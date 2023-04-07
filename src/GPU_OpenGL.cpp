@@ -34,7 +34,11 @@ using namespace OpenGL;
 
 bool GLCompositor::Init()
 {
-    if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_Nearest, CompShader[0], "CompositorShader"))
+    if (!OpenGL::CompileVertexFragmentProgram(CompShader[0],
+            kCompositorVS, kCompositorFS_Nearest, 
+            "CompositorShader",
+            {{"vPosition", 0}, {"vTexcoord", 1}},
+            {{"oColor", 0}}))
     //if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_Linear, CompShader[0], "CompositorShader"))
     //if (!OpenGL::BuildShaderProgram(kCompositorVS_xBRZ, kCompositorFS_xBRZ, CompShader[0], "CompositorShader"))
         return false;
@@ -43,20 +47,13 @@ bool GLCompositor::Init()
     {
         GLint uni_id;
 
-        glBindAttribLocation(CompShader[i][2], 0, "vPosition");
-        glBindAttribLocation(CompShader[i][2], 1, "vTexcoord");
-        glBindFragDataLocation(CompShader[i][2], 0, "oColor");
+        CompScaleLoc[i] = glGetUniformLocation(CompShader[i], "u3DScale");
+        Comp3DXPosLoc[i] = glGetUniformLocation(CompShader[i], "u3DXPos");
 
-        if (!OpenGL::LinkShaderProgram(CompShader[i]))
-            return false;
-
-        CompScaleLoc[i] = glGetUniformLocation(CompShader[i][2], "u3DScale");
-        Comp3DXPosLoc[i] = glGetUniformLocation(CompShader[i][2], "u3DXPos");
-
-        glUseProgram(CompShader[i][2]);
-        uni_id = glGetUniformLocation(CompShader[i][2], "ScreenTex");
+        glUseProgram(CompShader[i]);
+        uni_id = glGetUniformLocation(CompShader[i], "ScreenTex");
         glUniform1i(uni_id, 0);
-        uni_id = glGetUniformLocation(CompShader[i][2], "_3DTex");
+        uni_id = glGetUniformLocation(CompShader[i], "_3DTex");
         glUniform1i(uni_id, 1);
     }
 
@@ -133,7 +130,7 @@ void GLCompositor::DeInit()
     glDeleteBuffers(1, &CompVertexBufferID);
 
     for (int i = 0; i < 1; i++)
-        OpenGL::DeleteShaderProgram(CompShader[i]);
+        glDeleteProgram(CompShader[i]);
 }
 
 void GLCompositor::Reset()
@@ -197,7 +194,7 @@ void GLCompositor::RenderFrame()
     glClear(GL_COLOR_BUFFER_BIT);
 
     // TODO: select more shaders (filtering, etc)
-    OpenGL::UseShaderProgram(CompShader[0]);
+    glUseProgram(CompShader[0]);
     glUniform1ui(CompScaleLoc[0], Scale);
 
     // TODO: support setting this midframe, if ever needed

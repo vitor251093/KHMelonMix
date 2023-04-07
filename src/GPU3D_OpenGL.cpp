@@ -48,24 +48,17 @@ bool GLRenderer::BuildRenderShader(u32 flags, const char* vs, const char* fs)
     strcpy(&fsbuf[headerlen], kRenderFSCommon);
     strcpy(&fsbuf[headerlen + fsclen], fs);
 
-    bool ret = OpenGL::BuildShaderProgram(vsbuf, fsbuf, RenderShader[flags], shadername);
+    GLuint prog;
+    bool ret = OpenGL::CompileVertexFragmentProgram(prog,
+        vsbuf, fsbuf,
+        shadername,
+        {{"vPosition", 0}, {"vColor", 1}, {"vTexcoord", 2}, {"vPolygonAttr", 3}},
+        {{"oColor", 0}, {"oAttr", 1}});
 
     delete[] vsbuf;
     delete[] fsbuf;
 
     if (!ret) return false;
-
-    GLuint prog = RenderShader[flags][2];
-
-    glBindAttribLocation(prog, 0, "vPosition");
-    glBindAttribLocation(prog, 1, "vColor");
-    glBindAttribLocation(prog, 2, "vTexcoord");
-    glBindAttribLocation(prog, 3, "vPolygonAttr");
-    glBindFragDataLocation(prog, 0, "oColor");
-    glBindFragDataLocation(prog, 1, "oAttr");
-
-    if (!OpenGL::LinkShaderProgram(RenderShader[flags]))
-        return false;
 
     GLint uni_id = glGetUniformBlockIndex(prog, "uConfig");
     glUniformBlockBinding(prog, uni_id, 0);
@@ -77,13 +70,15 @@ bool GLRenderer::BuildRenderShader(u32 flags, const char* vs, const char* fs)
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
+    RenderShader[flags] = prog;
+
     return true;
 }
 
 void GLRenderer::UseRenderShader(u32 flags)
 {
     if (CurShaderID == flags) return;
-    glUseProgram(RenderShader[flags][2]);
+    glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
 }
 
@@ -111,21 +106,17 @@ bool GLRenderer::Init()
     glDepthRange(0, 1);
     glClearDepth(1.0);
 
-
-    if (!OpenGL::BuildShaderProgram(kClearVS, kClearFS, ClearShaderPlain, "ClearShader"))
+    if (!OpenGL::CompileVertexFragmentProgram(ClearShaderPlain,
+            kClearVS, kClearFS,
+            "ClearShader",
+            {{"vPosition", 0}},
+            {{"oColor", 0}, {"oAttr", 1}}))
         return false;
 
-    glBindAttribLocation(ClearShaderPlain[2], 0, "vPosition");
-    glBindFragDataLocation(ClearShaderPlain[2], 0, "oColor");
-    glBindFragDataLocation(ClearShaderPlain[2], 1, "oAttr");
-
-    if (!OpenGL::LinkShaderProgram(ClearShaderPlain))
-        return false;
-
-    ClearUniformLoc[0] = glGetUniformLocation(ClearShaderPlain[2], "uColor");
-    ClearUniformLoc[1] = glGetUniformLocation(ClearShaderPlain[2], "uDepth");
-    ClearUniformLoc[2] = glGetUniformLocation(ClearShaderPlain[2], "uOpaquePolyID");
-    ClearUniformLoc[3] = glGetUniformLocation(ClearShaderPlain[2], "uFogFlag");
+    ClearUniformLoc[0] = glGetUniformLocation(ClearShaderPlain, "uColor");
+    ClearUniformLoc[1] = glGetUniformLocation(ClearShaderPlain, "uDepth");
+    ClearUniformLoc[2] = glGetUniformLocation(ClearShaderPlain, "uOpaquePolyID");
+    ClearUniformLoc[3] = glGetUniformLocation(ClearShaderPlain, "uFogFlag");
 
     memset(RenderShader, 0, sizeof(RenderShader));
 
@@ -146,42 +137,35 @@ bool GLRenderer::Init()
     if (!BuildRenderShader(RenderFlag_ShadowMask | RenderFlag_WBuffer,
                            kRenderVS_W, kRenderFS_WSM)) return false;
 
-
-    if (!OpenGL::BuildShaderProgram(kFinalPassVS, kFinalPassEdgeFS, FinalPassEdgeShader, "FinalPassEdgeShader"))
+    if (!OpenGL::CompileVertexFragmentProgram(FinalPassEdgeShader,
+            kFinalPassVS, kFinalPassEdgeFS,
+            "FinalPassEdgeShader",
+            {{"vPosition", 0}},
+            {{"oColor", 0}}))
         return false;
-    if (!OpenGL::BuildShaderProgram(kFinalPassVS, kFinalPassFogFS, FinalPassFogShader, "FinalPassFogShader"))
+    if (!OpenGL::CompileVertexFragmentProgram(FinalPassFogShader,
+            kFinalPassVS, kFinalPassFogFS,
+            "FinalPassFogShader",
+            {{"vPosition", 0}},
+            {{"oColor", 0}}))
         return false;
 
-    glBindAttribLocation(FinalPassEdgeShader[2], 0, "vPosition");
-    glBindFragDataLocation(FinalPassEdgeShader[2], 0, "oColor");
+    uni_id = glGetUniformBlockIndex(FinalPassEdgeShader, "uConfig");
+    glUniformBlockBinding(FinalPassEdgeShader, uni_id, 0);
 
-    if (!OpenGL::LinkShaderProgram(FinalPassEdgeShader))
-        return false;
-
-    uni_id = glGetUniformBlockIndex(FinalPassEdgeShader[2], "uConfig");
-    glUniformBlockBinding(FinalPassEdgeShader[2], uni_id, 0);
-
-    glUseProgram(FinalPassEdgeShader[2]);
-
-    uni_id = glGetUniformLocation(FinalPassEdgeShader[2], "DepthBuffer");
+    glUseProgram(FinalPassEdgeShader);
+    uni_id = glGetUniformLocation(FinalPassEdgeShader, "DepthBuffer");
     glUniform1i(uni_id, 0);
-    uni_id = glGetUniformLocation(FinalPassEdgeShader[2], "AttrBuffer");
+    uni_id = glGetUniformLocation(FinalPassEdgeShader, "AttrBuffer");
     glUniform1i(uni_id, 1);
 
-    glBindAttribLocation(FinalPassFogShader[2], 0, "vPosition");
-    glBindFragDataLocation(FinalPassFogShader[2], 0, "oColor");
+    uni_id = glGetUniformBlockIndex(FinalPassFogShader, "uConfig");
+    glUniformBlockBinding(FinalPassFogShader, uni_id, 0);
 
-    if (!OpenGL::LinkShaderProgram(FinalPassFogShader))
-        return false;
-
-    uni_id = glGetUniformBlockIndex(FinalPassFogShader[2], "uConfig");
-    glUniformBlockBinding(FinalPassFogShader[2], uni_id, 0);
-
-    glUseProgram(FinalPassFogShader[2]);
-
-    uni_id = glGetUniformLocation(FinalPassFogShader[2], "DepthBuffer");
+    glUseProgram(FinalPassFogShader);
+    uni_id = glGetUniformLocation(FinalPassFogShader, "DepthBuffer");
     glUniform1i(uni_id, 0);
-    uni_id = glGetUniformLocation(FinalPassFogShader[2], "AttrBuffer");
+    uni_id = glGetUniformLocation(FinalPassFogShader, "AttrBuffer");
     glUniform1i(uni_id, 1);
 
 
@@ -304,8 +288,8 @@ void GLRenderer::DeInit()
 
     for (int i = 0; i < 16; i++)
     {
-        if (!RenderShader[i][2]) continue;
-        OpenGL::DeleteShaderProgram(RenderShader[i]);
+        if (!RenderShader[i]) continue;
+        glDeleteProgram(RenderShader[i]);
     }
 }
 
@@ -1077,7 +1061,7 @@ void GLRenderer::RenderSceneChunk(int y, int h)
             // edge marking
             // TODO: depth/polyid values at screen edges
 
-            glUseProgram(FinalPassEdgeShader[2]);
+            glUseProgram(FinalPassEdgeShader);
 
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
@@ -1088,7 +1072,7 @@ void GLRenderer::RenderSceneChunk(int y, int h)
         {
             // fog
 
-            glUseProgram(FinalPassFogShader[2]);
+            glUseProgram(FinalPassFogShader);
 
             if (RenderDispCnt & (1<<6))
                 glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_ALPHA);
@@ -1222,7 +1206,7 @@ void GLRenderer::RenderFrame()
     // TODO: check whether 'clear polygon ID' affects translucent polyID
     // (for example when alpha is 1..30)
     {
-        glUseProgram(ClearShaderPlain[2]);
+        glUseProgram(ClearShaderPlain);
         glDepthFunc(GL_ALWAYS);
 
         u32 r = RenderClearAttr1 & 0x1F;

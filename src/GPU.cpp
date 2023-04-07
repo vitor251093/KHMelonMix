@@ -397,7 +397,7 @@ void InitRenderer(int renderer)
             GPU3D::CurrentRenderer = std::make_unique<GPU3D::SoftRenderer>();
             GPU3D::CurrentRenderer->Init();
         }
-        GPU3D::CurrentRenderer = std::make_unique<GPU3D::GLRenderer>();
+        GPU3D::CurrentRenderer = std::make_unique<GPU3D::ComputeRenderer>();
         if (!GPU3D::CurrentRenderer->Init())
         {
             // Fallback on software renderer
