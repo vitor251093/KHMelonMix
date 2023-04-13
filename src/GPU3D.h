@@ -161,6 +161,7 @@ public:
     virtual u32* GetLine(int line) = 0;
 
     virtual void SetupAccelFrame() {}
+    virtual void PrepareCaptureFrame() {}
 };
 
 extern int Renderer;

@@ -41,7 +41,7 @@ public:
     virtual u32* GetLine(int line) override;
 
     void SetupAccelFrame() override;
-    void PrepareCaptureFrame();
+    void PrepareCaptureFrame() override;
 private:
 
     // GL version requirements
