@@ -41,7 +41,6 @@ const char* dskeylabels[12] = {"A", "B", "X", "Y", "Left", "Right", "Up", "Down"
 
 const int dstouchkeyorder[12] = {1, 0, 2, 3};
 
-
 InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new Ui::InputConfigDialog)
 {
     ui->setupUi(this);

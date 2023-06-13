@@ -157,7 +157,7 @@ else()
     target_include_directories(khDaysMM PUBLIC ${Qt5Gui_PRIVATE_INCLUDE_DIRS})
 endif()
 target_link_libraries(khDaysMM PRIVATE core)
-target_link_libraries(khDaysMM PRIVATE PkgConfig::SDL2 PkgConfig::Slirp PkgConfig::LibArchive)
+target_link_libraries(khDaysMM PRIVATE PkgConfig::SDL2 PkgConfig::Slirp PkgConfig::LibArchive PkgConfig::Zstd)
 target_link_libraries(khDaysMM PRIVATE ${QT_LINK_LIBS} ${CMAKE_DL_LIBS})
 
 if (UNIX)
