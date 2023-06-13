@@ -35,6 +35,7 @@ extern SaveManager* GBASave;
 QString VerifySetup();
 void Reset();
 bool LoadBIOS();
+void ClearBackupState();
 
 bool LoadROM(QStringList filepath, bool reset);
 void EjectCart();
@@ -49,8 +50,8 @@ QString GBACartLabel();
 
 std::string GetSavestateName(int slot);
 bool SavestateExists(int slot);
-bool LoadState(std::string filename);
-bool SaveState(std::string filename);
+bool LoadState(const std::string& filename);
+bool SaveState(const std::string& filename);
 void UndoStateLoad();
 
 void EnableCheats(bool enable);

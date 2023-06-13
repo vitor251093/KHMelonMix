@@ -32,9 +32,13 @@ enum
     HK_FastForwardToggle,
     HK_FullscreenToggle,
     HK_SwapScreens,
+    HK_SwapScreenEmphasis,
     HK_SolarSensorDecrease,
     HK_SolarSensorIncrease,
     HK_FrameStep,
+    HK_PowerButton,
+    HK_VolumeUp,
+    HK_VolumeDown,
     HK_MAX
 };
 
@@ -70,6 +74,15 @@ enum
     gameScene_RoxasThoughts,      // 14
     gameScene_Other2D,            // 15
     gameScene_Other               // 16
+};
+
+enum
+{
+    micInputType_Silence,
+    micInputType_External,
+    micInputType_Noise,
+    micInputType_Wav,
+    micInputType_MAX,
 };
 
 namespace Config
@@ -188,10 +201,12 @@ extern bool SavestateRelocSRAM;
 extern int AudioInterp;
 extern int AudioBitrate;
 extern int AudioVolume;
+extern bool DSiVolumeSync;
 extern int MicInputType;
 extern std::string MicWavPath;
 
 extern std::string LastROMFolder;
+extern std::string LastBIOSFolder;
 
 extern std::string RecentROMList[10];
 

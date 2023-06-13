@@ -28,3 +28,8 @@ compile_commands.json
 *.exe
 
 .DS_Store
+
+.vs
+.vscode
+CMakeFiles
+CMakeCache.txt

@@ -33,14 +33,14 @@ namespace NDSCart
 class CartCommon
 {
 public:
-    CartCommon(u8* rom, u32 len, u32 chipid);
+    CartCommon(u8* rom, u32 len, u32 chipid, bool badDSiDump);
     virtual ~CartCommon();
 
     virtual u32 Type() { return 0x001; }
     virtual u32 Checksum();
 
     virtual void Reset();
-    virtual void SetupDirectBoot(std::string romname);
+    virtual void SetupDirectBoot(const std::string& romname);
 
     virtual void DoSavestate(Savestate* file);
 
@@ -51,6 +51,9 @@ public:
     virtual void ROMCommandFinish(u8* cmd, u8* data, u32 len);
 
     virtual u8 SPIWrite(u8 val, u32 pos, bool last);
+
+    virtual u8* GetSaveMemory() const;
+    virtual u32 GetSaveMemoryLength() const;
 
 protected:
     void ReadROM(u32 addr, u32 len, u8* data, u32 offset);
@@ -72,7 +75,7 @@ protected:
 class CartRetail : public CartCommon
 {
 public:
-    CartRetail(u8* rom, u32 len, u32 chipid);
+    CartRetail(u8* rom, u32 len, u32 chipid, bool badDSiDump);
     virtual ~CartRetail() override;
 
     virtual u32 Type() override { return 0x101; }
@@ -87,6 +90,9 @@ public:
     virtual int ROMCommandStart(u8* cmd, u8* data, u32 len) override;
 
     virtual u8 SPIWrite(u8 val, u32 pos, bool last) override;
+
+    virtual u8* GetSaveMemory() const override;
+    virtual u32 GetSaveMemoryLength() const override;
 
 protected:
     void ReadROM_B7(u32 addr, u32 len, u8* data, u32 offset);
@@ -139,7 +145,7 @@ private:
 class CartRetailIR : public CartRetail
 {
 public:
-    CartRetailIR(u8* rom, u32 len, u32 chipid, u32 irversion);
+    CartRetailIR(u8* rom, u32 len, u32 chipid, u32 irversion, bool badDSiDump);
     ~CartRetailIR() override;
 
     virtual u32 Type() override { return 0x103; }
@@ -155,7 +161,7 @@ private:
     u8 IRCmd;
 };
 
-// CartRetailBT - Pokémon Typing Adventure (SPI BT controller)
+// CartRetailBT - Pokï¿½mon Typing Adventure (SPI BT controller)
 class CartRetailBT : public CartRetail
 {
 public:
@@ -181,7 +187,7 @@ public:
     virtual u32 Type() override { return 0x201; }
 
     void Reset() override;
-    void SetupDirectBoot(std::string romname) override;
+    void SetupDirectBoot(const std::string& romname) override;
 
     void DoSavestate(Savestate* file) override;
 
@@ -221,7 +227,20 @@ void DecryptSecureArea(u8* out);
 
 bool LoadROM(const u8* romdata, u32 romlen);
 void LoadSave(const u8* savedata, u32 savelen);
-void SetupDirectBoot(std::string romname);
+void SetupDirectBoot(const std::string& romname);
+
+/// This function is intended to allow frontends to save and load SRAM
+/// without using melonDS APIs.
+/// Modifying the emulated SRAM for any other reason is strongly discouraged.
+/// The returned pointer may be invalidated if the emulator is reset,
+/// or when a new game is loaded.
+/// Consequently, don't store the returned pointer for any longer than necessary.
+/// @returns Pointer to this cart's SRAM if a cart is loaded and supports SRAM, otherwise \c nullptr.
+u8* GetSaveMemory();
+
+/// @returns The length of the buffer returned by ::GetSaveMemory()
+/// if a cart is loaded and supports SRAM, otherwise zero.
+u32 GetSaveMemoryLength();
 
 void EjectCart();
 

@@ -15,10 +15,10 @@ You need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it int
 
 ### Linux
 1. Install dependencies:
-   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libslirp-dev libarchive-dev`
-   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libslirp-dev libarchive-dev`
-   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia libslirp libarchive`
-3. Download the KHDays FM repository and prepare:
+   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libslirp-dev libarchive-dev libzstd-dev`
+   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libslirp-dev libarchive-dev libzstd-dev`
+   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia libslirp libarchive zstd`
+3. Download the KHDays MM repository and prepare:
    ```bash
    git clone https://github.com/vitor251093/KHDays_FM
    cd KHDays_FM
@@ -38,13 +38,13 @@ You need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it int
    ```bash
    pacman -S git
    ```
-5. Download the KHDays FM repository and prepare:
+5. Download the KHDays MM repository and prepare:
    ```bash
    git clone https://github.com/vitor251093/KHDays_FM
    cd KHDays_FM
    ```
 #### Dynamic builds (with DLLs)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt5-base,qt5-svg,qt5-multimedia,libslirp,libarchive}`
+5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt5-base,qt5-svg,qt5-multimedia,libslirp,libarchive,zstd}`
 6. Compile:
    ```bash
    cmake -B build
@@ -52,10 +52,10 @@ You need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it int
    cd build
    ../tools/msys-dist.sh
    ```
-If everything went well, KHDays FM and the libraries it needs should now be in the `dist` folder.
+If everything went well, KHDays MM and the libraries it needs should now be in the `dist` folder.
 
 #### Static builds (without DLLs, standalone executable)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt5-static,libslirp,libarchive}`
+5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt5-static,libslirp,libarchive,zstd}`
 6. Compile:
    ```bash
    cmake -B build -DBUILD_STATIC=ON -DCMAKE_PREFIX_PATH=/mingw64/qt5-static
@@ -65,8 +65,8 @@ If everything went well, khDaysMM should now be in the `build` folder.
 
 ### macOS
 1. Install the [Homebrew Package Manager](https://brew.sh)
-2. Install dependencies: `brew install git pkg-config cmake sdl2 qt@6 libslirp libarchive libepoxy`
-3. Download the KHDays FM repository and prepare:
+2. Install dependencies: `brew install git pkg-config cmake sdl2 qt@6 libslirp libarchive zstd`
+3. Download the KHDays MM repository and prepare:
    ```zsh
    git clone https://github.com/vitor251093/KHDays_FM
    cd KHDays_FM
@@ -121,7 +121,7 @@ If you want an app bundle that can be distributed to other computers without nee
 
 [![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)
 
-KHDays FM is free software: you can redistribute it and/or modify
+KHDays MM is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.

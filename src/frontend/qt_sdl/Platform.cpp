@@ -60,10 +60,10 @@ void IPCInit()
 
     if (!IPCBuffer->attach())
     {
-        printf("IPC sharedmem doesn't exist. creating\n");
+        Log(LogLevel::Info, "IPC sharedmem doesn't exist. creating\n");
         if (!IPCBuffer->create(1024))
         {
-            printf("IPC sharedmem create failed :(\n");
+            Log(LogLevel::Error, "IPC sharedmem create failed :(\n");
             delete IPCBuffer;
             IPCBuffer = nullptr;
             return;
@@ -88,7 +88,7 @@ void IPCInit()
     }
     IPCBuffer->unlock();
 
-    printf("IPC: instance ID %d\n", IPCInstanceID);
+    Log(LogLevel::Info, "IPC: instance ID %d\n", IPCInstanceID);
 }
 
 void IPCDeInit()
@@ -288,7 +288,7 @@ bool GetConfigArray(ConfigEntry entry, void* data)
 }
 
 
-FILE* OpenFile(std::string path, std::string mode, bool mustexist)
+FILE* OpenFile(const std::string& path, const std::string& mode, bool mustexist)
 {
     QFile f(QString::fromStdString(path));
 
@@ -322,7 +322,7 @@ FILE* OpenFile(std::string path, std::string mode, bool mustexist)
     return file;
 }
 
-FILE* OpenLocalFile(std::string path, std::string mode)
+FILE* OpenLocalFile(const std::string& path, const std::string& mode)
 {
     QString qpath = QString::fromStdString(path);
 	QDir dir(qpath);
@@ -347,6 +347,17 @@ FILE* OpenLocalFile(std::string path, std::string mode)
     }
 
     return OpenFile(fullpath.toStdString(), mode, mode[0] != 'w');
+}
+
+void Log(LogLevel level, const char* fmt, ...)
+{
+    if (fmt == nullptr)
+        return;
+
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
 }
 
 Thread* Thread_Create(std::function<void()> func)
