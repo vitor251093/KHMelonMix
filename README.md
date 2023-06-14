@@ -82,36 +82,6 @@ If everything went well, khDaysMM.app should now be in the `build` directory.
 If you want an app bundle that can be distributed to other computers without needing to install dependencies through Homebrew, you can additionally run `
 ../tools/mac-bundle.rb khDaysMM.app` after the build is completed, or add `-DMACOS_BUNDLE_LIBS=ON` to the first CMake command.
 
-## DONE
-
- * the game camera now can be controlled using an analog stick
- * the app should start with OpenGL rendering and 5x native resolution by default
- * the widescreen hack should be included by default
- * the map from the bottom screen should be cropped and placed in the top screen (when visible)
- * the gauge from the bottom screen should be cropped and placed in the top screen (when the game is paused)
-
-## PARTIALLY DONE
-
- * screen sizes and positions should switch automatically according to the needs
-
-## BUGS THAT NEED FIXING
-
- * for a brief moment, the tutorial window appears as a minimap
- * the minimap isn't properly cropped if the emulator window is in an aspect ratio lower than 16:9
- * background color based in the screen brightness is not accurate
-
-## TODO LIST
-
- * replace textures that look crispy
- * replace the ingame font
- * intro menu should be properly adapted to look more like the KH 1.5 + 2.5 menu
-
-### TODO LIST FOR LATER (low priority)
-
- * replace cutscenes with the remastered ones
- * automatically skip tutorials that show how to control the camera
- * remove the ingame menu instructions regarding the game camera
-
 ## Credits
 
  * All people that supported and developed melonDS
