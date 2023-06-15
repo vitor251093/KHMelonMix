@@ -218,9 +218,9 @@ if (UNIX AND NOT APPLE)
     foreach(SIZE 16 32 48 64 128 256)
         install(FILES ${CMAKE_SOURCE_DIR}/res/icon/melon_${SIZE}x${SIZE}.png
             DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/${SIZE}x${SIZE}/apps
-            RENAME net.kuribo64.khDaysMM.png)
+            RENAME com.vitormm.khDaysMM.png)
     endforeach()
 
-    install(FILES ${CMAKE_SOURCE_DIR}/res/net.kuribo64.khDaysMM.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
+    install(FILES ${CMAKE_SOURCE_DIR}/res/com.vitormm.khDaysMM.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
     install(TARGETS khDaysMM BUNDLE DESTINATION ${CMAKE_BINARY_DIR} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 endif()
