@@ -161,6 +161,9 @@ public:
     virtual void RenderFrame() = 0;
     virtual void RestartFrame() {};
     virtual u32* GetLine(int line) = 0;
+
+    virtual void SetupAccelFrame() {}
+    virtual void PrepareCaptureFrame() {}
 };
 
 extern int Renderer;
@@ -172,6 +175,7 @@ extern std::unique_ptr<Renderer3D> CurrentRenderer;
 
 #ifdef OGLRENDERER_ENABLED
 #include "GPU3D_OpenGL.h"
+#include "GPU3D_Compute.h"
 #endif
 
 #endif

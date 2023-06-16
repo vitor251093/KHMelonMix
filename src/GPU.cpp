@@ -25,6 +25,7 @@
 #endif
 
 #include "GPU2D_Soft.h"
+#include "GPU3D.h"
 
 using Platform::Log;
 using Platform::LogLevel;
@@ -386,7 +387,7 @@ void AssignFramebuffers()
 void InitRenderer(int renderer)
 {
 #ifdef OGLRENDERER_ENABLED
-    if (renderer == 1)
+    if (renderer != renderer3D_Software)
     {
         CurGLCompositor = std::make_unique<GLCompositor>();
         // Create opengl rendrerer
@@ -397,7 +398,10 @@ void InitRenderer(int renderer)
             GPU3D::CurrentRenderer = std::make_unique<GPU3D::SoftRenderer>();
             GPU3D::CurrentRenderer->Init();
         }
-        GPU3D::CurrentRenderer = std::make_unique<GPU3D::GLRenderer>();
+        if (renderer == renderer3D_OpenGL)
+            GPU3D::CurrentRenderer = std::make_unique<GPU3D::GLRenderer>();
+        else
+            GPU3D::CurrentRenderer = std::make_unique<GPU3D::ComputeRenderer>();
         if (!GPU3D::CurrentRenderer->Init())
         {
             // Fallback on software renderer

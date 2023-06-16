@@ -40,8 +40,8 @@ public:
     virtual void RenderFrame() override;
     virtual u32* GetLine(int line) override;
 
-    void SetupAccelFrame();
-    void PrepareCaptureFrame();
+    void SetupAccelFrame() override;
+    void PrepareCaptureFrame() override;
 private:
 
     // GL version requirements
@@ -64,7 +64,7 @@ private:
 
     RendererPolygon PolygonList[2048];
 
-    bool BuildRenderShader(u32 flags, const char* vs, const char* fs);
+    bool BuildRenderShader(u32 flags, const std::string& vs, const std::string& fs);
     void UseRenderShader(u32 flags);
     void SetupPolygon(RendererPolygon* rp, Polygon* polygon);
     u32* SetupVertex(Polygon* poly, int vid, Vertex* vtx, u32 vtxattr, u32* vptr);
@@ -83,13 +83,13 @@ private:
     };
 
 
-    GLuint ClearShaderPlain[3];
+    GLuint ClearShaderPlain;
 
-    GLuint RenderShader[16][3];
+    GLuint RenderShader[16];
     GLuint CurShaderID = -1;
 
-    GLuint FinalPassEdgeShader[3];
-    GLuint FinalPassFogShader[3];
+    GLuint FinalPassEdgeShader;
+    GLuint FinalPassFogShader;
 
     // std140 compliant structure
     struct
@@ -142,11 +142,11 @@ private:
     bool BetterPolygons;
     int ScreenW, ScreenH;
 
-    GLuint FramebufferTex[8];
-    int FrontBuffer;
-    GLuint FramebufferID[4], PixelbufferID;
+    GLuint ColorBufferTex, DepthBufferTex, AttrBufferTex;
+    GLuint DownScaleBufferTex;
+    GLuint PixelbufferID;
+
+    GLuint MainFramebuffer, DownscaleFramebuffer;
     u32 Framebuffer[256*192];
-
-
 };
 }

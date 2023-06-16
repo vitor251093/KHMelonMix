@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include "Platform.h"
 #include "Config.h"
+#include "GPU.h"
 
 
 namespace Config
@@ -60,6 +61,7 @@ bool Threaded3D;
 
 int GL_ScaleFactor;
 bool GL_BetterPolygons;
+bool GL_HiresCoordinates;
 
 bool LimitFPS;
 bool AudioSync;
@@ -246,6 +248,7 @@ ConfigEntry ConfigFile[] =
 
     {"GL_ScaleFactor", 0, &GL_ScaleFactor, 5, false},
     {"GL_BetterPolygons", 1, &GL_BetterPolygons, false, false},
+    {"GL_HiresCoordinates", 1, &GL_HiresCoordinates, true, false},
 
     {"LimitFPS", 1, &LimitFPS, true, false},
     {"AudioSync", 1, &AudioSync, false},

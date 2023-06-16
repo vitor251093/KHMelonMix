@@ -162,6 +162,7 @@ struct RenderSettings
 
     int GL_ScaleFactor;
     bool GL_BetterPolygons;
+    bool GL_HiresCoordinates;
 };
 
 
@@ -171,6 +172,16 @@ void Reset();
 void Stop();
 
 void DoSavestate(Savestate* file);
+
+enum
+{
+    renderer3D_Software = 0,
+#ifdef OGLRENDERER_ENABLED
+    renderer3D_OpenGL,
+    renderer3D_OpenGLCompute,
+#endif
+    renderer3D_Max,
+};
 
 void InitRenderer(int renderer);
 void DeInitRenderer();
@@ -618,7 +629,5 @@ void SetDispStat(u32 cpu, u16 val);
 
 void SetVCount(u16 val);
 }
-
-#include "GPU3D.h"
 
 #endif

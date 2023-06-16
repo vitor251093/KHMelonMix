@@ -27,45 +27,31 @@
 namespace GPU3D
 {
 
-bool GLRenderer::BuildRenderShader(u32 flags, const char* vs, const char* fs)
+bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::string& fs)
 {
     char shadername[32];
     sprintf(shadername, "RenderShader%02X", flags);
 
     int headerlen = strlen(kShaderHeader);
 
-    int vslen = strlen(vs);
-    int vsclen = strlen(kRenderVSCommon);
-    char* vsbuf = new char[headerlen + vsclen + vslen + 1];
-    strcpy(&vsbuf[0], kShaderHeader);
-    strcpy(&vsbuf[headerlen], kRenderVSCommon);
-    strcpy(&vsbuf[headerlen + vsclen], vs);
+    std::string vsbuf;
+    vsbuf += kShaderHeader;
+    vsbuf += kRenderVSCommon;
+    vsbuf += vs;
 
-    int fslen = strlen(fs);
-    int fsclen = strlen(kRenderFSCommon);
-    char* fsbuf = new char[headerlen + fsclen + fslen + 1];
-    strcpy(&fsbuf[0], kShaderHeader);
-    strcpy(&fsbuf[headerlen], kRenderFSCommon);
-    strcpy(&fsbuf[headerlen + fsclen], fs);
+    std::string fsbuf;
+    fsbuf += kShaderHeader;
+    fsbuf += kRenderFSCommon;
+    fsbuf += fs;
 
-    bool ret = OpenGL::BuildShaderProgram(vsbuf, fsbuf, RenderShader[flags], shadername);
-
-    delete[] vsbuf;
-    delete[] fsbuf;
+    GLuint prog;
+    bool ret = OpenGL::CompileVertexFragmentProgram(prog,
+        vsbuf, fsbuf,
+        shadername,
+        {{"vPosition", 0}, {"vColor", 1}, {"vTexcoord", 2}, {"vPolygonAttr", 3}},
+        {{"oColor", 0}, {"oAttr", 1}});
 
     if (!ret) return false;
-
-    GLuint prog = RenderShader[flags][2];
-
-    glBindAttribLocation(prog, 0, "vPosition");
-    glBindAttribLocation(prog, 1, "vColor");
-    glBindAttribLocation(prog, 2, "vTexcoord");
-    glBindAttribLocation(prog, 3, "vPolygonAttr");
-    glBindFragDataLocation(prog, 0, "oColor");
-    glBindFragDataLocation(prog, 1, "oAttr");
-
-    if (!OpenGL::LinkShaderProgram(RenderShader[flags]))
-        return false;
 
     GLint uni_id = glGetUniformBlockIndex(prog, "uConfig");
     glUniformBlockBinding(prog, uni_id, 0);
@@ -77,13 +63,15 @@ bool GLRenderer::BuildRenderShader(u32 flags, const char* vs, const char* fs)
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
+    RenderShader[flags] = prog;
+
     return true;
 }
 
 void GLRenderer::UseRenderShader(u32 flags)
 {
     if (CurShaderID == flags) return;
-    glUseProgram(RenderShader[flags][2]);
+    glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
 }
 
@@ -111,21 +99,17 @@ bool GLRenderer::Init()
     glDepthRange(0, 1);
     glClearDepth(1.0);
 
-
-    if (!OpenGL::BuildShaderProgram(kClearVS, kClearFS, ClearShaderPlain, "ClearShader"))
+    if (!OpenGL::CompileVertexFragmentProgram(ClearShaderPlain,
+            kClearVS, kClearFS,
+            "ClearShader",
+            {{"vPosition", 0}},
+            {{"oColor", 0}, {"oAttr", 1}}))
         return false;
 
-    glBindAttribLocation(ClearShaderPlain[2], 0, "vPosition");
-    glBindFragDataLocation(ClearShaderPlain[2], 0, "oColor");
-    glBindFragDataLocation(ClearShaderPlain[2], 1, "oAttr");
-
-    if (!OpenGL::LinkShaderProgram(ClearShaderPlain))
-        return false;
-
-    ClearUniformLoc[0] = glGetUniformLocation(ClearShaderPlain[2], "uColor");
-    ClearUniformLoc[1] = glGetUniformLocation(ClearShaderPlain[2], "uDepth");
-    ClearUniformLoc[2] = glGetUniformLocation(ClearShaderPlain[2], "uOpaquePolyID");
-    ClearUniformLoc[3] = glGetUniformLocation(ClearShaderPlain[2], "uFogFlag");
+    ClearUniformLoc[0] = glGetUniformLocation(ClearShaderPlain, "uColor");
+    ClearUniformLoc[1] = glGetUniformLocation(ClearShaderPlain, "uDepth");
+    ClearUniformLoc[2] = glGetUniformLocation(ClearShaderPlain, "uOpaquePolyID");
+    ClearUniformLoc[3] = glGetUniformLocation(ClearShaderPlain, "uFogFlag");
 
     memset(RenderShader, 0, sizeof(RenderShader));
 
@@ -146,42 +130,35 @@ bool GLRenderer::Init()
     if (!BuildRenderShader(RenderFlag_ShadowMask | RenderFlag_WBuffer,
                            kRenderVS_W, kRenderFS_WSM)) return false;
 
-
-    if (!OpenGL::BuildShaderProgram(kFinalPassVS, kFinalPassEdgeFS, FinalPassEdgeShader, "FinalPassEdgeShader"))
+    if (!OpenGL::CompileVertexFragmentProgram(FinalPassEdgeShader,
+            kFinalPassVS, kFinalPassEdgeFS,
+            "FinalPassEdgeShader",
+            {{"vPosition", 0}},
+            {{"oColor", 0}}))
         return false;
-    if (!OpenGL::BuildShaderProgram(kFinalPassVS, kFinalPassFogFS, FinalPassFogShader, "FinalPassFogShader"))
+    if (!OpenGL::CompileVertexFragmentProgram(FinalPassFogShader,
+            kFinalPassVS, kFinalPassFogFS,
+            "FinalPassFogShader",
+            {{"vPosition", 0}},
+            {{"oColor", 0}}))
         return false;
 
-    glBindAttribLocation(FinalPassEdgeShader[2], 0, "vPosition");
-    glBindFragDataLocation(FinalPassEdgeShader[2], 0, "oColor");
+    uni_id = glGetUniformBlockIndex(FinalPassEdgeShader, "uConfig");
+    glUniformBlockBinding(FinalPassEdgeShader, uni_id, 0);
 
-    if (!OpenGL::LinkShaderProgram(FinalPassEdgeShader))
-        return false;
-
-    uni_id = glGetUniformBlockIndex(FinalPassEdgeShader[2], "uConfig");
-    glUniformBlockBinding(FinalPassEdgeShader[2], uni_id, 0);
-
-    glUseProgram(FinalPassEdgeShader[2]);
-
-    uni_id = glGetUniformLocation(FinalPassEdgeShader[2], "DepthBuffer");
+    glUseProgram(FinalPassEdgeShader);
+    uni_id = glGetUniformLocation(FinalPassEdgeShader, "DepthBuffer");
     glUniform1i(uni_id, 0);
-    uni_id = glGetUniformLocation(FinalPassEdgeShader[2], "AttrBuffer");
+    uni_id = glGetUniformLocation(FinalPassEdgeShader, "AttrBuffer");
     glUniform1i(uni_id, 1);
 
-    glBindAttribLocation(FinalPassFogShader[2], 0, "vPosition");
-    glBindFragDataLocation(FinalPassFogShader[2], 0, "oColor");
+    uni_id = glGetUniformBlockIndex(FinalPassFogShader, "uConfig");
+    glUniformBlockBinding(FinalPassFogShader, uni_id, 0);
 
-    if (!OpenGL::LinkShaderProgram(FinalPassFogShader))
-        return false;
-
-    uni_id = glGetUniformBlockIndex(FinalPassFogShader[2], "uConfig");
-    glUniformBlockBinding(FinalPassFogShader[2], uni_id, 0);
-
-    glUseProgram(FinalPassFogShader[2]);
-
-    uni_id = glGetUniformLocation(FinalPassFogShader[2], "DepthBuffer");
+    glUseProgram(FinalPassFogShader);
+    uni_id = glGetUniformLocation(FinalPassFogShader, "DepthBuffer");
     glUniform1i(uni_id, 0);
-    uni_id = glGetUniformLocation(FinalPassFogShader[2], "AttrBuffer");
+    uni_id = glGetUniformLocation(FinalPassFogShader, "AttrBuffer");
     glUniform1i(uni_id, 1);
 
 
@@ -234,29 +211,26 @@ bool GLRenderer::Init()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferID);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(IndexBuffer), NULL, GL_DYNAMIC_DRAW);
 
-    glGenFramebuffers(4, &FramebufferID[0]);
-    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferID[0]);
-
-    glGenTextures(8, &FramebufferTex[0]);
-    FrontBuffer = 0;
+    glGenFramebuffers(1, &MainFramebuffer);
 
     // color buffers
-    SetupDefaultTexParams(FramebufferTex[0]);
-    SetupDefaultTexParams(FramebufferTex[1]);
+    glGenTextures(1, &ColorBufferTex);
+    SetupDefaultTexParams(ColorBufferTex);
 
     // depth/stencil buffer
-    SetupDefaultTexParams(FramebufferTex[4]);
-    SetupDefaultTexParams(FramebufferTex[6]);
+    glGenTextures(1, &DepthBufferTex);
+    SetupDefaultTexParams(DepthBufferTex);
 
     // attribute buffer
     // R: opaque polyID (for edgemarking)
     // G: edge flag
     // B: fog flag
-    SetupDefaultTexParams(FramebufferTex[5]);
-    SetupDefaultTexParams(FramebufferTex[7]);
+    glGenTextures(1, &AttrBufferTex);
+    SetupDefaultTexParams(AttrBufferTex);
 
     // downscale framebuffer for display capture (always 256x192)
-    SetupDefaultTexParams(FramebufferTex[3]);
+    glGenTextures(1, &DownScaleBufferTex);
+    SetupDefaultTexParams(DownScaleBufferTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 192, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glEnable(GL_BLEND);
@@ -292,8 +266,12 @@ void GLRenderer::DeInit()
     glDeleteTextures(1, &TexMemID);
     glDeleteTextures(1, &TexPalMemID);
 
-    glDeleteFramebuffers(4, &FramebufferID[0]);
-    glDeleteTextures(8, &FramebufferTex[0]);
+    glDeleteFramebuffers(1, &MainFramebuffer);
+    glDeleteFramebuffers(1, &DownscaleFramebuffer);
+    glDeleteTextures(1, &ColorBufferTex);
+    glDeleteTextures(1, &DepthBufferTex);
+    glDeleteTextures(1, &AttrBufferTex);
+    glDeleteTextures(1, &DownScaleBufferTex);
 
     glDeleteVertexArrays(1, &VertexArrayID);
     glDeleteBuffers(1, &VertexBufferID);
@@ -304,8 +282,8 @@ void GLRenderer::DeInit()
 
     for (int i = 0; i < 16; i++)
     {
-        if (!RenderShader[i][2]) continue;
-        OpenGL::DeleteShaderProgram(RenderShader[i]);
+        if (!RenderShader[i]) continue;
+        glDeleteProgram(RenderShader[i]);
     }
 }
 
@@ -323,39 +301,24 @@ void GLRenderer::SetRenderSettings(GPU::RenderSettings& settings)
     ScreenW = 256 * scale;
     ScreenH = 192 * scale;
 
-    glBindTexture(GL_TEXTURE_2D, FramebufferTex[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ScreenW, ScreenH, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glBindTexture(GL_TEXTURE_2D, FramebufferTex[1]);
+    glBindTexture(GL_TEXTURE_2D, ColorBufferTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ScreenW, ScreenH, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-    glBindTexture(GL_TEXTURE_2D, FramebufferTex[4]);
+    glBindTexture(GL_TEXTURE_2D, DepthBufferTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, ScreenW, ScreenH, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-    glBindTexture(GL_TEXTURE_2D, FramebufferTex[5]);
+    glBindTexture(GL_TEXTURE_2D, AttrBufferTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ScreenW, ScreenH, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-    glBindTexture(GL_TEXTURE_2D, FramebufferTex[6]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, ScreenW, ScreenH, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
-    glBindTexture(GL_TEXTURE_2D, FramebufferTex[7]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ScreenW, ScreenH, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferID[3]);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, FramebufferTex[3], 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, DownscaleFramebuffer);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, DownScaleBufferTex, 0);
 
     GLenum fbassign[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
 
-    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferID[0]);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, FramebufferTex[0], 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, FramebufferTex[4], 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, FramebufferTex[5], 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, MainFramebuffer);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, ColorBufferTex, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, DepthBufferTex, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, AttrBufferTex, 0);
     glDrawBuffers(2, fbassign);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferID[1]);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, FramebufferTex[1], 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, FramebufferTex[6], 0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, FramebufferTex[7], 0);
-    glDrawBuffers(2, fbassign);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferID[0]);
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, PixelbufferID);
     glBufferData(GL_PIXEL_PACK_BUFFER, 256*192*4, NULL, GL_DYNAMIC_READ);
@@ -1065,9 +1028,9 @@ void GLRenderer::RenderSceneChunk(int y, int h)
         glStencilMask(0);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, FramebufferTex[FrontBuffer ? 6 : 4]);
+        glBindTexture(GL_TEXTURE_2D, DepthBufferTex);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, FramebufferTex[FrontBuffer ? 7 : 5]);
+        glBindTexture(GL_TEXTURE_2D, AttrBufferTex);
 
         glBindBuffer(GL_ARRAY_BUFFER, ClearVertexBufferID);
         glBindVertexArray(ClearVertexArrayID);
@@ -1077,7 +1040,7 @@ void GLRenderer::RenderSceneChunk(int y, int h)
             // edge marking
             // TODO: depth/polyid values at screen edges
 
-            glUseProgram(FinalPassEdgeShader[2]);
+            glUseProgram(FinalPassEdgeShader);
 
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
@@ -1088,7 +1051,7 @@ void GLRenderer::RenderSceneChunk(int y, int h)
         {
             // fog
 
-            glUseProgram(FinalPassFogShader[2]);
+            glUseProgram(FinalPassFogShader);
 
             if (RenderDispCnt & (1<<6))
                 glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_ALPHA);
@@ -1116,7 +1079,7 @@ void GLRenderer::RenderFrame()
     CurShaderID = -1;
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FramebufferID[FrontBuffer]);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, MainFramebuffer);
 
     ShaderConfig.uScreenSize[0] = ScreenW;
     ShaderConfig.uScreenSize[1] = ScreenH;
@@ -1223,7 +1186,7 @@ void GLRenderer::RenderFrame()
     // TODO: check whether 'clear polygon ID' affects translucent polyID
     // (for example when alpha is 1..30)
     {
-        glUseProgram(ClearShaderPlain[2]);
+        glUseProgram(ClearShaderPlain);
         glDepthFunc(GL_ALWAYS);
 
         u32 r = RenderClearAttr1 & 0x1F;
@@ -1283,22 +1246,18 @@ void GLRenderer::RenderFrame()
 
         RenderSceneChunk(0, 192);
     }
-
-    FrontBuffer = FrontBuffer ? 0 : 1;
 }
 
 void GLRenderer::PrepareCaptureFrame()
 {
-    // TODO: make sure this picks the right buffer when doing antialiasing
-    int original_fb = FrontBuffer^1;
-
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, FramebufferID[original_fb]);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, MainFramebuffer);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, FramebufferID[3]);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, DownscaleFramebuffer);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
     glBlitFramebuffer(0, 0, ScreenW, ScreenH, 0, 0, 256, 192, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, FramebufferID[3]);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, PixelbufferID);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, DownscaleFramebuffer);
     glReadPixels(0, 0, 256, 192, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
 }
 
@@ -1308,6 +1267,7 @@ u32* GLRenderer::GetLine(int line)
 
     if (line == 0)
     {
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, PixelbufferID);
         u8* data = (u8*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
         if (data) memcpy(&Framebuffer[stride*0], data, 4*stride*192);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
@@ -1327,7 +1287,7 @@ u32* GLRenderer::GetLine(int line)
 
 void GLRenderer::SetupAccelFrame()
 {
-    glBindTexture(GL_TEXTURE_2D, FramebufferTex[FrontBuffer]);
+    glBindTexture(GL_TEXTURE_2D, ColorBufferTex);
 }
 
 }

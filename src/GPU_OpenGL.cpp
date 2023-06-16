@@ -34,7 +34,11 @@ using namespace OpenGL;
 
 bool GLCompositor::Init()
 {
-    if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_Nearest, CompShader[0], "CompositorShader"))
+    if (!OpenGL::CompileVertexFragmentProgram(CompShader[0],
+            kCompositorVS, kCompositorFS_Nearest, 
+            "CompositorShader",
+            {{"vPosition", 0}, {"vTexcoord", 1}},
+            {{"oColor", 0}}))
     //if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_Linear, CompShader[0], "CompositorShader"))
     //if (!OpenGL::BuildShaderProgram(kCompositorVS_xBRZ, kCompositorFS_xBRZ, CompShader[0], "CompositorShader"))
         return false;
@@ -43,20 +47,13 @@ bool GLCompositor::Init()
     {
         GLint uni_id;
 
-        glBindAttribLocation(CompShader[i][2], 0, "vPosition");
-        glBindAttribLocation(CompShader[i][2], 1, "vTexcoord");
-        glBindFragDataLocation(CompShader[i][2], 0, "oColor");
+        CompScaleLoc[i] = glGetUniformLocation(CompShader[i], "u3DScale");
+        Comp3DXPosLoc[i] = glGetUniformLocation(CompShader[i], "u3DXPos");
 
-        if (!OpenGL::LinkShaderProgram(CompShader[i]))
-            return false;
-
-        CompScaleLoc[i] = glGetUniformLocation(CompShader[i][2], "u3DScale");
-        Comp3DXPosLoc[i] = glGetUniformLocation(CompShader[i][2], "u3DXPos");
-
-        glUseProgram(CompShader[i][2]);
-        uni_id = glGetUniformLocation(CompShader[i][2], "ScreenTex");
+        glUseProgram(CompShader[i]);
+        uni_id = glGetUniformLocation(CompShader[i], "ScreenTex");
         glUniform1i(uni_id, 0);
-        uni_id = glGetUniformLocation(CompShader[i][2], "_3DTex");
+        uni_id = glGetUniformLocation(CompShader[i], "_3DTex");
         glUniform1i(uni_id, 1);
     }
 
@@ -133,7 +130,7 @@ void GLCompositor::DeInit()
     glDeleteBuffers(1, &CompVertexBufferID);
 
     for (int i = 0; i < 1; i++)
-        OpenGL::DeleteShaderProgram(CompShader[i]);
+        glDeleteProgram(CompShader[i]);
 }
 
 void GLCompositor::Reset()
@@ -184,9 +181,9 @@ void GLCompositor::Stop()
 
 void GLCompositor::RenderFrame()
 {
-    int frontbuf = GPU::FrontBuffer;
+    int backbuf = GPU::FrontBuffer ^ 1;
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, CompScreenOutputFB[frontbuf]);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, CompScreenOutputFB[backbuf]);
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
@@ -198,7 +195,7 @@ void GLCompositor::RenderFrame()
     glClear(GL_COLOR_BUFFER_BIT);
 
     // TODO: select more shaders (filtering, etc)
-    OpenGL::UseShaderProgram(CompShader[0]);
+    glUseProgram(CompShader[0]);
     glUniform1ui(CompScaleLoc[0], Scale);
 
     // TODO: support setting this midframe, if ever needed
@@ -207,16 +204,16 @@ void GLCompositor::RenderFrame()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, CompScreenInputTex);
 
-    if (GPU::Framebuffer[frontbuf][0] && GPU::Framebuffer[frontbuf][1])
+    if (GPU::Framebuffer[backbuf][0] && GPU::Framebuffer[backbuf][1])
     {
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256*3 + 1, 192, GL_RGBA_INTEGER,
-                        GL_UNSIGNED_BYTE, GPU::Framebuffer[frontbuf][0]);
+                        GL_UNSIGNED_BYTE, GPU::Framebuffer[backbuf][0]);
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192, 256*3 + 1, 192, GL_RGBA_INTEGER,
-                        GL_UNSIGNED_BYTE, GPU::Framebuffer[frontbuf][1]);
+                        GL_UNSIGNED_BYTE, GPU::Framebuffer[backbuf][1]);
     }
 
     glActiveTexture(GL_TEXTURE1);
-    reinterpret_cast<GPU3D::GLRenderer*>(GPU3D::CurrentRenderer.get())->SetupAccelFrame();
+    GPU3D::CurrentRenderer->SetupAccelFrame();
 
     glBindBuffer(GL_ARRAY_BUFFER, CompVertexBufferID);
     glBindVertexArray(CompVertexArrayID);

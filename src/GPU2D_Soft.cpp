@@ -18,6 +18,7 @@
 
 #include "GPU2D_Soft.h"
 #include "GPU.h"
+#include "GPU3D.h"
 
 namespace GPU2D
 {
@@ -367,7 +368,7 @@ void SoftRenderer::VBlankEnd(Unit* unitA, Unit* unitB)
     {
         if ((unitA->CaptureCnt & (1<<31)) && (((unitA->CaptureCnt >> 29) & 0x3) != 1))
         {
-            reinterpret_cast<GPU3D::GLRenderer*>(GPU3D::CurrentRenderer.get())->PrepareCaptureFrame();
+            GPU3D::CurrentRenderer.get()->PrepareCaptureFrame();
         }
     }
 #endif
