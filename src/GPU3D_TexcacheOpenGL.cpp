@@ -21,11 +21,11 @@ GLuint TexcacheOpenGLLoader::GenerateTexture(u32 width, u32 height, u32 layers)
     return texarray;
 }
 
-void TexcacheOpenGLLoader::UploadTexture(GLuint handle, u32 width, u32 height, u32 layer, void* data)
+void TexcacheOpenGLLoader::UploadTexture(u32 addr, GLuint handle, u32 width, u32 height, u32 layer, void* data)
 {
-    printf("TexcacheOpenGLLoader::UploadTexture(%u, %d, %d, %d, %p)\n", handle, width, height, layer, data);
+    printf("TexcacheOpenGLLoader::UploadTexture(%u, %u, %d, %d, %d, ?)\n", addr, handle, width, height, layer);
     std::filesystem::path currentPath = std::filesystem::current_path();
-    std::string filename = std::to_string(handle) + ".png";
+    std::string filename = std::to_string(addr) + ".png";
     std::filesystem::path fullPath = currentPath / "textures" / filename;
     const char* path = fullPath.c_str();
 
@@ -36,7 +36,7 @@ void TexcacheOpenGLLoader::UploadTexture(GLuint handle, u32 width, u32 height, u
         glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
             0, 0, 0, layer,
-            width, height, 1,
+            r_width, r_height, 1,
             GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, imageData);
 
         stbi_image_free(imageData);
