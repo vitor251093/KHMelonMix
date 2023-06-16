@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/res/icon/melon_128x128.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/res/icon/khDaysMM_128x128.png"></p>
 <h2 align="center"><b>Kingdom Hearts 358/2 Days - Melon Mix</b></h2>
 melonDS, sorta
 

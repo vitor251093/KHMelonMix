@@ -3583,7 +3583,7 @@ void emuStop()
 MelonApplication::MelonApplication(int& argc, char** argv)
     : QApplication(argc, argv)
 {
-    setWindowIcon(QIcon(":/melon-icon"));
+    setWindowIcon(QIcon(":/khDaysMM-icon"));
 }
 
 bool MelonApplication::event(QEvent *event)
