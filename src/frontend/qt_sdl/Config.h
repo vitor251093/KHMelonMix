@@ -72,8 +72,9 @@ enum
     gameScene_PauseMenuWithGauge, // 12
     gameScene_Tutorial,           // 13
     gameScene_RoxasThoughts,      // 14
-    gameScene_Other2D,            // 15
-    gameScene_Other               // 16
+    gameScene_Shop,               // 15
+    gameScene_Other2D,            // 16
+    gameScene_Other               // 17
 };
 
 enum

@@ -703,6 +703,7 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_PauseMenuWithGauge: size = screenSizing_PauseMenuWithGauge; break;
         case gameScene_Tutorial: size = screenSizing_BotOnly; break;
         case gameScene_RoxasThoughts: size = screenSizing_TopOnly; break;
+        case gameScene_Shop: break;
         default: break;
     }
     autoScreenSizing = size;
@@ -752,6 +753,13 @@ bool EmuThread::refreshAutoScreenSizing()
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_B.MasterBrightness);
+
+    bool isShop = GPU3D::NumVertices == 982 && GPU3D::NumPolygons == 264 || 
+            (videoSettings.GameScene == gameScene_Shop && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0);
+    if (isShop)
+    {
+        return setGameScene(gameScene_Shop);
+    }
 
     if (doesntLook3D)
     {
