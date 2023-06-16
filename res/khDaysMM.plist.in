@@ -5,7 +5,7 @@
     <key>CFBundleExecutable</key>
     <string>khDaysMM</string>
     <key>CFBundleIconFile</key>
-    <string>melon.icns</string>
+    <string>khDaysMM.icns</string>
     <key>CFBundleIdentifier</key>
     <string>com.vitormm.khDaysMM</string>
     <key>CFBundleDevelopmentRegion</key>

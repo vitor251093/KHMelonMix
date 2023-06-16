@@ -49,7 +49,7 @@ set(SOURCES_QT_SDL
     ../glad/glad.c
     ../duckstation/gl/context.cpp
 
-    ${CMAKE_SOURCE_DIR}/res/melon.qrc
+    ${CMAKE_SOURCE_DIR}/res/khDaysMM.qrc
     ${CMAKE_SOURCE_DIR}/res/images/images.qrc
 
     CLI.h
@@ -165,8 +165,8 @@ if (UNIX)
 elseif (WIN32)
     option(PORTABLE "Make a portable build that looks for its configuration in the current directory" ON)
 
-    configure_file("${CMAKE_SOURCE_DIR}/res/melon.rc.in" "${CMAKE_BINARY_DIR}/res/melon.rc")
-    target_sources(khDaysMM PUBLIC "${CMAKE_BINARY_DIR}/res/melon.rc")
+    configure_file("${CMAKE_SOURCE_DIR}/res/khDaysMM.rc.in" "${CMAKE_BINARY_DIR}/res/khDaysMM.rc")
+    target_sources(khDaysMM PUBLIC "${CMAKE_BINARY_DIR}/res/khDaysMM.rc")
     target_include_directories(khDaysMM PRIVATE "${CMAKE_BINARY_DIR}/res")
 
     if (${ARCHITECTURE} STREQUAL x86_64)
@@ -191,12 +191,12 @@ if (APPLE)
     target_sources(khDaysMM PRIVATE sem_timedwait.cpp)
 
     # Copy icon into the bundle
-    set(RESOURCE_FILES "${CMAKE_SOURCE_DIR}/res/melon.icns")
+    set(RESOURCE_FILES "${CMAKE_SOURCE_DIR}/res/khDaysMM.icns")
     target_sources(khDaysMM PUBLIC "${RESOURCE_FILES}")
 
     set_target_properties(khDaysMM PROPERTIES
         MACOSX_BUNDLE true
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/melon.plist.in
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/khDaysMM.plist.in
         OUTPUT_NAME khDaysMM
         RESOURCE "${RESOURCE_FILES}")
 
@@ -216,7 +216,7 @@ endif()
 
 if (UNIX AND NOT APPLE)
     foreach(SIZE 16 32 48 64 128 256)
-        install(FILES ${CMAKE_SOURCE_DIR}/res/icon/melon_${SIZE}x${SIZE}.png
+        install(FILES ${CMAKE_SOURCE_DIR}/res/icon/khDaysMM_${SIZE}x${SIZE}.png
             DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/${SIZE}x${SIZE}/apps
             RENAME com.vitormm.khDaysMM.png)
     endforeach()
