@@ -1,11 +1,11 @@
 [Desktop Entry]
-Name=khDaysMM
+Name=melonDS
 GenericName=Nintendo DS Emulator
 Comment=A fast and accurate Nintendo DS emulator.
-Exec=khDaysMM %f
+Exec=melonDS %f
 Type=Application
 Categories=Game;Emulator;
 Terminal=false
-Icon=com.vitormm.khDaysMM
+Icon=net.kuribo64.melonDS
 MimeType=application/x-nintendo-ds-rom;
 Keywords=emulator;Nintendo;DS;NDS;Nintendo DS;

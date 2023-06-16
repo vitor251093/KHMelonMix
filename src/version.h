@@ -19,7 +19,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define KHDAYSMM_URL        "https://github.com/vitor251093/KHDays_FM"
+#define MELONDS_URL        "https://melonds.kuribo64.net/"
 
 #endif // VERSION_H
 

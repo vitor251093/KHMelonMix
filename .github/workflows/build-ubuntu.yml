@@ -30,8 +30,8 @@ jobs:
       run: |
         make -j$(nproc --all)
         mkdir dist
-        cp khDaysMM dist
+        cp melonDS dist
     - uses: actions/upload-artifact@v1
       with:
-        name: khDaysMM-ubuntu-x86_64
+        name: melonDS-ubuntu-x86_64
         path: ${{runner.workspace}}/build/dist

@@ -1,15 +1,15 @@
 #!/bin/bash
 
-if [[ ! -x khDaysMM.exe ]]; then
-	echo "Run this script from the directory you built khDaysMM."
+if [[ ! -x melonDS.exe ]]; then
+	echo "Run this script from the directory you built melonDS."
 	exit 1
 fi
 
 mkdir -p dist
 
-for lib in $(ldd khDaysMM.exe | grep mingw | sed "s/.*=> //" | sed "s/(.*)//"); do
+for lib in $(ldd melonDS.exe | grep mingw | sed "s/.*=> //" | sed "s/(.*)//"); do
 	cp "${lib}" dist
 done
 
-cp khDaysMM.exe dist
+cp melonDS.exe dist
 windeployqt dist
