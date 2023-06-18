@@ -27,7 +27,7 @@ void TexcacheOpenGLLoader::UploadTexture(u32 addr, GLuint handle, u32 width, u32
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::string filename = std::to_string(addr) + ".png";
     std::filesystem::path fullPath = currentPath / "textures" / filename;
-    const char* path = fullPath.c_str();
+    const char* path = fullPath.u8string().c_str();
 
     int channels = 4;
     int r_width, r_height, r_channels;
@@ -84,7 +84,7 @@ void TexcacheOpenGLLoader::UploadTexture(u32 addr, GLuint handle, u32 width, u32
     glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
     glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
         0, 0, 0, layer,
-        r_width, r_height, 1,
+        width, height, 1,
         GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, imageData);
 
     if (cachedImage) {
