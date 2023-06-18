@@ -754,7 +754,7 @@ bool EmuThread::refreshAutoScreenSizing()
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_B.MasterBrightness);
 
-    bool isShop = GPU3D::NumVertices == 982 && GPU3D::NumPolygons == 264 || 
+    bool isShop = (GPU3D::RenderNumPolygons == 264 && GPU::GPU2D_B.BlendCnt == 0 && GPU::GPU2D_B.BlendAlpha == 16) ||
             (videoSettings.GameScene == gameScene_Shop && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0);
     if (isShop)
     {
@@ -892,6 +892,14 @@ bool EmuThread::refreshAutoScreenSizing()
         }
         bool inTutorialScreen = topScreenBrightness == 8 && botScreenBrightness == 15;
         if (inTutorialScreen)
+        {
+            return setGameScene(gameScene_Tutorial);
+        }
+        bool inShopTutorialScreen = GPU3D::NumVertices == 2159 && GPU3D::NumPolygons == 575 &&
+                                    GPU::GPU2D_A.BlendCnt == 193 && GPU::GPU2D_A.BlendAlpha == 16 &&
+                                    GPU::GPU2D_B.BlendCnt == 172 && GPU::GPU2D_B.MasterBrightness == 0 &&
+                                    GPU::GPU2D_B.EVY == 0;
+        if (inShopTutorialScreen)
         {
             return setGameScene(gameScene_Tutorial);
         }
