@@ -704,6 +704,7 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_PauseMenuWithGauge: size = screenSizing_PauseMenuWithGauge; break;
         case gameScene_Tutorial: size = screenSizing_BotOnly; break;
         case gameScene_RoxasThoughts: size = screenSizing_TopOnly; break;
+        case gameScene_Shop: break;
         default: break;
     }
     autoScreenSizing = size;
@@ -753,6 +754,13 @@ bool EmuThread::refreshAutoScreenSizing()
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_B.MasterBrightness);
+
+    bool isShop = (GPU3D::RenderNumPolygons == 264 && GPU::GPU2D_B.BlendCnt == 0 && GPU::GPU2D_B.BlendAlpha == 16) ||
+            (videoSettings.GameScene == gameScene_Shop && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0);
+    if (isShop)
+    {
+        return setGameScene(gameScene_Shop);
+    }
 
     if (doesntLook3D)
     {
@@ -885,6 +893,14 @@ bool EmuThread::refreshAutoScreenSizing()
         }
         bool inTutorialScreen = topScreenBrightness == 8 && botScreenBrightness == 15;
         if (inTutorialScreen)
+        {
+            return setGameScene(gameScene_Tutorial);
+        }
+        bool inShopTutorialScreen = GPU3D::NumVertices == 2159 && GPU3D::NumPolygons == 575 &&
+                                    GPU::GPU2D_A.BlendCnt == 193 && GPU::GPU2D_A.BlendAlpha == 16 &&
+                                    GPU::GPU2D_B.BlendCnt == 172 && GPU::GPU2D_B.MasterBrightness == 0 &&
+                                    GPU::GPU2D_B.EVY == 0;
+        if (inShopTutorialScreen)
         {
             return setGameScene(gameScene_Tutorial);
         }
@@ -1101,7 +1117,7 @@ void EmuThread::drawScreenGL()
             }
             
             if (shouldCropScreenLikeAMap) {
-                float mapY = 128.0;
+                float mapY = 108.0;
                 float mapNegativeX = 20.0;
                 float mapHeight = 33.0, mapWidth = 44.0;
                 float mapX = 256 - mapNegativeX;
