@@ -695,6 +695,7 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_IntroCutscene: break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
         case gameScene_Cutscene: size = screenSizing_TopOnly; break;
+        case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
         case gameScene_InGameWithMap: size = screenSizing_MiniMap; break;
         case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
         case gameScene_InGameMenu: break;
@@ -861,6 +862,14 @@ bool EmuThread::refreshAutoScreenSizing()
             return setGameScene(gameScene_RoxasThoughts);
         }
 
+        bool isBottomCutscene = GPU::GPU2D_A.BlendCnt == 0 && 
+             GPU::GPU2D_A.EVA == 16 && GPU::GPU2D_A.EVB == 0 && GPU::GPU2D_A.EVY == 9 &&
+             GPU::GPU2D_B.EVA == 16 && GPU::GPU2D_B.EVB == 0 && GPU::GPU2D_B.EVY == 0;
+        if (isBottomCutscene)
+        {
+            return setGameScene(gameScene_BottomCutscene);
+        }
+
         // Unknown 2D
         return setGameScene(gameScene_Other2D);
     }
@@ -896,11 +905,9 @@ bool EmuThread::refreshAutoScreenSizing()
         {
             return setGameScene(gameScene_Tutorial);
         }
-        bool inShopTutorialScreen = GPU3D::NumVertices == 2159 && GPU3D::NumPolygons == 575 &&
-                                    GPU::GPU2D_A.BlendCnt == 193 && GPU::GPU2D_A.BlendAlpha == 16 &&
-                                    GPU::GPU2D_B.BlendCnt == 172 && GPU::GPU2D_B.MasterBrightness == 0 &&
-                                    GPU::GPU2D_B.EVY == 0;
-        if (inShopTutorialScreen)
+        bool inTutorialScreenWithoutWarningOnTop = GPU::GPU2D_A.BlendCnt == 193 && GPU::GPU2D_B.BlendCnt == 172 && 
+                                                   GPU::GPU2D_B.MasterBrightness == 0 && GPU::GPU2D_B.EVY == 0;
+        if (inTutorialScreenWithoutWarningOnTop)
         {
             return setGameScene(gameScene_Tutorial);
         }
@@ -916,6 +923,12 @@ bool EmuThread::refreshAutoScreenSizing()
         bool inHoloMissionMenu = GPU3D::NumVertices == 344 && GPU3D::NumPolygons == 89 && GPU3D::RenderNumPolygons == 89 &&
                                  GPU::GPU2D_A.BlendCnt == 0 && GPU::GPU2D_B.BlendCnt == 0;
         if (inHoloMissionMenu || videoSettings.GameScene == gameScene_InHoloMissionMenu)
+        {
+            return setGameScene(gameScene_InHoloMissionMenu);
+        }
+
+        inHoloMissionMenu = GPU::GPU2D_A.BlendCnt == 2625 && GPU::GPU2D_B.BlendCnt == 0;
+        if (inHoloMissionMenu)
         {
             return setGameScene(gameScene_InHoloMissionMenu);
         }
