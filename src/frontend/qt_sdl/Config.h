@@ -74,8 +74,9 @@ enum
     gameScene_Tutorial,           // 14
     gameScene_RoxasThoughts,      // 15
     gameScene_Shop,               // 16
-    gameScene_Other2D,            // 17
-    gameScene_Other               // 18
+    gameScene_BlackScreen,        // 17
+    gameScene_Other2D,            // 18
+    gameScene_Other               // 19
 };
 
 enum
