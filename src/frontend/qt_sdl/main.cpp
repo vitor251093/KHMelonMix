@@ -904,11 +904,9 @@ bool EmuThread::refreshAutoScreenSizing()
         {
             return setGameScene(gameScene_Tutorial);
         }
-        bool inShopTutorialScreen = GPU3D::NumVertices == 2159 && GPU3D::NumPolygons == 575 &&
-                                    GPU::GPU2D_A.BlendCnt == 193 && GPU::GPU2D_A.BlendAlpha == 16 &&
-                                    GPU::GPU2D_B.BlendCnt == 172 && GPU::GPU2D_B.MasterBrightness == 0 &&
-                                    GPU::GPU2D_B.EVY == 0;
-        if (inShopTutorialScreen)
+        bool inTutorialScreenWithoutWarningOnTop = GPU::GPU2D_A.BlendCnt == 193 && GPU::GPU2D_B.BlendCnt == 172 && 
+                                                   GPU::GPU2D_B.MasterBrightness == 0 && GPU::GPU2D_B.EVY == 0;
+        if (inTutorialScreenWithoutWarningOnTop)
         {
             return setGameScene(gameScene_Tutorial);
         }
@@ -924,6 +922,12 @@ bool EmuThread::refreshAutoScreenSizing()
         bool inHoloMissionMenu = GPU3D::NumVertices == 344 && GPU3D::NumPolygons == 89 && GPU3D::RenderNumPolygons == 89 &&
                                  GPU::GPU2D_A.BlendCnt == 0 && GPU::GPU2D_B.BlendCnt == 0;
         if (inHoloMissionMenu || videoSettings.GameScene == gameScene_InHoloMissionMenu)
+        {
+            return setGameScene(gameScene_InHoloMissionMenu);
+        }
+
+        inHoloMissionMenu = GPU::GPU2D_A.BlendCnt == 2625 && GPU::GPU2D_B.BlendCnt == 0;
+        if (inHoloMissionMenu)
         {
             return setGameScene(gameScene_InHoloMissionMenu);
         }
