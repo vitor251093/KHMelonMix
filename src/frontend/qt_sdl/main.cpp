@@ -694,6 +694,7 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_IntroCutscene: break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
         case gameScene_Cutscene: size = screenSizing_TopOnly; break;
+        case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
         case gameScene_InGameWithMap: size = screenSizing_MiniMap; break;
         case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
         case gameScene_InGameMenu: break;
@@ -858,6 +859,14 @@ bool EmuThread::refreshAutoScreenSizing()
         if (isBlackBottomScreen)
         {
             return setGameScene(gameScene_RoxasThoughts);
+        }
+
+        bool isBottomCutscene = GPU::GPU2D_A.BlendCnt == 0 && 
+             GPU::GPU2D_A.EVA == 16 && GPU::GPU2D_A.EVB == 0 && GPU::GPU2D_A.EVY == 9 &&
+             GPU::GPU2D_B.EVA == 16 && GPU::GPU2D_B.EVB == 0 && GPU::GPU2D_B.EVY == 0;
+        if (isBottomCutscene)
+        {
+            return setGameScene(gameScene_BottomCutscene);
         }
 
         // Unknown 2D

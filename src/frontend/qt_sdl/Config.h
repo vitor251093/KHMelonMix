@@ -63,18 +63,19 @@ enum
     gameScene_IntroCutscene,      // 3
     gameScene_DayCounter,         // 4
     gameScene_Cutscene,           // 5
-    gameScene_InGameWithMap,      // 6
-    gameScene_InGameWithoutMap,   // 7
-    gameScene_InGameMenu,         // 8
-    gameScene_InGameSaveMenu,     // 9
-    gameScene_InHoloMissionMenu,  // 10
-    gameScene_PauseMenu,          // 11
-    gameScene_PauseMenuWithGauge, // 12
-    gameScene_Tutorial,           // 13
-    gameScene_RoxasThoughts,      // 14
-    gameScene_Shop,               // 15
-    gameScene_Other2D,            // 16
-    gameScene_Other               // 17
+    gameScene_BottomCutscene,     // 6
+    gameScene_InGameWithMap,      // 7
+    gameScene_InGameWithoutMap,   // 8
+    gameScene_InGameMenu,         // 9
+    gameScene_InGameSaveMenu,     // 10
+    gameScene_InHoloMissionMenu,  // 11
+    gameScene_PauseMenu,          // 12
+    gameScene_PauseMenuWithGauge, // 13
+    gameScene_Tutorial,           // 14
+    gameScene_RoxasThoughts,      // 15
+    gameScene_Shop,               // 16
+    gameScene_Other2D,            // 17
+    gameScene_Other               // 18
 };
 
 enum
