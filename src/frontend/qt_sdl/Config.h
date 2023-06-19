@@ -59,7 +59,7 @@ enum
 {
     gameScene_Intro,              // 0
     gameScene_MainMenu,           // 1
-    gameScene_IntroSaveMenu,      // 2
+    gameScene_IntroLoadMenu,      // 2
     gameScene_DayCounter,         // 3
     gameScene_Cutscene,           // 4
     gameScene_TopCutscene,        // 5

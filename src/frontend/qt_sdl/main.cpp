@@ -683,6 +683,29 @@ bool EmuThread::setGameScene(int newGameScene)
         videoSettings.GameScene = newGameScene;
 
         videoSettingsDirty = true;
+
+#ifdef _DEBUG
+        switch (newGameScene) {
+            case gameScene_Intro: OSD::AddMessage(0, "Game scene: Intro"); break;
+            case gameScene_MainMenu: OSD::AddMessage(0, "Game scene: Main menu"); break;
+            case gameScene_IntroLoadMenu: OSD::AddMessage(0, "Game scene: Intro load menu"); break;
+            case gameScene_DayCounter: OSD::AddMessage(0, "Game scene: Day counter"); break;
+            case gameScene_Cutscene: OSD::AddMessage(0, "Game scene: Cutscene"); break;
+            case gameScene_BottomCutscene: OSD::AddMessage(0, "Game scene: Cutscene (Bottom screen)"); break;
+            case gameScene_InGameWithMap: OSD::AddMessage(0, "Game scene: ingame (with minimap)"); break;
+            case gameScene_InGameWithoutMap: OSD::AddMessage(0, "Game scene: ingame (without minimap)"); break;
+            case gameScene_InGameMenu: OSD::AddMessage(0, "Game scene: ingame menu"); break;
+            case gameScene_InGameSaveMenu: OSD::AddMessage(0, "Game scene: ingame save menu"); break;
+            case gameScene_InHoloMissionMenu: OSD::AddMessage(0, "Game scene: holo mission menu"); break;
+            case gameScene_PauseMenu: OSD::AddMessage(0, "Game scene: pause menu"); break;
+            case gameScene_PauseMenuWithGauge: OSD::AddMessage(0, "Game scene: pause menu (with gauge)"); break;
+            case gameScene_Tutorial: OSD::AddMessage(0, "Game scene: tutorial"); break;
+            case gameScene_RoxasThoughts: OSD::AddMessage(0, "Game scene: Roxas thoughts"); break;
+            case gameScene_Shop: OSD::AddMessage(0, "Game scene: shop"); break;
+            case gameScene_Other2D: OSD::AddMessage(0, "Game scene: unknown (2D)"); break;
+            default: OSD::AddMessage(0, "Game scene: unknown (3D)"); break;
+        }
+#endif
     }
 
     // Screens position and size
@@ -690,7 +713,7 @@ bool EmuThread::setGameScene(int newGameScene)
     switch (newGameScene) {
         case gameScene_Intro: break;
         case gameScene_MainMenu: break;
-        case gameScene_IntroSaveMenu: size = screenSizing_BotOnly; break;
+        case gameScene_IntroLoadMenu: size = screenSizing_BotOnly; break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
         case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : size; break;
         case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
@@ -774,9 +797,9 @@ bool EmuThread::refreshAutoScreenSizing()
 
         if (isIntroSaveMenu)
         {
-            return setGameScene(gameScene_IntroSaveMenu);
+            return setGameScene(gameScene_IntroLoadMenu);
         }
-        if (videoSettings.GameScene == gameScene_IntroSaveMenu)
+        if (videoSettings.GameScene == gameScene_IntroLoadMenu)
         {
             if (mayBeMainMenu)
             {
@@ -784,7 +807,7 @@ bool EmuThread::refreshAutoScreenSizing()
             }
             if (GPU3D::NumVertices != 8)
             {
-                return setGameScene(gameScene_IntroSaveMenu);
+                return setGameScene(gameScene_IntroLoadMenu);
             }
         }
 
