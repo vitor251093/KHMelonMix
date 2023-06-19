@@ -651,8 +651,14 @@ bool EmuThread::setGameScene(int newGameScene)
     float backgroundColor = 0.0;
     if (newGameScene == gameScene_Intro)
     {
-        backgroundColor = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_A.MasterBrightness) / 15.0;
-        backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
+        if (isBlackBottomScreen && isBlackTopScreen)
+        {
+            backgroundColor = 0;
+        }
+        else {
+            backgroundColor = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_A.MasterBrightness) / 15.0;
+            backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
+        }
     }
     if (newGameScene == gameScene_MainMenu)
     {
@@ -784,7 +790,8 @@ bool EmuThread::refreshAutoScreenSizing()
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_B.MasterBrightness);
 
     // Shop has 2D and 3D segments, which is why it's on the top
-    bool isShop = (GPU3D::RenderNumPolygons == 264 && GPU::GPU2D_B.BlendCnt == 0 && GPU::GPU2D_B.BlendAlpha == 16) ||
+    bool isShop = (GPU3D::RenderNumPolygons == 264 && GPU::GPU2D_A.BlendCnt == 0 && 
+                   GPU::GPU2D_B.BlendCnt == 0 && GPU::GPU2D_B.BlendAlpha == 16) ||
             (videoSettings.GameScene == gameScene_Shop && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0);
     if (isShop)
     {
@@ -849,15 +856,15 @@ bool EmuThread::refreshAutoScreenSizing()
             return setGameScene(gameScene_MainMenu);
         }
 
-        if (isBlackTopScreen && isBlackBottomScreen)
-        {
-            return setGameScene(gameScene_BlackScreen);
-        }
-
         // Intro
         if (videoSettings.GameScene == -1 || videoSettings.GameScene == gameScene_Intro)
         {
             return setGameScene(gameScene_Intro);
+        }
+
+        if (isBlackTopScreen && isBlackBottomScreen)
+        {
+            return setGameScene(gameScene_BlackScreen);
         }
 
         // Intro cutscene
@@ -869,6 +876,10 @@ bool EmuThread::refreshAutoScreenSizing()
             }
         }
         if (videoSettings.GameScene == gameScene_MainMenu && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0 && GPU3D::RenderNumPolygons == 1)
+        {
+            return setGameScene(gameScene_Cutscene);
+        }
+        if (videoSettings.GameScene == gameScene_BlackScreen && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0 && GPU3D::RenderNumPolygons >= 0 && GPU3D::RenderNumPolygons <= 3)
         {
             return setGameScene(gameScene_Cutscene);
         }
