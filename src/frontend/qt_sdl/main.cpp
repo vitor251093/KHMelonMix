@@ -691,9 +691,9 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_Intro: break;
         case gameScene_MainMenu: break;
         case gameScene_IntroSaveMenu: size = screenSizing_BotOnly; break;
-        case gameScene_IntroCutscene: break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
-        case gameScene_Cutscene: size = screenSizing_TopOnly; break;
+        case gameScene_DualScreenCutscene: break;
+        case gameScene_TopCutscene: size = screenSizing_TopOnly; break;
         case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
         case gameScene_InGameWithMap: size = screenSizing_MiniMap; break;
         case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
@@ -719,6 +719,7 @@ bool EmuThread::setGameScene(int newGameScene)
 void EmuThread::debugLogs(int gameScene)
 {
     printf("Game scene: %d\n", gameScene);
+    printf("isBlackBottomScreen: %d\n", isBlackBottomScreen);
     printf("GPU3D::NumVertices: %d\n",       GPU3D::NumVertices);
     printf("GPU3D::NumPolygons: %d\n",       GPU3D::NumPolygons);
     printf("GPU3D::RenderNumPolygons: %d\n", GPU3D::RenderNumPolygons);
@@ -738,6 +739,9 @@ void EmuThread::debugLogs(int gameScene)
     printf("\n");
 }
 
+// TODO: All conditions that involve videoSettings.GameScene should be reworked so they
+//   don't rely on it; otherwise, everything becomes a castle of cards, and save states
+//   become unreliable when it comes to screen sizing.
 bool EmuThread::refreshAutoScreenSizing()
 {
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
@@ -810,9 +814,9 @@ bool EmuThread::refreshAutoScreenSizing()
         }
 
         // Cutscene
-        if (videoSettings.GameScene == gameScene_Cutscene && no3D)
+        if (videoSettings.GameScene == gameScene_TopCutscene && no3D)
         {
-            return setGameScene(gameScene_Cutscene);
+            return setGameScene(gameScene_TopCutscene);
         }
 
         // Main menu
@@ -828,16 +832,16 @@ bool EmuThread::refreshAutoScreenSizing()
         }
 
         // Intro cutscene
-        if (videoSettings.GameScene == gameScene_IntroCutscene)
+        if (videoSettings.GameScene == gameScene_DualScreenCutscene)
         {
             if (GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0 && GPU3D::RenderNumPolygons >= 0 && GPU3D::RenderNumPolygons <= 3)
             {
-                return setGameScene(gameScene_IntroCutscene);
+                return setGameScene(gameScene_DualScreenCutscene);
             }
         }
         if (videoSettings.GameScene == gameScene_MainMenu && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0 && GPU3D::RenderNumPolygons == 1)
         {
-            return setGameScene(gameScene_IntroCutscene);
+            return setGameScene(gameScene_DualScreenCutscene);
         }
 
         // In Game Save Menu
@@ -861,6 +865,7 @@ bool EmuThread::refreshAutoScreenSizing()
             return setGameScene(gameScene_RoxasThoughts);
         }
 
+        // Bottom cutscene
         bool isBottomCutscene = GPU::GPU2D_A.BlendCnt == 0 && 
              GPU::GPU2D_A.EVA == 16 && GPU::GPU2D_A.EVB == 0 && GPU::GPU2D_A.EVY == 9 &&
              GPU::GPU2D_B.EVA == 16 && GPU::GPU2D_B.EVB == 0 && GPU::GPU2D_B.EVY == 0;

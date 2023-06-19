@@ -60,9 +60,9 @@ enum
     gameScene_Intro,              // 0
     gameScene_MainMenu,           // 1
     gameScene_IntroSaveMenu,      // 2
-    gameScene_IntroCutscene,      // 3
-    gameScene_DayCounter,         // 4
-    gameScene_Cutscene,           // 5
+    gameScene_DayCounter,         // 3
+    gameScene_DualScreenCutscene, // 4
+    gameScene_TopCutscene,        // 5
     gameScene_BottomCutscene,     // 6
     gameScene_InGameWithMap,      // 7
     gameScene_InGameWithoutMap,   // 8
