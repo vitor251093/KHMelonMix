@@ -676,14 +676,14 @@ bool EmuThread::setGameScene(int newGameScene)
     debugLogs(newGameScene);
 #endif
 
-    if (videoSettings.GameScene == newGameScene) 
+    if (videoSettings.GameScene != newGameScene) 
     {
-        return false;
-    }
+        // Game scene
+        priorGameScene = videoSettings.GameScene;
+        videoSettings.GameScene = newGameScene;
 
-    // Game scene
-    priorGameScene = videoSettings.GameScene;
-    videoSettings.GameScene = newGameScene;
+        videoSettingsDirty = true;
+    }
 
     // Screens position and size
     int size = screenSizing_Even;
@@ -692,8 +692,7 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_MainMenu: break;
         case gameScene_IntroSaveMenu: size = screenSizing_BotOnly; break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
-        case gameScene_DualScreenCutscene: break;
-        case gameScene_TopCutscene: size = screenSizing_TopOnly; break;
+        case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : size; break;
         case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
         case gameScene_InGameWithMap: size = screenSizing_MiniMap; break;
         case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
@@ -710,8 +709,6 @@ bool EmuThread::setGameScene(int newGameScene)
     autoScreenSizing = size;
     Config::ScreenSwap = (newGameScene == gameScene_Intro || newGameScene == gameScene_MainMenu) ? 1 : 0;
     Config::ScreenAspectTop = (size == screenSizing_Even) ? 0 : 4; // 4:3 / window size
-
-    videoSettingsDirty = true;
 
     return true;
 }
@@ -813,12 +810,6 @@ bool EmuThread::refreshAutoScreenSizing()
             }
         }
 
-        // Cutscene
-        if (videoSettings.GameScene == gameScene_TopCutscene && no3D)
-        {
-            return setGameScene(gameScene_TopCutscene);
-        }
-
         // Main menu
         if (mayBeMainMenu)
         {
@@ -832,16 +823,16 @@ bool EmuThread::refreshAutoScreenSizing()
         }
 
         // Intro cutscene
-        if (videoSettings.GameScene == gameScene_DualScreenCutscene)
+        if (videoSettings.GameScene == gameScene_Cutscene)
         {
             if (GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0 && GPU3D::RenderNumPolygons >= 0 && GPU3D::RenderNumPolygons <= 3)
             {
-                return setGameScene(gameScene_DualScreenCutscene);
+                return setGameScene(gameScene_Cutscene);
             }
         }
         if (videoSettings.GameScene == gameScene_MainMenu && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0 && GPU3D::RenderNumPolygons == 1)
         {
-            return setGameScene(gameScene_DualScreenCutscene);
+            return setGameScene(gameScene_Cutscene);
         }
 
         // In Game Save Menu
