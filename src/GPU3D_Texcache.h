@@ -7,6 +7,9 @@
 #include <assert.h>
 #include <unordered_map>
 
+#include <filesystem>
+#include <fstream>
+
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash/xxhash.h"
 
@@ -231,6 +234,40 @@ public:
         auto& texArrays = TexArrays[widthLog2][heightLog2];
         auto& freeTextures = FreeTextures[widthLog2][heightLog2];
 
+        std::filesystem::path currentPath = std::filesystem::current_path();
+        std::string filename = std::to_string(key) + ".png";
+        std::filesystem::path fullPath = currentPath / "textures" / filename;
+        const char* path = fullPath.c_str();
+
+        int channels = 4;
+        int r_width, r_height, r_channels;
+        unsigned char* imageData = TexLoader.LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+        if (imageData != nullptr) {
+            for (int y = 0; y < r_height; ++y) {
+                for (int x = 0; x < r_width; ++x) {
+                    unsigned char* pixel = imageData + (y * r_width + x) * (channels);
+                    unsigned char r = pixel[0];
+                    unsigned char g = pixel[1];
+                    unsigned char b = pixel[2];
+                    unsigned char alpha = pixel[3];
+                    r = (r >> 2);
+                    g = (g >> 2);
+                    b = (b >> 2);
+                    alpha = (alpha + 1 >> 3) - 1;
+                    pixel[0] = r;
+                    pixel[1] = g;
+                    pixel[2] = b;
+                    pixel[3] = alpha;
+                }
+            }
+            width = r_width;
+            height = r_height;
+        }
+        else {
+            imageData = (unsigned char*)DecodingBuffer;
+            TexLoader.ExportTextureAsFile(imageData, path, width, height, channels);
+        }
+
         if (freeTextures.size() == 0)
         {
             texArrays.resize(texArrays.size()+1);
@@ -240,7 +277,7 @@ public:
 
             // allocate new array texture
             //printf("allocating new layer set for %d %d %d %d\n", width, height, texArrays.size()-1, array.ImageDescriptor);
-            array = TexLoader.GenerateTexture(key, width, height, layers);
+            array = TexLoader.GenerateTexture(width, height, layers);
 
             for (u32 i = 0; i < layers; i++)
             {
@@ -253,7 +290,7 @@ public:
 
         entry.Texture = storagePlace;
 
-        TexLoader.UploadTexture(key, storagePlace.TextureID, width, height, storagePlace.Layer, DecodingBuffer);
+        TexLoader.UploadTexture(storagePlace.TextureID, width, height, storagePlace.Layer, imageData);
         //printf("using storage place %d %d | %d %d (%d)\n", width, height, storagePlace.TexArrayIdx, storagePlace.LayerIdx, array.ImageDescriptor);
 
         textureHandle = storagePlace.TextureID;
