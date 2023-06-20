@@ -254,10 +254,13 @@ public:
         std::filesystem::path currentPath = std::filesystem::current_path();
         std::string filename = uniqueIdentifier + ".png";
         std::filesystem::path fullPath = currentPath / "textures" / filename;
+        std::filesystem::path fullPathTmp = currentPath / "textures_tmp" / filename;
 #ifdef _WIN32
         const char* path = fullPath.string().c_str();
+        const char* pathTmp = fullPathTmp.string().c_str();
 #else
         const char* path = fullPath.c_str();
+        const char* pathTmp = fullPathTmp.c_str();
 #endif
 
         int channels = 4;
@@ -286,7 +289,7 @@ public:
         }
         else {
             imageData = (unsigned char*)DecodingBuffer;
-            TexLoader.ExportTextureAsFile(imageData, path, width, height, channels);
+            TexLoader.ExportTextureAsFile(imageData, pathTmp, width, height, channels);
         }
 
         widthLog2 = RightmostBit(width) - 3;
