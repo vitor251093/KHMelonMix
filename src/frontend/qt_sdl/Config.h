@@ -59,10 +59,10 @@ enum
 {
     gameScene_Intro,              // 0
     gameScene_MainMenu,           // 1
-    gameScene_IntroSaveMenu,      // 2
-    gameScene_IntroCutscene,      // 3
-    gameScene_DayCounter,         // 4
-    gameScene_Cutscene,           // 5
+    gameScene_IntroLoadMenu,      // 2
+    gameScene_DayCounter,         // 3
+    gameScene_Cutscene,           // 4
+    gameScene_TopCutscene,        // 5
     gameScene_BottomCutscene,     // 6
     gameScene_InGameWithMap,      // 7
     gameScene_InGameWithoutMap,   // 8
@@ -74,8 +74,9 @@ enum
     gameScene_Tutorial,           // 14
     gameScene_RoxasThoughts,      // 15
     gameScene_Shop,               // 16
-    gameScene_Other2D,            // 17
-    gameScene_Other               // 18
+    gameScene_BlackScreen,        // 17
+    gameScene_Other2D,            // 18
+    gameScene_Other               // 19
 };
 
 enum

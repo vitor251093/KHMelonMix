@@ -90,6 +90,7 @@ signals:
     void syncVolumeLevel();
 
 private:
+    bool isBufferBlack(u32* buffer);
     void drawScreenGL();
     void initOpenGL();
     void deinitOpenGL();

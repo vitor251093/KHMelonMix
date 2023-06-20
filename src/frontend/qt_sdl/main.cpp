@@ -172,6 +172,7 @@ bool camStarted[2];
 float backgroundRed = 0.0;
 float backgroundGreen = 0.0;
 float backgroundBlue = 0.0;
+bool isBlackTopScreen = false;
 bool isBlackBottomScreen = false;
 
 const struct { int id; float ratio; const char* label; } aspectRatios[] =
@@ -651,8 +652,14 @@ bool EmuThread::setGameScene(int newGameScene)
     float backgroundColor = 0.0;
     if (newGameScene == gameScene_Intro)
     {
-        backgroundColor = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_A.MasterBrightness) / 15.0;
-        backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
+        if (isBlackBottomScreen && isBlackTopScreen)
+        {
+            backgroundColor = 0;
+        }
+        else {
+            backgroundColor = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_A.MasterBrightness) / 15.0;
+            backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
+        }
     }
     if (newGameScene == gameScene_MainMenu)
     {
@@ -677,24 +684,47 @@ bool EmuThread::setGameScene(int newGameScene)
     debugLogs(newGameScene);
 #endif
 
-    if (videoSettings.GameScene == newGameScene) 
+    if (videoSettings.GameScene != newGameScene) 
     {
-        return false;
-    }
+#ifdef _DEBUG
+        switch (newGameScene) {
+            case gameScene_Intro: OSD::AddMessage(0, "Game scene: Intro"); break;
+            case gameScene_MainMenu: OSD::AddMessage(0, "Game scene: Main menu"); break;
+            case gameScene_IntroLoadMenu: OSD::AddMessage(0, "Game scene: Intro load menu"); break;
+            case gameScene_DayCounter: OSD::AddMessage(0, "Game scene: Day counter"); break;
+            case gameScene_Cutscene: OSD::AddMessage(0, "Game scene: Cutscene"); break;
+            case gameScene_BottomCutscene: OSD::AddMessage(0, "Game scene: Cutscene (Bottom screen)"); break;
+            case gameScene_InGameWithMap: OSD::AddMessage(0, "Game scene: Ingame (with minimap)"); break;
+            case gameScene_InGameWithoutMap: OSD::AddMessage(0, "Game scene: Ingame (without minimap)"); break;
+            case gameScene_InGameMenu: OSD::AddMessage(0, "Game scene: Ingame menu"); break;
+            case gameScene_InGameSaveMenu: OSD::AddMessage(0, "Game scene: Ingame save menu"); break;
+            case gameScene_InHoloMissionMenu: OSD::AddMessage(0, "Game scene: Holo mission menu"); break;
+            case gameScene_PauseMenu: OSD::AddMessage(0, "Game scene: Pause menu"); break;
+            case gameScene_PauseMenuWithGauge: OSD::AddMessage(0, "Game scene: Pause menu (with gauge)"); break;
+            case gameScene_Tutorial: OSD::AddMessage(0, "Game scene: Tutorial"); break;
+            case gameScene_RoxasThoughts: OSD::AddMessage(0, "Game scene: Roxas thoughts"); break;
+            case gameScene_Shop: OSD::AddMessage(0, "Game scene: Shop"); break;
+            case gameScene_BlackScreen: OSD::AddMessage(0, "Game scene: Black screen"); break;
+            case gameScene_Other2D: OSD::AddMessage(0, "Game scene: Unknown (2D)"); break;
+            default: OSD::AddMessage(0, "Game scene: Unknown (3D)"); break;
+        }
+#endif
 
-    // Game scene
-    priorGameScene = videoSettings.GameScene;
-    videoSettings.GameScene = newGameScene;
+        // Game scene
+        priorGameScene = videoSettings.GameScene;
+        videoSettings.GameScene = newGameScene;
+
+        videoSettingsDirty = true;
+    }
 
     // Screens position and size
     int size = screenSizing_Even;
     switch (newGameScene) {
         case gameScene_Intro: break;
         case gameScene_MainMenu: break;
-        case gameScene_IntroSaveMenu: size = screenSizing_BotOnly; break;
-        case gameScene_IntroCutscene: break;
+        case gameScene_IntroLoadMenu: size = screenSizing_BotOnly; break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
-        case gameScene_Cutscene: size = screenSizing_TopOnly; break;
+        case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : size; break;
         case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
         case gameScene_InGameWithMap: size = screenSizing_MiniMap; break;
         case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
@@ -706,13 +736,12 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_Tutorial: size = screenSizing_BotOnly; break;
         case gameScene_RoxasThoughts: size = screenSizing_TopOnly; break;
         case gameScene_Shop: break;
+        case gameScene_BlackScreen: size = screenSizing_TopOnly; break;
         default: break;
     }
     autoScreenSizing = size;
     Config::ScreenSwap = (newGameScene == gameScene_Intro || newGameScene == gameScene_MainMenu) ? 1 : 0;
     Config::ScreenAspectTop = (size == screenSizing_Even) ? 0 : 4; // 4:3 / window size
-
-    videoSettingsDirty = true;
 
     return true;
 }
@@ -720,6 +749,8 @@ bool EmuThread::setGameScene(int newGameScene)
 void EmuThread::debugLogs(int gameScene)
 {
     printf("Game scene: %d\n", gameScene);
+    printf("isBlackTopScreen: %d\n", isBlackTopScreen);
+    printf("isBlackBottomScreen: %d\n", isBlackBottomScreen);
     printf("GPU3D::NumVertices: %d\n",       GPU3D::NumVertices);
     printf("GPU3D::NumPolygons: %d\n",       GPU3D::NumPolygons);
     printf("GPU3D::RenderNumPolygons: %d\n", GPU3D::RenderNumPolygons);
@@ -739,6 +770,9 @@ void EmuThread::debugLogs(int gameScene)
     printf("\n");
 }
 
+// TODO: All conditions that involve videoSettings.GameScene should be reworked so they
+//   don't rely on it; otherwise, everything becomes a castle of cards, and save states
+//   become unreliable when it comes to screen sizing.
 bool EmuThread::refreshAutoScreenSizing()
 {
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
@@ -756,11 +790,18 @@ bool EmuThread::refreshAutoScreenSizing()
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(GPU::GPU2D_B.MasterBrightness);
 
-    bool isShop = (GPU3D::RenderNumPolygons == 264 && GPU::GPU2D_B.BlendCnt == 0 && GPU::GPU2D_B.BlendAlpha == 16) ||
+    // Shop has 2D and 3D segments, which is why it's on the top
+    bool isShop = (GPU3D::RenderNumPolygons == 264 && GPU::GPU2D_A.BlendCnt == 0 && 
+                   GPU::GPU2D_B.BlendCnt == 0 && GPU::GPU2D_B.BlendAlpha == 16) ||
             (videoSettings.GameScene == gameScene_Shop && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0);
     if (isShop)
     {
         return setGameScene(gameScene_Shop);
+    }
+
+    if (isBlackTopScreen && (NDS::PowerControl9 >> 9) == 1)
+    {
+        return setGameScene(gameScene_BlackScreen);
     }
 
     if (doesntLook3D)
@@ -774,9 +815,9 @@ bool EmuThread::refreshAutoScreenSizing()
 
         if (isIntroSaveMenu)
         {
-            return setGameScene(gameScene_IntroSaveMenu);
+            return setGameScene(gameScene_IntroLoadMenu);
         }
-        if (videoSettings.GameScene == gameScene_IntroSaveMenu)
+        if (videoSettings.GameScene == gameScene_IntroLoadMenu)
         {
             if (mayBeMainMenu)
             {
@@ -784,7 +825,7 @@ bool EmuThread::refreshAutoScreenSizing()
             }
             if (GPU3D::NumVertices != 8)
             {
-                return setGameScene(gameScene_IntroSaveMenu);
+                return setGameScene(gameScene_IntroLoadMenu);
             }
         }
 
@@ -810,12 +851,6 @@ bool EmuThread::refreshAutoScreenSizing()
             }
         }
 
-        // Cutscene
-        if (videoSettings.GameScene == gameScene_Cutscene && no3D)
-        {
-            return setGameScene(gameScene_Cutscene);
-        }
-
         // Main menu
         if (mayBeMainMenu)
         {
@@ -828,17 +863,26 @@ bool EmuThread::refreshAutoScreenSizing()
             return setGameScene(gameScene_Intro);
         }
 
+        if (isBlackTopScreen && isBlackBottomScreen)
+        {
+            return setGameScene(gameScene_BlackScreen);
+        }
+
         // Intro cutscene
-        if (videoSettings.GameScene == gameScene_IntroCutscene)
+        if (videoSettings.GameScene == gameScene_Cutscene)
         {
             if (GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0 && GPU3D::RenderNumPolygons >= 0 && GPU3D::RenderNumPolygons <= 3)
             {
-                return setGameScene(gameScene_IntroCutscene);
+                return setGameScene(gameScene_Cutscene);
             }
         }
         if (videoSettings.GameScene == gameScene_MainMenu && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0 && GPU3D::RenderNumPolygons == 1)
         {
-            return setGameScene(gameScene_IntroCutscene);
+            return setGameScene(gameScene_Cutscene);
+        }
+        if (videoSettings.GameScene == gameScene_BlackScreen && GPU3D::NumVertices == 0 && GPU3D::NumPolygons == 0 && GPU3D::RenderNumPolygons >= 0 && GPU3D::RenderNumPolygons <= 3)
+        {
+            return setGameScene(gameScene_Cutscene);
         }
 
         // In Game Save Menu
@@ -859,15 +903,28 @@ bool EmuThread::refreshAutoScreenSizing()
         // Roxas thoughts scene
         if (isBlackBottomScreen)
         {
-            return setGameScene(gameScene_RoxasThoughts);
+            if (has3DOnTopScreen)
+            {
+                return setGameScene(gameScene_BlackScreen);
+            }
+            else
+            {
+                return setGameScene(gameScene_RoxasThoughts);
+            }
         }
 
+        // Bottom cutscene
         bool isBottomCutscene = GPU::GPU2D_A.BlendCnt == 0 && 
              GPU::GPU2D_A.EVA == 16 && GPU::GPU2D_A.EVB == 0 && GPU::GPU2D_A.EVY == 9 &&
              GPU::GPU2D_B.EVA == 16 && GPU::GPU2D_B.EVB == 0 && GPU::GPU2D_B.EVY == 0;
         if (isBottomCutscene)
         {
             return setGameScene(gameScene_BottomCutscene);
+        }
+
+        if (videoSettings.GameScene == gameScene_BlackScreen)
+        {
+            return setGameScene(gameScene_BlackScreen);
         }
 
         // Unknown 2D
@@ -1023,6 +1080,23 @@ bool EmuThread::emuIsActive()
     return (RunningSomething == 1);
 }
 
+bool EmuThread::isBufferBlack(u32* buffer)
+{
+    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
+    bool newIsNullScreen = true;
+    bool newIsBlackScreen = true;
+    for (int i = 0; i < 192*256; i++) {
+        u32 color = buffer[i] & 0xFFFFFF;
+        newIsNullScreen = newIsNullScreen && color == 0;
+        newIsBlackScreen = newIsBlackScreen &&
+                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
+        if (!newIsBlackScreen) {
+            break;
+        }
+    }
+    return !newIsNullScreen && newIsBlackScreen;
+}
+
 void EmuThread::drawScreenGL()
 {
     int w = windowInfo.surface_width;
@@ -1069,23 +1143,13 @@ void EmuThread::drawScreenGL()
     }
 
     // checking if bottom screen is totally black
+    u32* topBuffer = GPU::Framebuffer[frontbuf][0];
     u32* bottomBuffer = GPU::Framebuffer[frontbuf][1];
+    if (topBuffer) {
+        isBlackTopScreen = isBufferBlack(topBuffer);
+    }
     if (bottomBuffer) {
-        // when the result is 'totally black', it's a false positive, so we need to exclude that scenario
-        bool newIsTotallyBlackBottomScreen = true;
-        bool newIsBlackBottomScreen = true;
-        for (int i = 0; i < 192*256; i++) {
-            u32 color = bottomBuffer[i] & 0xFFFFFF;
-            newIsTotallyBlackBottomScreen = newIsTotallyBlackBottomScreen && color == 0;
-            newIsBlackBottomScreen = newIsBlackBottomScreen && 
-                    (color == 0 || color == 0x000080 || color == 0x010000 || (bottomBuffer[i] & 0xFFFFE0) == 0x018000);
-            if (!newIsBlackBottomScreen) {
-                break;
-            }
-        }
-        if (!newIsTotallyBlackBottomScreen) {
-            isBlackBottomScreen = newIsBlackBottomScreen;
-        }
+        isBlackBottomScreen = isBufferBlack(bottomBuffer);
     }
 
     screenSettingsLock.lock();
