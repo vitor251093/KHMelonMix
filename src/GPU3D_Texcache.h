@@ -274,7 +274,8 @@ public:
                     r = (r >> 2);
                     g = (g >> 2);
                     b = (b >> 2);
-                    alpha = (alpha + 1 >> 3) - 1;
+                    alpha = (alpha + 1 >> 3);
+                    if (alpha) alpha -= 1;
                     pixel[0] = r;
                     pixel[1] = g;
                     pixel[2] = b;
