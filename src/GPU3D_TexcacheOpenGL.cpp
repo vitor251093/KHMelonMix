@@ -12,8 +12,24 @@
 namespace GPU3D
 {
 
-GLuint TexcacheOpenGLLoader::GenerateTexture(u32 width, u32 height, u32 layers)
+GLuint TexcacheOpenGLLoader::GenerateTexture(u64 key, u32 width, u32 height, u32 layers)
 {
+    printf("TexcacheOpenGLLoader::GenerateTexture(%u, %d, %d, %u)\n", key, width, height, layers);
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::string filename = std::to_string(key) + ".png";
+    std::filesystem::path fullPath = currentPath / "textures" / filename;
+    const char* path = fullPath.c_str();
+
+    int channels = 4;
+    int r_width, r_height, r_channels;
+    unsigned char* imageData = stbi_load(path, &r_width, &r_height, &r_channels, 0);
+    bool cachedImage = (imageData != nullptr);
+    if (imageData != nullptr)
+    {
+        width = r_width;
+        height = r_height;
+    }
+
     GLuint texarray;
     glGenTextures(1, &texarray);
     glBindTexture(GL_TEXTURE_2D_ARRAY, texarray);
@@ -89,12 +105,14 @@ void TexcacheOpenGLLoader::UploadTexture(u64 key, GLuint handle, u32 width, u32 
     }
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, handle);
+
     glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
         0, 0, 0, layer,
-        width, height, 1,
+        r_width, r_height, 1,
         GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, imageData);
 
-    if (cachedImage) {
+    if (cachedImage)
+    {
         stbi_image_free(imageData);
     }
 }

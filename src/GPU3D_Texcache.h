@@ -240,7 +240,7 @@ public:
 
             // allocate new array texture
             //printf("allocating new layer set for %d %d %d %d\n", width, height, texArrays.size()-1, array.ImageDescriptor);
-            array = TexLoader.GenerateTexture(width, height, layers);
+            array = TexLoader.GenerateTexture(key, width, height, layers);
 
             for (u32 i = 0; i < layers; i++)
             {
