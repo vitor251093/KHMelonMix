@@ -234,8 +234,16 @@ public:
         auto& texArrays = TexArrays[widthLog2][heightLog2];
         auto& freeTextures = FreeTextures[widthLog2][heightLog2];
 
+        std::ostringstream oss;
+        for (int i = 0; i < 2; i++)
+        {
+            if (entry.TextureRAMSize[i])
+                oss << static_cast<char32_t>(entry.TextureHash[i]);
+        }
+        std::string uniqueIdentifier = oss.str();
+        
         std::filesystem::path currentPath = std::filesystem::current_path();
-        std::string filename = std::to_string(key) + ".png";
+        std::string filename = uniqueIdentifier + ".png";
         std::filesystem::path fullPath = currentPath / "textures" / filename;
 #ifdef _WIN32
         const char* path = fullPath.string().c_str();
