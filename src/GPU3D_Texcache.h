@@ -120,6 +120,18 @@ public:
         return false;
     }
 
+    int RightmostBit(u32 num) {
+        int c = 0;
+        if (num == 0) {
+            return 0;
+        }
+        while ((num & 1) == 0) {
+            num >>= 1;
+            c++;
+        }
+        return c;
+    }
+
     void GetTexture(u32 texParam, u32 palBase, TexHandleT& textureHandle, u32& layer, u32*& helper)
     {
         // remove sampling and texcoord gen params
@@ -231,9 +243,6 @@ public:
         if (entry.TexPalSize)
             entry.TexPalHash = XXH3_64bits(&GPU::VRAMFlat_TexPal[entry.TexPalStart], entry.TexPalSize);
 
-        auto& texArrays = TexArrays[widthLog2][heightLog2];
-        auto& freeTextures = FreeTextures[widthLog2][heightLog2];
-
         std::ostringstream oss;
         for (int i = 0; i < 2; i++)
         {
@@ -279,6 +288,14 @@ public:
             imageData = (unsigned char*)DecodingBuffer;
             TexLoader.ExportTextureAsFile(imageData, path, width, height, channels);
         }
+
+        widthLog2 = RightmostBit(width) - 3;
+        heightLog2 = RightmostBit(height) - 3;
+        entry.WidthLog2 = widthLog2;
+        entry.HeightLog2 = heightLog2;
+
+        auto& texArrays = TexArrays[widthLog2][heightLog2];
+        auto& freeTextures = FreeTextures[widthLog2][heightLog2];
 
         if (freeTextures.size() == 0)
         {
