@@ -237,7 +237,11 @@ public:
         std::filesystem::path currentPath = std::filesystem::current_path();
         std::string filename = std::to_string(key) + ".png";
         std::filesystem::path fullPath = currentPath / "textures" / filename;
+#ifdef _WIN32
+        const char* path = fullPath.string().c_str();
+#else
         const char* path = fullPath.c_str();
+#endif
 
         int channels = 4;
         int r_width, r_height, r_channels;
