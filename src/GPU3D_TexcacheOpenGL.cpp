@@ -50,6 +50,7 @@ void TexcacheOpenGLLoader::ExportTextureAsFile(unsigned char* data, const char* 
             g = (g << 2);
             b = (b << 2);
             alpha = (alpha + 1 << 3) - 1;
+            if (alpha <= 0x7) alpha = 0;
             pixel[0] = r;
             pixel[1] = g;
             pixel[2] = b;
