@@ -833,6 +833,13 @@ bool EmuThread::refreshAutoScreenSizing()
             return setGameScene(gameScene_InGameMenu);
         }
 
+        // Mission Mode / Story Mode - Challenges (happens if you press L/R repeatedly)
+        bool inHoloMissionMenu = GPU::GPU2D_A.BlendCnt == 129 && GPU::GPU2D_B.BlendCnt == 159;
+        if (inHoloMissionMenu)
+        {
+            return setGameScene(gameScene_InHoloMissionMenu);
+        }
+
         // Day counter
         if (videoSettings.GameScene == gameScene_DayCounter && !no3D)
         {
@@ -976,19 +983,23 @@ bool EmuThread::refreshAutoScreenSizing()
             return setGameScene(gameScene_InGameMenu);
         }
 
-        bool inHoloMissionMenu = GPU3D::NumVertices == 344 && GPU3D::NumPolygons == 89 && GPU3D::RenderNumPolygons == 89 &&
+        // Story Mode - Normal missions
+        bool inHoloMissionMenu = ((GPU3D::NumVertices == 344 && GPU3D::NumPolygons == 89 && GPU3D::RenderNumPolygons == 89) ||
+                                  (GPU3D::NumVertices == 348 && GPU3D::NumPolygons == 90 && GPU3D::RenderNumPolygons == 90)) &&
                                  GPU::GPU2D_A.BlendCnt == 0 && GPU::GPU2D_B.BlendCnt == 0;
         if (inHoloMissionMenu || videoSettings.GameScene == gameScene_InHoloMissionMenu)
         {
             return setGameScene(gameScene_InHoloMissionMenu);
         }
 
+        // Mission Mode / Story Mode - Challenges
         inHoloMissionMenu = GPU::GPU2D_A.BlendCnt == 129 && GPU::GPU2D_B.BlendCnt == 159;
         if (inHoloMissionMenu)
         {
             return setGameScene(gameScene_InHoloMissionMenu);
         }
 
+        // I can't remember
         inHoloMissionMenu = GPU::GPU2D_A.BlendCnt == 2625 && GPU::GPU2D_B.BlendCnt == 0;
         if (inHoloMissionMenu)
         {
