@@ -983,6 +983,12 @@ bool EmuThread::refreshAutoScreenSizing()
             return setGameScene(gameScene_InHoloMissionMenu);
         }
 
+        inHoloMissionMenu = GPU::GPU2D_A.BlendCnt == 129 && GPU::GPU2D_B.BlendCnt == 159;
+        if (inHoloMissionMenu)
+        {
+            return setGameScene(gameScene_InHoloMissionMenu);
+        }
+
         inHoloMissionMenu = GPU::GPU2D_A.BlendCnt == 2625 && GPU::GPU2D_B.BlendCnt == 0;
         if (inHoloMissionMenu)
         {
