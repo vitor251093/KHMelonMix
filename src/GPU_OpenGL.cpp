@@ -144,7 +144,6 @@ void GLCompositor::Reset()
 void GLCompositor::SetRenderSettings(RenderSettings& settings)
 {
     int scale = settings.GL_ScaleFactor;
-    GameScene = settings.GameScene;
 
     Scale = scale;
     ScreenW = 256 * scale;

@@ -712,8 +712,6 @@ bool EmuThread::setGameScene(int newGameScene)
         // Game scene
         priorGameScene = videoSettings.GameScene;
         videoSettings.GameScene = newGameScene;
-
-        videoSettingsDirty = true;
     }
 
     // Screens position and size
