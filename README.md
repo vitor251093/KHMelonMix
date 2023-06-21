@@ -85,6 +85,7 @@ If you want an app bundle that can be distributed to other computers without nee
 ## Credits
 
  * All people that supported and developed melonDS
+ * sandwichwater, for testing multiple scenarios of the game, and for providing multiple replacement textures
  * Michael Lipinski, for the [documentation](https://pdfs.semanticscholar.org/657d/adf4888f6302701095055b0d7a066e42b36f.pdf) regarding the way a NDS works
 
 ## Licenses
