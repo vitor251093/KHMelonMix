@@ -45,7 +45,6 @@ private:
 
     int Scale;
     int ScreenH, ScreenW;
-    int GameScene;
 
     GLuint CompShader[1];
     GLuint CompScaleLoc[1];
