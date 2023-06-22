@@ -267,9 +267,24 @@ public:
         int r_width, r_height, r_channels;
         unsigned char* imageData = TexLoader.LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
         if (imageData != nullptr) {
+            if (r_channels == 3) {
+                unsigned char* newImageData = (unsigned char*)malloc(r_height * r_width * channels * sizeof(unsigned char[4]));
+                for (int y = 0; y < r_height; ++y) {
+                    for (int x = 0; x < r_width; ++x) {
+                        unsigned char* old_pixel = imageData + (y * r_width + x) * (r_channels);
+                        unsigned char* new_pixel = newImageData + (y * r_width + x) * channels;
+                        new_pixel[0] = old_pixel[0];
+                        new_pixel[1] = old_pixel[1];
+                        new_pixel[2] = old_pixel[2];
+                        new_pixel[3] = 255;
+                    }
+                }
+                imageData = newImageData;
+                r_channels = channels;
+            }
             for (int y = 0; y < r_height; ++y) {
                 for (int x = 0; x < r_width; ++x) {
-                    unsigned char* pixel = imageData + (y * r_width + x) * (channels);
+                    unsigned char* pixel = imageData + (y * r_width + x) * (r_channels);
                     unsigned char r = pixel[0];
                     unsigned char g = pixel[1];
                     unsigned char b = pixel[2];
