@@ -109,7 +109,7 @@ public:
             invalidate:
                 FreeTextures[entry.WidthLog2][entry.HeightLog2].push_back(entry.Texture);
 
-                //printf("invalidating texture %d\n", entry.ImageDescriptor);
+                // printf("invalidating texture %u\n", it->first);
 
                 it = Cache.erase(it);
             }
@@ -267,6 +267,8 @@ public:
         int r_width, r_height, r_channels;
         unsigned char* imageData = TexLoader.LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
         if (imageData != nullptr) {
+            // printf("Loading texture %s (key: %u)\n", path, key);
+
             if (r_channels == 3) {
                 unsigned char* newImageData = (unsigned char*)malloc(r_height * r_width * channels * sizeof(unsigned char[4]));
                 for (int y = 0; y < r_height; ++y) {
