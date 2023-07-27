@@ -471,11 +471,13 @@ void EmuThread::run()
             u32 CmdMenuInputMask = Input::CmdMenuInputMask, PriorCmdMenuInputMask = Input::PriorPriorCmdMenuInputMask;
             if (videoSettings.GameScene == gameScene_InGameWithMap || videoSettings.GameScene == gameScene_InGameWithoutMap) {
                 // Workaround, so the arrow keys can be used to control the command menu
-                printf("CmdMenuInputMask: %d, PriorCmdMenuInputMask: %d\n", CmdMenuInputMask, PriorCmdMenuInputMask);
                 if (CmdMenuInputMask & ((1 << 0) | (1 << 1))) {
                     InputMask &= ~(1<<10);
-                    InputMask |= (1<<6);
-                    InputMask |= (1<<7);
+                    if (CmdMenuInputMask & (1 << 0)) {
+                        // If you press the up arrow while having the player moving priorly, it may make it go down instead
+                        InputMask |= (1<<6);
+                        InputMask |= (1<<7);
+                    }
                     if (PriorCmdMenuInputMask & (1 << 0)) // up
                         InputMask &= ~(1<<6);
                     if (PriorCmdMenuInputMask & (1 << 1)) // down
