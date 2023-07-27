@@ -467,7 +467,22 @@ void EmuThread::run()
             }
 
             // process input and hotkeys
-            NDS::SetKeyMask(Input::InputMask);
+            u32 InputMask = Input::InputMask;
+            u32 CmdMenuInputMask = Input::CmdMenuInputMask, PriorCmdMenuInputMask = Input::PriorPriorCmdMenuInputMask;
+            if (videoSettings.GameScene == gameScene_InGameWithMap || videoSettings.GameScene == gameScene_InGameWithoutMap) {
+                // Workaround, so the arrow keys can be used to control the command menu
+                printf("CmdMenuInputMask: %d, PriorCmdMenuInputMask: %d\n", CmdMenuInputMask, PriorCmdMenuInputMask);
+                if (CmdMenuInputMask & ((1 << 0) | (1 << 1))) {
+                    InputMask &= ~(1<<10);
+                    InputMask |= (1<<6);
+                    InputMask |= (1<<7);
+                    if (PriorCmdMenuInputMask & (1 << 0)) // up
+                        InputMask &= ~(1<<6);
+                    if (PriorCmdMenuInputMask & (1 << 1)) // down
+                        InputMask &= ~(1<<7);
+                }
+            }
+            NDS::SetKeyMask(InputMask);
             NDS::SetTouchKeyMask(Input::TouchInputMask);
 
             if (Input::HotkeyPressed(HK_Lid))

@@ -119,6 +119,9 @@ extern int HKJoyMapping[HK_MAX];
 extern int TouchKeyMapping[4];
 extern int TouchJoyMapping[4];
 
+extern int CmdMenuKeyMapping[2];
+extern int CmdMenuJoyMapping[2];
+
 extern int JoystickID;
 
 extern int WindowWidth;
