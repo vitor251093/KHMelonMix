@@ -41,8 +41,8 @@ const char* dskeylabels[12] = {"A", "B", "X", "Y", "Left", "Right", "Up", "Down"
 
 const int dstouchkeyorder[12] = {1, 0, 2, 3};
 
-const int dscmdmenukeyorder[12] = {0, 1};
-const char* dscmdmenukeylabels[12] = {"Up", "Down"};
+const int dscmdmenukeyorder[12] = {1, 0, 2, 3};
+const char* dscmdmenukeylabels[12] = {"Left", "Right", "Up", "Down"};
 
 InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new Ui::InputConfigDialog)
 {

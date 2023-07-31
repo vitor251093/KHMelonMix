@@ -35,8 +35,8 @@ int HKJoyMapping[HK_MAX];
 int TouchKeyMapping[4];
 int TouchJoyMapping[4];
 
-int CmdMenuKeyMapping[2];
-int CmdMenuJoyMapping[2];
+int CmdMenuKeyMapping[4];
+int CmdMenuJoyMapping[4];
 
 int JoystickID;
 
@@ -224,11 +224,15 @@ ConfigEntry ConfigFile[] =
     {"Joy_TouchUp",    0, &TouchJoyMapping[2], -1, true},
     {"Joy_TouchDown",  0, &TouchJoyMapping[3], -1, true},
 
-    {"Key_CmdMenuUp",   0, &CmdMenuKeyMapping[0], -1, true},
-    {"Key_CmdMenuDown", 0, &CmdMenuKeyMapping[1], -1, true},
+    {"Key_CmdMenuLeft",  0, &CmdMenuKeyMapping[0], -1, true},
+    {"Key_CmdMenuRight", 0, &CmdMenuKeyMapping[1], -1, true},
+    {"Key_CmdMenuUp",    0, &CmdMenuKeyMapping[2], -1, true},
+    {"Key_CmdMenuDown",  0, &CmdMenuKeyMapping[3], -1, true},
 
-    {"Joy_CmdMenuUp",   0, &CmdMenuJoyMapping[0], -1, true},
-    {"Joy_CmdMenuDown", 0, &CmdMenuJoyMapping[1], -1, true},
+    {"Joy_CmdMenuLeft",  0, &CmdMenuJoyMapping[0], -1, true},
+    {"Joy_CmdMenuRight", 0, &CmdMenuJoyMapping[1], -1, true},
+    {"Joy_CmdMenuUp",    0, &CmdMenuJoyMapping[2], -1, true},
+    {"Joy_CmdMenuDown",  0, &CmdMenuJoyMapping[3], -1, true},
 
     {"JoystickID", 0, &JoystickID, 0, true},
 

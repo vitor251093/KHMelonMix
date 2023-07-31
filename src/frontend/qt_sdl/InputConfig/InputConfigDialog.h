@@ -27,7 +27,7 @@
 
 static constexpr int keypad_num = 12;
 static constexpr int touchscreen_num = 4;
-static constexpr int cmdmenu_num = 2;
+static constexpr int cmdmenu_num = 4;
 
 static constexpr std::initializer_list<int> hk_addons =
 {
@@ -81,6 +81,8 @@ static_assert(hk_general.size() == hk_general_labels.size());
 
 static constexpr std::initializer_list<const char*> cmd_menu_labels =
 {
+    "Command Menu Left",
+    "Command Menu Right",
     "Command Menu Up",
     "Command Menu Down",
 };
@@ -145,7 +147,7 @@ private:
     int addonsKeyMap[hk_addons.size()], addonsJoyMap[hk_addons.size()];
     int hkGeneralKeyMap[hk_general.size()], hkGeneralJoyMap[hk_general.size()];
     int touchScreenKeyMap[4], touchScreenJoyMap[4];
-    int cmdMenuKeyMap[2], cmdMenuJoyMap[2];
+    int cmdMenuKeyMap[4], cmdMenuJoyMap[4];
 };
 
 

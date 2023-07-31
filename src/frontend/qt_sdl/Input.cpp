@@ -126,7 +126,7 @@ void KeyPress(QKeyEvent* event)
         if (keyHK == Config::HKKeyMapping[i])
             KeyHotkeyMask |= (1<<i);
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 4; i++)
         if (keyKP == Config::CmdMenuKeyMapping[i])
             KeyCmdMenuInputMask |= (1<<i);
 }
@@ -150,7 +150,7 @@ void KeyRelease(QKeyEvent* event)
         if (keyHK == Config::HKKeyMapping[i])
             KeyHotkeyMask &= ~(1<<i);
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 4; i++)
         if (keyKP == Config::CmdMenuKeyMapping[i])
             KeyCmdMenuInputMask &= ~(1<<i);
 }
@@ -247,7 +247,7 @@ void Process()
     for (int i = 0; i < HK_MAX; i++)
         if (JoystickButtonDown(Config::HKJoyMapping[i]))
             JoyHotkeyMask |= (1<<i);
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 4; i++)
         if (JoystickButtonDown(Config::CmdMenuJoyMapping[i]))
             JoyCmdMenuInputMask |= (1<<i);
 
