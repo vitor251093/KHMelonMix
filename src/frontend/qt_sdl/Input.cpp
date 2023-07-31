@@ -32,10 +32,12 @@ SDL_Joystick* Joystick = nullptr;
 u32 KeyInputMask, JoyInputMask;
 u32 KeyTouchInputMask, JoyTouchInputMask;
 u32 KeyHotkeyMask, JoyHotkeyMask;
+u32 KeyCmdMenuInputMask, JoyCmdMenuInputMask;
 u32 HotkeyMask, LastHotkeyMask;
 u32 HotkeyPress, HotkeyRelease;
 
 u32 InputMask, TouchInputMask;
+u32 CmdMenuInputMask, PriorCmdMenuInputMask, PriorPriorCmdMenuInputMask;
 
 
 void Init()
@@ -51,6 +53,12 @@ void Init()
     JoyHotkeyMask = 0;
     HotkeyMask = 0;
     LastHotkeyMask = 0;
+
+    KeyCmdMenuInputMask = 0;
+    JoyCmdMenuInputMask = 0;
+    CmdMenuInputMask = 0;
+    PriorCmdMenuInputMask = 0;
+    PriorPriorCmdMenuInputMask = 0;
 }
 
 
@@ -117,6 +125,10 @@ void KeyPress(QKeyEvent* event)
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == Config::HKKeyMapping[i])
             KeyHotkeyMask |= (1<<i);
+
+    for (int i = 0; i < 4; i++)
+        if (keyKP == Config::CmdMenuKeyMapping[i])
+            KeyCmdMenuInputMask |= (1<<i);
 }
 
 void KeyRelease(QKeyEvent* event)
@@ -137,6 +149,10 @@ void KeyRelease(QKeyEvent* event)
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == Config::HKKeyMapping[i])
             KeyHotkeyMask &= ~(1<<i);
+
+    for (int i = 0; i < 4; i++)
+        if (keyKP == Config::CmdMenuKeyMapping[i])
+            KeyCmdMenuInputMask &= ~(1<<i);
 }
 
 
@@ -225,16 +241,24 @@ void Process()
 
     InputMask = KeyInputMask & JoyInputMask;
     TouchInputMask = KeyTouchInputMask & JoyTouchInputMask;
-
+    
     JoyHotkeyMask = 0;
+    JoyCmdMenuInputMask = 0;
     for (int i = 0; i < HK_MAX; i++)
         if (JoystickButtonDown(Config::HKJoyMapping[i]))
             JoyHotkeyMask |= (1<<i);
+    for (int i = 0; i < 4; i++)
+        if (JoystickButtonDown(Config::CmdMenuJoyMapping[i]))
+            JoyCmdMenuInputMask |= (1<<i);
 
     HotkeyMask = KeyHotkeyMask | JoyHotkeyMask;
     HotkeyPress = HotkeyMask & ~LastHotkeyMask;
     HotkeyRelease = LastHotkeyMask & ~HotkeyMask;
     LastHotkeyMask = HotkeyMask;
+
+    PriorPriorCmdMenuInputMask = PriorCmdMenuInputMask;
+    PriorCmdMenuInputMask = CmdMenuInputMask;
+    CmdMenuInputMask = KeyCmdMenuInputMask | JoyCmdMenuInputMask;
 }
 
 

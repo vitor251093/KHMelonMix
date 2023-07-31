@@ -41,6 +41,9 @@ const char* dskeylabels[12] = {"A", "B", "X", "Y", "Left", "Right", "Up", "Down"
 
 const int dstouchkeyorder[12] = {1, 0, 2, 3};
 
+const int dscmdmenukeyorder[12] = {1, 0, 2, 3};
+const char* dscmdmenukeylabels[12] = {"Left", "Right", "Up", "Down"};
+
 InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new Ui::InputConfigDialog)
 {
     ui->setupUi(this);
@@ -74,6 +77,12 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
         touchScreenJoyMap[i] = Config::TouchJoyMapping[dstouchkeyorder[i]];
     }
 
+    for (int i = 0; i < cmdmenu_num; i++)
+    {
+        cmdMenuKeyMap[i] = Config::CmdMenuKeyMapping[dscmdmenukeyorder[i]];
+        cmdMenuJoyMap[i] = Config::CmdMenuJoyMapping[dscmdmenukeyorder[i]];
+    }
+
     populatePage(ui->tabAddons, hk_addons_labels, addonsKeyMap, addonsJoyMap);
     populatePage(ui->tabHotkeysGeneral, hk_general_labels, hkGeneralKeyMap, hkGeneralJoyMap);
 
@@ -95,6 +104,7 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
 
     setupKeypadPage();
     setupTouchScreenPage();
+    setupCommandMenuPage();
 
     int inst = Platform::InstanceID();
     if (inst > 0)
@@ -140,6 +150,17 @@ void InputConfigDialog::setupTouchScreenPage()
     main_layout->addWidget(touch_widget);
 
     ui->tabTouchScreen->setLayout(main_layout);
+}
+
+void InputConfigDialog::setupCommandMenuPage()
+{
+    QVBoxLayout* main_layout = new QVBoxLayout();
+
+    QWidget* cmd_menu_widget = new QWidget();
+    populatePage(cmd_menu_widget, cmd_menu_labels, cmdMenuKeyMap, cmdMenuJoyMap);
+    main_layout->addWidget(cmd_menu_widget);
+
+    ui->tabCommandMenu->setLayout(main_layout);
 }
 
 void InputConfigDialog::populatePage(QWidget* page,
@@ -221,6 +242,12 @@ void InputConfigDialog::on_InputConfigDialog_accepted()
     {
         Config::TouchKeyMapping[dstouchkeyorder[i]] = touchScreenKeyMap[i];
         Config::TouchJoyMapping[dstouchkeyorder[i]] = touchScreenJoyMap[i];
+    }
+
+    for (int i = 0; i < cmdmenu_num; i++)
+    {
+        Config::CmdMenuKeyMapping[dscmdmenukeyorder[i]] = cmdMenuKeyMap[i];
+        Config::CmdMenuJoyMapping[dscmdmenukeyorder[i]] = cmdMenuJoyMap[i];
     }
 
     Config::JoystickID = Input::JoystickID;
