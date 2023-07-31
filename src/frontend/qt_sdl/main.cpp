@@ -1224,14 +1224,9 @@ void EmuThread::drawScreenGL()
             if (viewAspect != windowAspect) {
                 if (viewAspect > windowAspect) { // window taller than view
                     topMargin = ((h/factor) - (w/factor)/viewAspect)/2;
-                    printf("window taller than view\n");
                 }
                 else if (viewAspect < windowAspect) { // window larger than view
                     leftMargin = ((w/factor) - (h/factor)*viewAspect)/2;
-                    printf("window larger than view\n");
-                }
-                else {
-                    printf("perfectly balanced\n");
                 }
             }
             
