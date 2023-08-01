@@ -761,7 +761,6 @@ bool EmuThread::setGameScene(int newGameScene)
     }
     autoScreenSizing = size;
     Config::ScreenSwap = (newGameScene == gameScene_Intro || newGameScene == gameScene_MainMenu) ? 1 : 0;
-    Config::ScreenAspectTop = (size == screenSizing_Even) ? 0 : 3; // 4:3 / window size
 
     return true;
 }
@@ -1297,13 +1296,20 @@ void ScreenHandler::screenSetupLayout(int w, int h)
     int sizing = Config::ScreenSizing;
     if (sizing == 3) sizing = autoScreenSizing;
 
+    int screenAspectTop = Config::ScreenAspectTop;
+    int screenAspectBot = Config::ScreenAspectBot;
+    if (sizing == screenSizing_Even) {
+        screenAspectTop = 0;
+        screenAspectBot = 0;
+    }
+
     float aspectTop, aspectBot;
 
     for (auto ratio : aspectRatios)
     {
-        if (ratio.id == Config::ScreenAspectTop)
+        if (ratio.id == screenAspectTop)
             aspectTop = ratio.ratio;
-        if (ratio.id == Config::ScreenAspectBot)
+        if (ratio.id == screenAspectBot)
             aspectBot = ratio.ratio;
     }
 
