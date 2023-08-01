@@ -16,9 +16,6 @@ public:
     GLuint GenerateTexture(u32 width, u32 height, u32 layers);
     void UploadTexture(GLuint handle, u32 width, u32 height, u32 layer, void* data);
     void DeleteTexture(GLuint handle);
-
-    unsigned char* LoadTextureFromFile(const char* path, int* width, int* height, int* channels);
-    void ExportTextureAsFile(unsigned char* data, const char* path, u32 width, u32 height, u32 channels);
 };
 
 using TexcacheOpenGL = Texcache<TexcacheOpenGLLoader, GLuint>;

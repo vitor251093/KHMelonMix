@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "GPU.h"
+#include "GPU_Texreplace.h"
 
 #include <assert.h>
 #include <unordered_map>
@@ -265,7 +266,7 @@ public:
 
         int channels = 4;
         int r_width, r_height, r_channels;
-        unsigned char* imageData = TexLoader.LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+        unsigned char* imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
         if (imageData != nullptr) {
             // printf("Loading texture %s (key: %u)\n", path, key);
 
@@ -306,7 +307,7 @@ public:
         }
         else {
             imageData = (unsigned char*)DecodingBuffer;
-            TexLoader.ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+            Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
         }
 
         widthLog2 = RightmostBit(width) - 3;
