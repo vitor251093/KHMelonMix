@@ -174,16 +174,6 @@ float backgroundBlue = 0.0;
 bool isBlackTopScreen = false;
 bool isBlackBottomScreen = false;
 
-const struct { int id; float ratio; const char* label; } aspectRatios[] =
-{
-    { 0, 1,                       "4:3 (native)" },
-    { 4, (5.f  / 3) / (4.f / 3),  "5:3 (3DS)"},
-    { 1, (16.f / 9) / (4.f / 3),  "16:9" },
-    { 2, (21.f / 9) / (4.f / 3),  "21:9" },
-    { 3, 0,                       "window" }
-};
-
-
 EmuThread::EmuThread(QObject* parent) : QThread(parent)
 {
     EmuStatus = 0;
