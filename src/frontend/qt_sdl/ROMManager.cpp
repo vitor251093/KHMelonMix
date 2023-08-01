@@ -458,7 +458,7 @@ void LoadCheats()
 {
     UnloadCheats();
 
-    float aspectTop;
+    float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
     for (auto ratio : aspectRatios)
     {
         if (ratio.id == Config::ScreenAspectTop)
