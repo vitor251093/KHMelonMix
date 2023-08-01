@@ -1646,13 +1646,15 @@ bool LoadROM(const u8* romdata, u32 romlen)
         memcpy(&Banner, CartROM + Header.BannerOffset, bannersize);
     }
 
-    Log(LogLevel::Info, "Game code: %.4s\n", Header.GameCode);
-
     u32 gamecode = (u32)Header.GameCode[3] << 24 |
                    (u32)Header.GameCode[2] << 16 |
                    (u32)Header.GameCode[1] << 8  |
                    (u32)Header.GameCode[0];
-    if (gamecode != 1162300249) {
+
+    Log(LogLevel::Info, "Game code: %u\n", gamecode);
+    u32 usGamecode = 1162300249;
+    u32 euGamecode = 1346849625;
+    if (gamecode != usGamecode && gamecode != euGamecode) {
         // Only Days should be loadable
         return false;
     }
