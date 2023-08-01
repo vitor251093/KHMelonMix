@@ -46,7 +46,7 @@ typedef std::list<ARCodeCat> ARCodeCatList;
 class ARCodeFile
 {
 public:
-    ARCodeFile(const std::string& filename);
+    ARCodeFile(float screenAspect);
     ~ARCodeFile();
 
     bool Error;
@@ -56,8 +56,9 @@ public:
 
     ARCodeCatList Categories;
 
+
 private:
-    std::string Filename;
+    float ScreenAspect;
 };
 
 #endif // ARCODEFILE_H

@@ -458,10 +458,14 @@ void LoadCheats()
 {
     UnloadCheats();
 
-    std::string filename = GetAssetPath(false, Config::CheatFilePath, ".mch");
-
-    // TODO: check for error (malformed cheat file, ...)
-    CheatFile = new ARCodeFile(filename);
+    float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
+    for (auto ratio : aspectRatios)
+    {
+        if (ratio.id == Config::ScreenAspectTop)
+            aspectTop = ratio.ratio * 4.0/3;
+    }
+    
+    CheatFile = new ARCodeFile(aspectTop);
 
     AREngine::SetCodeFile(CheatsOn ? CheatFile : nullptr);
 }

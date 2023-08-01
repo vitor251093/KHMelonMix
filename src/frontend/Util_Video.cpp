@@ -131,11 +131,9 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     bool swapScreens,
     float topAspect, float botAspect)
 {
-    float mapY = 30.0;
-    float mapNegativeX = -30.0;
     float mapHeight = 75.0, mapWidth = 100.0;
-    float mapX = 256 - mapWidth - mapNegativeX;
-
+    float mapY = 30.0, mapX = 150.0;
+    
     float gaugeHeight = 192.0, gaugeWidth = 256.0;
     float gaugeY = 0, gaugeX = 0;
     
@@ -175,16 +173,36 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
         M23_Scale(BotScreenMtx, mapWidth / 256.0, mapHeight / 192.0);
         refpoints[3][0] += - 256.0 + mapWidth;
         refpoints[3][1] += - 192.0 + mapHeight;
+        botAspect = topAspect;
     }
     if (sizing == 8) 
     {
         M23_Scale(BotScreenMtx, gaugeWidth / 256.0, gaugeHeight / 192.0);
         refpoints[3][0] += - 256.0 + gaugeWidth;
         refpoints[3][1] += - 192.0 + gaugeHeight;
+        botAspect = topAspect;
     }
 
     M23_Translate(TopScreenMtx, -256/2, -192/2);
     M23_Translate(BotScreenMtx, -256/2, -192/2);
+
+    if (sizing == 7) 
+    {
+        // move screens apart
+        {
+            float pipX = mapX;
+            float pipY = mapY;
+            M23_Translate(BotScreenMtx, pipX, pipY);
+
+            refpoints[2][0] += pipX;
+            refpoints[2][1] += pipY;
+            refpoints[3][0] += pipX;
+            refpoints[3][1] += pipY;
+
+            botTrans[0] = pipX;
+            botTrans[1] = pipY;
+        }
+    }
 
     M23_Scale(TopScreenMtx, topAspect, 1);
     M23_Scale(BotScreenMtx, botAspect, 1);
@@ -212,33 +230,10 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     {
         TopEnable = BotEnable = true;
         
-        // move screens apart
-        {
-            float pipX = sizing == 7 ? mapX : gaugeX;
-            float pipY = sizing == 7 ? mapY : gaugeY;
-            M23_Translate(BotScreenMtx, pipX, pipY);
-
-            refpoints[2][0] += pipX;
-            refpoints[2][1] += pipY;
-            refpoints[3][0] += pipX;
-            refpoints[3][1] += pipY;
-
-            botTrans[0] = pipX;
-            botTrans[1] = pipY;
-        }
-
         // scale
         {
-            float secMinX = refpoints[2][0];
-            float secMinY = refpoints[2][1];
-            float secMaxX = refpoints[3][0];
-            float secMaxY = refpoints[3][1];
-
             float primHSize = fabsf(refpoints[0][0] - refpoints[1][0]);
             float primVSize = fabsf(refpoints[0][1] - refpoints[1][1]);
-
-            float secHSize = secMaxX - secMinX;
-            float secVSize = secMaxY - secMinY;
 
             float scale = std::min(screenWidth / primHSize, screenHeight / primVSize);
             

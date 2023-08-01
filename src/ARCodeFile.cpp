@@ -20,6 +20,7 @@
 #include <string.h>
 #include "ARCodeFile.h"
 #include "Platform.h"
+#include <math.h>
 
 using Platform::Log;
 using Platform::LogLevel;
@@ -28,11 +29,13 @@ using Platform::LogLevel;
 // TODO: more user-friendly error reporting
 
 
-ARCodeFile::ARCodeFile(const std::string& filename)
+ARCodeFile::ARCodeFile(float screenAspect)
 {
-    Filename = filename;
-
     Error = false;
+    ScreenAspect = screenAspect;
+    if (ScreenAspect == 0) {
+        ScreenAspect = 16.0 / 9;
+    }
 
     Categories.clear();
 
@@ -47,148 +50,29 @@ ARCodeFile::~ARCodeFile()
 
 bool ARCodeFile::Load()
 {
-    FILE* f = Platform::OpenFile(Filename, "r");
-    if (!f) return true;
+    int aspectRatioKey = (int)round(0x1000 * ScreenAspect);
 
     Categories.clear();
 
-    bool isincat = false;
     ARCodeCat curcat;
+    curcat.Name = "KHDaysCheats";
+    curcat.Codes.clear();
 
-    bool isincode = false;
     ARCode curcode;
+    curcode.Name = "Ingame Widescreen";
+    curcode.Enabled = true;
+    curcode.Code[0] = 0x52023C9C; curcode.Code[1] = 0x00001555;
+    curcode.Code[2] = 0x02023C9C; curcode.Code[3] = aspectRatioKey;
+    curcode.Code[4] = 0xD2000000; curcode.Code[5] = 0x00000000;
+    curcode.CodeLen = 6;
 
-    char linebuf[1024];
-    while (!feof(f))
-    {
-        if (fgets(linebuf, 1024, f) == nullptr)
-            break;
+    curcat.Codes.push_back(curcode);
+    Categories.push_back(curcat);
 
-        linebuf[1023] = '\0';
-
-        char* start = linebuf;
-        while (start[0]==' ' || start[0]=='\t')
-            start++;
-
-        if (start[0]=='#' || start[0]=='\r' || start[0]=='\n' || start[0]=='\0')
-            continue;
-
-        if (!strncasecmp(start, "CAT", 3))
-        {
-            char catname[128];
-            int ret = sscanf(start, "CAT %127[^\r\n]", catname);
-            catname[127] = '\0';
-
-            if (ret < 1)
-            {
-                Log(LogLevel::Error, "AR: malformed CAT line: %s\n", start);
-                fclose(f);
-                return false;
-            }
-
-            if (isincode) curcat.Codes.push_back(curcode);
-            isincode = false;
-
-            if (isincat) Categories.push_back(curcat);
-            isincat = true;
-
-            curcat.Name = catname;
-            curcat.Codes.clear();
-        }
-        else if (!strncasecmp(start, "CODE", 4))
-        {
-            int enable;
-            char codename[128];
-            int ret = sscanf(start, "CODE %d %127[^\r\n]", &enable, codename);
-            codename[127] = '\0';
-
-            if (ret < 2)
-            {
-                Log(LogLevel::Error, "AR: malformed CODE line: %s\n", start);
-                fclose(f);
-                return false;
-            }
-
-            if (!isincat)
-            {
-                Log(LogLevel::Error, "AR: encountered CODE line with no category started\n");
-                fclose(f);
-                return false;
-            }
-
-            if (isincode) curcat.Codes.push_back(curcode);
-            isincode = true;
-
-            curcode.Name = codename;
-            curcode.Enabled = enable!=0;
-            curcode.CodeLen = 0;
-        }
-        else
-        {
-            u32 c0, c1;
-            int ret = sscanf(start, "%08X %08X", &c0, &c1);
-
-            if (ret < 2)
-            {
-                Log(LogLevel::Error, "AR: malformed data line: %s\n", start);
-                fclose(f);
-                return false;
-            }
-
-            if (!isincode)
-            {
-                Log(LogLevel::Error, "AR: encountered data line with no code started\n");
-                fclose(f);
-                return false;
-            }
-
-            if (curcode.CodeLen >= 2*64)
-            {
-                Log(LogLevel::Error, "AR: code too long!\n");
-                fclose(f);
-                return false;
-            }
-
-            u32 idx = curcode.CodeLen;
-            curcode.Code[idx+0] = c0;
-            curcode.Code[idx+1] = c1;
-            curcode.CodeLen += 2;
-        }
-    }
-
-    if (isincode) curcat.Codes.push_back(curcode);
-    if (isincat) Categories.push_back(curcat);
-
-    fclose(f);
     return true;
 }
 
 bool ARCodeFile::Save()
 {
-    FILE* f = Platform::OpenFile(Filename, "w");
-    if (!f) return false;
-
-    for (ARCodeCatList::iterator it = Categories.begin(); it != Categories.end(); it++)
-    {
-        ARCodeCat& cat = *it;
-
-        if (it != Categories.begin()) fprintf(f, "\r\n");
-        fprintf(f, "CAT %s\r\n\r\n", cat.Name.c_str());
-
-        for (ARCodeList::iterator jt = cat.Codes.begin(); jt != cat.Codes.end(); jt++)
-        {
-            ARCode& code = *jt;
-            fprintf(f, "CODE %d %s\r\n", code.Enabled, code.Name.c_str());
-
-            for (u32 i = 0; i < code.CodeLen; i+=2)
-            {
-                fprintf(f, "%08X %08X\r\n", code.Code[i], code.Code[i+1]);
-            }
-
-            fprintf(f, "\r\n");
-        }
-    }
-
-    fclose(f);
-    return true;
+    return false;
 }

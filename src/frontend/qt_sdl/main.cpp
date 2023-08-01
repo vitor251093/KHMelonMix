@@ -175,16 +175,6 @@ float backgroundBlue = 0.0;
 bool isBlackTopScreen = false;
 bool isBlackBottomScreen = false;
 
-const struct { int id; float ratio; const char* label; } aspectRatios[] =
-{
-    { 0, 1,                       "4:3 (native)" },
-    { 4, (5.f  / 3) / (4.f / 3), "5:3 (3DS)"},
-    { 1, (16.f / 9) / (4.f / 3),  "16:9" },
-    { 2, (21.f / 9) / (4.f / 3),  "21:9" },
-    { 3, 0,                       "window" }
-};
-
-
 EmuThread::EmuThread(QObject* parent) : QThread(parent)
 {
     EmuStatus = 0;
@@ -762,7 +752,6 @@ bool EmuThread::setGameScene(int newGameScene)
     }
     autoScreenSizing = size;
     Config::ScreenSwap = (newGameScene == gameScene_Intro || newGameScene == gameScene_MainMenu) ? 1 : 0;
-    Config::ScreenAspectTop = (size == screenSizing_Even) ? 0 : 4; // 4:3 / window size
 
     return true;
 }
@@ -1213,35 +1202,43 @@ void EmuThread::drawScreenGL()
         if (shouldCropScreenLikeAMap || shouldCropScreenLikeAGauge) {
             float leftMargin = 0, topMargin = 0;
             float viewAspect;
-            float screenAspect = (float) w / h;
+            float windowAspect = (float) w / h;
+            float windowWidth = w/factor;
+            float windowHeight = h/factor;
             for (auto ratio : aspectRatios)
             {
                 if (ratio.id == Config::ScreenAspectTop)
                     viewAspect = ratio.ratio;
             }
             if (viewAspect == 0) {
-                viewAspect = screenAspect;
+                viewAspect = windowAspect;
             }
-            if (viewAspect != screenAspect) {
-                if (viewAspect > screenAspect) {
-                    topMargin = (h - w/viewAspect)/2;
+            else {
+                viewAspect *= 4.0 / 3;
+            }
+            if (viewAspect != windowAspect) {
+                if (viewAspect > windowAspect) { // window taller than view
+                    topMargin = (windowHeight - windowWidth/viewAspect)/2;
                 }
-                if (viewAspect < screenAspect) {
-                    leftMargin = (w - h*viewAspect)/2;
+                else if (viewAspect < windowAspect) { // window larger than view
+                    leftMargin = (windowWidth - windowHeight*viewAspect)/2;
                 }
             }
-            
+
             if (shouldCropScreenLikeAMap) {
-                float mapY = 108.0;
                 float mapNegativeX = 20.0;
-                float mapHeight = 33.0, mapWidth = 44.0;
-                float mapX = 256 - mapNegativeX;
-            
-                float scissorFactorX = ((w - leftMargin*2)/256.0);
-                float scissorFactorY = ((h - topMargin*2)/192.0);
                 
-                glScissor((mapX*scissorFactorX + leftMargin)*factor, (mapY*scissorFactorY + topMargin)*factor, 
-                            mapWidth*scissorFactorX*factor, mapHeight*scissorFactorY*factor);
+                float mapY = 108.0;
+                float mapHeight = 33.0, mapWidth = 44.0;
+            
+                float viewWidth = windowWidth - leftMargin*2;
+                float viewHeight = windowHeight - topMargin*2;
+                float viewFactorX = viewWidth / 256.0;
+                float viewFactorY = viewHeight / 192.0;
+                
+                glScissor((leftMargin + viewWidth - (mapWidth + mapNegativeX)*viewFactorX)*factor, 
+                            (mapY*viewFactorY + topMargin)*factor, 
+                            mapWidth*viewFactorX*factor, mapHeight*viewFactorY*factor);
             }
             if (shouldCropScreenLikeAGauge) {
                 float gaugeY = 0;
@@ -1290,13 +1287,20 @@ void ScreenHandler::screenSetupLayout(int w, int h)
     int sizing = Config::ScreenSizing;
     if (sizing == 3) sizing = autoScreenSizing;
 
+    int screenAspectTop = Config::ScreenAspectTop;
+    int screenAspectBot = Config::ScreenAspectBot;
+    if (sizing == screenSizing_Even) {
+        screenAspectTop = 0;
+        screenAspectBot = 0;
+    }
+
     float aspectTop, aspectBot;
 
     for (auto ratio : aspectRatios)
     {
-        if (ratio.id == Config::ScreenAspectTop)
+        if (ratio.id == screenAspectTop)
             aspectTop = ratio.ratio;
-        if (ratio.id == Config::ScreenAspectBot)
+        if (ratio.id == screenAspectBot)
             aspectBot = ratio.ratio;
     }
 
