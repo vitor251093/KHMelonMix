@@ -19,6 +19,9 @@
 #include "GPU2D_Soft.h"
 #include "GPU.h"
 #include "GPU3D.h"
+#include "GPU_Texreplace.h"
+
+#include <filesystem>
 
 namespace GPU2D
 {
@@ -2038,8 +2041,64 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         xoff = -xpos;
         xpos = 0;
     }
+    s32 orig_xoff = xoff;
+    s32 orig_xpos = xpos;
 
     u16 color = 0; // transparent in all cases
+
+    std::ostringstream oss;
+    oss << tilenum;
+    std::string uniqueIdentifier = oss.str();
+    
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::string filename = uniqueIdentifier + ".png";
+    std::filesystem::path fullPath = currentPath / "textures" / filename;
+    std::filesystem::path fullPathTmp = currentPath / "textures_tmp_2" / filename;
+#ifdef _WIN32
+    const char* path = fullPath.string().c_str();
+    const char* pathTmp = fullPathTmp.string().c_str();
+#else
+    const char* path = fullPath.c_str();
+    const char* pathTmp = fullPathTmp.c_str();
+#endif
+
+    int channels = 4;
+    int r_width, r_height, r_channels;
+    unsigned char* imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+    bool hasFinalImage = false;
+    if (imageData != nullptr) // load 2D image from elsewhere
+    {
+        hasFinalImage = true;
+        imageData = Texreplace::LoadTextureFromFile(pathTmp, &r_width, &r_height, &r_channels);
+        // TODO: For now, let's export the texture only
+
+        // u32 alpha = attrib[2] >> 12;
+        // if (!alpha) return;
+        // alpha++;
+
+        // pixelattr |= (0xC0000000 | (alpha << 24));
+
+        // for (; xoff < xend;) {
+        //     color = *(u16*)&objvram[pixelsaddr & objvrammask];
+
+        //     if (color)
+        //     {
+        //         if (window) objWindow[xpos] = 1;
+        //         else      { objLine[xpos] = color | pixelattr; objIndex[xpos] = num; }
+        //     }
+        //     else if (!window)
+        //     {
+        //         if (objLine[xpos] == 0)
+        //         {
+        //             objLine[xpos] = pixelattr & 0x180000;
+        //             objIndex[xpos] = num;
+        //         }
+        //     }
+
+        //     xoff++;
+        //     xpos++;
+        // }
+    }
 
     if (spritemode == 3)
     {
@@ -2252,6 +2311,68 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
                 xpos++;
                 if (!(xoff & 0x7)) pixelsaddr += ((attrib[1] & 0x1000) ? -28 : 28);
             }
+        }
+    }
+
+    if (hasFinalImage)
+    {
+        return;
+    }
+
+    if (imageData == nullptr)
+    {
+        imageData = (unsigned char*)malloc(height * width * channels * sizeof(unsigned char[4]));
+    }
+    
+    xoff = orig_xoff;
+    xpos = orig_xpos;
+
+    bool newLine = false;
+    int y = ypos;
+    for (; xoff < xend;)
+    {
+        u32 og_pixel = objLine[xpos];
+
+        u16 color = 0;
+        if (og_pixel & 0x8000) {
+            color = og_pixel & 0x7FFF;
+        }
+        else if (og_pixel & 0x1000) {
+            u16* pal = (u16*)&GPU::Palette[CurUnit->Num ? 0x600 : 0x200];
+            color = pal[og_pixel & 0xFF];
+        }
+        else {
+            u16* extpal = CurUnit->GetOBJExtPal();
+            color = extpal[og_pixel & 0xFFF];
+        }
+        
+        u8 r = ((color & 0x001F) << 1) << 2;
+        u8 g = ((color & 0x03E0) >> 4) << 2;
+        u8 b = ((color & 0x7C00) >> 9) << 2;
+                
+        unsigned char* pixel = imageData + (y * width + xpos) * (channels);
+        
+        if (pixel[3] != 255)
+        {
+            newLine = true;
+        }
+
+        pixel[0] = r;
+        pixel[1] = g;
+        pixel[2] = b;
+        pixel[3] = 255;
+
+        xoff++;
+        xpos++;
+    }
+
+    if (newLine)
+    {
+        if (ypos + 1 == height) {
+            Texreplace::ExportTextureAsFile(imageData, path, width, height, channels);
+        }
+        else {
+            Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
         }
     }
 }
