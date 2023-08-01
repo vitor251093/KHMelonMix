@@ -1213,6 +1213,8 @@ void EmuThread::drawScreenGL()
             float leftMargin = 0, topMargin = 0;
             float viewAspect;
             float windowAspect = (float) w / h;
+            float windowWidth = w/factor;
+            float windowHeight = h/factor;
             for (auto ratio : aspectRatios)
             {
                 if (ratio.id == Config::ScreenAspectTop)
@@ -1221,27 +1223,28 @@ void EmuThread::drawScreenGL()
             if (viewAspect == 0) {
                 viewAspect = windowAspect;
             }
+            else {
+                viewAspect *= 4.0 / 3;
+            }
             if (viewAspect != windowAspect) {
                 if (viewAspect > windowAspect) { // window taller than view
-                    topMargin = ((h/factor) - (w/factor)/viewAspect)/2;
+                    topMargin = (windowHeight - windowWidth/viewAspect)/2;
                 }
                 else if (viewAspect < windowAspect) { // window larger than view
-                    leftMargin = ((w/factor) - (h/factor)*viewAspect)/2;
+                    leftMargin = (windowWidth - windowHeight*viewAspect)/2;
                 }
             }
-            
+
             if (shouldCropScreenLikeAMap) {
                 float mapNegativeX = 20.0;
                 
                 float mapY = 108.0;
                 float mapHeight = 33.0, mapWidth = 44.0;
             
-                float viewWidth = (w/factor) - leftMargin*2;
-                float viewHeight = (h/factor) - topMargin*2;
+                float viewWidth = windowWidth - leftMargin*2;
+                float viewHeight = windowHeight - topMargin*2;
                 float viewFactorX = viewWidth / 256.0;
                 float viewFactorY = viewHeight / 192.0;
-                float windowFactorX = (w/factor) / 256.0;
-                float windowFactorY = (h/factor) / 192.0;
                 
                 glScissor((leftMargin + viewWidth - (mapWidth + mapNegativeX)*viewFactorX)*factor, 
                             (mapY*viewFactorY + topMargin)*factor, 
