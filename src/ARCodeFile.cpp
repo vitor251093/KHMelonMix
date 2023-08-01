@@ -59,16 +59,15 @@ bool ARCodeFile::Load()
     curcat.Codes.clear();
 
     ARCode curcode;
-    curcode.Name = "Ingame Widescreen";
+    curcode.Name = "Auto Resolution";
     curcode.Enabled = true;
     curcode.Code[0] = 0x52023C9C; curcode.Code[1] = 0x00001555;
     curcode.Code[2] = 0x02023C9C; curcode.Code[3] = aspectRatioKey;
     curcode.Code[4] = 0xD2000000; curcode.Code[5] = 0x00000000;
     curcode.CodeLen = 6;
-
     curcat.Codes.push_back(curcode);
-    Categories.push_back(curcat);
 
+    Categories.push_back(curcat);
     return true;
 }
 
