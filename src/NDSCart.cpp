@@ -1654,7 +1654,8 @@ bool LoadROM(const u8* romdata, u32 romlen)
     Log(LogLevel::Info, "Game code: %u\n", gamecode);
     u32 usGamecode = 1162300249;
     u32 euGamecode = 1346849625;
-    if (gamecode != usGamecode && gamecode != euGamecode) {
+    u32 jpGamecode = 1246186329;
+    if (gamecode != usGamecode && gamecode != euGamecode && gamecode != jpGamecode) {
         // Only Days should be loadable
         return false;
     }
