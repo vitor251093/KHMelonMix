@@ -16,6 +16,7 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
+#include <locale>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -153,6 +154,24 @@ CameraConfig Camera[2];
 
 const char* kConfigFile = "melonDS.ini";
 const char* kUniqueConfigFile = "melonDS.%d.ini";
+
+int getLocaleIndex() {
+    int localIndex = 1;
+    std::string userlocale = std::locale("").name().substr(0, 2);
+    if (userlocale == "ja")
+        localIndex = 0;
+    else if (userlocale == "en")
+        localIndex = 1;
+    else if (userlocale == "fr")
+        localIndex = 2;
+    else if (userlocale == "de")
+        localIndex = 3;
+    else if (userlocale == "it")
+        localIndex = 4;
+    else if (userlocale == "es")
+        localIndex = 5;
+    return localIndex;
+}
 
 ConfigEntry ConfigFile[] =
 {
@@ -306,7 +325,7 @@ ConfigEntry ConfigFile[] =
 
     {"FirmwareOverrideSettings", 1, &FirmwareOverrideSettings, false, true},
     {"FirmwareUsername", 2, &FirmwareUsername, (std::string)"melonDS", true},
-    {"FirmwareLanguage", 0, &FirmwareLanguage, 1, true},
+    {"FirmwareLanguage", 0, &FirmwareLanguage, getLocaleIndex(), true},
     {"FirmwareBirthdayMonth", 0, &FirmwareBirthdayMonth, 1, true},
     {"FirmwareBirthdayDay", 0, &FirmwareBirthdayDay, 1, true},
     {"FirmwareFavouriteColour", 0, &FirmwareFavouriteColour, 0, true},
