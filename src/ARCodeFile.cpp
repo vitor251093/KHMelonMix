@@ -58,6 +58,7 @@ bool ARCodeFile::Load()
     curcat.Name = "KHDaysCheats";
     curcat.Codes.clear();
 
+    // Also known as the "Widescreen hack"
     ARCode curcode;
     curcode.Name = "Auto Resolution";
     curcode.Enabled = true;
