@@ -23,13 +23,13 @@
 #include "Savestate.h"
 #include "SPI.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class DSi;
 class DSi_TSC : public TSC
 {
 public:
-    DSi_TSC(melonDS::DSi& dsi);
+    DSi_TSC(khDaysMM::DSi& dsi);
     ~DSi_TSC() override;
 
     void Reset() override;

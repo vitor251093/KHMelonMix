@@ -43,7 +43,7 @@
 #include "ARMJIT.h"
 #include "ARMJIT_Memory.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using namespace Platform;
 
@@ -959,7 +959,7 @@ u32 NDS::RunFrame()
                     if (!(CPUStop & CPUStop_GXStall)) DMAs[3].Run();
                     if (ConsoleType == 1)
                     {
-                        auto& dsi = dynamic_cast<melonDS::DSi&>(*this);
+                        auto& dsi = dynamic_cast<khDaysMM::DSi&>(*this);
                         dsi.RunNDMAs(0);
                     }
                 }
@@ -991,7 +991,7 @@ u32 NDS::RunFrame()
                         DMAs[7].Run();
                         if (ConsoleType == 1)
                         {
-                            auto& dsi = dynamic_cast<melonDS::DSi&>(*this);
+                            auto& dsi = dynamic_cast<khDaysMM::DSi&>(*this);
                             dsi.RunNDMAs(1);
                         }
                     }
@@ -1435,7 +1435,7 @@ void NDS::GXFIFOStall()
         DMAs[3].StallIfRunning();
         if (ConsoleType == 1)
         {
-            auto& dsi = dynamic_cast<melonDS::DSi&>(*this);
+            auto& dsi = dynamic_cast<khDaysMM::DSi&>(*this);
             dsi.StallNDMAs();
         }
     }

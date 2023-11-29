@@ -26,7 +26,7 @@
 #include "CameraSettingsDialog.h"
 #include "ui_CameraSettingsDialog.h"
 
-using namespace melonDS;
+using namespace khDaysMM;
 
 CameraSettingsDialog* CameraSettingsDialog::currentDlg = nullptr;
 

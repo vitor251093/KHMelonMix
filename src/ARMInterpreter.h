@@ -22,7 +22,7 @@
 #include "types.h"
 #include "ARM.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 namespace ARMInterpreter
 {

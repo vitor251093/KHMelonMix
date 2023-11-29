@@ -54,22 +54,22 @@ enum
     ramInfo_Previous
 };
 
-melonDS::s32 GetMainRAMValue(melonDS::NDS& nds, const melonDS::u32& addr, const ramInfo_ByteType& byteType);
+khDaysMM::s32 GetMainRAMValue(khDaysMM::NDS& nds, const khDaysMM::u32& addr, const ramInfo_ByteType& byteType);
 
 struct ramInfo_RowData
 {
-    melonDS::u32 Address;
-    melonDS::s32 Value;
-    melonDS::s32 Previous;
+    khDaysMM::u32 Address;
+    khDaysMM::s32 Value;
+    khDaysMM::s32 Previous;
 
-    void Update(melonDS::NDS& nds, const ramInfo_ByteType& byteType)
+    void Update(khDaysMM::NDS& nds, const ramInfo_ByteType& byteType)
     {
         Value = GetMainRAMValue(nds, Address, byteType);
     }
 
-    void SetValue(melonDS::NDS& nds, const melonDS::s32& value)
+    void SetValue(khDaysMM::NDS& nds, const khDaysMM::s32& value)
     {
-        nds.MainRAM[Address&nds.MainRAMMask] = (melonDS::u32)value;
+        nds.MainRAM[Address&nds.MainRAMMask] = (khDaysMM::u32)value;
         Value = value;
     }
 };
@@ -100,7 +100,7 @@ public:
         currentDlg = nullptr;
     }
 
-    melonDS::s32 SearchValue = 0;
+    khDaysMM::s32 SearchValue = 0;
 
     void ClearTableContents();
 
@@ -116,7 +116,7 @@ private slots:
 
     void OnSearchFinished();
     void ShowRowsInTable();
-    void SetProgressbarValue(const melonDS::u32& value);
+    void SetProgressbarValue(const khDaysMM::u32& value);
 
 private:
     EmuThread* emuThread;
@@ -134,7 +134,7 @@ public:
     explicit RAMSearchThread(RAMInfoDialog* dialog);
     ~RAMSearchThread() override;
 
-    void Start(const melonDS::s32& searchValue, const ramInfoSTh_SearchMode& searchMode = ramInfoSTh_Default);
+    void Start(const khDaysMM::s32& searchValue, const ramInfoSTh_SearchMode& searchMode = ramInfoSTh_Default);
     void Start(const ramInfoSTh_SearchMode& searchMode);
     
     void SetSearchByteType(const ramInfo_ByteType& bytetype);
@@ -150,14 +150,14 @@ private:
     bool SearchRunning = false;
 
     ramInfoSTh_SearchMode SearchMode;
-    melonDS::s32 SearchValue;
+    khDaysMM::s32 SearchValue;
     ramInfo_ByteType SearchByteType = ramInfo_OneByte;
     std::vector<ramInfo_RowData>* RowDataVector = nullptr;
 
     void ClearTableContents();
 
 signals:
-    void SetProgressbarValue(const melonDS::u32& value);
+    void SetProgressbarValue(const khDaysMM::u32& value);
 };
 
 #endif // RAMINFODIALOG_H

@@ -29,17 +29,17 @@
 
 namespace Ui { class ROMInfoDialog; }
 class ROMInfoDialog;
-namespace melonDS::NDSCart { class CartCommon; }
+namespace khDaysMM::NDSCart { class CartCommon; }
 class ROMInfoDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit ROMInfoDialog(QWidget* parent, const melonDS::NDSCart::CartCommon& rom);
+    explicit ROMInfoDialog(QWidget* parent, const khDaysMM::NDSCart::CartCommon& rom);
     ~ROMInfoDialog();
 
     static ROMInfoDialog* currentDlg;
-    static ROMInfoDialog* openDlg(QWidget* parent, const melonDS::NDSCart::CartCommon& rom)
+    static ROMInfoDialog* openDlg(QWidget* parent, const khDaysMM::NDSCart::CartCommon& rom)
     {
         if (currentDlg)
         {
@@ -69,7 +69,7 @@ private:
 
     QImage iconImage;
     QTimeLine* iconTimeline;
-    melonDS::u32 animatedIconData[64][32*32] = {0};
+    khDaysMM::u32 animatedIconData[64][32*32] = {0};
     std::vector<QPixmap> animatedIconImages;
     std::vector<int> animatedSequence;
 };

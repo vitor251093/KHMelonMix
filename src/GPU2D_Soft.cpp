@@ -20,11 +20,11 @@
 #include "GPU.h"
 #include "GPU3D_OpenGL.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 namespace GPU2D
 {
-SoftRenderer::SoftRenderer(melonDS::GPU& gpu)
+SoftRenderer::SoftRenderer(khDaysMM::GPU& gpu)
     : Renderer2D(), GPU(gpu)
 {
     // mosaic table is initialized at compile-time

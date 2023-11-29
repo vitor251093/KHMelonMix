@@ -30,11 +30,11 @@
 #include "FATStorage.h"
 #include "ROMList.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class NDS;
 }
-namespace melonDS::NDSCart
+namespace khDaysMM::NDSCart
 {
 
 enum CartType
@@ -237,7 +237,7 @@ private:
 class NDSCartSlot
 {
 public:
-    NDSCartSlot(melonDS::NDS& nds) noexcept;
+    NDSCartSlot(khDaysMM::NDS& nds) noexcept;
     ~NDSCartSlot() noexcept;
     void Reset() noexcept;
     void ResetCart() noexcept;
@@ -305,7 +305,7 @@ public:
     void SetSPICnt(u16 val) noexcept { SPICnt = val; }
 private:
     friend class CartCommon;
-    melonDS::NDS& NDS;
+    khDaysMM::NDS& NDS;
     u16 SPICnt {};
     u32 ROMCnt {};
     std::array<u8, 8> ROMCommand {};

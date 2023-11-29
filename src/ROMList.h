@@ -23,7 +23,7 @@
 
 #include "types.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 struct ROMListEntry
 {

@@ -23,7 +23,7 @@
 #include <array>
 #include <optional>
 
-namespace melonDS
+namespace khDaysMM
 {
 class GPU;
 struct RenderSettings;

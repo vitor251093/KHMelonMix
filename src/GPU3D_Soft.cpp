@@ -24,7 +24,7 @@
 #include "NDS.h"
 #include "GPU.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 
 void RenderThreadFunc();
@@ -71,7 +71,7 @@ void SoftRenderer::SetupRenderThread()
 }
 
 
-SoftRenderer::SoftRenderer(melonDS::GPU& gpu, bool threaded) noexcept
+SoftRenderer::SoftRenderer(khDaysMM::GPU& gpu, bool threaded) noexcept
     : Renderer3D(false), GPU(gpu), Threaded(threaded)
 {
     Sema_RenderStart = Platform::Semaphore_Create();

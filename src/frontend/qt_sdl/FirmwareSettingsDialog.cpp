@@ -24,8 +24,8 @@
 #include "FirmwareSettingsDialog.h"
 #include "ui_FirmwareSettingsDialog.h"
 
-using namespace melonDS::Platform;
-namespace Platform = melonDS::Platform;
+using namespace khDaysMM::Platform;
+namespace Platform = khDaysMM::Platform;
 
 FirmwareSettingsDialog* FirmwareSettingsDialog::currentDlg = nullptr;
 

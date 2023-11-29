@@ -45,7 +45,7 @@
 #include "Platform.h"
 #include "ARMJIT_x64/ARMJIT_Offsets.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using Platform::Log;
 using Platform::LogLevel;

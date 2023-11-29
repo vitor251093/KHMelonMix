@@ -25,7 +25,7 @@
 #include "FATStorage.h"
 #include "Platform.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 namespace fs = std::filesystem;
 using namespace Platform;

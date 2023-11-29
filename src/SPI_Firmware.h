@@ -24,7 +24,7 @@
 #include "types.h"
 #include "Platform.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 u16 CRC16(const u8* data, u32 len, u32 start);
 

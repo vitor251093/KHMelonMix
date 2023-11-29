@@ -24,7 +24,7 @@
 #include <vector>
 #include "types.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 struct ARCode
 {

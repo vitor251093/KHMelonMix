@@ -19,7 +19,7 @@
 #ifndef GPU_OPENGL_SHADERS_H
 #define GPU_OPENGL_SHADERS_H
 
-namespace melonDS
+namespace khDaysMM
 {
 const char* kCompositorVS = R"(#version 140
 

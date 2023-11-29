@@ -24,7 +24,7 @@
 namespace LAN_PCap
 {
 
-using namespace melonDS;
+using namespace khDaysMM;
 struct AdapterData
 {
     char DeviceName[128];

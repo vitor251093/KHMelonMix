@@ -41,7 +41,7 @@
 
 #include "tiny-AES-c/aes.hpp"
 
-namespace melonDS
+namespace khDaysMM
 {
 using namespace Platform;
 

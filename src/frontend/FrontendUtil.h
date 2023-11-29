@@ -24,13 +24,13 @@
 #include <string>
 #include <vector>
 
-namespace melonDS
+namespace khDaysMM
 {
 class NDS;
 }
 namespace Frontend
 {
-using namespace melonDS;
+using namespace khDaysMM;
 
 enum ScreenLayout
 {

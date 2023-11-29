@@ -19,7 +19,7 @@
 #ifndef ARMINTERPRETER_BRANCH_H
 #define ARMINTERPRETER_BRANCH_H
 
-namespace melonDS
+namespace khDaysMM
 {
 namespace ARMInterpreter
 {

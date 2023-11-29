@@ -19,7 +19,7 @@
 #ifndef ARMINTERPRETER_ALU_H
 #define ARMINTERPRETER_ALU_H
 
-namespace melonDS
+namespace khDaysMM
 {
 namespace ARMInterpreter
 {

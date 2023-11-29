@@ -27,7 +27,7 @@
 #include "DSi_Camera.h"
 #include "DSi_NAND.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class DSi_I2CHost;
 class DSi_CamModule;

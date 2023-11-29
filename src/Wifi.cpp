@@ -24,7 +24,7 @@
 #include "WifiAP.h"
 #include "Platform.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -89,7 +89,7 @@ bool MACIsBroadcast(u8* a)
 }
 
 
-Wifi::Wifi(melonDS::NDS& nds) : NDS(nds)
+Wifi::Wifi(khDaysMM::NDS& nds) : NDS(nds)
 {
     NDS.RegisterEventFunc(Event_Wifi, 0, MemberEventFunc(Wifi, USTimer));
 

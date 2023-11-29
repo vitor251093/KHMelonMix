@@ -22,7 +22,7 @@
 
 using namespace Gen;
 
-namespace melonDS
+namespace khDaysMM
 {
 
 template <typename T>

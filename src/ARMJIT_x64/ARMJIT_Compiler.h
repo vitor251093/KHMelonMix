@@ -31,7 +31,7 @@
 #include <unordered_map>
 
 
-namespace melonDS
+namespace khDaysMM
 {
 class ARMJIT;
 class ARMJIT_Memory;
@@ -82,9 +82,9 @@ class Compiler : public Gen::XEmitter
 {
 public:
 #ifdef JIT_ENABLED
-    explicit Compiler(melonDS::NDS& nds);
+    explicit Compiler(khDaysMM::NDS& nds);
 #else
-    explicit Compiler(melonDS::NDS& nds) : XEmitter(), NDS(nds) {}
+    explicit Compiler(khDaysMM::NDS& nds) : XEmitter(), NDS(nds) {}
 #endif
 
     void Reset();
@@ -244,7 +244,7 @@ public:
     void CreateMethod(const char* namefmt, void* start, ...);
 #endif
 
-    melonDS::NDS& NDS;
+    khDaysMM::NDS& NDS;
     u8* FarCode {};
     u8* NearCode {};
     u32 FarSize {};

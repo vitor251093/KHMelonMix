@@ -22,7 +22,7 @@
 #include "Savestate.h"
 #include "Platform.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class NDS;
 class SPU;
@@ -30,7 +30,7 @@ class SPU;
 class SPUChannel
 {
 public:
-    SPUChannel(u32 num, melonDS::NDS& nds);
+    SPUChannel(u32 num, khDaysMM::NDS& nds);
     ~SPUChannel();
     void Reset();
     void DoSavestate(Savestate* file);
@@ -143,13 +143,13 @@ public:
     void PanOutput(s32 in, s32& left, s32& right);
 
 private:
-    melonDS::NDS& NDS;
+    khDaysMM::NDS& NDS;
 };
 
 class SPUCaptureUnit
 {
 public:
-    SPUCaptureUnit(u32 num, melonDS::NDS&);
+    SPUCaptureUnit(u32 num, khDaysMM::NDS&);
     ~SPUCaptureUnit();
     void Reset();
     void DoSavestate(Savestate* file);
@@ -200,13 +200,13 @@ public:
     void Run(s32 sample);
 
 private:
-    melonDS::NDS& NDS;
+    khDaysMM::NDS& NDS;
 };
 
 class SPU
 {
 public:
-    SPU(melonDS::NDS& nds);
+    SPU(khDaysMM::NDS& nds);
     ~SPU();
     void Reset();
     void DoSavestate(Savestate* file);
@@ -241,7 +241,7 @@ public:
 
 private:
     static const u32 OutputBufferSize = 2*2048;
-    melonDS::NDS& NDS;
+    khDaysMM::NDS& NDS;
     s16 OutputBackbuffer[2 * OutputBufferSize];
     u32 OutputBackbufferWritePosition;
 

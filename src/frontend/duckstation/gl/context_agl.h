@@ -13,7 +13,7 @@ struct NSView;
 
 namespace GL {
 
-using namespace melonDS;
+using namespace khDaysMM;
 class ContextAGL final : public Context
 {
 public:

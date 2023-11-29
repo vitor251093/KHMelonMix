@@ -23,12 +23,12 @@
 #include "GPU.h"
 #include "DSi_AES.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using Platform::Log;
 using Platform::LogLevel;
 
-DSi_NDMA::DSi_NDMA(u32 cpu, u32 num, melonDS::DSi& dsi) : DSi(dsi), CPU(cpu), Num(num)
+DSi_NDMA::DSi_NDMA(u32 cpu, u32 num, khDaysMM::DSi& dsi) : DSi(dsi), CPU(cpu), Num(num)
 {
     CPU = cpu;
     Num = num;

@@ -20,7 +20,7 @@
 #include "SPI.h"
 #include "Platform.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using Platform::Log;
 using Platform::LogLevel;

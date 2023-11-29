@@ -64,7 +64,7 @@ jobs:
         run: $GITHUB_WORKSPACE/tools/mac-universal.py ${{runner.workspace}}/build/arm64/khDaysMM.app ${{runner.workspace}}/build/x86_64/khDaysMM.app ${{runner.workspace}}/build/universal/khDaysMM.app
 
       - name: Codesign app
-        run: codesign -s - --deep -f ${{runner.workspace}}/build/universal/melonDS.app
+        run: codesign -s - --deep -f ${{runner.workspace}}/build/universal/khDaysMM.app
 
       - name: Create DMG
         run: hdiutil create -fs HFS+ -volname khDaysMM -srcfolder ${{runner.workspace}}/build/universal/khDaysMM.app -ov -format UDBZ ${{runner.workspace}}/build/universal/khDaysMM.dmg

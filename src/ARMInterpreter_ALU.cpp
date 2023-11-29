@@ -20,7 +20,7 @@
 #include "ARM.h"
 #include "NDS.h"
 
-namespace melonDS::ARMInterpreter
+namespace khDaysMM::ARMInterpreter
 {
 
 inline bool CarryAdd(u32 a, u32 b)

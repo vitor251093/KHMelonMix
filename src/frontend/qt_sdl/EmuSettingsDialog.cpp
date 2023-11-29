@@ -29,8 +29,8 @@
 #include "EmuSettingsDialog.h"
 #include "ui_EmuSettingsDialog.h"
 
-using namespace melonDS::Platform;
-using namespace melonDS;
+using namespace khDaysMM::Platform;
+using namespace khDaysMM;
 
 EmuSettingsDialog* EmuSettingsDialog::currentDlg = nullptr;
 

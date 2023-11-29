@@ -19,7 +19,7 @@
 
 namespace Gen
 {
-using namespace melonDS;
+using namespace khDaysMM;
 using namespace Common;
 enum CCFlags
 {

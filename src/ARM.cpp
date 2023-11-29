@@ -28,7 +28,7 @@
 #include "GPU.h"
 #include "ARMJIT_Memory.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -106,7 +106,7 @@ const u32 ARM::ConditionTable[16] =
     0x0000  // NE
 };
 
-ARM::ARM(u32 num, melonDS::NDS& nds) :
+ARM::ARM(u32 num, khDaysMM::NDS& nds) :
 #ifdef GDBSTUB_ENABLED
     GdbStub(this, Platform::GetConfigInt(num ? Platform::GdbPortARM7 : Platform::GdbPortARM9)),
 #endif
@@ -129,14 +129,14 @@ ARM::~ARM()
     // dorp
 }
 
-ARMv5::ARMv5(melonDS::NDS& nds) : ARM(0, nds)
+ARMv5::ARMv5(khDaysMM::NDS& nds) : ARM(0, nds)
 {
     DTCM = NDS.JIT.Memory.GetARM9DTCM();
 
     PU_Map = PU_PrivMap;
 }
 
-ARMv4::ARMv4(melonDS::NDS& nds) : ARM(1, nds)
+ARMv4::ARMv4(khDaysMM::NDS& nds) : ARM(1, nds)
 {
     //
 }
@@ -824,7 +824,7 @@ void ARMv4::Execute()
     if (Halted == 4)
     {
         assert(NDS.ConsoleType == 1);
-        auto& dsi = dynamic_cast<melonDS::DSi&>(NDS);
+        auto& dsi = dynamic_cast<khDaysMM::DSi&>(NDS);
         dsi.SoftReset();
         Halted = 2;
     }
@@ -898,7 +898,7 @@ void ARMv4::ExecuteJIT()
     if (Halted == 4)
     {
         assert(NDS.ConsoleType == 1);
-        auto& dsi = dynamic_cast<melonDS::DSi&>(NDS);
+        auto& dsi = dynamic_cast<khDaysMM::DSi&>(NDS);
         dsi.SoftReset();
         Halted = 2;
     }

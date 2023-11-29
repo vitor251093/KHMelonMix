@@ -25,7 +25,7 @@
 #include "GPU.h"
 #include "GPU3D_OpenGL_shaders.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 
 bool GLRenderer::BuildRenderShader(u32 flags, const char* vs, const char* fs)
@@ -97,7 +97,7 @@ void SetupDefaultTexParams(GLuint tex)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-GLRenderer::GLRenderer(GLCompositor&& compositor, melonDS::GPU& gpu) noexcept :
+GLRenderer::GLRenderer(GLCompositor&& compositor, khDaysMM::GPU& gpu) noexcept :
     Renderer3D(true),
     GPU(gpu),
     CurGLCompositor(std::move(compositor))
@@ -107,7 +107,7 @@ GLRenderer::GLRenderer(GLCompositor&& compositor, melonDS::GPU& gpu) noexcept :
     // so we can just let the destructor clean up a half-initialized renderer.
 }
 
-std::unique_ptr<GLRenderer> GLRenderer::New(melonDS::GPU& gpu) noexcept
+std::unique_ptr<GLRenderer> GLRenderer::New(khDaysMM::GPU& gpu) noexcept
 {
     assert(glEnable != nullptr);
 

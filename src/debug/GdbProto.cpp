@@ -24,7 +24,7 @@
 #include "GdbProto.h"
 
 
-using namespace melonDS;
+using namespace khDaysMM;
 using Platform::Log;
 using Platform::LogLevel;
 

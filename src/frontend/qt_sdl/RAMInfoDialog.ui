@@ -26,7 +26,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>RAM info - melonDS</string>
+   <string>RAM info - khDaysMM</string>
   </property>
   <property name="modal">
    <bool>false</bool>

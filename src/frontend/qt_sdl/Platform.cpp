@@ -54,7 +54,7 @@ extern CameraManager* camManager[2];
 void emuStop();
 
 
-namespace melonDS::Platform
+namespace khDaysMM::Platform
 {
 
 QSharedMemory* IPCBuffer = nullptr;

@@ -27,7 +27,7 @@
 
 #include "mic_blow.h"
 
-using namespace melonDS;
+using namespace khDaysMM;
 
 namespace Frontend
 {

@@ -18,7 +18,7 @@
 
 #include "ROMList.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 const ROMListEntry ROMList[] =
 {

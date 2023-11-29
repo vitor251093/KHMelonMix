@@ -22,7 +22,7 @@
 #include <string.h>
 #include "types.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 /// Set to indicate the console regions that a ROM (including DSiWare)
 /// can be played on.

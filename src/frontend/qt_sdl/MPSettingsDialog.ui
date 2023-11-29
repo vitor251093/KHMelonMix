@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Multiplayer settings - melonDS</string>
+   <string>Multiplayer settings - khDaysMM</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

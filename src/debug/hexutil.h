@@ -9,7 +9,7 @@ extern "C"
 
 #include <stdint.h>
 
-namespace melonDS
+namespace khDaysMM
 {
 inline static uint8_t hex2nyb(uint8_t v)
 {

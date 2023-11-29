@@ -23,7 +23,7 @@
 #include "types.h"
 #include "Savestate.h"
 
-namespace melonDS::GBACart
+namespace khDaysMM::GBACart
 {
 
 enum CartType

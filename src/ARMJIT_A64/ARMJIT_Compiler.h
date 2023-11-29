@@ -28,7 +28,7 @@
 
 #include <unordered_map>
 
-namespace melonDS
+namespace khDaysMM
 {
 class ARMJIT;
 const Arm64Gen::ARM64Reg RMemBase = Arm64Gen::X26;
@@ -97,9 +97,9 @@ public:
     typedef void (Compiler::*CompileFunc)();
 
 #ifdef JIT_ENABLED
-    explicit Compiler(melonDS::NDS& nds);
+    explicit Compiler(khDaysMM::NDS& nds);
 #else
-    explicit Compiler(melonDS::NDS& nds) : XEmitter(), NDS(nds) {}
+    explicit Compiler(khDaysMM::NDS& nds) : XEmitter(), NDS(nds) {}
 #endif
     ~Compiler();
 
@@ -246,7 +246,7 @@ public:
         OtherCodeRegion = offset;
     }
 
-    melonDS::NDS& NDS;
+    khDaysMM::NDS& NDS;
     ptrdiff_t OtherCodeRegion;
 
     bool Exit;

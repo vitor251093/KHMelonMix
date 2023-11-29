@@ -24,7 +24,7 @@
 namespace OSD
 {
 
-using namespace melonDS;
+using namespace khDaysMM;
 bool Init(bool openGL);
 void DeInit();
 

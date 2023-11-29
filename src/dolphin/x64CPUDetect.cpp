@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #endif
 
-using namespace melonDS;
+using namespace khDaysMM;
 
 static inline void __cpuidex(int info[4], int function_id, int subfunction_id)
 {

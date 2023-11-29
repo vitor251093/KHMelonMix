@@ -28,7 +28,7 @@
 #include "Platform.h"
 #include "Config.h"
 
-using namespace melonDS;
+using namespace khDaysMM;
 
 QString IntToHex(u64 num)
 {
@@ -42,7 +42,7 @@ QString QStringBytes(u64 num)
 
 ROMInfoDialog* ROMInfoDialog::currentDlg = nullptr;
 
-ROMInfoDialog::ROMInfoDialog(QWidget* parent, const melonDS::NDSCart::CartCommon& rom) : QDialog(parent), ui(new Ui::ROMInfoDialog)
+ROMInfoDialog::ROMInfoDialog(QWidget* parent, const khDaysMM::NDSCart::CartCommon& rom) : QDialog(parent), ui(new Ui::ROMInfoDialog)
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);

@@ -12,7 +12,7 @@
 #include "Compat.h"
 #include "CommonFuncs.h"
 
-using namespace melonDS;
+using namespace khDaysMM;
 
 namespace Gen
 {

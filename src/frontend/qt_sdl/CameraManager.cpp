@@ -21,7 +21,7 @@
 #include "CameraManager.h"
 #include "Config.h"
 
-using namespace melonDS;
+using namespace khDaysMM;
 
 #if QT_VERSION >= 0x060000
 

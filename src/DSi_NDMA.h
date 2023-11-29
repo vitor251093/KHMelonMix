@@ -22,14 +22,14 @@
 #include "types.h"
 #include "Savestate.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class DSi;
 
 class DSi_NDMA
 {
 public:
-    DSi_NDMA(u32 cpu, u32 num, melonDS::DSi& dsi);
+    DSi_NDMA(u32 cpu, u32 num, khDaysMM::DSi& dsi);
     ~DSi_NDMA();
 
     void Reset();
@@ -77,7 +77,7 @@ public:
     u32 Cnt;
 
 private:
-    melonDS::DSi& DSi;
+    khDaysMM::DSi& DSi;
     u32 CPU, Num;
 
     u32 StartMode;

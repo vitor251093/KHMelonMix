@@ -27,7 +27,7 @@
 #include "DSi_SPI_TSC.h"
 #include "Platform.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using namespace Platform;
 
@@ -65,7 +65,7 @@ bool FirmwareMem::VerifyCRC16(u32 start, u32 offset, u32 len, u32 crcoffset)
 }
 
 
-FirmwareMem::FirmwareMem(melonDS::NDS& nds) : SPIDevice(nds)
+FirmwareMem::FirmwareMem(khDaysMM::NDS& nds) : SPIDevice(nds)
 {
 }
 
@@ -327,7 +327,7 @@ void FirmwareMem::Release()
 
 
 
-PowerMan::PowerMan(melonDS::NDS& nds) : SPIDevice(nds)
+PowerMan::PowerMan(khDaysMM::NDS& nds) : SPIDevice(nds)
 {
 }
 
@@ -411,7 +411,7 @@ void PowerMan::Write(u8 val)
 
 
 
-TSC::TSC(melonDS::NDS& nds) : SPIDevice(nds)
+TSC::TSC(khDaysMM::NDS& nds) : SPIDevice(nds)
 {
 }
 
@@ -554,7 +554,7 @@ void TSC::Write(u8 val)
 
 
 
-SPIHost::SPIHost(melonDS::NDS& nds) : NDS(nds)
+SPIHost::SPIHost(khDaysMM::NDS& nds) : NDS(nds)
 {
     NDS.RegisterEventFunc(Event_SPITransfer, 0, MemberEventFunc(SPIHost, TransferDone));
 

@@ -22,7 +22,7 @@
 #include "types.h"
 #include <array>
 
-namespace melonDS::DSi_TMD
+namespace khDaysMM::DSi_TMD
 {
 
 struct TitleMetadataContent {

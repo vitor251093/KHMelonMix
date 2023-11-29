@@ -24,12 +24,12 @@
 #include <thread>
 #include <atomic>
 
-namespace melonDS
+namespace khDaysMM
 {
 class SoftRenderer : public Renderer3D
 {
 public:
-    SoftRenderer(melonDS::GPU& gpu, bool threaded = false) noexcept;
+    SoftRenderer(khDaysMM::GPU& gpu, bool threaded = false) noexcept;
     ~SoftRenderer() override;
     void Reset() override;
 
@@ -452,7 +452,7 @@ private:
 
     };
 
-    melonDS::GPU& GPU;
+    khDaysMM::GPU& GPU;
     RendererPolygon PolygonList[2048];
     void TextureLookup(u32 texparam, u32 texpal, s16 s, s16 t, u16* color, u8* alpha);
     u32 RenderPixel(Polygon* polygon, u8 vr, u8 vg, u8 vb, s16 s, s16 t);

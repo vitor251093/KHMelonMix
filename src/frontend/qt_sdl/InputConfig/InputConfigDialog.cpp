@@ -34,7 +34,7 @@
 #include "ui_InputConfigDialog.h"
 
 
-using namespace melonDS;
+using namespace khDaysMM;
 InputConfigDialog* InputConfigDialog::currentDlg = nullptr;
 
 const int dskeyorder[12] = {0, 1, 10, 11, 5, 4, 6, 7, 9, 8, 2, 3};

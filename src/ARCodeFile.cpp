@@ -22,7 +22,7 @@
 #include "Platform.h"
 #include <math.h>
 
-namespace melonDS
+namespace khDaysMM
 {
 using namespace Platform;
 

@@ -5,7 +5,7 @@
 namespace Gdb
 {
 
-using namespace melonDS;
+using namespace khDaysMM;
 enum class Register : int
 {
 	r0,

@@ -20,7 +20,7 @@
 #include "ARM.h"
 
 
-namespace melonDS::ARMInterpreter
+namespace khDaysMM::ARMInterpreter
 {
 
 

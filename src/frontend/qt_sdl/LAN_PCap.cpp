@@ -41,7 +41,7 @@
         #endif
 #endif
 
-using namespace melonDS;
+using namespace khDaysMM;
 using Platform::Log;
 using Platform::LogLevel;
 

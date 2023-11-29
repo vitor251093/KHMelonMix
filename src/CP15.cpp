@@ -25,7 +25,7 @@
 #include "ARMJIT_Memory.h"
 #include "ARMJIT.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using Platform::Log;
 using Platform::LogLevel;

@@ -28,7 +28,7 @@
 #include "Input.h"
 #include "main.h"
 
-using namespace melonDS;
+using namespace khDaysMM;
 namespace AudioInOut
 {
 
@@ -245,7 +245,7 @@ void MicLoadWav(const std::string& name)
     SDL_FreeWAV(buf);
 }
 
-void MicProcess(melonDS::NDS& nds)
+void MicProcess(khDaysMM::NDS& nds)
 {
     int type = Config::MicInputType;
     bool cmd = Input::HotkeyDown(HK_Mic);

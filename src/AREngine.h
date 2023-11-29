@@ -21,13 +21,13 @@
 
 #include "ARCodeFile.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class NDS;
 class AREngine
 {
 public:
-    AREngine(melonDS::NDS& nds);
+    AREngine(khDaysMM::NDS& nds);
 
     ARCodeFile* GetCodeFile() { return CodeFile; }
     void SetCodeFile(ARCodeFile* file) { CodeFile = file; }
@@ -35,7 +35,7 @@ public:
     void RunCheats();
     void RunCheat(ARCode& arcode);
 private:
-    melonDS::NDS& NDS;
+    khDaysMM::NDS& NDS;
     ARCodeFile* CodeFile; // AR code file - frontend is responsible for managing this
 };
 

@@ -27,7 +27,7 @@
 #define SAVESTATE_MAJOR 11
 #define SAVESTATE_MINOR 1
 
-namespace melonDS
+namespace khDaysMM
 {
 class Savestate
 {

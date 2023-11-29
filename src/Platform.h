@@ -24,7 +24,7 @@
 #include <functional>
 #include <string>
 
-namespace melonDS
+namespace khDaysMM
 {
 class Firmware;
 

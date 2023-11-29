@@ -28,7 +28,7 @@
 #include "JitBlock.h"
 #include "TinyVector.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class ARM;
 class ARMv5;

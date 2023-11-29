@@ -6,7 +6,7 @@
 #include <vector>
 
 namespace GL {
-using namespace melonDS;
+using namespace khDaysMM;
 class Context
 {
 public:

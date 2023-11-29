@@ -35,7 +35,7 @@
 namespace Archive
 {
 
-using namespace melonDS;
+using namespace khDaysMM;
 QVector<QString> ListArchive(QString path);
 s32 ExtractFileFromArchive(QString path, QString wantedFile, u8** filedata, u32* filesize);
 //QVector<QString> ExtractFileFromArchive(QString path, QString wantedFile, QByteArray *romBuffer);

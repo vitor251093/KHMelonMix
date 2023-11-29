@@ -22,8 +22,8 @@
 #include "SaveManager.h"
 #include "Platform.h"
 
-using namespace melonDS;
-using namespace melonDS::Platform;
+using namespace khDaysMM;
+using namespace khDaysMM::Platform;
 
 SaveManager::SaveManager(const std::string& path) : QThread()
 {

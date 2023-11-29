@@ -46,10 +46,10 @@ class TitleManagerDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit TitleManagerDialog(QWidget* parent, melonDS::DSi_NAND::NANDImage& image);
+    explicit TitleManagerDialog(QWidget* parent, khDaysMM::DSi_NAND::NANDImage& image);
     ~TitleManagerDialog();
 
-    static std::unique_ptr<melonDS::DSi_NAND::NANDImage> nand;
+    static std::unique_ptr<khDaysMM::DSi_NAND::NANDImage> nand;
     static bool openNAND();
     static void closeNAND();
 
@@ -94,17 +94,17 @@ private slots:
     void onExportTitleData();
 
 private:
-    melonDS::DSi_NAND::NANDMount nandmount;
+    khDaysMM::DSi_NAND::NANDMount nandmount;
     Ui::TitleManagerDialog* ui;
 
     QString importAppPath;
-    melonDS::DSi_TMD::TitleMetadata importTmdData;
+    khDaysMM::DSi_TMD::TitleMetadata importTmdData;
     bool importReadOnly;
 
     QAction* actImportTitleData[3];
     QAction* actExportTitleData[3];
 
-    void createTitleItem(melonDS::u32 category, melonDS::u32 titleid);
+    void createTitleItem(khDaysMM::u32 category, khDaysMM::u32 titleid);
 };
 
 class TitleImportDialog : public QDialog
@@ -112,7 +112,7 @@ class TitleImportDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit TitleImportDialog(QWidget* parent, QString& apppath, const melonDS::DSi_TMD::TitleMetadata* tmd, bool& readonly, melonDS::DSi_NAND::NANDMount& nand);
+    explicit TitleImportDialog(QWidget* parent, QString& apppath, const khDaysMM::DSi_TMD::TitleMetadata* tmd, bool& readonly, khDaysMM::DSi_NAND::NANDMount& nand);
     ~TitleImportDialog();
 
 private slots:
@@ -125,7 +125,7 @@ private slots:
 
 private:
     Ui::TitleImportDialog* ui;
-    melonDS::DSi_NAND::NANDMount& nandmount;
+    khDaysMM::DSi_NAND::NANDMount& nandmount;
 
     QButtonGroup* grpTmdSource;
 
@@ -133,10 +133,10 @@ private:
     QNetworkReply* netreply;
 
     QString& appPath;
-    const melonDS::DSi_TMD::TitleMetadata* tmdData;
+    const khDaysMM::DSi_TMD::TitleMetadata* tmdData;
     bool& readOnly;
 
-    melonDS::u32 titleid[2];
+    khDaysMM::u32 titleid[2];
 };
 
 #endif // TITLEMANAGERDIALOG_H

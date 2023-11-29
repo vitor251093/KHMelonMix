@@ -52,8 +52,8 @@ using std::string;
 using std::tie;
 using std::unique_ptr;
 using std::wstring_convert;
-using namespace melonDS;
-using namespace melonDS::Platform;
+using namespace khDaysMM;
+using namespace khDaysMM::Platform;
 
 namespace ROMManager
 {

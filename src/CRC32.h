@@ -23,7 +23,7 @@
 
 #include "types.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 u32 CRC32(const u8* data, int len, u32 start=0);
 }

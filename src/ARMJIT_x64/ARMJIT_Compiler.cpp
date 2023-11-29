@@ -39,7 +39,7 @@ using namespace Common;
 
 extern "C" void ARM_Ret();
 
-namespace melonDS
+namespace khDaysMM
 {
 template <>
 const X64Reg RegisterCache<Compiler, X64Reg>::NativeRegAllocOrder[] =
@@ -143,7 +143,7 @@ void Compiler::A_Comp_MSR()
     Comp_AddCycles_C();
 
     OpArg val = CurInstr.Instr & (1 << 25)
-        ? Imm32(melonDS::ROR((CurInstr.Instr & 0xFF), ((CurInstr.Instr >> 7) & 0x1E)))
+        ? Imm32(khDaysMM::ROR((CurInstr.Instr & 0xFF), ((CurInstr.Instr >> 7) & 0x1E)))
         : MapReg(CurInstr.A_Reg(0));
 
     u32 mask = 0;
@@ -235,7 +235,7 @@ void Compiler::A_Comp_MSR()
  */
 u8 CodeMemory[1024 * 1024 * 32];
 
-Compiler::Compiler(melonDS::NDS& nds) : XEmitter(), NDS(nds)
+Compiler::Compiler(khDaysMM::NDS& nds) : XEmitter(), NDS(nds)
 {
     {
     #ifdef _WIN32

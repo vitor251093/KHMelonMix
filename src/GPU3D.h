@@ -25,7 +25,7 @@
 #include "Savestate.h"
 #include "FIFO.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class GPU;
 
@@ -86,7 +86,7 @@ class NDS;
 class GPU3D
 {
 public:
-    GPU3D(melonDS::NDS& nds, std::unique_ptr<Renderer3D>&& renderer = nullptr) noexcept;
+    GPU3D(khDaysMM::NDS& nds, std::unique_ptr<Renderer3D>&& renderer = nullptr) noexcept;
     ~GPU3D() noexcept = default;
     void Reset() noexcept;
 
@@ -127,7 +127,7 @@ public:
     void Write32(u32 addr, u32 val) noexcept;
     void Blit() noexcept;
 private:
-    melonDS::NDS& NDS;
+    khDaysMM::NDS& NDS;
     typedef union
     {
         u64 _contents;

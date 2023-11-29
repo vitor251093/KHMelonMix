@@ -23,7 +23,7 @@
 #include "GPU_OpenGL.h"
 #include "OpenGLSupport.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class GPU;
 
@@ -51,7 +51,7 @@ public:
     [[nodiscard]] const GLCompositor& GetCompositor() const noexcept { return CurGLCompositor; }
     GLCompositor& GetCompositor() noexcept { return CurGLCompositor; }
 
-    static std::unique_ptr<GLRenderer> New(melonDS::GPU& gpu) noexcept;
+    static std::unique_ptr<GLRenderer> New(khDaysMM::GPU& gpu) noexcept;
 private:
     // Used by New()
     GLRenderer(GLCompositor&& compositor, GPU& gpu) noexcept;
@@ -74,7 +74,7 @@ private:
         u32 RenderKey;
     };
 
-    melonDS::GPU& GPU;
+    khDaysMM::GPU& GPU;
     GLCompositor CurGLCompositor;
     RendererPolygon PolygonList[2048] {};
 

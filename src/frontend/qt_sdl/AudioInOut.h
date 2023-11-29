@@ -24,7 +24,7 @@
 #include <QMainWindow>
 
 class EmuThread;
-namespace melonDS
+namespace khDaysMM
 {
 class NDS;
 }
@@ -34,12 +34,12 @@ namespace AudioInOut
 void Init(EmuThread* thread);
 void DeInit();
 
-void MicProcess(melonDS::NDS& nds);
+void MicProcess(khDaysMM::NDS& nds);
 void AudioMute(QMainWindow* mainWindow);
 
-void AudioSync(melonDS::NDS& nds);
+void AudioSync(khDaysMM::NDS& nds);
 
-void UpdateSettings(melonDS::NDS& nds);
+void UpdateSettings(khDaysMM::NDS& nds);
 
 void Enable();
 void Disable();

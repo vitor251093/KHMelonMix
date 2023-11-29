@@ -21,7 +21,7 @@
 
 #include "types.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 const u8 melonDLDI[] =
 {

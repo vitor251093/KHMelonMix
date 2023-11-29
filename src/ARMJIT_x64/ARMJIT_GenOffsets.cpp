@@ -17,7 +17,7 @@
 */
 
 #include "../ARM.h"
-using namespace melonDS;
+using namespace khDaysMM;
 int main(int argc, char* argv[])
 {
     FILE* f = fopen("ARMJIT_Offsets.h", "w");

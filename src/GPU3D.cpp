@@ -25,7 +25,7 @@
 #include "GPU3D_Soft.h"
 #include "Platform.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -140,7 +140,7 @@ const u8 CmdNumParams[256] =
 
 void MatrixLoadIdentity(s32* m);
 
-GPU3D::GPU3D(melonDS::NDS& nds, std::unique_ptr<Renderer3D>&& renderer) noexcept :
+GPU3D::GPU3D(khDaysMM::NDS& nds, std::unique_ptr<Renderer3D>&& renderer) noexcept :
     NDS(nds),
     CurrentRenderer(renderer ? std::move(renderer) : std::make_unique<SoftRenderer>(nds.GPU))
 {

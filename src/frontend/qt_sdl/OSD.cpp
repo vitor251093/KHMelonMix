@@ -32,7 +32,7 @@
 
 #include "Config.h"
 
-using namespace melonDS;
+using namespace khDaysMM;
 
 extern MainWindow* mainWindow;
 

@@ -21,7 +21,7 @@
 
 #include "types.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class Wifi;
 

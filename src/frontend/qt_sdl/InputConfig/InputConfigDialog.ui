@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Input and hotkeys - melonDS</string>
+   <string>Input and hotkeys - khDaysMM</string>
   </property>
   <property name="styleSheet">
    <string notr="true">#grp_ControlPad, #grp_ABXY, #grp_ControlPad_2, #grp_ABXY_2 { border: none }</string>

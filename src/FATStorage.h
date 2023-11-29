@@ -28,7 +28,7 @@
 #include "types.h"
 #include "fatfs/ff.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 class FATStorage
 {

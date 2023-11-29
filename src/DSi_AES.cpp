@@ -23,7 +23,7 @@
 #include "DSi_AES.h"
 #include "Platform.h"
 
-namespace melonDS
+namespace khDaysMM
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -36,7 +36,7 @@ using Platform::LogLevel;
 #define _printhex2R(str, size) { for (int z = 0; z < (size); z++) printf("%02X", (str)[((size)-1)-z]); }
 
 
-DSi_AES::DSi_AES(melonDS::DSi& dsi) : DSi(dsi)
+DSi_AES::DSi_AES(khDaysMM::DSi& dsi) : DSi(dsi)
 {
     const u8 zero[16] = {0};
     AES_init_ctx_iv(&Ctx, zero, zero);

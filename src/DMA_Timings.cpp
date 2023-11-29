@@ -19,7 +19,7 @@
 #include "DMA_Timings.h"
 #include "types.h"
 
-namespace melonDS::DMATiming
+namespace khDaysMM::DMATiming
 {
 
 // DMA timing tables

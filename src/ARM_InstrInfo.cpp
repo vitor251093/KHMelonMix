@@ -22,7 +22,7 @@
 
 #include "ARMJIT.h"
 
-namespace melonDS::ARMInstrInfo
+namespace khDaysMM::ARMInstrInfo
 {
 
 #define ak(x) ((x) << 23)
