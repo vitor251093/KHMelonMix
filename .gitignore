@@ -11,6 +11,7 @@ rom/*.ml8
 rom/*.ml9
 
 build
+build*/
 bin
 obj
 *.depend
@@ -19,7 +20,7 @@ obj
 khDaysMM_grc.c
 khDaysMM_grc.h
 khDaysMM.rc
-cmake-build
+cmake-build*
 cmake-build-debug
 compile_commands.json
 .idea

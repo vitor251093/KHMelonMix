@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2023 melonDS team
 
     This file is part of melonDS.
 
@@ -22,8 +22,9 @@
 #include "Platform.h"
 #include <math.h>
 
-using Platform::Log;
-using Platform::LogLevel;
+namespace melonDS
+{
+using namespace Platform;
 
 // TODO: import codes from other sources (usrcheat.dat, ...)
 // TODO: more user-friendly error reporting
@@ -65,7 +66,6 @@ bool ARCodeFile::Load()
     curcode.Code[0] = 0x52023C9C; curcode.Code[1] = 0x00001555;
     curcode.Code[2] = 0x02023C9C; curcode.Code[3] = aspectRatioKey;
     curcode.Code[4] = 0xD2000000; curcode.Code[5] = 0x00000000;
-    curcode.CodeLen = 6;
     curcat.Codes.push_back(curcode);
 
     Categories.push_back(curcat);
@@ -75,4 +75,6 @@ bool ARCodeFile::Load()
 bool ARCodeFile::Save()
 {
     return false;
+}
+
 }

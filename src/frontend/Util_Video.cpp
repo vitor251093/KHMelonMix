@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2023 melonDS team
 
     This file is part of melonDS.
 
@@ -123,9 +123,9 @@ void M23_Transform(float* m, float& x, float& y)
 
 
 void SetupScreenLayout(int screenWidth, int screenHeight,
-    int screenLayout, // always 2
-    int rotation,
-    int sizing, // screenSizing_*
+    ScreenLayout screenLayout, // always 2
+    ScreenRotation rotation,
+    ScreenSizing sizing, // screenSizing_*
     int screenGap,
     bool integerScale,
     bool swapScreens,
@@ -140,8 +140,8 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     HybEnable = screenLayout == 3;
     if (HybEnable)
     {
-        screenLayout = 0;
-        sizing = 0;
+        screenLayout = screenLayout_Natural;
+        sizing = screenSizing_Even;
         HybScreen = swapScreens ? 1 : 0;
         swapScreens = false;
         topAspect = botAspect = 1;
@@ -155,7 +155,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
         {0, 0}, {256, 192}
     };
 
-    int layout = screenLayout == 0
+    int layout = screenLayout == screenLayout_Natural
         ? rotation % 2
         : screenLayout - 1;
 
@@ -168,14 +168,14 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     M23_Identity(BotScreenMtx);
     M23_Identity(HybScreenMtx);
 
-    if (sizing == 7) 
+    if (sizing == screenSizing_MiniMap) 
     {
         M23_Scale(BotScreenMtx, mapWidth / 256.0, mapHeight / 192.0);
         refpoints[3][0] += - 256.0 + mapWidth;
         refpoints[3][1] += - 192.0 + mapHeight;
         botAspect = topAspect;
     }
-    if (sizing == 8) 
+    if (sizing == screenSizing_PauseMenuWithGauge)
     {
         M23_Scale(BotScreenMtx, gaugeWidth / 256.0, gaugeHeight / 192.0);
         refpoints[3][0] += - 256.0 + gaugeWidth;
@@ -186,7 +186,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     M23_Translate(TopScreenMtx, -256/2, -192/2);
     M23_Translate(BotScreenMtx, -256/2, -192/2);
 
-    if (sizing == 7) 
+    if (sizing == screenSizing_MiniMap) 
     {
         // move screens apart
         {
@@ -226,7 +226,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     int posRefPointOffset = 0;
     int posRefPointCount = HybEnable ? 6 : 4;
 
-    if (sizing == 7 || sizing == 8) 
+    if (sizing == screenSizing_MiniMap || sizing == screenSizing_PauseMenuWithGauge) 
     {
         TopEnable = BotEnable = true;
         
@@ -252,11 +252,11 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
             botScale = scale;
         }
     }
-    else if (sizing == 4 || sizing == 5)
+    else if (sizing == screenSizing_TopOnly || sizing == screenSizing_BotOnly)
     {
-        float* mtx = sizing == 4 ? TopScreenMtx : BotScreenMtx;
-        int primOffset = sizing == 4 ? 0 : 2;
-        int secOffset = sizing == 5 ? 2 : 0;
+        float* mtx = sizing == screenSizing_TopOnly ? TopScreenMtx : BotScreenMtx;
+        int primOffset = sizing == screenSizing_TopOnly ? 0 : 2;
+        int secOffset = sizing == screenSizing_BotOnly ? 2 : 0;
 
         float hSize = fabsf(refpoints[primOffset][0] - refpoints[primOffset+1][0]);
         float vSize = fabsf(refpoints[primOffset][1] - refpoints[primOffset+1][1]);
@@ -265,8 +265,8 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
         if (integerScale)
             scale = floorf(scale);
 
-        TopEnable = sizing == 4;
-        BotEnable = sizing == 5;
+        TopEnable = sizing == screenSizing_TopOnly;
+        BotEnable = sizing == screenSizing_BotOnly;
         botScale = scale;
 
         M23_Scale(mtx, scale);
@@ -310,7 +310,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
 
         // scale
         {
-            if (sizing == 0)
+            if (sizing == screenSizing_Even)
             {
                 float minX = refpoints[0][0], maxX = minX;
                 float minY = refpoints[0][1], maxY = minY;
@@ -386,10 +386,10 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
             }
             else
             {
-                int primOffset = (sizing == 1) ? 0 : 2;
-                int secOffset = (sizing == 1) ? 2 : 0;
-                float* primMtx = (sizing == 1) ? TopScreenMtx : BotScreenMtx;
-                float* secMtx = (sizing == 1) ? BotScreenMtx : TopScreenMtx;
+                int primOffset = (sizing == screenSizing_EmphTop) ? 0 : 2;
+                int secOffset = (sizing == screenSizing_EmphTop) ? 2 : 0;
+                float* primMtx = (sizing == screenSizing_EmphTop) ? TopScreenMtx : BotScreenMtx;
+                float* secMtx = (sizing == screenSizing_EmphTop) ? BotScreenMtx : TopScreenMtx;
 
                 float primMinX = refpoints[primOffset][0], primMaxX = primMinX;
                 float primMinY = refpoints[primOffset][1], primMaxY = primMinY;
@@ -451,7 +451,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
                 refpoints[secOffset+1][0] *= secScale;
                 refpoints[secOffset+1][1] *= secScale;
 
-                botScale = (sizing == 1) ? secScale : primScale;
+                botScale = (sizing == screenSizing_EmphTop) ? secScale : primScale;
             }
         }
     }
@@ -615,4 +615,3 @@ bool GetTouchCoords(int& x, int& y, bool clamp)
 }
 
 }
-
