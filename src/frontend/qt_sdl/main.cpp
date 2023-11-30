@@ -2873,6 +2873,7 @@ void MainWindow::loadMostRecentFile()
         recentFileList.prepend(filename);
         updateRecentFilesMenu();
 
+        assert(emuThread->NDS != nullptr);
         emuThread->NDS->Start();
         emuThread->emuRun();
 

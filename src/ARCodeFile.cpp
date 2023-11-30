@@ -63,9 +63,10 @@ bool ARCodeFile::Load()
     ARCode curcode;
     curcode.Name = "Auto Resolution";
     curcode.Enabled = true;
-    curcode.Code[0] = 0x52023C9C; curcode.Code[1] = 0x00001555;
-    curcode.Code[2] = 0x02023C9C; curcode.Code[3] = aspectRatioKey;
-    curcode.Code[4] = 0xD2000000; curcode.Code[5] = 0x00000000;
+    curcode.Code.clear();
+    curcode.Code.push_back(0x52023C9C); curcode.Code.push_back(0x00001555);
+    curcode.Code.push_back(0x02023C9C); curcode.Code.push_back(aspectRatioKey);
+    curcode.Code.push_back(0xD2000000); curcode.Code.push_back(0x00000000);
     curcat.Codes.push_back(curcode);
 
     Categories.push_back(curcat);
