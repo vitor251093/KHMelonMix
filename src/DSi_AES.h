@@ -24,7 +24,7 @@
 #include "FIFO.h"
 #include "tiny-AES-c/aes.hpp"
 
-namespace khDaysMM
+namespace melonDS
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wattributes"
@@ -49,7 +49,7 @@ class DSi;
 class DSi_AES
 {
 public:
-    DSi_AES(khDaysMM::DSi& dsi);
+    DSi_AES(melonDS::DSi& dsi);
     ~DSi_AES();
     void Reset();
     void DoSavestate(Savestate* file);
@@ -74,7 +74,7 @@ public:
     static void DeriveNormalKey(u8* keyX, u8* keyY, u8* normalkey);
 
 private:
-    khDaysMM::DSi& DSi;
+    melonDS::DSi& DSi;
     u32 Cnt;
 
     u32 BlkCnt;

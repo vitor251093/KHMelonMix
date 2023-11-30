@@ -23,12 +23,12 @@
 #include "FIFO.h"
 #include "Savestate.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 class DSi_NWifi : public DSi_SDDevice
 {
 public:
-    DSi_NWifi(khDaysMM::DSi& dsi, DSi_SDHost* host);
+    DSi_NWifi(melonDS::DSi& dsi, DSi_SDHost* host);
     ~DSi_NWifi();
 
     void Reset();
@@ -45,7 +45,7 @@ public:
     void MSTimer(u32 param);
 
 private:
-    khDaysMM::DSi& DSi;
+    melonDS::DSi& DSi;
     u32 TransferCmd;
     u32 TransferAddr;
     u32 RemSize;

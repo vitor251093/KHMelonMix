@@ -40,7 +40,7 @@
 #include "FrontendUtil.h"
 #include "duckstation/gl/context.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 class NDS;
 }
@@ -73,7 +73,7 @@ public:
 
     void updateScreenSettings(bool filter, const WindowInfo& windowInfo, int numScreens, int* screenKind, float* screenMatrix);
     void RecreateConsole();
-    std::unique_ptr<khDaysMM::NDS> NDS; // TODO: Proper encapsulation and synchronization
+    std::unique_ptr<melonDS::NDS> NDS; // TODO: Proper encapsulation and synchronization
 signals:
     void windowUpdate();
     void windowTitleChange(QString title);
@@ -97,7 +97,7 @@ signals:
 
 private:
     bool isBufferBlack(unsigned int* buffer);
-    std::unique_ptr<khDaysMM::NDS> CreateConsole();
+    std::unique_ptr<melonDS::NDS> CreateConsole();
     void drawScreenGL();
     void initOpenGL();
     void deinitOpenGL();

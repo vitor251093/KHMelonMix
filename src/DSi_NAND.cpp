@@ -30,9 +30,9 @@
 
 #include "fatfs/ff.h"
 
-using namespace khDaysMM::Platform;
+using namespace melonDS::Platform;
 
-namespace khDaysMM::DSi_NAND
+namespace melonDS::DSi_NAND
 {
 
 NANDImage::NANDImage(Platform::FileHandle* nandfile, const DSiKey& es_keyY) noexcept : NANDImage(nandfile, es_keyY.data())

@@ -4,7 +4,7 @@
 #include <X11/Xutil.h>
 
 namespace GL {
-using namespace khDaysMM;
+using namespace melonDS;
 class X11Window
 {
 public:

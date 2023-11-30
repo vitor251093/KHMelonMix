@@ -10,7 +10,7 @@
 
 namespace Common
 {
-using namespace khDaysMM;
+using namespace melonDS;
 #if defined(__GNUC__) || defined(__clang__)
 __attribute((always_inline)) static constexpr int CountSetBits(u8 val)
 {

@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <array>
 
-namespace khDaysMM
+namespace melonDS
 {
 typedef uint8_t     u8;
 typedef uint16_t    u16;

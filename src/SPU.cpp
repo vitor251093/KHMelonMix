@@ -24,7 +24,7 @@
 #include "DSi.h"
 #include "SPU.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -70,7 +70,7 @@ s16 SPUChannel::InterpCubic[0x100][4];
 bool SPUChannel::InterpInited = false;
 
 
-SPU::SPU(khDaysMM::NDS& nds) : NDS(nds)
+SPU::SPU(melonDS::NDS& nds) : NDS(nds)
 {
     NDS.RegisterEventFunc(Event_SPU, 0, MemberEventFunc(SPU, Mix));
 
@@ -212,7 +212,7 @@ void SPU::SetDegrade10Bit(bool enable)
 }
 
 
-SPUChannel::SPUChannel(u32 num, khDaysMM::NDS& nds) : NDS(nds)
+SPUChannel::SPUChannel(u32 num, melonDS::NDS& nds) : NDS(nds)
 {
     Num = num;
 
@@ -578,7 +578,7 @@ void SPUChannel::PanOutput(s32 in, s32& left, s32& right)
 }
 
 
-SPUCaptureUnit::SPUCaptureUnit(u32 num, khDaysMM::NDS& nds) : NDS(nds), Num(num)
+SPUCaptureUnit::SPUCaptureUnit(u32 num, melonDS::NDS& nds) : NDS(nds), Num(num)
 {
     Num = num;
 }

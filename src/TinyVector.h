@@ -23,7 +23,7 @@
 #include <string.h>
 #include "types.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 /*
     TinyVector

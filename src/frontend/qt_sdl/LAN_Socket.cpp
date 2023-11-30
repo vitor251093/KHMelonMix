@@ -37,7 +37,7 @@
 	#include <time.h>
 #endif
 
-using namespace khDaysMM;
+using namespace melonDS;
 
 namespace LAN_Socket
 {

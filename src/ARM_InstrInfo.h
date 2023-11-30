@@ -21,7 +21,7 @@
 
 #include "types.h"
 
-namespace khDaysMM::ARMInstrInfo
+namespace melonDS::ARMInstrInfo
 {
 
 // Instruction kinds, for faster dispatch

@@ -32,7 +32,7 @@
 #include "ARMJIT_Compiler.h"
 #include "MemConstants.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 class ARM;
 
@@ -40,7 +40,7 @@ class JitBlock;
 class ARMJIT
 {
 public:
-    ARMJIT(khDaysMM::NDS& nds) noexcept : NDS(nds), Memory(nds), JITCompiler(nds) {};
+    ARMJIT(melonDS::NDS& nds) noexcept : NDS(nds), Memory(nds), JITCompiler(nds) {};
     ~ARMJIT() noexcept NOOP_IF_NO_JIT;
     void InvalidateByAddr(u32) noexcept NOOP_IF_NO_JIT;
     void CheckAndInvalidateWVRAM(int) noexcept NOOP_IF_NO_JIT;
@@ -73,7 +73,7 @@ public:
     bool BranchOptimizations = false;
     bool FastMemory = false;
 
-    khDaysMM::NDS& NDS;
+    melonDS::NDS& NDS;
     TinyVector<u32> InvalidLiterals {};
     friend class ARMJIT_Memory;
     void blockSanityCheck(u32 num, u32 blockAddr, JitBlockEntry entry) noexcept;
@@ -161,6 +161,6 @@ public:
 }
 
 // Defined in assembly
-extern "C" void ARM_Dispatch(khDaysMM::ARM* cpu, khDaysMM::JitBlockEntry entry);
+extern "C" void ARM_Dispatch(melonDS::ARM* cpu, melonDS::JitBlockEntry entry);
 
 #endif

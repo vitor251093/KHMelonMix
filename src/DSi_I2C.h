@@ -22,7 +22,7 @@
 #include "types.h"
 #include "Savestate.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 class DSi_I2CHost;
 class DSi_Camera;
@@ -30,7 +30,7 @@ class DSi;
 class DSi_I2CDevice
 {
 public:
-    DSi_I2CDevice(khDaysMM::DSi& dsi, DSi_I2CHost* host) : DSi(dsi), Host(host) {}
+    DSi_I2CDevice(melonDS::DSi& dsi, DSi_I2CHost* host) : DSi(dsi), Host(host) {}
     virtual ~DSi_I2CDevice() {}
     virtual void Reset() = 0;
     virtual void DoSavestate(Savestate* file) = 0;
@@ -40,7 +40,7 @@ public:
     virtual void Write(u8 val, bool last) = 0;
 
 protected:
-    khDaysMM::DSi& DSi;
+    melonDS::DSi& DSi;
     DSi_I2CHost* Host;
 };
 
@@ -81,7 +81,7 @@ public:
         IRQ_ValidMask           = 0x7B,
     };
 
-    DSi_BPTWL(khDaysMM::DSi& dsi, DSi_I2CHost* host);
+    DSi_BPTWL(melonDS::DSi& dsi, DSi_I2CHost* host);
     ~DSi_BPTWL() override;
     void Reset() override;
     void DoSavestate(Savestate* file) override;
@@ -154,7 +154,7 @@ private:
 class DSi_I2CHost
 {
 public:
-    DSi_I2CHost(khDaysMM::DSi& dsi);
+    DSi_I2CHost(melonDS::DSi& dsi);
     ~DSi_I2CHost();
     void Reset();
     void DoSavestate(Savestate* file);
@@ -170,7 +170,7 @@ public:
     void WriteData(u8 val);
 
 private:
-    khDaysMM::DSi& DSi;
+    melonDS::DSi& DSi;
     u8 Cnt;
     u8 Data;
 

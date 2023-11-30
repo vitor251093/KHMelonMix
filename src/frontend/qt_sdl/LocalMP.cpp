@@ -38,8 +38,8 @@
 #include "LocalMP.h"
 #include "Platform.h"
 
-using namespace khDaysMM;
-using namespace khDaysMM::Platform;
+using namespace melonDS;
+using namespace melonDS::Platform;
 
 using Platform::Log;
 using Platform::LogLevel;

@@ -24,7 +24,7 @@
 #include "DSi_NWifi.h"
 #include "Platform.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using namespace Platform;
 
@@ -57,7 +57,7 @@ enum
 };
 
 
-DSi_SDHost::DSi_SDHost(khDaysMM::DSi& dsi, u32 num) : DSi(dsi)
+DSi_SDHost::DSi_SDHost(melonDS::DSi& dsi, u32 num) : DSi(dsi)
 {
     Num = num;
 

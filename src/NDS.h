@@ -42,7 +42,7 @@
 // with this enabled, to make sure it doesn't desync
 //#define DEBUG_CHECK_DESYNC
 
-namespace khDaysMM
+namespace melonDS
 {
 
 enum
@@ -277,17 +277,17 @@ public:
     // as they'll need the memory that it allocates in its constructor!
     // (Reminder: C++ fields are initialized in the order they're declared,
     // regardless of what the constructor's initializer list says.)
-    khDaysMM::ARMJIT JIT;
+    melonDS::ARMJIT JIT;
     ARMv5 ARM9;
     ARMv4 ARM7;
-    khDaysMM::SPU SPU;
+    melonDS::SPU SPU;
     SPIHost SPI;
-    khDaysMM::RTC RTC;
-    khDaysMM::Wifi Wifi;
+    melonDS::RTC RTC;
+    melonDS::Wifi Wifi;
     NDSCart::NDSCartSlot NDSCartSlot;
     GBACart::GBACartSlot GBACartSlot;
-    khDaysMM::GPU GPU;
-    khDaysMM::AREngine AREngine;
+    melonDS::GPU GPU;
+    melonDS::AREngine AREngine;
 
     const u32 ARM7WRAMSize = 0x10000;
     u8* ARM7WRAM;

@@ -21,7 +21,7 @@
 #include "RTC.h"
 #include "Platform.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -32,7 +32,7 @@ using Platform::LogLevel;
 void WriteDateTime(int num, u8 val);
 
 
-RTC::RTC(khDaysMM::NDS& nds) : NDS(nds)
+RTC::RTC(melonDS::NDS& nds) : NDS(nds)
 {
     NDS.RegisterEventFunc(Event_RTC, 0, MemberEventFunc(RTC, ClockTimer));
 

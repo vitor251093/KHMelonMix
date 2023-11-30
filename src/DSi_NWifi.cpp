@@ -24,7 +24,7 @@
 #include "WifiAP.h"
 #include "Platform.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 
 using Platform::Log;
@@ -119,7 +119,7 @@ const u8 CIS1[256] =
 };
 
 
-DSi_NWifi::DSi_NWifi(khDaysMM::DSi& dsi, DSi_SDHost* host) :
+DSi_NWifi::DSi_NWifi(melonDS::DSi& dsi, DSi_SDHost* host) :
     DSi_SDDevice(host),
     Mailbox
     {

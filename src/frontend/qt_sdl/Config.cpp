@@ -27,7 +27,7 @@
 
 namespace Config
 {
-using namespace khDaysMM;
+using namespace melonDS;
 
 int KeyMapping[12];
 int JoyMapping[12];
@@ -168,8 +168,8 @@ bool GdbARM9BreakOnStartup;
 CameraConfig Camera[2];
 
 
-const char* kConfigFile = "khDaysMM.ini";
-const char* kUniqueConfigFile = "khDaysMM.%d.ini";
+const char* kConfigFile = "melonDS.ini";
+const char* kUniqueConfigFile = "melonDS.%d.ini";
 
 int getLocaleIndex() {
     int localIndex = 1;

@@ -24,7 +24,7 @@
 namespace Input
 {
 
-using namespace khDaysMM;
+using namespace melonDS;
 extern int JoystickID;
 extern SDL_Joystick* Joystick;
 

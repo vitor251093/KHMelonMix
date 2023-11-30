@@ -22,7 +22,7 @@
 #include "types.h"
 #include "Savestate.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 template<typename T, u32 NumEntries>
 class FIFO

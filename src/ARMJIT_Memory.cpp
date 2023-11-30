@@ -97,7 +97,7 @@
     #endif
 #endif
 
-namespace khDaysMM
+namespace melonDS
 {
 
 using Platform::Log;
@@ -319,7 +319,7 @@ void ARMJIT_Memory::SetCodeProtectionRange(u32 addr, u32 size, u32 num, int prot
 }
 #endif
 
-void ARMJIT_Memory::Mapping::Unmap(int region, khDaysMM::NDS& nds) noexcept
+void ARMJIT_Memory::Mapping::Unmap(int region, melonDS::NDS& nds) noexcept
 {
     u32 dtcmStart = nds.ARM9.DTCMBase;
     u32 dtcmSize = ~nds.ARM9.DTCMMask + 1;
@@ -622,7 +622,7 @@ bool ARMJIT_Memory::MapAtAddress(u32 addr) noexcept
     return true;
 }
 
-bool ARMJIT_Memory::FaultHandler(FaultDescription& faultDesc, khDaysMM::NDS& nds)
+bool ARMJIT_Memory::FaultHandler(FaultDescription& faultDesc, melonDS::NDS& nds)
 {
     if (nds.JIT.JITCompiler.IsJITFault(faultDesc.FaultPC))
     {
@@ -643,7 +643,7 @@ bool ARMJIT_Memory::FaultHandler(FaultDescription& faultDesc, khDaysMM::NDS& nds
 
 const u64 AddrSpaceSize = 0x100000000;
 
-ARMJIT_Memory::ARMJIT_Memory(khDaysMM::NDS& nds) : NDS(nds)
+ARMJIT_Memory::ARMJIT_Memory(melonDS::NDS& nds) : NDS(nds)
 {
 #if defined(__SWITCH__)
     MemoryBase = (u8*)aligned_alloc(0x1000, MemoryTotalSize);
@@ -1013,7 +1013,7 @@ u32 ARMJIT_Memory::LocaliseAddress(int region, u32 num, u32 addr) const noexcept
         else
             return ((addr & NDS.SWRAM_ARM7.Mask) + (NDS.SWRAM_ARM7.Mem - GetSharedWRAM())) | (memregion_SharedWRAM << 27);
     case memregion_WRAM7:
-        return (addr & (khDaysMM::ARM7WRAMSize - 1)) | (memregion_WRAM7 << 27);
+        return (addr & (melonDS::ARM7WRAMSize - 1)) | (memregion_WRAM7 << 27);
     case memregion_VRAM:
         // TODO: take mapping properly into account
         return (addr & 0xFFFFF) | (memregion_VRAM << 27);

@@ -27,8 +27,8 @@
 #include "PathSettingsDialog.h"
 #include "ui_PathSettingsDialog.h"
 
-using namespace khDaysMM::Platform;
-namespace Platform = khDaysMM::Platform;
+using namespace melonDS::Platform;
+namespace Platform = melonDS::Platform;
 
 PathSettingsDialog* PathSettingsDialog::currentDlg = nullptr;
 

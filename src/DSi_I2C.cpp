@@ -26,7 +26,7 @@
 #include "SPI.h"
 #include "Platform.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -57,7 +57,7 @@ const u8 DSi_BPTWL::VolumeUpTable[32] =
 };
 
 
-DSi_BPTWL::DSi_BPTWL(khDaysMM::DSi& dsi, DSi_I2CHost* host) : DSi_I2CDevice(dsi, host)
+DSi_BPTWL::DSi_BPTWL(melonDS::DSi& dsi, DSi_I2CHost* host) : DSi_I2CDevice(dsi, host)
 {
 }
 
@@ -451,7 +451,7 @@ void DSi_BPTWL::Write(u8 val, bool last)
 }
 
 
-DSi_I2CHost::DSi_I2CHost(khDaysMM::DSi& dsi) : DSi(dsi)
+DSi_I2CHost::DSi_I2CHost(melonDS::DSi& dsi) : DSi(dsi)
 {
     BPTWL = new DSi_BPTWL(dsi, this);
     Camera0 = new DSi_Camera(dsi, this, 0);

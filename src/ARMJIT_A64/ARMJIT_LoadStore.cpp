@@ -25,7 +25,7 @@
 
 using namespace Arm64Gen;
 
-namespace khDaysMM
+namespace melonDS
 {
 
 bool Compiler::IsJITFault(u8* pc)
@@ -80,7 +80,7 @@ bool Compiler::Comp_MemLoadLiteral(int size, bool signExtend, int rd, u32 addr)
     if (size == 32)
     {
         CurCPU->DataRead32(addr & ~0x3, &val);
-        val = khDaysMM::ROR(val, (addr & 0x3) << 3);
+        val = melonDS::ROR(val, (addr & 0x3) << 3);
     }
     else if (size == 16)
     {

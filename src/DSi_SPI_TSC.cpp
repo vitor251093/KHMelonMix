@@ -22,13 +22,13 @@
 #include "DSi_SPI_TSC.h"
 #include "Platform.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
 
 
-DSi_TSC::DSi_TSC(khDaysMM::DSi& dsi) : TSC(dsi)
+DSi_TSC::DSi_TSC(melonDS::DSi& dsi) : TSC(dsi)
 {
 }
 

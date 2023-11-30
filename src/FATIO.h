@@ -24,7 +24,7 @@
 #include "fatfs/ff.h"
 
 // extra additions for interfacing with melonDS
-namespace khDaysMM
+namespace melonDS
 {
 using ff_disk_read_cb = std::function<UINT(BYTE*, LBA_t, UINT)>;
 using ff_disk_write_cb = std::function<UINT(const BYTE*, LBA_t, UINT)>;

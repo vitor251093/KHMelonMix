@@ -31,7 +31,7 @@
 
 struct AES_ctx;
 
-namespace khDaysMM::DSi_NAND
+namespace melonDS::DSi_NAND
 {
 
 enum

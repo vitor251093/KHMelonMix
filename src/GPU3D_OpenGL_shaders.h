@@ -21,7 +21,7 @@
 
 #define kShaderHeader "#version 140"
 
-namespace khDaysMM
+namespace melonDS
 {
 const char* kClearVS = kShaderHeader R"(
 

@@ -25,7 +25,7 @@
 #include "GPU3D.h"
 #include "NonStupidBitfield.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 class GPU3D;
 class ARMJIT;
@@ -55,7 +55,7 @@ struct VRAMTrackingSet
 class GPU
 {
 public:
-    explicit GPU(khDaysMM::NDS& nds, std::unique_ptr<Renderer3D>&& renderer3d = nullptr, std::unique_ptr<GPU2D::Renderer2D>&& renderer2d = nullptr) noexcept;
+    explicit GPU(melonDS::NDS& nds, std::unique_ptr<Renderer3D>&& renderer3d = nullptr, std::unique_ptr<GPU2D::Renderer2D>&& renderer2d = nullptr) noexcept;
     ~GPU() noexcept;
     void Reset() noexcept;
     void Stop() noexcept;
@@ -531,7 +531,7 @@ public:
 
     int GameScene = -1;
 
-    khDaysMM::NDS& NDS;
+    melonDS::NDS& NDS;
     u16 VCount = 0;
     u16 TotalScanlines = 0;
     u16 DispStat[2] {};
@@ -577,7 +577,7 @@ public:
 
     GPU2D::Unit GPU2D_A;
     GPU2D::Unit GPU2D_B;
-    khDaysMM::GPU3D GPU3D;
+    melonDS::GPU3D GPU3D;
 
     NonStupidBitField<128*1024/VRAMDirtyGranularity> VRAMDirty[9] {};
     VRAMTrackingSet<512*1024, 16*1024> VRAMDirty_ABG {};

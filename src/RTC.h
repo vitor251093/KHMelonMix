@@ -22,7 +22,7 @@
 #include "types.h"
 #include "Savestate.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 class RTC
 {
@@ -48,7 +48,7 @@ public:
         u8 AlarmDate2[3];
     };
 
-    RTC(khDaysMM::NDS& nds);
+    RTC(melonDS::NDS& nds);
     ~RTC();
 
     void Reset();
@@ -66,7 +66,7 @@ public:
     void Write(u16 val, bool byte);
 
 private:
-    khDaysMM::NDS& NDS;
+    melonDS::NDS& NDS;
     u16 IO;
 
     u8 Input;

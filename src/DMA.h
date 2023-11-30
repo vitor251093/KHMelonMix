@@ -22,7 +22,7 @@
 #include <array>
 #include "types.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 class NDS;
 class Savestate;
@@ -78,7 +78,7 @@ public:
     u32 Cnt {};
 
 private:
-    khDaysMM::NDS& NDS;
+    melonDS::NDS& NDS;
     u32 CPU {};
     u32 Num {};
 

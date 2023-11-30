@@ -23,7 +23,7 @@
 
 namespace LAN_Socket
 {
-using namespace khDaysMM;
+using namespace melonDS;
 
 //
 

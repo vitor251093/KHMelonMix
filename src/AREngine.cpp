@@ -23,13 +23,13 @@
 #include "AREngine.h"
 #include "Platform.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 
 using Platform::Log;
 using Platform::LogLevel;
 
-AREngine::AREngine(khDaysMM::NDS& nds) : NDS(nds)
+AREngine::AREngine(melonDS::NDS& nds) : NDS(nds)
 {
     CodeFile = nullptr;
 }

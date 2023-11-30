@@ -20,7 +20,7 @@
 #include "fatfs/ff.h"
 #include "fatfs/diskio.h"
 
-using namespace khDaysMM;
+using namespace melonDS;
 
 static ff_disk_read_cb ReadCb;
 static ff_disk_write_cb WriteCb;
@@ -28,7 +28,7 @@ static LBA_t SectorCount;
 static DSTATUS Status = STA_NOINIT | STA_NODISK;
 
 
-void khDaysMM::ff_disk_open(const ff_disk_read_cb& readcb, const ff_disk_write_cb& writecb, LBA_t seccnt)
+void melonDS::ff_disk_open(const ff_disk_read_cb& readcb, const ff_disk_write_cb& writecb, LBA_t seccnt)
 {
     if (!readcb) return;
 
@@ -41,7 +41,7 @@ void khDaysMM::ff_disk_open(const ff_disk_read_cb& readcb, const ff_disk_write_c
     else          Status &= ~STA_PROTECT;
 }
 
-void khDaysMM::ff_disk_close()
+void melonDS::ff_disk_close()
 {
     ReadCb = nullptr;
     WriteCb = nullptr;

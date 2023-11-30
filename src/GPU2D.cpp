@@ -21,7 +21,7 @@
 #include "NDS.h"
 #include "GPU.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -86,7 +86,7 @@ using Platform::LogLevel;
 
 namespace GPU2D
 {
-Unit::Unit(u32 num, khDaysMM::GPU& gpu) : Num(num), GPU(gpu)
+Unit::Unit(u32 num, melonDS::GPU& gpu) : Num(num), GPU(gpu)
 {
 }
 

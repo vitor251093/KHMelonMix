@@ -8,7 +8,7 @@
 
 #include "GdbProto.h"
 
-using namespace khDaysMM;
+using namespace melonDS;
 using Platform::Log;
 using Platform::LogLevel;
 

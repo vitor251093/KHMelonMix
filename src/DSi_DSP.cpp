@@ -24,7 +24,7 @@
 #include "NDS.h"
 #include "Platform.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -107,7 +107,7 @@ void DSi_DSP::AudioCb(std::array<s16, 2> frame)
     // TODO
 }
 
-DSi_DSP::DSi_DSP(khDaysMM::DSi& dsi) : DSi(dsi)
+DSi_DSP::DSi_DSP(melonDS::DSi& dsi) : DSi(dsi)
 {
     DSi.RegisterEventFunc(Event_DSi_DSP, 0, MemberEventFunc(DSi_DSP, DSPCatchUpU32));
 

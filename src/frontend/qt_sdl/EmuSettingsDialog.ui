@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Emu settings - khDaysMM</string>
+   <string>Emu settings - melonDS</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="sizeConstraint">
@@ -610,7 +610,7 @@
        <item row="4" column="0" colspan="7">
         <widget class="QLabel" name="label_18">
          <property name="text">
-          <string>Note: khDaysMM must be restarted in order for these changes to have effect</string>
+          <string>Note: melonDS must be restarted in order for these changes to have effect</string>
          </property>
         </widget>
        </item>

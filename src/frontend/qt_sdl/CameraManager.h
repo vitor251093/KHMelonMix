@@ -89,11 +89,11 @@ public:
 
     void setXFlip(bool flip);
 
-    void captureFrame(khDaysMM::u32* frame, int width, int height, bool yuv);
+    void captureFrame(melonDS::u32* frame, int width, int height, bool yuv);
 
-    void feedFrame(khDaysMM::u32* frame, int width, int height, bool yuv);
-    void feedFrame_UYVY(khDaysMM::u32* frame, int width, int height);
-    void feedFrame_NV12(khDaysMM::u8* planeY, khDaysMM::u8* planeUV, int width, int height);
+    void feedFrame(melonDS::u32* frame, int width, int height, bool yuv);
+    void feedFrame_UYVY(melonDS::u32* frame, int width, int height);
+    void feedFrame_NV12(melonDS::u8* planeY, melonDS::u8* planeUV, int width, int height);
 
 signals:
     void camStartSignal();
@@ -120,15 +120,15 @@ private:
 
     int frameWidth, frameHeight;
     bool frameFormatYUV;
-    khDaysMM::u32* frameBuffer;
-    khDaysMM::u32* tempFrameBuffer;
+    melonDS::u32* frameBuffer;
+    melonDS::u32* tempFrameBuffer;
     QMutex frameMutex;
 
     bool xFlip;
 
-    void copyFrame_Straight(khDaysMM::u32* src, int swidth, int sheight, khDaysMM::u32* dst, int dwidth, int dheight, bool xflip, bool yuv);
-    void copyFrame_RGBtoYUV(khDaysMM::u32* src, int swidth, int sheight, khDaysMM::u32* dst, int dwidth, int dheight, bool xflip);
-    void copyFrame_YUVtoRGB(khDaysMM::u32* src, int swidth, int sheight, khDaysMM::u32* dst, int dwidth, int dheight, bool xflip);
+    void copyFrame_Straight(melonDS::u32* src, int swidth, int sheight, melonDS::u32* dst, int dwidth, int dheight, bool xflip, bool yuv);
+    void copyFrame_RGBtoYUV(melonDS::u32* src, int swidth, int sheight, melonDS::u32* dst, int dwidth, int dheight, bool xflip);
+    void copyFrame_YUVtoRGB(melonDS::u32* src, int swidth, int sheight, melonDS::u32* dst, int dwidth, int dheight, bool xflip);
 };
 
 #endif // CAMERAMANAGER_H

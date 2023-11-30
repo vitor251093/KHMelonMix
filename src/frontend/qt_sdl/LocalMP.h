@@ -24,7 +24,7 @@
 namespace LocalMP
 {
 
-using namespace khDaysMM;
+using namespace melonDS;
 bool Init();
 void DeInit();
 

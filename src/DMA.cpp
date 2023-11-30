@@ -24,7 +24,7 @@
 #include "DMA_Timings.h"
 #include "Platform.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -49,7 +49,7 @@ using Platform::LogLevel;
 // TODO: timings are nonseq when address is fixed/decrementing
 
 
-DMA::DMA(u32 cpu, u32 num, khDaysMM::NDS& nds) :
+DMA::DMA(u32 cpu, u32 num, melonDS::NDS& nds) :
     CPU(cpu),
     Num(num),
     NDS(nds)

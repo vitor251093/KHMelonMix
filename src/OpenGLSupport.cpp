@@ -18,7 +18,7 @@
 
 #include "OpenGLSupport.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 
 using Platform::Log;

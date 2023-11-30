@@ -22,7 +22,7 @@
 #include "types.h"
 
 // this file exists to break #include cycle loops
-namespace khDaysMM
+namespace melonDS
 {
 struct MemRegion
 {

@@ -21,7 +21,7 @@
 
 #include "Savestate.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 class WifiAP;
 class NDS;
@@ -157,7 +157,7 @@ public:
         W_RXTXAddr = 0x268,
     };
 
-    Wifi(khDaysMM::NDS& nds);
+    Wifi(melonDS::NDS& nds);
     ~Wifi();
     void Reset();
     void DoSavestate(Savestate* file);
@@ -173,7 +173,7 @@ public:
     u8* GetBSSID();
 
 private:
-    khDaysMM::NDS& NDS;
+    melonDS::NDS& NDS;
     u8 RAM[0x2000];
     u16 IO[0x1000>>1];
 

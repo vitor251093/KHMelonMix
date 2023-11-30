@@ -27,7 +27,7 @@
 #include <stddef.h>
 #endif
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;

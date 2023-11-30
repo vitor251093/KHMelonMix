@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Wifi settings - khDaysMM</string>
+   <string>Wifi settings - melonDS</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="sizeConstraint">
@@ -31,7 +31,7 @@
 }</string>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;These settings control how khDaysMM connects to the internet for online features (typically called &amp;quot;Nintendo Wi-Fi Connection&amp;quot;) in games. &lt;/p&gt;&lt;p&gt;Local multiplayer features do not use the same network protocols as online play, so the settings here will have no effect on them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;These settings control how melonDS connects to the internet for online features (typically called &amp;quot;Nintendo Wi-Fi Connection&amp;quot;) in games. &lt;/p&gt;&lt;p&gt;Local multiplayer features do not use the same network protocols as online play, so the settings here will have no effect on them.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

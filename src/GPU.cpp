@@ -25,7 +25,7 @@
 #include "GPU2D_Soft.h"
 #include "GPU3D_Soft.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -63,7 +63,7 @@ enum
                 VRAMDirty need to be reset for the respective VRAM bank.
 */
 
-GPU::GPU(khDaysMM::NDS& nds, std::unique_ptr<Renderer3D>&& renderer3d, std::unique_ptr<GPU2D::Renderer2D>&& renderer2d) noexcept :
+GPU::GPU(melonDS::NDS& nds, std::unique_ptr<Renderer3D>&& renderer3d, std::unique_ptr<GPU2D::Renderer2D>&& renderer2d) noexcept :
     NDS(nds),
     GPU2D_A(0, *this),
     GPU2D_B(1, *this),

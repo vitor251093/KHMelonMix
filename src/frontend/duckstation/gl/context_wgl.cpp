@@ -3,7 +3,7 @@
 #include "../log.h"
 #include "../scoped_guard.h"
 #include "loader.h"
-using namespace khDaysMM;
+using namespace melonDS;
 Log_SetChannel(GL::ContextWGL);
 
 // TODO: get rid of this

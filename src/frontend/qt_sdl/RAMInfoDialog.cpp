@@ -21,7 +21,7 @@
 
 #include "main.h"
 
-using namespace khDaysMM;
+using namespace melonDS;
 extern EmuThread* emuThread;
 
 s32 GetMainRAMValue(NDS& nds, const u32& addr, const ramInfo_ByteType& byteType)

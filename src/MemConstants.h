@@ -21,7 +21,7 @@
 
 #include "types.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 constexpr u32 MainRAMMaxSize = 0x1000000;
 constexpr u32 SharedWRAMSize = 0x8000;

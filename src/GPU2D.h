@@ -22,7 +22,7 @@
 #include "types.h"
 #include "Savestate.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 class GPU;
 
@@ -34,7 +34,7 @@ class Unit
 public:
     // take a reference to the GPU so we can access its state
     // and ensure that it's not null
-    Unit(u32 num, khDaysMM::GPU& gpu);
+    Unit(u32 num, melonDS::GPU& gpu);
     virtual ~Unit() = default;
     Unit(const Unit&) = delete;
     Unit& operator=(const Unit&) = delete;
@@ -123,7 +123,7 @@ public:
 
     u16 MasterBrightness;
 private:
-    khDaysMM::GPU& GPU;
+    melonDS::GPU& GPU;
 };
 
 class Renderer2D

@@ -22,7 +22,7 @@
 #include "Input.h"
 #include "Config.h"
 
-using namespace khDaysMM;
+using namespace melonDS;
 
 namespace Input
 {

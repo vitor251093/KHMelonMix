@@ -27,8 +27,8 @@
 #include "CLI.h"
 #include "Platform.h"
 
-using khDaysMM::Platform::Log;
-using khDaysMM::Platform::LogLevel;
+using melonDS::Platform::Log;
+using melonDS::Platform::LogLevel;
 
 namespace CLI
 {
@@ -42,7 +42,7 @@ CommandLineOptions* ManageArgs(QApplication& melon)
     parser.addPositionalArgument("gba", "GBA ROM (or an archive file which contains it) to load into Slot-2");
 
     parser.addOption(QCommandLineOption({"b", "boot"}, "Whether to boot firmware on startup. Defaults to \"auto\" (boot if NDS rom given)", "auto/always/never", "auto"));
-    parser.addOption(QCommandLineOption({"f", "fullscreen"}, "Start khDaysMM in fullscreen mode"));
+    parser.addOption(QCommandLineOption({"f", "fullscreen"}, "Start melonDS in fullscreen mode"));
 
 #ifdef ARCHIVE_SUPPORT_ENABLED
     parser.addOption(QCommandLineOption({"a", "archive-file"}, "Specify file to load inside an archive given (NDS)", "rom"));

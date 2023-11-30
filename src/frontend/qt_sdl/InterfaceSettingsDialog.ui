@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Interface settings - khDaysMM</string>
+   <string>Interface settings - melonDS</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0" alignment="Qt::AlignLeft">

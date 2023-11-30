@@ -27,7 +27,7 @@
 #include "melonDLDI.h"
 #include "xxhash/xxhash.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -1444,7 +1444,7 @@ void CartHomebrew::ReadROM_B7(u32 addr, u32 len, u8* data, u32 offset)
 
 
 
-NDSCartSlot::NDSCartSlot(khDaysMM::NDS& nds) noexcept : NDS(nds)
+NDSCartSlot::NDSCartSlot(melonDS::NDS& nds) noexcept : NDS(nds)
 {
     NDS.RegisterEventFunc(Event_ROMTransfer, ROMTransfer_PrepareData, MemberEventFunc(NDSCartSlot, ROMPrepareData));
     NDS.RegisterEventFunc(Event_ROMTransfer, ROMTransfer_End, MemberEventFunc(NDSCartSlot, ROMEndTransfer));

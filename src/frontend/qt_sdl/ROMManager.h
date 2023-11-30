@@ -30,7 +30,7 @@
 #include <memory>
 #include <vector>
 
-namespace khDaysMM
+namespace melonDS
 {
 class NDS;
 class DSi;
@@ -40,7 +40,7 @@ class EmuThread;
 namespace ROMManager
 {
 
-using namespace khDaysMM;
+using namespace melonDS;
 extern SaveManager* NDSSave;
 extern SaveManager* GBASave;
 extern std::unique_ptr<SaveManager> FirmwareSave;

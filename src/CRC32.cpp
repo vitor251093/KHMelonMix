@@ -20,7 +20,7 @@
 
 // http://www.codeproject.com/KB/recipes/crc32_large.aspx
 
-namespace khDaysMM
+namespace melonDS
 {
 constexpr u32 _reflect(u32 refl, char ch)
 {

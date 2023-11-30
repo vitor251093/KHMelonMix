@@ -42,7 +42,7 @@
 #include "NDS.h"
 #endif
 
-namespace khDaysMM
+namespace melonDS
 {
 namespace Platform { struct DynamicLibrary; }
 class Compiler;
@@ -97,7 +97,7 @@ public:
 
 #ifdef JIT_ENABLED
 public:
-    explicit ARMJIT_Memory(khDaysMM::NDS& nds);
+    explicit ARMJIT_Memory(melonDS::NDS& nds);
     ~ARMJIT_Memory() noexcept;
     ARMJIT_Memory(const ARMJIT_Memory&) = delete;
     ARMJIT_Memory(ARMJIT_Memory&&) = delete;
@@ -153,12 +153,12 @@ private:
         u32 EmulatedFaultAddr;
         u8* FaultPC;
     };
-    static bool FaultHandler(FaultDescription& faultDesc, khDaysMM::NDS& nds);
+    static bool FaultHandler(FaultDescription& faultDesc, melonDS::NDS& nds);
     bool MapIntoRange(u32 addr, u32 num, u32 offset, u32 size) noexcept;
     bool UnmapFromRange(u32 addr, u32 num, u32 offset, u32 size) noexcept;
     void SetCodeProtectionRange(u32 addr, u32 size, u32 num, int protection) noexcept;
 
-    khDaysMM::NDS& NDS;
+    melonDS::NDS& NDS;
     void* FastMem9Start;
     void* FastMem7Start;
     u8* MemoryBase = nullptr;
@@ -181,7 +181,7 @@ private:
     TinyVector<Mapping> Mappings[memregions_Count] {};
 #else
 public:
-    explicit ARMJIT_Memory(khDaysMM::NDS&) {};
+    explicit ARMJIT_Memory(melonDS::NDS&) {};
     ~ARMJIT_Memory() = default;
     ARMJIT_Memory(const ARMJIT_Memory&) = delete;
     ARMJIT_Memory(ARMJIT_Memory&&) = delete;

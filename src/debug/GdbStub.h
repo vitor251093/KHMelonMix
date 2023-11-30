@@ -13,7 +13,7 @@
 namespace Gdb
 {
 
-using namespace khDaysMM;
+using namespace melonDS;
 enum class TgtStatus
 {
 	NoEvent,

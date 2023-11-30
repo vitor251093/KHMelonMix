@@ -28,7 +28,7 @@
 #include "debug/GdbStub.h"
 #endif
 
-namespace khDaysMM::ARMInterpreter
+namespace melonDS::ARMInterpreter
 {
     using Platform::Log;
     using Platform::LogLevel;

@@ -31,7 +31,7 @@
 #include <QtDebug>
 #include "main.h"
 
-using namespace khDaysMM;
+using namespace melonDS;
 
 PowerManagementDialog* PowerManagementDialog::currentDlg = nullptr;
 

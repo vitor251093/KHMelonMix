@@ -108,7 +108,7 @@
 #include "CLI.h"
 
 // TODO: uniform variable spelling
-using namespace khDaysMM;
+using namespace melonDS;
 const QString NdsRomMimeType = "application/x-nintendo-ds-rom";
 const QStringList NdsRomExtensions { ".nds", ".srl", ".dsi", ".ids" };
 
@@ -207,10 +207,10 @@ std::unique_ptr<NDS> EmuThread::CreateConsole()
 {
     if (Config::ConsoleType == 1)
     {
-        return std::make_unique<khDaysMM::DSi>();
+        return std::make_unique<melonDS::DSi>();
     }
 
-    return std::make_unique<khDaysMM::NDS>();
+    return std::make_unique<melonDS::NDS>();
 }
 
 void EmuThread::RecreateConsole()
@@ -366,7 +366,7 @@ void EmuThread::run()
     }
     else
     {
-        auto glrenderer =  khDaysMM::GLRenderer::New(NDS->GPU);
+        auto glrenderer =  melonDS::GLRenderer::New(NDS->GPU);
         glrenderer->SetRenderSettings(Config::GL_BetterPolygons, Config::GL_ScaleFactor);
         NDS->GPU.SetRenderer3D(std::move(glrenderer));
     }
@@ -501,7 +501,7 @@ void EmuThread::run()
                 }
                 else
                 {
-                    auto glrenderer =  khDaysMM::GLRenderer::New(NDS->GPU);
+                    auto glrenderer =  melonDS::GLRenderer::New(NDS->GPU);
                     glrenderer->SetRenderSettings(Config::GL_BetterPolygons, Config::GL_ScaleFactor);
                     NDS->GPU.SetRenderer3D(std::move(glrenderer));
                 }

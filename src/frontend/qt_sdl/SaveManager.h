@@ -41,31 +41,31 @@ public:
     std::string GetPath();
     void SetPath(const std::string& path, bool reload);
 
-    void RequestFlush(const khDaysMM::u8* savedata, khDaysMM::u32 savelen, khDaysMM::u32 writeoffset, khDaysMM::u32 writelen);
+    void RequestFlush(const melonDS::u8* savedata, melonDS::u32 savelen, melonDS::u32 writeoffset, melonDS::u32 writelen);
     void CheckFlush();
 
     bool NeedsFlush();
-    void FlushSecondaryBuffer(khDaysMM::u8* dst = nullptr, khDaysMM::u32 dstLength = 0);
+    void FlushSecondaryBuffer(melonDS::u8* dst = nullptr, melonDS::u32 dstLength = 0);
 
 private:
     std::string Path;
 
     std::atomic_bool Running;
 
-    std::unique_ptr<khDaysMM::u8[]> Buffer;
-    khDaysMM::u32 Length;
+    std::unique_ptr<melonDS::u8[]> Buffer;
+    melonDS::u32 Length;
     bool FlushRequested;
 
     QMutex* SecondaryBufferLock;
-    std::unique_ptr<khDaysMM::u8[]> SecondaryBuffer;
-    khDaysMM::u32 SecondaryBufferLength;
+    std::unique_ptr<melonDS::u8[]> SecondaryBuffer;
+    melonDS::u32 SecondaryBufferLength;
 
     time_t TimeAtLastFlushRequest;
 
     // We keep versions in case the user closes the application before
     // a flush cycle is finished.
-    khDaysMM::u32 PreviousFlushVersion;
-    khDaysMM::u32 FlushVersion;
+    melonDS::u32 PreviousFlushVersion;
+    melonDS::u32 FlushVersion;
 };
 
 #endif // SAVEMANAGER_H

@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>ROM info - khDaysMM</string>
+   <string>ROM info - melonDS</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="0">

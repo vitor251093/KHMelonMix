@@ -27,8 +27,8 @@
 
 #include "ARCodeFile.h"
 
-Q_DECLARE_METATYPE(khDaysMM::ARCodeList::iterator)
-Q_DECLARE_METATYPE(khDaysMM::ARCodeCatList::iterator)
+Q_DECLARE_METATYPE(melonDS::ARCodeList::iterator)
+Q_DECLARE_METATYPE(melonDS::ARCodeCatList::iterator)
 
 namespace Ui { class CheatsDialog; }
 class CheatsDialog;
@@ -87,7 +87,7 @@ private slots:
 private:
     Ui::CheatsDialog* ui;
 
-    khDaysMM::ARCodeFile* codeFile;
+    melonDS::ARCodeFile* codeFile;
     ARCodeChecker* codeChecker;
 };
 

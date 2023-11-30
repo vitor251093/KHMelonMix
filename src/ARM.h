@@ -28,7 +28,7 @@
 #include "debug/GdbStub.h"
 #endif
 
-namespace khDaysMM
+namespace melonDS
 {
 inline u32 ROR(u32 x, u32 n)
 {
@@ -189,7 +189,7 @@ public:
     Gdb::GdbStub GdbStub;
 #endif
 
-    khDaysMM::NDS& NDS;
+    melonDS::NDS& NDS;
 protected:
     virtual u8 BusRead8(u32 addr) = 0;
     virtual u16 BusRead16(u32 addr) = 0;
@@ -225,7 +225,7 @@ protected:
 class ARMv5 : public ARM
 {
 public:
-    ARMv5(khDaysMM::NDS& nds);
+    ARMv5(melonDS::NDS& nds);
     ~ARMv5();
 
     void Reset() override;
@@ -377,7 +377,7 @@ protected:
 class ARMv4 : public ARM
 {
 public:
-    ARMv4(khDaysMM::NDS& nds);
+    ARMv4(melonDS::NDS& nds);
 
     void FillPipeline() override;
 

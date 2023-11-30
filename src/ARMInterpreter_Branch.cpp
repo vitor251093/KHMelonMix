@@ -19,7 +19,7 @@
 #include "ARM.h"
 #include "Platform.h"
 
-namespace khDaysMM::ARMInterpreter
+namespace melonDS::ARMInterpreter
 {
 using Platform::Log;
 using Platform::LogLevel;

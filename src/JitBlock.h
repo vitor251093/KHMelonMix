@@ -22,7 +22,7 @@
 #include "types.h"
 #include "TinyVector.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 typedef void (*JitBlockEntry)();
 

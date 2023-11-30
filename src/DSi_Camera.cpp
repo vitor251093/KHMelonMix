@@ -23,7 +23,7 @@
 #include "DSi_Camera.h"
 #include "Platform.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 using Platform::Log;
 using Platform::LogLevel;
@@ -38,7 +38,7 @@ const u32 DSi_CamModule::kIRQInterval = 1120000; // ~30 FPS
 const u32 DSi_CamModule::kTransferStart = 60000;
 
 
-DSi_CamModule::DSi_CamModule(khDaysMM::DSi& dsi) : DSi(dsi)
+DSi_CamModule::DSi_CamModule(melonDS::DSi& dsi) : DSi(dsi)
 {
     DSi.RegisterEventFunc(Event_DSi_CamIRQ, 0, MemberEventFunc(DSi_CamModule, IRQ));
     DSi.RegisterEventFunc(Event_DSi_CamTransfer, 0, MemberEventFunc(DSi_CamModule, TransferScanline));
@@ -379,7 +379,7 @@ void DSi_CamModule::Write32(u32 addr, u32 val)
 
 
 
-DSi_Camera::DSi_Camera(khDaysMM::DSi& dsi, DSi_I2CHost* host, u32 num) : DSi_I2CDevice(dsi, host), Num(num)
+DSi_Camera::DSi_Camera(melonDS::DSi& dsi, DSi_I2CHost* host, u32 num) : DSi_I2CDevice(dsi, host), Num(num)
 {
 }
 

@@ -28,7 +28,7 @@
 #include "OpenGLSupport.h"
 #include "GPU_OpenGL_shaders.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 
 using namespace OpenGL;

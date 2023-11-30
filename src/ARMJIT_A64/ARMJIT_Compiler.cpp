@@ -40,7 +40,7 @@ using namespace Arm64Gen;
 
 extern "C" void ARM_Ret();
 
-namespace khDaysMM
+namespace melonDS
 {
 
 /*
@@ -107,7 +107,7 @@ void Compiler::A_Comp_MSR()
     if (CurInstr.Instr & (1 << 25))
     {
         val = W0;
-        MOVI2R(val, khDaysMM::ROR((CurInstr.Instr & 0xFF), ((CurInstr.Instr >> 7) & 0x1E)));
+        MOVI2R(val, melonDS::ROR((CurInstr.Instr & 0xFF), ((CurInstr.Instr >> 7) & 0x1E)));
     }
     else
     {
@@ -221,7 +221,7 @@ void Compiler::PopRegs(bool saveHiRegs, bool saveRegsToBeChanged)
     }
 }
 
-Compiler::Compiler(khDaysMM::NDS& nds) : Arm64Gen::ARM64XEmitter(), NDS(nds)
+Compiler::Compiler(melonDS::NDS& nds) : Arm64Gen::ARM64XEmitter(), NDS(nds)
 {
 #ifdef __SWITCH__
     JitRWBase = aligned_alloc(0x1000, JitMemSize);

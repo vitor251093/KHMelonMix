@@ -29,7 +29,7 @@
 // like std::bitset but less stupid and optimised for 
 // our use case (keeping track of memory invalidations)
 
-namespace khDaysMM
+namespace melonDS
 {
 template <u32 Size>
 struct NonStupidBitField

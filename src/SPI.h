@@ -28,7 +28,7 @@
 #include "Savestate.h"
 #include "SPI_Firmware.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 enum
 {
@@ -46,7 +46,7 @@ class NDS;
 class SPIDevice
 {
 public:
-    SPIDevice(khDaysMM::NDS& nds) : NDS(nds), Hold(false), DataPos(0) {}
+    SPIDevice(melonDS::NDS& nds) : NDS(nds), Hold(false), DataPos(0) {}
     virtual ~SPIDevice() {}
     virtual void Reset() = 0;
     virtual void DoSavestate(Savestate* file) = 0;
@@ -56,7 +56,7 @@ public:
     virtual void Release() { Hold = false; DataPos = 0; }
 
 protected:
-    khDaysMM::NDS& NDS;
+    melonDS::NDS& NDS;
 
     bool Hold;
     u32 DataPos;
@@ -66,7 +66,7 @@ protected:
 class FirmwareMem : public SPIDevice
 {
 public:
-    FirmwareMem(khDaysMM::NDS& nds);
+    FirmwareMem(melonDS::NDS& nds);
     ~FirmwareMem() override;
     void Reset() override;
     void DoSavestate(Savestate* file) override;
@@ -96,7 +96,7 @@ private:
 class PowerMan : public SPIDevice
 {
 public:
-    PowerMan(khDaysMM::NDS& nds);
+    PowerMan(melonDS::NDS& nds);
     ~PowerMan() override;
     void Reset() override;
     void DoSavestate(Savestate* file) override;
@@ -116,7 +116,7 @@ private:
 class TSC : public SPIDevice
 {
 public:
-    TSC(khDaysMM::NDS& nds);
+    TSC(melonDS::NDS& nds);
     virtual ~TSC() override;
     virtual void Reset() override;
     virtual void DoSavestate(Savestate* file) override;
@@ -142,7 +142,7 @@ protected:
 class SPIHost
 {
 public:
-    SPIHost(khDaysMM::NDS& nds);
+    SPIHost(melonDS::NDS& nds);
     ~SPIHost();
     void Reset();
     void DoSavestate(Savestate* file);
@@ -162,7 +162,7 @@ public:
     void TransferDone(u32 param);
 
 private:
-    khDaysMM::NDS& NDS;
+    melonDS::NDS& NDS;
     u16 Cnt;
 
     SPIDevice* Devices[3];

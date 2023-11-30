@@ -24,7 +24,7 @@ using namespace Arm64Gen;
 // hack
 const int kCodeCacheTiming = 3;
 
-namespace khDaysMM
+namespace melonDS
 {
 
 template <typename T>

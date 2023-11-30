@@ -24,7 +24,7 @@
 #include "FATStorage.h"
 #include "Savestate.h"
 
-namespace khDaysMM
+namespace melonDS
 {
 namespace DSi_NAND
 {
@@ -38,7 +38,7 @@ class DSi;
 class DSi_SDHost
 {
 public:
-    DSi_SDHost(khDaysMM::DSi& dsi, u32 num);
+    DSi_SDHost(melonDS::DSi& dsi, u32 num);
     ~DSi_SDHost();
 
     void CloseHandles();
@@ -70,7 +70,7 @@ public:
     void CheckSwapFIFO();
 
 private:
-    khDaysMM::DSi& DSi;
+    melonDS::DSi& DSi;
     u32 Num;
 
     u16 PortSelect;
