@@ -814,6 +814,7 @@ bool EmuThread::setGameScene(int newGameScene)
     }
     autoScreenSizing = size;
     Config::ScreenSwap = (newGameScene == gameScene_Intro || newGameScene == gameScene_MainMenu) ? 1 : 0;
+    Config::ScreenAspectTop = (newGameScene == gameScene_DayCounter) ? 0 : 3;
 
     return true;
 }
