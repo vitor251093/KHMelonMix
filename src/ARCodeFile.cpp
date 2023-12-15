@@ -51,6 +51,9 @@ ARCodeFile::~ARCodeFile()
 
 bool ARCodeFile::Load()
 {
+    // References
+    // https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf
+
     int aspectRatioKey = (int)round(0x1000 * ScreenAspect);
 
     Categories.clear();
@@ -60,14 +63,22 @@ bool ARCodeFile::Load()
     curcat.Codes.clear();
 
     // Also known as the "Widescreen hack"
+    // TODO: Shouldn't be applied while the menu is opened
     ARCode curcode;
     curcode.Name = "Auto Resolution";
     curcode.Enabled = true;
     curcode.Code.clear();
-    curcode.Code.push_back(0x52023C9C); curcode.Code.push_back(0x00001555);
-    curcode.Code.push_back(0x02023C9C); curcode.Code.push_back(aspectRatioKey);
-    curcode.Code.push_back(0xD2000000); curcode.Code.push_back(0x00000000);
+    curcode.Code.push_back(0x52023C9C); curcode.Code.push_back(0x00001555);     // if (mem[0x02023C9C] == 0x00001555) {
+    curcode.Code.push_back(0x02023C9C); curcode.Code.push_back(aspectRatioKey); //     mem[0x02023C9C] = aspectRatioKey;
+    curcode.Code.push_back(0xD2000000); curcode.Code.push_back(0x00000000);     // }
     curcat.Codes.push_back(curcode);
+
+    //ARCode curcode2;
+    //curcode2.Name = "Always X + D-Pad";
+    //curcode2.Enabled = true;
+    //curcode2.Code.clear();
+    //curcode2.Code.push_back(0x20194CC3); curcode2.Code.push_back(0x00000040);
+    //curcat.Codes.push_back(curcode2);
 
     Categories.push_back(curcat);
     return true;

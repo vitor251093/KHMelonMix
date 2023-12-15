@@ -49,7 +49,7 @@ enum
     screenSizing_EmphBot,
     screenSizing_Auto,
     screenSizing_TopOnly,
-    screenSizing_BotOnly, // Intro Save Menu
+    screenSizing_BotOnly, // Intro Load Menu
     screenSizing_MAX,
     screenSizing_MiniMap, // Main Game with a floating map
     screenSizing_PauseMenuWithGauge
