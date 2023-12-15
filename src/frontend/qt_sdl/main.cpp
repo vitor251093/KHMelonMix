@@ -882,8 +882,8 @@ bool EmuThread::refreshAutoScreenSizing()
         // Intro save menu
         bool isIntroSaveMenu = NDS->GPU.GPU2D_B.BlendCnt == 4164 && (NDS->GPU.GPU2D_A.EVA == 0 || NDS->GPU.GPU2D_A.EVA == 16) && 
              NDS->GPU.GPU2D_A.EVB == 0 && NDS->GPU.GPU2D_A.EVY == 0 &&
-            (NDS->GPU.GPU2D_B.EVA < 10 && NDS->GPU.GPU2D_B.EVA >= 2) && 
-            (NDS->GPU.GPU2D_B.EVB >  7 && NDS->GPU.GPU2D_B.EVB <= 14) && NDS->GPU.GPU2D_B.EVY == 0;
+            (NDS->GPU.GPU2D_B.EVA < 10 && NDS->GPU.GPU2D_B.EVA >= 0) && 
+            (NDS->GPU.GPU2D_B.EVB >  7 && NDS->GPU.GPU2D_B.EVB <= 16) && NDS->GPU.GPU2D_B.EVY == 0;
         bool mayBeMainMenu = NDS->GPU.GPU3D.NumVertices == 4 && NDS->GPU.GPU3D.NumPolygons == 1 && NDS->GPU.GPU3D.RenderNumPolygons == 1;
 
         if (isIntroSaveMenu)
