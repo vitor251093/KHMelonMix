@@ -65,7 +65,7 @@ bool ARCodeFile::Load()
     // Also known as the "Widescreen hack"
     // TODO: Shouldn't be applied while the menu is opened
     ARCode curcode;
-    curcode.Name = "Auto Resolution";
+    curcode.Name = "Auto Resolution (US)";
     curcode.Enabled = true;
     curcode.Code.clear();
     curcode.Code.push_back(0x52023C9C); curcode.Code.push_back(0x00001555);     // if (mem32[0x02023C9C] == 0x00001555) {
@@ -94,6 +94,17 @@ bool ARCodeFile::Load()
     curcode3.Code.push_back(0xD2000000); curcode3.Code.push_back(0x00000000);  //     }
     curcode3.Code.push_back(0xD2000000); curcode3.Code.push_back(0x00000000);  // }
     curcat.Codes.push_back(curcode3);
+
+    ARCode curcode4;
+    curcode4.Name = "Always X + D-Pad (JP)";
+    curcode4.Enabled = true;
+    curcode4.Code.clear();
+    curcode4.Code.push_back(0x72193E22); curcode4.Code.push_back(0x4300);      // if (mem16[0x02193E22] < 0x4300) {
+    curcode4.Code.push_back(0x82193E22); curcode4.Code.push_back(0x41FF);      //     if (mem16[0x02193E22] > 0x41FF) {
+    curcode4.Code.push_back(0x22193E23); curcode4.Code.push_back(0x40);        //         mem8[0x02193E23] = 0x40;
+    curcode4.Code.push_back(0xD2000000); curcode4.Code.push_back(0x00000000);  //     }
+    curcode4.Code.push_back(0xD2000000); curcode4.Code.push_back(0x00000000);  // }
+    curcat.Codes.push_back(curcode4);
 
     Categories.push_back(curcat);
     return true;
