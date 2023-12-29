@@ -68,16 +68,20 @@ bool ARCodeFile::Load()
     curcode.Name = "Auto Resolution";
     curcode.Enabled = true;
     curcode.Code.clear();
-    curcode.Code.push_back(0x52023C9C); curcode.Code.push_back(0x00001555);     // if (mem[0x02023C9C] == 0x00001555) {
-    curcode.Code.push_back(0x02023C9C); curcode.Code.push_back(aspectRatioKey); //     mem[0x02023C9C] = aspectRatioKey;
+    curcode.Code.push_back(0x52023C9C); curcode.Code.push_back(0x00001555);     // if (mem32[0x02023C9C] == 0x00001555) {
+    curcode.Code.push_back(0x02023C9C); curcode.Code.push_back(aspectRatioKey); //     mem32[0x02023C9C] = aspectRatioKey;
     curcode.Code.push_back(0xD2000000); curcode.Code.push_back(0x00000000);     // }
     curcat.Codes.push_back(curcode);
 
     ARCode curcode2;
-    curcode2.Name = "Always X + D-Pad";
+    curcode2.Name = "Always X + D-Pad (US)";
     curcode2.Enabled = true;
     curcode2.Code.clear();
-    curcode2.Code.push_back(0x02194CC0); curcode2.Code.push_back(0x40100000);   // mem[0x02194CC0] = 0x40100000;
+    curcode2.Code.push_back(0x72194CC2); curcode2.Code.push_back(0x4300);      // if (mem16[0x02194CC2] < 0x4300) {
+    curcode2.Code.push_back(0x82194CC2); curcode2.Code.push_back(0x41FF);      //     if (mem16[0x02194CC2] > 0x41FF) {
+    curcode2.Code.push_back(0x22194CC3); curcode2.Code.push_back(0x40);        //         mem8[0x02194CC3] = 0x40;
+    curcode2.Code.push_back(0xD2000000); curcode2.Code.push_back(0x00000000);  //     }
+    curcode2.Code.push_back(0xD2000000); curcode2.Code.push_back(0x00000000);  // }
     curcat.Codes.push_back(curcode2);
 
     Categories.push_back(curcat);
