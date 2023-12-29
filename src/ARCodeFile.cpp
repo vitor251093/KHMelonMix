@@ -106,6 +106,17 @@ bool ARCodeFile::Load()
     curcode4.Code.push_back(0xD2000000); curcode4.Code.push_back(0x00000000);  // }
     curcat.Codes.push_back(curcode4);
 
+    ARCode curcode5;
+    curcode5.Name = "Always X + D-Pad (JP Rev1)";
+    curcode5.Enabled = true;
+    curcode5.Code.clear();
+    curcode5.Code.push_back(0x72193DA2); curcode5.Code.push_back(0x4300);      // if (mem16[0x02193DA2] < 0x4300) {
+    curcode5.Code.push_back(0x82193DA2); curcode5.Code.push_back(0x41FF);      //     if (mem16[0x02193DA2] > 0x41FF) {
+    curcode5.Code.push_back(0x22193DA3); curcode5.Code.push_back(0x40);        //         mem8[0x02193DA3] = 0x40;
+    curcode5.Code.push_back(0xD2000000); curcode5.Code.push_back(0x00000000);  //     }
+    curcode5.Code.push_back(0xD2000000); curcode5.Code.push_back(0x00000000);  // }
+    curcat.Codes.push_back(curcode5);
+
     Categories.push_back(curcat);
     return true;
 }
