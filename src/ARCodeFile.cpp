@@ -73,12 +73,12 @@ bool ARCodeFile::Load()
     curcode.Code.push_back(0xD2000000); curcode.Code.push_back(0x00000000);     // }
     curcat.Codes.push_back(curcode);
 
-    //ARCode curcode2;
-    //curcode2.Name = "Always X + D-Pad";
-    //curcode2.Enabled = true;
-    //curcode2.Code.clear();
-    //curcode2.Code.push_back(0x20194CC3); curcode2.Code.push_back(0x00000040);
-    //curcat.Codes.push_back(curcode2);
+    ARCode curcode2;
+    curcode2.Name = "Always X + D-Pad";
+    curcode2.Enabled = true;
+    curcode2.Code.clear();
+    curcode2.Code.push_back(0x02194CC0); curcode2.Code.push_back(0x40100000);   // mem[0x02194CC0] = 0x40100000;
+    curcat.Codes.push_back(curcode2);
 
     Categories.push_back(curcat);
     return true;
