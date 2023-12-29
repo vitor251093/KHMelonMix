@@ -60,6 +60,8 @@ public:
 
 private:
     float ScreenAspect;
+
+    ARCode AlwaysEnableXAndDPadToControlCommandMenu(std::string codeName, u32 address);
 };
 
 }

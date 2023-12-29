@@ -49,6 +49,27 @@ ARCodeFile::~ARCodeFile()
     Categories.clear();
 }
 
+ARCode ARCodeFile::AlwaysEnableXAndDPadToControlCommandMenu(std::string codeName, u32 address)
+{
+    // Example:
+    // if (mem16[0x02194CC2] < 0x4300) {
+    //     if (mem16[0x02194CC2] > 0x41FF) {
+    //         mem8[0x02194CC3] = 0x40;
+    //     }
+    // }
+
+    ARCode curcode2;
+    curcode2.Name = codeName;
+    curcode2.Enabled = true;
+    curcode2.Code.clear();
+    curcode2.Code.push_back((0x70000000 | address) - 0x1); curcode2.Code.push_back(0x4300);
+    curcode2.Code.push_back((0x80000000 | address) - 0x1); curcode2.Code.push_back(0x41FF);
+    curcode2.Code.push_back(0x20000000 | address); curcode2.Code.push_back(0x40);
+    curcode2.Code.push_back(0xD2000000); curcode2.Code.push_back(0x00000000);
+    curcode2.Code.push_back(0xD2000000); curcode2.Code.push_back(0x00000000);
+    return curcode2;
+}
+
 bool ARCodeFile::Load()
 {
     // References
@@ -73,49 +94,10 @@ bool ARCodeFile::Load()
     curcode.Code.push_back(0xD2000000); curcode.Code.push_back(0x00000000);     // }
     curcat.Codes.push_back(curcode);
 
-    ARCode curcode2;
-    curcode2.Name = "Always X + D-Pad (US)";
-    curcode2.Enabled = true;
-    curcode2.Code.clear();
-    curcode2.Code.push_back(0x72194CC2); curcode2.Code.push_back(0x4300);      // if (mem16[0x02194CC2] < 0x4300) {
-    curcode2.Code.push_back(0x82194CC2); curcode2.Code.push_back(0x41FF);      //     if (mem16[0x02194CC2] > 0x41FF) {
-    curcode2.Code.push_back(0x22194CC3); curcode2.Code.push_back(0x40);        //         mem8[0x02194CC3] = 0x40;
-    curcode2.Code.push_back(0xD2000000); curcode2.Code.push_back(0x00000000);  //     }
-    curcode2.Code.push_back(0xD2000000); curcode2.Code.push_back(0x00000000);  // }
-    curcat.Codes.push_back(curcode2);
-
-    ARCode curcode3;
-    curcode3.Name = "Always X + D-Pad (EU)";
-    curcode3.Enabled = true;
-    curcode3.Code.clear();
-    curcode3.Code.push_back(0x72195AA2); curcode3.Code.push_back(0x4300);      // if (mem16[0x02195AA2] < 0x4300) {
-    curcode3.Code.push_back(0x82195AA2); curcode3.Code.push_back(0x41FF);      //     if (mem16[0x02195AA2] > 0x41FF) {
-    curcode3.Code.push_back(0x22195AA3); curcode3.Code.push_back(0x40);        //         mem8[0x02195AA3] = 0x40;
-    curcode3.Code.push_back(0xD2000000); curcode3.Code.push_back(0x00000000);  //     }
-    curcode3.Code.push_back(0xD2000000); curcode3.Code.push_back(0x00000000);  // }
-    curcat.Codes.push_back(curcode3);
-
-    ARCode curcode4;
-    curcode4.Name = "Always X + D-Pad (JP)";
-    curcode4.Enabled = true;
-    curcode4.Code.clear();
-    curcode4.Code.push_back(0x72193E22); curcode4.Code.push_back(0x4300);      // if (mem16[0x02193E22] < 0x4300) {
-    curcode4.Code.push_back(0x82193E22); curcode4.Code.push_back(0x41FF);      //     if (mem16[0x02193E22] > 0x41FF) {
-    curcode4.Code.push_back(0x22193E23); curcode4.Code.push_back(0x40);        //         mem8[0x02193E23] = 0x40;
-    curcode4.Code.push_back(0xD2000000); curcode4.Code.push_back(0x00000000);  //     }
-    curcode4.Code.push_back(0xD2000000); curcode4.Code.push_back(0x00000000);  // }
-    curcat.Codes.push_back(curcode4);
-
-    ARCode curcode5;
-    curcode5.Name = "Always X + D-Pad (JP Rev1)";
-    curcode5.Enabled = true;
-    curcode5.Code.clear();
-    curcode5.Code.push_back(0x72193DA2); curcode5.Code.push_back(0x4300);      // if (mem16[0x02193DA2] < 0x4300) {
-    curcode5.Code.push_back(0x82193DA2); curcode5.Code.push_back(0x41FF);      //     if (mem16[0x02193DA2] > 0x41FF) {
-    curcode5.Code.push_back(0x22193DA3); curcode5.Code.push_back(0x40);        //         mem8[0x02193DA3] = 0x40;
-    curcode5.Code.push_back(0xD2000000); curcode5.Code.push_back(0x00000000);  //     }
-    curcode5.Code.push_back(0xD2000000); curcode5.Code.push_back(0x00000000);  // }
-    curcat.Codes.push_back(curcode5);
+    curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)",      0x02194CC3));
+    curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (EU)",      0x02195AA3));
+    curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP)",      0x02193E23));
+    curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP Rev1)", 0x02193DA3));
 
     Categories.push_back(curcat);
     return true;
