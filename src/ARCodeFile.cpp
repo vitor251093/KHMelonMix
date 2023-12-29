@@ -84,6 +84,17 @@ bool ARCodeFile::Load()
     curcode2.Code.push_back(0xD2000000); curcode2.Code.push_back(0x00000000);  // }
     curcat.Codes.push_back(curcode2);
 
+    ARCode curcode3;
+    curcode3.Name = "Always X + D-Pad (EU)";
+    curcode3.Enabled = true;
+    curcode3.Code.clear();
+    curcode3.Code.push_back(0x72195AA2); curcode3.Code.push_back(0x4300);      // if (mem16[0x02195AA2] < 0x4300) {
+    curcode3.Code.push_back(0x82195AA2); curcode3.Code.push_back(0x41FF);      //     if (mem16[0x02195AA2] > 0x41FF) {
+    curcode3.Code.push_back(0x22195AA3); curcode3.Code.push_back(0x40);        //         mem8[0x02195AA3] = 0x40;
+    curcode3.Code.push_back(0xD2000000); curcode3.Code.push_back(0x00000000);  //     }
+    curcode3.Code.push_back(0xD2000000); curcode3.Code.push_back(0x00000000);  // }
+    curcat.Codes.push_back(curcode3);
+
     Categories.push_back(curcat);
     return true;
 }
