@@ -172,6 +172,10 @@ const char* kConfigFile = "melonDS.ini";
 const char* kUniqueConfigFile = "melonDS.%d.ini";
 
 int getLocaleIndex() {
+    #if defined(_WIN32)
+    return 1;
+    #endif
+
     int localIndex = 1;
     std::string userlocale = std::locale("").name().substr(0, 2);
     if (userlocale == "ja")
