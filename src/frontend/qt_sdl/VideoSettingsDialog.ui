@@ -26,6 +26,16 @@
    <property name="horizontalSpacing">
     <number>-1</number>
    </property>
+   <item row="2" column="1">
+    <widget class="QCheckBox" name="cbAutoFullscreen">
+    <property name="whatsThis">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically launches the emulator on fullscreen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="text">
+        <string>Launch in Fullscreen</string>
+    </property>
+    </widget>
+   </item>
    <item row="1" column="1">
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
@@ -200,6 +210,7 @@
   <tabstop>cbSoftwareThreaded</tabstop>
   <tabstop>cbxGLResolution</tabstop>
   <tabstop>cbBetterPolygons</tabstop>
+  <tabstop>cbAutoFullscreen</tabstop>
  </tabstops>
  <resources/>
  <connections>

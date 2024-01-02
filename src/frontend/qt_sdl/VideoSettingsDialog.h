@@ -62,6 +62,7 @@ private slots:
     void on_cbGLDisplay_stateChanged(int state);
     void on_cbVSync_stateChanged(int state);
     void on_sbVSyncInterval_valueChanged(int val);
+    void on_cbAutoFullscreen_stateChanged(int state);
 
     void on_cbxGLResolution_currentIndexChanged(int idx);
     void on_cbBetterPolygons_stateChanged(int state);
@@ -81,6 +82,7 @@ private:
     int oldSoftThreaded;
     int oldGLScale;
     int oldGLBetterPolygons;
+    int oldAutoFullscreen;
 };
 
 #endif // VIDEOSETTINGSDIALOG_H

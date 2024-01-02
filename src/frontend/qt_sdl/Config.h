@@ -159,6 +159,7 @@ extern bool GL_BetterPolygons;
 extern bool LimitFPS;
 extern bool AudioSync;
 extern bool ShowOSD;
+extern bool AutoFullscreen;
 
 extern int ConsoleType;
 extern bool DirectBoot;

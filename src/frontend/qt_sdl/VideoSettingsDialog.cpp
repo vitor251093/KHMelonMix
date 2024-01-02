@@ -48,6 +48,7 @@ VideoSettingsDialog::VideoSettingsDialog(QWidget* parent) : QDialog(parent), ui(
     oldSoftThreaded = Config::Threaded3D;
     oldGLScale = Config::GL_ScaleFactor;
     oldGLBetterPolygons = Config::GL_BetterPolygons;
+    oldAutoFullscreen = Config::AutoFullscreen;
 
     grp3DRenderer = new QButtonGroup(this);
     grp3DRenderer->addButton(ui->rb3DSoftware, 0);
@@ -75,6 +76,8 @@ VideoSettingsDialog::VideoSettingsDialog(QWidget* parent) : QDialog(parent), ui(
     ui->cbxGLResolution->setCurrentIndex(Config::GL_ScaleFactor-1);
 
     ui->cbBetterPolygons->setChecked(Config::GL_BetterPolygons != 0);
+
+    ui->cbAutoFullscreen->setChecked(Config::AutoFullscreen != 0);
 
     if (!Config::ScreenVSync)
         ui->sbVSyncInterval->setEnabled(false);
@@ -119,6 +122,7 @@ void VideoSettingsDialog::on_VideoSettingsDialog_rejected()
     Config::Threaded3D = oldSoftThreaded;
     Config::GL_ScaleFactor = oldGLScale;
     Config::GL_BetterPolygons = oldGLBetterPolygons;
+    Config::AutoFullscreen = oldAutoFullscreen;
 
     emit updateVideoSettings(old_gl != UsesGL());
 
@@ -184,6 +188,12 @@ void VideoSettingsDialog::on_cbSoftwareThreaded_stateChanged(int state)
 {
     Config::Threaded3D = (state != 0);
 
+    emit updateVideoSettings(false);
+}
+
+void VideoSettingsDialog::on_cbAutoFullscreen_stateChanged(int state)
+{
+    Config::AutoFullscreen = (state != 0);
     emit updateVideoSettings(false);
 }
 

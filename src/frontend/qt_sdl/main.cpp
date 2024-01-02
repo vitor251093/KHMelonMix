@@ -848,6 +848,9 @@ void EmuThread::debugLogs(int gameScene)
 //   become unreliable when it comes to screen sizing.
 bool EmuThread::refreshAutoScreenSizing()
 {
+    // printf("0x0223D384: %d\n",   NDS->ARM7Read32(0x0223D384));
+    // printf("0x0223D38C: %d\n\n", NDS->ARM7Read32(0x0223D38C));
+
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
     bool no3D = NDS->GPU.GPU3D.NumVertices == 0 && NDS->GPU.GPU3D.NumPolygons == 0 && NDS->GPU.GPU3D.RenderNumPolygons == 0;
 
@@ -2880,7 +2883,10 @@ void MainWindow::loadMostRecentFile()
 
         updateCartInserted(false);
 
-        emuThread->windowFullscreenToggle();
+        if (Config::AutoFullscreen)
+        {
+            emuThread->windowFullscreenToggle();
+        }
     }
 }
 
