@@ -804,11 +804,8 @@ bool EmuThread::setGameScene(int newGameScene)
         priorGameScene = NDS->GPU.GameScene;
         NDS->GPU.GameScene = newGameScene;
 
-        if (priorGameScene == gameScene_InGameWithMap || priorGameScene == gameScene_InGameWithoutMap || 
-            newGameScene == gameScene_InGameWithMap   || newGameScene == gameScene_InGameWithoutMap)
-        {
-            static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
-        }
+        // Updating GameScene inside shader
+        static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
     }
 
     // Screens position and size

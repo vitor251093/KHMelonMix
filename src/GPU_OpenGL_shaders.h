@@ -82,8 +82,12 @@ ivec2 getUITextureCoordinates(float xpos, float ypos)
     }
 
     // command menu
-    if (texPosition3d.x <= 128 && texPosition3d.y >= (192.0*iuTexScale - 106.0)) {
-        return texPosition3d - ivec2(0, 192.0*iuTexScale - 106.0) + ivec2(0, 86.0);
+    float commandMenuLeftMargin = 20.0;
+    float commandMenuBottomMargin = 20.0;
+    if (texPosition3d.x >= commandMenuLeftMargin && texPosition3d.x <= 128 &&
+        texPosition3d.y >= (192.0*iuTexScale - 106.0 - commandMenuBottomMargin) &&
+        texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
+        return texPosition3d - ivec2(commandMenuLeftMargin, 192.0*iuTexScale - 106.0 - commandMenuBottomMargin) + ivec2(0, 86.0);
     }
 
     // player health
