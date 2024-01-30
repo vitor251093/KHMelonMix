@@ -91,8 +91,13 @@ ivec2 getUITextureCoordinates(float xpos, float ypos)
     }
 
     // player health
-    if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y >= (192.0*iuTexScale - 96.0)) {
-        return texPosition3d - ivec2(256.0*iuTexScale - 128.0, 192.0*iuTexScale - 96.0) + ivec2(128.0, 96.0);
+    float playerHealthRightMargin = 12.0;
+    float playerHealthBottomMargin = 20.0;
+    if (texPosition3d.x >= (256.0*iuTexScale - 128.0 - playerHealthRightMargin) &&
+        texPosition3d.x < (256.0*iuTexScale - playerHealthRightMargin) &&
+        texPosition3d.y >= (192.0*iuTexScale - 96.0 - commandMenuBottomMargin) &&
+        texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
+        return texPosition3d - ivec2(256.0*iuTexScale - 128.0 - playerHealthRightMargin, 192.0*iuTexScale - 96.0 - playerHealthBottomMargin) + ivec2(128.0, 96.0);
     }
 
     // nothing (clear screen)
