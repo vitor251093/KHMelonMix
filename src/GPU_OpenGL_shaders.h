@@ -73,7 +73,7 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     // item notification
     float itemNotificationLeftMargin = 0.0;
     float itemNotificationTopMargin = 10.0;
-    if (texPosition3d.x <= 128 + itemNotificationLeftMargin &&
+    if (texPosition3d.x <= 108 + itemNotificationLeftMargin &&
         texPosition3d.x > itemNotificationLeftMargin &&
         texPosition3d.y <= 86 + itemNotificationTopMargin &&
         texPosition3d.y >= itemNotificationTopMargin) {
@@ -83,11 +83,11 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     // enemy health
     float enemyHealthRightMargin = 12.0;
     float enemyHealthTopMargin = 10.0;
-    if (texPosition3d.x >= (256.0*iuTexScale - 128.0 - enemyHealthRightMargin) &&
+    if (texPosition3d.x >= (256.0*iuTexScale - 148.0 - enemyHealthRightMargin) &&
         texPosition3d.x < (256.0*iuTexScale - enemyHealthRightMargin) && 
         texPosition3d.y <= 96 + enemyHealthTopMargin && 
         texPosition3d.y >= enemyHealthTopMargin) {
-        return texPosition3d - ivec2(256.0*iuTexScale - 128.0 - enemyHealthRightMargin, enemyHealthTopMargin) + ivec2(128.0, 0);
+        return texPosition3d - ivec2(256.0*iuTexScale - 148.0 - enemyHealthRightMargin, enemyHealthTopMargin) + ivec2(108.0, 0);
     }
 
     // command menu
