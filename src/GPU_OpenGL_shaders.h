@@ -52,9 +52,29 @@ smooth in vec2 fTexcoord;
 
 out vec4 oColor;
 
+ivec2 getTextureCoordinates(float xpos, float ypos)
+{
+    // KHDays: Cropping the ingame IU into pieces, so they aren't stretched
+    int iuScale = 3;
+    float iuTexScale = (u3DScale*1.0)/iuScale;
+    ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
+    if (texPosition3d.x <= 128 && texPosition3d.y <= 96) {
+        return texPosition3d;
+    }
+    else if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y <= 96) {
+        return texPosition3d - ivec2(256.0*iuTexScale - 128.0, 0) + ivec2(128.0, 0);
+    }
+    else if (texPosition3d.x <= 128 && texPosition3d.y >= (192.0*iuTexScale - 96.0)) {
+        return texPosition3d - ivec2(0, 192.0*iuTexScale - 96.0) + ivec2(0, 96.0);
+    }
+    else if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y >= (192.0*iuTexScale - 96.0)) {
+        return texPosition3d - ivec2(256.0*iuTexScale - 128.0, 192.0*iuTexScale - 96.0) + ivec2(128.0, 96.0);
+    }
+    return ivec2(0, 0);
+}
+
 void main()
 {
-    int iuScale = 3;
     ivec4 pixel = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord), 0));
 
     float _3dxpos = float(u3DXPos);
@@ -71,51 +91,23 @@ void main()
         ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(512,0), 0));
         ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
 
-        if (fTexcoord.y <= 192)
-        {
-            // KHDays: Cropping the ingame IU into pieces, so they aren't stretched
-            float iuTexScale = (u3DScale*1.0)/iuScale;
-            ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
-            if (texPosition3d.x <= 128 && texPosition3d.y <= 96) {
-                ivec2 textureBeginning = texPosition3d;
-                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
-                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
-            }
-            else if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y <= 96) {
-                ivec2 textureBeginning = texPosition3d - ivec2(256.0*iuTexScale - 128.0, 0) + ivec2(128.0, 0);
-                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
-                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
-            }
-            else if (texPosition3d.x <= 128 && texPosition3d.y >= (192.0*iuTexScale - 96.0)) {
-                ivec2 textureBeginning = texPosition3d - ivec2(0, 192.0*iuTexScale - 96.0) + ivec2(0, 96.0);
-                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
-                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
-            }
-            else if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y >= (192.0*iuTexScale - 96.0)) {
-                ivec2 textureBeginning = texPosition3d - ivec2(256.0*iuTexScale - 128.0, 192.0*iuTexScale - 96.0) + ivec2(128.0, 96.0);
-                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
-                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
-            }
-            else {
-                val1 = ivec4(1,1,1,0);
-                val2 = ivec4(1,1,1,0);
-                val3 = ivec4(1,1,1,0);
-            }
-        }
-
         int compmode = val3.a & 0xF;
         int eva, evb, evy;
+
+        ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
+                * vec4(63,63,63,31));
+
+        if (fTexcoord.y <= 192)
+        {
+            ivec2 textureBeginning = getTextureCoordinates(xpos, ypos);
+            val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+            val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
+            val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
+        }
 
         if (compmode == 4)
         {
             // 3D on top, blending
-
-            ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
-                         * vec4(63,63,63,31));
 
             if (_3dpix.a > 0)
             {
@@ -132,9 +124,6 @@ void main()
         {
             // 3D on bottom, blending
 
-            ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
-                         * vec4(63,63,63,31));
-
             if (_3dpix.a > 0)
             {
                 eva = val3.g;
@@ -149,9 +138,6 @@ void main()
         else if (compmode <= 3)
         {
             // 3D on top, normal/fade
-
-            ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
-                         * vec4(63,63,63,31));
 
             if (_3dpix.a > 0)
             {
