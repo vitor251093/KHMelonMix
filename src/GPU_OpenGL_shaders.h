@@ -61,9 +61,13 @@ ivec2 getUITextureCoordinates(float xpos, float ypos)
     ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
 
     ivec4 dialogMiddlePixel = ivec4(texelFetch(ScreenTex, ivec2(256/2, 192*0.809) + ivec2(512,0), 0));
-    bool isDialogVisible = (dialogMiddlePixel.a & 0xF) == 1;
+    if ((dialogMiddlePixel.a & 0xF) == 1) {
+        return ivec2(fTexcoord);
+    }
 
-    if (isDialogVisible) {
+    ivec4 missionInfoTopLeft = ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0));
+    ivec4 missionInfoMiddleLeft = ivec4(texelFetch(ScreenTex, ivec2(0, 192*0.078) + ivec2(512,0), 0));
+    if ((missionInfoTopLeft.a & 0xF) == 1 || (missionInfoMiddleLeft.a & 0xF) == 1) {
         return ivec2(fTexcoord);
     }
 
