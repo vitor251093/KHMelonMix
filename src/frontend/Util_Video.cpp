@@ -132,7 +132,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     float topAspect, float botAspect)
 {
     float mapHeight = 75.0, mapWidth = 100.0;
-    float mapY = 30.0, mapX = 150.0;
+    float mapY = 30.0, mapX = 160.0;
     
     float gaugeHeight = 192.0, gaugeWidth = 256.0;
     float gaugeY = 0, gaugeX = 0;
@@ -461,12 +461,20 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
         float minX = refpoints[posRefPointOffset][0], maxX = minX;
         float minY = refpoints[posRefPointOffset][1], maxY = minY;
 
-        for (int i = posRefPointOffset + 1; i < posRefPointOffset + posRefPointCount; i++)
+        if (sizing == screenSizing_MiniMap || sizing == screenSizing_PauseMenuWithGauge) 
         {
-            minX = std::min(minX, refpoints[i][0]);
-            minY = std::min(minY, refpoints[i][1]);
-            maxX = std::max(maxX, refpoints[i][0]);
-            maxY = std::max(maxY, refpoints[i][1]);
+            minX = refpoints[0][0], maxX = refpoints[1][0];
+            minY = refpoints[0][1], maxY = refpoints[1][1];
+        }
+        else
+        {
+            for (int i = posRefPointOffset + 1; i < posRefPointOffset + posRefPointCount; i++)
+            {
+                minX = std::min(minX, refpoints[i][0]);
+                minY = std::min(minY, refpoints[i][1]);
+                maxX = std::max(maxX, refpoints[i][0]);
+                maxY = std::max(maxY, refpoints[i][1]);
+            }
         }
 
         float width = maxX - minX;

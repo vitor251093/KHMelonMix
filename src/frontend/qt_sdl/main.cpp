@@ -1311,7 +1311,7 @@ void EmuThread::drawScreenGL()
             }
 
             if (shouldCropScreenLikeAMap) {
-                float mapNegativeX = 20.0;
+                float mapNegativeX = 10.0;
                 
                 float mapY = 108.0;
                 float mapHeight = 33.0, mapWidth = 44.0;
