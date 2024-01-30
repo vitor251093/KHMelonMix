@@ -59,19 +59,36 @@ ivec2 getUITextureCoordinates(float xpos, float ypos)
     int iuScale = 3;
     float iuTexScale = (u3DScale*1.0)/iuScale;
     ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
+
+    ivec4 dialogMiddlePixel = ivec4(texelFetch(ScreenTex, ivec2(256/2, 192*0.809) + ivec2(512,0), 0));
+    bool isDialogVisible = (dialogMiddlePixel.a & 0xF) == 1;
+
+    if (isDialogVisible) {
+        return ivec2(fTexcoord);
+    }
+
+    // top left (?)
     if (texPosition3d.x <= 128 && texPosition3d.y <= 86) {
         return texPosition3d;
     }
-    else if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y <= 96) {
+
+    // enemy health
+    if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y <= 96) {
         return texPosition3d - ivec2(256.0*iuTexScale - 128.0, 0) + ivec2(128.0, 0);
     }
-    else if (texPosition3d.x <= 128 && texPosition3d.y >= (192.0*iuTexScale - 106.0)) {
+
+    // command menu
+    if (texPosition3d.x <= 128 && texPosition3d.y >= (192.0*iuTexScale - 106.0)) {
         return texPosition3d - ivec2(0, 192.0*iuTexScale - 106.0) + ivec2(0, 86.0);
     }
-    else if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y >= (192.0*iuTexScale - 96.0)) {
+
+    // player health
+    if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y >= (192.0*iuTexScale - 96.0)) {
         return texPosition3d - ivec2(256.0*iuTexScale - 128.0, 192.0*iuTexScale - 96.0) + ivec2(128.0, 96.0);
     }
-    return ivec2(0, 0);
+
+    // nothing (clear screen)
+    return ivec2(-1, -1);
 }
 
 void main()
@@ -98,9 +115,18 @@ void main()
         if (fTexcoord.y <= 192 && (GameScene == 7 || GameScene == 8))
         {
             ivec2 textureBeginning = getUITextureCoordinates(xpos, ypos);
-            val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-            val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
-            val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
+            if (textureBeginning.x == -1 && textureBeginning.y == -1)
+            {
+                val1 = ivec4(1,1,1,0);
+                val2 = ivec4(1,1,1,0);
+                val3 = ivec4(1,1,1,0);
+            }
+            else
+            {
+                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
+                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
+            }
         }
 
         int compmode = val3.a & 0xF;
