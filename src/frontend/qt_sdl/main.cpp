@@ -531,6 +531,21 @@ void EmuThread::run()
                         InputMask &= ~(1<<7); // down
                 }
             }
+            else {
+                // So the arrow keys can be used as directionals
+                if (CmdMenuInputMask & (1 << 0)) { // D-pad right
+                    InputMask &= ~(1<<4); // right
+                }
+                if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+                    InputMask &= ~(1<<5); // left
+                }
+                if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+                    InputMask &= ~(1<<6); // up
+                }
+                if (CmdMenuInputMask & (1 << 3)) { // D-pad down
+                    InputMask &= ~(1<<7); // down
+                }
+            }
             NDS->SetKeyMask(InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
 
