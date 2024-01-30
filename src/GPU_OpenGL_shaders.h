@@ -54,9 +54,12 @@ out vec4 oColor;
 
 void main()
 {
+    int iuScale = 3;
     ivec4 pixel = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord), 0));
 
     float _3dxpos = float(u3DXPos);
+    float xpos = fTexcoord.x + _3dxpos;
+    float ypos = mod(fTexcoord.y, 192);
 
     ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     int dispmode = mbright.b & 0x3;
@@ -66,6 +69,43 @@ void main()
         ivec4 val1 = pixel;
         ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(256,0), 0));
         ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(512,0), 0));
+        ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
+
+        if (fTexcoord.y <= 192)
+        {
+            // KHDays: Cropping the ingame IU into pieces, so they aren't stretched
+            float iuTexScale = (u3DScale*1.0)/iuScale;
+            ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
+            if (texPosition3d.x <= 128 && texPosition3d.y <= 96) {
+                ivec2 textureBeginning = texPosition3d;
+                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
+                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
+            }
+            else if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y <= 96) {
+                ivec2 textureBeginning = texPosition3d - ivec2(256.0*iuTexScale - 128.0, 0) + ivec2(128.0, 0);
+                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
+                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
+            }
+            else if (texPosition3d.x <= 128 && texPosition3d.y >= (192.0*iuTexScale - 96.0)) {
+                ivec2 textureBeginning = texPosition3d - ivec2(0, 192.0*iuTexScale - 96.0) + ivec2(0, 96.0);
+                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
+                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
+            }
+            else if (texPosition3d.x >= (256.0*iuTexScale - 128.0) && texPosition3d.y >= (192.0*iuTexScale - 96.0)) {
+                ivec2 textureBeginning = texPosition3d - ivec2(256.0*iuTexScale - 128.0, 192.0*iuTexScale - 96.0) + ivec2(128.0, 96.0);
+                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
+                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
+            }
+            else {
+                val1 = ivec4(1,1,1,0);
+                val2 = ivec4(1,1,1,0);
+                val3 = ivec4(1,1,1,0);
+            }
+        }
 
         int compmode = val3.a & 0xF;
         int eva, evb, evy;
@@ -74,9 +114,7 @@ void main()
         {
             // 3D on top, blending
 
-            float xpos = fTexcoord.x + _3dxpos;
-            float ypos = mod(fTexcoord.y, 192);
-            ivec4 _3dpix = ivec4(texelFetch(_3DTex, ivec2(vec2(xpos, ypos)*u3DScale), 0).bgra
+            ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                          * vec4(63,63,63,31));
 
             if (_3dpix.a > 0)
@@ -94,9 +132,7 @@ void main()
         {
             // 3D on bottom, blending
 
-            float xpos = fTexcoord.x + _3dxpos;
-            float ypos = mod(fTexcoord.y, 192);
-            ivec4 _3dpix = ivec4(texelFetch(_3DTex, ivec2(vec2(xpos, ypos)*u3DScale), 0).bgra
+            ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                          * vec4(63,63,63,31));
 
             if (_3dpix.a > 0)
@@ -114,9 +150,7 @@ void main()
         {
             // 3D on top, normal/fade
 
-            float xpos = fTexcoord.x + _3dxpos;
-            float ypos = mod(fTexcoord.y, 192);
-            ivec4 _3dpix = ivec4(texelFetch(_3DTex, ivec2(vec2(xpos, ypos)*u3DScale), 0).bgra
+            ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                          * vec4(63,63,63,31));
 
             if (_3dpix.a > 0)
