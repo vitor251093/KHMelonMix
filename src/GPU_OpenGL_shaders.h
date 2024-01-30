@@ -71,9 +71,14 @@ ivec2 getUITextureCoordinates(float xpos, float ypos)
         return ivec2(fTexcoord);
     }
 
-    // top left (?)
-    if (texPosition3d.x <= 128 && texPosition3d.y <= 86) {
-        return texPosition3d;
+    // item notification
+    float itemNotificationLeftMargin = 0.0;
+    float itemNotificationTopMargin = 10.0;
+    if (texPosition3d.x <= 128 + itemNotificationLeftMargin &&
+        texPosition3d.x > itemNotificationLeftMargin &&
+        texPosition3d.y <= 86 + itemNotificationTopMargin &&
+        texPosition3d.y >= itemNotificationTopMargin) {
+        return texPosition3d - ivec2(itemNotificationLeftMargin, itemNotificationTopMargin);
     }
 
     // enemy health
