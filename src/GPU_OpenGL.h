@@ -31,13 +31,14 @@ class GLRenderer;
 class GLCompositor
 {
 public:
-    static std::optional<GLCompositor> New(const GPU& gpu) noexcept;
+    static std::optional<GLCompositor> New() noexcept;
     GLCompositor(const GLCompositor&) = delete;
     GLCompositor& operator=(const GLCompositor&) = delete;
     GLCompositor(GLCompositor&&) noexcept;
     GLCompositor& operator=(GLCompositor&&) noexcept;
     ~GLCompositor();
 
+    void SetGameScene(int gameScene) noexcept;
     void SetScaleFactor(int scale) noexcept;
     [[nodiscard]] int GetScaleFactor() const noexcept { return Scale; }
 
@@ -45,7 +46,7 @@ public:
     void RenderFrame(const GPU& gpu, GLRenderer& renderer) noexcept;
     void BindOutputTexture(int buf);
 private:
-    GLCompositor(std::array<GLuint, 3> CompShader, int gameScene) noexcept;
+    GLCompositor(std::array<GLuint, 3> CompShader) noexcept;
     int Scale = 0;
     int ScreenH = 0, ScreenW = 0;
 

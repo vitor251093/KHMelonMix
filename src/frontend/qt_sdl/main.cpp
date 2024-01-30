@@ -807,7 +807,7 @@ bool EmuThread::setGameScene(int newGameScene)
         if (priorGameScene == gameScene_InGameWithMap || priorGameScene == gameScene_InGameWithoutMap || 
             newGameScene == gameScene_InGameWithMap   || newGameScene == gameScene_InGameWithoutMap)
         {
-            videoSettingsDirty = true;
+            static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
         }
     }
 

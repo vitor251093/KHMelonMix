@@ -111,7 +111,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New(melonDS::GPU& gpu) noexcept
 {
     assert(glEnable != nullptr);
 
-    std::optional<GLCompositor> compositor =  GLCompositor::New(gpu);
+    std::optional<GLCompositor> compositor =  GLCompositor::New();
     if (!compositor)
         return nullptr;
 

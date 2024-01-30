@@ -33,7 +33,7 @@ namespace melonDS
 
 using namespace OpenGL;
 
-std::optional<GLCompositor> GLCompositor::New(const GPU& gpu) noexcept
+std::optional<GLCompositor> GLCompositor::New() noexcept
 {
     assert(glBindAttribLocation != nullptr);
 
@@ -50,17 +50,15 @@ std::optional<GLCompositor> GLCompositor::New(const GPU& gpu) noexcept
         // if linking the shaders together failed.
         return std::nullopt;
 
-    return { GLCompositor(CompShader, gpu.GameScene) };
+    return { GLCompositor(CompShader) };
 }
 
-GLCompositor::GLCompositor(std::array<GLuint, 3> compShader, int gameScene) noexcept : CompShader(compShader)
+GLCompositor::GLCompositor(std::array<GLuint, 3> compShader) noexcept : CompShader(compShader)
 {
     CompScaleLoc = glGetUniformLocation(CompShader[2], "u3DScale");
     Comp3DXPosLoc = glGetUniformLocation(CompShader[2], "u3DXPos");
 
     glUseProgram(CompShader[2]);
-    GLint gameSceneLocation = glGetUniformLocation(CompShader[2], "GameScene");
-    glUniform1i(gameSceneLocation, gameScene);
     GLuint screenTextureUniform = glGetUniformLocation(CompShader[2], "ScreenTex");
     glUniform1i(screenTextureUniform, 0);
     GLuint _3dTextureUniform = glGetUniformLocation(CompShader[2], "_3DTex");
@@ -205,7 +203,12 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
     return *this;
 }
 
-
+void GLCompositor::SetGameScene(int gameScene) noexcept
+{
+    glUseProgram(CompShader[2]);
+    GLint gameSceneLocation = glGetUniformLocation(CompShader[2], "GameScene");
+    glUniform1i(gameSceneLocation, gameScene);
+}
 void GLCompositor::SetScaleFactor(int scale) noexcept
 {
     if (scale == Scale)
