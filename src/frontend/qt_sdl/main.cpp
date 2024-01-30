@@ -803,6 +803,12 @@ bool EmuThread::setGameScene(int newGameScene)
         // Game scene
         priorGameScene = NDS->GPU.GameScene;
         NDS->GPU.GameScene = newGameScene;
+
+        if (priorGameScene == gameScene_InGameWithMap || priorGameScene == gameScene_InGameWithoutMap || 
+            newGameScene == gameScene_InGameWithMap   || newGameScene == gameScene_InGameWithoutMap)
+        {
+            videoSettingsDirty = true;
+        }
     }
 
     // Screens position and size
@@ -863,8 +869,8 @@ void EmuThread::debugLogs(int gameScene)
 //   become unreliable when it comes to screen sizing.
 bool EmuThread::refreshAutoScreenSizing()
 {
-    // printf("0x0223D384: %d\n",   NDS->ARM7Read32(0x0223D384));
-    // printf("0x0223D38C: %d\n\n", NDS->ARM7Read32(0x0223D38C));
+    // printf("0x021D08B8: %d\n",   NDS->ARM7Read8(0x021D08B8));
+    // printf("0x0223D38C: %d\n\n", NDS->ARM7Read8(0x0223D38C));
 
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
     bool no3D = NDS->GPU.GPU3D.NumVertices == 0 && NDS->GPU.GPU3D.NumPolygons == 0 && NDS->GPU.GPU3D.RenderNumPolygons == 0;

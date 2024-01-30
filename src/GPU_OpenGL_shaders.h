@@ -44,6 +44,7 @@ const char* kCompositorFS_Nearest = R"(#version 140
 
 uniform uint u3DScale;
 uniform int u3DXPos;
+uniform int GameScene;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -94,7 +95,7 @@ void main()
         ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
 
-        if (fTexcoord.y <= 192)
+        if (fTexcoord.y <= 192 && (GameScene == 7 || GameScene == 8))
         {
             ivec2 textureBeginning = getUITextureCoordinates(xpos, ypos);
             val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));

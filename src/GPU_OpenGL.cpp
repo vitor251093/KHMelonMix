@@ -33,7 +33,7 @@ namespace melonDS
 
 using namespace OpenGL;
 
-std::optional<GLCompositor> GLCompositor::New() noexcept
+std::optional<GLCompositor> GLCompositor::New(const GPU& gpu) noexcept
 {
     assert(glBindAttribLocation != nullptr);
 
@@ -50,15 +50,17 @@ std::optional<GLCompositor> GLCompositor::New() noexcept
         // if linking the shaders together failed.
         return std::nullopt;
 
-    return { GLCompositor(CompShader) };
+    return { GLCompositor(CompShader, gpu.GameScene) };
 }
 
-GLCompositor::GLCompositor(std::array<GLuint, 3> compShader) noexcept : CompShader(compShader)
+GLCompositor::GLCompositor(std::array<GLuint, 3> compShader, int gameScene) noexcept : CompShader(compShader)
 {
     CompScaleLoc = glGetUniformLocation(CompShader[2], "u3DScale");
     Comp3DXPosLoc = glGetUniformLocation(CompShader[2], "u3DXPos");
 
     glUseProgram(CompShader[2]);
+    GLint gameSceneLocation = glGetUniformLocation(CompShader[2], "GameScene");
+    glUniform1i(gameSceneLocation, gameScene);
     GLuint screenTextureUniform = glGetUniformLocation(CompShader[2], "ScreenTex");
     glUniform1i(screenTextureUniform, 0);
     GLuint _3dTextureUniform = glGetUniformLocation(CompShader[2], "_3DTex");
