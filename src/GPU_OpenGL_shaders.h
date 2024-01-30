@@ -53,9 +53,8 @@ smooth in vec2 fTexcoord;
 
 out vec4 oColor;
 
-ivec2 getUITextureCoordinates(float xpos, float ypos)
+ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
-    // KHDays: Cropping the ingame IU into pieces, so they aren't stretched
     int iuScale = 3;
     float iuTexScale = (u3DScale*1.0)/iuScale;
     ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
@@ -111,7 +110,42 @@ ivec2 getUITextureCoordinates(float xpos, float ypos)
     }
 
     // nothing (clear screen)
-    return ivec2(-1, -1);
+    return ivec2(0, 0);
+}
+
+ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
+{
+    int iuScale = 3;
+    float iuTexScale = (u3DScale*1.0)/iuScale;
+    ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
+
+    float height = 192.0;
+    float width = 256.0;
+    float x1 = (256.0*iuTexScale)/2 - width/2;
+    float x2 = (256.0*iuTexScale)/2 + width/2;
+    float y1 = (192.0*iuTexScale)/2 - height/2;
+    float y2 = (192.0*iuTexScale)/2 + height/2;
+    if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
+    {
+        return texPosition3d - ivec2(x1, y1);
+    }
+
+    // nothing (clear screen)
+    return ivec2(0, 0);
+}
+
+ivec2 getTextureCoordinates(float xpos, float ypos)
+{
+    // KHDays: Cropping the ingame IU into pieces, so they aren't stretched
+    if (GameScene == 7 || GameScene == 8) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
+    {
+        return getIngameHudTextureCoordinates(xpos, ypos);
+    }
+    if (GameScene == 12 || GameScene == 13) // gameScene_PauseMenu or gameScene_PauseMenuWithGauge
+    {
+        return getPauseHudTextureCoordinates(xpos, ypos);
+    }
+    return ivec2(fTexcoord);
 }
 
 void main()
@@ -135,21 +169,12 @@ void main()
         ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
 
-        if (fTexcoord.y <= 192 && (GameScene == 7 || GameScene == 8))
+        if (fTexcoord.y <= 192)
         {
-            ivec2 textureBeginning = getUITextureCoordinates(xpos, ypos);
-            if (textureBeginning.x == -1 && textureBeginning.y == -1)
-            {
-                val1 = ivec4(1,1,1,0);
-                val2 = ivec4(1,1,1,0);
-                val3 = ivec4(1,1,1,0);
-            }
-            else
-            {
-                val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
-                val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
-            }
+            ivec2 textureBeginning = getTextureCoordinates(xpos, ypos);
+            val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+            val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
+            val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
         }
 
         int compmode = val3.a & 0xF;
