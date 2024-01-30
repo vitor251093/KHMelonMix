@@ -91,9 +91,6 @@ void main()
         ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(512,0), 0));
         ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
 
-        int compmode = val3.a & 0xF;
-        int eva, evb, evy;
-
         ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
 
@@ -104,6 +101,9 @@ void main()
             val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
             val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
         }
+
+        int compmode = val3.a & 0xF;
+        int eva, evb, evy;
 
         if (compmode == 4)
         {
