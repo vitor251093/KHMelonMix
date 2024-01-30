@@ -131,8 +131,8 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     bool swapScreens,
     float topAspect, float botAspect)
 {
-    float mapHeight = 75.0, mapWidth = 100.0;
-    float mapY = 30.0, mapX = 160.0;
+    float mapHeight = 60.0, mapWidth = 80.0;
+    float mapY = 40.5, mapX = 176.5;
     
     float gaugeHeight = 192.0, gaugeWidth = 256.0;
     float gaugeY = 0, gaugeX = 0;

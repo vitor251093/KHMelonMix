@@ -1314,7 +1314,7 @@ void EmuThread::drawScreenGL()
                 float mapNegativeX = 10.0;
                 
                 float mapY = 108.0;
-                float mapHeight = 33.0, mapWidth = 44.0;
+                float mapHeight = 27.0, mapWidth = 36.0;
             
                 float viewWidth = windowWidth - leftMargin*2;
                 float viewHeight = windowHeight - topMargin*2;
