@@ -61,6 +61,7 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 
     ivec4 dialogMiddlePixel = ivec4(texelFetch(ScreenTex, ivec2(256/2, 192*0.809) + ivec2(512,0), 0));
     if ((dialogMiddlePixel.a & 0xF) == 1) {
+        // TODO: Isn't working all the time
         return ivec2(fTexcoord);
     }
 
