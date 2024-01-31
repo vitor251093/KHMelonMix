@@ -136,7 +136,7 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     return ivec2(0, 0);
 }
 
-ivec2 getTextureCoordinates(float xpos, float ypos)
+ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
     // KHDays: Cropping the ingame IU into pieces, so they aren't stretched
     if (GameScene == 7 || GameScene == 8) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
@@ -173,10 +173,16 @@ void main()
 
         if (fTexcoord.y <= 192)
         {
-            ivec2 textureBeginning = getTextureCoordinates(xpos, ypos);
+            ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
             val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
             val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
             val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
+        }
+        else {
+            if (GameScene == 7) // gameScene_InGameWithMap
+            {
+                val1 = ivec4(64 - pixel.r, 64 - pixel.g, 64 - pixel.b, pixel.a);
+            }
         }
 
         int compmode = val3.a & 0xF;
