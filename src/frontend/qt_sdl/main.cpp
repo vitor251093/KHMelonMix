@@ -1273,60 +1273,10 @@ void EmuThread::drawScreenGL()
     glBindBuffer(GL_ARRAY_BUFFER, screenVertexBuffer);
     glBindVertexArray(screenVertexArray);
 
-    bool isInGamePauseWithGauge = NDS->GPU.GameScene == gameScene_PauseMenuWithGauge;
-
     for (int i = 0; i < numScreens; i++)
     {
-        bool isBottomScreen = i == 1;
-        bool shouldCropScreenLikeAGauge = isBottomScreen && isInGamePauseWithGauge;
-
         glUniformMatrix2x3fv(screenShaderTransformULoc, 1, GL_TRUE, screenMatrix[i]);
-
-        if (shouldCropScreenLikeAGauge) {
-            float leftMargin = 0, topMargin = 0;
-            float viewAspect;
-            float windowAspect = (float) w / h;
-            float windowWidth = w/factor;
-            float windowHeight = h/factor;
-            for (auto ratio : aspectRatios)
-            {
-                if (ratio.id == Config::ScreenAspectTop)
-                    viewAspect = ratio.ratio;
-            }
-            if (viewAspect == 0) {
-                viewAspect = windowAspect;
-            }
-            else {
-                viewAspect *= 4.0 / 3;
-            }
-            if (viewAspect != windowAspect) {
-                if (viewAspect > windowAspect) { // window taller than view
-                    topMargin = (windowHeight - windowWidth/viewAspect)/2;
-                }
-                else if (viewAspect < windowAspect) { // window larger than view
-                    leftMargin = (windowWidth - windowHeight*viewAspect)/2;
-                }
-            }
-
-            if (shouldCropScreenLikeAGauge) {
-                float gaugeY = 0;
-                float gaugeHeight = 33.0, gaugeWidth = 256.0;
-                float gaugeX = 0;
-            
-                float scissorFactorX = ((w - leftMargin*2)/256.0);
-                float scissorFactorY = ((h - topMargin*2)/192.0);
-                
-                glScissor((gaugeX*scissorFactorX + leftMargin)*factor, (gaugeY*scissorFactorY + topMargin)*factor, 
-                            gaugeWidth*scissorFactorX*factor, gaugeHeight*scissorFactorY*factor);
-            }
-            glEnable(GL_SCISSOR_TEST);
-        }
-
         glDrawArrays(GL_TRIANGLES, screenKind[i] == 0 ? 0 : 2*3, 2*3);
-
-        if (shouldCropScreenLikeAGauge) {
-            glDisable(GL_SCISSOR_TEST);
-        }
     }
 
     screenSettingsLock.unlock();
