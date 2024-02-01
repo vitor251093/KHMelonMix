@@ -158,7 +158,6 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
-    // KHDays: Cropping the ingame IU into pieces, so they aren't stretched
     if (KHGameScene == 7 || KHGameScene == 8) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
     {
         return getIngameHudTextureCoordinates(xpos, ypos);

@@ -817,7 +817,7 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
         case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : size; break;
         case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
-        case gameScene_InGameWithMap: size = screenSizing_MiniMap; break;
+        case gameScene_InGameWithMap: size = screenSizing_TopOnly; break;
         case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
         case gameScene_InGameMenu: break;
         case gameScene_InGameSaveMenu: size = screenSizing_TopOnly; break;
@@ -2238,7 +2238,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
             QMenu* submenu = menu->addMenu("Screen sizing");
             grpScreenSizing = new QActionGroup(submenu);
 
-            const char* screensizing[] = {"Even", "Emphasize top", "Emphasize bottom", "Auto", "Top only", "Bottom only", "Minimap", "Pause menu"};
+            const char* screensizing[] = {"Even", "Emphasize top", "Emphasize bottom", "Auto", "Top only", "Bottom only", "Pause menu"};
 
             for (int i = 0; i < Frontend::screenSizing_PauseMenuWithGauge; i++)
             {

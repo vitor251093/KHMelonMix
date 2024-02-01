@@ -137,11 +137,6 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     float gaugeHeight = 192.0, gaugeWidth = 256.0;
     float gaugeY = 0, gaugeX = 0;
     
-    if (sizing == screenSizing_MiniMap) 
-    {
-        sizing = screenSizing_TopOnly;
-    }
-
     HybEnable = screenLayout == 3;
     if (HybEnable)
     {

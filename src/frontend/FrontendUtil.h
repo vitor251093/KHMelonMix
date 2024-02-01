@@ -59,7 +59,6 @@ enum ScreenSizing
     screenSizing_TopOnly,
     screenSizing_BotOnly,
     screenSizing_MAX,
-    screenSizing_MiniMap, // Main Game with a floating map
     screenSizing_PauseMenuWithGauge
 };
 
