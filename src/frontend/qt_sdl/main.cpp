@@ -1273,18 +1273,16 @@ void EmuThread::drawScreenGL()
     glBindBuffer(GL_ARRAY_BUFFER, screenVertexBuffer);
     glBindVertexArray(screenVertexArray);
 
-    bool isInGameWithMap = NDS->GPU.GameScene == gameScene_InGameWithMap;
     bool isInGamePauseWithGauge = NDS->GPU.GameScene == gameScene_PauseMenuWithGauge;
 
     for (int i = 0; i < numScreens; i++)
     {
         bool isBottomScreen = i == 1;
-        bool shouldCropScreenLikeAMap = isBottomScreen && isInGameWithMap;
         bool shouldCropScreenLikeAGauge = isBottomScreen && isInGamePauseWithGauge;
 
         glUniformMatrix2x3fv(screenShaderTransformULoc, 1, GL_TRUE, screenMatrix[i]);
 
-        if (shouldCropScreenLikeAMap || shouldCropScreenLikeAGauge) {
+        if (shouldCropScreenLikeAGauge) {
             float leftMargin = 0, topMargin = 0;
             float viewAspect;
             float windowAspect = (float) w / h;
@@ -1310,21 +1308,6 @@ void EmuThread::drawScreenGL()
                 }
             }
 
-            if (shouldCropScreenLikeAMap) {
-                float mapNegativeX = 10.0;
-                
-                float mapY = 99.0;
-                float mapHeight = 36.0, mapWidth = 36.0;
-            
-                float viewWidth = windowWidth - leftMargin*2;
-                float viewHeight = windowHeight - topMargin*2;
-                float viewFactorX = viewWidth / 256.0;
-                float viewFactorY = viewHeight / 192.0;
-                
-                glScissor((leftMargin + viewWidth - (mapWidth + mapNegativeX)*viewFactorX)*factor, 
-                            (mapY*viewFactorY + topMargin)*factor, 
-                            mapWidth*viewFactorX*factor, mapHeight*viewFactorY*factor);
-            }
             if (shouldCropScreenLikeAGauge) {
                 float gaugeY = 0;
                 float gaugeHeight = 33.0, gaugeWidth = 256.0;
@@ -1341,7 +1324,7 @@ void EmuThread::drawScreenGL()
 
         glDrawArrays(GL_TRIANGLES, screenKind[i] == 0 ? 0 : 2*3, 2*3);
 
-        if (shouldCropScreenLikeAMap || shouldCropScreenLikeAGauge) {
+        if (shouldCropScreenLikeAGauge) {
             glDisable(GL_SCISSOR_TEST);
         }
     }
@@ -1407,6 +1390,11 @@ void ScreenHandler::screenSetupLayout(int w, int h)
                                 aspectBot);
 
     numScreens = Frontend::GetScreenTransforms(screenMatrix[0], screenKind);
+
+    if (emuThread != nullptr && emuThread->NDS != nullptr) {
+        //printf("\n\naspect ratio: %f\n\n", aspectTop);
+        static_cast<GLRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).GetCompositor().SetAspectRatio(aspectTop);
+    }
 }
 
 QSize ScreenHandler::screenGetMinSize(int factor = 1)

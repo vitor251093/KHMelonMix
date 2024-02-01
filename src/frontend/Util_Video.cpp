@@ -132,11 +132,16 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     float topAspect, float botAspect)
 {
     float mapHeight = 87.0, mapWidth = 116.0;
-    float mapY = 31.5, mapX = 153.5;
+    float mapY = 61.5, mapX = 153.5;
     
     float gaugeHeight = 192.0, gaugeWidth = 256.0;
     float gaugeY = 0, gaugeX = 0;
     
+    if (sizing == screenSizing_MiniMap) 
+    {
+        sizing = screenSizing_TopOnly;
+    }
+
     HybEnable = screenLayout == 3;
     if (HybEnable)
     {
@@ -168,13 +173,6 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     M23_Identity(BotScreenMtx);
     M23_Identity(HybScreenMtx);
 
-    if (sizing == screenSizing_MiniMap) 
-    {
-        M23_Scale(BotScreenMtx, mapWidth / 256.0, mapHeight / 192.0);
-        refpoints[3][0] += - 256.0 + mapWidth;
-        refpoints[3][1] += - 192.0 + mapHeight;
-        botAspect = topAspect;
-    }
     if (sizing == screenSizing_PauseMenuWithGauge)
     {
         M23_Scale(BotScreenMtx, gaugeWidth / 256.0, gaugeHeight / 192.0);
@@ -185,24 +183,6 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
 
     M23_Translate(TopScreenMtx, -256/2, -192/2);
     M23_Translate(BotScreenMtx, -256/2, -192/2);
-
-    if (sizing == screenSizing_MiniMap) 
-    {
-        // move screens apart
-        {
-            float pipX = mapX;
-            float pipY = mapY;
-            M23_Translate(BotScreenMtx, pipX, pipY);
-
-            refpoints[2][0] += pipX;
-            refpoints[2][1] += pipY;
-            refpoints[3][0] += pipX;
-            refpoints[3][1] += pipY;
-
-            botTrans[0] = pipX;
-            botTrans[1] = pipY;
-        }
-    }
 
     M23_Scale(TopScreenMtx, topAspect, 1);
     M23_Scale(BotScreenMtx, botAspect, 1);
@@ -226,7 +206,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     int posRefPointOffset = 0;
     int posRefPointCount = HybEnable ? 6 : 4;
 
-    if (sizing == screenSizing_MiniMap || sizing == screenSizing_PauseMenuWithGauge) 
+    if (sizing == screenSizing_PauseMenuWithGauge) 
     {
         TopEnable = BotEnable = true;
         
@@ -461,7 +441,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
         float minX = refpoints[posRefPointOffset][0], maxX = minX;
         float minY = refpoints[posRefPointOffset][1], maxY = minY;
 
-        if (sizing == screenSizing_MiniMap || sizing == screenSizing_PauseMenuWithGauge) 
+        if (sizing == screenSizing_PauseMenuWithGauge) 
         {
             minX = refpoints[0][0], maxX = refpoints[1][0];
             minY = refpoints[0][1], maxY = refpoints[1][1];

@@ -44,7 +44,9 @@ const char* kCompositorFS_Nearest = R"(#version 140
 
 uniform uint u3DScale;
 uniform int u3DXPos;
-uniform int GameScene;
+uniform int KHGameScene;
+uniform int KHUIScale;
+uniform float TopScreenAspectRatio;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -55,7 +57,7 @@ out vec4 oColor;
 
 ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
-    int iuScale = 3;
+    int iuScale = KHUIScale;
     float iuTexScale = (u3DScale*1.0)/iuScale;
     ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
 
@@ -92,6 +94,24 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return texPosition3d - ivec2(256.0*iuTexScale - enemyHealthWidth - enemyHealthRightMargin, enemyHealthTopMargin) + ivec2(256.0 - enemyHealthWidth, 0);
     }
 
+    if (KHGameScene == 7) // gameScene_InGameWithMap
+    {
+        // minimap
+        float minimapHeight = 68.0;
+        float minimapWidth = 68.0;
+        float minimapRightMargin = 18.0;
+        float minimapTopMargin = 114.0;
+        float bottomMinimapLeftMargin = 130.0;
+        float bottomMinimapTopMargin = 60.0;
+        if (texPosition3d.x >= (256.0*iuTexScale - minimapWidth - minimapRightMargin) &&
+            texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
+            texPosition3d.y <= minimapHeight + minimapTopMargin && 
+            texPosition3d.y >= minimapTopMargin) {
+            return (texPosition3d - ivec2(256.0*iuTexScale - minimapWidth - minimapRightMargin, minimapTopMargin)) +
+                ivec2(bottomMinimapLeftMargin, 192.0 + bottomMinimapTopMargin);
+        }
+    }
+
     // command menu
     float commandMenuLeftMargin = 20.0;
     float commandMenuBottomMargin = 20.0;
@@ -117,7 +137,7 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 {
-    int iuScale = 3;
+    int iuScale = KHUIScale;
     float iuTexScale = (u3DScale*1.0)/iuScale;
     ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
 
@@ -139,15 +159,42 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
     // KHDays: Cropping the ingame IU into pieces, so they aren't stretched
-    if (GameScene == 7 || GameScene == 8) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
+    if (KHGameScene == 7 || KHGameScene == 8) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
     {
         return getIngameHudTextureCoordinates(xpos, ypos);
     }
-    if (GameScene == 12 || GameScene == 13) // gameScene_PauseMenu or gameScene_PauseMenuWithGauge
+    if (KHGameScene == 12 || KHGameScene == 13) // gameScene_PauseMenu or gameScene_PauseMenuWithGauge
     {
         return getPauseHudTextureCoordinates(xpos, ypos);
     }
     return ivec2(fTexcoord);
+}
+
+ivec4 getTopScreenColor(float xpos, float ypos, int index)
+{
+    ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
+    ivec4 color = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0)*index, 0));
+
+    if (KHGameScene == 7) // gameScene_InGameWithMap
+    {
+        int iuScale = KHUIScale;
+        float iuTexScale = (u3DScale*1.0)/iuScale;
+        ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
+
+        // minimap
+        float minimapHeight = 68.0;
+        float minimapWidth = 68.0;
+        float minimapRightMargin = 18.0;
+        float minimapTopMargin = 114.0;
+        if (texPosition3d.x >= (256.0*iuTexScale - minimapWidth - minimapRightMargin) &&
+            texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
+            texPosition3d.y <= minimapHeight + minimapTopMargin && 
+            texPosition3d.y >= minimapTopMargin) {
+            color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+        }
+    }
+
+    return color;
 }
 
 void main()
@@ -173,16 +220,9 @@ void main()
 
         if (fTexcoord.y <= 192)
         {
-            ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
-            val1 = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-            val2 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0), 0));
-            val3 = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
-        }
-        else {
-            if (GameScene == 7) // gameScene_InGameWithMap
-            {
-                val1 = ivec4(64 - pixel.r, 64 - pixel.g, 64 - pixel.b, pixel.a);
-            }
+            val1 = getTopScreenColor(xpos, ypos, 0);
+            val2 = getTopScreenColor(xpos, ypos, 1);
+            val3 = getTopScreenColor(xpos, ypos, 2);
         }
 
         int compmode = val3.a & 0xF;

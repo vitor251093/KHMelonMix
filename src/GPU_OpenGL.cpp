@@ -63,6 +63,8 @@ GLCompositor::GLCompositor(std::array<GLuint, 3> compShader) noexcept : CompShad
     glUniform1i(screenTextureUniform, 0);
     GLuint _3dTextureUniform = glGetUniformLocation(CompShader[2], "_3DTex");
     glUniform1i(_3dTextureUniform, 1);
+    GLuint khUiScaleUniform = glGetUniformLocation(CompShader[2], "KHUIScale");
+    glUniform1i(khUiScaleUniform, 3);
 
     // all this mess is to prevent bleeding
 #define SETVERTEX(i, x, y, offset) \
@@ -206,8 +208,14 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
 void GLCompositor::SetGameScene(int gameScene) noexcept
 {
     glUseProgram(CompShader[2]);
-    GLint gameSceneLocation = glGetUniformLocation(CompShader[2], "GameScene");
+    GLint gameSceneLocation = glGetUniformLocation(CompShader[2], "KHGameScene");
     glUniform1i(gameSceneLocation, gameScene);
+}
+void GLCompositor::SetAspectRatio(float aspectRatio) noexcept
+{
+    glUseProgram(CompShader[2]);
+    GLint aspectRatioLocation = glGetUniformLocation(CompShader[2], "TopScreenAspectRatio");
+    glUniform1f(aspectRatioLocation, aspectRatio);
 }
 void GLCompositor::SetScaleFactor(int scale) noexcept
 {
