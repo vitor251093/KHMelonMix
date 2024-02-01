@@ -50,8 +50,7 @@ enum
     screenSizing_Auto,
     screenSizing_TopOnly,
     screenSizing_BotOnly, // Intro Load Menu
-    screenSizing_MAX,
-    screenSizing_PauseMenuWithGauge
+    screenSizing_MAX
 };
 
 enum

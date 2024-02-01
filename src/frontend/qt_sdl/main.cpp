@@ -823,7 +823,7 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_InGameSaveMenu: size = screenSizing_TopOnly; break;
         case gameScene_InHoloMissionMenu: break;
         case gameScene_PauseMenu: size = screenSizing_TopOnly; break;
-        case gameScene_PauseMenuWithGauge: size = screenSizing_PauseMenuWithGauge; break;
+        case gameScene_PauseMenuWithGauge: size = screenSizing_TopOnly; break;
         case gameScene_Tutorial: size = screenSizing_BotOnly; break;
         case gameScene_RoxasThoughts: size = screenSizing_TopOnly; break;
         case gameScene_Shop: break;
@@ -2240,7 +2240,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
             const char* screensizing[] = {"Even", "Emphasize top", "Emphasize bottom", "Auto", "Top only", "Bottom only", "Pause menu"};
 
-            for (int i = 0; i < Frontend::screenSizing_PauseMenuWithGauge; i++)
+            for (int i = 0; i < Frontend::screenSizing_MAX; i++)
             {
                 actScreenSizing[i] = submenu->addAction(QString(screensizing[i]));
                 actScreenSizing[i]->setActionGroup(grpScreenSizing);
@@ -3913,7 +3913,7 @@ int main(int argc, char** argv)
     SANITIZE(Config::ScreenRotation, 0, (int)Frontend::screenRot_MAX);
     SANITIZE(Config::ScreenGap, 0, 500);
     SANITIZE(Config::ScreenLayout, 0, (int)Frontend::screenLayout_MAX);
-    SANITIZE(Config::ScreenSizing, 0, (int)Frontend::screenSizing_PauseMenuWithGauge);
+    SANITIZE(Config::ScreenSizing, 0, (int)Frontend::screenSizing_MAX);
     SANITIZE(Config::ScreenAspectTop, 0, AspectRatiosNum);
     SANITIZE(Config::ScreenAspectBot, 0, AspectRatiosNum);
 #undef SANITIZE

@@ -168,14 +168,6 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     M23_Identity(BotScreenMtx);
     M23_Identity(HybScreenMtx);
 
-    if (sizing == screenSizing_PauseMenuWithGauge)
-    {
-        M23_Scale(BotScreenMtx, gaugeWidth / 256.0, gaugeHeight / 192.0);
-        refpoints[3][0] += - 256.0 + gaugeWidth;
-        refpoints[3][1] += - 192.0 + gaugeHeight;
-        botAspect = topAspect;
-    }
-
     M23_Translate(TopScreenMtx, -256/2, -192/2);
     M23_Translate(BotScreenMtx, -256/2, -192/2);
 
@@ -201,33 +193,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     int posRefPointOffset = 0;
     int posRefPointCount = HybEnable ? 6 : 4;
 
-    if (sizing == screenSizing_PauseMenuWithGauge) 
-    {
-        TopEnable = BotEnable = true;
-        
-        // scale
-        {
-            float primHSize = fabsf(refpoints[0][0] - refpoints[1][0]);
-            float primVSize = fabsf(refpoints[0][1] - refpoints[1][1]);
-
-            float scale = std::min(screenWidth / primHSize, screenHeight / primVSize);
-            
-            M23_Scale(TopScreenMtx, scale);
-            M23_Scale(BotScreenMtx, scale);
-
-            refpoints[0][0] *= scale;
-            refpoints[0][1] *= scale;
-            refpoints[1][0] *= scale;
-            refpoints[1][1] *= scale;
-            refpoints[2][0] *= scale;
-            refpoints[2][1] *= scale;
-            refpoints[3][0] *= scale;
-            refpoints[3][1] *= scale;
-
-            botScale = scale;
-        }
-    }
-    else if (sizing == screenSizing_TopOnly || sizing == screenSizing_BotOnly)
+    if (sizing == screenSizing_TopOnly || sizing == screenSizing_BotOnly)
     {
         float* mtx = sizing == screenSizing_TopOnly ? TopScreenMtx : BotScreenMtx;
         int primOffset = sizing == screenSizing_TopOnly ? 0 : 2;
@@ -436,20 +402,12 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
         float minX = refpoints[posRefPointOffset][0], maxX = minX;
         float minY = refpoints[posRefPointOffset][1], maxY = minY;
 
-        if (sizing == screenSizing_PauseMenuWithGauge) 
+        for (int i = posRefPointOffset + 1; i < posRefPointOffset + posRefPointCount; i++)
         {
-            minX = refpoints[0][0], maxX = refpoints[1][0];
-            minY = refpoints[0][1], maxY = refpoints[1][1];
-        }
-        else
-        {
-            for (int i = posRefPointOffset + 1; i < posRefPointOffset + posRefPointCount; i++)
-            {
-                minX = std::min(minX, refpoints[i][0]);
-                minY = std::min(minY, refpoints[i][1]);
-                maxX = std::max(maxX, refpoints[i][0]);
-                maxY = std::max(maxY, refpoints[i][1]);
-            }
+            minX = std::min(minX, refpoints[i][0]);
+            minY = std::min(minY, refpoints[i][1]);
+            maxX = std::max(maxX, refpoints[i][0]);
+            maxY = std::max(maxY, refpoints[i][1]);
         }
 
         float width = maxX - minX;
