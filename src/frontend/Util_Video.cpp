@@ -123,20 +123,14 @@ void M23_Transform(float* m, float& x, float& y)
 
 
 void SetupScreenLayout(int screenWidth, int screenHeight,
-    ScreenLayout screenLayout, // always 2
+    ScreenLayout screenLayout,
     ScreenRotation rotation,
-    ScreenSizing sizing, // screenSizing_*
+    ScreenSizing sizing,
     int screenGap,
     bool integerScale,
     bool swapScreens,
     float topAspect, float botAspect)
 {
-    float mapHeight = 87.0, mapWidth = 116.0;
-    float mapY = 61.5, mapX = 153.5;
-    
-    float gaugeHeight = 192.0, gaugeWidth = 256.0;
-    float gaugeY = 0, gaugeX = 0;
-    
     HybEnable = screenLayout == 3;
     if (HybEnable)
     {
@@ -477,7 +471,7 @@ int GetScreenTransforms(float* out, int* kind)
 
 bool GetTouchCoords(int& x, int& y, bool clamp)
 {
-    if (HybEnable && HybScreen == 1) 
+    if (HybEnable && HybScreen == 1)
     {
         float vx = x;
         float vy = y;
@@ -493,7 +487,7 @@ bool GetTouchCoords(int& x, int& y, bool clamp)
             {
                 x = std::clamp((int)vx, 0, 255);
                 y = std::clamp((int)vy, 0, 191);
-                
+
                 return true;
             }
             if (HybPrevTouchScreen == 2)
