@@ -299,7 +299,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
                         ? (scale * vSize * 4) / 3
                         : (scale * hSize * 4) / 3;
 
-                    if (rotation > 1)
+                    if (rotation > screenRot_90Deg)
                         hybWidth *= -1;
 
                     M23_Translate(TopScreenMtx, (layout==0)?hybWidth:0, (layout==1)?hybWidth:0);
@@ -311,8 +311,8 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
 
                     botTrans[2+layout] += hybWidth;
 
-                    hybTrans[0] = scale * (rotation == 0 || rotation == 3 ? minX : maxX);
-                    hybTrans[1] = scale * (rotation == 0 || rotation == 1 ? minY : maxY);
+                    hybTrans[0] = scale * (rotation == screenRot_0Deg || rotation == screenRot_270Deg ? minX : maxX);
+                    hybTrans[1] = scale * (rotation == screenRot_0Deg || rotation == screenRot_90Deg ? minY : maxY);
                     M23_Translate(HybScreenMtx, hybTrans[0], hybTrans[1]);
 
                     M23_Transform(HybScreenMtx, refpoints[4][0], refpoints[4][1]);
@@ -550,3 +550,4 @@ bool GetTouchCoords(int& x, int& y, bool clamp)
 }
 
 }
+

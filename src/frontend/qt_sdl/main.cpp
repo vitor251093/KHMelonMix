@@ -384,7 +384,6 @@ void EmuThread::applyCommandMenuInputMask()
 
 void EmuThread::run()
 {
-    u32 mainScreenPos[3];
     Platform::FileHandle* file;
 
     RecreateConsole();
@@ -680,7 +679,7 @@ void EmuThread::run()
 
                 int inst = Platform::InstanceID();
                 if (inst == 0)
-                    sprintf(melontitle, "[%d/%.0f] khDaysMM " KHDAYSMM_VERSION, fps, fpstarget);
+                    sprintf(melontitle, "[%d/%.0f] khDaysMM " MELONDS_VERSION, fps, fpstarget);
                 else
                     sprintf(melontitle, "[%d/%.0f] khDaysMM (%d)", fps, fpstarget, inst+1);
                 changeWindowTitle(melontitle);
@@ -699,7 +698,7 @@ void EmuThread::run()
 
             int inst = Platform::InstanceID();
             if (inst == 0)
-                sprintf(melontitle, "khDaysMM " KHDAYSMM_VERSION);
+                sprintf(melontitle, "khDaysMM " MELONDS_VERSION);
             else
                 sprintf(melontitle, "khDaysMM (%d)", inst+1);
             changeWindowTitle(melontitle);
@@ -1563,8 +1562,8 @@ void ScreenPanelNative::setupScreenLayout()
     {
         float* mtx = screenMatrix[i];
         screenTrans[i].setMatrix(mtx[0], mtx[1], 0.f,
-                                 mtx[2], mtx[3], 0.f,
-                                 mtx[4], mtx[5], 1.f);
+                                mtx[2], mtx[3], 0.f,
+                                mtx[4], mtx[5], 1.f);
     }
 }
 
@@ -1915,7 +1914,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     oldH = Config::WindowHeight;
     oldMax = Config::WindowMaximized;
 
-    setWindowTitle("khDaysMM " KHDAYSMM_VERSION);
+    setWindowTitle("khDaysMM " MELONDS_VERSION);
     setAttribute(Qt::WA_DeleteOnClose);
     setAcceptDrops(true);
     setFocusPolicy(Qt::ClickFocus);
@@ -3819,8 +3818,8 @@ int main(int argc, char** argv)
 
     qputenv("QT_SCALE_FACTOR", "1");
 
-    printf("khDaysMM " KHDAYSMM_VERSION "\n");
-    printf(KHDAYSMM_URL "\n");
+    printf("khDaysMM " MELONDS_VERSION "\n");
+    printf(MELONDS_URL "\n");
 
     // easter egg - not worth checking other cases for something so dumb
     if (argc != 0 && (!strcasecmp(argv[0], "derpDS") || !strcasecmp(argv[0], "./derpDS")))
