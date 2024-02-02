@@ -132,7 +132,7 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float miscWidth = 93.0;
     float miscRightMargin = 12.0;
     float miscTopMargin = 70.0*iuTexScale;
-    float sourceMiscTopMargin = 30.0;
+    float sourceMiscTopMargin = 25.0;
     if (texPosition3d.x >= (256.0*iuTexScale - miscWidth - miscRightMargin) &&
         texPosition3d.x < (256.0*iuTexScale - miscRightMargin) && 
         texPosition3d.y <= miscHeight + miscTopMargin && 
