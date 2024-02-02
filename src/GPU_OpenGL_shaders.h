@@ -62,8 +62,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
     float heightScale = (4.0/3)/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
-    vec2 fixStretch = vec2(widthScale, 1.0);
-    vec2 antiFixStretch = vec2(heightScale, 1.0);
+    vec2 fixStretch = vec2(1.0, heightScale);
 
     ivec4 dialogMiddlePixel = ivec4(texelFetch(ScreenTex, ivec2(256/2, 192*0.809) + ivec2(512,0), 0));
     if ((dialogMiddlePixel.a & 0xF) == 1) {
@@ -115,7 +114,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             texPosition3d.y <= minimapHeight + minimapTopMargin && 
             texPosition3d.y >= minimapTopMargin) {
             return increaseMapSize*fixStretch*(texPosition3d - vec2(256.0*iuTexScale - minimapWidth - minimapRightMargin, minimapTopMargin)) +
-                vec2(0, 192.0) + antiFixStretch*vec2(bottomMinimapLeftMargin, bottomMinimapTopMargin);
+                vec2(0, 192.0) + vec2(bottomMinimapLeftMargin, bottomMinimapTopMargin);
         }
     }
 
@@ -156,7 +155,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         texPosition3d.y >= (192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin) &&
         texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
         return fixStretch*(texPosition3d - vec2(commandMenuLeftMargin, 192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin)) +
-            antiFixStretch*vec2(0, 192.0 - commandMenuHeight);
+            vec2(0, 192.0 - commandMenuHeight);
     }
 
     // player health
@@ -169,7 +168,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
         texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
         return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin, 192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
-            antiFixStretch*vec2(256.0 - playerHealthWidth, 192.0 - playerHealthHeight);
+            vec2(256.0 - playerHealthWidth, 192.0 - playerHealthHeight);
     }
 
     // nothing (clear screen)
