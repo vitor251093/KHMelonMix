@@ -99,7 +99,7 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         // minimap
         float minimapHeight = 68.0;
         float minimapWidth = 68.0;
-        float minimapRightMargin = 18.0;
+        float minimapRightMargin = 12.0;
         float minimapTopMargin = 114.0;
         float bottomMinimapLeftMargin = 130.0;
         float bottomMinimapTopMargin = 60.0;
@@ -113,8 +113,8 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // command menu
-    float commandMenuLeftMargin = 20.0;
-    float commandMenuBottomMargin = 20.0;
+    float commandMenuLeftMargin = 10.0;
+    float commandMenuBottomMargin = 0.0;
     if (texPosition3d.x >= commandMenuLeftMargin && texPosition3d.x <= 128 &&
         texPosition3d.y >= (192.0*iuTexScale - 106.0 - commandMenuBottomMargin) &&
         texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
@@ -122,12 +122,12 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // player health
-    float playerHealthRightMargin = 12.0;
-    float playerHealthBottomMargin = 20.0;
+    float playerHealthRightMargin = 8.0;
+    float playerHealthBottomMargin = 2.0;
     if (texPosition3d.x >= (256.0*iuTexScale - 128.0 - playerHealthRightMargin) &&
         texPosition3d.x < (256.0*iuTexScale - playerHealthRightMargin) &&
-        texPosition3d.y >= (192.0*iuTexScale - 96.0 - commandMenuBottomMargin) &&
-        texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
+        texPosition3d.y >= (192.0*iuTexScale - 96.0 - playerHealthBottomMargin) &&
+        texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
         return texPosition3d - ivec2(256.0*iuTexScale - 128.0 - playerHealthRightMargin, 192.0*iuTexScale - 96.0 - playerHealthBottomMargin) + ivec2(128.0, 96.0);
     }
 
@@ -193,7 +193,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         // minimap
         float minimapHeight = 68.0;
         float minimapWidth = 68.0;
-        float minimapRightMargin = 18.0;
+        float minimapRightMargin = 12.0;
         float minimapTopMargin = 114.0;
         if (texPosition3d.x >= (256.0*iuTexScale - minimapWidth - minimapRightMargin) &&
             texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
