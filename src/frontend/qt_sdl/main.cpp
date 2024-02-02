@@ -1348,8 +1348,7 @@ void ScreenHandler::screenSetupLayout(int w, int h)
     numScreens = Frontend::GetScreenTransforms(screenMatrix[0], screenKind);
 
     if (emuThread != nullptr && emuThread->NDS != nullptr) {
-        //printf("\n\naspect ratio: %f\n\n", aspectTop);
-        static_cast<GLRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).GetCompositor().SetAspectRatio(aspectTop);
+        static_cast<GLRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).GetCompositor().SetAspectRatio(aspectTop * (4.f / 3.f));
     }
 }
 
