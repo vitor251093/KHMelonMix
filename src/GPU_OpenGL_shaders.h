@@ -142,6 +142,15 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     float iuTexScale = (u3DScale*1.0)/iuScale;
     ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
 
+    if (KHGameScene == 13) // gameScene_PauseMenuWithGauge
+    {
+        // gauge bar
+        float gaugeBarHeight = 33.0*iuTexScale;
+        if (texPosition3d.y >= (192.0*iuTexScale - gaugeBarHeight)) {
+            return ivec2(fTexcoord) + ivec2(0,192);
+        }
+    }
+
     // pause menu
     float height = 192.0;
     float width = 256.0;
@@ -152,15 +161,6 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
     {
         return texPosition3d - ivec2(x1, y1);
-    }
-
-    if (KHGameScene == 13) // gameScene_PauseMenuWithGauge
-    {
-        // gauge bar
-        float gaugeBarHeight = 66.0;
-        if (texPosition3d.y >= (192.0*iuTexScale - gaugeBarHeight)) {
-            return ivec2(fTexcoord) + ivec2(0,192);
-        }
     }
 
     // nothing (clear screen)
