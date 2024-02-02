@@ -3794,7 +3794,7 @@ MelonApplication::MelonApplication(int& argc, char** argv)
     : QApplication(argc, argv)
 {
 #ifndef __APPLE__
-    setWindowIcon(QIcon(":/khDaysMM-icon"));
+    setWindowIcon(QIcon(":/melon-icon"));
 #endif
 }
 

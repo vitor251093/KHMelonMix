@@ -13,9 +13,9 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleVersion</key>
-    <string>${khDaysMM_VERSION}</string>
+    <string>${melonDS_VERSION}</string>
     <key>CFBundleShortVersionString</key>
-    <string>${khDaysMM_VERSION}</string> 
+    <string>${melonDS_VERSION}</string> 
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.games</string>
     <key>NSHumanReadableCopyright</key>
