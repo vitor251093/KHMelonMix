@@ -193,9 +193,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     if (isScreenBackgroundBlack(0) && isScreenBackgroundBlack(1)) {
         return getGenericHudTextureCoordinates(xpos, ypos);
     }
-    if (isScreenBackgroundBlack(1)) {
-        return vec2(fTexcoord);
-    }
 
     // item notification
     float sourceItemNotificationHeight = 86.0;
