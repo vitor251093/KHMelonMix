@@ -137,17 +137,19 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // sigils and death counter
-    float miscHeight = 30.0;
-    float miscWidth = 93.0;
+    float sourceMiscHeight = 30.0;
+    float sourceMiscWidth = 93.0;
+    float miscHeight = sourceMiscHeight;
+    float miscWidth = sourceMiscWidth*heightScale;
     float miscRightMargin = 12.0;
-    float miscTopMargin = 70.0*iuTexScale;
+    float miscTopMargin = 55.0*iuTexScale;
     float sourceMiscTopMargin = 25.0;
     if (texPosition3d.x >= (256.0*iuTexScale - miscWidth - miscRightMargin) &&
         texPosition3d.x < (256.0*iuTexScale - miscRightMargin) && 
         texPosition3d.y <= miscHeight + miscTopMargin && 
         texPosition3d.y >= miscTopMargin) {
-        return (texPosition3d - vec2(256.0*iuTexScale - miscWidth - miscRightMargin, miscTopMargin)) + 
-            vec2(256.0 - miscWidth, sourceMiscTopMargin);
+        return antiFixStretch*(texPosition3d - vec2(256.0*iuTexScale - miscWidth - miscRightMargin, miscTopMargin)) + 
+            vec2(256.0 - sourceMiscWidth, sourceMiscTopMargin);
     }
 
     // command menu
