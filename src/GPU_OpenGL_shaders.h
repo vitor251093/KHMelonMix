@@ -146,7 +146,8 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // command menu
-    float commandMenuHeight = 106.0;
+    float bottomCommandMenuHeight = 106.0;
+    float commandMenuHeight = bottomCommandMenuHeight*widthScale;
     float commandMenuWidth = 98.0;
     float commandMenuLeftMargin = 10.0;
     float commandMenuBottomMargin = 0.0;
@@ -155,7 +156,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         texPosition3d.y >= (192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin) &&
         texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
         return fixStretch*(texPosition3d - vec2(commandMenuLeftMargin, 192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin)) +
-            vec2(0, 192.0 - commandMenuHeight);
+            vec2(0, 192.0 - bottomCommandMenuHeight);
     }
 
     // player health
