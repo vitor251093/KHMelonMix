@@ -77,13 +77,17 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // item notification
+    float sourceItemNotificationHeight = 86.0;
+    float sourceItemNotificationWidth = 108.0;
+    float itemNotificationHeight = sourceItemNotificationHeight;
+    float itemNotificationWidth = sourceItemNotificationWidth*heightScale;
     float itemNotificationLeftMargin = 0.0;
     float itemNotificationTopMargin = 15.0*iuTexScale;
-    if (texPosition3d.x <= 108 + itemNotificationLeftMargin &&
+    if (texPosition3d.x <= itemNotificationWidth + itemNotificationLeftMargin &&
         texPosition3d.x > itemNotificationLeftMargin &&
-        texPosition3d.y <= 86 + itemNotificationTopMargin &&
+        texPosition3d.y <= itemNotificationHeight + itemNotificationTopMargin &&
         texPosition3d.y >= itemNotificationTopMargin) {
-        return texPosition3d - vec2(itemNotificationLeftMargin, itemNotificationTopMargin);
+        return fixStretch*(texPosition3d - vec2(itemNotificationLeftMargin, itemNotificationTopMargin));
     }
 
     // countdown
@@ -102,10 +106,10 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     if (KHGameScene == 7) // gameScene_InGameWithMap
     {
         // minimap
-        float bottomMinimapWidth = 60.0;
         float bottomMinimapHeight = 50.0;
-        float minimapWidth = bottomMinimapWidth*heightScale;
+        float bottomMinimapWidth = 60.0;
         float minimapHeight = bottomMinimapHeight;
+        float minimapWidth = bottomMinimapWidth*heightScale;
         float minimapRightMargin = 9.0;
         float minimapTopMargin = 20.0*iuTexScale;
         float bottomMinimapCenterX = 158.0;
