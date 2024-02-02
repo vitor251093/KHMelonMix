@@ -43,7 +43,7 @@ jobs:
       run: |
         cmake --build build -j$(nproc --all)
         mkdir dist
-        cp build/khDaysMM dist
+        cp build/melonDS dist/khDaysMM
     - uses: actions/upload-artifact@v1
       with:
         name: khDaysMM-ubuntu-aarch64

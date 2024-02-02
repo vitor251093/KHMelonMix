@@ -1,6 +1,6 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
 	<qresource>
-		<file alias="khDaysMM-icon">icon/khDaysMM_256x256.png</file>
+		<file alias="melon-icon">icon/khDaysMM_256x256.png</file>
 	</qresource>
 </RCC>

@@ -65,7 +65,7 @@ public:
         if (!openNAND())
         {
             QMessageBox::critical(parent,
-                                  "DSi title manager - khDaysMM",
+                                  "DSi title manager - melonDS",
                                   "Failed to mount the DSi NAND. Check that your NAND dump is accessible and valid.");
             return nullptr;
         }
