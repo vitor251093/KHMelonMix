@@ -83,24 +83,13 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return texPosition3d - ivec2(itemNotificationLeftMargin, itemNotificationTopMargin);
     }
 
-    // enemy health
-    float enemyHealthWidth = 93.0;
-    float enemyHealthRightMargin = 12.0;
-    float enemyHealthTopMargin = 10.0;
-    if (texPosition3d.x >= (256.0*iuTexScale - enemyHealthWidth - enemyHealthRightMargin) &&
-        texPosition3d.x < (256.0*iuTexScale - enemyHealthRightMargin) && 
-        texPosition3d.y <= 96 + enemyHealthTopMargin && 
-        texPosition3d.y >= enemyHealthTopMargin) {
-        return texPosition3d - ivec2(256.0*iuTexScale - enemyHealthWidth - enemyHealthRightMargin, enemyHealthTopMargin) + ivec2(256.0 - enemyHealthWidth, 0);
-    }
-
     if (KHGameScene == 7) // gameScene_InGameWithMap
     {
         // minimap
         float minimapHeight = 68.0;
         float minimapWidth = 68.0;
         float minimapRightMargin = 12.0;
-        float minimapTopMargin = 114.0;
+        float minimapTopMargin = 30.0*iuTexScale;
         float bottomMinimapLeftMargin = 130.0;
         float bottomMinimapTopMargin = 60.0;
         if (texPosition3d.x >= (256.0*iuTexScale - minimapWidth - minimapRightMargin) &&
@@ -110,6 +99,18 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             return (texPosition3d - ivec2(256.0*iuTexScale - minimapWidth - minimapRightMargin, minimapTopMargin)) +
                 ivec2(bottomMinimapLeftMargin, 192.0 + bottomMinimapTopMargin);
         }
+    }
+
+    // enemy health
+    float enemyHealthWidth = 93.0;
+    float enemyHealthRightMargin = 12.0;
+    float enemyHealthTopMargin = 10.0;
+    if (texPosition3d.x >= (256.0*iuTexScale - enemyHealthWidth - enemyHealthRightMargin) &&
+        texPosition3d.x < (256.0*iuTexScale - enemyHealthRightMargin) && 
+        texPosition3d.y <= 96 + enemyHealthTopMargin && 
+        texPosition3d.y >= enemyHealthTopMargin) {
+        return (texPosition3d - ivec2(256.0*iuTexScale - enemyHealthWidth - enemyHealthRightMargin, enemyHealthTopMargin)) + 
+            ivec2(256.0 - enemyHealthWidth, 0);
     }
 
     // command menu
@@ -194,7 +195,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         float minimapHeight = 68.0;
         float minimapWidth = 68.0;
         float minimapRightMargin = 12.0;
-        float minimapTopMargin = 114.0;
+        float minimapTopMargin = 30.0*iuTexScale;
         if (texPosition3d.x >= (256.0*iuTexScale - minimapWidth - minimapRightMargin) &&
             texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
             texPosition3d.y <= minimapHeight + minimapTopMargin && 
