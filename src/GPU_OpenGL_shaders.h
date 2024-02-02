@@ -237,7 +237,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     {
         int iuScale = KHUIScale;
         float iuTexScale = (u3DScale*1.0)/iuScale;
-        ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
+        vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
         float heightScale = (4.0/3)/TopScreenAspectRatio;
         float widthScale = 1.0/heightScale;
 
