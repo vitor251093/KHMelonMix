@@ -34,9 +34,6 @@ ARCodeFile::ARCodeFile(float screenAspect)
 {
     Error = false;
     ScreenAspect = screenAspect;
-    if (ScreenAspect == 0) {
-        ScreenAspect = 16.0 / 9;
-    }
 
     Categories.clear();
 

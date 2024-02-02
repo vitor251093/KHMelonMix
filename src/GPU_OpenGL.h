@@ -42,7 +42,6 @@ public:
     void SetAspectRatio(float aspectRatio) noexcept;
     void SetScaleFactor(int scale) noexcept;
     [[nodiscard]] int GetScaleFactor() const noexcept { return Scale; }
-    [[nodiscard]] int GetAspectRatio() const noexcept { return AspectRatio; }
 
     void Stop(const GPU& gpu) noexcept;
     void RenderFrame(const GPU& gpu, GLRenderer& renderer) noexcept;
@@ -51,7 +50,6 @@ private:
     GLCompositor(std::array<GLuint, 3> CompShader) noexcept;
     int Scale = 0;
     int ScreenH = 0, ScreenW = 0;
-    float AspectRatio = 1.0;
 
     std::array<GLuint, 3> CompShader {};
     GLuint CompScaleLoc = 0;

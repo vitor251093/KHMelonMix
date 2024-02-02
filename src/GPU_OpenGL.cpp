@@ -210,12 +210,13 @@ void GLCompositor::SetGameScene(int gameScene) noexcept
     glUseProgram(CompShader[2]);
     GLint gameSceneLocation = glGetUniformLocation(CompShader[2], "KHGameScene");
     glUniform1i(gameSceneLocation, gameScene);
-    GLint aspectRatioLocation = glGetUniformLocation(CompShader[2], "TopScreenAspectRatio");
-    glUniform1f(aspectRatioLocation, AspectRatio);
 }
 void GLCompositor::SetAspectRatio(float aspectRatio) noexcept
 {
-    AspectRatio = aspectRatio;
+    glUseProgram(CompShader[2]);
+    GLint aspectRatioLocation = glGetUniformLocation(CompShader[2], "TopScreenAspectRatio");
+    //glUniform1f(aspectRatioLocation, aspectRatio);
+    glUniform1f(aspectRatioLocation, 4.0/3.0);
 }
 void GLCompositor::SetScaleFactor(int scale) noexcept
 {

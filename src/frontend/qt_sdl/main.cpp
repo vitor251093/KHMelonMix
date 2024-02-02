@@ -812,6 +812,14 @@ bool EmuThread::setGameScene(int newGameScene)
 
         // Updating GameScene inside shader
         static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
+
+        float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
+        for (auto ratio : aspectRatios)
+        {
+            if (ratio.id == Config::ScreenAspectTop && ratio.ratio != 0)
+                aspectTop = ratio.ratio * 4.0/3;
+        }
+        static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetAspectRatio(aspectTop);
     }
 
     // Screens position and size
@@ -1346,10 +1354,6 @@ void ScreenHandler::screenSetupLayout(int w, int h)
                                 aspectBot);
 
     numScreens = Frontend::GetScreenTransforms(screenMatrix[0], screenKind);
-
-    if (emuThread != nullptr && emuThread->NDS != nullptr) {
-        static_cast<GLRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).GetCompositor().SetAspectRatio(aspectTop * (4.f / 3.f));
-    }
 }
 
 QSize ScreenHandler::screenGetMinSize(int factor = 1)

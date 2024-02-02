@@ -107,9 +107,9 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         float minimapHeight = 50.0*widthScale;
         float minimapRightMargin = 9.0;
         float minimapTopMargin = 20.0*iuTexScale;
-        float bottomMinimapLeftMargin = 170.0;
-        float bottomMinimapTopMargin = 65.0;
-        float increaseMapSize = 0.9;
+        float bottomMinimapLeftMargin = 128.0;
+        float bottomMinimapTopMargin = 60.0;
+        float increaseMapSize = 1.2;
         if (texPosition3d.x >= (256.0*iuTexScale - minimapWidth - minimapRightMargin) &&
             texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
             texPosition3d.y <= minimapHeight + minimapTopMargin && 
