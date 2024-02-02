@@ -64,7 +64,7 @@ GLCompositor::GLCompositor(std::array<GLuint, 3> compShader) noexcept : CompShad
     GLuint _3dTextureUniform = glGetUniformLocation(CompShader[2], "_3DTex");
     glUniform1i(_3dTextureUniform, 1);
     GLuint khUiScaleUniform = glGetUniformLocation(CompShader[2], "KHUIScale");
-    glUniform1i(khUiScaleUniform, 3);
+    glUniform1i(khUiScaleUniform, 4);
 
     // all this mess is to prevent bleeding
 #define SETVERTEX(i, x, y, offset) \
