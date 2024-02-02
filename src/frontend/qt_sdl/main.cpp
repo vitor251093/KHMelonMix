@@ -339,6 +339,49 @@ void EmuThread::deinitOpenGL()
     lastScreenWidth = lastScreenHeight = -1;
 }
 
+void EmuThread::applyCommandMenuInputMask()
+{
+    u32 InputMask = Input::InputMask;
+    u32 CmdMenuInputMask = Input::CmdMenuInputMask, PriorCmdMenuInputMask = Input::PriorPriorCmdMenuInputMask;
+    if (NDS->GPU.GameScene == gameScene_InGameWithMap || NDS->GPU.GameScene == gameScene_InGameWithoutMap) {
+        // So the arrow keys can be used to control the command menu
+        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+            InputMask &= ~(1<<1); // B
+        }
+        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
+            InputMask &= ~(1<<0); // A
+        }
+        if (CmdMenuInputMask & ((1 << 2) | (1 << 3))) {
+            InputMask &= ~(1<<10); // X
+            if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+                // If you press the up arrow while having the player moving priorly, it may make it go down instead
+                InputMask |= (1<<6); // up
+                InputMask |= (1<<7); // down
+            }
+            if (PriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
+                InputMask &= ~(1<<6); // up
+            if (PriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
+                InputMask &= ~(1<<7); // down
+        }
+    }
+    else {
+        // So the arrow keys can be used as directionals
+        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
+            InputMask &= ~(1<<4); // right
+        }
+        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+            InputMask &= ~(1<<5); // left
+        }
+        if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+            InputMask &= ~(1<<6); // up
+        }
+        if (CmdMenuInputMask & (1 << 3)) { // D-pad down
+            InputMask &= ~(1<<7); // down
+        }
+    }
+    Input::InputMask = InputMask;
+}
+
 void EmuThread::run()
 {
     u32 mainScreenPos[3];
@@ -508,45 +551,8 @@ void EmuThread::run()
             }
 
             // process input and hotkeys
-            u32 InputMask = Input::InputMask;
-            u32 CmdMenuInputMask = Input::CmdMenuInputMask, PriorCmdMenuInputMask = Input::PriorPriorCmdMenuInputMask;
-            if (NDS->GPU.GameScene == gameScene_InGameWithMap || NDS->GPU.GameScene == gameScene_InGameWithoutMap) {
-                // So the arrow keys can be used to control the command menu
-                if (CmdMenuInputMask & (1 << 1)) { // D-pad left
-                    InputMask &= ~(1<<1); // B
-                }
-                if (CmdMenuInputMask & (1 << 0)) { // D-pad right
-                    InputMask &= ~(1<<0); // A
-                }
-                if (CmdMenuInputMask & ((1 << 2) | (1 << 3))) {
-                    InputMask &= ~(1<<10); // X
-                    if (CmdMenuInputMask & (1 << 2)) { // D-pad up
-                        // If you press the up arrow while having the player moving priorly, it may make it go down instead
-                        InputMask |= (1<<6); // up
-                        InputMask |= (1<<7); // down
-                    }
-                    if (PriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
-                        InputMask &= ~(1<<6); // up
-                    if (PriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
-                        InputMask &= ~(1<<7); // down
-                }
-            }
-            else {
-                // So the arrow keys can be used as directionals
-                if (CmdMenuInputMask & (1 << 0)) { // D-pad right
-                    InputMask &= ~(1<<4); // right
-                }
-                if (CmdMenuInputMask & (1 << 1)) { // D-pad left
-                    InputMask &= ~(1<<5); // left
-                }
-                if (CmdMenuInputMask & (1 << 2)) { // D-pad up
-                    InputMask &= ~(1<<6); // up
-                }
-                if (CmdMenuInputMask & (1 << 3)) { // D-pad down
-                    InputMask &= ~(1<<7); // down
-                }
-            }
-            NDS->SetKeyMask(InputMask);
+            applyCommandMenuInputMask();
+            NDS->SetKeyMask(Input::InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
 
             if (Input::HotkeyPressed(HK_Lid))
