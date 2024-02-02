@@ -339,6 +339,49 @@ void EmuThread::deinitOpenGL()
     lastScreenWidth = lastScreenHeight = -1;
 }
 
+void EmuThread::applyCommandMenuInputMask()
+{
+    u32 InputMask = Input::InputMask;
+    u32 CmdMenuInputMask = Input::CmdMenuInputMask, PriorCmdMenuInputMask = Input::PriorPriorCmdMenuInputMask;
+    if (NDS->GPU.GameScene == gameScene_InGameWithMap || NDS->GPU.GameScene == gameScene_InGameWithoutMap) {
+        // So the arrow keys can be used to control the command menu
+        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+            InputMask &= ~(1<<1); // B
+        }
+        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
+            InputMask &= ~(1<<0); // A
+        }
+        if (CmdMenuInputMask & ((1 << 2) | (1 << 3))) {
+            InputMask &= ~(1<<10); // X
+            if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+                // If you press the up arrow while having the player moving priorly, it may make it go down instead
+                InputMask |= (1<<6); // up
+                InputMask |= (1<<7); // down
+            }
+            if (PriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
+                InputMask &= ~(1<<6); // up
+            if (PriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
+                InputMask &= ~(1<<7); // down
+        }
+    }
+    else {
+        // So the arrow keys can be used as directionals
+        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
+            InputMask &= ~(1<<4); // right
+        }
+        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+            InputMask &= ~(1<<5); // left
+        }
+        if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+            InputMask &= ~(1<<6); // up
+        }
+        if (CmdMenuInputMask & (1 << 3)) { // D-pad down
+            InputMask &= ~(1<<7); // down
+        }
+    }
+    Input::InputMask = InputMask;
+}
+
 void EmuThread::run()
 {
     u32 mainScreenPos[3];
@@ -508,45 +551,8 @@ void EmuThread::run()
             }
 
             // process input and hotkeys
-            u32 InputMask = Input::InputMask;
-            u32 CmdMenuInputMask = Input::CmdMenuInputMask, PriorCmdMenuInputMask = Input::PriorPriorCmdMenuInputMask;
-            if (NDS->GPU.GameScene == gameScene_InGameWithMap || NDS->GPU.GameScene == gameScene_InGameWithoutMap) {
-                // So the arrow keys can be used to control the command menu
-                if (CmdMenuInputMask & (1 << 1)) { // D-pad left
-                    InputMask &= ~(1<<1); // B
-                }
-                if (CmdMenuInputMask & (1 << 0)) { // D-pad right
-                    InputMask &= ~(1<<0); // A
-                }
-                if (CmdMenuInputMask & ((1 << 2) | (1 << 3))) {
-                    InputMask &= ~(1<<10); // X
-                    if (CmdMenuInputMask & (1 << 2)) { // D-pad up
-                        // If you press the up arrow while having the player moving priorly, it may make it go down instead
-                        InputMask |= (1<<6); // up
-                        InputMask |= (1<<7); // down
-                    }
-                    if (PriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
-                        InputMask &= ~(1<<6); // up
-                    if (PriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
-                        InputMask &= ~(1<<7); // down
-                }
-            }
-            else {
-                // So the arrow keys can be used as directionals
-                if (CmdMenuInputMask & (1 << 0)) { // D-pad right
-                    InputMask &= ~(1<<4); // right
-                }
-                if (CmdMenuInputMask & (1 << 1)) { // D-pad left
-                    InputMask &= ~(1<<5); // left
-                }
-                if (CmdMenuInputMask & (1 << 2)) { // D-pad up
-                    InputMask &= ~(1<<6); // up
-                }
-                if (CmdMenuInputMask & (1 << 3)) { // D-pad down
-                    InputMask &= ~(1<<7); // down
-                }
-            }
-            NDS->SetKeyMask(InputMask);
+            applyCommandMenuInputMask();
+            NDS->SetKeyMask(Input::InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
 
             if (Input::HotkeyPressed(HK_Lid))
@@ -803,6 +809,17 @@ bool EmuThread::setGameScene(int newGameScene)
         // Game scene
         priorGameScene = NDS->GPU.GameScene;
         NDS->GPU.GameScene = newGameScene;
+
+        // Updating GameScene inside shader
+        static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
+
+        float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
+        for (auto ratio : aspectRatios)
+        {
+            if (ratio.id == Config::ScreenAspectTop && ratio.ratio != 0)
+                aspectTop = ratio.ratio * 4.0/3;
+        }
+        static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetAspectRatio(aspectTop);
     }
 
     // Screens position and size
@@ -814,13 +831,13 @@ bool EmuThread::setGameScene(int newGameScene)
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
         case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : size; break;
         case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
-        case gameScene_InGameWithMap: size = screenSizing_MiniMap; break;
+        case gameScene_InGameWithMap: size = screenSizing_TopOnly; break;
         case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
         case gameScene_InGameMenu: break;
         case gameScene_InGameSaveMenu: size = screenSizing_TopOnly; break;
         case gameScene_InHoloMissionMenu: break;
         case gameScene_PauseMenu: size = screenSizing_TopOnly; break;
-        case gameScene_PauseMenuWithGauge: size = screenSizing_PauseMenuWithGauge; break;
+        case gameScene_PauseMenuWithGauge: size = screenSizing_TopOnly; break;
         case gameScene_Tutorial: size = screenSizing_BotOnly; break;
         case gameScene_RoxasThoughts: size = screenSizing_TopOnly; break;
         case gameScene_Shop: break;
@@ -863,8 +880,8 @@ void EmuThread::debugLogs(int gameScene)
 //   become unreliable when it comes to screen sizing.
 bool EmuThread::refreshAutoScreenSizing()
 {
-    // printf("0x0223D384: %d\n",   NDS->ARM7Read32(0x0223D384));
-    // printf("0x0223D38C: %d\n\n", NDS->ARM7Read32(0x0223D38C));
+    // printf("0x021D08B8: %d\n",   NDS->ARM7Read8(0x021D08B8));
+    // printf("0x0223D38C: %d\n\n", NDS->ARM7Read8(0x0223D38C));
 
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
     bool no3D = NDS->GPU.GPU3D.NumVertices == 0 && NDS->GPU.GPU3D.NumPolygons == 0 && NDS->GPU.GPU3D.RenderNumPolygons == 0;
@@ -1270,77 +1287,10 @@ void EmuThread::drawScreenGL()
     glBindBuffer(GL_ARRAY_BUFFER, screenVertexBuffer);
     glBindVertexArray(screenVertexArray);
 
-    bool isInGameWithMap = NDS->GPU.GameScene == gameScene_InGameWithMap;
-    bool isInGamePauseWithGauge = NDS->GPU.GameScene == gameScene_PauseMenuWithGauge;
-
     for (int i = 0; i < numScreens; i++)
     {
-        bool isBottomScreen = i == 1;
-        bool shouldCropScreenLikeAMap = isBottomScreen && isInGameWithMap;
-        bool shouldCropScreenLikeAGauge = isBottomScreen && isInGamePauseWithGauge;
-
         glUniformMatrix2x3fv(screenShaderTransformULoc, 1, GL_TRUE, screenMatrix[i]);
-
-        if (shouldCropScreenLikeAMap || shouldCropScreenLikeAGauge) {
-            float leftMargin = 0, topMargin = 0;
-            float viewAspect;
-            float windowAspect = (float) w / h;
-            float windowWidth = w/factor;
-            float windowHeight = h/factor;
-            for (auto ratio : aspectRatios)
-            {
-                if (ratio.id == Config::ScreenAspectTop)
-                    viewAspect = ratio.ratio;
-            }
-            if (viewAspect == 0) {
-                viewAspect = windowAspect;
-            }
-            else {
-                viewAspect *= 4.0 / 3;
-            }
-            if (viewAspect != windowAspect) {
-                if (viewAspect > windowAspect) { // window taller than view
-                    topMargin = (windowHeight - windowWidth/viewAspect)/2;
-                }
-                else if (viewAspect < windowAspect) { // window larger than view
-                    leftMargin = (windowWidth - windowHeight*viewAspect)/2;
-                }
-            }
-
-            if (shouldCropScreenLikeAMap) {
-                float mapNegativeX = 20.0;
-                
-                float mapY = 108.0;
-                float mapHeight = 33.0, mapWidth = 44.0;
-            
-                float viewWidth = windowWidth - leftMargin*2;
-                float viewHeight = windowHeight - topMargin*2;
-                float viewFactorX = viewWidth / 256.0;
-                float viewFactorY = viewHeight / 192.0;
-                
-                glScissor((leftMargin + viewWidth - (mapWidth + mapNegativeX)*viewFactorX)*factor, 
-                            (mapY*viewFactorY + topMargin)*factor, 
-                            mapWidth*viewFactorX*factor, mapHeight*viewFactorY*factor);
-            }
-            if (shouldCropScreenLikeAGauge) {
-                float gaugeY = 0;
-                float gaugeHeight = 33.0, gaugeWidth = 256.0;
-                float gaugeX = 0;
-            
-                float scissorFactorX = ((w - leftMargin*2)/256.0);
-                float scissorFactorY = ((h - topMargin*2)/192.0);
-                
-                glScissor((gaugeX*scissorFactorX + leftMargin)*factor, (gaugeY*scissorFactorY + topMargin)*factor, 
-                            gaugeWidth*scissorFactorX*factor, gaugeHeight*scissorFactorY*factor);
-            }
-            glEnable(GL_SCISSOR_TEST);
-        }
-
         glDrawArrays(GL_TRIANGLES, screenKind[i] == 0 ? 0 : 2*3, 2*3);
-
-        if (shouldCropScreenLikeAMap || shouldCropScreenLikeAGauge) {
-            glDisable(GL_SCISSOR_TEST);
-        }
     }
 
     screenSettingsLock.unlock();
@@ -1404,6 +1354,9 @@ void ScreenHandler::screenSetupLayout(int w, int h)
                                 aspectBot);
 
     numScreens = Frontend::GetScreenTransforms(screenMatrix[0], screenKind);
+
+    Config::WindowHeight = h;
+    Config::WindowWidth = w;
 }
 
 QSize ScreenHandler::screenGetMinSize(int factor = 1)
@@ -2247,9 +2200,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
             QMenu* submenu = menu->addMenu("Screen sizing");
             grpScreenSizing = new QActionGroup(submenu);
 
-            const char* screensizing[] = {"Even", "Emphasize top", "Emphasize bottom", "Auto", "Top only", "Bottom only", "Minimap", "Pause menu"};
+            const char* screensizing[] = {"Even", "Emphasize top", "Emphasize bottom", "Auto", "Top only", "Bottom only"};
 
-            for (int i = 0; i < Frontend::screenSizing_PauseMenuWithGauge; i++)
+            for (int i = 0; i < Frontend::screenSizing_MAX; i++)
             {
                 actScreenSizing[i] = submenu->addAction(QString(screensizing[i]));
                 actScreenSizing[i]->setActionGroup(grpScreenSizing);
@@ -3922,7 +3875,7 @@ int main(int argc, char** argv)
     SANITIZE(Config::ScreenRotation, 0, (int)Frontend::screenRot_MAX);
     SANITIZE(Config::ScreenGap, 0, 500);
     SANITIZE(Config::ScreenLayout, 0, (int)Frontend::screenLayout_MAX);
-    SANITIZE(Config::ScreenSizing, 0, (int)Frontend::screenSizing_PauseMenuWithGauge);
+    SANITIZE(Config::ScreenSizing, 0, (int)Frontend::screenSizing_MAX);
     SANITIZE(Config::ScreenAspectTop, 0, AspectRatiosNum);
     SANITIZE(Config::ScreenAspectBot, 0, AspectRatiosNum);
 #undef SANITIZE

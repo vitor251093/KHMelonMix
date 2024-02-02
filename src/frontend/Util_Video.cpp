@@ -123,20 +123,14 @@ void M23_Transform(float* m, float& x, float& y)
 
 
 void SetupScreenLayout(int screenWidth, int screenHeight,
-    ScreenLayout screenLayout, // always 2
+    ScreenLayout screenLayout,
     ScreenRotation rotation,
-    ScreenSizing sizing, // screenSizing_*
+    ScreenSizing sizing,
     int screenGap,
     bool integerScale,
     bool swapScreens,
     float topAspect, float botAspect)
 {
-    float mapHeight = 75.0, mapWidth = 100.0;
-    float mapY = 30.0, mapX = 150.0;
-    
-    float gaugeHeight = 192.0, gaugeWidth = 256.0;
-    float gaugeY = 0, gaugeX = 0;
-    
     HybEnable = screenLayout == 3;
     if (HybEnable)
     {
@@ -168,41 +162,8 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     M23_Identity(BotScreenMtx);
     M23_Identity(HybScreenMtx);
 
-    if (sizing == screenSizing_MiniMap) 
-    {
-        M23_Scale(BotScreenMtx, mapWidth / 256.0, mapHeight / 192.0);
-        refpoints[3][0] += - 256.0 + mapWidth;
-        refpoints[3][1] += - 192.0 + mapHeight;
-        botAspect = topAspect;
-    }
-    if (sizing == screenSizing_PauseMenuWithGauge)
-    {
-        M23_Scale(BotScreenMtx, gaugeWidth / 256.0, gaugeHeight / 192.0);
-        refpoints[3][0] += - 256.0 + gaugeWidth;
-        refpoints[3][1] += - 192.0 + gaugeHeight;
-        botAspect = topAspect;
-    }
-
     M23_Translate(TopScreenMtx, -256/2, -192/2);
     M23_Translate(BotScreenMtx, -256/2, -192/2);
-
-    if (sizing == screenSizing_MiniMap) 
-    {
-        // move screens apart
-        {
-            float pipX = mapX;
-            float pipY = mapY;
-            M23_Translate(BotScreenMtx, pipX, pipY);
-
-            refpoints[2][0] += pipX;
-            refpoints[2][1] += pipY;
-            refpoints[3][0] += pipX;
-            refpoints[3][1] += pipY;
-
-            botTrans[0] = pipX;
-            botTrans[1] = pipY;
-        }
-    }
 
     M23_Scale(TopScreenMtx, topAspect, 1);
     M23_Scale(BotScreenMtx, botAspect, 1);
@@ -226,33 +187,7 @@ void SetupScreenLayout(int screenWidth, int screenHeight,
     int posRefPointOffset = 0;
     int posRefPointCount = HybEnable ? 6 : 4;
 
-    if (sizing == screenSizing_MiniMap || sizing == screenSizing_PauseMenuWithGauge) 
-    {
-        TopEnable = BotEnable = true;
-        
-        // scale
-        {
-            float primHSize = fabsf(refpoints[0][0] - refpoints[1][0]);
-            float primVSize = fabsf(refpoints[0][1] - refpoints[1][1]);
-
-            float scale = std::min(screenWidth / primHSize, screenHeight / primVSize);
-            
-            M23_Scale(TopScreenMtx, scale);
-            M23_Scale(BotScreenMtx, scale);
-
-            refpoints[0][0] *= scale;
-            refpoints[0][1] *= scale;
-            refpoints[1][0] *= scale;
-            refpoints[1][1] *= scale;
-            refpoints[2][0] *= scale;
-            refpoints[2][1] *= scale;
-            refpoints[3][0] *= scale;
-            refpoints[3][1] *= scale;
-
-            botScale = scale;
-        }
-    }
-    else if (sizing == screenSizing_TopOnly || sizing == screenSizing_BotOnly)
+    if (sizing == screenSizing_TopOnly || sizing == screenSizing_BotOnly)
     {
         float* mtx = sizing == screenSizing_TopOnly ? TopScreenMtx : BotScreenMtx;
         int primOffset = sizing == screenSizing_TopOnly ? 0 : 2;
@@ -536,7 +471,7 @@ int GetScreenTransforms(float* out, int* kind)
 
 bool GetTouchCoords(int& x, int& y, bool clamp)
 {
-    if (HybEnable && HybScreen == 1) 
+    if (HybEnable && HybScreen == 1)
     {
         float vx = x;
         float vy = y;
@@ -552,7 +487,7 @@ bool GetTouchCoords(int& x, int& y, bool clamp)
             {
                 x = std::clamp((int)vx, 0, 255);
                 y = std::clamp((int)vy, 0, 191);
-                
+
                 return true;
             }
             if (HybPrevTouchScreen == 2)

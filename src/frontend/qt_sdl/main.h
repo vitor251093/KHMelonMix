@@ -101,6 +101,7 @@ private:
     void drawScreenGL();
     void initOpenGL();
     void deinitOpenGL();
+    void applyCommandMenuInputMask();
 
     enum EmuStatusKind
     {

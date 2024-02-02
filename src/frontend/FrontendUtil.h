@@ -58,9 +58,7 @@ enum ScreenSizing
     screenSizing_Auto, // not applied in SetupScreenLayout
     screenSizing_TopOnly,
     screenSizing_BotOnly,
-    screenSizing_MAX,
-    screenSizing_MiniMap, // Main Game with a floating map
-    screenSizing_PauseMenuWithGauge
+    screenSizing_MAX
 };
 
 // setup the display layout based on the provided display size and parameters

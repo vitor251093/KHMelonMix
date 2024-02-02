@@ -38,6 +38,8 @@ public:
     GLCompositor& operator=(GLCompositor&&) noexcept;
     ~GLCompositor();
 
+    void SetGameScene(int gameScene) noexcept;
+    void SetAspectRatio(float aspectRatio) noexcept;
     void SetScaleFactor(int scale) noexcept;
     [[nodiscard]] int GetScaleFactor() const noexcept { return Scale; }
 
