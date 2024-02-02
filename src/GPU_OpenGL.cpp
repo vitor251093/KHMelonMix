@@ -215,8 +215,7 @@ void GLCompositor::SetAspectRatio(float aspectRatio) noexcept
 {
     glUseProgram(CompShader[2]);
     GLint aspectRatioLocation = glGetUniformLocation(CompShader[2], "TopScreenAspectRatio");
-    //glUniform1f(aspectRatioLocation, aspectRatio);
-    glUniform1f(aspectRatioLocation, 4.0/3.0);
+    glUniform1f(aspectRatioLocation, aspectRatio);
 }
 void GLCompositor::SetScaleFactor(int scale) noexcept
 {
