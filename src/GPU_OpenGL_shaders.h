@@ -200,7 +200,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
             texPosition3d.y <= minimapHeight + minimapTopMargin && 
             texPosition3d.y >= minimapTopMargin) {
-            color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+
+            bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+            if (isShadeOfGray) {
+                color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+            }
         }
     }
 
