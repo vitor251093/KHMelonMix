@@ -17,9 +17,9 @@ obj
 *.depend
 *.layout
 *.o
-khDaysMM_grc.c
-khDaysMM_grc.h
-khDaysMM.rc
+melon_grc.c
+melon_grc.h
+melon.rc
 cmake-build*
 cmake-build-debug
 compile_commands.json

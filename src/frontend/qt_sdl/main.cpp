@@ -2532,7 +2532,7 @@ void MainWindow::dropEvent(QDropEvent* event)
         if (!ROMManager::LoadROM(emuThread, file, true))
         {
             // TODO: better error reporting?
-            QMessageBox::critical(this, "khDaysMM", "Failed to load the DS ROM.");
+            QMessageBox::critical(this, "melonDS", "Failed to load the DS ROM.");
             emuThread->emuUnpause();
             return;
         }
@@ -2553,7 +2553,7 @@ void MainWindow::dropEvent(QDropEvent* event)
         if (!ROMManager::LoadGBAROM(*emuThread->NDS, file))
         {
             // TODO: better error reporting?
-            QMessageBox::critical(this, "khDaysMM", "Failed to load the GBA ROM.");
+            QMessageBox::critical(this, "melonDS", "Failed to load the GBA ROM.");
             emuThread->emuUnpause();
             return;
         }
@@ -2564,7 +2564,7 @@ void MainWindow::dropEvent(QDropEvent* event)
     }
     else
     {
-        QMessageBox::critical(this, "khDaysMM", "The file could not be recognized as a DS or GBA ROM.");
+        QMessageBox::critical(this, "melonDS", "The file could not be recognized as a DS or GBA ROM.");
         emuThread->emuUnpause();
         return;
     }
@@ -2599,7 +2599,7 @@ bool MainWindow::verifySetup()
     QString res = ROMManager::VerifySetup();
     if (!res.isEmpty())
     {
-         QMessageBox::critical(this, "khDaysMM", res);
+         QMessageBox::critical(this, "melonDS", res);
          return false;
     }
 
@@ -2619,7 +2619,7 @@ bool MainWindow::preloadROMs(QStringList file, QStringList gbafile, bool boot)
         if (!ROMManager::LoadGBAROM(*emuThread->NDS, gbafile))
         {
             // TODO: better error reporting?
-            QMessageBox::critical(this, "khDaysMM", "Failed to load the GBA ROM.");
+            QMessageBox::critical(this, "melonDS", "Failed to load the GBA ROM.");
             return false;
         }
 
@@ -2632,7 +2632,7 @@ bool MainWindow::preloadROMs(QStringList file, QStringList gbafile, bool boot)
         if (!ROMManager::LoadROM(emuThread, file, true))
         {
             // TODO: better error reporting?
-            QMessageBox::critical(this, "khDaysMM", "Failed to load the ROM.");
+            QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
             return false;
         }
         recentFileList.removeAll(file.join("|"));
@@ -2674,7 +2674,7 @@ QStringList MainWindow::splitArchivePath(const QString& filename, bool useMember
         const QStringList filenameParts = filename.split('|');
         if (filenameParts.size() > 2)
         {
-            QMessageBox::warning(this, "khDaysMM", "This path contains too many '|'.");
+            QMessageBox::warning(this, "melonDS", "This path contains too many '|'.");
             return {};
         }
 
@@ -2683,14 +2683,14 @@ QStringList MainWindow::splitArchivePath(const QString& filename, bool useMember
             const QString archive = filenameParts.at(0);
             if (!QFileInfo(archive).exists())
             {
-                QMessageBox::warning(this, "khDaysMM", "This archive does not exist.");
+                QMessageBox::warning(this, "melonDS", "This archive does not exist.");
                 return {};
             }
 
             const QString subfile = filenameParts.at(1);
             if (!Archive::ListArchive(archive).contains(subfile))
             {
-                QMessageBox::warning(this, "khDaysMM", "This archive does not contain the desired file.");
+                QMessageBox::warning(this, "melonDS", "This archive does not contain the desired file.");
                 return {};
             }
 
@@ -2701,7 +2701,7 @@ QStringList MainWindow::splitArchivePath(const QString& filename, bool useMember
 
     if (!QFileInfo(filename).exists())
     {
-        QMessageBox::warning(this, "khDaysMM", "This ROM file does not exist.");
+        QMessageBox::warning(this, "melonDS", "This ROM file does not exist.");
         return {};
     }
 
@@ -2727,9 +2727,9 @@ QString MainWindow::pickFileFromArchive(QString archiveFileName)
     if (archiveROMList.size() <= 1)
     {
         if (!archiveROMList.isEmpty() && archiveROMList.at(0) == "OK")
-            QMessageBox::warning(this, "khDaysMM", "This archive is empty.");
+            QMessageBox::warning(this, "melonDS", "This archive is empty.");
         else
-            QMessageBox::critical(this, "khDaysMM", "This archive could not be read. It may be corrupt or you don't have the permissions.");
+            QMessageBox::critical(this, "melonDS", "This archive could not be read. It may be corrupt or you don't have the permissions.");
         return QString();
     }
 
@@ -2747,7 +2747,7 @@ QString MainWindow::pickFileFromArchive(QString archiveFileName)
 
     if (archiveROMList.isEmpty())
     {
-        QMessageBox::warning(this, "khDaysMM", "This archive does not contain any supported ROMs.");
+        QMessageBox::warning(this, "melonDS", "This archive does not contain any supported ROMs.");
         return QString();
     }
 
@@ -2756,7 +2756,7 @@ QString MainWindow::pickFileFromArchive(QString archiveFileName)
 
     bool ok;
     const QString toLoad = QInputDialog::getItem(
-        this, "khDaysMM",
+        this, "melonDS",
         "This archive contains multiple files. Select which ROM you want to load.",
         archiveROMList.toList(), 0, false, &ok
     );
@@ -2835,7 +2835,7 @@ void MainWindow::loadMostRecentFile()
         if (!ROMManager::LoadROM(emuThread, file, true))
         {
             // TODO: better error reporting?
-            QMessageBox::critical(this, "khDaysMM", "Failed to load the ROM.");
+            QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
             emuThread->emuUnpause();
             return;
         }
@@ -2877,7 +2877,7 @@ void MainWindow::onOpenFile()
     if (!ROMManager::LoadROM(emuThread, file, true))
     {
         // TODO: better error reporting?
-        QMessageBox::critical(this, "khDaysMM", "Failed to load the ROM.");
+        QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
         emuThread->emuUnpause();
         return;
     }
@@ -2976,7 +2976,7 @@ void MainWindow::onClickRecentFile()
     if (!ROMManager::LoadROM(emuThread, file, true))
     {
         // TODO: better error reporting?
-        QMessageBox::critical(this, "khDaysMM", "Failed to load the ROM.");
+        QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
         emuThread->emuUnpause();
         return;
     }
@@ -3005,7 +3005,7 @@ void MainWindow::onBootFirmware()
     if (!ROMManager::LoadBIOS(emuThread))
     {
         // TODO: better error reporting?
-        QMessageBox::critical(this, "khDaysMM", "This firmware is not bootable.");
+        QMessageBox::critical(this, "melonDS", "This firmware is not bootable.");
         emuThread->emuUnpause();
         return;
     }
@@ -3029,7 +3029,7 @@ void MainWindow::onInsertCart()
     if (!ROMManager::LoadROM(emuThread, file, false))
     {
         // TODO: better error reporting?
-        QMessageBox::critical(this, "khDaysMM", "Failed to load the ROM.");
+        QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
         emuThread->emuUnpause();
         return;
     }
@@ -3064,7 +3064,7 @@ void MainWindow::onInsertGBACart()
     if (!ROMManager::LoadGBAROM(*emuThread->NDS, file))
     {
         // TODO: better error reporting?
-        QMessageBox::critical(this, "khDaysMM", "Failed to load the ROM.");
+        QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
         emuThread->emuUnpause();
         return;
     }
@@ -3116,7 +3116,7 @@ void MainWindow::onSaveState()
         QString qfilename = QFileDialog::getSaveFileName(this,
                                                          "Save state",
                                                          QString::fromStdString(Config::LastROMFolder),
-                                                         "khDaysMM savestates (*.mln);;Any file (*.*)");
+                                                         "melonDS savestates (*.mln);;Any file (*.*)");
         if (qfilename.isEmpty())
         {
             emuThread->emuUnpause();
@@ -3160,7 +3160,7 @@ void MainWindow::onLoadState()
         QString qfilename = QFileDialog::getOpenFileName(this,
                                                          "Load state",
                                                          QString::fromStdString(Config::LastROMFolder),
-                                                         "khDaysMM savestates (*.ml*);;Any file (*.*)");
+                                                         "melonDS savestates (*.ml*);;Any file (*.*)");
         if (qfilename.isEmpty())
         {
             emuThread->emuUnpause();
@@ -3224,7 +3224,7 @@ void MainWindow::onImportSavefile()
     Platform::FileHandle* f = Platform::OpenFile(path.toStdString(), Platform::FileMode::Read);
     if (!f)
     {
-        QMessageBox::critical(this, "khDaysMM", "Could not open the given savefile.");
+        QMessageBox::critical(this, "melonDS", "Could not open the given savefile.");
         emuThread->emuUnpause();
         return;
     }
@@ -3232,7 +3232,7 @@ void MainWindow::onImportSavefile()
     if (RunningSomething)
     {
         if (QMessageBox::warning(this,
-                        "khDaysMM",
+                        "melonDS",
                         "The emulation will be reset and the current savefile overwritten.",
                         QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok)
         {
@@ -3848,7 +3848,7 @@ int main(int argc, char** argv)
         QString errorStr = "Failed to initialize SDL. This could indicate an issue with your audio driver.\n\nThe error was: ";
         errorStr += err;
 
-        QMessageBox::critical(NULL, "khDaysMM", errorStr);
+        QMessageBox::critical(NULL, "melonDS", errorStr);
         return 1;
     }
 

@@ -35,7 +35,9 @@ jobs:
 
     - name: Make
       working-directory: ${{runner.workspace}}/build
-      run: cmake --build .
+      run: |
+        cmake --build .
+        mv melonDS.exe khDaysMM.exe
 
     - uses: actions/upload-artifact@v1
       with:
