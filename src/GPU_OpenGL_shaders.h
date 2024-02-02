@@ -146,8 +146,8 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // command menu
-    float bottomCommandMenuHeight = 106.0;
-    float commandMenuHeight = bottomCommandMenuHeight*widthScale;
+    float sourceCommandMenuHeight = 106.0;
+    float commandMenuHeight = sourceCommandMenuHeight*widthScale;
     float commandMenuWidth = 98.0;
     float commandMenuLeftMargin = 10.0;
     float commandMenuBottomMargin = 0.0;
@@ -156,20 +156,21 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         texPosition3d.y >= (192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin) &&
         texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
         return fixStretch*(texPosition3d - vec2(commandMenuLeftMargin, 192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin)) +
-            vec2(0, 192.0 - bottomCommandMenuHeight);
+            vec2(0, 192.0 - sourceCommandMenuHeight);
     }
 
     // player health
-    float playerHealthHeight = 96.0;
+    float sourcePlayerHealthHeight = 96.0;
+    float playerHealthHeight = sourcePlayerHealthHeight*widthScale;
     float playerHealthWidth = 108.0;
     float playerHealthRightMargin = 8.0;
-    float playerHealthBottomMargin = 2.0;
+    float playerHealthBottomMargin = 2.0*iuTexScale;
     if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
         texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
         texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
         texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
         return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin, 192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
-            vec2(256.0 - playerHealthWidth, 192.0 - playerHealthHeight);
+            vec2(256.0 - playerHealthWidth, 192.0 - sourcePlayerHealthHeight);
     }
 
     // nothing (clear screen)
