@@ -61,6 +61,19 @@ bool isMinimapVisible()
     return minimapSecurityPixel.r > 60 && minimapSecurityPixel.g > 60 && minimapSecurityPixel.b > 60;
 }
 
+bool isColorBlack(ivec4 pixel)
+{
+    return pixel.r < 5 && pixel.g < 5 && pixel.b < 5;
+}
+bool isBackgroundBlack()
+{
+    ivec4 pixel1 = ivec4(texelFetch(ScreenTex, ivec2(0, 0), 0));
+    ivec4 pixel2 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0*(1.0/3.0)), 0));
+    ivec4 pixel3 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0*(2.0/3.0)), 0));
+    ivec4 pixel4 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0), 0));
+    return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4);
+}
+
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
@@ -73,6 +86,10 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     ivec4 dialogMiddlePixel = ivec4(texelFetch(ScreenTex, ivec2(256/2, 192*0.809) + ivec2(512,0), 0));
     if ((dialogMiddlePixel.a & 0xF) == 1) {
         // TODO: Isn't working all the time
+        return vec2(fTexcoord);
+    }
+
+    if (isBackgroundBlack()) {
         return vec2(fTexcoord);
     }
 
