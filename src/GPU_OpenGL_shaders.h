@@ -72,12 +72,12 @@ bool isColorBlack(ivec4 pixel)
 {
     return pixel.r < 5 && pixel.g < 5 && pixel.b < 5;
 }
-bool isBackgroundBlack()
+bool isBottomScreenBlack()
 {
-    ivec4 pixel1 = ivec4(texelFetch(ScreenTex, ivec2(0, 0), 0));
-    ivec4 pixel2 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0*(1.0/3.0)), 0));
-    ivec4 pixel3 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0*(2.0/3.0)), 0));
-    ivec4 pixel4 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0), 0));
+    ivec4 pixel1 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0 + 0), 0));
+    ivec4 pixel2 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0 + 192.0*(1.0/3.0)), 0));
+    ivec4 pixel3 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0 + 192.0*(2.0/3.0)), 0));
+    ivec4 pixel4 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0 + 192.0), 0));
     return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4);
 }
 
@@ -118,7 +118,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return vec2(fTexcoord);
     }
 
-    if (isBackgroundBlack()) {
+    if (isBottomScreenBlack()) {
         return getGenericHudTextureCoordinates(xpos, ypos);
     }
 
