@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - feature/fix-builds
   pull_request:
     branches:
       - master
