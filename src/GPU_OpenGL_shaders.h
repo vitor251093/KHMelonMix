@@ -55,6 +55,12 @@ smooth in vec2 fTexcoord;
 
 out vec4 oColor;
 
+bool isMinimapVisible()
+{
+    ivec4 minimapSecurityPixel = ivec4(texelFetch(ScreenTex, ivec2(99, 53) + ivec2(0,192), 0));
+    return minimapSecurityPixel.r > 60 && minimapSecurityPixel.g > 60 && minimapSecurityPixel.b > 60;
+}
+
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
@@ -105,7 +111,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
-    if (KHGameScene == 7) // gameScene_InGameWithMap
+    if (KHGameScene == 7 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         // minimap
         float bottomMinimapHeight = 50.0;
@@ -242,7 +248,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
     ivec4 color = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0)*index, 0));
 
-    if (KHGameScene == 7) // gameScene_InGameWithMap
+    if (KHGameScene == 7 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         int iuScale = KHUIScale;
         float iuTexScale = (u3DScale*1.0)/iuScale;
