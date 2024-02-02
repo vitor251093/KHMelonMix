@@ -63,6 +63,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float heightScale = (4.0/3)/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(1.0, heightScale);
+    vec2 antiFixStretch = vec2(widthScale, 1.0);
 
     ivec4 dialogMiddlePixel = ivec4(texelFetch(ScreenTex, ivec2(256/2, 192*0.809) + ivec2(512,0), 0));
     if ((dialogMiddlePixel.a & 0xF) == 1) {
@@ -147,30 +148,32 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 
     // command menu
     float sourceCommandMenuHeight = 106.0;
-    float commandMenuHeight = sourceCommandMenuHeight*widthScale;
-    float commandMenuWidth = 98.0;
+    float sourceCommandMenuWidth = 98.0;
+    float commandMenuHeight = sourceCommandMenuHeight;
+    float commandMenuWidth = sourceCommandMenuWidth*heightScale;
     float commandMenuLeftMargin = 10.0;
     float commandMenuBottomMargin = 0.0;
     if (texPosition3d.x >= commandMenuLeftMargin &&
         texPosition3d.x <= commandMenuWidth + commandMenuLeftMargin &&
         texPosition3d.y >= (192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin) &&
         texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
-        return fixStretch*(texPosition3d - vec2(commandMenuLeftMargin, 192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin)) +
+        return antiFixStretch*(texPosition3d - vec2(commandMenuLeftMargin, 192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin)) +
             vec2(0, 192.0 - sourceCommandMenuHeight);
     }
 
     // player health
     float sourcePlayerHealthHeight = 96.0;
-    float playerHealthHeight = sourcePlayerHealthHeight*widthScale;
-    float playerHealthWidth = 108.0;
+    float sourcePlayerHealthWidth = 108.0;
+    float playerHealthHeight = sourcePlayerHealthHeight;
+    float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
     float playerHealthRightMargin = 8.0;
     float playerHealthBottomMargin = 2.0*iuTexScale;
     if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
         texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
         texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
         texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
-        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin, 192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
-            vec2(256.0 - playerHealthWidth, 192.0 - sourcePlayerHealthHeight);
+        return antiFixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin, 192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
+            vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
     }
 
     // nothing (clear screen)
