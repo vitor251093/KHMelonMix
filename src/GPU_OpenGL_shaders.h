@@ -91,16 +91,18 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // countdown
-    float countdownHeight = 20.0;
-    float countdownWidth = 30.0;
+    float sourceCountdownHeight = 20.0;
+    float sourceCountdownWidth = 30.0;
+    float countdownHeight = sourceCountdownHeight;
+    float countdownWidth = sourceCountdownWidth*heightScale;
     float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
     float countdownTopMargin = 6.0*iuTexScale;
     if (texPosition3d.x >= (256.0*iuTexScale - countdownWidth - countdownRightMargin) &&
         texPosition3d.x < (256.0*iuTexScale - countdownRightMargin) && 
         texPosition3d.y <= countdownHeight + countdownTopMargin && 
         texPosition3d.y >= countdownTopMargin) {
-        return (texPosition3d - vec2(256.0*iuTexScale - countdownWidth - countdownRightMargin, countdownTopMargin)) + 
-            vec2(128.0 - countdownWidth/2, 0);
+        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - countdownWidth - countdownRightMargin, countdownTopMargin)) + 
+            vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
     if (KHGameScene == 7) // gameScene_InGameWithMap
