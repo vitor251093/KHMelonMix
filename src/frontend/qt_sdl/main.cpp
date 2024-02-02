@@ -1354,6 +1354,9 @@ void ScreenHandler::screenSetupLayout(int w, int h)
                                 aspectBot);
 
     numScreens = Frontend::GetScreenTransforms(screenMatrix[0], screenKind);
+
+    Config::WindowHeight = h;
+    Config::WindowWidth = w;
 }
 
 QSize ScreenHandler::screenGetMinSize(int factor = 1)
