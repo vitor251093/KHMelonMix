@@ -74,6 +74,28 @@ bool isBackgroundBlack()
     return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4);
 }
 
+vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
+{
+    vec2 texPosition3d = vec2(xpos, ypos);
+    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float widthScale = 1.0/heightScale;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
+    float sourceHeight = 192.0;
+    float sourceWidth = 256.0;
+    float height = sourceHeight;
+    float width = sourceWidth*heightScale;
+    float leftMargin = 256.0/2 - width/2;
+    if (texPosition3d.x <= width + leftMargin &&
+        texPosition3d.x > leftMargin)
+    {
+        return fixStretch*(texPosition3d - vec2(leftMargin, 0));
+    }
+
+    // nothing (clear screen)
+    return vec2(0, 0);
+}
+
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
@@ -90,7 +112,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     if (isBackgroundBlack()) {
-        return vec2(fTexcoord);
+        return getGenericHudTextureCoordinates(xpos, ypos);
     }
 
     ivec4 missionInfoTopLeft = ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0));
