@@ -55,11 +55,71 @@ smooth in vec2 fTexcoord;
 
 out vec4 oColor;
 
+ivec4 combineLayers(float xpos, float ypos, ivec4 val1, ivec4 val2, ivec4 val3)
+{
+    ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
+
+    ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
+            * vec4(63,63,63,31));
+
+    int compmode = val3.a & 0xF;
+    int eva, evb, evy;
+
+    if (compmode == 4)
+    {
+        // 3D on top, blending
+
+        if (_3dpix.a > 0)
+        {
+            eva = (_3dpix.a & 0x1F) + 1;
+            evb = 32 - eva;
+
+            val1 = ((_3dpix * eva) + (val1 * evb) + 0x10) >> 5;
+            val1 = min(val1, 0x3F);
+        }
+        else
+            val1 = val2;
+    }
+    else if (compmode == 1)
+    {
+        // 3D on bottom, blending
+
+        if (_3dpix.a > 0)
+        {
+            eva = val3.g;
+            evb = val3.b;
+
+            val1 = ((val1 * eva) + (_3dpix * evb) + 0x8) >> 4;
+            val1 = min(val1, 0x3F);
+        }
+        else
+            val1 = val2;
+    }
+    else if (compmode <= 3)
+    {
+        // 3D on top, normal/fade
+
+        if (_3dpix.a > 0)
+        {
+            evy = val3.g;
+
+            val1 = _3dpix;
+            if      (compmode == 2) val1 += (((0x3F - val1) * evy) + 0x8) >> 4;
+            else if (compmode == 3) val1 -= ((val1 * evy) + 0x7) >> 4;
+        }
+        else
+            val1 = val2;
+    }
+
+    return val1;
+}
+
 bool isMissionInformationVisible()
 {
     ivec4 missionInfoTopLeft = ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0));
     ivec4 missionInfoMiddleLeft = ivec4(texelFetch(ScreenTex, ivec2(0, 192*0.078) + ivec2(512,0), 0));
-    return (missionInfoTopLeft.a & 0xF) == 1 || (missionInfoMiddleLeft.a & 0xF) == 1;
+    ivec4 missionInfoMiddleRight = ivec4(texelFetch(ScreenTex, ivec2(255.0 - 1.0, 192*0.078) + ivec2(512,0), 0));
+    return (missionInfoTopLeft.a & 0xF) == 1 || (missionInfoMiddleLeft.a & 0xF) == 1 || (missionInfoMiddleRight.a & 0xF) == 1;
 }
 
 bool isMinimapVisible()
@@ -72,12 +132,20 @@ bool isColorBlack(ivec4 pixel)
 {
     return pixel.r < 5 && pixel.g < 5 && pixel.b < 5;
 }
-bool isBottomScreenBlack()
+ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
 {
-    ivec4 pixel1 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0 + 0), 0));
-    ivec4 pixel2 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0 + 192.0*(1.0/3.0)), 0));
-    ivec4 pixel3 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0 + 192.0*(2.0/3.0)), 0));
-    ivec4 pixel4 = ivec4(texelFetch(ScreenTex, ivec2(0, 192.0 + 192.0), 0));
+    vec2 texcoord = vec2(xpos, ypos);
+    ivec4 val1 = ivec4(texelFetch(ScreenTex, ivec2(texcoord), 0));
+    ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(256,0), 0));
+    ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0));
+    return combineLayers(xpos, ypos, val1, val2, val3);
+}
+bool isScreenBackgroundBlack(int index)
+{
+    ivec4 pixel1 = getSimpleColorAtCoordinate(0, index*192.0 + 0);
+    ivec4 pixel2 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0));
+    ivec4 pixel3 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0));
+    ivec4 pixel4 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0);
     return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4);
 }
 
@@ -118,11 +186,14 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return vec2(fTexcoord);
     }
 
-    if (isBottomScreenBlack()) {
-        return getGenericHudTextureCoordinates(xpos, ypos);
+    if (isMissionInformationVisible()) {
+        return vec2(fTexcoord);
     }
 
-    if (isMissionInformationVisible()) {
+    if (isScreenBackgroundBlack(0) && isScreenBackgroundBlack(1)) {
+        return getGenericHudTextureCoordinates(xpos, ypos);
+    }
+    if (isScreenBackgroundBlack(1)) {
         return vec2(fTexcoord);
     }
 
@@ -338,10 +409,6 @@ void main()
         ivec4 val1 = pixel;
         ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(256,0), 0));
         ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(512,0), 0));
-        ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
-
-        ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
-                * vec4(63,63,63,31));
 
         if (fTexcoord.y <= 192)
         {
@@ -350,56 +417,7 @@ void main()
             val3 = getTopScreenColor(xpos, ypos, 2);
         }
 
-        int compmode = val3.a & 0xF;
-        int eva, evb, evy;
-
-        if (compmode == 4)
-        {
-            // 3D on top, blending
-
-            if (_3dpix.a > 0)
-            {
-                eva = (_3dpix.a & 0x1F) + 1;
-                evb = 32 - eva;
-
-                val1 = ((_3dpix * eva) + (val1 * evb) + 0x10) >> 5;
-                val1 = min(val1, 0x3F);
-            }
-            else
-                val1 = val2;
-        }
-        else if (compmode == 1)
-        {
-            // 3D on bottom, blending
-
-            if (_3dpix.a > 0)
-            {
-                eva = val3.g;
-                evb = val3.b;
-
-                val1 = ((val1 * eva) + (_3dpix * evb) + 0x8) >> 4;
-                val1 = min(val1, 0x3F);
-            }
-            else
-                val1 = val2;
-        }
-        else if (compmode <= 3)
-        {
-            // 3D on top, normal/fade
-
-            if (_3dpix.a > 0)
-            {
-                evy = val3.g;
-
-                val1 = _3dpix;
-                if      (compmode == 2) val1 += (((0x3F - val1) * evy) + 0x8) >> 4;
-                else if (compmode == 3) val1 -= ((val1 * evy) + 0x7) >> 4;
-            }
-            else
-                val1 = val2;
-        }
-
-        pixel = val1;
+        pixel = combineLayers(xpos, ypos, val1, val2, val3);
     }
 
     if (dispmode != 0)
