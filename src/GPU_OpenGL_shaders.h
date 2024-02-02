@@ -75,7 +75,7 @@ ivec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 
     // item notification
     float itemNotificationLeftMargin = 0.0;
-    float itemNotificationTopMargin = 10.0;
+    float itemNotificationTopMargin = 15.0*iuTexScale;
     if (texPosition3d.x <= 108 + itemNotificationLeftMargin &&
         texPosition3d.x > itemNotificationLeftMargin &&
         texPosition3d.y <= 86 + itemNotificationTopMargin &&
