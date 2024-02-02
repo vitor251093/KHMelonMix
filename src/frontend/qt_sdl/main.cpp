@@ -825,7 +825,7 @@ bool EmuThread::setGameScene(int newGameScene)
     int size = screenSizing_Even;
     switch (newGameScene) {
         case gameScene_Intro: break;
-        case gameScene_MainMenu: break;
+        case gameScene_MainMenu: size = screenSizing_BotOnly; break;
         case gameScene_IntroLoadMenu: size = screenSizing_BotOnly; break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
         case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : size; break;
@@ -844,8 +844,9 @@ bool EmuThread::setGameScene(int newGameScene)
         default: break;
     }
     autoScreenSizing = size;
-    Config::ScreenSwap = (newGameScene == gameScene_Intro || newGameScene == gameScene_MainMenu) ? 1 : 0;
+    Config::ScreenSwap = (newGameScene == gameScene_Intro) ? 1 : 0;
     Config::ScreenAspectTop = (newGameScene == gameScene_DayCounter) ? 0 : 3;
+    Config::ScreenAspectBot = (newGameScene == gameScene_Tutorial) ? 0 : 3;
 
     return true;
 }

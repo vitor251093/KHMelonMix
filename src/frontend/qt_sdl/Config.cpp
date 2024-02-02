@@ -287,7 +287,7 @@ ConfigEntry ConfigFile[] =
     {"ScreenSizing",   0, &ScreenSizing,   3,     true},
     {"IntegerScaling", 1, &IntegerScaling, false, true},
     {"ScreenAspectTop",0, &ScreenAspectTop,3,     true},
-    {"ScreenAspectBot",0, &ScreenAspectBot,0,     true},
+    {"ScreenAspectBot",0, &ScreenAspectBot,3,     true},
     {"ScreenFilter",   1, &ScreenFilter,   true,  true},
 
     {"ScreenUseGL",         1, &ScreenUseGL,         false, false},
