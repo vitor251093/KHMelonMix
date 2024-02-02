@@ -232,16 +232,17 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         float minimapWidth = bottomMinimapWidth*heightScale;
         float minimapRightMargin = 9.0;
         float minimapTopMargin = 20.0*iuTexScale;
+        float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
         float bottomMinimapCenterX = 158.0;
         float bottomMinimapCenterY = 95.0;
         float bottomMinimapLeftMargin = bottomMinimapCenterX - bottomMinimapWidth/2;
         float bottomMinimapTopMargin = bottomMinimapCenterY - bottomMinimapHeight/2;
         float increaseMapSize = 1.2;
-        if (texPosition3d.x >= (256.0*iuTexScale - minimapWidth - minimapRightMargin) &&
+        if (texPosition3d.x >= minimapLeftMargin &&
             texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
             texPosition3d.y <= minimapHeight + minimapTopMargin && 
             texPosition3d.y >= minimapTopMargin) {
-            return increaseMapSize*fixStretch*(texPosition3d - vec2(256.0*iuTexScale - minimapWidth - minimapRightMargin, minimapTopMargin)) +
+            return increaseMapSize*fixStretch*(texPosition3d - vec2(minimapLeftMargin, minimapTopMargin)) +
                 vec2(0, 192.0) + vec2(bottomMinimapLeftMargin, bottomMinimapTopMargin);
         }
     }
@@ -358,7 +359,8 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
     ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
-    ivec4 color = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(256,0)*index, 0));
+    ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
+    ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
     if (KHGameScene == 7 && isMinimapVisible() && !isMissionInformationVisible()) // gameScene_InGameWithMap
     {
@@ -375,7 +377,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         float minimapHeight = bottomMinimapHeight;
         float minimapRightMargin = 9.0;
         float minimapTopMargin = 20.0*iuTexScale;
-        if (texPosition3d.x >= (256.0*iuTexScale - minimapWidth - minimapRightMargin) &&
+        float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
+        if (texPosition3d.x >= minimapLeftMargin &&
             texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
             texPosition3d.y <= minimapHeight + minimapTopMargin && 
             texPosition3d.y >= minimapTopMargin) {
