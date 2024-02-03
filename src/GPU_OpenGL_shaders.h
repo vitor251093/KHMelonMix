@@ -208,9 +208,9 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return fixStretch*(texPosition3d - vec2(itemNotificationLeftMargin, itemNotificationTopMargin));
     }
 
-    // countdown
+    // countdown and locked on
     float sourceCountdownHeight = 20.0;
-    float sourceCountdownWidth = 30.0;
+    float sourceCountdownWidth = 70.0;
     float countdownHeight = sourceCountdownHeight;
     float countdownWidth = sourceCountdownWidth*heightScale;
     float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
