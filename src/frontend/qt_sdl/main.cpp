@@ -808,18 +808,10 @@ bool EmuThread::setGameScene(int newGameScene)
         // Game scene
         priorGameScene = NDS->GPU.GameScene;
         NDS->GPU.GameScene = newGameScene;
-
-        // Updating GameScene inside shader
-        static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
-
-        float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
-        for (auto ratio : aspectRatios)
-        {
-            if (ratio.id == Config::ScreenAspectTop && ratio.ratio != 0)
-                aspectTop = ratio.ratio * 4.0/3;
-        }
-        static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetAspectRatio(aspectTop);
     }
+
+    // Updating GameScene inside shader
+    static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
 
     // Screens position and size
     int size = screenSizing_Even;
@@ -844,9 +836,6 @@ bool EmuThread::setGameScene(int newGameScene)
         default: break;
     }
     autoScreenSizing = size;
-    Config::ScreenSwap = (newGameScene == gameScene_Intro) ? 1 : 0;
-    Config::ScreenAspectTop = (newGameScene == gameScene_DayCounter) ? 0 : 3;
-    Config::ScreenAspectBot = (newGameScene == gameScene_Tutorial) ? 0 : 3;
 
     return true;
 }
@@ -1317,11 +1306,31 @@ ScreenHandler::~ScreenHandler()
 
 void ScreenHandler::screenSetupLayout(int w, int h)
 {
+    bool screenSwap = Config::ScreenSwap != 0;
     int sizing = Config::ScreenSizing;
     if (sizing == 3) sizing = autoScreenSizing;
 
     int screenAspectTop = Config::ScreenAspectTop;
     int screenAspectBot = Config::ScreenAspectBot;
+    if (screenAspectTop == 3) {
+        if (emuThread != nullptr && emuThread->NDS != nullptr) {
+            int gameScene = emuThread->NDS->GPU.GameScene;
+            if (gameScene == gameScene_DayCounter) {
+                screenAspectTop = 0;
+            }
+            if (gameScene == gameScene_Intro || gameScene == gameScene_MainMenu) {
+                screenSwap = true;
+            }
+        }
+    }
+    if (screenAspectBot == 3) {
+        if (emuThread != nullptr && emuThread->NDS != nullptr) {
+            int gameScene = emuThread->NDS->GPU.GameScene;
+            if (gameScene == gameScene_Tutorial) {
+                screenAspectBot = 0;
+            }
+        }
+    }
     if (sizing == screenSizing_Even) {
         screenAspectTop = 0;
         screenAspectBot = 0;
@@ -1349,7 +1358,7 @@ void ScreenHandler::screenSetupLayout(int w, int h)
                                 static_cast<Frontend::ScreenSizing>(sizing),
                                 Config::ScreenGap,
                                 Config::IntegerScaling != 0,
-                                Config::ScreenSwap != 0,
+                                screenSwap,
                                 aspectTop,
                                 aspectBot);
 
@@ -1357,6 +1366,10 @@ void ScreenHandler::screenSetupLayout(int w, int h)
 
     Config::WindowHeight = h;
     Config::WindowWidth = w;
+
+    if (emuThread != nullptr && emuThread->NDS != nullptr) {
+        static_cast<GLRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).GetCompositor().SetAspectRatio(aspectTop);
+    }
 }
 
 QSize ScreenHandler::screenGetMinSize(int factor = 1)

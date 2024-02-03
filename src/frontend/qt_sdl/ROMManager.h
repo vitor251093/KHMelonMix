@@ -82,6 +82,7 @@ void UndoStateLoad(NDS& nds);
 
 void EnableCheats(NDS& nds, bool enable);
 ARCodeFile* GetCheatFile();
+void LoadCheats(NDS& nds, float aspectTop);
 
 void ROMIcon(const u8 (&data)[512], const u16 (&palette)[16], u32 (&iconRef)[32*32]);
 void AnimatedROMIcon(const u8 (&data)[8][512], const u16 (&palette)[8][16],
