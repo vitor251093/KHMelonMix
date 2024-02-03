@@ -27,6 +27,7 @@
 #include "GPU3D_OpenGL.h"
 #include "OpenGLSupport.h"
 #include "GPU_OpenGL_shaders.h"
+#include "KHDays_GPU_OpenGL_shaders.h"
 
 namespace melonDS
 {
@@ -38,7 +39,7 @@ std::optional<GLCompositor> GLCompositor::New() noexcept
     assert(glBindAttribLocation != nullptr);
 
     std::array<GLuint, 3> CompShader {};
-    if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_Nearest, &CompShader[0], "CompositorShader"))
+    if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_KhDays, &CompShader[0], "CompositorShader"))
         return std::nullopt;
 
     glBindAttribLocation(CompShader[2], 0, "vPosition");
