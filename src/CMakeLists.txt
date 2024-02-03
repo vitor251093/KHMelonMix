@@ -35,6 +35,7 @@ add_library(core STATIC
     GPU2D_Soft.cpp
     GPU3D.cpp
     GPU3D_Soft.cpp
+    KHDays_Plugin.cpp
     melonDLDI.h
     NDS.cpp
     NDSCart.cpp
