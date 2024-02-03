@@ -57,6 +57,8 @@ GLCompositor::GLCompositor(std::array<GLuint, 3> compShader) noexcept : CompShad
 {
     CompScaleLoc = glGetUniformLocation(CompShader[2], "u3DScale");
     Comp3DXPosLoc = glGetUniformLocation(CompShader[2], "u3DXPos");
+    CompGameSceneLoc = glGetUniformLocation(CompShader[2], "KHGameScene");
+    CompAspectRatioLoc = glGetUniformLocation(CompShader[2], "TopScreenAspectRatio");
 
     glUseProgram(CompShader[2]);
     GLuint screenTextureUniform = glGetUniformLocation(CompShader[2], "ScreenTex");
@@ -146,8 +148,12 @@ GLCompositor::GLCompositor(GLCompositor&& other) noexcept :
     Scale(other.Scale),
     ScreenH(other.ScreenH),
     ScreenW(other.ScreenW),
+    GameScene(other.GameScene),
+    AspectRatio(other.AspectRatio),
     CompScaleLoc(other.CompScaleLoc),
     Comp3DXPosLoc(other.Comp3DXPosLoc),
+    CompGameSceneLoc(other.CompGameSceneLoc),
+    CompAspectRatioLoc(other.CompAspectRatioLoc),
     CompVertices(other.CompVertices),
     CompShader(other.CompShader),
     CompVertexBufferID(other.CompVertexBufferID),
@@ -171,8 +177,12 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
         Scale = other.Scale;
         ScreenH = other.ScreenH;
         ScreenW = other.ScreenW;
+        GameScene = other.GameScene;
+        AspectRatio = other.AspectRatio;
         CompScaleLoc = other.CompScaleLoc;
         Comp3DXPosLoc = other.Comp3DXPosLoc;
+        CompGameSceneLoc = other.CompGameSceneLoc;
+        CompAspectRatioLoc = other.CompAspectRatioLoc;
         CompVertices = other.CompVertices;
 
         // Clean up these resources before overwriting them
@@ -207,15 +217,17 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
 
 void GLCompositor::SetGameScene(int gameScene) noexcept
 {
-    glUseProgram(CompShader[2]);
-    GLint gameSceneLocation = glGetUniformLocation(CompShader[2], "KHGameScene");
-    glUniform1i(gameSceneLocation, gameScene);
+    if (gameScene == GameScene)
+        return;
+
+    GameScene = gameScene;
 }
 void GLCompositor::SetAspectRatio(float aspectRatio) noexcept
 {
-    glUseProgram(CompShader[2]);
-    GLint aspectRatioLocation = glGetUniformLocation(CompShader[2], "TopScreenAspectRatio");
-    glUniform1f(aspectRatioLocation, aspectRatio);
+    if (aspectRatio == AspectRatio)
+        return;
+
+    AspectRatio = aspectRatio;
 }
 void GLCompositor::SetScaleFactor(int scale) noexcept
 {
@@ -275,6 +287,8 @@ void GLCompositor::RenderFrame(const GPU& gpu, GLRenderer& renderer) noexcept
     // TODO: select more shaders (filtering, etc)
     OpenGL::UseShaderProgram(CompShader.data());
     glUniform1ui(CompScaleLoc, Scale);
+    glUniform1i(CompGameSceneLoc, GameScene);
+    glUniform1f(CompAspectRatioLoc, AspectRatio);
 
     // TODO: support setting this midframe, if ever needed
     glUniform1i(Comp3DXPosLoc, ((int)gpu.GPU3D.GetRenderXPos() << 23) >> 23);
