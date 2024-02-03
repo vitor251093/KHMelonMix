@@ -144,8 +144,6 @@ private:
     bool setGameScene(int newGameScene);
 
     void debugLogs(int gameScene);
-
-    bool refreshAutoScreenSizing();
 };
 
 

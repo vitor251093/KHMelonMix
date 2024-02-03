@@ -566,7 +566,8 @@ void EmuThread::run()
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
             {
-                bool requiresRefresh = refreshAutoScreenSizing();
+                melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
+                bool requiresRefresh = setGameScene(KHDaysPlugin::detectGameScene(&nds));
                 if (requiresRefresh)
                 {
                     emit screenLayoutChange();
@@ -806,15 +807,6 @@ void EmuThread::debugLogs(int gameScene)
     printf("NDS->GPU.GPU2D_B.EVY: %d\n",              NDS->GPU.GPU2D_B.EVY);
     printf("NDS->GPU.GPU2D_B.MasterBrightness: %d\n", NDS->GPU.GPU2D_B.MasterBrightness);
     printf("\n");
-}
-
-// TODO: All conditions that involve NDS->GPU.GameScene should be reworked so they
-//   don't rely on it; otherwise, everything becomes a castle of cards, and save states
-//   become unreliable when it comes to screen sizing.
-bool EmuThread::refreshAutoScreenSizing()
-{
-    melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
-    return setGameScene(KHDaysPlugin::detectGameScene(&nds));
 }
 
 void EmuThread::changeWindowTitle(char* title)
