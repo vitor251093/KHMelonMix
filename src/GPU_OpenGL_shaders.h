@@ -55,13 +55,8 @@ smooth in vec2 fTexcoord;
 
 out vec4 oColor;
 
-ivec4 combineLayers(float xpos, float ypos, ivec4 val1, ivec4 val2, ivec4 val3)
+ivec4 combineLayers(ivec4 _3dpix, ivec4 val1, ivec4 val2, ivec4 val3)
 {
-    ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
-
-    ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
-            * vec4(63,63,63,31));
-
     int compmode = val3.a & 0xF;
     int eva, evb, evy;
 
@@ -122,6 +117,17 @@ bool isMissionInformationVisible()
     return (missionInfoTopLeft.a & 0xF) == 1 || (missionInfoMiddleLeft.a & 0xF) == 1 || (missionInfoMiddleRight.a & 0xF) == 1;
 }
 
+bool isDialogVisible()
+{
+    ivec4 _3dpix = ivec4(0,0,0,31);
+    vec2 texcoord = vec2(256/2, 192*0.809);
+    ivec4 val1 = ivec4(texelFetch(ScreenTex, ivec2(texcoord), 0));
+    ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(256,0), 0));
+    ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0));
+    ivec4 pixel = combineLayers(_3dpix, val1, val2, val3);
+    return (!(pixel.r == 0 && pixel.g == 0 && pixel.b == 0));
+}
+
 bool isMinimapVisible()
 {
     ivec4 minimapSecurityPixel = ivec4(texelFetch(ScreenTex, ivec2(99, 53) + ivec2(0,192), 0));
@@ -134,11 +140,15 @@ bool isColorBlack(ivec4 pixel)
 }
 ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
 {
+    ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
+    ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
+            * vec4(63,63,63,31));
+
     vec2 texcoord = vec2(xpos, ypos);
     ivec4 val1 = ivec4(texelFetch(ScreenTex, ivec2(texcoord), 0));
     ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(256,0), 0));
     ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0));
-    return combineLayers(xpos, ypos, val1, val2, val3);
+    return combineLayers(_3dpix, val1, val2, val3);
 }
 bool isScreenBackgroundBlack(int index)
 {
@@ -180,9 +190,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    ivec4 dialogMiddlePixel = ivec4(texelFetch(ScreenTex, ivec2(256/2, 192*0.809) + ivec2(512,0), 0));
-    if ((dialogMiddlePixel.a & 0xF) == 1) {
-        // TODO: Isn't working all the time
+    if (isDialogVisible()) {
         return vec2(fTexcoord);
     }
 
@@ -406,6 +414,10 @@ void main()
 
     if (dispmode == 1)
     {
+        ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
+        ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
+                * vec4(63,63,63,31));
+
         ivec4 val1 = pixel;
         ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(256,0), 0));
         ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(512,0), 0));
@@ -417,7 +429,7 @@ void main()
             val3 = getTopScreenColor(xpos, ypos, 2);
         }
 
-        pixel = combineLayers(xpos, ypos, val1, val2, val3);
+        pixel = combineLayers(_3dpix, val1, val2, val3);
     }
 
     if (dispmode != 0)
