@@ -893,23 +893,6 @@ bool EmuThread::emuIsActive()
     return (RunningSomething == 1);
 }
 
-bool EmuThread::isBufferBlack(unsigned int* buffer)
-{
-    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
-    bool newIsNullScreen = true;
-    bool newIsBlackScreen = true;
-    for (int i = 0; i < 192*256; i++) {
-        unsigned int color = buffer[i] & 0xFFFFFF;
-        newIsNullScreen = newIsNullScreen && color == 0;
-        newIsBlackScreen = newIsBlackScreen &&
-                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
-        if (!newIsBlackScreen) {
-            break;
-        }
-    }
-    return !newIsNullScreen && newIsBlackScreen;
-}
-
 void EmuThread::drawScreenGL()
 {
     if (!NDS) return;
