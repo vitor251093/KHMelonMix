@@ -294,7 +294,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // player health
-    float sourcePlayerHealthHeight = 96.0;
+    float sourcePlayerHealthHeight = 128.0;
     float sourcePlayerHealthWidth = 108.0;
     float playerHealthHeight = sourcePlayerHealthHeight;
     float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
