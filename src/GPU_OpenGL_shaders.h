@@ -280,7 +280,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 
     // command menu
     float sourceCommandMenuHeight = 106.0;
-    float sourceCommandMenuWidth = 98.0;
+    float sourceCommandMenuWidth = 108.0;
     float commandMenuHeight = sourceCommandMenuHeight;
     float commandMenuWidth = sourceCommandMenuWidth*heightScale;
     float commandMenuLeftMargin = 10.0;
