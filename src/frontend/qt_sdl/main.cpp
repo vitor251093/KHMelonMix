@@ -808,10 +808,10 @@ bool EmuThread::setGameScene(int newGameScene)
         // Game scene
         priorGameScene = NDS->GPU.GameScene;
         NDS->GPU.GameScene = newGameScene;
-
-        // Updating GameScene inside shader
-        static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
     }
+
+    // Updating GameScene inside shader
+    static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
 
     // Screens position and size
     int size = screenSizing_Even;
