@@ -844,8 +844,6 @@ bool EmuThread::setGameScene(int newGameScene)
         default: break;
     }
     autoScreenSizing = size;
-    Config::ScreenSwap = (newGameScene == gameScene_Intro || newGameScene == gameScene_MainMenu) ? 1 : 0;
-    Config::ScreenAspectTop = (newGameScene == gameScene_DayCounter) ? 0 : 3;
 
     return true;
 }
@@ -1316,11 +1314,23 @@ ScreenHandler::~ScreenHandler()
 
 void ScreenHandler::screenSetupLayout(int w, int h)
 {
+    bool screenSwap = Config::ScreenSwap != 0;
     int sizing = Config::ScreenSizing;
     if (sizing == 3) sizing = autoScreenSizing;
 
     int screenAspectTop = Config::ScreenAspectTop;
     int screenAspectBot = Config::ScreenAspectBot;
+    if (screenAspectTop == 3) {
+        if (emuThread != nullptr && emuThread->NDS != nullptr) {
+            int gameScene = emuThread->NDS->GPU.GameScene;
+            if (gameScene == gameScene_DayCounter) {
+                screenAspectTop = 0;
+            }
+            if (gameScene == gameScene_Intro || gameScene == gameScene_MainMenu) {
+                screenSwap = true;
+            }
+        }
+    }
     if (sizing == screenSizing_Even) {
         screenAspectTop = 0;
         screenAspectBot = 0;
@@ -1348,7 +1358,7 @@ void ScreenHandler::screenSetupLayout(int w, int h)
                                 static_cast<Frontend::ScreenSizing>(sizing),
                                 Config::ScreenGap,
                                 Config::IntegerScaling != 0,
-                                Config::ScreenSwap != 0,
+                                screenSwap,
                                 aspectTop,
                                 aspectBot);
 
