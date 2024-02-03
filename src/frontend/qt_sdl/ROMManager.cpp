@@ -1481,7 +1481,16 @@ bool LoadROM(EmuThread* emuthread, QStringList filepath, bool reset)
         CartType = 0;
         NDSSave = new SaveManager(savname);
 
-        float aspectTop = 16.0 / 9;
+        float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
+        for (auto ratio : aspectRatios)
+        {
+            if (ratio.id == Config::ScreenAspectTop)
+                aspectTop = ratio.ratio * 4.0/3;
+        }
+        if (aspectTop == 0) {
+            aspectTop = 16.0 / 9;
+        }
+
         LoadCheats(*emuthread->NDS, aspectTop);
     }
 

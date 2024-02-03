@@ -1361,9 +1361,6 @@ void ScreenHandler::screenSetupLayout(int w, int h)
 
     if (emuThread != nullptr && emuThread->NDS != nullptr) {
         static_cast<GLRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).GetCompositor().SetAspectRatio(aspectTop);
-
-        // Isn't working yet
-        ROMManager::LoadCheats(*emuThread->NDS, aspectTop);
     }
 }
 
