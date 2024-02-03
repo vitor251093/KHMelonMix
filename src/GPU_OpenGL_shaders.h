@@ -126,7 +126,7 @@ bool isMissionInformationVisible()
     return (missionInfoTopLeft.a & 0xF) == 1 || (missionInfoMiddleLeft.a & 0xF) == 1 || (missionInfoMiddleRight.a & 0xF) == 1;
 }
 
-bool isChallengeCutsceneVisible()
+bool isCutsceneFromChallengeMissionVisible()
 {
     return is2DGraphicDifferentFromColor(ivec4(63,0,0,31), ivec2(256/4, 0));
 }
@@ -206,7 +206,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return vec2(fTexcoord);
     }
 
-    if (isChallengeCutsceneVisible()) {
+    if (isCutsceneFromChallengeMissionVisible()) {
         return vec2(fTexcoord);
     }
 
