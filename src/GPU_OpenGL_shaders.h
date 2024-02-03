@@ -214,7 +214,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float countdownHeight = sourceCountdownHeight;
     float countdownWidth = sourceCountdownWidth*heightScale;
     float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
-    float countdownTopMargin = 6.0*iuTexScale;
+    float countdownTopMargin = 9.0;
     if (texPosition3d.x >= (256.0*iuTexScale - countdownWidth - countdownRightMargin) &&
         texPosition3d.x < (256.0*iuTexScale - countdownRightMargin) && 
         texPosition3d.y <= countdownHeight + countdownTopMargin && 
@@ -231,7 +231,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         float minimapHeight = bottomMinimapHeight;
         float minimapWidth = bottomMinimapWidth*heightScale;
         float minimapRightMargin = 9.0;
-        float minimapTopMargin = 20.0*iuTexScale;
+        float minimapTopMargin = 30.0;
         float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
         float bottomMinimapCenterX = 158.0;
         float bottomMinimapCenterY = 95.0;
@@ -253,7 +253,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float enemyHealthHeight = sourceEnemyHealthHeight;
     float enemyHealthWidth = sourceEnemyHealthWidth*heightScale;
     float enemyHealthRightMargin = 9.0;
-    float enemyHealthTopMargin = 5.0*iuTexScale;
+    float enemyHealthTopMargin = 7.5;
     if (texPosition3d.x >= (256.0*iuTexScale - enemyHealthWidth - enemyHealthRightMargin) &&
         texPosition3d.x < (256.0*iuTexScale - enemyHealthRightMargin) && 
         texPosition3d.y <= enemyHealthHeight + enemyHealthTopMargin && 
@@ -268,7 +268,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float miscHeight = sourceMiscHeight;
     float miscWidth = sourceMiscWidth*heightScale;
     float miscRightMargin = 12.0;
-    float miscTopMargin = 55.0*iuTexScale;
+    float miscTopMargin = 82.5;
     float sourceMiscTopMargin = 25.0;
     if (texPosition3d.x >= (256.0*iuTexScale - miscWidth - miscRightMargin) &&
         texPosition3d.x < (256.0*iuTexScale - miscRightMargin) && 
@@ -299,7 +299,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float playerHealthHeight = sourcePlayerHealthHeight;
     float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
     float playerHealthRightMargin = 8.0;
-    float playerHealthBottomMargin = 2.0*iuTexScale;
+    float playerHealthBottomMargin = 3.0;
     if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
         texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
         texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
@@ -376,7 +376,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         float minimapWidth = bottomMinimapWidth*heightScale;
         float minimapHeight = bottomMinimapHeight;
         float minimapRightMargin = 9.0;
-        float minimapTopMargin = 20.0*iuTexScale;
+        float minimapTopMargin = 30.0;
         float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
         if (texPosition3d.x >= minimapLeftMargin &&
             texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
