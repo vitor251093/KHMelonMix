@@ -174,7 +174,7 @@ vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
-    float iuTexScale = (u3DScale*1.0)/iuScale;
+    float iuTexScale = (6.0)/iuScale;
     vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
     float heightScale = (4.0/3)/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
@@ -315,7 +315,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
-    float iuTexScale = (u3DScale*1.0)/iuScale;
+    float iuTexScale = (6.0)/iuScale;
     ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
 
     if (KHGameScene == 13) // gameScene_PauseMenuWithGauge
@@ -365,7 +365,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     if (KHGameScene == 7 && isMinimapVisible() && !isMissionInformationVisible()) // gameScene_InGameWithMap
     {
         int iuScale = KHUIScale;
-        float iuTexScale = (u3DScale*1.0)/iuScale;
+        float iuTexScale = (6.0)/iuScale;
         vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
         float heightScale = (4.0/3)/TopScreenAspectRatio;
         float widthScale = 1.0/heightScale;
