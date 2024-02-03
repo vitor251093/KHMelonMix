@@ -109,6 +109,15 @@ ivec4 combineLayers(ivec4 _3dpix, ivec4 val1, ivec4 val2, ivec4 val3)
     return val1;
 }
 
+bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
+{
+    ivec4 val1 = ivec4(texelFetch(ScreenTex, texcoord, 0));
+    ivec4 val2 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(256,0), 0));
+    ivec4 val3 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(512,0), 0));
+    ivec4 pixel = combineLayers(diffColor, val1, val2, val3);
+    return (!(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b));
+}
+
 bool isMissionInformationVisible()
 {
     ivec4 missionInfoTopLeft = ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0));
@@ -117,15 +126,14 @@ bool isMissionInformationVisible()
     return (missionInfoTopLeft.a & 0xF) == 1 || (missionInfoMiddleLeft.a & 0xF) == 1 || (missionInfoMiddleRight.a & 0xF) == 1;
 }
 
+bool isChallengeCutsceneVisible()
+{
+    return is2DGraphicDifferentFromColor(ivec4(63,0,0,31), ivec2(256/4, 0));
+}
+
 bool isDialogVisible()
 {
-    ivec4 _3dpix = ivec4(0,0,0,31);
-    vec2 texcoord = vec2(256/2, 192*0.809);
-    ivec4 val1 = ivec4(texelFetch(ScreenTex, ivec2(texcoord), 0));
-    ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(256,0), 0));
-    ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0));
-    ivec4 pixel = combineLayers(_3dpix, val1, val2, val3);
-    return (!(pixel.r == 0 && pixel.g == 0 && pixel.b == 0));
+    return is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(256/2, 192*0.809));
 }
 
 bool isMinimapVisible()
@@ -195,6 +203,10 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     if (isMissionInformationVisible()) {
+        return vec2(fTexcoord);
+    }
+
+    if (isChallengeCutsceneVisible()) {
         return vec2(fTexcoord);
     }
 
