@@ -248,7 +248,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // enemy health
-    float sourceEnemyHealthHeight = 20.0;
+    float sourceEnemyHealthHeight = 22.0;
     float sourceEnemyHealthWidth = 93.0;
     float enemyHealthHeight = sourceEnemyHealthHeight;
     float enemyHealthWidth = sourceEnemyHealthWidth*heightScale;
