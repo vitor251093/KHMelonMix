@@ -309,7 +309,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // nothing (clear screen)
-    return vec2(0, 0);
+    return vec2(255, 191);
 }
 
 ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
