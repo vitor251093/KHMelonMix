@@ -170,6 +170,55 @@ vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
     return vec2(0, 0);
 }
 
+vec2 getMainMenuHudTextureCoordinates(float xpos, float ypos)
+{
+    int iuScale = KHUIScale;
+    float iuTexScale = (6.0)/iuScale;
+    vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float widthScale = 1.0/heightScale;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
+    // logo
+    float logoScale = 1.2;
+    float bottomLogoHeight = 192.0;
+    float bottomLogoWidth = 256.0;
+    float bottomLogoLeftMargin = 0;
+    float bottomLogoTopMargin = 0;
+    float logoHeight = bottomLogoHeight/logoScale;
+    float logoWidth = (bottomLogoWidth/logoScale)*heightScale;
+    float logoLeftMargin = 0.0;
+    float logoTopMargin = 0.0;
+    if (texPosition3d.x >= logoLeftMargin &&
+        texPosition3d.x < (logoWidth + logoLeftMargin) && 
+        texPosition3d.y <= (logoHeight + logoTopMargin) && 
+        texPosition3d.y >= logoTopMargin) {
+        return logoScale*fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
+            vec2(bottomLogoLeftMargin, bottomLogoTopMargin);
+    }
+
+    // menu options
+    float bottomMenuOptionsHeight = 96.0;
+    float bottomMenuOptionsWidth = 128.0;
+    float bottomMenuOptionsLeftMargin = 0;
+    float bottomMenuOptionsBottomMargin = 0;
+    float menuOptionsHeight = bottomMenuOptionsHeight;
+    float menuOptionsWidth = bottomMenuOptionsWidth*heightScale;
+    float menuOptionsLeftMargin = 0.0;
+    float menuOptionsBottomMargin = 0.0;
+    float menuOptionsTopMargin = 192.0*iuTexScale - menuOptionsHeight - menuOptionsBottomMargin;
+    if (texPosition3d.x >= menuOptionsLeftMargin &&
+        texPosition3d.x < (menuOptionsWidth + menuOptionsLeftMargin) && 
+        texPosition3d.y <= (menuOptionsHeight + menuOptionsTopMargin) && 
+        texPosition3d.y >= menuOptionsTopMargin) {
+        return fixStretch*(texPosition3d - vec2(menuOptionsLeftMargin, menuOptionsTopMargin)) +
+            vec2(0, 192.0) + vec2(bottomMenuOptionsLeftMargin, 192.0 - bottomMenuOptionsHeight - bottomMenuOptionsBottomMargin);
+    }
+
+    // nothing (clear screen)
+    return vec2(0, 0);
+}
+
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
@@ -346,6 +395,10 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
+    if (KHGameScene == 1) // gameScene_MainMenu
+    {
+        return ivec2(getMainMenuHudTextureCoordinates(xpos, ypos));
+    }
     if (KHGameScene == 7 || KHGameScene == 8) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
     {
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
