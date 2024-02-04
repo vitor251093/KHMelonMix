@@ -35,6 +35,7 @@ add_library(core STATIC
     GPU2D_Soft.cpp
     GPU3D.cpp
     GPU3D_Soft.cpp
+    KHDays_Plugin.cpp
     melonDLDI.h
     NDS.cpp
     NDSCart.cpp
@@ -75,6 +76,7 @@ if (ENABLE_OGLRENDERER)
     target_sources(core PRIVATE
         GPU_OpenGL.cpp
         GPU_OpenGL_shaders.h
+        KHDays_GPU_OpenGL_shaders.h
         GPU3D_OpenGL.cpp
         GPU3D_OpenGL_shaders.h
         OpenGLSupport.cpp)

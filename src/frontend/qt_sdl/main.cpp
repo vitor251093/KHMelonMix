@@ -107,6 +107,8 @@
 
 #include "CLI.h"
 
+#include "KHDays_Plugin.h"
+
 // TODO: uniform variable spelling
 using namespace melonDS;
 const QString NdsRomMimeType = "application/x-nintendo-ds-rom";
@@ -164,7 +166,6 @@ MainWindow* mainWindow;
 EmuThread* emuThread;
 
 int autoScreenSizing = 0;
-int priorGameScene = -1;
 
 int videoRenderer;
 bool videoSettingsDirty;
@@ -175,8 +176,6 @@ bool camStarted[2];
 float backgroundRed = 0.0;
 float backgroundGreen = 0.0;
 float backgroundBlue = 0.0;
-bool isBlackTopScreen = false;
-bool isBlackBottomScreen = false;
 
 constexpr int AspectRatiosNum = sizeof(aspectRatios) / sizeof(aspectRatios[0]);
 
@@ -567,7 +566,8 @@ void EmuThread::run()
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
             {
-                bool requiresRefresh = refreshAutoScreenSizing();
+                melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
+                bool requiresRefresh = setGameScene(KHDaysPlugin::detectGameScene(&nds));
                 if (requiresRefresh)
                 {
                     emit screenLayoutChange();
@@ -737,49 +737,20 @@ void EmuThread::run()
     // nds is out of scope, so unique_ptr cleans it up for us
 }
 
-// If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
-#define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
-#define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
-#define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
-
 bool EmuThread::setGameScene(int newGameScene)
 {
-    float backgroundColor = 0.0;
-    if (newGameScene == gameScene_Intro)
-    {
-        if (isBlackBottomScreen && isBlackTopScreen)
-        {
-            backgroundColor = 0;
-        }
-        else {
-            backgroundColor = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(NDS->GPU.GPU2D_A.MasterBrightness) / 15.0;
-            backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
-        }
-    }
-    if (newGameScene == gameScene_MainMenu)
-    {
-        backgroundColor = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(NDS->GPU.GPU2D_B.MasterBrightness) / 15.0;
-        backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
-    }
-    if (newGameScene == gameScene_InGameWithoutMap || newGameScene == gameScene_Other2D)
-    {
-        if (NDS->GPU.GPU2D_B.MasterBrightness == 0) {
-            backgroundColor = 0;
-        }
-        else if (NDS->GPU.GPU2D_B.MasterBrightness & (1 << 14)) {
-            backgroundColor = PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(NDS->GPU.GPU2D_B.MasterBrightness) / 15.0;
-            backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
-        }
-    }
-    backgroundRed = backgroundColor;
-    backgroundGreen = backgroundColor;
-    backgroundBlue = backgroundColor;
+    melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
+    float* bgColors = KHDaysPlugin::getBackgroundColorByGameScene(&nds, newGameScene);
+    backgroundRed = bgColors[0];
+    backgroundGreen = bgColors[1];
+    backgroundBlue = bgColors[2];
     
 #ifdef _DEBUG
     debugLogs(newGameScene);
 #endif
 
-    if (NDS->GPU.GameScene != newGameScene) 
+    bool updated = KHDaysPlugin::setGameScene(&nds, newGameScene);
+    if (updated) 
     {
 #ifdef _DEBUG
         switch (newGameScene) {
@@ -804,38 +775,9 @@ bool EmuThread::setGameScene(int newGameScene)
             default: OSD::AddMessage(0, "Game scene: Unknown (3D)"); break;
         }
 #endif
-
-        // Game scene
-        priorGameScene = NDS->GPU.GameScene;
-        NDS->GPU.GameScene = newGameScene;
     }
 
-    // Updating GameScene inside shader
-    static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
-
-    // Screens position and size
-    int size = screenSizing_Even;
-    switch (newGameScene) {
-        case gameScene_Intro: break;
-        case gameScene_MainMenu: size = screenSizing_BotOnly; break;
-        case gameScene_IntroLoadMenu: size = screenSizing_BotOnly; break;
-        case gameScene_DayCounter: size = screenSizing_TopOnly; break;
-        case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : size; break;
-        case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
-        case gameScene_InGameWithMap: size = screenSizing_TopOnly; break;
-        case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
-        case gameScene_InGameMenu: break;
-        case gameScene_InGameSaveMenu: size = screenSizing_TopOnly; break;
-        case gameScene_InHoloMissionMenu: break;
-        case gameScene_PauseMenu: size = screenSizing_TopOnly; break;
-        case gameScene_PauseMenuWithGauge: size = screenSizing_TopOnly; break;
-        case gameScene_Tutorial: size = screenSizing_BotOnly; break;
-        case gameScene_RoxasThoughts: size = screenSizing_TopOnly; break;
-        case gameScene_Shop: break;
-        case gameScene_BlackScreen: size = screenSizing_TopOnly; break;
-        default: break;
-    }
-    autoScreenSizing = size;
+    autoScreenSizing = KHDaysPlugin::getSizeByGameScene(newGameScene);
 
     return true;
 }
@@ -843,8 +785,6 @@ bool EmuThread::setGameScene(int newGameScene)
 void EmuThread::debugLogs(int gameScene)
 {
     printf("Game scene: %d\n", gameScene);
-    printf("isBlackTopScreen: %d\n", isBlackTopScreen);
-    printf("isBlackBottomScreen: %d\n", isBlackBottomScreen);
     printf("NDS->GPU.GPU3D.NumVertices: %d\n",       NDS->GPU.GPU3D.NumVertices);
     printf("NDS->GPU.GPU3D.NumPolygons: %d\n",       NDS->GPU.GPU3D.NumPolygons);
     printf("NDS->GPU.GPU3D.RenderNumPolygons: %d\n", NDS->GPU.GPU3D.RenderNumPolygons);
@@ -862,260 +802,6 @@ void EmuThread::debugLogs(int gameScene)
     printf("NDS->GPU.GPU2D_B.EVY: %d\n",              NDS->GPU.GPU2D_B.EVY);
     printf("NDS->GPU.GPU2D_B.MasterBrightness: %d\n", NDS->GPU.GPU2D_B.MasterBrightness);
     printf("\n");
-}
-
-// TODO: All conditions that involve NDS->GPU.GameScene should be reworked so they
-//   don't rely on it; otherwise, everything becomes a castle of cards, and save states
-//   become unreliable when it comes to screen sizing.
-bool EmuThread::refreshAutoScreenSizing()
-{
-    // printf("0x021D08B8: %d\n",   NDS->ARM7Read8(0x021D08B8));
-    // printf("0x0223D38C: %d\n\n", NDS->ARM7Read8(0x0223D38C));
-
-    // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
-    bool no3D = NDS->GPU.GPU3D.NumVertices == 0 && NDS->GPU.GPU3D.NumPolygons == 0 && NDS->GPU.GPU3D.RenderNumPolygons == 0;
-
-    // 3D element mimicking 2D behavior
-    bool doesntLook3D = NDS->GPU.GPU3D.RenderNumPolygons < 10;
-
-    bool has3DOnTopScreen = (NDS->PowerControl9 >> 15) == 1;
-
-    // The second screen can still look black and not be empty (invisible elements)
-    bool noElementsOnBottomScreen = NDS->GPU.GPU2D_B.BlendCnt == 0;
-
-    // Scale of brightness, from 0 (black) to 15 (every element is visible)
-    u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(NDS->GPU.GPU2D_A.MasterBrightness);
-    u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(NDS->GPU.GPU2D_B.MasterBrightness);
-
-    // Shop has 2D and 3D segments, which is why it's on the top
-    bool isShop = (NDS->GPU.GPU3D.RenderNumPolygons == 264 && NDS->GPU.GPU2D_A.BlendCnt == 0 && 
-                   NDS->GPU.GPU2D_B.BlendCnt == 0 && NDS->GPU.GPU2D_B.BlendAlpha == 16) ||
-            (NDS->GPU.GameScene == gameScene_Shop && NDS->GPU.GPU3D.NumVertices == 0 && NDS->GPU.GPU3D.NumPolygons == 0);
-    if (isShop)
-    {
-        return setGameScene(gameScene_Shop);
-    }
-
-    if (isBlackTopScreen && (NDS->PowerControl9 >> 9) == 1)
-    {
-        return setGameScene(gameScene_BlackScreen);
-    }
-
-    if (doesntLook3D)
-    {
-        // Intro save menu
-        bool isIntroLoadMenu = NDS->GPU.GPU2D_B.BlendCnt == 4164 && (NDS->GPU.GPU2D_A.EVA == 0 || NDS->GPU.GPU2D_A.EVA == 16) && 
-             NDS->GPU.GPU2D_A.EVB == 0 && NDS->GPU.GPU2D_A.EVY == 0 &&
-            (NDS->GPU.GPU2D_B.EVA < 10 && NDS->GPU.GPU2D_B.EVA >= 0) && 
-            (NDS->GPU.GPU2D_B.EVB >  7 && NDS->GPU.GPU2D_B.EVB <= 16) && NDS->GPU.GPU2D_B.EVY == 0;
-        bool mayBeMainMenu = NDS->GPU.GPU3D.NumVertices == 4 && NDS->GPU.GPU3D.NumPolygons == 1 && NDS->GPU.GPU3D.RenderNumPolygons == 1;
-
-        if (isIntroLoadMenu)
-        {
-            return setGameScene(gameScene_IntroLoadMenu);
-        }
-        if (NDS->GPU.GameScene == gameScene_IntroLoadMenu)
-        {
-            if (mayBeMainMenu)
-            {
-                return setGameScene(gameScene_MainMenu);
-            }
-            if (NDS->GPU.GPU3D.NumVertices != 8)
-            {
-                return setGameScene(gameScene_IntroLoadMenu);
-            }
-        }
-
-        if ((NDS->PowerControl9 >> 9) == 1 && NDS->GPU.GameScene == gameScene_InGameMenu)
-        {
-            return setGameScene(gameScene_InGameMenu);
-        }
-
-        // Mission Mode / Story Mode - Challenges (happens if you press L/R repeatedly)
-        bool inHoloMissionMenu = NDS->GPU.GPU2D_A.BlendCnt == 129 && NDS->GPU.GPU2D_B.BlendCnt == 159;
-        if (inHoloMissionMenu)
-        {
-            return setGameScene(gameScene_InHoloMissionMenu);
-        }
-
-        // Day counter
-        if (NDS->GPU.GameScene == gameScene_DayCounter && !no3D)
-        {
-            return setGameScene(gameScene_DayCounter);
-        }
-        if (NDS->GPU.GameScene != gameScene_Intro)
-        {
-            if (NDS->GPU.GPU3D.NumVertices == 8 && NDS->GPU.GPU3D.NumPolygons == 2 && NDS->GPU.GPU3D.RenderNumPolygons == 2)
-            {
-                return setGameScene(gameScene_DayCounter);
-            }
-            if (NDS->GPU.GPU3D.NumVertices == 12 && NDS->GPU.GPU3D.NumPolygons == 3 && NDS->GPU.GPU3D.RenderNumPolygons == 3)
-            {
-                return setGameScene(gameScene_DayCounter);
-            }
-        }
-
-        // Main menu
-        if (mayBeMainMenu)
-        {
-            return setGameScene(gameScene_MainMenu);
-        }
-
-        // Intro
-        if (NDS->GPU.GameScene == -1 || NDS->GPU.GameScene == gameScene_Intro)
-        {
-            return setGameScene(gameScene_Intro);
-        }
-
-        if (isBlackTopScreen && isBlackBottomScreen)
-        {
-            return setGameScene(gameScene_BlackScreen);
-        }
-
-        // Intro cutscene
-        if (NDS->GPU.GameScene == gameScene_Cutscene)
-        {
-            if (NDS->GPU.GPU3D.NumVertices == 0 && NDS->GPU.GPU3D.NumPolygons == 0 && NDS->GPU.GPU3D.RenderNumPolygons >= 0 && NDS->GPU.GPU3D.RenderNumPolygons <= 3)
-            {
-                return setGameScene(gameScene_Cutscene);
-            }
-        }
-        if (NDS->GPU.GameScene == gameScene_MainMenu && NDS->GPU.GPU3D.NumVertices == 0 && NDS->GPU.GPU3D.NumPolygons == 0 && NDS->GPU.GPU3D.RenderNumPolygons == 1)
-        {
-            return setGameScene(gameScene_Cutscene);
-        }
-        if (NDS->GPU.GameScene == gameScene_BlackScreen && NDS->GPU.GPU3D.NumVertices == 0 && NDS->GPU.GPU3D.NumPolygons == 0 && NDS->GPU.GPU3D.RenderNumPolygons >= 0 && NDS->GPU.GPU3D.RenderNumPolygons <= 3)
-        {
-            return setGameScene(gameScene_Cutscene);
-        }
-
-        // In Game Save Menu
-        bool isGameSaveMenu = NDS->GPU.GPU2D_A.BlendCnt == 4164 && (NDS->GPU.GPU2D_B.EVA == 0 || NDS->GPU.GPU2D_B.EVA == 16) && 
-             NDS->GPU.GPU2D_B.EVB == 0 && NDS->GPU.GPU2D_B.EVY == 0 &&
-            (NDS->GPU.GPU2D_A.EVA < 10 && NDS->GPU.GPU2D_A.EVA >= 2) && 
-            (NDS->GPU.GPU2D_A.EVB >  7 && NDS->GPU.GPU2D_A.EVB <= 14);
-        if (isGameSaveMenu) 
-        {
-            return setGameScene(gameScene_InGameSaveMenu);
-        }
-
-        if ((NDS->PowerControl9 >> 9) == 1) 
-        {
-            return setGameScene(gameScene_InGameMenu);
-        }
-
-        // Roxas thoughts scene
-        if (isBlackBottomScreen)
-        {
-            if (has3DOnTopScreen)
-            {
-                return setGameScene(gameScene_BlackScreen);
-            }
-            else
-            {
-                return setGameScene(gameScene_RoxasThoughts);
-            }
-        }
-
-        // Bottom cutscene
-        bool isBottomCutscene = NDS->GPU.GPU2D_A.BlendCnt == 0 && 
-             NDS->GPU.GPU2D_A.EVA == 16 && NDS->GPU.GPU2D_A.EVB == 0 && NDS->GPU.GPU2D_A.EVY == 9 &&
-             NDS->GPU.GPU2D_B.EVA == 16 && NDS->GPU.GPU2D_B.EVB == 0 && NDS->GPU.GPU2D_B.EVY == 0;
-        if (isBottomCutscene)
-        {
-            return setGameScene(gameScene_BottomCutscene);
-        }
-
-        if (NDS->GPU.GameScene == gameScene_BlackScreen)
-        {
-            return setGameScene(gameScene_BlackScreen);
-        }
-
-        // Unknown 2D
-        return setGameScene(gameScene_Other2D);
-    }
-
-    if (has3DOnTopScreen)
-    {
-        // Pause Menu
-        bool inMissionPauseMenu = NDS->GPU.GPU2D_A.EVY == 8 && NDS->GPU.GPU2D_B.EVY == 8;
-        if (inMissionPauseMenu)
-        {
-            if (NDS->GPU.GameScene == gameScene_InGameWithMap)
-            {
-                return setGameScene(gameScene_PauseMenuWithGauge);    
-            }
-            if (NDS->GPU.GameScene == gameScene_PauseMenu || NDS->GPU.GameScene == gameScene_PauseMenuWithGauge)
-            {
-                return setGameScene(NDS->GPU.GameScene);
-            }
-            return setGameScene(gameScene_PauseMenu);
-        }
-        else if (NDS->GPU.GameScene == gameScene_PauseMenu || NDS->GPU.GameScene == gameScene_PauseMenuWithGauge)
-        {
-            return setGameScene(priorGameScene);
-        }
-
-        // Tutorial
-        if (NDS->GPU.GameScene == gameScene_Tutorial && topScreenBrightness < 15)
-        {
-            return setGameScene(gameScene_Tutorial);
-        }
-        bool inTutorialScreen = topScreenBrightness == 8 && botScreenBrightness == 15;
-        if (inTutorialScreen)
-        {
-            return setGameScene(gameScene_Tutorial);
-        }
-        bool inTutorialScreenWithoutWarningOnTop = NDS->GPU.GPU2D_A.BlendCnt == 193 && NDS->GPU.GPU2D_B.BlendCnt == 172 && 
-                                                   NDS->GPU.GPU2D_B.MasterBrightness == 0 && NDS->GPU.GPU2D_B.EVY == 0;
-        if (inTutorialScreenWithoutWarningOnTop)
-        {
-            return setGameScene(gameScene_Tutorial);
-        }
-
-        bool inGameMenu = (NDS->GPU.GPU3D.NumVertices > 940 || NDS->GPU.GPU3D.NumVertices == 0) &&
-                          NDS->GPU.GPU3D.RenderNumPolygons > 340 && NDS->GPU.GPU3D.RenderNumPolygons < 360 &&
-                          NDS->GPU.GPU2D_A.BlendCnt == 0 && NDS->GPU.GPU2D_B.BlendCnt == 0;
-        if (inGameMenu)
-        {
-            return setGameScene(gameScene_InGameMenu);
-        }
-
-        // Story Mode - Normal missions
-        bool inHoloMissionMenu = ((NDS->GPU.GPU3D.NumVertices == 344 && NDS->GPU.GPU3D.NumPolygons == 89 && NDS->GPU.GPU3D.RenderNumPolygons == 89) ||
-                                  (NDS->GPU.GPU3D.NumVertices == 348 && NDS->GPU.GPU3D.NumPolygons == 90 && NDS->GPU.GPU3D.RenderNumPolygons == 90)) &&
-                                 NDS->GPU.GPU2D_A.BlendCnt == 0 && NDS->GPU.GPU2D_B.BlendCnt == 0;
-        if (inHoloMissionMenu || NDS->GPU.GameScene == gameScene_InHoloMissionMenu)
-        {
-            return setGameScene(gameScene_InHoloMissionMenu);
-        }
-
-        // Mission Mode / Story Mode - Challenges
-        inHoloMissionMenu = NDS->GPU.GPU2D_A.BlendCnt == 129 && NDS->GPU.GPU2D_B.BlendCnt == 159;
-        if (inHoloMissionMenu)
-        {
-            return setGameScene(gameScene_InHoloMissionMenu);
-        }
-
-        // I can't remember
-        inHoloMissionMenu = NDS->GPU.GPU2D_A.BlendCnt == 2625 && NDS->GPU.GPU2D_B.BlendCnt == 0;
-        if (inHoloMissionMenu)
-        {
-            return setGameScene(gameScene_InHoloMissionMenu);
-        }
-
-        // Regular gameplay without a map
-        if (noElementsOnBottomScreen || isBlackBottomScreen)
-        {
-            return setGameScene(gameScene_InGameWithoutMap);
-        }
-    
-        // Regular gameplay with a map
-        return setGameScene(gameScene_InGameWithMap);
-    }
-    
-    // Unknown
-    return setGameScene(gameScene_Other);
 }
 
 void EmuThread::changeWindowTitle(char* title)
@@ -1194,23 +880,6 @@ bool EmuThread::emuIsActive()
     return (RunningSomething == 1);
 }
 
-bool EmuThread::isBufferBlack(unsigned int* buffer)
-{
-    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
-    bool newIsNullScreen = true;
-    bool newIsBlackScreen = true;
-    for (int i = 0; i < 192*256; i++) {
-        unsigned int color = buffer[i] & 0xFFFFFF;
-        newIsNullScreen = newIsNullScreen && color == 0;
-        newIsBlackScreen = newIsBlackScreen &&
-                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
-        if (!newIsBlackScreen) {
-            break;
-        }
-    }
-    return !newIsNullScreen && newIsBlackScreen;
-}
-
 void EmuThread::drawScreenGL()
 {
     if (!NDS) return;
@@ -1257,15 +926,8 @@ void EmuThread::drawScreenGL()
         }
     }
 
-    // checking if bottom screen is totally black
-    u32* topBuffer = NDS->GPU.Framebuffer[frontbuf][0].get();
-    u32* bottomBuffer = NDS->GPU.Framebuffer[frontbuf][1].get();
-    if (topBuffer) {
-        isBlackTopScreen = isBufferBlack(topBuffer);
-    }
-    if (bottomBuffer) {
-        isBlackBottomScreen = isBufferBlack(bottomBuffer);
-    }
+    melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
+    KHDaysPlugin::fetchScreenStatus(&nds, frontbuf);
 
     screenSettingsLock.lock();
 

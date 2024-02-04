@@ -96,7 +96,6 @@ signals:
     void syncVolumeLevel();
 
 private:
-    bool isBufferBlack(unsigned int* buffer);
     std::unique_ptr<melonDS::NDS> CreateConsole();
     void drawScreenGL();
     void initOpenGL();
@@ -145,8 +144,6 @@ private:
     bool setGameScene(int newGameScene);
 
     void debugLogs(int gameScene);
-
-    bool refreshAutoScreenSizing();
 };
 
 
