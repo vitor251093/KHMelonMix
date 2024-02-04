@@ -180,20 +180,19 @@ vec2 getMainMenuHudTextureCoordinates(float xpos, float ypos)
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     // logo
-    float logoScale = 1.2;
-    float bottomLogoHeight = 192.0;
-    float bottomLogoWidth = 256.0;
-    float bottomLogoLeftMargin = 0;
-    float bottomLogoTopMargin = 0;
-    float logoHeight = bottomLogoHeight/logoScale;
-    float logoWidth = (bottomLogoWidth/logoScale)*heightScale;
+    float bottomLogoHeight = 192.0/1.2;
+    float bottomLogoWidth = 256.0/1.2;
+    float bottomLogoLeftMargin = 20;
+    float bottomLogoTopMargin = 10;
+    float logoHeight = bottomLogoHeight;
+    float logoWidth = bottomLogoWidth*heightScale;
     float logoLeftMargin = 0.0;
     float logoTopMargin = 0.0;
     if (texPosition3d.x >= logoLeftMargin &&
         texPosition3d.x < (logoWidth + logoLeftMargin) && 
         texPosition3d.y <= (logoHeight + logoTopMargin) && 
         texPosition3d.y >= logoTopMargin) {
-        return logoScale*fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
+        return fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
             vec2(bottomLogoLeftMargin, bottomLogoTopMargin);
     }
 
@@ -425,20 +424,19 @@ ivec4 getTopScreen3DColor(float xpos, float ypos)
         vec2 fixStretch = vec2(widthScale, 1.0);
 
         // logo
-        float logoScale = 1.2;
-        float bottomLogoHeight = 192.0;
-        float bottomLogoWidth = 256.0;
-        float bottomLogoLeftMargin = 0;
-        float bottomLogoTopMargin = 0;
-        float logoHeight = bottomLogoHeight/logoScale;
-        float logoWidth = (bottomLogoWidth/logoScale)*heightScale;
+        float bottomLogoHeight = 192.0/1.2;
+        float bottomLogoWidth = 256.0/1.2;
+        float bottomLogoLeftMargin = 20;
+        float bottomLogoTopMargin = 10;
+        float logoHeight = bottomLogoHeight;
+        float logoWidth = bottomLogoWidth*heightScale;
         float logoLeftMargin = 0.0;
         float logoTopMargin = 0.0;
         if (texPosition3d.x >= logoLeftMargin &&
             texPosition3d.x < (logoWidth + logoLeftMargin) && 
             texPosition3d.y <= (logoHeight + logoTopMargin) && 
             texPosition3d.y >= logoTopMargin) {
-            position3d = ivec2((logoScale*fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
+            position3d = ivec2((fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
                 vec2(bottomLogoLeftMargin, bottomLogoTopMargin))*u3DScale);
             _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
