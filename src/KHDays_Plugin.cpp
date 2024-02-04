@@ -181,6 +181,14 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InHoloMissionMenu;
         }
 
+        if (nds->GPU.GameScene == gameScene_MainMenu)
+        {
+            mayBeMainMenu = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
+            if (mayBeMainMenu) {
+                return gameScene_MainMenu;
+            }
+        }
+
         // Day counter
         if (nds->GPU.GameScene == gameScene_DayCounter && !no3D)
         {
@@ -207,7 +215,8 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         // Intro
         if (nds->GPU.GameScene == -1 || nds->GPU.GameScene == gameScene_Intro)
         {
-            return gameScene_Intro;
+            mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
+            return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
         }
 
         if (isBlackTopScreen && isBlackBottomScreen)
