@@ -39,6 +39,7 @@ public:
     static float* getBackgroundColorByGameScene(melonDS::NDS* nds, int newGameScene);
     static int detectGameScene(melonDS::NDS* nds);
     static bool setGameScene(melonDS::NDS* nds, int newGameScene);
+    static void debugLogs(melonDS::NDS* nds, int gameScene);
 private:
     static bool isBufferBlack(unsigned int* buffer);
 };

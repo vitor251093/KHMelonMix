@@ -890,7 +890,7 @@ bool EmuThread::setGameScene(int newGameScene)
     backgroundBlue = bgColors[2];
     
 #ifdef _DEBUG
-    debugLogs(newGameScene);
+    KHDaysPlugin::debugLogs(&nds, newGameScene);
 #endif
 
     bool updated = KHDaysPlugin::setGameScene(&nds, newGameScene);
@@ -904,28 +904,6 @@ bool EmuThread::setGameScene(int newGameScene)
     autoScreenSizing = KHDaysPlugin::getSizeByGameScene(newGameScene);
 
     return true;
-}
-
-void EmuThread::debugLogs(int gameScene)
-{
-    printf("Game scene: %d\n", gameScene);
-    printf("NDS->GPU.GPU3D.NumVertices: %d\n",       NDS->GPU.GPU3D.NumVertices);
-    printf("NDS->GPU.GPU3D.NumPolygons: %d\n",       NDS->GPU.GPU3D.NumPolygons);
-    printf("NDS->GPU.GPU3D.RenderNumPolygons: %d\n", NDS->GPU.GPU3D.RenderNumPolygons);
-    printf("NDS->PowerControl9: %d\n",       NDS->PowerControl9);
-    printf("NDS->GPU.GPU2D_A.BlendCnt: %d\n",         NDS->GPU.GPU2D_A.BlendCnt);
-    printf("NDS->GPU.GPU2D_A.BlendAlpha: %d\n",       NDS->GPU.GPU2D_A.BlendAlpha);
-    printf("NDS->GPU.GPU2D_A.EVA: %d\n",              NDS->GPU.GPU2D_A.EVA);
-    printf("NDS->GPU.GPU2D_A.EVB: %d\n",              NDS->GPU.GPU2D_A.EVB);
-    printf("NDS->GPU.GPU2D_A.EVY: %d\n",              NDS->GPU.GPU2D_A.EVY);
-    printf("NDS->GPU.GPU2D_A.MasterBrightness: %d\n", NDS->GPU.GPU2D_A.MasterBrightness);
-    printf("NDS->GPU.GPU2D_B.BlendCnt: %d\n",         NDS->GPU.GPU2D_B.BlendCnt);
-    printf("NDS->GPU.GPU2D_B.BlendAlpha: %d\n",       NDS->GPU.GPU2D_B.BlendAlpha);
-    printf("NDS->GPU.GPU2D_B.EVA: %d\n",              NDS->GPU.GPU2D_B.EVA);
-    printf("NDS->GPU.GPU2D_B.EVB: %d\n",              NDS->GPU.GPU2D_B.EVB);
-    printf("NDS->GPU.GPU2D_B.EVY: %d\n",              NDS->GPU.GPU2D_B.EVY);
-    printf("NDS->GPU.GPU2D_B.MasterBrightness: %d\n", NDS->GPU.GPU2D_B.MasterBrightness);
-    printf("\n");
 }
 
 void EmuThread::changeWindowTitle(char* title)
