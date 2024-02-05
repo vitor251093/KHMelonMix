@@ -116,6 +116,31 @@ int KHDaysPlugin::getSizeByGameScene(int newGameScene)
     return size;
 }
 
+const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
+{
+    switch (newGameScene) {
+        case gameScene_Intro: return "Game scene: Intro";
+        case gameScene_MainMenu: return "Game scene: Main menu";
+        case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
+        case gameScene_DayCounter: return "Game scene: Day counter";
+        case gameScene_Cutscene: return "Game scene: Cutscene";
+        case gameScene_BottomCutscene: return "Game scene: Cutscene (Bottom screen)";
+        case gameScene_InGameWithMap: return "Game scene: Ingame (with minimap)";
+        case gameScene_InGameWithoutMap: return "Game scene: Ingame (without minimap)";
+        case gameScene_InGameMenu: return "Game scene: Ingame menu";
+        case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
+        case gameScene_InHoloMissionMenu: return "Game scene: Holo mission menu";
+        case gameScene_PauseMenu: return "Game scene: Pause menu";
+        case gameScene_PauseMenuWithGauge: return "Game scene: Pause menu (with gauge)";
+        case gameScene_Tutorial: return "Game scene: Tutorial";
+        case gameScene_RoxasThoughts: return "Game scene: Roxas thoughts";
+        case gameScene_Shop: return "Game scene: Shop";
+        case gameScene_BlackScreen: return "Game scene: Black screen";
+        case gameScene_Other2D: return "Game scene: Unknown (2D)";
+        default: return "Game scene: Unknown (3D)";
+    }
+}
+
 float* KHDaysPlugin::getBackgroundColorByGameScene(melonDS::NDS* nds, int newGameScene)
 {
     float backgroundColor = 0.0;

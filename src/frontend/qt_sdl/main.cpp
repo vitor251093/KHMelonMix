@@ -897,27 +897,7 @@ bool EmuThread::setGameScene(int newGameScene)
     if (updated) 
     {
 #ifdef _DEBUG
-        switch (newGameScene) {
-            case gameScene_Intro: OSD::AddMessage(0, "Game scene: Intro"); break;
-            case gameScene_MainMenu: OSD::AddMessage(0, "Game scene: Main menu"); break;
-            case gameScene_IntroLoadMenu: OSD::AddMessage(0, "Game scene: Intro load menu"); break;
-            case gameScene_DayCounter: OSD::AddMessage(0, "Game scene: Day counter"); break;
-            case gameScene_Cutscene: OSD::AddMessage(0, "Game scene: Cutscene"); break;
-            case gameScene_BottomCutscene: OSD::AddMessage(0, "Game scene: Cutscene (Bottom screen)"); break;
-            case gameScene_InGameWithMap: OSD::AddMessage(0, "Game scene: Ingame (with minimap)"); break;
-            case gameScene_InGameWithoutMap: OSD::AddMessage(0, "Game scene: Ingame (without minimap)"); break;
-            case gameScene_InGameMenu: OSD::AddMessage(0, "Game scene: Ingame menu"); break;
-            case gameScene_InGameSaveMenu: OSD::AddMessage(0, "Game scene: Ingame save menu"); break;
-            case gameScene_InHoloMissionMenu: OSD::AddMessage(0, "Game scene: Holo mission menu"); break;
-            case gameScene_PauseMenu: OSD::AddMessage(0, "Game scene: Pause menu"); break;
-            case gameScene_PauseMenuWithGauge: OSD::AddMessage(0, "Game scene: Pause menu (with gauge)"); break;
-            case gameScene_Tutorial: OSD::AddMessage(0, "Game scene: Tutorial"); break;
-            case gameScene_RoxasThoughts: OSD::AddMessage(0, "Game scene: Roxas thoughts"); break;
-            case gameScene_Shop: OSD::AddMessage(0, "Game scene: Shop"); break;
-            case gameScene_BlackScreen: OSD::AddMessage(0, "Game scene: Black screen"); break;
-            case gameScene_Other2D: OSD::AddMessage(0, "Game scene: Unknown (2D)"); break;
-            default: OSD::AddMessage(0, "Game scene: Unknown (3D)"); break;
-        }
+        OSD::AddMessage(0, KHDaysPlugin::getNameByGameScene(newGameScene));
 #endif
     }
 
