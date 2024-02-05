@@ -1249,7 +1249,6 @@ void GLRenderer::RenderFrame()
     glEnable(GL_STENCIL_TEST);
 
     glViewport(0, 0, ScreenW, ScreenH);
-    
 
     glDisable(GL_BLEND);
     glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
