@@ -63,7 +63,7 @@ std::optional<Firmware> LoadFirmware(int type) noexcept;
 std::optional<DSi_NAND::NANDImage> LoadNAND(const std::array<u8, DSiBIOSSize>& arm7ibios) noexcept;
 bool InstallFirmware(NDS& nds);
 bool InstallNAND(DSi& dsi);
-bool LoadROM(EmuThread*, QStringList filepath, bool reset);
+bool LoadROM(EmuThread*, QStringList filepath, bool reset, float aspectRatioTop);
 void EjectCart(NDS& nds);
 bool CartInserted();
 QString CartLabel();

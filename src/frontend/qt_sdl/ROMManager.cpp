@@ -1335,7 +1335,7 @@ bool InstallFirmware(NDS& nds)
     return nds.SPI.GetFirmwareMem()->InstallFirmware(std::move(firmware));
 }
 
-bool LoadROM(EmuThread* emuthread, QStringList filepath, bool reset)
+bool LoadROM(EmuThread* emuthread, QStringList filepath, bool reset, float aspectRatioTop)
 {
     if (filepath.empty()) return false;
 
@@ -1481,17 +1481,7 @@ bool LoadROM(EmuThread* emuthread, QStringList filepath, bool reset)
         CartType = 0;
         NDSSave = new SaveManager(savname);
 
-        float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
-        for (auto ratio : aspectRatios)
-        {
-            if (ratio.id == Config::ScreenAspectTop)
-                aspectTop = ratio.ratio * 4.0/3;
-        }
-        if (aspectTop == 0) {
-            aspectTop = 16.0 / 9;
-        }
-
-        LoadCheats(*emuthread->NDS, aspectTop);
+        LoadCheats(*emuthread->NDS, aspectRatioTop);
     }
 
     if (savedata) delete[] savedata;

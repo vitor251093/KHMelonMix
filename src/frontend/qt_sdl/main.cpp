@@ -173,6 +173,15 @@ bool videoSettingsDirty;
 CameraManager* camManager[2];
 bool camStarted[2];
 
+const struct { int id; float ratio; const char* label; } aspectRatios[] =
+{
+    { 0, 1,                       "4:3 (native)" },
+    { 4, (5.f  / 3) / (4.f / 3),  "5:3 (3DS)"},
+    { 1, (16.f / 9) / (4.f / 3),  "16:9" },
+    { 2, (21.f / 9) / (4.f / 3),  "21:9" },
+    { 3, 0,                       "window" }
+};
+
 float backgroundRed = 0.0;
 float backgroundGreen = 0.0;
 float backgroundBlue = 0.0;
@@ -2149,6 +2158,19 @@ void MainWindow::keyReleaseEvent(QKeyEvent* event)
     Input::KeyRelease(event);
 }
 
+float MainWindow::aspectRatioTop()
+{
+    float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
+    for (auto ratio : aspectRatios)
+    {
+        if (ratio.id == Config::ScreenAspectTop)
+            aspectTop = ratio.ratio * 4.0/3;
+    }
+    if (aspectTop == 0) {
+        aspectTop = 16.0 / 9;
+    }
+    return aspectTop;
+}
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
@@ -2197,7 +2219,7 @@ void MainWindow::dropEvent(QDropEvent* event)
 
     if (isNdsRom)
     {
-        if (!ROMManager::LoadROM(emuThread, file, true))
+        if (!ROMManager::LoadROM(emuThread, file, true, aspectRatioTop()))
         {
             // TODO: better error reporting?
             QMessageBox::critical(this, "melonDS", "Failed to load the DS ROM.");
@@ -2297,7 +2319,7 @@ bool MainWindow::preloadROMs(QStringList file, QStringList gbafile, bool boot)
     bool ndsloaded = false;
     if (!file.isEmpty())
     {
-        if (!ROMManager::LoadROM(emuThread, file, true))
+        if (!ROMManager::LoadROM(emuThread, file, true, aspectRatioTop()))
         {
             // TODO: better error reporting?
             QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
@@ -2500,7 +2522,7 @@ void MainWindow::loadMostRecentFile()
         QString filename = QString::fromStdString(item);
         QStringList file = filename.split('|');
 
-        if (!ROMManager::LoadROM(emuThread, file, true))
+        if (!ROMManager::LoadROM(emuThread, file, true, aspectRatioTop()))
         {
             // TODO: better error reporting?
             QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
@@ -2542,7 +2564,7 @@ void MainWindow::onOpenFile()
         return;
     }
 
-    if (!ROMManager::LoadROM(emuThread, file, true))
+    if (!ROMManager::LoadROM(emuThread, file, true, aspectRatioTop()))
     {
         // TODO: better error reporting?
         QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
@@ -2641,7 +2663,7 @@ void MainWindow::onClickRecentFile()
         return;
     }
 
-    if (!ROMManager::LoadROM(emuThread, file, true))
+    if (!ROMManager::LoadROM(emuThread, file, true, aspectRatioTop()))
     {
         // TODO: better error reporting?
         QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
@@ -2694,7 +2716,7 @@ void MainWindow::onInsertCart()
         return;
     }
 
-    if (!ROMManager::LoadROM(emuThread, file, false))
+    if (!ROMManager::LoadROM(emuThread, file, false, aspectRatioTop()))
     {
         // TODO: better error reporting?
         QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");

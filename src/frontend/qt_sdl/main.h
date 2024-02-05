@@ -390,6 +390,8 @@ private:
     int oldW, oldH;
     bool oldMax;
 
+    float aspectRatioTop();
+
 public:
     ScreenHandler* panel;
     QWidget* panelWidget;
