@@ -2463,32 +2463,34 @@ void MainWindow::loadMostRecentFile()
     }
     
     std::string item = Config::RecentROMList[0];
-    if (!item.empty()) {
-        QString filename = QString::fromStdString(item);
-        QStringList file = filename.split('|');
+    if (item.empty()) {
+        return;
+    }
 
-        if (!ROMManager::LoadROM(emuThread, file, true, aspectRatioTop()))
-        {
-            // TODO: better error reporting?
-            QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
-            emuThread->emuUnpause();
-            return;
-        }
+    QString filename = QString::fromStdString(item);
+    QStringList file = filename.split('|');
 
-        recentFileList.removeAll(filename);
-        recentFileList.prepend(filename);
-        updateRecentFilesMenu();
+    if (!ROMManager::LoadROM(emuThread, file, true, aspectRatioTop()))
+    {
+        // TODO: better error reporting?
+        QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
+        emuThread->emuUnpause();
+        return;
+    }
 
-        assert(emuThread->NDS != nullptr);
-        emuThread->NDS->Start();
-        emuThread->emuRun();
+    recentFileList.removeAll(filename);
+    recentFileList.prepend(filename);
+    updateRecentFilesMenu();
 
-        updateCartInserted(false);
+    assert(emuThread->NDS != nullptr);
+    emuThread->NDS->Start();
+    emuThread->emuRun();
 
-        if (Config::AutoFullscreen)
-        {
-            emuThread->windowFullscreenToggle();
-        }
+    updateCartInserted(false);
+
+    if (Config::AutoFullscreen)
+    {
+        emuThread->windowFullscreenToggle();
     }
 }
 
