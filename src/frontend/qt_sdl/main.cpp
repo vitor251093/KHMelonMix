@@ -709,8 +709,7 @@ void EmuThread::run()
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
             {
-                melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
-                bool requiresRefresh = setGameScene(KHDaysPlugin::detectGameScene(&nds));
+                bool requiresRefresh = refreshGameScene();
                 if (requiresRefresh)
                 {
                     emit screenLayoutChange();
@@ -880,9 +879,12 @@ void EmuThread::run()
     // nds is out of scope, so unique_ptr cleans it up for us
 }
 
-bool EmuThread::setGameScene(int newGameScene)
+bool EmuThread::refreshGameScene()
 {
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
+
+    int newGameScene = KHDaysPlugin::detectGameScene(&nds);
+
     float* bgColors = KHDaysPlugin::getBackgroundColorByGameScene(&nds, newGameScene);
     backgroundRed = bgColors[0];
     backgroundGreen = bgColors[1];

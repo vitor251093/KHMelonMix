@@ -156,7 +156,7 @@ private:
 
     int lastScreenWidth = -1, lastScreenHeight = -1;
 
-    bool setGameScene(int newGameScene);
+    bool refreshGameScene();
 
     void debugLogs(int gameScene);
 };
