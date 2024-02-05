@@ -155,21 +155,6 @@ float* KHDaysPlugin::getBackgroundColorByGameScene(melonDS::NDS* nds, int newGam
             backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
         }
     }
-    if (newGameScene == gameScene_MainMenu)
-    {
-        backgroundColor = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness) / 15.0;
-        backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
-    }
-    if (newGameScene == gameScene_InGameWithoutMap || newGameScene == gameScene_Other2D)
-    {
-        if (nds->GPU.GPU2D_B.MasterBrightness == 0) {
-            backgroundColor = 0;
-        }
-        else if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 14)) {
-            backgroundColor = PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness) / 15.0;
-            backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
-        }
-    }
     float* bgColors = new float[3];
     bgColors[0] = backgroundColor;
     bgColors[1] = backgroundColor;

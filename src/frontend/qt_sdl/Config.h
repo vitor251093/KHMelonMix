@@ -111,6 +111,7 @@ extern int GL_ScaleFactor;
 extern bool GL_BetterPolygons;
 
 extern bool LimitFPS;
+extern int MaxFPS;
 extern bool AudioSync;
 extern bool ShowOSD;
 extern bool AutoFullscreen;
