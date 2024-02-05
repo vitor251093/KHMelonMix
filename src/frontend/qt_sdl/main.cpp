@@ -985,7 +985,7 @@ void ScreenHandler::screenSetupLayout(int w, int h)
             }
         }
     }
-    if (sizing == screenSizing_Even) {
+    if (sizing == Frontend::screenSizing_Even) {
         screenAspectTop = 0;
         screenAspectBot = 0;
     }
