@@ -32,6 +32,7 @@ enum
 class KHDaysPlugin
 {
 public:
+    static u32 applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask);
     static void fetchScreenStatus(melonDS::NDS* nds, int frontbuf);
     static int getSizeByGameScene(int newGameScene);
     static float* getBackgroundColorByGameScene(melonDS::NDS* nds, int newGameScene);

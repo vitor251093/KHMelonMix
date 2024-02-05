@@ -7,6 +7,7 @@
 namespace melonDS
 {
 
+int GameScene = -1;
 int priorGameScene = -1;
 bool isBlackTopScreen = false;
 bool isBlackBottomScreen = false;
@@ -15,6 +16,47 @@ bool isBlackBottomScreen = false;
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
 #define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
+
+u32 KHDaysPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
+{
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap) {
+        // So the arrow keys can be used to control the command menu
+        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+            InputMask &= ~(1<<1); // B
+        }
+        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
+            InputMask &= ~(1<<0); // A
+        }
+        if (CmdMenuInputMask & ((1 << 2) | (1 << 3))) {
+            InputMask &= ~(1<<10); // X
+            if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+                // If you press the up arrow while having the player moving priorly, it may make it go down instead
+                InputMask |= (1<<6); // up
+                InputMask |= (1<<7); // down
+            }
+            if (PriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
+                InputMask &= ~(1<<6); // up
+            if (PriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
+                InputMask &= ~(1<<7); // down
+        }
+    }
+    else {
+        // So the arrow keys can be used as directionals
+        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
+            InputMask &= ~(1<<4); // right
+        }
+        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+            InputMask &= ~(1<<5); // left
+        }
+        if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+            InputMask &= ~(1<<6); // up
+        }
+        if (CmdMenuInputMask & (1 << 3)) { // D-pad down
+            InputMask &= ~(1<<7); // down
+        }
+    }
+    return InputMask;
+}
 
 bool KHDaysPlugin::isBufferBlack(unsigned int* buffer)
 {
@@ -133,7 +175,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     // Shop has 2D and 3D segments, which is why it's on the top
     bool isShop = (nds->GPU.GPU3D.RenderNumPolygons == 264 && nds->GPU.GPU2D_A.BlendCnt == 0 && 
                    nds->GPU.GPU2D_B.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendAlpha == 16) ||
-            (nds->GPU.GameScene == gameScene_Shop && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0);
+            (GameScene == gameScene_Shop && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0);
     if (isShop)
     {
         return gameScene_Shop;
@@ -157,7 +199,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         {
             return gameScene_IntroLoadMenu;
         }
-        if (nds->GPU.GameScene == gameScene_IntroLoadMenu)
+        if (GameScene == gameScene_IntroLoadMenu)
         {
             if (mayBeMainMenu)
             {
@@ -169,7 +211,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             }
         }
 
-        if ((nds->PowerControl9 >> 9) == 1 && nds->GPU.GameScene == gameScene_InGameMenu)
+        if ((nds->PowerControl9 >> 9) == 1 && GameScene == gameScene_InGameMenu)
         {
             return gameScene_InGameMenu;
         }
@@ -182,11 +224,11 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         // Day counter
-        if (nds->GPU.GameScene == gameScene_DayCounter && !no3D)
+        if (GameScene == gameScene_DayCounter && !no3D)
         {
             return gameScene_DayCounter;
         }
-        if (nds->GPU.GameScene != gameScene_Intro)
+        if (GameScene != gameScene_Intro)
         {
             if (nds->GPU.GPU3D.NumVertices == 8 && nds->GPU.GPU3D.NumPolygons == 2 && nds->GPU.GPU3D.RenderNumPolygons == 2)
             {
@@ -205,7 +247,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         // Intro
-        if (nds->GPU.GameScene == -1 || nds->GPU.GameScene == gameScene_Intro)
+        if (GameScene == -1 || GameScene == gameScene_Intro)
         {
             return gameScene_Intro;
         }
@@ -216,18 +258,18 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         // Intro cutscene
-        if (nds->GPU.GameScene == gameScene_Cutscene)
+        if (GameScene == gameScene_Cutscene)
         {
             if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons >= 0 && nds->GPU.GPU3D.RenderNumPolygons <= 3)
             {
                 return gameScene_Cutscene;
             }
         }
-        if (nds->GPU.GameScene == gameScene_MainMenu && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 1)
+        if (GameScene == gameScene_MainMenu && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 1)
         {
             return gameScene_Cutscene;
         }
-        if (nds->GPU.GameScene == gameScene_BlackScreen && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons >= 0 && nds->GPU.GPU3D.RenderNumPolygons <= 3)
+        if (GameScene == gameScene_BlackScreen && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons >= 0 && nds->GPU.GPU3D.RenderNumPolygons <= 3)
         {
             return gameScene_Cutscene;
         }
@@ -269,7 +311,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_BottomCutscene;
         }
 
-        if (nds->GPU.GameScene == gameScene_BlackScreen)
+        if (GameScene == gameScene_BlackScreen)
         {
             return gameScene_BlackScreen;
         }
@@ -284,23 +326,23 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && nds->GPU.GPU2D_B.EVY == 8;
         if (inMissionPauseMenu)
         {
-            if (nds->GPU.GameScene == gameScene_InGameWithMap)
+            if (GameScene == gameScene_InGameWithMap)
             {
                 return gameScene_PauseMenuWithGauge;  
             }
-            if (nds->GPU.GameScene == gameScene_PauseMenu || nds->GPU.GameScene == gameScene_PauseMenuWithGauge)
+            if (GameScene == gameScene_PauseMenu || GameScene == gameScene_PauseMenuWithGauge)
             {
-                return nds->GPU.GameScene;
+                return GameScene;
             }
             return gameScene_PauseMenu;
         }
-        else if (nds->GPU.GameScene == gameScene_PauseMenu || nds->GPU.GameScene == gameScene_PauseMenuWithGauge)
+        else if (GameScene == gameScene_PauseMenu || GameScene == gameScene_PauseMenuWithGauge)
         {
             return priorGameScene;
         }
 
         // Tutorial
-        if (nds->GPU.GameScene == gameScene_Tutorial && topScreenBrightness < 15)
+        if (GameScene == gameScene_Tutorial && topScreenBrightness < 15)
         {
             return gameScene_Tutorial;
         }
@@ -328,7 +370,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         bool inHoloMissionMenu = ((nds->GPU.GPU3D.NumVertices == 344 && nds->GPU.GPU3D.NumPolygons == 89 && nds->GPU.GPU3D.RenderNumPolygons == 89) ||
                                   (nds->GPU.GPU3D.NumVertices == 348 && nds->GPU.GPU3D.NumPolygons == 90 && nds->GPU.GPU3D.RenderNumPolygons == 90)) &&
                                  nds->GPU.GPU2D_A.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendCnt == 0;
-        if (inHoloMissionMenu || nds->GPU.GameScene == gameScene_InHoloMissionMenu)
+        if (inHoloMissionMenu || GameScene == gameScene_InHoloMissionMenu)
         {
             return gameScene_InHoloMissionMenu;
         }
@@ -364,13 +406,13 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
 {
     bool updated = false;
-    if (nds->GPU.GameScene != newGameScene) 
+    if (GameScene != newGameScene) 
     {
         updated = true;
 
         // Game scene
-        priorGameScene = nds->GPU.GameScene;
-        nds->GPU.GameScene = newGameScene;
+        priorGameScene = GameScene;
+        GameScene = newGameScene;
     }
 
     // Updating GameScene inside shader

@@ -346,6 +346,8 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
+    // TODO: Make gameScene_DayCounter return a square, for both 2D and 3D graphics
+
     if (KHGameScene == 7 || KHGameScene == 8) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
     {
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));

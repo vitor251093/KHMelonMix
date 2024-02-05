@@ -529,8 +529,6 @@ public:
 
     void SyncDirtyFlags() noexcept;
 
-    int GameScene = -1;
-
     melonDS::NDS& NDS;
     u16 VCount = 0;
     u16 TotalScanlines = 0;
