@@ -139,7 +139,7 @@ ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
     ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0));
     return combineLayers(_3dpix, val1, val2, val3);
 }
-bool isScreenBackgroundBlack(int index)
+bool isScreenBlack(int index)
 {
     ivec4 pixel1 = getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(1.0/3.0));
     ivec4 pixel2 = getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(2.0/3.0));
@@ -150,6 +150,14 @@ bool isScreenBackgroundBlack(int index)
     
     return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4) &&
            isColorBlack(pixel5) && isColorBlack(pixel6);
+}
+bool isScreenBackgroundBlack(int index)
+{
+    ivec4 pixel1 = getSimpleColorAtCoordinate(0, index*192.0 + 0);
+    ivec4 pixel2 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0));
+    ivec4 pixel3 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0));
+    ivec4 pixel4 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0);
+    return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4);
 }
 
 vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
@@ -241,8 +249,7 @@ vec2 getDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearVect)
             texPosition3d.x < (logoWidth + logoLeftMargin) && 
             texPosition3d.y <= (logoHeight + logoTopMargin) && 
             texPosition3d.y >= logoTopMargin) {
-            return fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
-                    vec2(0, 192.0);
+            return fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) + vec2(0, 192.0);
         }
     }
 
@@ -426,10 +433,10 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    if (isScreenBackgroundBlack(0)) {
+    if (isScreenBlack(0)) {
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(-1, 0)));
     }
-    if (isScreenBackgroundBlack(1)) {
+    if (isScreenBlack(1)) {
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(-1, 0)));
     }
     return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
@@ -484,72 +491,83 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     return ivec2(fTexcoord);
 }
 
+ivec4 getSingleSquaredScreen3DColor(float xpos, float ypos)
+{
+    vec2 texPosition3d = vec2(xpos, ypos);
+    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float widthScale = 1.0/heightScale;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
+    // logo
+    float bottomLogoHeight = 192.0;
+    float bottomLogoWidth = 256.0;
+    float bottomLogoTopMargin = 0;
+    float bottomLogoLeftMargin = 0;
+    float logoHeight = bottomLogoHeight;
+    float logoWidth = bottomLogoWidth*heightScale;
+    float logoTopMargin = 0;
+    float logoLeftMargin = (256.0 - logoWidth)/2;
+    if (texPosition3d.x >= logoLeftMargin &&
+        texPosition3d.x < (logoWidth + logoLeftMargin) && 
+        texPosition3d.y <= (logoHeight + logoTopMargin) && 
+        texPosition3d.y >= logoTopMargin) {
+        ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
+            vec2(bottomLogoLeftMargin, bottomLogoTopMargin))*u3DScale);
+        return ivec4(texelFetch(_3DTex, position3d, 0).bgra
+            * vec4(63,63,63,31));
+    }
+    return ivec4(63,63,63,0);
+}
+
+ivec4 getDualScreen3DColor(float xpos, float ypos)
+{
+    float iuTexScale = 2;
+    vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float widthScale = 1.0/heightScale;
+    vec2 fixStretch = vec2(1.0, heightScale);
+
+    float bottomLogoHeight = 192.0;
+    float bottomLogoWidth = 256.0;
+    float bottomLogoTopMargin = 0;
+    float bottomLogoLeftMargin = 0;
+    float logoHeight = bottomLogoHeight*widthScale;
+    float logoWidth = bottomLogoWidth;
+    float logoTopMargin = (192.0*iuTexScale - logoHeight)/2;
+    float logoLeftMargin = 0.0;
+    if (texPosition3d.x >= logoLeftMargin &&
+        texPosition3d.x < (logoWidth + logoLeftMargin) && 
+        texPosition3d.y <= (logoHeight + logoTopMargin) && 
+        texPosition3d.y >= logoTopMargin) {
+        ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
+            vec2(bottomLogoLeftMargin, bottomLogoTopMargin))*u3DScale);
+        return ivec4(texelFetch(_3DTex, position3d, 0).bgra
+            * vec4(63,63,63,31));
+    }
+    return ivec4(63,63,63,0);
+}
+
 ivec4 getTopScreen3DColor(float xpos, float ypos)
 {
     ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
     ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
 
-    // gameScene_DayCounter
-    if (KHGameScene == 3)
+    if (KHGameScene == 1) // gameScene_MainMenu
     {
-        vec2 texPosition3d = vec2(xpos, ypos);
-        float heightScale = (4.0/3)/TopScreenAspectRatio;
-        float widthScale = 1.0/heightScale;
-        vec2 fixStretch = vec2(widthScale, 1.0);
-
-        // logo
-        float bottomLogoHeight = 192.0;
-        float bottomLogoWidth = 256.0;
-        float bottomLogoTopMargin = 0;
-        float bottomLogoLeftMargin = 0;
-        float logoHeight = bottomLogoHeight;
-        float logoWidth = bottomLogoWidth*heightScale;
-        float logoTopMargin = 0;
-        float logoLeftMargin = (256.0 - logoWidth)/2;
-        if (texPosition3d.x >= logoLeftMargin &&
-            texPosition3d.x < (logoWidth + logoLeftMargin) && 
-            texPosition3d.y <= (logoHeight + logoTopMargin) && 
-            texPosition3d.y >= logoTopMargin) {
-            position3d = ivec2((fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
-                vec2(bottomLogoLeftMargin, bottomLogoTopMargin))*u3DScale);
-            _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
-                * vec4(63,63,63,31));
-        }
-        else {
-            _3dpix = ivec4(63,63,63,0);
-        }
+        return getDualScreen3DColor(xpos, ypos);
     }
-
-    // gameScene_MainMenu, gameScene_InGameMenu, gameScene_Shop
-    if (KHGameScene == 1 || KHGameScene == 7 || KHGameScene == 14)
+    if (KHGameScene == 3) // gameScene_DayCounter
     {
-        float iuTexScale = 2;
-        vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-        float heightScale = (4.0/3)/TopScreenAspectRatio;
-        float widthScale = 1.0/heightScale;
-        vec2 fixStretch = vec2(1.0, heightScale);
-
-        float bottomLogoHeight = 192.0;
-        float bottomLogoWidth = 256.0;
-        float bottomLogoTopMargin = 0;
-        float bottomLogoLeftMargin = 0;
-        float logoHeight = bottomLogoHeight*widthScale;
-        float logoWidth = bottomLogoWidth;
-        float logoTopMargin = (192.0*iuTexScale - logoHeight)/2;
-        float logoLeftMargin = 0.0;
-        if (texPosition3d.x >= logoLeftMargin &&
-            texPosition3d.x < (logoWidth + logoLeftMargin) && 
-            texPosition3d.y <= (logoHeight + logoTopMargin) && 
-            texPosition3d.y >= logoTopMargin) {
-            position3d = ivec2((fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
-                vec2(bottomLogoLeftMargin, bottomLogoTopMargin))*u3DScale);
-            _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
-                * vec4(63,63,63,31));
-        }
-        else {
-            _3dpix = ivec4(63,63,63,0);
-        }
+        return getSingleSquaredScreen3DColor(xpos, ypos);
+    }
+    if (KHGameScene == 7) // gameScene_InGameMenu
+    {
+        return getDualScreen3DColor(xpos, ypos);
+    }
+    if (KHGameScene == 14) // gameScene_Shop
+    {
+        return getDualScreen3DColor(xpos, ypos);
     }
 
     return _3dpix;
