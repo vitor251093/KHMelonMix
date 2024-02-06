@@ -94,7 +94,7 @@ int KHDaysPlugin::getSizeByGameScene(int newGameScene)
     int screenSizing_TopOnly = 4;
     int screenSizing_BotOnly = 5;
     switch (newGameScene) {
-        case gameScene_Intro: break;
+        case gameScene_Intro: size = screenSizing_TopOnly; break;
         case gameScene_MainMenu: break;
         case gameScene_IntroLoadMenu: size = screenSizing_BotOnly; break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;

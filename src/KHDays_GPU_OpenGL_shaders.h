@@ -170,6 +170,55 @@ vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
     return vec2(0, 0);
 }
 
+vec2 getIntroTextureCoordinates(float xpos, float ypos)
+{
+    float logoScale = 2;
+    vec2 texPosition3d = vec2(xpos, ypos)*logoScale;
+    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float widthScale = 1.0/heightScale;
+    vec2 fixStretch = vec2(1.0, heightScale);
+
+    // logo 1
+    {
+        float bottomLogoHeight = 192.0;
+        float bottomLogoWidth = 256.0;
+        float bottomLogoTopMargin = 0;
+        float bottomLogoLeftMargin = 0;
+        float logoHeight = 192.0*widthScale;
+        float logoWidth = 256.0;
+        float logoTopMargin = (384.0 - logoHeight)/2;
+        float logoLeftMargin = 0.0;
+        if (texPosition3d.x >= logoLeftMargin &&
+            texPosition3d.x < (logoWidth + logoLeftMargin) && 
+            texPosition3d.y <= (logoHeight + logoTopMargin) && 
+            texPosition3d.y >= logoTopMargin) {
+            return fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin));
+        }
+    }
+
+    // logo 2
+    {
+        float bottomLogoHeight = 192.0;
+        float bottomLogoWidth = 256.0;
+        float bottomLogoTopMargin = 0;
+        float bottomLogoLeftMargin = 0;
+        float logoHeight = 192.0*widthScale;
+        float logoWidth = 256.0;
+        float logoTopMargin = (384.0 - logoHeight)/2;
+        float logoLeftMargin = 256.0;
+        if (texPosition3d.x >= logoLeftMargin &&
+            texPosition3d.x < (logoWidth + logoLeftMargin) && 
+            texPosition3d.y <= (logoHeight + logoTopMargin) && 
+            texPosition3d.y >= logoTopMargin) {
+            return fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
+                    vec2(0, 192.0);
+        }
+    }
+
+    // nothing (clear screen)
+    return vec2(0, 0);
+}
+
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
@@ -346,7 +395,11 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
-    // TODO: Make gameScene_Intro return both 2D graphics, side by side
+    if (KHGameScene == 0) // gameScene_Intro
+    {
+        return ivec2(getIntroTextureCoordinates(xpos, ypos));
+    }
+
     // TODO: Make gameScene_DayCounter return a square, for both 2D and 3D graphics
 
     if (KHGameScene == 7 || KHGameScene == 8) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
