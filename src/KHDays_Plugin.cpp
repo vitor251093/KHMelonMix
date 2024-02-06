@@ -100,7 +100,6 @@ int KHDaysPlugin::getSizeByGameScene(int newGameScene)
         case gameScene_IntroLoadMenu: size = screenSizing_TopOnly; break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
         case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : screenSizing_Even; break;
-        case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
         case gameScene_InGameWithMap: size = screenSizing_TopOnly; break;
         case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
         case gameScene_InGameMenu: size = screenSizing_TopOnly; break;
@@ -125,7 +124,6 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
         case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
         case gameScene_DayCounter: return "Game scene: Day counter";
         case gameScene_Cutscene: return "Game scene: Cutscene";
-        case gameScene_BottomCutscene: return "Game scene: Cutscene (Bottom screen)";
         case gameScene_InGameWithMap: return "Game scene: Ingame (with minimap)";
         case gameScene_InGameWithoutMap: return "Game scene: Ingame (without minimap)";
         case gameScene_InGameMenu: return "Game scene: Ingame menu";
@@ -328,7 +326,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
              nds->GPU.GPU2D_B.EVA == 16 && nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0;
         if (isBottomCutscene)
         {
-            return gameScene_BottomCutscene;
+            return gameScene_Cutscene;
         }
 
         if (GameScene == gameScene_BlackScreen)

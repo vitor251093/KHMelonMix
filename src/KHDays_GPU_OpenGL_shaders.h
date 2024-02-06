@@ -300,7 +300,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
-    if (KHGameScene == 7 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         // minimap
         float bottomMinimapHeight = 50.0;
@@ -395,7 +395,7 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     float iuTexScale = (6.0)/iuScale;
     ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
 
-    if (KHGameScene == 13) // gameScene_PauseMenuWithGauge
+    if (KHGameScene == 11) // gameScene_PauseMenuWithGauge
     {
         // gauge bar
         float gaugeBarHeight = 33.0*iuTexScale;
@@ -437,27 +437,27 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 
     // TODO: Make gameScene_DayCounter return a square, for both 2D and 3D graphics
 
-    if (KHGameScene == 7 || KHGameScene == 8) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
+    if (KHGameScene == 5 || KHGameScene == 6) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
     {
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
-    if (KHGameScene == 9) // gameScene_InGameMenu
+    if (KHGameScene == 7) // gameScene_InGameMenu
     {
         return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
     }
-    if (KHGameScene == 11) // gameScene_InHoloMissionMenu
+    if (KHGameScene == 9) // gameScene_InHoloMissionMenu
     {
         return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
     }
-    if (KHGameScene == 12 || KHGameScene == 13) // gameScene_PauseMenu or gameScene_PauseMenuWithGauge
+    if (KHGameScene == 10 || KHGameScene == 11) // gameScene_PauseMenu or gameScene_PauseMenuWithGauge
     {
         return getPauseHudTextureCoordinates(xpos, ypos);
     }
-    if (KHGameScene == 14) // gameScene_Tutorial
+    if (KHGameScene == 12) // gameScene_Tutorial
     {
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
-    if (KHGameScene == 16) // gameScene_Shop
+    if (KHGameScene == 14) // gameScene_Shop
     {
         return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
@@ -471,7 +471,7 @@ ivec4 getTopScreen3DColor(float xpos, float ypos)
                 * vec4(63,63,63,31));
 
     // gameScene_MainMenu, gameScene_InGameMenu, gameScene_Shop
-    if (KHGameScene == 1 || KHGameScene == 9 || KHGameScene == 16)
+    if (KHGameScene == 1 || KHGameScene == 7 || KHGameScene == 14)
     {
         float iuTexScale = 2;
         vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
@@ -511,7 +511,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
-    if (KHGameScene == 7 && isMinimapVisible() && !isMissionInformationVisible()) // gameScene_InGameWithMap
+    if (KHGameScene == 5 && isMinimapVisible() && !isMissionInformationVisible()) // gameScene_InGameWithMap
     {
         int iuScale = KHUIScale;
         float iuTexScale = (6.0)/iuScale;
@@ -571,7 +571,7 @@ void main()
         pixel = combineLayers(_3dpix, val1, val2, val3);
     }
 
-    bool disableBrightness = (KHGameScene == 14); // gameScene_Tutorial
+    bool disableBrightness = (KHGameScene == 12); // gameScene_Tutorial
     if (dispmode != 0 && !disableBrightness)
     {
         int brightmode = mbright.g >> 6;
