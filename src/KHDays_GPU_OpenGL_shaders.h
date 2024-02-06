@@ -516,34 +516,35 @@ ivec4 getSingleSquaredScreen3DColor(float xpos, float ypos)
 
 ivec4 getDualScreen3DColor(float xpos, float ypos)
 {
-    float iuTexScale = 2;
-    vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+    float _3dxpos = float(u3DXPos);
+    vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
     float heightScale = (4.0/3)/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(1.0, heightScale);
 
     float bottomLogoHeight = 192.0;
     float bottomLogoWidth = 256.0;
-    float bottomLogoTopMargin = 0;
-    float bottomLogoLeftMargin = 0;
-    float logoHeight = bottomLogoHeight*widthScale;
-    float logoWidth = bottomLogoWidth;
-    float logoTopMargin = (192.0*iuTexScale - logoHeight)/2;
+    float logoHeight = (bottomLogoHeight*widthScale*u3DScale)/2;
+    float logoWidth = (bottomLogoWidth*u3DScale)/2;
+    float logoTopMargin = (192.0*u3DScale - logoHeight)/2;
     float logoLeftMargin = 0.0;
     if (texPosition3d.x >= logoLeftMargin &&
         texPosition3d.x < (logoWidth + logoLeftMargin) && 
         texPosition3d.y <= (logoHeight + logoTopMargin) && 
         texPosition3d.y >= logoTopMargin) {
-        ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
-            vec2(bottomLogoLeftMargin, bottomLogoTopMargin))*u3DScale);
-        return ivec4(texelFetch(_3DTex, position3d, 0).bgra
+        ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(logoLeftMargin, logoTopMargin)));
+        return ivec4(texelFetch(_3DTex, position3d + ivec2(_3dxpos*u3DScale, 0), 0).bgra
             * vec4(63,63,63,31));
     }
     return ivec4(63,63,63,0);
 }
 
-ivec4 getTopScreen3DColor(float xpos, float ypos)
+ivec4 getTopScreen3DColor()
 {
+    float _3dxpos = float(u3DXPos);
+    float xpos = fTexcoord.x + _3dxpos;
+    float ypos = mod(fTexcoord.y, 192);
+
     ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
     ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
@@ -605,16 +606,12 @@ void main()
 {
     ivec4 pixel = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord), 0));
 
-    float _3dxpos = float(u3DXPos);
-    float xpos = fTexcoord.x + _3dxpos;
-    float ypos = mod(fTexcoord.y, 192);
-
     ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     int dispmode = mbright.b & 0x3;
 
     if (dispmode == 1)
     {
-        ivec4 _3dpix = getTopScreen3DColor(xpos, ypos);
+        ivec4 _3dpix = getTopScreen3DColor();
 
         ivec4 val1 = pixel;
         ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(256,0), 0));
