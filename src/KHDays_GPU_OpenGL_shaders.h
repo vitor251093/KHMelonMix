@@ -141,11 +141,15 @@ ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
 }
 bool isScreenBackgroundBlack(int index)
 {
-    ivec4 pixel1 = getSimpleColorAtCoordinate(0, index*192.0 + 0);
-    ivec4 pixel2 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0));
-    ivec4 pixel3 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0));
-    ivec4 pixel4 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0);
-    return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4);
+    ivec4 pixel1 = getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(1.0/3.0));
+    ivec4 pixel2 = getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(2.0/3.0));
+    ivec4 pixel3 = getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(1.0/3.0));
+    ivec4 pixel4 = getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(2.0/3.0));
+    ivec4 pixel5 = getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(1.0/3.0));
+    ivec4 pixel6 = getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(2.0/3.0));
+    
+    return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4) &&
+           isColorBlack(pixel5) && isColorBlack(pixel6);
 }
 
 vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
@@ -420,6 +424,17 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     return ivec2(0, 0);
 }
 
+ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
+{
+    if (isScreenBackgroundBlack(0)) {
+        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(-1, 0)));
+    }
+    if (isScreenBackgroundBlack(1)) {
+        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(-1, 0)));
+    }
+    return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
+}
+
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
     if (KHGameScene == 0) // gameScene_Intro
@@ -440,7 +455,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     }
     if (KHGameScene == 4) // gameScene_Cutscene
     {
-        // return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
+        return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     if (KHGameScene == 5 || KHGameScene == 6) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
     {
