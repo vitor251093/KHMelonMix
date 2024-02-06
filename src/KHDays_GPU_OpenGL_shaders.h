@@ -190,19 +190,19 @@ vec2 getSingleSquaredScreenTextureCoordinates(float xpos, float ypos, int screen
     vec2 fixStretch = vec2(widthScale, 1.0);
     vec2 initialScreenMargin = (screenIndex == 2 ? vec2(0, 192.0) : vec2(0, 0));
 
-    float bottomLogoHeight = 192.0;
-    float bottomLogoWidth = 256.0;
-    float bottomLogoTopMargin = 0;
-    float bottomLogoLeftMargin = 0;
-    float logoHeight = bottomLogoHeight;
-    float logoWidth = bottomLogoWidth*heightScale;
-    float logoTopMargin = 0;
-    float logoLeftMargin = (256.0 - logoWidth)/2;
-    if (texPosition3d.x >= logoLeftMargin &&
-        texPosition3d.x < (logoWidth + logoLeftMargin) && 
-        texPosition3d.y <= (logoHeight + logoTopMargin) && 
-        texPosition3d.y >= logoTopMargin) {
-        return fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) + initialScreenMargin;
+    float sourceScreenHeight = 192.0;
+    float sourceScreenWidth = 256.0;
+    float sourceScreenTopMargin = 0;
+    float sourceScreenLeftMargin = 0;
+    float screenHeight = sourceScreenHeight;
+    float screenWidth = sourceScreenWidth*heightScale;
+    float screenTopMargin = 0;
+    float screenLeftMargin = (256.0 - screenWidth)/2;
+    if (texPosition3d.x >= screenLeftMargin &&
+        texPosition3d.x < (screenWidth + screenLeftMargin) && 
+        texPosition3d.y <= (screenHeight + screenTopMargin) && 
+        texPosition3d.y >= screenTopMargin) {
+        return fixStretch*(texPosition3d - vec2(screenLeftMargin, screenTopMargin)) + initialScreenMargin;
     }
 
     // nothing (clear screen)
@@ -211,45 +211,45 @@ vec2 getSingleSquaredScreenTextureCoordinates(float xpos, float ypos, int screen
 
 vec2 getDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearVect)
 {
-    float logoScale = 2;
-    vec2 texPosition3d = vec2(xpos, ypos)*logoScale;
+    float screenScale = 2;
+    vec2 texPosition3d = vec2(xpos, ypos)*screenScale;
     float heightScale = (4.0/3)/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(1.0, heightScale);
 
     // screen 1
     {
-        float bottomLogoHeight = 192.0;
-        float bottomLogoWidth = 256.0;
-        float bottomLogoTopMargin = 0;
-        float bottomLogoLeftMargin = 0;
-        float logoHeight = bottomLogoHeight*widthScale;
-        float logoWidth = bottomLogoWidth;
-        float logoTopMargin = (192.0*logoScale - logoHeight)/2;
-        float logoLeftMargin = 0.0;
-        if (texPosition3d.x >= logoLeftMargin &&
-            texPosition3d.x < (logoWidth + logoLeftMargin) && 
-            texPosition3d.y <= (logoHeight + logoTopMargin) && 
-            texPosition3d.y >= logoTopMargin) {
-            return fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin));
+        float sourceScreenHeight = 192.0;
+        float sourceScreenWidth = 256.0;
+        float sourceScreenTopMargin = 0;
+        float sourceScreenLeftMargin = 0;
+        float screenHeight = sourceScreenHeight*widthScale;
+        float screenWidth = sourceScreenWidth;
+        float screenTopMargin = (192.0*screenScale - screenHeight)/2;
+        float screenLeftMargin = 0.0;
+        if (texPosition3d.x >= screenLeftMargin &&
+            texPosition3d.x < (screenWidth + screenLeftMargin) && 
+            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.y >= screenTopMargin) {
+            return fixStretch*(texPosition3d - vec2(screenLeftMargin, screenTopMargin));
         }
     }
 
     // screen 2
     {
-        float bottomLogoHeight = 192.0;
-        float bottomLogoWidth = 256.0;
-        float bottomLogoTopMargin = 0;
-        float bottomLogoLeftMargin = 0;
-        float logoHeight = bottomLogoHeight*widthScale;
-        float logoWidth = bottomLogoWidth;
-        float logoTopMargin = (192.0*logoScale - logoHeight)/2;
-        float logoLeftMargin = 256.0;
-        if (texPosition3d.x >= logoLeftMargin &&
-            texPosition3d.x < (logoWidth + logoLeftMargin) && 
-            texPosition3d.y <= (logoHeight + logoTopMargin) && 
-            texPosition3d.y >= logoTopMargin) {
-            return fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) + vec2(0, 192.0);
+        float sourceScreenHeight = 192.0;
+        float sourceScreenWidth = 256.0;
+        float sourceScreenTopMargin = 0;
+        float sourceScreenLeftMargin = 0;
+        float screenHeight = sourceScreenHeight*widthScale;
+        float screenWidth = sourceScreenWidth;
+        float screenTopMargin = (192.0*screenScale - screenHeight)/2;
+        float screenLeftMargin = 256.0;
+        if (texPosition3d.x >= screenLeftMargin &&
+            texPosition3d.x < (screenWidth + screenLeftMargin) && 
+            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.y >= screenTopMargin) {
+            return fixStretch*(texPosition3d - vec2(screenLeftMargin, screenTopMargin)) + vec2(0, 192.0);
         }
     }
 
@@ -493,21 +493,20 @@ ivec4 getSingleSquaredScreen3DColor(float xpos, float ypos)
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    // logo
-    float bottomLogoHeight = 192.0;
-    float bottomLogoWidth = 256.0;
-    float bottomLogoTopMargin = 0;
-    float bottomLogoLeftMargin = 0;
-    float logoHeight = bottomLogoHeight;
-    float logoWidth = bottomLogoWidth*heightScale;
-    float logoTopMargin = 0;
-    float logoLeftMargin = (256.0 - logoWidth)/2;
-    if (texPosition3d.x >= logoLeftMargin &&
-        texPosition3d.x < (logoWidth + logoLeftMargin) && 
-        texPosition3d.y <= (logoHeight + logoTopMargin) && 
-        texPosition3d.y >= logoTopMargin) {
-        ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
-            vec2(bottomLogoLeftMargin, bottomLogoTopMargin))*u3DScale);
+    float sourceScreenHeight = 192.0;
+    float sourceScreenWidth = 256.0;
+    float sourceScreenTopMargin = 0;
+    float sourceScreenLeftMargin = 0;
+    float screenHeight = sourceScreenHeight;
+    float screenWidth = sourceScreenWidth*heightScale;
+    float screenTopMargin = 0;
+    float screenLeftMargin = (256.0 - screenWidth)/2;
+    if (texPosition3d.x >= screenLeftMargin &&
+        texPosition3d.x < (screenWidth + screenLeftMargin) && 
+        texPosition3d.y <= (screenHeight + screenTopMargin) && 
+        texPosition3d.y >= screenTopMargin) {
+        ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(screenLeftMargin, screenTopMargin)) +
+            vec2(sourceScreenLeftMargin, sourceScreenTopMargin))*u3DScale);
         return ivec4(texelFetch(_3DTex, position3d, 0).bgra
             * vec4(63,63,63,31));
     }
@@ -522,17 +521,17 @@ ivec4 getDualScreen3DColor(float xpos, float ypos)
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(1.0, heightScale);
 
-    float bottomLogoHeight = 192.0;
-    float bottomLogoWidth = 256.0;
-    float logoHeight = (bottomLogoHeight*widthScale*u3DScale)/2;
-    float logoWidth = (bottomLogoWidth*u3DScale)/2;
-    float logoTopMargin = (192.0*u3DScale - logoHeight)/2;
-    float logoLeftMargin = 0.0;
-    if (texPosition3d.x >= logoLeftMargin &&
-        texPosition3d.x < (logoWidth + logoLeftMargin) && 
-        texPosition3d.y <= (logoHeight + logoTopMargin) && 
-        texPosition3d.y >= logoTopMargin) {
-        ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(logoLeftMargin, logoTopMargin)));
+    float sourceScreenHeight = 192.0;
+    float sourceScreenWidth = 256.0;
+    float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
+    float screenWidth = (sourceScreenWidth*u3DScale)/2;
+    float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
+    float screenLeftMargin = 0.0;
+    if (texPosition3d.x >= screenLeftMargin &&
+        texPosition3d.x < (screenWidth + screenLeftMargin) && 
+        texPosition3d.y <= (screenHeight + screenTopMargin) && 
+        texPosition3d.y >= screenTopMargin) {
+        ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)));
         return ivec4(texelFetch(_3DTex, position3d + ivec2(_3dxpos*u3DScale, 0), 0).bgra
             * vec4(63,63,63,31));
     }
