@@ -91,6 +91,7 @@ void KHDaysPlugin::fetchScreenStatus(melonDS::NDS* nds, int frontbuf)
 int KHDaysPlugin::getSizeByGameScene(int newGameScene)
 {
     int size = 0;
+    int screenSizing_Even = 0;
     int screenSizing_TopOnly = 4;
     int screenSizing_BotOnly = 5;
     switch (newGameScene) {
@@ -98,18 +99,18 @@ int KHDaysPlugin::getSizeByGameScene(int newGameScene)
         case gameScene_MainMenu: size = screenSizing_TopOnly; break;
         case gameScene_IntroLoadMenu: size = screenSizing_BotOnly; break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
-        case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : size; break;
+        case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : screenSizing_Even; break;
         case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
         case gameScene_InGameWithMap: size = screenSizing_TopOnly; break;
         case gameScene_InGameWithoutMap: size = screenSizing_TopOnly; break;
-        case gameScene_InGameMenu: break;
+        case gameScene_InGameMenu: size = screenSizing_TopOnly; break;
         case gameScene_InGameSaveMenu: size = screenSizing_TopOnly; break;
-        case gameScene_InHoloMissionMenu: break;
+        case gameScene_InHoloMissionMenu: size = screenSizing_TopOnly; break;
         case gameScene_PauseMenu: size = screenSizing_TopOnly; break;
         case gameScene_PauseMenuWithGauge: size = screenSizing_TopOnly; break;
         case gameScene_Tutorial: size = screenSizing_BotOnly; break;
         case gameScene_RoxasThoughts: size = screenSizing_TopOnly; break;
-        case gameScene_Shop: break;
+        case gameScene_Shop: size = screenSizing_TopOnly; break;
         case gameScene_BlackScreen: size = screenSizing_TopOnly; break;
         default: break;
     }

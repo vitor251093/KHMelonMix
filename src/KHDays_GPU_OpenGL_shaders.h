@@ -170,7 +170,7 @@ vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
     return vec2(0, 0);
 }
 
-vec2 getDualScreenTextureCoordinates(float xpos, float ypos)
+vec2 getDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearVect)
 {
     float logoScale = 2;
     vec2 texPosition3d = vec2(xpos, ypos)*logoScale;
@@ -216,7 +216,7 @@ vec2 getDualScreenTextureCoordinates(float xpos, float ypos)
     }
 
     // nothing (clear screen)
-    return vec2(0, 0);
+    return clearVect;
 }
 
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
@@ -397,11 +397,11 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
     if (KHGameScene == 0) // gameScene_Intro
     {
-        return ivec2(getDualScreenTextureCoordinates(xpos, ypos));
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
     }
     if (KHGameScene == 1) // gameScene_MainMenu
     {
-        return ivec2(getDualScreenTextureCoordinates(xpos, ypos));
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
     }
 
     // TODO: Make gameScene_DayCounter return a square, for both 2D and 3D graphics
@@ -410,9 +410,21 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     {
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
+    if (KHGameScene == 9) // gameScene_InGameMenu
+    {
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
+    }
+    if (KHGameScene == 11) // gameScene_InHoloMissionMenu
+    {
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
+    }
     if (KHGameScene == 12 || KHGameScene == 13) // gameScene_PauseMenu or gameScene_PauseMenuWithGauge
     {
         return getPauseHudTextureCoordinates(xpos, ypos);
+    }
+    if (KHGameScene == 16) // gameScene_Shop
+    {
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
     return ivec2(fTexcoord);
 }
@@ -423,7 +435,7 @@ ivec4 getTopScreen3DColor(float xpos, float ypos)
     ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
 
-    if (KHGameScene == 1)
+    if (KHGameScene == 1 || KHGameScene == 9 || KHGameScene == 16)
     {
         float iuTexScale = 2;
         vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
