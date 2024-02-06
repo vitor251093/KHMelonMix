@@ -622,9 +622,9 @@ void main()
 
         if (fTexcoord.y <= 192)
         {
-            val1 = getTopScreenColor(xpos, ypos, 0);
-            val2 = getTopScreenColor(xpos, ypos, 1);
-            val3 = getTopScreenColor(xpos, ypos, 2);
+            val1 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 0);
+            val2 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 1);
+            val3 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 2);
         }
 
         pixel = combineLayers(_3dpix, val1, val2, val3);
