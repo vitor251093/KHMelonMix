@@ -486,7 +486,7 @@ void EmuThread::run()
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
             {
-                int newGameScene = refreshGameScene();
+                refreshGameScene();
                 int guess = Frontend::screenSizing_TopOnly;
 
                 if (guess != autoScreenSizing)
@@ -661,7 +661,7 @@ void EmuThread::run()
     // nds is out of scope, so unique_ptr cleans it up for us
 }
 
-int EmuThread::refreshGameScene()
+void EmuThread::refreshGameScene()
 {
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
@@ -678,8 +678,6 @@ int EmuThread::refreshGameScene()
         mainWindow->osdAddMessage(0, KHDaysPlugin::getNameByGameScene(newGameScene));
 #endif
     }
-
-    return newGameScene;
 }
 
 void EmuThread::changeWindowTitle(char* title)

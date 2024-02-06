@@ -466,7 +466,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
     if (KHGameScene == 7) { // gameScene_InGameMenu
-        return ivec2(getDualScreenTextureCoordinates(xpos + 59, ypos, vec2(128, 190)));
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
     if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
         return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
@@ -555,7 +555,7 @@ ivec4 getTopScreen3DColor(float xpos, float ypos)
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
     if (KHGameScene == 7) { // gameScene_InGameMenu
-        return getDualScreen3DColor(xpos + 29, ypos);
+        return getDualScreen3DColor(xpos, ypos);
     }
     if (KHGameScene == 14) { // gameScene_Shop
         return getDualScreen3DColor(xpos, ypos);

@@ -106,8 +106,6 @@
 
 #include "CLI.h"
 
-#include "KHDays_Plugin.h"
-
 // TODO: uniform variable spelling
 using namespace melonDS;
 QString NdsRomMimeType = "application/x-nintendo-ds-rom";

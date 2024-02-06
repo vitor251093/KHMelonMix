@@ -9,8 +9,6 @@ namespace melonDS
 
 int GameScene = -1;
 int priorGameScene = -1;
-bool isBlackTopScreen = false;
-bool isBlackBottomScreen = false;
 
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
@@ -58,36 +56,6 @@ u32 KHDaysPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask,
     return InputMask;
 }
 
-bool KHDaysPlugin::isBufferBlack(unsigned int* buffer)
-{
-    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
-    bool newIsNullScreen = true;
-    bool newIsBlackScreen = true;
-    for (int i = 0; i < 192*256; i++) {
-        unsigned int color = buffer[i] & 0xFFFFFF;
-        newIsNullScreen = newIsNullScreen && color == 0;
-        newIsBlackScreen = newIsBlackScreen &&
-                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
-        if (!newIsBlackScreen) {
-            break;
-        }
-    }
-    return !newIsNullScreen && newIsBlackScreen;
-}
-
-void KHDaysPlugin::fetchScreenStatus(melonDS::NDS* nds, int frontbuf)
-{
-    // checking if bottom screen is totally black
-    u32* topBuffer = nds->GPU.Framebuffer[frontbuf][0].get();
-    u32* bottomBuffer = nds->GPU.Framebuffer[frontbuf][1].get();
-    if (topBuffer) {
-        isBlackTopScreen = isBufferBlack(topBuffer);
-    }
-    if (bottomBuffer) {
-        isBlackBottomScreen = isBufferBlack(bottomBuffer);
-    }
-}
-
 const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
 {
     switch (newGameScene) {
@@ -106,31 +74,9 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
         case gameScene_Tutorial: return "Game scene: Tutorial";
         case gameScene_RoxasThoughts: return "Game scene: Roxas thoughts";
         case gameScene_Shop: return "Game scene: Shop";
-        case gameScene_BlackScreen: return "Game scene: Black screen";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         default: return "Game scene: Unknown (3D)";
     }
-}
-
-float* KHDaysPlugin::getBackgroundColorByGameScene(melonDS::NDS* nds, int newGameScene)
-{
-    float backgroundColor = 0.0;
-    if (newGameScene == gameScene_Intro)
-    {
-        if (isBlackBottomScreen && isBlackTopScreen)
-        {
-            backgroundColor = 0;
-        }
-        else {
-            backgroundColor = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness) / 15.0;
-            backgroundColor = (sqrt(backgroundColor)*3 + pow(backgroundColor, 2)) / 4;
-        }
-    }
-    float* bgColors = new float[3];
-    bgColors[0] = backgroundColor;
-    bgColors[1] = backgroundColor;
-    bgColors[2] = backgroundColor;
-    return bgColors;
 }
 
 int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
@@ -160,11 +106,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     if (isShop)
     {
         return gameScene_Shop;
-    }
-
-    if (isBlackTopScreen && (nds->PowerControl9 >> 9) == 1)
-    {
-        return gameScene_BlackScreen;
     }
 
     if (doesntLook3D)
@@ -206,6 +147,11 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
         if (GameScene == gameScene_MainMenu)
         {
+            if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 1)
+            {
+                return gameScene_Cutscene;
+            }
+
             mayBeMainMenu = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
             if (mayBeMainMenu) {
                 return gameScene_MainMenu;
@@ -242,11 +188,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
         }
 
-        if (isBlackTopScreen && isBlackBottomScreen)
-        {
-            return gameScene_BlackScreen;
-        }
-
         // Intro cutscene
         if (GameScene == gameScene_Cutscene)
         {
@@ -254,14 +195,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             {
                 return gameScene_Cutscene;
             }
-        }
-        if (GameScene == gameScene_MainMenu && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 1)
-        {
-            return gameScene_Cutscene;
-        }
-        if (GameScene == gameScene_BlackScreen && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons >= 0 && nds->GPU.GPU3D.RenderNumPolygons <= 3)
-        {
-            return gameScene_Cutscene;
         }
 
         // In Game Save Menu
@@ -279,19 +212,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InGameMenu;
         }
 
-        // Roxas thoughts scene
-        if (isBlackBottomScreen)
-        {
-            if (has3DOnTopScreen)
-            {
-                return gameScene_BlackScreen;
-            }
-            else
-            {
-                return gameScene_RoxasThoughts;
-            }
-        }
-
         // Bottom cutscene
         bool isBottomCutscene = nds->GPU.GPU2D_A.BlendCnt == 0 && 
              nds->GPU.GPU2D_A.EVA == 16 && nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 9 &&
@@ -299,11 +219,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         if (isBottomCutscene)
         {
             return gameScene_Cutscene;
-        }
-
-        if (GameScene == gameScene_BlackScreen)
-        {
-            return gameScene_BlackScreen;
         }
 
         // Unknown 2D
@@ -380,7 +295,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         // Regular gameplay without a map
-        if (noElementsOnBottomScreen || isBlackBottomScreen)
+        if (noElementsOnBottomScreen)
         {
             return gameScene_InGameWithoutMap;
         }

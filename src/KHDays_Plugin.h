@@ -22,23 +22,18 @@ enum
     gameScene_Tutorial,           // 12
     gameScene_RoxasThoughts,      // 13
     gameScene_Shop,               // 14
-    gameScene_BlackScreen,        // 15
-    gameScene_Other2D,            // 16
-    gameScene_Other               // 17
+    gameScene_Other2D,            // 15
+    gameScene_Other               // 16
 };
 
 class KHDaysPlugin
 {
 public:
     static u32 applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask);
-    static void fetchScreenStatus(melonDS::NDS* nds, int frontbuf);
     static const char* getNameByGameScene(int newGameScene);
-    static float* getBackgroundColorByGameScene(melonDS::NDS* nds, int newGameScene);
     static int detectGameScene(melonDS::NDS* nds);
     static bool setGameScene(melonDS::NDS* nds, int newGameScene);
     static void debugLogs(melonDS::NDS* nds, int gameScene);
-private:
-    static bool isBufferBlack(unsigned int* buffer);
 };
 }
 

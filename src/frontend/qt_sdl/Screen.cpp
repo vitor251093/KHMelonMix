@@ -16,8 +16,6 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#include "KHDays_Plugin.h"
-
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -927,9 +925,6 @@ void ScreenPanelGL::drawScreenGL()
                             GL_UNSIGNED_BYTE, emuThread->NDS->GPU.Framebuffer[frontbuf][1].get());
         }
     }
-
-    melonDS::NDS& nds = static_cast<melonDS::NDS&>(*emuThread->NDS);
-    KHDaysPlugin::fetchScreenStatus(&nds, frontbuf);
 
     screenSettingsLock.lock();
 

@@ -130,7 +130,7 @@ private:
     int videoRenderer;
     bool videoSettingsDirty;
 
-    int refreshGameScene();
+    void refreshGameScene();
 };
 
 #endif // EMUTHREAD_H
