@@ -434,9 +434,14 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     {
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(255, 191)));
     }
-
-    // TODO: Make gameScene_DayCounter return a square, for both 2D and 3D graphics
-
+    if (KHGameScene == 3) // gameScene_DayCounter
+    {
+        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
+    }
+    if (KHGameScene == 4) // gameScene_Cutscene
+    {
+        // return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
+    }
     if (KHGameScene == 5 || KHGameScene == 6) // gameScene_InGameWithMap or gameScene_InGameWithoutMap
     {
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
@@ -469,6 +474,37 @@ ivec4 getTopScreen3DColor(float xpos, float ypos)
     ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
     ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
+
+    // gameScene_DayCounter
+    if (KHGameScene == 3)
+    {
+        vec2 texPosition3d = vec2(xpos, ypos);
+        float heightScale = (4.0/3)/TopScreenAspectRatio;
+        float widthScale = 1.0/heightScale;
+        vec2 fixStretch = vec2(widthScale, 1.0);
+
+        // logo
+        float bottomLogoHeight = 192.0;
+        float bottomLogoWidth = 256.0;
+        float bottomLogoTopMargin = 0;
+        float bottomLogoLeftMargin = 0;
+        float logoHeight = bottomLogoHeight;
+        float logoWidth = bottomLogoWidth*heightScale;
+        float logoTopMargin = 0;
+        float logoLeftMargin = (256.0 - logoWidth)/2;
+        if (texPosition3d.x >= logoLeftMargin &&
+            texPosition3d.x < (logoWidth + logoLeftMargin) && 
+            texPosition3d.y <= (logoHeight + logoTopMargin) && 
+            texPosition3d.y >= logoTopMargin) {
+            position3d = ivec2((fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
+                vec2(bottomLogoLeftMargin, bottomLogoTopMargin))*u3DScale);
+            _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
+                * vec4(63,63,63,31));
+        }
+        else {
+            _3dpix = ivec4(63,63,63,0);
+        }
+    }
 
     // gameScene_MainMenu, gameScene_InGameMenu, gameScene_Shop
     if (KHGameScene == 1 || KHGameScene == 7 || KHGameScene == 14)
