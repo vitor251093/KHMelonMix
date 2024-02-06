@@ -2594,6 +2594,8 @@ void MainWindow::updateCartInserted(bool gba)
 
 void MainWindow::loadMostRecentFile()
 {
+    printf("Trying to load most recent ROM\n");
+
     if (emuThread->NDS->IsRunning()) {
         return;
     }
@@ -2613,6 +2615,8 @@ void MainWindow::loadMostRecentFile()
         emuThread->emuUnpause();
         return;
     }
+
+    printf("Most recent ROM loaded successfully\n");
 
     recentFileList.removeAll(filename);
     recentFileList.prepend(filename);
