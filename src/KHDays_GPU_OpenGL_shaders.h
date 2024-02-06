@@ -170,7 +170,7 @@ vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
     return vec2(0, 0);
 }
 
-vec2 getIntroTextureCoordinates(float xpos, float ypos)
+vec2 getDualScreenTextureCoordinates(float xpos, float ypos)
 {
     float logoScale = 2;
     vec2 texPosition3d = vec2(xpos, ypos)*logoScale;
@@ -178,15 +178,15 @@ vec2 getIntroTextureCoordinates(float xpos, float ypos)
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(1.0, heightScale);
 
-    // logo 1
+    // screen 1
     {
         float bottomLogoHeight = 192.0;
         float bottomLogoWidth = 256.0;
         float bottomLogoTopMargin = 0;
         float bottomLogoLeftMargin = 0;
-        float logoHeight = 192.0*widthScale;
-        float logoWidth = 256.0;
-        float logoTopMargin = (384.0 - logoHeight)/2;
+        float logoHeight = bottomLogoHeight*widthScale;
+        float logoWidth = bottomLogoWidth;
+        float logoTopMargin = (192.0*logoScale - logoHeight)/2;
         float logoLeftMargin = 0.0;
         if (texPosition3d.x >= logoLeftMargin &&
             texPosition3d.x < (logoWidth + logoLeftMargin) && 
@@ -196,15 +196,15 @@ vec2 getIntroTextureCoordinates(float xpos, float ypos)
         }
     }
 
-    // logo 2
+    // screen 2
     {
         float bottomLogoHeight = 192.0;
         float bottomLogoWidth = 256.0;
         float bottomLogoTopMargin = 0;
         float bottomLogoLeftMargin = 0;
-        float logoHeight = 192.0*widthScale;
-        float logoWidth = 256.0;
-        float logoTopMargin = (384.0 - logoHeight)/2;
+        float logoHeight = bottomLogoHeight*widthScale;
+        float logoWidth = bottomLogoWidth;
+        float logoTopMargin = (192.0*logoScale - logoHeight)/2;
         float logoLeftMargin = 256.0;
         if (texPosition3d.x >= logoLeftMargin &&
             texPosition3d.x < (logoWidth + logoLeftMargin) && 
@@ -397,7 +397,11 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
     if (KHGameScene == 0) // gameScene_Intro
     {
-        return ivec2(getIntroTextureCoordinates(xpos, ypos));
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos));
+    }
+    if (KHGameScene == 1) // gameScene_MainMenu
+    {
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos));
     }
 
     // TODO: Make gameScene_DayCounter return a square, for both 2D and 3D graphics
@@ -411,6 +415,46 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return getPauseHudTextureCoordinates(xpos, ypos);
     }
     return ivec2(fTexcoord);
+}
+
+ivec4 getTopScreen3DColor(float xpos, float ypos)
+{
+    ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
+    ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
+                * vec4(63,63,63,31));
+
+    if (KHGameScene == 1)
+    {
+        float iuTexScale = 2;
+        vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+        float heightScale = (4.0/3)/TopScreenAspectRatio;
+        float widthScale = 1.0/heightScale;
+        vec2 fixStretch = vec2(1.0, heightScale);
+
+        // logo
+        float bottomLogoHeight = 192.0;
+        float bottomLogoWidth = 256.0;
+        float bottomLogoTopMargin = 0;
+        float bottomLogoLeftMargin = 0;
+        float logoHeight = bottomLogoHeight*widthScale;
+        float logoWidth = bottomLogoWidth;
+        float logoTopMargin = (192.0*iuTexScale - logoHeight)/2;
+        float logoLeftMargin = 0.0;
+        if (texPosition3d.x >= logoLeftMargin &&
+            texPosition3d.x < (logoWidth + logoLeftMargin) && 
+            texPosition3d.y <= (logoHeight + logoTopMargin) && 
+            texPosition3d.y >= logoTopMargin) {
+            position3d = ivec2((fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) +
+                vec2(bottomLogoLeftMargin, bottomLogoTopMargin))*u3DScale);
+            _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
+                * vec4(63,63,63,31));
+        }
+        else {
+            _3dpix = ivec4(63,63,63,0);
+        }
+    }
+
+    return _3dpix;
 }
 
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
@@ -463,9 +507,7 @@ void main()
 
     if (dispmode == 1)
     {
-        ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
-        ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
-                * vec4(63,63,63,31));
+        ivec4 _3dpix = getTopScreen3DColor(xpos, ypos);
 
         ivec4 val1 = pixel;
         ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(256,0), 0));

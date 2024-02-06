@@ -95,7 +95,7 @@ int KHDaysPlugin::getSizeByGameScene(int newGameScene)
     int screenSizing_BotOnly = 5;
     switch (newGameScene) {
         case gameScene_Intro: size = screenSizing_TopOnly; break;
-        case gameScene_MainMenu: break;
+        case gameScene_MainMenu: size = screenSizing_TopOnly; break;
         case gameScene_IntroLoadMenu: size = screenSizing_BotOnly; break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
         case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : size; break;
@@ -233,6 +233,14 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InHoloMissionMenu;
         }
 
+        if (GameScene == gameScene_MainMenu)
+        {
+            mayBeMainMenu = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
+            if (mayBeMainMenu) {
+                return gameScene_MainMenu;
+            }
+        }
+
         // Day counter
         if (GameScene == gameScene_DayCounter && !no3D)
         {
@@ -259,7 +267,8 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         // Intro
         if (GameScene == -1 || GameScene == gameScene_Intro)
         {
-            return gameScene_Intro;
+            mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
+            return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
         }
 
         if (isBlackTopScreen && isBlackBottomScreen)
