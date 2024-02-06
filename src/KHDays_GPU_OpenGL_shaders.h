@@ -463,7 +463,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     }
     if (KHGameScene == 7) // gameScene_InGameMenu
     {
-        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
     if (KHGameScene == 9) // gameScene_InHoloMissionMenu
     {
@@ -530,7 +530,6 @@ ivec4 getTopScreen3DColor(float xpos, float ypos)
         float widthScale = 1.0/heightScale;
         vec2 fixStretch = vec2(1.0, heightScale);
 
-        // logo
         float bottomLogoHeight = 192.0;
         float bottomLogoWidth = 256.0;
         float bottomLogoTopMargin = 0;

@@ -487,7 +487,7 @@ void EmuThread::run()
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
             {
                 int newGameScene = refreshGameScene();
-                int guess = KHDaysPlugin::getSizeByGameScene(newGameScene);
+                int guess = Frontend::screenSizing_TopOnly;
 
                 if (guess != autoScreenSizing)
                 {
@@ -666,7 +666,7 @@ int EmuThread::refreshGameScene()
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
     int newGameScene = KHDaysPlugin::detectGameScene(&nds);
-    
+
 #ifdef _DEBUG
     KHDaysPlugin::debugLogs(&nds, newGameScene);
 #endif
