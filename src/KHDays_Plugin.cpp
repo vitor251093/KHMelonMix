@@ -97,7 +97,7 @@ int KHDaysPlugin::getSizeByGameScene(int newGameScene)
     switch (newGameScene) {
         case gameScene_Intro: size = screenSizing_TopOnly; break;
         case gameScene_MainMenu: size = screenSizing_TopOnly; break;
-        case gameScene_IntroLoadMenu: size = screenSizing_BotOnly; break;
+        case gameScene_IntroLoadMenu: size = screenSizing_TopOnly; break;
         case gameScene_DayCounter: size = screenSizing_TopOnly; break;
         case gameScene_Cutscene: size = isBlackBottomScreen ? screenSizing_TopOnly : screenSizing_Even; break;
         case gameScene_BottomCutscene: size = screenSizing_BotOnly; break;
@@ -108,7 +108,7 @@ int KHDaysPlugin::getSizeByGameScene(int newGameScene)
         case gameScene_InHoloMissionMenu: size = screenSizing_TopOnly; break;
         case gameScene_PauseMenu: size = screenSizing_TopOnly; break;
         case gameScene_PauseMenuWithGauge: size = screenSizing_TopOnly; break;
-        case gameScene_Tutorial: size = screenSizing_BotOnly; break;
+        case gameScene_Tutorial: size = screenSizing_TopOnly; break;
         case gameScene_RoxasThoughts: size = screenSizing_TopOnly; break;
         case gameScene_Shop: size = screenSizing_TopOnly; break;
         case gameScene_BlackScreen: size = screenSizing_TopOnly; break;

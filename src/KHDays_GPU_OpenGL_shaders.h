@@ -170,6 +170,33 @@ vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
     return vec2(0, 0);
 }
 
+vec2 getSingleSquaredScreenTextureCoordinates(float xpos, float ypos, int screenIndex, vec2 clearVect)
+{
+    vec2 texPosition3d = vec2(xpos, ypos);
+    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float widthScale = 1.0/heightScale;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+    vec2 initialScreenMargin = (screenIndex == 2 ? vec2(0, 192.0) : vec2(0, 0));
+
+    float bottomLogoHeight = 192.0;
+    float bottomLogoWidth = 256.0;
+    float bottomLogoTopMargin = 0;
+    float bottomLogoLeftMargin = 0;
+    float logoHeight = bottomLogoHeight;
+    float logoWidth = bottomLogoWidth*heightScale;
+    float logoTopMargin = 0;
+    float logoLeftMargin = (256.0 - logoWidth)/2;
+    if (texPosition3d.x >= logoLeftMargin &&
+        texPosition3d.x < (logoWidth + logoLeftMargin) && 
+        texPosition3d.y <= (logoHeight + logoTopMargin) && 
+        texPosition3d.y >= logoTopMargin) {
+        return fixStretch*(texPosition3d - vec2(logoLeftMargin, logoTopMargin)) + initialScreenMargin;
+    }
+
+    // nothing (clear screen)
+    return initialScreenMargin + clearVect;
+}
+
 vec2 getDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearVect)
 {
     float logoScale = 2;
@@ -403,6 +430,10 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     {
         return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
     }
+    if (KHGameScene == 2) // gameScene_IntroLoadMenu
+    {
+        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(255, 191)));
+    }
 
     // TODO: Make gameScene_DayCounter return a square, for both 2D and 3D graphics
 
@@ -422,6 +453,10 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     {
         return getPauseHudTextureCoordinates(xpos, ypos);
     }
+    if (KHGameScene == 14) // gameScene_Tutorial
+    {
+        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
+    }
     if (KHGameScene == 16) // gameScene_Shop
     {
         return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
@@ -435,6 +470,7 @@ ivec4 getTopScreen3DColor(float xpos, float ypos)
     ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
 
+    // gameScene_MainMenu, gameScene_InGameMenu, gameScene_Shop
     if (KHGameScene == 1 || KHGameScene == 9 || KHGameScene == 16)
     {
         float iuTexScale = 2;
@@ -535,7 +571,8 @@ void main()
         pixel = combineLayers(_3dpix, val1, val2, val3);
     }
 
-    if (dispmode != 0)
+    bool disableBrightness = (KHGameScene == 14); // gameScene_Tutorial
+    if (dispmode != 0 && !disableBrightness)
     {
         int brightmode = mbright.g >> 6;
         if (brightmode == 1)
