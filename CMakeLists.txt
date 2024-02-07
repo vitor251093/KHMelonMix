@@ -10,7 +10,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 project(melonDS
-    VERSION 0.1.1
+    VERSION 0.2.0
     DESCRIPTION "DS emulator, sorta"
     HOMEPAGE_URL "https://github.com/vitor251093/KHDays_FM"
     LANGUAGES C CXX)
