@@ -17,7 +17,7 @@ int priorGameScene = -1;
 
 u32 KHDaysPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithSoraGlitch) {
         // So the arrow keys can be used to control the command menu
         if (CmdMenuInputMask & (1 << 1)) { // D-pad left
             InputMask &= ~(1<<1); // B
@@ -72,7 +72,7 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_PauseMenuWithGauge: return "Game scene: Pause menu (with gauge)";
         case gameScene_Tutorial: return "Game scene: Tutorial";
-        case gameScene_RoxasThoughts: return "Game scene: Roxas thoughts";
+        case gameScene_InGameWithSoraGlitch: return "Game scene: Ingame (with cutscene)";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         default: return "Game scene: Unknown (3D)";
@@ -209,6 +209,11 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
         if ((nds->PowerControl9 >> 9) == 1) 
         {
+            if (GameScene == gameScene_InGameWithSoraGlitch)
+            {
+                return gameScene_InGameWithSoraGlitch;
+            }
+
             return gameScene_InGameMenu;
         }
 
@@ -299,9 +304,19 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         {
             return gameScene_InGameWithoutMap;
         }
+
+        if (GameScene == gameScene_InGameWithSoraGlitch)
+        {
+            return gameScene_InGameWithSoraGlitch;
+        }
     
         // Regular gameplay with a map
         return gameScene_InGameWithMap;
+    }
+
+    if (GameScene == gameScene_InGameWithSoraGlitch || GameScene == gameScene_InGameWithMap)
+    {
+        return gameScene_InGameWithSoraGlitch;
     }
     
     // Unknown
