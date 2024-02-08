@@ -101,10 +101,9 @@ bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
 
 bool isMissionInformationVisible()
 {
-    ivec4 missionInfoTopLeft = ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0));
-    ivec4 missionInfoMiddleLeft = ivec4(texelFetch(ScreenTex, ivec2(0, 192*0.078) + ivec2(512,0), 0));
-    ivec4 missionInfoMiddleRight = ivec4(texelFetch(ScreenTex, ivec2(255.0 - 1.0, 192*0.078) + ivec2(512,0), 0));
-    return (missionInfoTopLeft.a & 0xF) == 1 || (missionInfoMiddleLeft.a & 0xF) == 1 || (missionInfoMiddleRight.a & 0xF) == 1;
+    return ((ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0))).a & 0xF) == 1 ||
+           ((ivec4(texelFetch(ScreenTex, ivec2(0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1 ||
+           ((ivec4(texelFetch(ScreenTex, ivec2(255.0 - 1.0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1;
 }
 
 bool isCutsceneFromChallengeMissionVisible()
@@ -141,23 +140,19 @@ ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
 }
 bool isScreenBlack(int index)
 {
-    ivec4 pixel1 = getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(1.0/3.0));
-    ivec4 pixel2 = getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(2.0/3.0));
-    ivec4 pixel3 = getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(1.0/3.0));
-    ivec4 pixel4 = getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(2.0/3.0));
-    ivec4 pixel5 = getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(1.0/3.0));
-    ivec4 pixel6 = getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(2.0/3.0));
-    
-    return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4) &&
-           isColorBlack(pixel5) && isColorBlack(pixel6);
+    return isColorBlack(getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(1.0/3.0))) &&
+           isColorBlack(getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(2.0/3.0))) &&
+           isColorBlack(getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(1.0/3.0))) &&
+           isColorBlack(getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(2.0/3.0))) &&
+           isColorBlack(getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(1.0/3.0))) &&
+           isColorBlack(getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(2.0/3.0)));
 }
 bool isScreenBackgroundBlack(int index)
 {
-    ivec4 pixel1 = getSimpleColorAtCoordinate(0, index*192.0 + 0);
-    ivec4 pixel2 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0));
-    ivec4 pixel3 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0));
-    ivec4 pixel4 = getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0);
-    return isColorBlack(pixel1) && isColorBlack(pixel2) && isColorBlack(pixel3) && isColorBlack(pixel4);
+    return isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 0)) &&
+           isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0))) &&
+           isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0))) &&
+           isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0));
 }
 
 vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
@@ -469,7 +464,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
     if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
-        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
+        return ivec2(getDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
     }
     if (KHGameScene == 10) { // gameScene_PauseMenu
         return getPauseHudTextureCoordinates(xpos, ypos);
@@ -555,6 +550,9 @@ ivec4 getTopScreen3DColor()
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
     if (KHGameScene == 7) { // gameScene_InGameMenu
+        return getDualScreen3DColor(xpos, ypos);
+    }
+    if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
         return getDualScreen3DColor(xpos, ypos);
     }
     if (KHGameScene == 14) { // gameScene_Shop
