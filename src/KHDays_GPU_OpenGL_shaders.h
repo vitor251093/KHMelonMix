@@ -126,6 +126,10 @@ bool isColorBlack(ivec4 pixel)
 {
     return pixel.r < 5 && pixel.g < 5 && pixel.b < 5;
 }
+bool isColorWhite(ivec4 pixel)
+{
+    return pixel.r > 60 && pixel.g > 60 && pixel.b > 60;
+}
 ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
 {
     ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
@@ -137,6 +141,15 @@ ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
     ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(256,0), 0));
     ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0));
     return combineLayers(_3dpix, val1, val2, val3);
+}
+bool isScreenWhite(int index)
+{
+    return isColorWhite(getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(1.0/3.0))) &&
+           isColorWhite(getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(2.0/3.0))) &&
+           isColorWhite(getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(1.0/3.0))) &&
+           isColorWhite(getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(2.0/3.0))) &&
+           isColorWhite(getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(1.0/3.0))) &&
+           isColorWhite(getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(2.0/3.0)));
 }
 bool isScreenBlack(int index)
 {
@@ -599,11 +612,35 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     return color;
 }
 
+ivec4 brightness()
+{
+    if (KHGameScene == 1) { // gameScene_MainMenu
+        ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+        int brightmode = mbright.g >> 6;
+        if ((mbright.b & 0x3) != 0 && brightmode == 2) {
+            return mbright;
+        }
+    }
+    if (KHGameScene == 2) { // gameScene_IntroLoadMenu
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+    }
+    if (KHGameScene == 7) { // gameScene_InGameMenu
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+    }
+    if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+    }
+    if (KHGameScene == 14) { // gameScene_Shop
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+    }
+    return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+}
+
 void main()
 {
     ivec4 pixel = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord), 0));
 
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    ivec4 mbright = brightness();
     int dispmode = mbright.b & 0x3;
 
     if (dispmode == 1)
