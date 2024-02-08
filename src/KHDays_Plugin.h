@@ -33,6 +33,7 @@ public:
     static const char* getNameByGameScene(int newGameScene);
     static int detectGameScene(melonDS::NDS* nds);
     static bool setGameScene(melonDS::NDS* nds, int newGameScene);
+private:
     static void debugLogs(melonDS::NDS* nds, int gameScene);
 };
 }

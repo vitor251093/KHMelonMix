@@ -666,13 +666,8 @@ void EmuThread::refreshGameScene()
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
     int newGameScene = KHDaysPlugin::detectGameScene(&nds);
-
-#ifdef _DEBUG
-    KHDaysPlugin::debugLogs(&nds, newGameScene);
-#endif
-
     bool updated = KHDaysPlugin::setGameScene(&nds, newGameScene);
-    if (updated) 
+    if (updated)
     {
 #ifdef _DEBUG
         mainWindow->osdAddMessage(0, KHDaysPlugin::getNameByGameScene(newGameScene));

@@ -310,6 +310,10 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
 bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
 {
+#ifdef _DEBUG
+    debugLogs(nds, newGameScene);
+#endif
+
     bool updated = false;
     if (GameScene != newGameScene) 
     {
