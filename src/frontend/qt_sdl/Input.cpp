@@ -242,7 +242,7 @@ void Process()
 
     InputMask = KeyInputMask & JoyInputMask;
     TouchInputMask = KeyTouchInputMask & JoyTouchInputMask;
-    
+
     JoyHotkeyMask = 0;
     JoyCmdMenuInputMask = 0;
     for (int i = 0; i < HK_MAX; i++)

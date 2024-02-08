@@ -44,31 +44,11 @@ enum
 
 enum
 {
-    screenSizing_Even,    // Intro and some menus
-    screenSizing_EmphTop,
-    screenSizing_EmphBot,
-    screenSizing_Auto,
-    screenSizing_TopOnly,
-    screenSizing_BotOnly, // Intro Load Menu
-    screenSizing_MAX
-};
-
-enum
-{
     micInputType_Silence,
     micInputType_External,
     micInputType_Noise,
     micInputType_Wav,
     micInputType_MAX,
-};
-
-const struct { int id; float ratio; const char* label; } aspectRatios[] =
-{
-    { 0, 1,                       "4:3 (native)" },
-    { 4, (5.f  / 3) / (4.f / 3),  "5:3 (3DS)"},
-    { 1, (16.f / 9) / (4.f / 3),  "16:9" },
-    { 2, (21.f / 9) / (4.f / 3),  "21:9" },
-    { 3, 0,                       "window" }
 };
 
 namespace Config
@@ -131,6 +111,7 @@ extern int GL_ScaleFactor;
 extern bool GL_BetterPolygons;
 
 extern bool LimitFPS;
+extern int MaxFPS;
 extern bool AudioSync;
 extern bool ShowOSD;
 extern bool AutoFullscreen;

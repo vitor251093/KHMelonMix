@@ -95,7 +95,6 @@ static constexpr std::initializer_list<const char*> ds_touch_key_labels =
     "Down"
 };
 
-
 namespace Ui { class InputConfigDialog; }
 class InputConfigDialog;
 

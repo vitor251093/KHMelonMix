@@ -34,6 +34,7 @@
 #include "AREngine.h"
 #include "Platform.h"
 #include "FreeBIOS.h"
+#include "Args.h"
 
 #include "DSi.h"
 #include "DSi_SPI_TSC.h"
@@ -74,19 +75,39 @@ const s32 kIterationCycleMargin = 8;
 
 NDS* NDS::Current = nullptr;
 
-NDS::NDS(int type) noexcept :
+NDS::NDS() noexcept :
+    NDS(
+        NDSArgs {
+            nullptr,
+            nullptr,
+            bios_arm9_bin,
+            bios_arm7_bin,
+            Firmware(0),
+        }
+    )
+{
+}
+
+NDS::NDS(NDSArgs&& args, int type) noexcept :
     ConsoleType(type),
-    JIT(*this),
-    SPU(*this),
-    GPU(*this),
-    SPI(*this),
+    ARM7BIOS(args.ARM7BIOS),
+    ARM9BIOS(args.ARM9BIOS),
+    ARM7BIOSNative(CRC32(ARM7BIOS.data(), ARM7BIOS.size()) == ARM7BIOSCRC32),
+    ARM9BIOSNative(CRC32(ARM9BIOS.data(), ARM9BIOS.size()) == ARM9BIOSCRC32),
+    JIT(*this, args.JIT),
+    SPU(*this, args.BitDepth, args.Interpolation),
+    GPU(*this, std::move(args.Renderer3D)),
+    SPI(*this, std::move(args.Firmware)),
     RTC(*this),
     Wifi(*this),
-    NDSCartSlot(*this),
-    GBACartSlot(),
+    NDSCartSlot(*this, std::move(args.NDSROM)),
+    GBACartSlot(type == 1 ? nullptr : std::move(args.GBAROM)),
     AREngine(*this),
-    ARM9(*this),
-    ARM7(*this),
+    ARM9(*this, args.GDB, args.JIT.has_value()),
+    ARM7(*this, args.GDB, args.JIT.has_value()),
+#ifdef JIT_ENABLED
+    EnableJIT(args.JIT.has_value()),
+#endif
     DMAs {
         DMA(0, 0, *this),
         DMA(0, 1, *this),
@@ -187,6 +208,22 @@ void NDS::SetARM7RegionTimings(u32 addrstart, u32 addrend, u32 region, int buswi
     }
 }
 
+#ifdef JIT_ENABLED
+void NDS::SetJITArgs(std::optional<JITArgs> args) noexcept
+{
+    if (args)
+    { // If we want to turn the JIT on...
+        JIT.SetJITArgs(*args);
+    }
+    else if (args.has_value() != EnableJIT)
+    { // Else if we want to turn the JIT off, and it wasn't already off...
+        JIT.ResetBlockCache();
+    }
+
+    EnableJIT = args.has_value();
+}
+#endif
+
 void NDS::InitTimings()
 {
     // TODO, eventually:
@@ -224,7 +261,7 @@ void NDS::InitTimings()
     // handled later: GBA slot, wifi
 }
 
-bool NDS::NeedsDirectBoot()
+bool NDS::NeedsDirectBoot() const
 {
     if (ConsoleType == 1)
     {
@@ -233,12 +270,12 @@ bool NDS::NeedsDirectBoot()
     }
     else
     {
-        // internal BIOS does not support direct boot
-        if (!Platform::GetConfigBool(Platform::ExternalBIOSEnable))
+        // DSi/3DS firmwares aren't bootable, neither is the generated firmware
+        if (!SPI.GetFirmware().IsBootable())
             return true;
 
-        // DSi/3DS firmwares aren't bootable
-        if (!SPI.GetFirmware()->IsBootable())
+        // FreeBIOS requires direct boot (it can't boot firmware)
+        if (!IsLoadedARM9BIOSKnownNative() || !IsLoadedARM7BIOSKnownNative())
             return true;
 
         return false;
@@ -251,6 +288,13 @@ void NDS::SetupDirectBoot()
     u32 cartid = NDSCartSlot.GetCart()->ID();
     const u8* cartrom = NDSCartSlot.GetCart()->GetROM();
     MapSharedWRAM(3);
+
+    // Copy the Nintendo logo from the NDS ROM header to the ARM9 BIOS if using FreeBIOS
+    // Games need this for DS<->GBA comm to work
+    if (!IsLoadedARM9BIOSKnownNative())
+    {
+        memcpy(ARM9BIOS.data() + 0x20, header.NintendoLogo, 0x9C);
+    }
 
     // setup main RAM data
 
@@ -378,10 +422,6 @@ void NDS::Reset()
     Platform::FileHandle* f;
     u32 i;
 
-#ifdef JIT_ENABLED
-    EnableJIT = Platform::GetConfigBool(Platform::JIT_Enable);
-#endif
-
     RunningGame = false;
     LastSysClockCycles = 0;
 
@@ -489,28 +529,6 @@ void NDS::Reset()
     SPI.Reset();
     RTC.Reset();
     Wifi.Reset();
-
-    // TODO: move the SOUNDBIAS/degrade logic to SPU?
-
-    // The SOUNDBIAS register does nothing on DSi
-    SPU.SetApplyBias(ConsoleType == 0);
-
-    bool degradeAudio = true;
-
-    if (ConsoleType == 1)
-    {
-        //DSi::Reset();
-        KeyInput &= ~(1 << (16+6));
-        degradeAudio = false;
-    }
-
-    int bitDepth = Platform::GetConfigInt(Platform::AudioBitDepth);
-    if (bitDepth == 1) // Always 10-bit
-        degradeAudio = true;
-    else if (bitDepth == 2) // Always 16-bit
-        degradeAudio = false;
-
-    SPU.SetDegrade10Bit(degradeAudio);
 }
 
 void NDS::Start()
@@ -695,57 +713,38 @@ bool NDS::DoSavestate(Savestate* file)
 
         SPU.SetPowerCnt(PowerControl7 & 0x0001);
         Wifi.SetPowerCnt(PowerControl7 & 0x0002);
-    }
 
 #ifdef JIT_ENABLED
-    if (!file->Saving)
-    {
-        JIT.ResetBlockCache();
-        JIT.Memory.Reset();
-    }
+        JIT.Reset();
 #endif
+    }
 
     file->Finish();
 
     return true;
 }
 
-bool NDS::LoadCart(const u8* romdata, u32 romlen, const u8* savedata, u32 savelen)
+void NDS::SetNDSCart(std::unique_ptr<NDSCart::CartCommon>&& cart)
 {
-    if (!NDSCartSlot.LoadROM(romdata, romlen))
-        return false;
-
-    if (savedata && savelen)
-        NDSCartSlot.LoadSave(savedata, savelen);
-
-    return true;
+    NDSCartSlot.SetCart(std::move(cart));
+    // The existing cart will always be ejected;
+    // if cart is null, then that's equivalent to ejecting a cart
+    // without inserting a new one.
 }
 
-void NDS::LoadSave(const u8* savedata, u32 savelen)
+void NDS::SetNDSSave(const u8* savedata, u32 savelen)
 {
     if (savedata && savelen)
-        NDSCartSlot.LoadSave(savedata, savelen);
+        NDSCartSlot.SetSaveMemory(savedata, savelen);
 }
 
-void NDS::EjectCart()
+void NDS::SetGBASave(const u8* savedata, u32 savelen)
 {
-    NDSCartSlot.EjectCart();
-}
+    if (ConsoleType == 0 && savedata && savelen)
+    {
+        GBACartSlot.SetSaveMemory(savedata, savelen);
+    }
 
-bool NDS::CartInserted()
-{
-    return NDSCartSlot.GetCart() != nullptr;
-}
-
-bool NDS::LoadGBACart(const u8* romdata, u32 romlen, const u8* savedata, u32 savelen)
-{
-    if (!GBACartSlot.LoadROM(romdata, romlen))
-        return false;
-
-    if (savedata && savelen)
-        GBACartSlot.LoadSave(savedata, savelen);
-
-    return true;
 }
 
 void NDS::LoadGBAAddon(int type)
@@ -753,24 +752,21 @@ void NDS::LoadGBAAddon(int type)
     GBACartSlot.LoadAddon(type);
 }
 
-void NDS::EjectGBACart()
-{
-    GBACartSlot.EjectCart();
-}
-
 void NDS::LoadBIOS()
 {
     Reset();
 }
 
-bool NDS::IsLoadedARM9BIOSBuiltIn()
+void NDS::SetARM7BIOS(const std::array<u8, ARM7BIOSSize>& bios) noexcept
 {
-    return memcmp(ARM9BIOS, bios_arm9_bin, sizeof(NDS::ARM9BIOS)) == 0;
+    ARM7BIOS = bios;
+    ARM7BIOSNative = CRC32(ARM7BIOS.data(), ARM7BIOS.size()) == ARM7BIOSCRC32;
 }
 
-bool NDS::IsLoadedARM7BIOSBuiltIn()
+void NDS::SetARM9BIOS(const std::array<u8, ARM9BIOSSize>& bios) noexcept
 {
-    return memcmp(ARM7BIOS, bios_arm7_bin, sizeof(NDS::ARM7BIOS)) == 0;
+    ARM9BIOS = bios;
+    ARM9BIOSNative = CRC32(ARM9BIOS.data(), ARM9BIOS.size()) == ARM9BIOSCRC32;
 }
 
 u64 NDS::NextTarget()
@@ -1120,12 +1116,6 @@ void NDS::TouchScreen(u16 x, u16 y)
     SPI.GetTSC()->SetTouchCoords(x, y);
 }
 
-void NDS::MoveOnTouchScreen(u16 x, u16 y)
-{
-    SPI.GetTSC()->MoveTouchCoords(x, y);
-    KeyInput &= ~(1 << (16+6));
-}
-
 void NDS::ReleaseScreen()
 {
     SPI.GetTSC()->SetTouchCoords(0x000, 0xFFF);
@@ -1182,15 +1172,72 @@ void NDS::SetTouchKeyMask(u32 mask)
     u32 up    = (~(mask >> 2)) & 0x1;
     u32 down  = (~(mask >> 3)) & 0x1;
 
-    if (right | left | up | down) {
-        MoveOnTouchScreen((right - left) + 1, (down - up) + 1);
+    if (!(right | left | up | down)) {
+        ReleaseScreen();
+        return;
+    }
+    
+    u16 TouchX = SPI.GetTSC()->GetTouchX();
+    u16 TouchY = SPI.GetTSC()->GetTouchY();
+    u16 sensitivityX = 4;
+    u16 sensitivityY = 8;
+    bool invalidNextPosition = false;
+
+    if (left)
+    {
+        if (TouchX < sensitivityX)
+        {
+            invalidNextPosition = true;
+        }
+        else
+        {
+            TouchX -= sensitivityX;
+        }
+    }
+    if (right)
+    {
+        if (TouchX + sensitivityX > 191)
+        {
+            invalidNextPosition = true;
+        }
+        else
+        {
+            TouchX += sensitivityX;
+        }
+    }
+    if (down)
+    {
+        if (TouchY < sensitivityY)
+        {
+            invalidNextPosition = true;
+        }
+        else
+        {
+            TouchY -= sensitivityY;
+        }
+    }
+    if (up)
+    {
+        if (TouchY + sensitivityY > 255)
+        {
+            invalidNextPosition = true;
+        }
+        else
+        {
+            TouchY += sensitivityY;
+        }
+    }
+
+    if (invalidNextPosition)
+    {
+        ReleaseScreen();
     }
     else {
-        ReleaseScreen();
+        TouchScreen(TouchX, TouchY);
     }
 }
 
-bool NDS::IsLidClosed()
+bool NDS::IsLidClosed() const
 {
     if (KeyInput & (1<<23)) return true;
     return false;
@@ -1360,7 +1407,7 @@ void NDS::SetIRQ(u32 cpu, u32 irq)
         {
             CPUStop &= ~CPUStop_Sleep;
             CPUStop |= CPUStop_Wakeup;
-            GPU.GPU3D.RestartFrame();
+            GPU.GPU3D.RestartFrame(GPU);
         }
     }
 }
@@ -1383,7 +1430,7 @@ void NDS::ClearIRQ2(u32 irq)
     UpdateIRQ(1);
 }
 
-bool NDS::HaltInterrupted(u32 cpu)
+bool NDS::HaltInterrupted(u32 cpu) const
 {
     if (cpu == 0)
     {
@@ -1454,7 +1501,7 @@ void NDS::EnterSleepMode()
     ARM7.Halt(2);
 }
 
-u32 NDS::GetPC(u32 cpu)
+u32 NDS::GetPC(u32 cpu) const
 {
     return cpu ? ARM7.R[15] : ARM9.R[15];
 }
@@ -1518,40 +1565,40 @@ void NDS::NocashPrint(u32 ncpu, u32 addr)
 
             if (cmd[0] == 'r')
             {
-                if      (!strcmp(cmd, "r0")) sprintf(subs, "%08X", cpu->R[0]);
-                else if (!strcmp(cmd, "r1")) sprintf(subs, "%08X", cpu->R[1]);
-                else if (!strcmp(cmd, "r2")) sprintf(subs, "%08X", cpu->R[2]);
-                else if (!strcmp(cmd, "r3")) sprintf(subs, "%08X", cpu->R[3]);
-                else if (!strcmp(cmd, "r4")) sprintf(subs, "%08X", cpu->R[4]);
-                else if (!strcmp(cmd, "r5")) sprintf(subs, "%08X", cpu->R[5]);
-                else if (!strcmp(cmd, "r6")) sprintf(subs, "%08X", cpu->R[6]);
-                else if (!strcmp(cmd, "r7")) sprintf(subs, "%08X", cpu->R[7]);
-                else if (!strcmp(cmd, "r8")) sprintf(subs, "%08X", cpu->R[8]);
-                else if (!strcmp(cmd, "r9")) sprintf(subs, "%08X", cpu->R[9]);
-                else if (!strcmp(cmd, "r10")) sprintf(subs, "%08X", cpu->R[10]);
-                else if (!strcmp(cmd, "r11")) sprintf(subs, "%08X", cpu->R[11]);
-                else if (!strcmp(cmd, "r12")) sprintf(subs, "%08X", cpu->R[12]);
-                else if (!strcmp(cmd, "r13")) sprintf(subs, "%08X", cpu->R[13]);
-                else if (!strcmp(cmd, "r14")) sprintf(subs, "%08X", cpu->R[14]);
-                else if (!strcmp(cmd, "r15")) sprintf(subs, "%08X", cpu->R[15]);
+                if      (!strcmp(cmd, "r0")) snprintf(subs, sizeof(subs), "%08X", cpu->R[0]);
+                else if (!strcmp(cmd, "r1")) snprintf(subs, sizeof(subs), "%08X", cpu->R[1]);
+                else if (!strcmp(cmd, "r2")) snprintf(subs, sizeof(subs), "%08X", cpu->R[2]);
+                else if (!strcmp(cmd, "r3")) snprintf(subs, sizeof(subs), "%08X", cpu->R[3]);
+                else if (!strcmp(cmd, "r4")) snprintf(subs, sizeof(subs), "%08X", cpu->R[4]);
+                else if (!strcmp(cmd, "r5")) snprintf(subs, sizeof(subs), "%08X", cpu->R[5]);
+                else if (!strcmp(cmd, "r6")) snprintf(subs, sizeof(subs), "%08X", cpu->R[6]);
+                else if (!strcmp(cmd, "r7")) snprintf(subs, sizeof(subs), "%08X", cpu->R[7]);
+                else if (!strcmp(cmd, "r8")) snprintf(subs, sizeof(subs), "%08X", cpu->R[8]);
+                else if (!strcmp(cmd, "r9")) snprintf(subs, sizeof(subs), "%08X", cpu->R[9]);
+                else if (!strcmp(cmd, "r10")) snprintf(subs, sizeof(subs), "%08X", cpu->R[10]);
+                else if (!strcmp(cmd, "r11")) snprintf(subs, sizeof(subs), "%08X", cpu->R[11]);
+                else if (!strcmp(cmd, "r12")) snprintf(subs, sizeof(subs), "%08X", cpu->R[12]);
+                else if (!strcmp(cmd, "r13")) snprintf(subs, sizeof(subs), "%08X", cpu->R[13]);
+                else if (!strcmp(cmd, "r14")) snprintf(subs, sizeof(subs), "%08X", cpu->R[14]);
+                else if (!strcmp(cmd, "r15")) snprintf(subs, sizeof(subs), "%08X", cpu->R[15]);
             }
             else
             {
-                if      (!strcmp(cmd, "sp")) sprintf(subs, "%08X", cpu->R[13]);
-                else if (!strcmp(cmd, "lr")) sprintf(subs, "%08X", cpu->R[14]);
-                else if (!strcmp(cmd, "pc")) sprintf(subs, "%08X", cpu->R[15]);
-                else if (!strcmp(cmd, "frame")) sprintf(subs, "%u", NumFrames);
-                else if (!strcmp(cmd, "scanline")) sprintf(subs, "%u", GPU.VCount);
-                else if (!strcmp(cmd, "totalclks")) sprintf(subs, "%" PRIu64, GetSysClockCycles(0));
-                else if (!strcmp(cmd, "lastclks")) sprintf(subs, "%" PRIu64, GetSysClockCycles(1));
+                if      (!strcmp(cmd, "sp")) snprintf(subs, sizeof(subs), "%08X", cpu->R[13]);
+                else if (!strcmp(cmd, "lr")) snprintf(subs, sizeof(subs), "%08X", cpu->R[14]);
+                else if (!strcmp(cmd, "pc")) snprintf(subs, sizeof(subs), "%08X", cpu->R[15]);
+                else if (!strcmp(cmd, "frame")) snprintf(subs, sizeof(subs), "%u", NumFrames);
+                else if (!strcmp(cmd, "scanline")) snprintf(subs, sizeof(subs), "%u", GPU.VCount);
+                else if (!strcmp(cmd, "totalclks")) snprintf(subs, sizeof(subs), "%" PRIu64, GetSysClockCycles(0));
+                else if (!strcmp(cmd, "lastclks")) snprintf(subs, sizeof(subs), "%" PRIu64, GetSysClockCycles(1));
                 else if (!strcmp(cmd, "zeroclks"))
                 {
-                    sprintf(subs, "%s", "");
+                    snprintf(subs, sizeof(subs), "%s", "");
                     GetSysClockCycles(1);
                 }
             }
 
-            int slen = strlen(subs);
+            int slen = strnlen(subs, sizeof(subs));
             if ((ptr+slen) > 1023) slen = 1023-ptr;
             strncpy(&output[ptr], subs, slen);
             ptr += slen;
@@ -1682,7 +1729,7 @@ void NDS::TimerStart(u32 id, u16 cnt)
 
 
 
-bool NDS::DMAsInMode(u32 cpu, u32 mode)
+bool NDS::DMAsInMode(u32 cpu, u32 mode) const
 {
     cpu <<= 2;
     if (DMAs[cpu+0].IsInMode(mode)) return true;
@@ -1693,7 +1740,7 @@ bool NDS::DMAsInMode(u32 cpu, u32 mode)
     return false;
 }
 
-bool NDS::DMAsRunning(u32 cpu)
+bool NDS::DMAsRunning(u32 cpu) const
 {
     cpu <<= 2;
     if (DMAs[cpu+0].IsRunning()) return true;
@@ -2273,7 +2320,7 @@ bool NDS::ARM9GetMemRegion(u32 addr, bool write, MemRegion* region)
 
     if ((addr & 0xFFFFF000) == 0xFFFF0000 && !write)
     {
-        region->Mem = ARM9BIOS;
+        region->Mem = &ARM9BIOS[0];
         region->Mask = 0xFFF;
         return true;
     }
@@ -2721,7 +2768,7 @@ bool NDS::ARM7GetMemRegion(u32 addr, bool write, MemRegion* region)
     {
         if (ARM7.R[15] < 0x4000 && (addr >= ARM7BIOSProt || ARM7.R[15] < ARM7BIOSProt))
         {
-            region->Mem = ARM7BIOS;
+            region->Mem = &ARM7BIOS[0];
             region->Mask = 0x3FFF;
             return true;
         }
@@ -2753,9 +2800,35 @@ u8 NDS::ARM9IORead8(u32 addr)
     case 0x04000132: return KeyCnt[0] & 0xFF;
     case 0x04000133: return KeyCnt[0] >> 8;
 
+    case 0x040001A0:
+        if (!(ExMemCnt[0] & (1<<11)))
+            return NDSCartSlot.GetSPICnt() & 0xFF;
+        return 0;
+    case 0x040001A1:
+        if (!(ExMemCnt[0] & (1<<11)))
+            return NDSCartSlot.GetSPICnt() >> 8;
+        return 0;
+
     case 0x040001A2:
         if (!(ExMemCnt[0] & (1<<11)))
             return NDSCartSlot.ReadSPIData();
+        return 0;
+
+    case 0x040001A4:
+        if (!(ExMemCnt[0] & (1<<11)))
+            return NDSCartSlot.GetROMCnt() & 0xFF;
+        return 0;
+    case 0x040001A5:
+        if (!(ExMemCnt[0] & (1<<11)))
+            return (NDSCartSlot.GetROMCnt() >> 8) & 0xFF;
+        return 0;
+    case 0x040001A6:
+        if (!(ExMemCnt[0] & (1<<11)))
+            return (NDSCartSlot.GetROMCnt() >> 16) & 0xFF;
+        return 0;
+    case 0x040001A7:
+        if (!(ExMemCnt[0] & (1<<11)))
+            return NDSCartSlot.GetROMCnt() >> 24;
         return 0;
 
     case 0x040001A8:
@@ -2907,6 +2980,15 @@ u16 NDS::ARM9IORead16(u32 addr)
     case 0x040001A2:
         if (!(ExMemCnt[0] & (1<<11)))
             return NDSCartSlot.ReadSPIData();
+        return 0;
+
+    case 0x040001A4:
+        if (!(ExMemCnt[0] & (1<<11)))
+            return NDSCartSlot.GetROMCnt() & 0xFFFF;
+        return 0;
+    case 0x040001A6:
+        if (!(ExMemCnt[0] & (1<<11)))
+            return NDSCartSlot.GetROMCnt() >> 16;
         return 0;
 
     case 0x040001A8:
@@ -3172,6 +3254,23 @@ void NDS::ARM9IOWrite8(u32 addr, u8 val)
             NDSCartSlot.WriteSPIData(val);
         return;
 
+    case 0x040001A4:
+        if (!(ExMemCnt[0] & (1<<11)))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0xFFFFFF00) | val);
+        return;
+    case 0x040001A5:
+        if (!(ExMemCnt[0] & (1<<11)))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0xFFFF00FF) | (val << 8));
+        return;
+    case 0x040001A6:
+        if (!(ExMemCnt[0] & (1<<11)))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0xFF00FFFF) | (val << 16));
+        return;
+    case 0x040001A7:
+        if (!(ExMemCnt[0] & (1<<11)))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0x00FFFFFF) | (val << 24));
+        return;
+
     case 0x040001A8: if (!(ExMemCnt[0] & (1<<11))) NDSCartSlot.SetROMCommand(0, val); return;
     case 0x040001A9: if (!(ExMemCnt[0] & (1<<11))) NDSCartSlot.SetROMCommand(1, val); return;
     case 0x040001AA: if (!(ExMemCnt[0] & (1<<11))) NDSCartSlot.SetROMCommand(2, val); return;
@@ -3299,6 +3398,15 @@ void NDS::ARM9IOWrite16(u32 addr, u16 val)
     case 0x040001A2:
         if (!(ExMemCnt[0] & (1<<11)))
             NDSCartSlot.WriteSPIData(val & 0xFF);
+        return;
+
+    case 0x040001A4:
+        if (!(ExMemCnt[0] & (1<<11)))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0xFFFF0000) | val);
+        return;
+    case 0x040001A6:
+        if (!(ExMemCnt[0] & (1<<11)))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0x0000FFFF) | (val << 16));
         return;
 
     case 0x040001A8:
@@ -3617,9 +3725,35 @@ u8 NDS::ARM7IORead8(u32 addr)
 
     case 0x04000138: return RTC.Read() & 0xFF;
 
+    case 0x040001A0:
+        if (ExMemCnt[0] & (1<<11))
+            return NDSCartSlot.GetSPICnt() & 0xFF;
+        return 0;
+    case 0x040001A1:
+        if (ExMemCnt[0] & (1<<11))
+            return NDSCartSlot.GetSPICnt() >> 8;
+        return 0;
+
     case 0x040001A2:
         if (ExMemCnt[0] & (1<<11))
             return NDSCartSlot.ReadSPIData();
+        return 0;
+
+    case 0x040001A4:
+        if (ExMemCnt[0] & (1<<11))
+            return NDSCartSlot.GetROMCnt() & 0xFF;
+        return 0;
+    case 0x040001A5:
+        if (ExMemCnt[0] & (1<<11))
+            return (NDSCartSlot.GetROMCnt() >> 8) & 0xFF;
+        return 0;
+    case 0x040001A6:
+        if (ExMemCnt[0] & (1<<11))
+            return (NDSCartSlot.GetROMCnt() >> 16) & 0xFF;
+        return 0;
+    case 0x040001A7:
+        if (ExMemCnt[0] & (1<<11))
+            return NDSCartSlot.GetROMCnt() >> 24;
         return 0;
 
     case 0x040001A8:
@@ -3721,6 +3855,15 @@ u16 NDS::ARM7IORead16(u32 addr)
 
     case 0x040001A0: if (ExMemCnt[0] & (1<<11)) return NDSCartSlot.GetSPICnt();   return 0;
     case 0x040001A2: if (ExMemCnt[0] & (1<<11)) return NDSCartSlot.ReadSPIData(); return 0;
+
+    case 0x040001A4:
+        if (ExMemCnt[0] & (1<<11))
+            return NDSCartSlot.GetROMCnt() & 0xFFFF;
+        return 0;
+    case 0x040001A6:
+        if (ExMemCnt[0] & (1<<11))
+            return NDSCartSlot.GetROMCnt() >> 16;
+        return 0;
 
     case 0x040001A8:
         if (ExMemCnt[0] & (1<<11))
@@ -3909,6 +4052,23 @@ void NDS::ARM7IOWrite8(u32 addr, u8 val)
             NDSCartSlot.WriteSPIData(val);
         return;
 
+    case 0x040001A4:
+        if (ExMemCnt[0] & (1<<11))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0xFFFFFF00) | val);
+        return;
+    case 0x040001A5:
+        if (ExMemCnt[0] & (1<<11))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0xFFFF00FF) | (val << 8));
+        return;
+    case 0x040001A6:
+        if (ExMemCnt[0] & (1<<11))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0xFF00FFFF) | (val << 16));
+        return;
+    case 0x040001A7:
+        if (ExMemCnt[0] & (1<<11))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0x00FFFFFF) | (val << 24));
+        return;
+
     case 0x040001A8: if (ExMemCnt[0] & (1<<11)) NDSCartSlot.SetROMCommand(0, val); return;
     case 0x040001A9: if (ExMemCnt[0] & (1<<11)) NDSCartSlot.SetROMCommand(1, val); return;
     case 0x040001AA: if (ExMemCnt[0] & (1<<11)) NDSCartSlot.SetROMCommand(2, val); return;
@@ -4012,6 +4172,15 @@ void NDS::ARM7IOWrite16(u32 addr, u16 val)
     case 0x040001A2:
         if (ExMemCnt[0] & (1<<11))
             NDSCartSlot.WriteSPIData(val & 0xFF);
+        return;
+
+    case 0x040001A4:
+        if (ExMemCnt[0] & (1<<11))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0xFFFFFF00) | val);
+        return;
+    case 0x040001A6:
+        if (ExMemCnt[0] & (1<<11))
+            NDSCartSlot.WriteROMCnt((NDSCartSlot.GetROMCnt() & 0xFF00FFFF) | (val << 16));
         return;
 
     case 0x040001A8:
