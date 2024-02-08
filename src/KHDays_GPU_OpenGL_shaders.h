@@ -620,25 +620,13 @@ ivec4 brightness()
         if ((mbright.b & 0x3) != 0 && brightmode == 2) {
             return mbright;
         }
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (KHGameScene == 2) { // gameScene_IntroLoadMenu
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
-    }
-    if (KHGameScene == 4) { // gameScene_Cutscene
-        ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
-        int brightmode = mbright.g >> 6;
-        if (brightmode != 0) {
-            return mbright;
-        }
-    }
-    if (KHGameScene == 7) { // gameScene_InGameMenu
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
-    }
-    if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
-    }
-    if (KHGameScene == 14) { // gameScene_Shop
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+    int brightmode = mbright.g >> 6;
+    if (brightmode != 0) {
+        return mbright;
     }
     return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
 }
