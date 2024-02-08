@@ -539,6 +539,9 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (KHGameScene == 14) { // gameScene_Shop
         return getDualScreenTextureCoordinates(xpos, ypos, ivec2(128, 190));
     }
+    if (KHGameScene == 15) { // gameScene_Other2D
+        return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
+    }
     return ivec2(fTexcoord);
 }
 
@@ -695,6 +698,9 @@ ivec4 brightness()
         if ((mbright.b & 0x3) != 0 && brightmode == 2) {
             return mbright;
         }
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    }
+    if (KHGameScene == 15) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
 
