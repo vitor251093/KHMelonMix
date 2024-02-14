@@ -91,6 +91,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 50;
 
     bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
+    bool has3DOnBottomScreen = (nds->PowerControl9 >> 9) == 1;
 
     // The second screen can still look black and not be empty (invisible elements)
     bool noElementsOnBottomScreen = nds->GPU.GPU2D_B.BlendCnt == 0;
@@ -134,7 +135,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             }
         }
 
-        if ((nds->PowerControl9 >> 9) == 1 && GameScene == gameScene_InGameMenu)
+        if (has3DOnBottomScreen && GameScene == gameScene_InGameMenu)
         {
             return gameScene_InGameMenu;
         }
@@ -208,7 +209,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InGameSaveMenu;
         }
 
-        if ((nds->PowerControl9 >> 9) == 1) 
+        if (has3DOnBottomScreen)
         {
             if (GameScene == gameScene_InGameWithSoraGlitch)
             {
@@ -320,6 +321,11 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         return gameScene_InGameWithSoraGlitch;
     }
     
+    if (has3DOnBottomScreen)
+    {
+        return gameScene_InGameWithSoraGlitch;
+    }
+
     // Unknown
     return gameScene_Other;
 }
