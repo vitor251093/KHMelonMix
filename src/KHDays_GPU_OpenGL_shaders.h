@@ -419,7 +419,9 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
         // gauge bar
         float gaugeBarHeight = 33.0*iuTexScale;
         if (texPosition3d.y >= (192.0*iuTexScale - gaugeBarHeight)) {
-            return ivec2(fTexcoord) + ivec2(0,192);
+            if (!isScreenBlack(1)) {
+                return ivec2(fTexcoord) + ivec2(0,192);
+            }
         }
     }
 
