@@ -88,7 +88,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
 
     // 3D element mimicking 2D behavior
-    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 10;
+    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 50;
 
     bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
 

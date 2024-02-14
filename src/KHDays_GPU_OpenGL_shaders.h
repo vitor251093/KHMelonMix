@@ -476,7 +476,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
     if (KHGameScene == 7) { // gameScene_InGameMenu
-        return getDualScreenTextureCoordinates(xpos, ypos, ivec2(128, 190));
+        return getDualScreenTextureCoordinates(xpos, ypos, ivec2(128, 191));
     }
     if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
         return getDualScreenTextureCoordinates(xpos, ypos, ivec2(255, 191));
