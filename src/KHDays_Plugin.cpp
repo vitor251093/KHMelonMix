@@ -315,7 +315,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         return gameScene_InGameWithMap;
     }
 
-    if (GameScene == gameScene_InGameWithSoraGlitch || GameScene == gameScene_InGameWithMap)
+    if (GameScene == gameScene_InGameWithSoraGlitch || (GameScene == gameScene_InGameWithMap && nds->GPU.GPU2D_A.MasterBrightness > 0))
     {
         return gameScene_InGameWithSoraGlitch;
     }
