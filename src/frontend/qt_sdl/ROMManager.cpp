@@ -496,7 +496,15 @@ void LoadCheats(NDS& nds)
 {
     UnloadCheats(nds);
 
-    CheatFile = new KHDaysARCodes();
+    std::string filename = GetAssetPath(false, Config::CheatFilePath, ".mch");
+
+    // TODO: check for error (malformed cheat file, ...)
+    CheatFile = new ARCodeFile(filename);
+
+    if (CheatFile->Categories.empty())
+    {
+        CheatFile = new KHDaysARCodes();
+    }
 
     nds.AREngine.SetCodeFile(CheatsOn ? CheatFile : nullptr);
 }
