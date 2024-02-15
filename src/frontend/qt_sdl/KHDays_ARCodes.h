@@ -31,7 +31,7 @@ namespace melonDS
 class KHDaysARCodes: public ARCodeFile
 {
 public:
-    KHDaysARCodes(float screenAspect);
+    KHDaysARCodes();
 
     bool Load() override;
     bool Save() override;

@@ -20,16 +20,28 @@
 #include <stdio.h>
 #include <string.h>
 #include "Platform.h"
+#include "Screen.h"
+#include "Config.h"
 #include <math.h>
 
 namespace melonDS
 {
 using namespace Platform;
 
-KHDaysARCodes::KHDaysARCodes(float screenAspect)
+KHDaysARCodes::KHDaysARCodes()
 {
     Error = false;
-    ScreenAspect = screenAspect;
+
+    float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
+    for (auto ratio : aspectRatios)
+    {
+        if (ratio.id == Config::ScreenAspectTop)
+            aspectTop = ratio.ratio * 4.0/3;
+    }
+    if (aspectTop == 0) {
+        aspectTop = 16.0 / 9;
+    }
+    ScreenAspect = aspectTop;
 
     Categories.clear();
 
