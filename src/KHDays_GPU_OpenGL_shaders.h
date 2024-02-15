@@ -650,6 +650,9 @@ ivec4 brightness()
         }
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
+    if (KHGameScene == 12) { // gameScene_InGameWithSoraGlitch
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+    }
     if (KHGameScene == 14) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }

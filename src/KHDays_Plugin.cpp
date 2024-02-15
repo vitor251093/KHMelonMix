@@ -10,6 +10,8 @@ namespace melonDS
 int GameScene = -1;
 int priorGameScene = -1;
 
+bool _olderHad3DOnTopScreen = false;
+bool _olderHad3DOnBottomScreen = false;
 bool _had3DOnTopScreen = false;
 bool _had3DOnBottomScreen = false;
 
@@ -90,12 +92,16 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
 
     // 3D element mimicking 2D behavior
-    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 50;
+    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 20;
 
+    bool olderHad3DOnTopScreen = _olderHad3DOnTopScreen;
+    bool olderHad3DOnBottomScreen = _olderHad3DOnBottomScreen;
     bool had3DOnTopScreen = _had3DOnTopScreen;
     bool had3DOnBottomScreen = _had3DOnBottomScreen;
     bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
     bool has3DOnBottomScreen = (nds->PowerControl9 >> 9) == 1;
+    _olderHad3DOnTopScreen = _had3DOnTopScreen;
+    _olderHad3DOnBottomScreen = _had3DOnBottomScreen;
     _had3DOnTopScreen = has3DOnTopScreen;
     _had3DOnBottomScreen = has3DOnBottomScreen;
 
@@ -118,6 +124,13 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     if (GameScene == gameScene_InGameWithSoraGlitch)
     {
         if ((had3DOnTopScreen && !has3DOnTopScreen) || (had3DOnBottomScreen && !has3DOnBottomScreen))
+        {
+            return gameScene_InGameWithSoraGlitch;
+        }
+    }
+    else {
+        if ((!olderHad3DOnTopScreen && had3DOnTopScreen && !has3DOnTopScreen) ||
+            (!olderHad3DOnBottomScreen && had3DOnBottomScreen && !has3DOnBottomScreen))
         {
             return gameScene_InGameWithSoraGlitch;
         }
@@ -312,16 +325,11 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         return gameScene_InGameWithMap;
     }
 
-    if (GameScene == gameScene_InGameWithMap && nds->GPU.GPU2D_A.MasterBrightness > 0)
+    if (GameScene == gameScene_InGameWithMap || has3DOnBottomScreen)
     {
         return gameScene_InGameWithSoraGlitch;
     }
     
-    if (has3DOnBottomScreen)
-    {
-        return gameScene_InGameWithSoraGlitch;
-    }
-
     // Unknown
     return gameScene_Other;
 }
