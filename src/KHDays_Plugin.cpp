@@ -104,6 +104,8 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     _olderHad3DOnBottomScreen = _had3DOnBottomScreen;
     _had3DOnTopScreen = has3DOnTopScreen;
     _had3DOnBottomScreen = has3DOnBottomScreen;
+    bool has3DOnBothScreens = (!olderHad3DOnTopScreen && had3DOnTopScreen && !has3DOnTopScreen) ||
+                              (!olderHad3DOnBottomScreen && had3DOnBottomScreen && !has3DOnBottomScreen);
 
     // The second screen can still look black and not be empty (invisible elements)
     bool noElementsOnBottomScreen = nds->GPU.GPU2D_B.BlendCnt == 0;
@@ -121,19 +123,9 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         return gameScene_Shop;
     }
 
-    if (GameScene == gameScene_InGameWithSoraGlitch)
+    if (has3DOnBothScreens)
     {
-        if ((had3DOnTopScreen && !has3DOnTopScreen) || (had3DOnBottomScreen && !has3DOnBottomScreen))
-        {
-            return gameScene_InGameWithSoraGlitch;
-        }
-    }
-    else {
-        if ((!olderHad3DOnTopScreen && had3DOnTopScreen && !has3DOnTopScreen) ||
-            (!olderHad3DOnBottomScreen && had3DOnBottomScreen && !has3DOnBottomScreen))
-        {
-            return gameScene_InGameWithSoraGlitch;
-        }
+        return gameScene_InGameWithSoraGlitch;
     }
 
     if (doesntLook3D)
