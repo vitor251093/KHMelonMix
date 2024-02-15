@@ -10,6 +10,9 @@ namespace melonDS
 int GameScene = -1;
 int priorGameScene = -1;
 
+bool _had3DOnTopScreen = false;
+bool _had3DOnBottomScreen = false;
+
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -90,8 +93,12 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     // 3D element mimicking 2D behavior
     bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 50;
 
+    bool had3DOnTopScreen = _had3DOnTopScreen;
+    bool had3DOnBottomScreen = _had3DOnBottomScreen;
     bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
     bool has3DOnBottomScreen = (nds->PowerControl9 >> 9) == 1;
+    _had3DOnTopScreen = has3DOnTopScreen;
+    _had3DOnBottomScreen = has3DOnBottomScreen;
 
     // The second screen can still look black and not be empty (invisible elements)
     bool noElementsOnBottomScreen = nds->GPU.GPU2D_B.BlendCnt == 0;
@@ -107,6 +114,14 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     if (isShop)
     {
         return gameScene_Shop;
+    }
+
+    if (GameScene == gameScene_InGameWithSoraGlitch)
+    {
+        if ((had3DOnTopScreen && !has3DOnTopScreen) || (had3DOnBottomScreen && !has3DOnBottomScreen))
+        {
+            return gameScene_InGameWithSoraGlitch;
+        }
     }
 
     if (doesntLook3D)
@@ -211,11 +226,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
         if (has3DOnBottomScreen)
         {
-            if (GameScene == gameScene_InGameWithSoraGlitch)
-            {
-                return gameScene_InGameWithSoraGlitch;
-            }
-
             return gameScene_InGameMenu;
         }
 
@@ -235,7 +245,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     if (has3DOnTopScreen)
     {
         // Pause Menu
-        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && nds->GPU.GPU2D_B.EVY == 8;
+        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8;
         if (inMissionPauseMenu)
         {
             if (GameScene == gameScene_InGameWithMap)
@@ -307,16 +317,11 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InGameWithoutMap;
         }
 
-        if (GameScene == gameScene_InGameWithSoraGlitch)
-        {
-            return gameScene_InGameWithSoraGlitch;
-        }
-    
         // Regular gameplay with a map
         return gameScene_InGameWithMap;
     }
 
-    if (GameScene == gameScene_InGameWithSoraGlitch || (GameScene == gameScene_InGameWithMap && nds->GPU.GPU2D_A.MasterBrightness > 0))
+    if (GameScene == gameScene_InGameWithMap && nds->GPU.GPU2D_A.MasterBrightness > 0)
     {
         return gameScene_InGameWithSoraGlitch;
     }
