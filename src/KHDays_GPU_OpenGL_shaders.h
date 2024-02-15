@@ -534,20 +534,40 @@ ivec4 getDualScreen3DColor(float xpos, float ypos)
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(1.0, heightScale);
 
-    float sourceScreenHeight = 192.0;
-    float sourceScreenWidth = 256.0;
-    float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
-    float screenWidth = (sourceScreenWidth*u3DScale)/2;
-    float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
-    float screenLeftMargin = 0.0;
-    if (texPosition3d.x >= screenLeftMargin &&
-        texPosition3d.x < (screenWidth + screenLeftMargin) && 
-        texPosition3d.y <= (screenHeight + screenTopMargin) && 
-        texPosition3d.y >= screenTopMargin) {
-        ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)));
-        return ivec4(texelFetch(_3DTex, position3d + ivec2(_3dxpos*u3DScale, 0), 0).bgra
-            * vec4(63,63,63,31));
+    {
+        float sourceScreenHeight = 192.0;
+        float sourceScreenWidth = 256.0;
+        float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
+        float screenWidth = (sourceScreenWidth*u3DScale)/2;
+        float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
+        float screenLeftMargin = 0.0;
+        if (texPosition3d.x >= screenLeftMargin &&
+            texPosition3d.x < (screenWidth + screenLeftMargin) && 
+            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.y >= screenTopMargin) {
+            ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)));
+            return ivec4(texelFetch(_3DTex, position3d + ivec2(_3dxpos*u3DScale, 0), 0).bgra
+                * vec4(63,63,63,31));
+        }
     }
+
+    {
+        float sourceScreenHeight = 192.0;
+        float sourceScreenWidth = 256.0;
+        float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
+        float screenWidth = (sourceScreenWidth*u3DScale)/2;
+        float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
+        float screenLeftMargin = screenWidth;
+        if (texPosition3d.x >= screenLeftMargin &&
+            texPosition3d.x < (screenWidth + screenLeftMargin) && 
+            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.y >= screenTopMargin) {
+            ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)));
+            return ivec4(texelFetch(_3DTex, position3d + ivec2(_3dxpos*u3DScale, 0), 0).bgra
+                * vec4(63,63,63,31));
+        }
+    }
+
     return ivec4(63,63,63,0);
 }
 
