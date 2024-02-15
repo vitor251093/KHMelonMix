@@ -73,7 +73,6 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
         case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
         case gameScene_InHoloMissionMenu: return "Game scene: Holo mission menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
-        case gameScene_PauseMenuWithGauge: return "Game scene: Pause menu (with gauge)";
         case gameScene_Tutorial: return "Game scene: Tutorial";
         case gameScene_InGameWithSoraGlitch: return "Game scene: Ingame (with cutscene)";
         case gameScene_Shop: return "Game scene: Shop";
@@ -248,17 +247,9 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8;
         if (inMissionPauseMenu)
         {
-            if (GameScene == gameScene_InGameWithMap)
-            {
-                return gameScene_PauseMenuWithGauge;  
-            }
-            if (GameScene == gameScene_PauseMenu || GameScene == gameScene_PauseMenuWithGauge)
-            {
-                return GameScene;
-            }
             return gameScene_PauseMenu;
         }
-        else if (GameScene == gameScene_PauseMenu || GameScene == gameScene_PauseMenuWithGauge)
+        else if (GameScene == gameScene_PauseMenu)
         {
             return priorGameScene;
         }

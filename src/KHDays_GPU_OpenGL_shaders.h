@@ -414,7 +414,7 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     float iuTexScale = (6.0)/iuScale;
     ivec2 texPosition3d = ivec2(vec2(xpos, ypos)*iuTexScale);
 
-    if (KHGameScene == 11) // gameScene_PauseMenuWithGauge
+    if (KHGameScene == 10) // gameScene_PauseMenu
     {
         // gauge bar
         float gaugeBarHeight = 33.0*iuTexScale;
@@ -484,19 +484,16 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (KHGameScene == 10) { // gameScene_PauseMenu
         return getPauseHudTextureCoordinates(xpos, ypos);
     }
-    if (KHGameScene == 11) { // gameScene_PauseMenuWithGauge
-        return getPauseHudTextureCoordinates(xpos, ypos);
-    }
-    if (KHGameScene == 12) { // gameScene_Tutorial
+    if (KHGameScene == 11) { // gameScene_Tutorial
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
-    if (KHGameScene == 13) { // gameScene_InGameWithSoraGlitch
+    if (KHGameScene == 12) { // gameScene_InGameWithSoraGlitch
         return getDualScreenTextureCoordinates(xpos, ypos, ivec2(-1, -1));
     }
-    if (KHGameScene == 14) { // gameScene_Shop
+    if (KHGameScene == 13) { // gameScene_Shop
         return getDualScreenTextureCoordinates(xpos, ypos, ivec2(128, 190));
     }
-    if (KHGameScene == 15) { // gameScene_Other2D
+    if (KHGameScene == 14) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -576,10 +573,10 @@ ivec4 getTopScreen3DColor()
     if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
         return getDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 13) { // gameScene_InGameWithSoraGlitch
+    if (KHGameScene == 12) { // gameScene_InGameWithSoraGlitch
         return getDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 14) { // gameScene_Shop
+    if (KHGameScene == 13) { // gameScene_Shop
         return getDualScreen3DColor(xpos, ypos);
     }
 
@@ -633,7 +630,7 @@ ivec4 brightness()
         }
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (KHGameScene == 15) { // gameScene_Other2D
+    if (KHGameScene == 14) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
 
@@ -670,7 +667,7 @@ void main()
         pixel = combineLayers(_3dpix, val1, val2, val3);
     }
 
-    bool disableBrightness = (KHGameScene == 12); // gameScene_Tutorial
+    bool disableBrightness = (KHGameScene == 11); // gameScene_Tutorial
     if (dispmode != 0 && !disableBrightness)
     {
         int brightmode = mbright.g >> 6;

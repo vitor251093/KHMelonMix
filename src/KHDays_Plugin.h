@@ -18,12 +18,11 @@ enum
     gameScene_InGameSaveMenu,     // 8
     gameScene_InHoloMissionMenu,  // 9
     gameScene_PauseMenu,          // 10
-    gameScene_PauseMenuWithGauge, // 11
-    gameScene_Tutorial,           // 12
-    gameScene_InGameWithSoraGlitch, // 13
-    gameScene_Shop,               // 14
-    gameScene_Other2D,            // 15
-    gameScene_Other               // 16
+    gameScene_Tutorial,           // 11
+    gameScene_InGameWithSoraGlitch, // 12
+    gameScene_Shop,               // 13
+    gameScene_Other2D,            // 14
+    gameScene_Other               // 15
 };
 
 class KHDaysPlugin
