@@ -46,6 +46,8 @@
 #include "FreeBIOS.h"
 #include "main.h"
 
+#include "KHDays_ARCodes.h"
+
 using std::make_unique;
 using std::pair;
 using std::string;
@@ -494,7 +496,7 @@ void LoadCheats(NDS& nds, float aspectTop)
 {
     UnloadCheats(nds);
 
-    CheatFile = new ARCodeFile(aspectTop);
+    CheatFile = new KHDaysARCodes(aspectTop);
 
     nds.AREngine.SetCodeFile(CheatsOn ? CheatFile : nullptr);
 }
