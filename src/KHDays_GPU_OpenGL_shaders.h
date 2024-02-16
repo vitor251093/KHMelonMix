@@ -754,6 +754,9 @@ ivec4 brightness()
         }
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
+    if (KHGameScene == 11) { // gameScene_Tutorial
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+    }
     if (KHGameScene == 12) { // gameScene_InGameWithCutscene
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
@@ -797,8 +800,7 @@ void main()
         pixel = combineLayers(_3dpix, val1, val2, val3);
     }
 
-    bool disableBrightness = (KHGameScene == 11); // gameScene_Tutorial
-    if (dispmode != 0 && !disableBrightness)
+    if (dispmode != 0)
     {
         int brightmode = mbright.g >> 6;
         if (brightmode == 1)
