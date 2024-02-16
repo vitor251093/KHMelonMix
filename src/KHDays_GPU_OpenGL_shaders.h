@@ -271,7 +271,7 @@ ivec2 getVerticalDualScreenTextureCoordinates(float xpos, float ypos, ivec2 clea
     ivec2 texPosition3d = ivec2(xpos*screenScale, ypos*screenScale);
     float heightScale = (4.0/3)/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
-    vec2 fixStretch = vec2(1.0, heightScale);
+    vec2 fixStretch = vec2(widthScale, 1.0);
 
     // screen 1
     {
@@ -630,7 +630,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
     float heightScale = (4.0/3)/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
-    vec2 fixStretch = vec2(1.0, heightScale);
+    vec2 fixStretch = vec2(widthScale, 1.0);
 
     // screen 1
     {
