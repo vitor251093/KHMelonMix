@@ -248,17 +248,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
     if (has3DOnTopScreen)
     {
-        // Pause Menu
-        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8;
-        if (inMissionPauseMenu)
-        {
-            return gameScene_PauseMenu;
-        }
-        else if (GameScene == gameScene_PauseMenu)
-        {
-            return priorGameScene;
-        }
-
         // Tutorial
         if (GameScene == gameScene_Tutorial && topScreenBrightness < 15)
         {
@@ -305,6 +294,17 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         if (inHoloMissionMenu)
         {
             return gameScene_InHoloMissionMenu;
+        }
+
+        // Pause Menu
+        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8;
+        if (inMissionPauseMenu)
+        {
+            return gameScene_PauseMenu;
+        }
+        else if (GameScene == gameScene_PauseMenu)
+        {
+            return priorGameScene;
         }
 
         // Regular gameplay without a map
