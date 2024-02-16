@@ -22,7 +22,7 @@ bool _had3DOnBottomScreen = false;
 
 u32 KHDaysPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithSoraGlitch) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
         if (CmdMenuInputMask & (1 << 1)) { // D-pad left
             InputMask &= ~(1<<1); // B
@@ -76,10 +76,12 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
         case gameScene_InHoloMissionMenu: return "Game scene: Holo mission menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_Tutorial: return "Game scene: Tutorial";
-        case gameScene_InGameWithSoraGlitch: return "Game scene: Ingame (with cutscene)";
+        case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
+        case gameScene_MultiplayerMissionReview: return "Game scene: Multiplayer Mission Review";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
-        default: return "Game scene: Unknown (3D)";
+        case gameScene_Other: return "Game scene: Unknown (3D)";
+        default: return "Game scene: Unknown";
     }
 }
 
@@ -125,7 +127,12 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
     if (has3DOnBothScreens)
     {
-        return gameScene_InGameWithSoraGlitch;
+        bool isMissionVictory = nds->GPU.GPU2D_A.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendCnt == 0;
+        if (isMissionVictory)
+        {
+            return gameScene_MultiplayerMissionReview;
+        }
+        return gameScene_InGameWithCutscene;
     }
 
     if (doesntLook3D)
@@ -328,7 +335,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
     if (GameScene == gameScene_InGameWithMap || has3DOnBottomScreen)
     {
-        return gameScene_InGameWithSoraGlitch;
+        return gameScene_InGameWithCutscene;
     }
     
     // Unknown

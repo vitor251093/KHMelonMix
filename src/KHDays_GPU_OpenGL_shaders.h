@@ -487,13 +487,16 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (KHGameScene == 11) { // gameScene_Tutorial
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
-    if (KHGameScene == 12) { // gameScene_InGameWithSoraGlitch
+    if (KHGameScene == 12) { // gameScene_InGameWithCutscene
         return getDualScreenTextureCoordinates(xpos, ypos, ivec2(-1, -1));
     }
-    if (KHGameScene == 13) { // gameScene_Shop
+    if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
+        return getDualScreenTextureCoordinates(xpos, ypos, ivec2(-1, -1));
+    }
+    if (KHGameScene == 14) { // gameScene_Shop
         return getDualScreenTextureCoordinates(xpos, ypos, ivec2(128, 190));
     }
-    if (KHGameScene == 14) { // gameScene_Other2D
+    if (KHGameScene == 15) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -593,10 +596,13 @@ ivec4 getTopScreen3DColor()
     if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
         return getDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 12) { // gameScene_InGameWithSoraGlitch
+    if (KHGameScene == 12) { // gameScene_InGameWithCutscene
         return getDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 13) { // gameScene_Shop
+    if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
+        return getDualScreen3DColor(xpos, ypos);
+    }
+    if (KHGameScene == 14) { // gameScene_Shop
         return getDualScreen3DColor(xpos, ypos);
     }
 
@@ -650,7 +656,10 @@ ivec4 brightness()
         }
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (KHGameScene == 12) { // gameScene_InGameWithSoraGlitch
+    if (KHGameScene == 12) { // gameScene_InGameWithCutscene
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+    }
+    if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
     if (KHGameScene == 14) { // gameScene_Other2D
