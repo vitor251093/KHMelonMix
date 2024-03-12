@@ -128,11 +128,18 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     if (has3DOnBothScreens)
     {
         bool isMissionVictory = (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 0) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 130) ||
                                 (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 2625) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 2114) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 130 && nds->GPU.GPU2D_B.BlendCnt == 0) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 322 && nds->GPU.GPU2D_B.BlendCnt == 0) ||
                                 (nds->GPU.GPU2D_A.BlendCnt == 840 && nds->GPU.GPU2D_B.BlendCnt == 0);
         if (isMissionVictory)
         {
-            return gameScene_MultiplayerMissionReview;
+            if (GameScene != gameScene_InGameWithCutscene)
+            {
+                return gameScene_MultiplayerMissionReview;
+            }
         }
         return gameScene_InGameWithCutscene;
     }
