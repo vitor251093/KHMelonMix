@@ -758,7 +758,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     yBlur = int((((minimapHeight + minimapTopMargin) - texPosition3d.y)*16.0)/blurBorder);
                 }
 
-                int blur = int((xBlur * yBlur)/16);
+                int blur = int((xBlur * yBlur * 15)/(16*16));
                 color = ivec4(color.r, blur, 16 - blur, 0x01);
             }
         }
