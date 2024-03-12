@@ -311,6 +311,15 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InHoloMissionMenu;
         }
 
+        // Story Mode - Normal missions - Day 357
+        inHoloMissionMenu = ((nds->GPU.GPU3D.NumVertices == 332 && nds->GPU.GPU3D.NumPolygons == 102 && nds->GPU.GPU3D.RenderNumPolygons == 102) ||
+                             (nds->GPU.GPU3D.NumVertices == 340 && nds->GPU.GPU3D.NumPolygons == 104 && nds->GPU.GPU3D.RenderNumPolygons == 104)) &&
+                            nds->GPU.GPU2D_A.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendCnt == 0;
+        if (inHoloMissionMenu || GameScene == gameScene_InHoloMissionMenu)
+        {
+            return gameScene_InHoloMissionMenu;
+        }
+
         // Mission Mode / Story Mode - Challenges
         inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && (nds->GPU.GPU2D_B.BlendCnt >= 143 && nds->GPU.GPU2D_B.BlendCnt <= 207);
         if (inHoloMissionMenu)
