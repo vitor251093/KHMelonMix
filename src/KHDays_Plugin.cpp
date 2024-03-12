@@ -202,13 +202,17 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
         if (GameScene != gameScene_Intro)
         {
+            if (nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1)
+            {
+                return gameScene_DayCounter; // 1 digit
+            }
             if (nds->GPU.GPU3D.NumVertices == 8 && nds->GPU.GPU3D.NumPolygons == 2 && nds->GPU.GPU3D.RenderNumPolygons == 2)
             {
-                return gameScene_DayCounter;
+                return gameScene_DayCounter; // 2 digits
             }
             if (nds->GPU.GPU3D.NumVertices == 12 && nds->GPU.GPU3D.NumPolygons == 3 && nds->GPU.GPU3D.RenderNumPolygons == 3)
             {
-                return gameScene_DayCounter;
+                return gameScene_DayCounter; // 3 digits
             }
         }
 

@@ -763,8 +763,11 @@ ivec4 brightness()
     if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (KHGameScene == 14) { // gameScene_Other2D
+    if (KHGameScene == 14) { // gameScene_Shop
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    }
+    if (KHGameScene == 15) { // gameScene_Other2D
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
 
     ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
