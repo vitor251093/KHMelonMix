@@ -729,6 +729,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         float minimapRightMargin = 9.0;
         float minimapTopMargin = 30.0;
         float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
+        float blurBorder = 5.0;
         if (texPosition3d.x >= minimapLeftMargin &&
             texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
             texPosition3d.y <= minimapHeight + minimapTopMargin && 
@@ -737,6 +738,28 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
             if (isShadeOfGray) {
                 color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+            }
+
+            if (index == 2)
+            {
+                int xBlur = 16;
+                if (texPosition3d.x - minimapLeftMargin <= (blurBorder*heightScale)) {
+                    xBlur = int(((texPosition3d.x - minimapLeftMargin)*16.0)/(blurBorder*heightScale));
+                }
+                if ((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x <= (blurBorder*heightScale)) {
+                    xBlur = int((((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x)*16.0)/(blurBorder*heightScale));
+                }
+
+                int yBlur = 16;
+                if (texPosition3d.y - minimapTopMargin <= blurBorder) {
+                    yBlur = int(((texPosition3d.y - minimapTopMargin)*16.0)/blurBorder);
+                }
+                if ((minimapHeight + minimapTopMargin) - texPosition3d.y <= blurBorder) {
+                    yBlur = int((((minimapHeight + minimapTopMargin) - texPosition3d.y)*16.0)/blurBorder);
+                }
+
+                int blur = min(xBlur, yBlur);
+                color = ivec4(color.r, blur, 16 - blur, 0x01);
             }
         }
     }
