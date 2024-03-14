@@ -262,6 +262,12 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_Cutscene;
         }
 
+        mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
+        if (mayBeMainMenu)
+        {
+            return gameScene_MainMenu;
+        }
+
         // Unknown 2D
         return gameScene_Other2D;
     }
