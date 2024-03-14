@@ -713,7 +713,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
-    if (KHGameScene == 5 && isMinimapVisible() && !isMissionInformationVisible()) // gameScene_InGameWithMap
+    if (KHGameScene == 5 && isMinimapVisible() && !isDialogVisible() && !isMissionInformationVisible()) // gameScene_InGameWithMap
     {
         int iuScale = KHUIScale;
         float iuTexScale = (6.0)/iuScale;
