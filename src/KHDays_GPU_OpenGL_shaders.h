@@ -375,7 +375,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         float minimapWidth = bottomMinimapWidth*heightScale;
         float minimapHeight = bottomMinimapHeight;
         float minimapRightMargin = 9.0;
-        float minimapTopMargin = 25.0;
+        float minimapTopMargin = 30.0;
         float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
         float bottomMinimapCenterX = 158.0;
         float bottomMinimapCenterY = 90.0;
@@ -412,7 +412,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float miscHeight = sourceMiscHeight;
     float miscWidth = sourceMiscWidth*heightScale;
     float miscRightMargin = 12.0;
-    float miscTopMargin = 87.5;
+    float miscTopMargin = 92.5;
     float sourceMiscTopMargin = 25.0;
     if (texPosition3d.x >= (256.0*iuTexScale - miscWidth - miscRightMargin) &&
         texPosition3d.x < (256.0*iuTexScale - miscRightMargin) && 
@@ -727,7 +727,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         float minimapWidth = bottomMinimapWidth*heightScale;
         float minimapHeight = bottomMinimapHeight;
         float minimapRightMargin = 9.0;
-        float minimapTopMargin = 25.0;
+        float minimapTopMargin = 30.0;
         float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
         float blurBorder = 5.0;
         if (texPosition3d.x >= minimapLeftMargin &&
