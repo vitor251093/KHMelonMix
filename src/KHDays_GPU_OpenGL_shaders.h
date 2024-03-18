@@ -491,11 +491,11 @@ ivec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    if (isScreenBlack(0)) {
-        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(-1, 0)));
-    }
     if (isScreenBlack(1)) {
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(-1, 0)));
+    }
+    if (isScreenBlack(0)) {
+        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(-1, 0)));
     }
     return getHorizontalDualScreenTextureCoordinates(xpos, ypos, ivec2(-1, 0));
 }
