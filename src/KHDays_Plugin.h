@@ -18,9 +18,9 @@ enum
     gameScene_InGameSaveMenu,     // 8
     gameScene_InHoloMissionMenu,  // 9
     gameScene_PauseMenu,          // 10
-    gameScene_PauseMenuWithGauge, // 11
-    gameScene_Tutorial,           // 12
-    gameScene_RoxasThoughts,      // 13
+    gameScene_Tutorial,           // 11
+    gameScene_InGameWithCutscene, // 12
+    gameScene_MultiplayerMissionReview, // 13
     gameScene_Shop,               // 14
     gameScene_Other2D,            // 15
     gameScene_Other               // 16

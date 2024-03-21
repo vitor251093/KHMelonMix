@@ -20,7 +20,6 @@
 #include <string.h>
 #include "ARCodeFile.h"
 #include "Platform.h"
-#include <math.h>
 
 namespace melonDS
 {
@@ -30,10 +29,16 @@ using namespace Platform;
 // TODO: more user-friendly error reporting
 
 
-ARCodeFile::ARCodeFile(float screenAspect)
+ARCodeFile::ARCodeFile()
 {
+    Error = true;
+}
+
+ARCodeFile::ARCodeFile(const std::string& filename)
+{
+    Filename = filename;
+
     Error = false;
-    ScreenAspect = screenAspect;
 
     Categories.clear();
 
@@ -46,73 +51,143 @@ ARCodeFile::~ARCodeFile()
     Categories.clear();
 }
 
-ARCode ARCodeFile::ChangeAspectRatio(std::string codeName, u32 address)
-{
-    // Also known as the "Widescreen hack"
-    // TODO: Shouldn't be applied while the menu is opened
-
-    // if (mem32[0x02023C9C] == 0x00001555) {
-    //     mem32[0x02023C9C] = aspectRatioKey;
-    // }
-
-    int aspectRatioKey = (int)round(0x1000 * ScreenAspect);
-
-    ARCode curcode;
-    curcode.Name = codeName;
-    curcode.Enabled = true;
-    curcode.Code.clear();
-    curcode.Code.push_back(0x50000000 | address); curcode.Code.push_back(0x00001555);
-    curcode.Code.push_back(             address); curcode.Code.push_back(aspectRatioKey);
-    curcode.Code.push_back(0xD2000000);           curcode.Code.push_back(0x00000000);
-    return curcode;
-}
-
-ARCode ARCodeFile::AlwaysEnableXAndDPadToControlCommandMenu(std::string codeName, u32 address)
-{
-    // Example:
-    // if (mem16[0x02194CC2] < 0x4300) {
-    //     if (mem16[0x02194CC2] > 0x41FF) {
-    //         mem8[0x02194CC3] = 0x40;
-    //     }
-    // }
-
-    ARCode curcode2;
-    curcode2.Name = codeName;
-    curcode2.Enabled = true;
-    curcode2.Code.clear();
-    curcode2.Code.push_back((0x70000000 | address) - 0x1); curcode2.Code.push_back(0x4300);
-    curcode2.Code.push_back((0x80000000 | address) - 0x1); curcode2.Code.push_back(0x41FF);
-    curcode2.Code.push_back( 0x20000000 | address);        curcode2.Code.push_back(0x40);
-    curcode2.Code.push_back( 0xD2000000);                  curcode2.Code.push_back(0x00000000);
-    curcode2.Code.push_back( 0xD2000000);                  curcode2.Code.push_back(0x00000000);
-    return curcode2;
-}
-
 bool ARCodeFile::Load()
 {
-    // References
-    // https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf
+    FileHandle* f = OpenFile(Filename, FileMode::ReadText);
+    if (!f) return true;
 
     Categories.clear();
 
+    bool isincat = false;
     ARCodeCat curcat;
-    curcat.Name = "KHDaysCheats";
-    curcat.Codes.clear();
 
-    curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (US)", 0x02023C9C));
-    curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (EU)", 0x02023CBC));
-    curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)",      0x02194CC3));
-    curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (EU)",      0x02195AA3));
-    curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP)",      0x02193E23));
-    curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP Rev1)", 0x02193DA3));
+    bool isincode = false;
+    ARCode curcode;
 
-    Categories.push_back(curcat);
+    char linebuf[1024];
+    while (!IsEndOfFile(f))
+    {
+        if (!FileReadLine(linebuf, 1024, f))
+            break;
+
+        linebuf[1023] = '\0';
+
+        char* start = linebuf;
+        while (start[0]==' ' || start[0]=='\t')
+            start++;
+
+        if (start[0]=='#' || start[0]=='\r' || start[0]=='\n' || start[0]=='\0')
+            continue;
+
+        if (!strncasecmp(start, "CAT", 3))
+        {
+            char catname[128];
+            int ret = sscanf(start, "CAT %127[^\r\n]", catname);
+            catname[127] = '\0';
+
+            if (ret < 1)
+            {
+                Log(LogLevel::Error, "AR: malformed CAT line: %s\n", start);
+                CloseFile(f);
+                return false;
+            }
+
+            if (isincode) curcat.Codes.push_back(curcode);
+            isincode = false;
+
+            if (isincat) Categories.push_back(curcat);
+            isincat = true;
+
+            curcat.Name = catname;
+            curcat.Codes.clear();
+        }
+        else if (!strncasecmp(start, "CODE", 4))
+        {
+            int enable;
+            char codename[128];
+            int ret = sscanf(start, "CODE %d %127[^\r\n]", &enable, codename);
+            codename[127] = '\0';
+
+            if (ret < 2)
+            {
+                Log(LogLevel::Error, "AR: malformed CODE line: %s\n", start);
+                CloseFile(f);
+                return false;
+            }
+
+            if (!isincat)
+            {
+                Log(LogLevel::Error, "AR: encountered CODE line with no category started\n");
+                CloseFile(f);
+                return false;
+            }
+
+            if (isincode) curcat.Codes.push_back(curcode);
+            isincode = true;
+
+            curcode.Name = codename;
+            curcode.Enabled = enable!=0;
+            curcode.Code.clear();
+        }
+        else
+        {
+            u32 c0, c1;
+            int ret = sscanf(start, "%08X %08X", &c0, &c1);
+
+            if (ret < 2)
+            {
+                Log(LogLevel::Error, "AR: malformed data line: %s\n", start);
+                CloseFile(f);
+                return false;
+            }
+
+            if (!isincode)
+            {
+                Log(LogLevel::Error, "AR: encountered data line with no code started\n");
+                CloseFile(f);
+                return false;
+            }
+
+            curcode.Code.push_back(c0);
+            curcode.Code.push_back(c1);
+        }
+    }
+
+    if (isincode) curcat.Codes.push_back(curcode);
+    if (isincat) Categories.push_back(curcat);
+
+    CloseFile(f);
     return true;
 }
 
 bool ARCodeFile::Save()
 {
-    return false;
+    FileHandle* f = Platform::OpenFile(Filename, FileMode::WriteText);
+    if (!f) return false;
+
+    for (ARCodeCatList::iterator it = Categories.begin(); it != Categories.end(); it++)
+    {
+        ARCodeCat& cat = *it;
+
+        if (it != Categories.begin()) FileWriteFormatted(f, "\n");
+        FileWriteFormatted(f, "CAT %s\n\n", cat.Name.c_str());
+
+        for (ARCodeList::iterator jt = cat.Codes.begin(); jt != cat.Codes.end(); jt++)
+        {
+            ARCode& code = *jt;
+            FileWriteFormatted(f, "CODE %d %s\n", code.Enabled, code.Name.c_str());
+
+            for (size_t i = 0; i < code.Code.size(); i+=2)
+            {
+                FileWriteFormatted(f, "%08X %08X\n", code.Code[i], code.Code[i + 1]);
+            }
+
+            FileWriteFormatted(f, "\n");
+        }
+    }
+
+    CloseFile(f);
+    return true;
 }
 
 }

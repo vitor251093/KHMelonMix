@@ -72,7 +72,7 @@ std::optional<Firmware> LoadFirmware(int type) noexcept;
 std::optional<DSi_NAND::NANDImage> LoadNAND(const std::array<u8, DSiBIOSSize>& arm7ibios) noexcept;
 
 /// Inserts a ROM into the emulated console.
-bool LoadROM(EmuThread*, QStringList filepath, bool reset, float aspectRatioTop);
+bool LoadROM(EmuThread*, QStringList filepath, bool reset);
 void EjectCart(NDS& nds);
 bool CartInserted();
 QString CartLabel();
@@ -91,7 +91,6 @@ void UndoStateLoad(NDS& nds);
 
 void EnableCheats(NDS& nds, bool enable);
 ARCodeFile* GetCheatFile();
-void LoadCheats(NDS& nds, float aspectTop);
 
 void ROMIcon(const u8 (&data)[512], const u16 (&palette)[16], u32 (&iconRef)[32*32]);
 void AnimatedROMIcon(const u8 (&data)[8][512], const u16 (&palette)[8][16],

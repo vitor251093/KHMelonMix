@@ -10,6 +10,11 @@ namespace melonDS
 int GameScene = -1;
 int priorGameScene = -1;
 
+bool _olderHad3DOnTopScreen = false;
+bool _olderHad3DOnBottomScreen = false;
+bool _had3DOnTopScreen = false;
+bool _had3DOnBottomScreen = false;
+
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -17,7 +22,7 @@ int priorGameScene = -1;
 
 u32 KHDaysPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
         if (CmdMenuInputMask & (1 << 1)) { // D-pad left
             InputMask &= ~(1<<1); // B
@@ -70,12 +75,13 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
         case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
         case gameScene_InHoloMissionMenu: return "Game scene: Holo mission menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
-        case gameScene_PauseMenuWithGauge: return "Game scene: Pause menu (with gauge)";
         case gameScene_Tutorial: return "Game scene: Tutorial";
-        case gameScene_RoxasThoughts: return "Game scene: Roxas thoughts";
+        case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
+        case gameScene_MultiplayerMissionReview: return "Game scene: Multiplayer Mission Review";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
-        default: return "Game scene: Unknown (3D)";
+        case gameScene_Other: return "Game scene: Unknown (3D)";
+        default: return "Game scene: Unknown";
     }
 }
 
@@ -88,9 +94,20 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
 
     // 3D element mimicking 2D behavior
-    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 10;
+    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 20;
 
+    bool olderHad3DOnTopScreen = _olderHad3DOnTopScreen;
+    bool olderHad3DOnBottomScreen = _olderHad3DOnBottomScreen;
+    bool had3DOnTopScreen = _had3DOnTopScreen;
+    bool had3DOnBottomScreen = _had3DOnBottomScreen;
     bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
+    bool has3DOnBottomScreen = (nds->PowerControl9 >> 9) == 1;
+    _olderHad3DOnTopScreen = _had3DOnTopScreen;
+    _olderHad3DOnBottomScreen = _had3DOnBottomScreen;
+    _had3DOnTopScreen = has3DOnTopScreen;
+    _had3DOnBottomScreen = has3DOnBottomScreen;
+    bool has3DOnBothScreens = (!olderHad3DOnTopScreen && had3DOnTopScreen && !has3DOnTopScreen) ||
+                              (!olderHad3DOnBottomScreen && had3DOnBottomScreen && !has3DOnBottomScreen);
 
     // The second screen can still look black and not be empty (invisible elements)
     bool noElementsOnBottomScreen = nds->GPU.GPU2D_B.BlendCnt == 0;
@@ -108,10 +125,30 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         return gameScene_Shop;
     }
 
+    if (has3DOnBothScreens)
+    {
+        bool isMissionVictory = (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 0) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 130) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 2625) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 2114) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 130 && nds->GPU.GPU2D_B.BlendCnt == 0) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 322 && nds->GPU.GPU2D_B.BlendCnt == 0) ||
+                                (nds->GPU.GPU2D_A.BlendCnt == 840 && nds->GPU.GPU2D_B.BlendCnt == 0);
+        if (isMissionVictory)
+        {
+            if (GameScene != gameScene_InGameWithCutscene)
+            {
+                return gameScene_MultiplayerMissionReview;
+            }
+        }
+        return gameScene_InGameWithCutscene;
+    }
+
     if (doesntLook3D)
     {
         // Intro save menu
-        bool isIntroLoadMenu = nds->GPU.GPU2D_B.BlendCnt == 4164 && (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) && 
+        bool isIntroLoadMenu = (nds->GPU.GPU2D_B.BlendCnt == 4164 || nds->GPU.GPU2D_B.BlendCnt == 4161) &&
+            (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) &&
              nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
             (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
             (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
@@ -133,13 +170,13 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             }
         }
 
-        if ((nds->PowerControl9 >> 9) == 1 && GameScene == gameScene_InGameMenu)
+        if (has3DOnBottomScreen && GameScene == gameScene_InGameMenu)
         {
             return gameScene_InGameMenu;
         }
 
-        // Mission Mode / Story Mode - Challenges (happens if you press L/R repeatedly)
-        bool inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && nds->GPU.GPU2D_B.BlendCnt == 159;
+        // Mission Mode / Story Mode - Challenges
+        bool inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && (nds->GPU.GPU2D_B.BlendCnt >= 143 && nds->GPU.GPU2D_B.BlendCnt <= 207);
         if (inHoloMissionMenu)
         {
             return gameScene_InHoloMissionMenu;
@@ -165,13 +202,17 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
         if (GameScene != gameScene_Intro)
         {
+            if (nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1)
+            {
+                return gameScene_DayCounter; // 1 digit
+            }
             if (nds->GPU.GPU3D.NumVertices == 8 && nds->GPU.GPU3D.NumPolygons == 2 && nds->GPU.GPU3D.RenderNumPolygons == 2)
             {
-                return gameScene_DayCounter;
+                return gameScene_DayCounter; // 2 digits
             }
             if (nds->GPU.GPU3D.NumVertices == 12 && nds->GPU.GPU3D.NumPolygons == 3 && nds->GPU.GPU3D.RenderNumPolygons == 3)
             {
-                return gameScene_DayCounter;
+                return gameScene_DayCounter; // 3 digits
             }
         }
 
@@ -207,7 +248,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InGameSaveMenu;
         }
 
-        if ((nds->PowerControl9 >> 9) == 1) 
+        if (has3DOnBottomScreen)
         {
             return gameScene_InGameMenu;
         }
@@ -221,31 +262,18 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_Cutscene;
         }
 
+        mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
+        if (mayBeMainMenu)
+        {
+            return gameScene_MainMenu;
+        }
+
         // Unknown 2D
         return gameScene_Other2D;
     }
 
     if (has3DOnTopScreen)
     {
-        // Pause Menu
-        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && nds->GPU.GPU2D_B.EVY == 8;
-        if (inMissionPauseMenu)
-        {
-            if (GameScene == gameScene_InGameWithMap)
-            {
-                return gameScene_PauseMenuWithGauge;  
-            }
-            if (GameScene == gameScene_PauseMenu || GameScene == gameScene_PauseMenuWithGauge)
-            {
-                return GameScene;
-            }
-            return gameScene_PauseMenu;
-        }
-        else if (GameScene == gameScene_PauseMenu || GameScene == gameScene_PauseMenuWithGauge)
-        {
-            return priorGameScene;
-        }
-
         // Tutorial
         if (GameScene == gameScene_Tutorial && topScreenBrightness < 15)
         {
@@ -264,8 +292,17 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         bool inGameMenu = (nds->GPU.GPU3D.NumVertices > 940 || nds->GPU.GPU3D.NumVertices == 0) &&
-                          nds->GPU.GPU3D.RenderNumPolygons > 340 && nds->GPU.GPU3D.RenderNumPolygons < 360 &&
-                          nds->GPU.GPU2D_A.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendCnt == 0;
+                          nds->GPU.GPU3D.RenderNumPolygons > 340 && nds->GPU.GPU3D.RenderNumPolygons < 370 &&
+                          (nds->GPU.GPU2D_A.BlendCnt == 0 || nds->GPU.GPU2D_A.BlendCnt == 2625) && nds->GPU.GPU2D_B.BlendCnt == 0;
+        if (inGameMenu)
+        {
+            return gameScene_InGameMenu;
+        }
+
+        // After exiting a mission from Mission Mode
+        inGameMenu = (nds->GPU.GPU3D.NumVertices > 940 || nds->GPU.GPU3D.NumVertices == 0) &&
+                      nds->GPU.GPU3D.RenderNumPolygons > 370 && nds->GPU.GPU3D.RenderNumPolygons < 400 &&
+                      (nds->GPU.GPU2D_A.BlendCnt == 0 || nds->GPU.GPU2D_A.BlendCnt == 2625) && nds->GPU.GPU2D_B.BlendCnt == 0;
         if (inGameMenu)
         {
             return gameScene_InGameMenu;
@@ -280,8 +317,17 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InHoloMissionMenu;
         }
 
+        // Story Mode - Normal missions - Day 357
+        inHoloMissionMenu = ((nds->GPU.GPU3D.NumVertices == 332 && nds->GPU.GPU3D.NumPolygons == 102 && nds->GPU.GPU3D.RenderNumPolygons == 102) ||
+                             (nds->GPU.GPU3D.NumVertices == 340 && nds->GPU.GPU3D.NumPolygons == 104 && nds->GPU.GPU3D.RenderNumPolygons == 104)) &&
+                            nds->GPU.GPU2D_A.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendCnt == 0;
+        if (inHoloMissionMenu || GameScene == gameScene_InHoloMissionMenu)
+        {
+            return gameScene_InHoloMissionMenu;
+        }
+
         // Mission Mode / Story Mode - Challenges
-        inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && nds->GPU.GPU2D_B.BlendCnt == 159;
+        inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && (nds->GPU.GPU2D_B.BlendCnt >= 143 && nds->GPU.GPU2D_B.BlendCnt <= 207);
         if (inHoloMissionMenu)
         {
             return gameScene_InHoloMissionMenu;
@@ -294,14 +340,30 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InHoloMissionMenu;
         }
 
+        // Pause Menu
+        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8;
+        if (inMissionPauseMenu)
+        {
+            return gameScene_PauseMenu;
+        }
+        else if (GameScene == gameScene_PauseMenu)
+        {
+            return priorGameScene;
+        }
+
         // Regular gameplay without a map
         if (noElementsOnBottomScreen)
         {
             return gameScene_InGameWithoutMap;
         }
-    
+
         // Regular gameplay with a map
         return gameScene_InGameWithMap;
+    }
+
+    if (GameScene == gameScene_InGameWithMap || has3DOnBottomScreen)
+    {
+        return gameScene_InGameWithCutscene;
     }
     
     // Unknown

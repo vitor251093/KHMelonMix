@@ -229,7 +229,6 @@ private:
     int oldW, oldH;
     bool oldMax;
 
-    float aspectRatioTop();
     void loadMostRecentFile();
 
 public:

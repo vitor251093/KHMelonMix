@@ -16,51 +16,27 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#ifndef ARCODEFILE_H
-#define ARCODEFILE_H
+#ifndef KHDAYSCARTVALID_H
+#define KHDAYSCARTVALID_H
 
-#include <string>
-#include <list>
-#include <vector>
-#include "types.h"
+#include "Utils.h"
 
 namespace melonDS
 {
-struct ARCode
-{
-    std::string Name;
-    bool Enabled;
-    std::vector<u32> Code;
-};
 
-typedef std::list<ARCode> ARCodeList;
-
-struct ARCodeCat
-{
-    std::string Name;
-    ARCodeList Codes;
-};
-
-typedef std::list<ARCodeCat> ARCodeCatList;
-
-
-class ARCodeFile
+class KHDaysCartValidator
 {
 public:
-    ARCodeFile();
-    ARCodeFile(const std::string& filename);
-    ~ARCodeFile();
-
-    bool Error;
-
-    virtual bool Load();
-    virtual bool Save();
-
-    ARCodeCatList Categories;
-
-private:
-    std::string Filename;
+    static bool isValid(u32 gamecode)
+    {
+        // Only Days should be loadable
+        Log(LogLevel::Info, "Game code: %u\n", gamecode);
+        u32 usGamecode = 1162300249;
+        u32 euGamecode = 1346849625;
+        u32 jpGamecode = 1246186329;
+        return (gamecode == usGamecode || gamecode == euGamecode || gamecode == jpGamecode);
+    }
 };
 
 }
-#endif // ARCODEFILE_H
+#endif // KHDAYSCARTVALID_H

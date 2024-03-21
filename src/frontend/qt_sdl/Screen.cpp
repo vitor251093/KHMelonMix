@@ -93,20 +93,13 @@ void ScreenPanel::setupScreenLayout()
     int sizing = Config::ScreenSizing;
     if (sizing == 3) sizing = autoScreenSizing;
 
-    int screenAspectTop = Config::ScreenAspectTop;
-    int screenAspectBot = Config::ScreenAspectBot;
-    if (sizing == Frontend::screenSizing_Even) {
-        screenAspectTop = 0;
-        screenAspectBot = 0;
-    }
-
     float aspectTop, aspectBot;
 
     for (auto ratio : aspectRatios)
     {
-        if (ratio.id == screenAspectTop)
+        if (ratio.id == Config::ScreenAspectTop)
             aspectTop = ratio.ratio;
-        if (ratio.id == screenAspectBot)
+        if (ratio.id == Config::ScreenAspectBot)
             aspectBot = ratio.ratio;
     }
 

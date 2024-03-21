@@ -16,9 +16,10 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#ifndef ARCODEFILE_H
-#define ARCODEFILE_H
+#ifndef KHDAYSARCODES_H
+#define KHDAYSARCODES_H
 
+#include "ARCodeFile.h"
 #include <string>
 #include <list>
 #include <vector>
@@ -26,41 +27,22 @@
 
 namespace melonDS
 {
-struct ARCode
-{
-    std::string Name;
-    bool Enabled;
-    std::vector<u32> Code;
-};
 
-typedef std::list<ARCode> ARCodeList;
-
-struct ARCodeCat
-{
-    std::string Name;
-    ARCodeList Codes;
-};
-
-typedef std::list<ARCodeCat> ARCodeCatList;
-
-
-class ARCodeFile
+class KHDaysARCodes: public ARCodeFile
 {
 public:
-    ARCodeFile();
-    ARCodeFile(const std::string& filename);
-    ~ARCodeFile();
+    KHDaysARCodes();
 
-    bool Error;
+    bool Load() override;
+    bool Save() override;
 
-    virtual bool Load();
-    virtual bool Save();
-
-    ARCodeCatList Categories;
 
 private:
-    std::string Filename;
+    float ScreenAspect;
+
+    ARCode ChangeAspectRatio(std::string codeName, u32 address);
+    ARCode AlwaysEnableXAndDPadToControlCommandMenu(std::string codeName, u32 address);
 };
 
 }
-#endif // ARCODEFILE_H
+#endif // KHDAYSARCODES_H

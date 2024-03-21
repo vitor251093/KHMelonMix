@@ -46,6 +46,8 @@
 #include "FreeBIOS.h"
 #include "main.h"
 
+#include "KHDays_ARCodes.h"
+
 using std::make_unique;
 using std::pair;
 using std::string;
@@ -490,11 +492,19 @@ void UnloadCheats(NDS& nds)
     }
 }
 
-void LoadCheats(NDS& nds, float aspectTop)
+void LoadCheats(NDS& nds)
 {
     UnloadCheats(nds);
 
-    CheatFile = new ARCodeFile(aspectTop);
+    std::string filename = GetAssetPath(false, Config::CheatFilePath, ".mch");
+
+    // TODO: check for error (malformed cheat file, ...)
+    CheatFile = new ARCodeFile(filename);
+
+    if (CheatFile->Categories.empty())
+    {
+        CheatFile = new KHDaysARCodes();
+    }
 
     nds.AREngine.SetCodeFile(CheatsOn ? CheatFile : nullptr);
 }
@@ -1191,7 +1201,7 @@ void CustomizeFirmware(Firmware& firmware) noexcept
 }
 
 // Loads ROM data without parsing it. Works for GBA and NDS ROMs.
-bool LoadROMData(const QStringList& filepath, std::unique_ptr<u8[]>& filedata, u32& filelen, string& basepath, string& romname, float aspectRatioTop) noexcept
+bool LoadROMData(const QStringList& filepath, std::unique_ptr<u8[]>& filedata, u32& filelen, string& basepath, string& romname) noexcept
 {
     if (filepath.empty()) return false;
 
@@ -1273,14 +1283,14 @@ bool LoadROMData(const QStringList& filepath, std::unique_ptr<u8[]>& filedata, u
         return false;
 }
 
-bool LoadROM(EmuThread* emuthread, QStringList filepath, bool reset, float aspectRatioTop)
+bool LoadROM(EmuThread* emuthread, QStringList filepath, bool reset)
 {
     unique_ptr<u8[]> filedata = nullptr;
     u32 filelen;
     std::string basepath;
     std::string romname;
 
-    if (!LoadROMData(filepath, filedata, filelen, basepath, romname, aspectRatioTop))
+    if (!LoadROMData(filepath, filedata, filelen, basepath, romname))
         return false;
 
     NDSSave = nullptr;
@@ -1346,7 +1356,7 @@ bool LoadROM(EmuThread* emuthread, QStringList filepath, bool reset, float aspec
 
     CartType = 0;
     NDSSave = std::make_unique<SaveManager>(savname);
-    LoadCheats(*emuthread->NDS, aspectRatioTop);
+    LoadCheats(*emuthread->NDS);
 
     return true;
 }
@@ -1394,7 +1404,7 @@ bool LoadGBAROM(NDS& nds, QStringList filepath)
     std::string basepath;
     std::string romname;
 
-    if (!LoadROMData(filepath, filedata, filelen, basepath, romname, 0))
+    if (!LoadROMData(filepath, filedata, filelen, basepath, romname))
         return false;
 
     GBASave = nullptr;
