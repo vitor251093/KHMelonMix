@@ -33,6 +33,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         make install DESTDIR=AppDir
+        mv ./AppDir/usr/local/bin/melonDS ./AppDir/usr/local/bin/khDaysMM
         mv ./AppDir/usr/local/bin ./AppDir/usr/bin
         mv ./AppDir/usr/local/share ./AppDir/usr/share
         rm -rf ./AppDir/usr/local
@@ -48,8 +49,8 @@ jobs:
       run: |
         ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt --output appimage
         mkdir dist
-        cp ./melonDS*.AppImage ./dist
+        cp ./khDaysMM*.AppImage ./dist
     - uses: actions/upload-artifact@v1
       with:
-        name: melonDS-appimage-x86_64
+        name: khDaysMM-appimage-x86_64
         path: ${{runner.workspace}}/build/dist
