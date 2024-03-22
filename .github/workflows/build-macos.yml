@@ -64,11 +64,11 @@ jobs:
         run: |
           unzip x86_64/*.zip -d x86_64
           unzip arm64/*.zip -d arm64
-          lipo {x86_64,arm64}/melonDS.app/Contents/MacOS/melonDS -create -output melonDS
-          cp -a arm64/melonDS.app melonDS.app
-          cp melonDS melonDS.app/Contents/MacOS/melonDS
-          codesign -s - --deep melonDS.app
-          zip -r -y macOS-universal.zip melonDS.app
+          lipo {x86_64,arm64}/khDaysMM.app/Contents/MacOS/khDaysMM -create -output khDaysMM
+          cp -a arm64/khDaysMM.app khDaysMM.app
+          cp khDaysMM khDaysMM.app/Contents/MacOS/khDaysMM
+          codesign -s - --deep khDaysMM.app
+          zip -r -y macOS-universal.zip khDaysMM.app
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
