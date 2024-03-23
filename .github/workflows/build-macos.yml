@@ -64,8 +64,8 @@ jobs:
         run: |
           unzip x86_64/*.zip -d x86_64
           unzip arm64/*.zip -d arm64
-          lipo {x86_64,arm64}/khDaysMM.app/Contents/MacOS/khDaysMM -create -output khDaysMM
-          cp -a arm64/khDaysMM.app khDaysMM.app
+          lipo {x86_64,arm64}/melonDS.app/Contents/MacOS/melonDS -create -output melonDS
+          cp -a arm64/melonDS.app khDaysMM.app
           cp khDaysMM khDaysMM.app/Contents/MacOS/khDaysMM
           codesign -s - --deep khDaysMM.app
           zip -r -y macOS-universal.zip khDaysMM.app
