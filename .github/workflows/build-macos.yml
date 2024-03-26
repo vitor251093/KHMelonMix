@@ -66,7 +66,7 @@ jobs:
           unzip arm64/*.zip -d arm64
           lipo {x86_64,arm64}/melonDS.app/Contents/MacOS/melonDS -create -output melonDS
           cp -a arm64/melonDS.app khDaysMM.app
-          cp khDaysMM khDaysMM.app/Contents/MacOS/khDaysMM
+          cp melonDS khDaysMM.app/Contents/MacOS/khDaysMM
           codesign -s - --deep khDaysMM.app
           zip -r -y macOS-universal.zip khDaysMM.app
       - name: Upload artifact
