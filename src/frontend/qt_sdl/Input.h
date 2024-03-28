@@ -28,6 +28,8 @@ namespace Input
 
 using namespace melonDS;
 extern int JoystickID;
+extern int JoystickVendorID;
+extern int JoystickDeviceID;
 extern SDL_Joystick* Joystick;
 
 extern u32 InputMask;

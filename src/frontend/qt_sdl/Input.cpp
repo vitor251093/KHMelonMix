@@ -28,6 +28,8 @@ namespace Input
 {
 
 int JoystickID;
+int JoystickVendorID;
+int JoystickDeviceID;
 SDL_Joystick* Joystick = nullptr;
 
 u32 KeyInputMask, JoyInputMask;
@@ -63,6 +65,50 @@ void Init()
 }
 
 
+void SetControllerConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
+                         int camRight, int camLeft, int camUp, int camDown,
+                         int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
+                         int pause, int fullscreen)
+{
+    Config::JoyMapping[0] = a;
+    Config::JoyMapping[1] = b;
+    Config::JoyMapping[2] = select;
+    Config::JoyMapping[3] = start;
+    Config::JoyMapping[4] = right;
+    Config::JoyMapping[5] = left;
+    Config::JoyMapping[6] = up;
+    Config::JoyMapping[7] = down;
+    Config::JoyMapping[8] = r;
+    Config::JoyMapping[9] = l;
+    Config::JoyMapping[10] = x;
+    Config::JoyMapping[11] = y;
+
+    Config::TouchJoyMapping[0] = camRight;
+    Config::TouchJoyMapping[1] = camLeft;
+    Config::TouchJoyMapping[2] = camUp;
+    Config::TouchJoyMapping[3] = camDown;
+
+    Config::CmdMenuJoyMapping[0] = cmdLeft;
+    Config::CmdMenuJoyMapping[1] = cmdRight;
+    Config::CmdMenuJoyMapping[2] = cmdUp;
+    Config::CmdMenuJoyMapping[3] = cmdDown;
+
+    Config::HKJoyMapping[HK_Lid] = -1;
+    Config::HKJoyMapping[HK_Mic] = -1;
+    Config::HKJoyMapping[HK_Pause] = pause;
+    Config::HKJoyMapping[HK_Reset] = -1;
+    Config::HKJoyMapping[HK_FastForward] = -1;
+    Config::HKJoyMapping[HK_FastForwardToggle] = -1;
+    Config::HKJoyMapping[HK_FullscreenToggle] = fullscreen;
+    Config::HKJoyMapping[HK_SwapScreens] = -1;
+    Config::HKJoyMapping[HK_SwapScreenEmphasis] = -1;
+    Config::HKJoyMapping[HK_SolarSensorDecrease] = -1;
+    Config::HKJoyMapping[HK_SolarSensorIncrease] = -1;
+    Config::HKJoyMapping[HK_FrameStep] = -1;
+    Config::HKJoyMapping[HK_PowerButton] = -1;
+    Config::HKJoyMapping[HK_VolumeUp] = -1;
+    Config::HKJoyMapping[HK_VolumeDown] = -1;
+}
 void OpenJoystick()
 {
     if (Joystick) SDL_JoystickClose(Joystick);
@@ -78,6 +124,38 @@ void OpenJoystick()
         JoystickID = 0;
 
     Joystick = SDL_JoystickOpen(JoystickID);
+
+    JoystickVendorID = SDL_JoystickGetDeviceVendor(JoystickID);
+    JoystickDeviceID = SDL_JoystickGetDeviceProduct(JoystickID);
+
+    printf("Joystick - Vendor ID %04x - Device ID %04x\n", JoystickVendorID, JoystickDeviceID);
+    if (Config::JoystickAuto)
+    {
+        if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268) { // PS3 Controller
+
+        }
+        if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4) { // PS4 Controller V1
+
+        }
+        if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc) { // PS4 Controller V2
+
+        }
+        if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
+            SetControllerConfig(1, 0, 6, 7, 131071, 1179647, 17956863, 16908287, 86048773, 35717124, 3, 2,
+                                50462719, 51511295, 68288511, 67239935,
+                                258, 264, 257, 260,
+                                9, 10);
+        }
+        if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028f) { // Xbox 360 Controller (Wireless)
+
+        }
+        if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x02d1) { // Xbox One Controller
+
+        }
+        if (JoystickVendorID == 0x28de) {
+
+        }
+    }
 }
 
 void CloseJoystick()

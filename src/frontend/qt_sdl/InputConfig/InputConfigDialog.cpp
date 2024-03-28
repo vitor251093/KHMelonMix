@@ -50,6 +50,9 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
 
+    keypadJoyAuto = Config::JoystickAuto;
+    ui->cbJoystickAuto->setChecked(Config::JoystickAuto);
+
     for (int i = 0; i < keypad_num; i++)
     {
         keypadKeyMap[i] = Config::KeyMapping[dskeyorder[i]];
@@ -217,6 +220,8 @@ void InputConfigDialog::populatePage(QWidget* page,
 
 void InputConfigDialog::on_InputConfigDialog_accepted()
 {
+    Config::JoystickAuto = keypadJoyAuto;
+
     for (int i = 0; i < keypad_num; i++)
     {
         Config::KeyMapping[dskeyorder[i]] = keypadKeyMap[i];
@@ -283,3 +288,9 @@ void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
     Input::JoystickID = id;
     Input::OpenJoystick();
 }
+void InputConfigDialog::on_cbJoystickAuto_stateChanged(int state)
+{
+    Config::JoystickAuto = (state != 0);
+    Input::OpenJoystick();
+}
+

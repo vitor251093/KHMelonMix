@@ -85,6 +85,7 @@ extern int CmdMenuKeyMapping[4];
 extern int CmdMenuJoyMapping[4];
 
 extern int JoystickID;
+extern bool JoystickAuto;
 
 extern int WindowWidth;
 extern int WindowHeight;
