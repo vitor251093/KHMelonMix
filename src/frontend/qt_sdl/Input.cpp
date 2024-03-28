@@ -138,12 +138,16 @@ void OpenJoystick()
 
         }
         if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc) { // PS4 Controller V2
+            SetAutoJoystickConfig(1, 0, 4, 6, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048778, 69271561, 3, 2,
+                                  0x201FFFF, 0x211FFFF, 0x311FFFF, 0x301FFFF,
+                                  0x102, 0x108, 0x101, 0x104,
+                                  69271559, 86048776);
 
         }
         if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
-            SetAutoJoystickConfig(1, 0, 6, 7, 131071, 1179647, 17956863, 16908287, 86048773, 35717124, 3, 2,
-                                  50462719, 51511295, 68288511, 67239935,
-                                  258, 264, 257, 260,
+            SetAutoJoystickConfig(1, 0, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048773, 35717124, 3, 2,
+                                  0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
+                                  0x102, 0x108, 0x101, 0x104,
                                   9, 10);
         }
         if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028f) { // Xbox 360 Controller (Wireless)
