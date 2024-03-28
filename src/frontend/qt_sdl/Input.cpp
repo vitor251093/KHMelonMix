@@ -65,10 +65,10 @@ void Init()
 }
 
 
-void SetControllerConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
-                         int camRight, int camLeft, int camUp, int camDown,
-                         int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
-                         int pause, int fullscreen)
+void SetAutoJoystickConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
+                           int camRight, int camLeft, int camUp, int camDown,
+                           int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
+                           int pause, int fullscreen)
 {
     Config::JoyMapping[0] = a;
     Config::JoyMapping[1] = b;
@@ -141,10 +141,10 @@ void OpenJoystick()
 
         }
         if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
-            SetControllerConfig(1, 0, 6, 7, 131071, 1179647, 17956863, 16908287, 86048773, 35717124, 3, 2,
-                                50462719, 51511295, 68288511, 67239935,
-                                258, 264, 257, 260,
-                                9, 10);
+            SetAutoJoystickConfig(1, 0, 6, 7, 131071, 1179647, 17956863, 16908287, 86048773, 35717124, 3, 2,
+                                  50462719, 51511295, 68288511, 67239935,
+                                  258, 264, 257, 260,
+                                  9, 10);
         }
         if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028f) { // Xbox 360 Controller (Wireless)
 
@@ -152,7 +152,7 @@ void OpenJoystick()
         if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x02d1) { // Xbox One Controller
 
         }
-        if (JoystickVendorID == 0x28de) {
+        if (JoystickVendorID == 0x28de) { // Valve controllers
 
         }
     }
