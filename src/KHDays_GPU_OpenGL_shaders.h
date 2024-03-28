@@ -126,6 +126,10 @@ bool isColorBlack(ivec4 pixel)
 {
     return pixel.r < 5 && pixel.g < 5 && pixel.b < 5;
 }
+bool isColorVeryBlack(ivec4 pixel)
+{
+    return pixel.r < 2 && pixel.g < 2 && pixel.b < 2;
+}
 bool isColorWhite(ivec4 pixel)
 {
     return pixel.r > 60 && pixel.g > 60 && pixel.b > 60;
@@ -166,6 +170,17 @@ bool isScreenBackgroundBlack(int index)
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0));
+}
+bool isCreditsScreen()
+{
+    return isColorVeryBlack(getSimpleColorAtCoordinate(255, 0)) &&
+           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0*(1.0/3.0))) &&
+           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0*(2.0/3.0))) &&
+           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 - 1.0)) &&
+           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 0)) &&
+           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0*(1.0/3.0))) &&
+           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0*(2.0/3.0))) &&
+           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0 - 1.0));
 }
 
 vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
@@ -491,9 +506,9 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    // if (isScreenBackgroundBlack(0) && isScreenBackgroundBlack(1)) { // credits
-    //     return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
-    // }
+    if (isCreditsScreen()) {
+        return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
+    }
     if (isScreenBlack(1)) {
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(-1, 0)));
     }
