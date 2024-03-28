@@ -142,7 +142,6 @@ void OpenJoystick()
                                   0x201FFFF, 0x211FFFF, 0x311FFFF, 0x301FFFF,
                                   0x102, 0x108, 0x101, 0x104,
                                   69271559, 86048776);
-
         }
         if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
             SetAutoJoystickConfig(1, 0, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048773, 35717124, 3, 2,

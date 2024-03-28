@@ -171,7 +171,7 @@ bool isScreenBackgroundBlack(int index)
 vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
 {
     vec2 texPosition3d = vec2(xpos, ypos);
-    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
@@ -193,7 +193,7 @@ vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
 vec2 getSingleSquaredScreenTextureCoordinates(float xpos, float ypos, int screenIndex, vec2 clearVect)
 {
     vec2 texPosition3d = vec2(xpos, ypos);
-    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(widthScale, 1.0);
     vec2 initialScreenMargin = (screenIndex == 2 ? vec2(0, 192.0) : vec2(0, 0));
@@ -221,7 +221,7 @@ ivec2 getHorizontalDualScreenTextureCoordinates(float xpos, float ypos, ivec2 cl
 {
     int screenScale = 2;
     ivec2 texPosition3d = ivec2(xpos*screenScale, ypos*screenScale);
-    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(1.0, heightScale);
 
@@ -269,7 +269,7 @@ ivec2 getVerticalDualScreenTextureCoordinates(float xpos, float ypos, ivec2 clea
 {
     int screenScale = 2;
     ivec2 texPosition3d = ivec2(xpos*screenScale, ypos*screenScale);
-    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
@@ -318,7 +318,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     int iuScale = KHUIScale;
     float iuTexScale = (6.0)/iuScale;
     vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
@@ -553,7 +553,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 ivec4 getSingleSquaredScreen3DColor(float xpos, float ypos)
 {
     vec2 texPosition3d = vec2(xpos, ypos);
-    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
@@ -581,7 +581,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
 {
     float _3dxpos = float(u3DXPos);
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
-    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(1.0, heightScale);
 
@@ -628,7 +628,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 {
     float _3dxpos = float(u3DXPos);
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
-    float heightScale = (4.0/3)/TopScreenAspectRatio;
+    float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = 1.0/heightScale;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
@@ -718,7 +718,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         int iuScale = KHUIScale;
         float iuTexScale = (6.0)/iuScale;
         vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-        float heightScale = (4.0/3)/TopScreenAspectRatio;
+        float heightScale = 1.0/TopScreenAspectRatio;
         float widthScale = 1.0/heightScale;
 
         // minimap
