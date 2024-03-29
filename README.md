@@ -9,7 +9,11 @@ This is basically melonDS, but with some modifications made specifically to impr
 
 ## How to use
 
-You need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Place that file inside the rom folder, and name it game.nds. Only then you will be able to use the emulator properly.
+You need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Place that file inside a rom folder, next to the executable, and name it game.nds. Only then you will be able to use the emulator properly.
+
+### Steam Deck
+
+The AppImage build is compatible with the Steam Deck. In order to use it, download the AppImage build, extract the zip, right click the AppImage and go to "Properties". Then go to the "Permissions" tab and check the "Allow executing file as program" checkbox.
 
 ## How to build
 
