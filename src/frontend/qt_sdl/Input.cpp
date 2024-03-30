@@ -70,6 +70,14 @@ void SetAutoJoystickConfig(int a, int b, int select, int start, int right, int l
                            int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
                            int pause, int fullscreen)
 {
+    bool shouldUpdate = (Config::JoyMapping[0] == -1) && (Config::JoyMapping[1]  && -1) || (Config::JoyMapping[2]  && -1) ||
+                        (Config::JoyMapping[3] == -1) && (Config::JoyMapping[4]  && -1) || (Config::JoyMapping[5]  && -1) ||
+                        (Config::JoyMapping[6] == -1) && (Config::JoyMapping[7]  && -1) || (Config::JoyMapping[8]  && -1) ||
+                        (Config::JoyMapping[9] == -1) && (Config::JoyMapping[10] && -1) || (Config::JoyMapping[11] && -1);
+    if (!shouldUpdate) {
+        return;
+    }
+
     Config::JoyMapping[0] = a;
     Config::JoyMapping[1] = b;
     Config::JoyMapping[2] = select;
@@ -156,7 +164,10 @@ void OpenJoystick()
 
         }
         if (JoystickVendorID == 0x28de) { // Valve controllers
-
+            SetAutoJoystickConfig(0, 1, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 5, 4, 3, 2,
+                                  0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
+                                  0x102, 0x108, 0x101, 0x104,
+                                  0x221FFFF, 0x521FFFF);
         }
     }
 }
