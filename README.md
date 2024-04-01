@@ -8,6 +8,7 @@ This is basically melonDS, but with some modifications made specifically to impr
 <hr>
 
 <p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/screenshot.png"></p>
+<p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.1</i></p>
 
 ## How to use
 
