@@ -7,6 +7,8 @@ The goal of this project is to turn "Kingdom Hearts 358/2 Days" into a playable 
 This is basically melonDS, but with some modifications made specifically to improve this specific game experience. Any issues you have with KHDays Melon Mix should be reported in this same repository, and not in melonDS repository.
 <hr>
 
+<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/screenshot.png"></p>
+
 ## How to use
 
 You need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Place that file inside a rom folder, next to the executable, and name it game.nds. Only then you will be able to use the emulator properly.
