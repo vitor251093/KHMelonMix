@@ -1,11 +1,11 @@
-#ifndef KHDAYS_PLUGIN_H
-#define KHDAYS_PLUGIN_H
+#ifndef KHRECODED_PLUGIN_H
+#define KHRECODED_PLUGIN_H
 
 #include "NDS.h"
 
 namespace melonDS
 {
-class KHDaysPlugin
+class KHReCodedPlugin
 {
 public:
     static u32 applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask);

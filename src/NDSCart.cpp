@@ -26,7 +26,7 @@
 #include "melonDLDI.h"
 #include "FATStorage.h"
 #include "Utils.h"
-#include "KHDays_CartValidator.h"
+#include "CartValidator.h"
 
 namespace melonDS
 {
@@ -1603,7 +1603,9 @@ std::unique_ptr<CartCommon> ParseROM(std::unique_ptr<u8[]>&& romdata, u32 romlen
     const char *gametitle = header.GameTitle;
     u32 gamecode = header.GameCodeAsU32();
 
-    if (!KHDaysCartValidator::isValid(gamecode)) {
+    CartValidator::load(gamecode);
+    Log(LogLevel::Info, "Game code: %u\n", gamecode);
+    if (!CartValidator::isValid()) {
         return nullptr;
     }
 

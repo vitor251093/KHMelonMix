@@ -16,7 +16,8 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#include "KHDays_Plugin.h"
+#include "KH_Plugin.h"
+#include "CartValidator.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -304,6 +305,7 @@ void EmuThread::run()
 {
     u32 mainScreenPos[3];
     Platform::FileHandle* file;
+    u32 lastRomLoaded = CartValidator::get();
 
     UpdateConsole(nullptr, nullptr);
     // No carts are inserted when melonDS first boots
@@ -377,6 +379,12 @@ void EmuThread::run()
 
         if (EmuRunning == emuStatus_Running || EmuRunning == emuStatus_FrameStep)
         {
+            if (lastRomLoaded != CartValidator::get())
+            {
+                lastRomLoaded = CartValidator::get();
+                videoSettingsDirty = true;
+            }
+
             EmuStatus = emuStatus_Running;
             if (EmuRunning == emuStatus_FrameStep) EmuRunning = emuStatus_Paused;
 
@@ -469,7 +477,7 @@ void EmuThread::run()
             }
 
             // process input and hotkeys
-            Input::InputMask = KHDaysPlugin::applyCommandMenuInputMask(Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
+            Input::InputMask = KHPlugin::applyCommandMenuInputMask(Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
             NDS->SetKeyMask(Input::InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
 
@@ -665,17 +673,17 @@ void EmuThread::refreshGameScene()
 {
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
-    int newGameScene = KHDaysPlugin::detectGameScene(&nds);
+    int newGameScene = KHPlugin::detectGameScene(&nds);
 
 #ifdef _DEBUG
-    KHDaysPlugin::debugLogs(&nds, newGameScene);
+    KHPlugin::debugLogs(&nds, newGameScene);
 #endif
 
-    bool updated = KHDaysPlugin::setGameScene(&nds, newGameScene);
+    bool updated = KHPlugin::setGameScene(&nds, newGameScene);
     if (updated) 
     {
 #ifdef _DEBUG
-        mainWindow->osdAddMessage(0, KHDaysPlugin::getNameByGameScene(newGameScene));
+        mainWindow->osdAddMessage(0, KHPlugin::getNameByGameScene(newGameScene));
 #endif
     }
 }

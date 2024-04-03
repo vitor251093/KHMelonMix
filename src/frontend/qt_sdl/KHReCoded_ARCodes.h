@@ -16,27 +16,33 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#ifndef KHDAYSCARTVALID_H
-#define KHDAYSCARTVALID_H
+#ifndef KHRECODEDARCODES_H
+#define KHRECODEDARCODES_H
 
-#include "Utils.h"
+#include "ARCodeFile.h"
+#include <string>
+#include <list>
+#include <vector>
+#include "types.h"
 
 namespace melonDS
 {
 
-class KHDaysCartValidator
+class KHReCodedARCodes: public ARCodeFile
 {
 public:
-    static bool isValid(u32 gamecode)
-    {
-        // Only Days should be loadable
-        Log(LogLevel::Info, "Game code: %u\n", gamecode);
-        u32 usGamecode = 1162300249;
-        u32 euGamecode = 1346849625;
-        u32 jpGamecode = 1246186329;
-        return (gamecode == usGamecode || gamecode == euGamecode || gamecode == jpGamecode);
-    }
+    KHReCodedARCodes();
+
+    bool Load() override;
+    bool Save() override;
+
+
+private:
+    float ScreenAspect;
+
+    ARCode ChangeAspectRatio(std::string codeName, u32 address);
+    ARCode AlwaysEnableXAndDPadToControlCommandMenu(std::string codeName, u32 address);
 };
 
 }
-#endif // KHDAYSCARTVALID_H
+#endif // KHRECODEDARCODES_H

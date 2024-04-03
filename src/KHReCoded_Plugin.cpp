@@ -1,4 +1,4 @@
-#include "KHDays_Plugin.h"
+#include "KHReCoded_Plugin.h"
 
 #include "GPU3D_OpenGL.h"
 
@@ -7,13 +7,13 @@
 namespace melonDS
 {
 
-int KHDaysPlugin::GameScene = -1;
-int KHDaysPlugin::priorGameScene = -1;
+int KHReCodedPlugin::GameScene = -1;
+int KHReCodedPlugin::priorGameScene = -1;
 
-bool KHDaysPlugin::_olderHad3DOnTopScreen = false;
-bool KHDaysPlugin::_olderHad3DOnBottomScreen = false;
-bool KHDaysPlugin::_had3DOnTopScreen = false;
-bool KHDaysPlugin::_had3DOnBottomScreen = false;
+bool KHReCodedPlugin::_olderHad3DOnTopScreen = false;
+bool KHReCodedPlugin::_olderHad3DOnBottomScreen = false;
+bool KHReCodedPlugin::_had3DOnTopScreen = false;
+bool KHReCodedPlugin::_had3DOnBottomScreen = false;
 
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
@@ -41,7 +41,7 @@ enum
     gameScene_Other               // 16
 };
 
-u32 KHDaysPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
+u32 KHReCodedPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
@@ -82,7 +82,7 @@ u32 KHDaysPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask,
     return InputMask;
 }
 
-const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
+const char* KHReCodedPlugin::getNameByGameScene(int newGameScene)
 {
     switch (newGameScene) {
         case gameScene_Intro: return "Game scene: Intro";
@@ -106,8 +106,10 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
     }
 }
 
-int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
+int KHReCodedPlugin::detectGameScene(melonDS::NDS* nds)
 {
+    return gameScene_InGameWithCutscene;
+
     // printf("0x021D08B8: %d\n",   nds->ARM7Read8(0x021D08B8));
     // printf("0x0223D38C: %d\n\n", nds->ARM7Read8(0x0223D38C));
 
@@ -391,7 +393,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     return gameScene_Other;
 }
 
-bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
+bool KHReCodedPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
 {
     bool updated = false;
     if (GameScene != newGameScene) 
@@ -408,7 +410,7 @@ bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
     return updated;
 }
 
-void KHDaysPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
+void KHReCodedPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
 {
     printf("Game scene: %d\n", gameScene);
     printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);

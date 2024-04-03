@@ -36,6 +36,8 @@ add_library(core STATIC
     GPU3D.cpp
     GPU3D_Soft.cpp
     KHDays_Plugin.cpp
+    KHReCoded_Plugin.cpp
+    CartValidator.cpp
     melonDLDI.h
     NDS.cpp
     NDSCart.cpp
@@ -80,6 +82,7 @@ if (ENABLE_OGLRENDERER)
         GPU_OpenGL.cpp
         GPU_OpenGL_shaders.h
         KHDays_GPU_OpenGL_shaders.h
+        KHReCoded_GPU_OpenGL_shaders.h
         GPU3D_OpenGL.cpp
         GPU3D_OpenGL_shaders.h
         OpenGLSupport.cpp)
