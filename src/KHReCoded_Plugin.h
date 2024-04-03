@@ -1,5 +1,5 @@
-#ifndef KHDAYS_PLUGIN_H
-#define KHDAYS_PLUGIN_H
+#ifndef KHRECODED_PLUGIN_H
+#define KHRECODED_PLUGIN_H
 
 #include "NDS.h"
 
