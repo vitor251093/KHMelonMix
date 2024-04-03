@@ -105,10 +105,9 @@ bool KHReCodedARCodes::Load()
     curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (US)", 0x0202A810));
     curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (EU)", 0x0202A824));
     curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (JP)", 0x0202A728));
-    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)",      0x02194CC3));
-    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (EU)",      0x02195AA3));
-    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP)",      0x02193E23));
-    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP Rev1)", 0x02193DA3));
+    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)", 0x02194CC3));
+    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (EU)", 0x02195AA3));
+    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP)", 0x02193E23));
 
     Categories.push_back(curcat);
     return true;
