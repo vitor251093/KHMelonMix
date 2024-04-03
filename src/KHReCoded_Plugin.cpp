@@ -7,18 +7,39 @@
 namespace melonDS
 {
 
-int GameScene = -1;
-int priorGameScene = -1;
+int KHReCodedPlugin::GameScene = -1;
+int KHReCodedPlugin::priorGameScene = -1;
 
-bool _olderHad3DOnTopScreen = false;
-bool _olderHad3DOnBottomScreen = false;
-bool _had3DOnTopScreen = false;
-bool _had3DOnBottomScreen = false;
+bool KHReCodedPlugin::_olderHad3DOnTopScreen = false;
+bool KHReCodedPlugin::_olderHad3DOnBottomScreen = false;
+bool KHReCodedPlugin::_had3DOnTopScreen = false;
+bool KHReCodedPlugin::_had3DOnBottomScreen = false;
 
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
 #define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
+
+enum
+{
+    gameScene_Intro,              // 0
+    gameScene_MainMenu,           // 1
+    gameScene_IntroLoadMenu,      // 2
+    gameScene_DayCounter,         // 3
+    gameScene_Cutscene,           // 4
+    gameScene_InGameWithMap,      // 5
+    gameScene_InGameWithoutMap,   // 6
+    gameScene_InGameMenu,         // 7
+    gameScene_InGameSaveMenu,     // 8
+    gameScene_InHoloMissionMenu,  // 9
+    gameScene_PauseMenu,          // 10
+    gameScene_Tutorial,           // 11
+    gameScene_InGameWithCutscene, // 12
+    gameScene_MultiplayerMissionReview, // 13
+    gameScene_Shop,               // 14
+    gameScene_Other2D,            // 15
+    gameScene_Other               // 16
+};
 
 u32 KHReCodedPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {

@@ -2,6 +2,7 @@
 #define KH_PLUGIN_H
 
 #include "KHDays_Plugin.h"
+#include "KHReCoded_Plugin.h"
 #include "CartValidator.h"
 #include "NDS.h"
 
@@ -15,11 +16,17 @@ public:
         if (CartValidator::isDays()) {
             return KHDaysPlugin::applyCommandMenuInputMask(InputMask, CmdMenuInputMask, PriorCmdMenuInputMask);
         }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::applyCommandMenuInputMask(InputMask, CmdMenuInputMask, PriorCmdMenuInputMask);
+        }
         return InputMask;
     }
     static const char* getNameByGameScene(int newGameScene) {
         if (CartValidator::isDays()) {
             return KHDaysPlugin::getNameByGameScene(newGameScene);
+        }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::getNameByGameScene(newGameScene);
         }
         return "";
     }
@@ -27,17 +34,26 @@ public:
         if (CartValidator::isDays()) {
             return KHDaysPlugin::detectGameScene(nds);
         }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::detectGameScene(nds);
+        }
         return -1;
     }
     static bool setGameScene(melonDS::NDS* nds, int newGameScene) {
         if (CartValidator::isDays()) {
             return KHDaysPlugin::setGameScene(nds, newGameScene);
         }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::setGameScene(nds, newGameScene);
+        }
         return false;
     }
     static void debugLogs(melonDS::NDS* nds, int gameScene) {
         if (CartValidator::isDays()) {
             KHDaysPlugin::debugLogs(nds, gameScene);
+        }
+        if (CartValidator::isRecoded()) {
+            KHReCodedPlugin::debugLogs(nds, gameScene);
         }
     }
 };

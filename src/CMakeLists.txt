@@ -36,6 +36,7 @@ add_library(core STATIC
     GPU3D.cpp
     GPU3D_Soft.cpp
     KHDays_Plugin.cpp
+    KHReCoded_Plugin.cpp
     CartValidator.cpp
     melonDLDI.h
     NDS.cpp
