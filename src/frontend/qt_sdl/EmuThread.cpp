@@ -17,7 +17,7 @@
 */
 
 #include "KHDays_Plugin.h"
-#include "KHDays_CartValidator.h"
+#include "CartValidator.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -305,7 +305,7 @@ void EmuThread::run()
 {
     u32 mainScreenPos[3];
     Platform::FileHandle* file;
-    u32 lastRomLoaded = KHDaysCartValidator::get();
+    u32 lastRomLoaded = CartValidator::get();
 
     UpdateConsole(nullptr, nullptr);
     // No carts are inserted when melonDS first boots
@@ -379,9 +379,9 @@ void EmuThread::run()
 
         if (EmuRunning == emuStatus_Running || EmuRunning == emuStatus_FrameStep)
         {
-            if (lastRomLoaded != KHDaysCartValidator::get())
+            if (lastRomLoaded != CartValidator::get())
             {
-                lastRomLoaded = KHDaysCartValidator::get();
+                lastRomLoaded = CartValidator::get();
                 videoSettingsDirty = true;
             }
 

@@ -24,7 +24,7 @@
 namespace melonDS
 {
 
-class KHDaysCartValidator
+class CartValidator
 {
 public:
     static u32 get();
