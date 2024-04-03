@@ -1603,7 +1603,8 @@ std::unique_ptr<CartCommon> ParseROM(std::unique_ptr<u8[]>&& romdata, u32 romlen
     const char *gametitle = header.GameTitle;
     u32 gamecode = header.GameCodeAsU32();
 
-    if (!KHDaysCartValidator::isValid(gamecode)) {
+    KHDaysCartValidator::load(gamecode);
+    if (!KHDaysCartValidator::isValid()) {
         return nullptr;
     }
 

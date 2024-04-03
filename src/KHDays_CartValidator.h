@@ -27,15 +27,11 @@ namespace melonDS
 class KHDaysCartValidator
 {
 public:
-    static bool isValid(u32 gamecode)
-    {
-        // Only Days should be loadable
-        Log(LogLevel::Info, "Game code: %u\n", gamecode);
-        u32 usGamecode = 1162300249;
-        u32 euGamecode = 1346849625;
-        u32 jpGamecode = 1246186329;
-        return (gamecode == usGamecode || gamecode == euGamecode || gamecode == jpGamecode);
-    }
+    static u32 get();
+    static void load(u32 gamecode);
+    static bool isDays();
+    static bool isRecoded();
+    static bool isValid();
 };
 
 }

@@ -2115,6 +2115,8 @@ void MainWindow::loadMostRecentFile()
 
     updateCartInserted(false);
 
+    videoSettingsDirty = true;
+
     if (Config::AutoFullscreen)
     {
         emuThread->windowFullscreenToggle();
