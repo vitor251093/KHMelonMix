@@ -99,7 +99,7 @@ bool KHReCodedARCodes::Load()
     Categories.clear();
 
     ARCodeCat curcat;
-    curcat.Name = "KHDaysCheats";
+    curcat.Name = "KHRecodedCheats";
     curcat.Codes.clear();
 
     curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (US)", 0x0202A810));
