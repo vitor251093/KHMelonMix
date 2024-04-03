@@ -29,6 +29,7 @@
 #include "GPU_OpenGL_shaders.h"
 #include "CartValidator.h"
 #include "KHDays_GPU_OpenGL_shaders.h"
+#include "KHReCoded_GPU_OpenGL_shaders.h"
 
 namespace melonDS
 {
@@ -46,7 +47,7 @@ std::optional<GLCompositor> GLCompositor::New() noexcept
             return std::nullopt;
     }
     else if (CartValidator::isRecoded()) {
-        if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_Nearest, &CompShader[0], "CompositorShader"))
+        if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_KhReCoded, &CompShader[0], "CompositorShader"))
             return std::nullopt;
     }
     else {

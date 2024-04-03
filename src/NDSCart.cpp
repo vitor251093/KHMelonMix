@@ -1604,6 +1604,7 @@ std::unique_ptr<CartCommon> ParseROM(std::unique_ptr<u8[]>&& romdata, u32 romlen
     u32 gamecode = header.GameCodeAsU32();
 
     CartValidator::load(gamecode);
+    Log(LogLevel::Info, "Game code: %u\n", gamecode);
     if (!CartValidator::isValid()) {
         return nullptr;
     }
