@@ -108,6 +108,8 @@ const char* KHReCodedPlugin::getNameByGameScene(int newGameScene)
 
 int KHReCodedPlugin::detectGameScene(melonDS::NDS* nds)
 {
+    return gameScene_InGameWithCutscene;
+
     // printf("0x021D08B8: %d\n",   nds->ARM7Read8(0x021D08B8));
     // printf("0x0223D38C: %d\n\n", nds->ARM7Read8(0x0223D38C));
 
