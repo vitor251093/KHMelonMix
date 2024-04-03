@@ -47,6 +47,8 @@
 #include "main.h"
 
 #include "KHDays_ARCodes.h"
+#include "KHReCoded_ARCodes.h"
+#include "CartValidator.h"
 
 using std::make_unique;
 using std::pair;
@@ -503,7 +505,12 @@ void LoadCheats(NDS& nds)
 
     if (CheatFile->Categories.empty())
     {
-        CheatFile = new KHDaysARCodes();
+        if (CartValidator::isDays()) {
+            CheatFile = new KHDaysARCodes();
+        }
+        if (CartValidator::isRecoded()) {
+            CheatFile = new KHReCodedARCodes();
+        }
     }
 
     nds.AREngine.SetCodeFile(CheatsOn ? CheatFile : nullptr);
