@@ -22,7 +22,10 @@ bool CartValidator::isDays()
 }
 bool CartValidator::isRecoded()
 {
-    return !isDays() && GameCode != 0; // TODO: Unimplemented
+    u32 usGamecode = 1161382722;
+    u32 euGamecode = 1345932098;
+    u32 jpGamecode = 1245268802;
+    return (GameCode == usGamecode || GameCode == euGamecode || GameCode == jpGamecode);
 }
 bool CartValidator::isValid()
 {
