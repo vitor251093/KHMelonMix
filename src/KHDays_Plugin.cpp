@@ -216,6 +216,13 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             }
         }
 
+        // Day 50 specific condition
+        if (GameScene == gameScene_InGameWithMap && nds->GPU.GPU2D_B.BlendCnt == 172 && nds->GPU.GPU2D_B.BlendAlpha == 16 &&
+                                                    nds->GPU.GPU2D_B.EVA == 16 && nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0)
+        {
+            return gameScene_InGameWithMap;
+        }
+
         // Day counter
         if (GameScene == gameScene_DayCounter && !no3D)
         {
