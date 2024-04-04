@@ -232,6 +232,13 @@ vec2 getSingleSquaredScreenTextureCoordinates(float xpos, float ypos, int screen
     return initialScreenMargin + clearVect;
 }
 
+vec2 getSingleScreenTextureCoordinates(float xpos, float ypos, int screenIndex)
+{
+    vec2 texPosition3d = vec2(xpos, ypos);
+    vec2 initialScreenMargin = (screenIndex == 2 ? vec2(0, 192.0) : vec2(0, 0));
+    return texPosition3d + initialScreenMargin;
+}
+
 vec2 getHorizontalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearVect)
 {
     int screenScale = 2;
@@ -510,10 +517,10 @@ ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
     //     return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
     // }
     if (isScreenBlack(1)) {
-        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(-1, 0)));
+        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 1));
     }
     if (isScreenBlack(0)) {
-        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(-1, 0)));
+        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 2));
     }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
 }
