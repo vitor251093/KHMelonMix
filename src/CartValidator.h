@@ -31,6 +31,9 @@ public:
     static void load(u32 gamecode);
     static bool isDays();
     static bool isRecoded();
+    static bool isUsaCart();
+    static bool isEuropeCart();
+    static bool isJapanCart();
     static bool isValid();
 };
 
