@@ -105,6 +105,8 @@ bool KHDaysARCodes::Load()
 
     if (CartValidator::isUsaCart()) {
         curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (US)", 0x02023C9C));
+
+        // TODO: This cheat code is making some save files look corrupted when they aren't (issue #69)
         curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)", 0x02194CC3));
     }
     if (CartValidator::isEuropeCart()) {
