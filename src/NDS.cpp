@@ -1173,19 +1173,19 @@ void NDS::SetTouchKeyMask(u32 mask)
     u16 down  = ((((~mask) >> 12)) & 0xF) >> 1;
 
     u16 frames = 2;
-    if (right == 3) right = (NumFrames % (6*frames) >= (4*frames)) ? 0 : 4;
-    if (left  == 3) left  = (NumFrames % (6*frames) >= (4*frames)) ? 0 : 4;
-    if (right == 2) right = (NumFrames % (6*frames) >= (3*frames)) ? 0 : 4;
-    if (left  == 2) left  = (NumFrames % (6*frames) >= (3*frames)) ? 0 : 4;
-    if (right == 1) right = (NumFrames % (6*frames) >= (2*frames)) ? 0 : 4;
-    if (left  == 1) left  = (NumFrames % (6*frames) >= (2*frames)) ? 0 : 4;
+    if (right == 3) right = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
+    if (left  == 3) left  = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
+    if (right == 2) right = (NumFrames % (8*frames) >= (4*frames)) ? 0 : 4;
+    if (left  == 2) left  = (NumFrames % (8*frames) >= (4*frames)) ? 0 : 4;
+    if (right == 1) right = (NumFrames % (8*frames) >= (2*frames)) ? 0 : 4;
+    if (left  == 1) left  = (NumFrames % (8*frames) >= (2*frames)) ? 0 : 4;
 
-    if (up   == 3) right = (NumFrames % (6*frames) >= (4*frames)) ? 0 : 4;
-    if (down == 3) left  = (NumFrames % (6*frames) >= (4*frames)) ? 0 : 4;
-    if (up   == 2) right = (NumFrames % (6*frames) >= (3*frames)) ? 0 : 4;
-    if (down == 2) left  = (NumFrames % (6*frames) >= (3*frames)) ? 0 : 4;
-    if (up   == 1) right = (NumFrames % (6*frames) >= (2*frames)) ? 0 : 4;
-    if (down == 1) left  = (NumFrames % (6*frames) >= (2*frames)) ? 0 : 4;
+    if (up   == 3) right = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
+    if (down == 3) left  = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
+    if (up   == 2) right = (NumFrames % (8*frames) >= (4*frames)) ? 0 : 4;
+    if (down == 2) left  = (NumFrames % (8*frames) >= (4*frames)) ? 0 : 4;
+    if (up   == 1) right = (NumFrames % (8*frames) >= (2*frames)) ? 0 : 4;
+    if (down == 1) left  = (NumFrames % (8*frames) >= (2*frames)) ? 0 : 4;
 
     if (!(right | left | up | down)) {
         ReleaseScreen();
