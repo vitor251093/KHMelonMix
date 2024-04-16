@@ -385,20 +385,20 @@ void TSC::DoSavestate(Savestate* file)
 
 u16 TSC::GetTouchX()
 {
-    if (NDS.KeyInput & (1 << (16+6)))
+    if ((NDS.KeyInput >> 22) & 0x1)
     {
         return 128;
     }
-    return (TouchX & ~0x8000) >> 4;
+    return (TouchX >> 4) & 0xFF;
 }
 
 u16 TSC::GetTouchY()
 {
-    if (NDS.KeyInput & (1 << (16+6)))
+    if ((NDS.KeyInput >> 22) & 0x1)
     {
-        return 95;
+        return 96;
     }
-    return (TouchY & ~0x8000) >> 4;
+    return (TouchY >> 4) & 0xFF;
 }
 
 void TSC::SetTouchCoords(u16 x, u16 y)

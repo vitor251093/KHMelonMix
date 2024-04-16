@@ -1167,15 +1167,15 @@ void NDS::SetKeyMask(u32 mask)
 
 void NDS::SetTouchKeyMask(u32 mask)
 {
-    u32 right = ((~mask) & 0xF) >> 2;
-    u32 left  = ((((~mask) >> 4))  & 0xF) >> 2;
-    u32 up    = ((((~mask) >> 8))  & 0xF) >> 1;
-    u32 down  = ((((~mask) >> 12)) & 0xF) >> 1;
+    u16 right = ((~mask) & 0xF) >> 1;
+    u16 left  = ((((~mask) >> 4))  & 0xF) >> 1;
+    u16 up    = ((((~mask) >> 8))  & 0xF) >> 1;
+    u16 down  = ((((~mask) >> 12)) & 0xF) >> 1;
 
-    right = ((right + 1) & (~0x1)) << 1;
-    left  = ((left  + 1) & (~0x1)) << 1;
-    up    = ((up    + 1) & (~0x1)) << 1;
-    down  = ((down  + 1) & (~0x1)) << 1;
+    if (right <= 3) right = 0;
+    if (left  <= 3) left  = 0;
+    if (up    <= 3) up    = 0;
+    if (down  <= 3) down  = 0;
 
     if (!(right | left | up | down)) {
         ReleaseScreen();
@@ -1188,7 +1188,7 @@ void NDS::SetTouchKeyMask(u32 mask)
 
     if (left)
     {
-        if (TouchX < left)
+        if (TouchX <= left)
         {
             invalidNextPosition = true;
         }
@@ -1199,7 +1199,7 @@ void NDS::SetTouchKeyMask(u32 mask)
     }
     if (right)
     {
-        if (TouchX + right > 191)
+        if (TouchX + right >= 255)
         {
             invalidNextPosition = true;
         }
@@ -1210,7 +1210,7 @@ void NDS::SetTouchKeyMask(u32 mask)
     }
     if (down)
     {
-        if (TouchY < down)
+        if (TouchY <= down)
         {
             invalidNextPosition = true;
         }
@@ -1221,7 +1221,7 @@ void NDS::SetTouchKeyMask(u32 mask)
     }
     if (up)
     {
-        if (TouchY + up > 255)
+        if (TouchY + up >= 191)
         {
             invalidNextPosition = true;
         }
