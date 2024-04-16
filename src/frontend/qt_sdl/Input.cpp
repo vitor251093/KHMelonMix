@@ -47,10 +47,10 @@ void Init()
 {
     KeyInputMask = 0xFFF;
     JoyInputMask = 0xFFF;
-    KeyTouchInputMask = 0xFFF;
-    JoyTouchInputMask = 0xFFF;
+    KeyTouchInputMask = 0xFFFF;
+    JoyTouchInputMask = 0xFFFF;
     InputMask = 0xFFF;
-    TouchInputMask = 0xFFF;
+    TouchInputMask = 0xFFFF;
 
     KeyHotkeyMask = 0;
     JoyHotkeyMask = 0;
@@ -213,7 +213,7 @@ void KeyPress(QKeyEvent* event)
 
     for (int i = 0; i < 4; i++)
         if (keyKP == Config::TouchKeyMapping[i])
-            KeyTouchInputMask &= ~(1<<i);
+            KeyTouchInputMask &= ~(0xF << (i*4));
 
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == Config::HKKeyMapping[i])
@@ -237,7 +237,7 @@ void KeyRelease(QKeyEvent* event)
 
     for (int i = 0; i < 4; i++)
         if (keyKP == Config::TouchKeyMapping[i])
-            KeyTouchInputMask |= (1<<i);
+            KeyTouchInputMask |= (0xF << (i*4));
 
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == Config::HKKeyMapping[i])
@@ -249,9 +249,9 @@ void KeyRelease(QKeyEvent* event)
 }
 
 
-bool JoystickButtonDown(int val)
+Sint16 JoystickButtonDown(int val)
 {
-    if (val == -1) return false;
+    if (val == -1) return 0;
 
     bool hasbtn = ((val & 0xFFFF) != 0xFFFF);
 
@@ -269,14 +269,14 @@ bool JoystickButtonDown(int val)
             else if (hatdir == 0x2) pressed = (hatval & SDL_HAT_RIGHT);
             else if (hatdir == 0x8) pressed = (hatval & SDL_HAT_LEFT);
 
-            if (pressed) return true;
+            if (pressed) return 1;
         }
         else
         {
             int btnnum = val & 0xFFFF;
             Uint8 btnval = SDL_JoystickGetButton(Joystick, btnnum);
 
-            if (btnval) return true;
+            if (btnval) return 1;
         }
     }
 
@@ -284,25 +284,25 @@ bool JoystickButtonDown(int val)
     {
         int axisnum = (val >> 24) & 0xF;
         int axisdir = (val >> 20) & 0xF;
-        Sint16 axisval = SDL_JoystickGetAxis(Joystick, axisnum);
+        Sint16 axisval = SDL_JoystickGetAxis(Joystick, axisnum); // from -32768 to 32767
 
         switch (axisdir)
         {
         case 0: // positive
-            if (axisval > 16384) return true;
+            if (axisval > 0) return (axisval >> 10);
             break;
 
         case 1: // negative
-            if (axisval < -16384) return true;
+            if (axisval < -1) return ((~axisval) >> 10);
             break;
 
         case 2: // trigger
-            if (axisval > 0) return true;
+            if (axisval > 0) return 1;
             break;
         }
     }
 
-    return false;
+    return 0;
 }
 
 void Process()
@@ -324,13 +324,15 @@ void Process()
     }
 
     JoyInputMask = 0xFFF;
-    JoyTouchInputMask = 0xFFF;
+    JoyTouchInputMask = 0xFFFF;
     for (int i = 0; i < 12; i++)
-        if (JoystickButtonDown(Config::JoyMapping[i]))
+        if (JoystickButtonDown(Config::JoyMapping[i]) != 0)
             JoyInputMask &= ~(1<<i);
-    for (int i = 0; i < 4; i++)
-        if (JoystickButtonDown(Config::TouchJoyMapping[i]))
-            JoyTouchInputMask &= ~(1<<i);
+    for (int i = 0; i < 4; i++) {
+        Sint16 joyValue = JoystickButtonDown(Config::TouchJoyMapping[i]);
+        if (joyValue != 0)
+            JoyTouchInputMask &= ~(joyValue << (i*4));
+    }
 
     InputMask = KeyInputMask & JoyInputMask;
     TouchInputMask = KeyTouchInputMask & JoyTouchInputMask;
@@ -338,10 +340,10 @@ void Process()
     JoyHotkeyMask = 0;
     JoyCmdMenuInputMask = 0;
     for (int i = 0; i < HK_MAX; i++)
-        if (JoystickButtonDown(Config::HKJoyMapping[i]))
+        if (JoystickButtonDown(Config::HKJoyMapping[i]) != 0)
             JoyHotkeyMask |= (1<<i);
     for (int i = 0; i < 4; i++)
-        if (JoystickButtonDown(Config::CmdMenuJoyMapping[i]))
+        if (JoystickButtonDown(Config::CmdMenuJoyMapping[i]) != 0)
             JoyCmdMenuInputMask |= (1<<i);
 
     HotkeyMask = KeyHotkeyMask | JoyHotkeyMask;

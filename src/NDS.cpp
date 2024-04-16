@@ -1167,10 +1167,15 @@ void NDS::SetKeyMask(u32 mask)
 
 void NDS::SetTouchKeyMask(u32 mask)
 {
-    u32 right = (~mask) & 0x1;
-    u32 left  = (~(mask >> 1)) & 0x1;
-    u32 up    = (~(mask >> 2)) & 0x1;
-    u32 down  = (~(mask >> 3)) & 0x1;
+    u32 right = ((~mask) & 0xF) >> 2;
+    u32 left  = ((((~mask) >> 4))  & 0xF) >> 2;
+    u32 up    = ((((~mask) >> 8))  & 0xF) >> 1;
+    u32 down  = ((((~mask) >> 12)) & 0xF) >> 1;
+
+    right = ((right + 1) & (~0x1)) << 1;
+    left  = ((left  + 1) & (~0x1)) << 1;
+    up    = ((up    + 1) & (~0x1)) << 1;
+    down  = ((down  + 1) & (~0x1)) << 1;
 
     if (!(right | left | up | down)) {
         ReleaseScreen();
@@ -1179,52 +1184,50 @@ void NDS::SetTouchKeyMask(u32 mask)
     
     u16 TouchX = SPI.GetTSC()->GetTouchX();
     u16 TouchY = SPI.GetTSC()->GetTouchY();
-    u16 sensitivityX = 4;
-    u16 sensitivityY = 8;
     bool invalidNextPosition = false;
 
     if (left)
     {
-        if (TouchX < sensitivityX)
+        if (TouchX < left)
         {
             invalidNextPosition = true;
         }
         else
         {
-            TouchX -= sensitivityX;
+            TouchX -= left;
         }
     }
     if (right)
     {
-        if (TouchX + sensitivityX > 191)
+        if (TouchX + right > 191)
         {
             invalidNextPosition = true;
         }
         else
         {
-            TouchX += sensitivityX;
+            TouchX += right;
         }
     }
     if (down)
     {
-        if (TouchY < sensitivityY)
+        if (TouchY < down)
         {
             invalidNextPosition = true;
         }
         else
         {
-            TouchY -= sensitivityY;
+            TouchY -= down;
         }
     }
     if (up)
     {
-        if (TouchY + sensitivityY > 255)
+        if (TouchY + up > 255)
         {
             invalidNextPosition = true;
         }
         else
         {
-            TouchY += sensitivityY;
+            TouchY += up;
         }
     }
 
