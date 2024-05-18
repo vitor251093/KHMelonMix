@@ -7,16 +7,16 @@ The goal of this project is to turn "Kingdom Hearts 358/2 Days" into a playable 
 This is basically melonDS, but with some modifications made specifically to improve this specific game experience. Any issues you have with KHDays Melon Mix should be reported in this same repository, and not in melonDS repository.
 <hr>
 
-<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/screenshot.png"></p>
-<p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.1</i></p>
-
 ## How to play
 
-First, download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system. Then, you will need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Place that file inside a rom folder, next to the downloaded executable, and name it game.nds. Now you just need to launch the Melon Mix.
+First, download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system (not the source code zip). Then, you will need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Place that NDS file inside a "rom" folder, next to the downloaded Melon Mix executable (which was inside the zip file that you downloaded), and name it game.nds. Now you just need to launch the Melon Mix executable.
 
 ### Steam Deck
 
 The AppImage build is compatible with the Steam Deck. In order to use it, download the AppImage build, extract the zip, right click the AppImage and go to "Properties". Then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Don't forget the NDS file, like mentioned above.
+
+<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/screenshot.png"></p>
+<p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.1</i></p>
 
 ## How to build from scratch
 
