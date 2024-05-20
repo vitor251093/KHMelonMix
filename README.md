@@ -16,7 +16,7 @@ First, download the [latest version](https://github.com/vitor251093/KHDays_FM/re
 The AppImage build is compatible with the Steam Deck. In order to use it, download the AppImage build, extract the zip, right click the AppImage and go to "Properties". Then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Don't forget the NDS file, like mentioned above.
 
 <p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/screenshot.png"></p>
-<p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.1</i></p>
+<p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.2 (upcoming)</i></p>
 
 ## How to build from scratch
 
