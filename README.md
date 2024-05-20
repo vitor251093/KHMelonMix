@@ -99,3 +99,4 @@ the Free Software Foundation, either version 3 of the License, or
 
 ### External
 * Images used in the Input Config Dialog - see `src/frontend/qt_sdl/InputConfig/resources/LICENSE.md`
+
