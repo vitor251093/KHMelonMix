@@ -135,8 +135,6 @@ private:
 
     void refreshGameScene();
 
-    int autoScreenSizing;
-
     int lastVideoRenderer = -1;
 
     double perfCountsSec;
