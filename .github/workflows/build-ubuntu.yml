@@ -9,25 +9,22 @@ on:
       - master
 
 jobs:
-  build:
+  build-x86_64:
     name: x86_64
-
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
+      name: Check out sources
     - name: Install dependencies
       run: |
         sudo rm -f /etc/apt/sources.list.d/dotnetdev.list /etc/apt/sources.list.d/microsoft-prod.list
         sudo apt update
-        sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libslirp0 libslirp-dev libarchive-dev zstd libzstd-dev --allow-downgrades
-    - name: Create build environment
-      run: mkdir ${{runner.workspace}}/build
+        sudo apt install --allow-downgrades cmake ninja-build extra-cmake-modules libpcap0.8-dev libsdl2-dev \
+          qt6-{base,base-private,multimedia}-dev libslirp0 libslirp-dev libarchive-dev libzstd-dev libfuse2
     - name: Configure
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE
-    - name: Make
-      working-directory: ${{runner.workspace}}/build
+      run: cmake -B build -G Ninja -DUSE_QT6=ON -DCMAKE_INSTALL_PREFIX=/usr
+    - name: Build
       run: |
         make -j$(nproc --all)
         mkdir dist

@@ -248,6 +248,11 @@ void KeyRelease(QKeyEvent* event)
             KeyCmdMenuInputMask &= ~(1<<i);
 }
 
+void KeyReleaseAll()
+{
+    KeyInputMask = 0xFFF;
+    KeyHotkeyMask = 0;
+}
 
 Sint16 JoystickButtonDown(int val)
 {
