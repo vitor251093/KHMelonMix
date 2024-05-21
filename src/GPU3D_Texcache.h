@@ -270,7 +270,7 @@ public:
 
             int channels = 4;
             int r_width, r_height, r_channels;
-            unsigned char* imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+            imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
             if (imageData != nullptr) {
                 printf("Loading texture %s (key: %u)\n", path, key);
                 width = r_width;
