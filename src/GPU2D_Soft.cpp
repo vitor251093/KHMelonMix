@@ -1713,6 +1713,8 @@ void SoftRenderer::DrawSprite_Rotscale(u32 num, u32 boundwidth, u32 boundheight,
     u32 tilenum = attrib[2] & 0x03FF;
     u32 spritemode = window ? 0 : ((attrib[0] >> 10) & 0x3);
 
+    //printf("SoftRenderer::DrawSprite_Rotscale - tilenum: %d\n", tilenum);
+
     u32 ytilefactor;
 
     u8* objvram;
@@ -1923,6 +1925,8 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     u32 pixelattr = ((attrib[2] & 0x0C00) << 6) | 0xC0000;
     u32 tilenum = attrib[2] & 0x03FF;
     u32 spritemode = window ? 0 : ((attrib[0] >> 10) & 0x3);
+
+    //printf("SoftRenderer::DrawSprite_Normal - tilenum: %d\n", tilenum);
 
     u32 wmask = width - 8; // really ((width - 1) & ~0x7)
 

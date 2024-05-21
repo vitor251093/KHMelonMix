@@ -3,10 +3,14 @@
 
 #include "types.h"
 #include "GPU.h"
+#include "GPU_Texreplace.h"
 
 #include <assert.h>
 #include <unordered_map>
 #include <vector>
+
+#include <filesystem>
+#include <fstream>
 
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash/xxhash.h"
@@ -107,7 +111,7 @@ public:
             invalidate:
                 FreeTextures[entry.WidthLog2][entry.HeightLog2].push_back(entry.Texture);
 
-                //printf("invalidating texture %d\n", entry.ImageDescriptor);
+                // printf("invalidating texture %u\n", it->first);
 
                 it = Cache.erase(it);
             }
@@ -116,6 +120,18 @@ public:
         }
 
         return false;
+    }
+
+    int RightmostBit(u32 num) {
+        int c = 0;
+        if (num == 0) {
+            return 0;
+        }
+        while ((num & 1) == 0) {
+            num >>= 1;
+            c++;
+        }
+        return c;
     }
 
     void GetTexture(GPU& gpu, u32 texParam, u32 palBase, TexHandleT& textureHandle, u32& layer, u32*& helper)
@@ -229,6 +245,77 @@ public:
         if (entry.TexPalSize)
             entry.TexPalHash = XXH3_64bits(&gpu.VRAMFlat_TexPal[entry.TexPalStart], entry.TexPalSize);
 
+        std::ostringstream oss;
+        for (int i = 0; i < 2; i++)
+        {
+            if (entry.TextureRAMSize[i])
+                oss << static_cast<char32_t>(entry.TextureHash[i]);
+        }
+        std::string uniqueIdentifier = oss.str();
+        
+        std::filesystem::path currentPath = std::filesystem::current_path();
+        std::string filename = uniqueIdentifier + ".png";
+        std::filesystem::path fullPath = currentPath / "textures" / filename;
+        std::filesystem::path fullPathTmp = currentPath / "textures_tmp" / filename;
+#ifdef _WIN32
+        const char* path = fullPath.string().c_str();
+        const char* pathTmp = fullPathTmp.string().c_str();
+#else
+        const char* path = fullPath.c_str();
+        const char* pathTmp = fullPathTmp.c_str();
+#endif
+
+        int channels = 4;
+        int r_width, r_height, r_channels;
+        unsigned char* imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+        if (imageData != nullptr) {
+            // printf("Loading texture %s (key: %u)\n", path, key);
+
+            if (r_channels == 3) {
+                unsigned char* newImageData = (unsigned char*)malloc(r_height * r_width * channels * sizeof(unsigned char[4]));
+                for (int y = 0; y < r_height; ++y) {
+                    for (int x = 0; x < r_width; ++x) {
+                        unsigned char* old_pixel = imageData + (y * r_width + x) * (r_channels);
+                        unsigned char* new_pixel = newImageData + (y * r_width + x) * channels;
+                        new_pixel[0] = old_pixel[0];
+                        new_pixel[1] = old_pixel[1];
+                        new_pixel[2] = old_pixel[2];
+                        new_pixel[3] = 255;
+                    }
+                }
+                imageData = newImageData;
+                r_channels = channels;
+            }
+            for (int y = 0; y < r_height; ++y) {
+                for (int x = 0; x < r_width; ++x) {
+                    unsigned char* pixel = imageData + (y * r_width + x) * (r_channels);
+                    unsigned char r = pixel[0];
+                    unsigned char g = pixel[1];
+                    unsigned char b = pixel[2];
+                    unsigned char alpha = pixel[3];
+                    r = (r >> 2);
+                    g = (g >> 2);
+                    b = (b >> 2);
+                    alpha = (alpha >> 3);
+                    pixel[0] = r;
+                    pixel[1] = g;
+                    pixel[2] = b;
+                    pixel[3] = alpha;
+                }
+            }
+            width = r_width;
+            height = r_height;
+        }
+        else {
+            imageData = (unsigned char*)DecodingBuffer;
+            Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+        }
+
+        widthLog2 = RightmostBit(width) - 3;
+        heightLog2 = RightmostBit(height) - 3;
+        entry.WidthLog2 = widthLog2;
+        entry.HeightLog2 = heightLog2;
+
         auto& texArrays = TexArrays[widthLog2][heightLog2];
         auto& freeTextures = FreeTextures[widthLog2][heightLog2];
 
@@ -254,7 +341,7 @@ public:
 
         entry.Texture = storagePlace;
 
-        TexLoader.UploadTexture(storagePlace.TextureID, width, height, storagePlace.Layer, DecodingBuffer);
+        TexLoader.UploadTexture(storagePlace.TextureID, width, height, storagePlace.Layer, imageData);
         //printf("using storage place %d %d | %d %d (%d)\n", width, height, storagePlace.TexArrayIdx, storagePlace.LayerIdx, array.ImageDescriptor);
 
         textureHandle = storagePlace.TextureID;

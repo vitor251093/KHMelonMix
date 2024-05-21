@@ -105,6 +105,7 @@
 #include "CameraManager.h"
 
 #include "CLI.h"
+#include "GPU3D.h"
 
 // TODO: uniform variable spelling
 using namespace melonDS;

@@ -34,3 +34,5 @@ compile_commands.json
 .vscode
 CMakeFiles
 CMakeCache.txt
+
+textures_tmp/*.png
