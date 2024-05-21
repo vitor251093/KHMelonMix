@@ -26,6 +26,9 @@
 #include <initializer_list>
 #include <algorithm>
 
+namespace melonDS
+{
+
 inline u64 GetRangedBitMask(u32 idx, u32 startBit, u32 bitsCount)
 {
     u32 startEntry = startBit >> 6;
@@ -66,7 +69,7 @@ struct NonStupidBitField
         NonStupidBitField<Size>& BitField;
         u32 Idx;
 
-        operator bool()
+        operator bool() const
         {
             return BitField.Data[Idx >> 6] & (1ULL << (Idx & 0x3F));
         }
@@ -86,13 +89,13 @@ struct NonStupidBitField
         u32 BitIdx;
         u64 RemainingBits;
 
-        u32 operator*() { return DataIdx * 64 + BitIdx; }
+        u32 operator*() const { return DataIdx * 64 + BitIdx; }
 
-        bool operator==(const Iterator& other)
+        bool operator==(const Iterator& other) const
         {
             return other.DataIdx == DataIdx;
         }
-        bool operator!=(const Iterator& other)
+        bool operator!=(const Iterator& other) const
         {
             return other.DataIdx != DataIdx;
         }
@@ -170,10 +173,11 @@ struct NonStupidBitField
     {
         for (u32 i = 0; i < DataLength; i++)
         {
-            u32 idx = __builtin_ctzll(Data[i]);
-            if (Data[i] && idx + i * 64 < Size)
+            if (Data[i])
             {
-                return {*this, i, idx, Data[i] & ~(1ULL << idx)};
+                u32 idx = __builtin_ctzll(Data[i]);
+                if (idx + i * 64 < Size)
+                    return {*this, i, idx, Data[i] & ~(1ULL << idx)};
             }
         }
         return End();
@@ -268,5 +272,6 @@ struct NonStupidBitField
     }
 };
 
+}
 
 #endif

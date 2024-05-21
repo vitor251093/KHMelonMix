@@ -24,17 +24,12 @@
 
 #include "GPU3D_Compute_shaders.h"
 
-namespace GPU3D
+namespace melonDS
 {
 
-ComputeRenderer::ComputeRenderer()
-    : Renderer3D(true), Texcache(TexcacheOpenGLLoader())
+ComputeRenderer::ComputeRenderer(GLCompositor&& compositor)
+    : Renderer3D(true), Texcache(TexcacheOpenGLLoader()), CurGLCompositor(std::move(compositor))
 {}
-
-ComputeRenderer::~ComputeRenderer()
-{}
-
-
 
 bool ComputeRenderer::CompileShader(GLuint& shader, const std::string& source, const std::initializer_list<const char*>& defines)
 {
@@ -62,60 +57,178 @@ bool ComputeRenderer::CompileShader(GLuint& shader, const std::string& source, c
     return OpenGL::CompileComputeProgram(shader, shaderSource.c_str(), shaderName.c_str());
 }
 
-void blah(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam)
+void ComputeRenderer::ShaderCompileStep(int& current, int& count)
+{
+    current = ShaderStepIdx;
+    ShaderStepIdx++;
+    count = 33;
+    switch (current)
+    {
+    case 0:
+        CompileShader(ShaderInterpXSpans[0], ComputeRendererShaders::InterpSpans, {"InterpSpans", "ZBuffer"});
+        return;
+    case 1:
+        CompileShader(ShaderInterpXSpans[1], ComputeRendererShaders::InterpSpans, {"InterpSpans", "WBuffer"});
+        return;
+    case 2:
+        CompileShader(ShaderBinCombined, ComputeRendererShaders::BinCombined, {"BinCombined"});
+        return;
+    case 3:
+        CompileShader(ShaderDepthBlend[0], ComputeRendererShaders::DepthBlend, {"DepthBlend", "ZBuffer"});
+        return;
+    case 4:
+        CompileShader(ShaderDepthBlend[1], ComputeRendererShaders::DepthBlend, {"DepthBlend", "WBuffer"});
+        return;
+    case 5:
+        CompileShader(ShaderRasteriseNoTexture[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "NoTexture"});
+        return;
+    case 6:
+        CompileShader(ShaderRasteriseNoTexture[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "NoTexture"});
+        return;
+    case 7:
+        CompileShader(ShaderRasteriseNoTextureToon[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "NoTexture", "Toon"});
+        return;
+    case 8:
+        CompileShader(ShaderRasteriseNoTextureToon[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "NoTexture", "Toon"});
+        return;
+    case 9:
+        CompileShader(ShaderRasteriseNoTextureHighlight[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "NoTexture", "Highlight"});
+        return;
+    case 10:
+        CompileShader(ShaderRasteriseNoTextureHighlight[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "NoTexture", "Highlight"});
+        return;
+    case 11:
+        CompileShader(ShaderRasteriseUseTextureDecal[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "UseTexture", "Decal"});
+        return;
+    case 12:
+        CompileShader(ShaderRasteriseUseTextureDecal[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "UseTexture", "Decal"});
+        return;
+    case 13:
+        CompileShader(ShaderRasteriseUseTextureModulate[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "UseTexture", "Modulate"});
+        return;
+    case 14:
+        CompileShader(ShaderRasteriseUseTextureModulate[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "UseTexture", "Modulate"});
+        return;
+    case 15:
+        CompileShader(ShaderRasteriseUseTextureToon[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "UseTexture", "Toon"});
+        return;
+    case 16:
+        CompileShader(ShaderRasteriseUseTextureToon[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "UseTexture", "Toon"});
+        return;
+    case 17:
+        CompileShader(ShaderRasteriseUseTextureHighlight[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "UseTexture", "Highlight"});
+        return;
+    case 18:
+        CompileShader(ShaderRasteriseUseTextureHighlight[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "UseTexture", "Highlight"});
+        return;
+    case 19:
+        CompileShader(ShaderRasteriseShadowMask[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "ShadowMask"});
+        return;
+    case 20:
+        CompileShader(ShaderRasteriseShadowMask[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "ShadowMask"});
+        return;
+    case 21:
+        CompileShader(ShaderClearCoarseBinMask, ComputeRendererShaders::ClearCoarseBinMask, {"ClearCoarseBinMask"});
+        return;
+    case 22:
+        CompileShader(ShaderClearIndirectWorkCount, ComputeRendererShaders::ClearIndirectWorkCount, {"ClearIndirectWorkCount"});
+        return;
+    case 23:
+        CompileShader(ShaderCalculateWorkListOffset, ComputeRendererShaders::CalcOffsets, {"CalculateWorkOffsets"});
+        return;
+    case 24:
+        CompileShader(ShaderSortWork, ComputeRendererShaders::SortWork, {"SortWork"});
+        return;
+    case 25:
+        CompileShader(ShaderFinalPass[0], ComputeRendererShaders::FinalPass, {"FinalPass"});
+        return;
+    case 26:
+        CompileShader(ShaderFinalPass[1], ComputeRendererShaders::FinalPass, {"FinalPass", "EdgeMarking"});
+        return;
+    case 27:
+        CompileShader(ShaderFinalPass[2], ComputeRendererShaders::FinalPass, {"FinalPass", "Fog"});
+        return;
+    case 28:
+        CompileShader(ShaderFinalPass[3], ComputeRendererShaders::FinalPass, {"FinalPass", "EdgeMarking", "Fog"});
+        return;
+    case 29:
+        CompileShader(ShaderFinalPass[4], ComputeRendererShaders::FinalPass, {"FinalPass", "AntiAliasing"});
+        return;
+    case 30:
+        CompileShader(ShaderFinalPass[5], ComputeRendererShaders::FinalPass, {"FinalPass", "AntiAliasing", "EdgeMarking"});
+        return;
+    case 31:
+        CompileShader(ShaderFinalPass[6], ComputeRendererShaders::FinalPass, {"FinalPass", "AntiAliasing", "Fog"});
+        return;
+    case 32:
+        CompileShader(ShaderFinalPass[7], ComputeRendererShaders::FinalPass, {"FinalPass", "AntiAliasing", "EdgeMarking", "Fog"});
+        return;
+    default:
+        __builtin_unreachable();
+        return;
+    }
+}
+
+void blah(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
 {
     printf("%s\n", message);
 }
 
-bool ComputeRenderer::Init()
+std::unique_ptr<ComputeRenderer> ComputeRenderer::New()
 {
+    std::optional<GLCompositor> compositor =  GLCompositor::New();
+    if (!compositor)
+        return nullptr;
+
+    std::unique_ptr<ComputeRenderer> result = std::unique_ptr<ComputeRenderer>(new ComputeRenderer(std::move(*compositor)));
+
     //glDebugMessageCallback(blah, NULL);
     //glEnable(GL_DEBUG_OUTPUT);
-    glGenBuffers(1, &YSpanSetupMemory);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, YSpanSetupMemory);
+    glGenBuffers(1, &result->YSpanSetupMemory);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, result->YSpanSetupMemory);
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(SpanSetupY)*MaxYSpanSetups, nullptr, GL_DYNAMIC_DRAW);
     
-    glGenBuffers(1, &RenderPolygonMemory);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, RenderPolygonMemory);
+    glGenBuffers(1, &result->RenderPolygonMemory);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, result->RenderPolygonMemory);
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(RenderPolygon)*2048, nullptr, GL_DYNAMIC_DRAW);
 
-    glGenBuffers(1, &XSpanSetupMemory);
-    glGenBuffers(1, &BinResultMemory);
-    glGenBuffers(1, &FinalTileMemory);
-    glGenBuffers(1, &YSpanIndicesTextureMemory);
-    glGenBuffers(tilememoryLayer_Num, TileMemory);
-    glGenBuffers(1, &WorkDescMemory);
+    glGenBuffers(1, &result->XSpanSetupMemory);
+    glGenBuffers(1, &result->BinResultMemory);
+    glGenBuffers(1, &result->FinalTileMemory);
+    glGenBuffers(1, &result->YSpanIndicesTextureMemory);
+    glGenBuffers(tilememoryLayer_Num, result->TileMemory);
+    glGenBuffers(1, &result->WorkDescMemory);
 
-    glGenTextures(1, &YSpanIndicesTexture);
-    glGenTextures(1, &LowResFramebuffer);
-    glBindTexture(GL_TEXTURE_2D, LowResFramebuffer);
+    glGenTextures(1, &result->YSpanIndicesTexture);
+    glGenTextures(1, &result->LowResFramebuffer);
+    glBindTexture(GL_TEXTURE_2D, result->LowResFramebuffer);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8UI, 256, 192);
 
-    glGenBuffers(1, &MetaUniformMemory);
-    glBindBuffer(GL_UNIFORM_BUFFER, MetaUniformMemory);
+    glGenBuffers(1, &result->MetaUniformMemory);
+    glBindBuffer(GL_UNIFORM_BUFFER, result->MetaUniformMemory);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(MetaUniform), nullptr, GL_DYNAMIC_DRAW);
 
-    glGenSamplers(9, Samplers);
+    glGenSamplers(9, result->Samplers);
     for (u32 j = 0; j < 3; j++)
     {
         for (u32 i = 0; i < 3; i++)
         {
             const GLenum translateWrapMode[3] = {GL_CLAMP_TO_EDGE, GL_REPEAT, GL_MIRRORED_REPEAT};
-            glSamplerParameteri(Samplers[i+j*3], GL_TEXTURE_WRAP_S, translateWrapMode[i]);
-            glSamplerParameteri(Samplers[i+j*3], GL_TEXTURE_WRAP_T, translateWrapMode[j]);
-            glSamplerParameteri(Samplers[i+j*3], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glSamplerParameterf(Samplers[i+j*3], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glSamplerParameteri(result->Samplers[i+j*3], GL_TEXTURE_WRAP_S, translateWrapMode[i]);
+            glSamplerParameteri(result->Samplers[i+j*3], GL_TEXTURE_WRAP_T, translateWrapMode[j]);
+            glSamplerParameteri(result->Samplers[i+j*3], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glSamplerParameterf(result->Samplers[i+j*3], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         }
     }
 
-    glGenBuffers(1, &PixelBuffer);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, PixelBuffer);
+    glGenBuffers(1, &result->PixelBuffer);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, result->PixelBuffer);
     glBufferData(GL_PIXEL_PACK_BUFFER, 256*192*4, NULL, GL_DYNAMIC_READ);
 
-    return true;
+    return result;
 }
 
-void ComputeRenderer::DeInit()
+ComputeRenderer::~ComputeRenderer()
 {
     Texcache.Reset();
 
@@ -177,26 +290,30 @@ void ComputeRenderer::DeleteShaders()
         glDeleteProgram(program);
 }
 
-void ComputeRenderer::Reset()
+void ComputeRenderer::Reset(GPU& gpu)
 {
     Texcache.Reset();
 }
 
-void ComputeRenderer::SetRenderSettings(GPU::RenderSettings& settings)
+void ComputeRenderer::SetRenderSettings(int scale, bool highResolutionCoordinates)
 {
+    CurGLCompositor.SetScaleFactor(scale);
+
     if (ScaleFactor != -1)
     {
         DeleteShaders();
     }
 
-    ScaleFactor = settings.GL_ScaleFactor;
+    ShaderStepIdx = 0;
+
+    ScaleFactor = scale;
     ScreenWidth = 256 * ScaleFactor;
     ScreenHeight = 192 * ScaleFactor;
 
     TilesPerLine = ScreenWidth/TileSize;
     TileLines = ScreenHeight/TileSize;
 
-    HiresCoordinates = settings.GL_HiresCoordinates;
+    HiresCoordinates = highResolutionCoordinates;
 
     MaxWorkTiles = TilesPerLine*TileLines*8;
 
@@ -238,43 +355,9 @@ void ComputeRenderer::SetRenderSettings(GPU::RenderSettings& settings)
 
     glBindTexture(GL_TEXTURE_BUFFER, YSpanIndicesTexture);
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16UI, YSpanIndicesTextureMemory);
-
-    CompileShader(ShaderInterpXSpans[0], ComputeRendererShaders::InterpSpans, {"InterpSpans", "ZBuffer"});
-    CompileShader(ShaderInterpXSpans[1], ComputeRendererShaders::InterpSpans, {"InterpSpans", "WBuffer"});
-    CompileShader(ShaderBinCombined, ComputeRendererShaders::BinCombined, {"BinCombined"});
-    CompileShader(ShaderDepthBlend[0], ComputeRendererShaders::DepthBlend, {"DepthBlend", "ZBuffer"});
-    CompileShader(ShaderDepthBlend[1], ComputeRendererShaders::DepthBlend, {"DepthBlend", "WBuffer"});
-    CompileShader(ShaderRasteriseNoTexture[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "NoTexture"});
-    CompileShader(ShaderRasteriseNoTexture[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "NoTexture"});
-    CompileShader(ShaderRasteriseNoTextureToon[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "NoTexture", "Toon"});
-    CompileShader(ShaderRasteriseNoTextureToon[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "NoTexture", "Toon"});
-    CompileShader(ShaderRasteriseNoTextureHighlight[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "NoTexture", "Highlight"});
-    CompileShader(ShaderRasteriseNoTextureHighlight[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "NoTexture", "Highlight"});
-    CompileShader(ShaderRasteriseUseTextureDecal[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "UseTexture", "Decal"});
-    CompileShader(ShaderRasteriseUseTextureDecal[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "UseTexture", "Decal"});
-    CompileShader(ShaderRasteriseUseTextureModulate[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "UseTexture", "Modulate"});
-    CompileShader(ShaderRasteriseUseTextureModulate[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "UseTexture", "Modulate"});
-    CompileShader(ShaderRasteriseUseTextureToon[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "UseTexture", "Toon"});
-    CompileShader(ShaderRasteriseUseTextureToon[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "UseTexture", "Toon"});
-    CompileShader(ShaderRasteriseUseTextureHighlight[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "UseTexture", "Highlight"});
-    CompileShader(ShaderRasteriseUseTextureHighlight[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "UseTexture", "Highlight"});
-    CompileShader(ShaderRasteriseShadowMask[0], ComputeRendererShaders::Rasterise, {"Rasterise", "ZBuffer", "ShadowMask"});
-    CompileShader(ShaderRasteriseShadowMask[1], ComputeRendererShaders::Rasterise, {"Rasterise", "WBuffer", "ShadowMask"});
-    CompileShader(ShaderClearCoarseBinMask, ComputeRendererShaders::ClearCoarseBinMask, {"ClearCoarseBinMask"});
-    CompileShader(ShaderClearIndirectWorkCount, ComputeRendererShaders::ClearIndirectWorkCount, {"ClearIndirectWorkCount"});
-    CompileShader(ShaderCalculateWorkListOffset, ComputeRendererShaders::CalcOffsets, {"CalculateWorkOffsets"});
-    CompileShader(ShaderSortWork, ComputeRendererShaders::SortWork, {"SortWork"});
-    CompileShader(ShaderFinalPass[0], ComputeRendererShaders::FinalPass, {"FinalPass"});
-    CompileShader(ShaderFinalPass[1], ComputeRendererShaders::FinalPass, {"FinalPass", "EdgeMarking"});
-    CompileShader(ShaderFinalPass[2], ComputeRendererShaders::FinalPass, {"FinalPass", "Fog"});
-    CompileShader(ShaderFinalPass[3], ComputeRendererShaders::FinalPass, {"FinalPass", "EdgeMarking", "Fog"});
-    CompileShader(ShaderFinalPass[4], ComputeRendererShaders::FinalPass, {"FinalPass", "AntiAliasing"});
-    CompileShader(ShaderFinalPass[5], ComputeRendererShaders::FinalPass, {"FinalPass", "AntiAliasing", "EdgeMarking"});
-    CompileShader(ShaderFinalPass[6], ComputeRendererShaders::FinalPass, {"FinalPass", "AntiAliasing", "Fog"});
-    CompileShader(ShaderFinalPass[7], ComputeRendererShaders::FinalPass, {"FinalPass", "AntiAliasing", "EdgeMarking", "Fog"});
 }
 
-void ComputeRenderer::VCount144()
+void ComputeRenderer::VCount144(GPU& gpu)
 {
 
 }
@@ -506,11 +589,9 @@ struct Variant
     => 20 Shader + 1x Shadow Mask
 */
 
-void ComputeRenderer::RenderFrame()
+void ComputeRenderer::RenderFrame(GPU& gpu)
 {
-    //printf("render frame\n");
-
-    if (!Texcache.Update() && RenderFrameIdentical)
+    if (!Texcache.Update(gpu) && gpu.GPU3D.RenderFrameIdentical)
     {
         return;
     }
@@ -533,11 +614,11 @@ void ComputeRenderer::RenderFrame()
     u32 numVariants = 0, prevVariant, prevTexLayer;
     Variant variants[MaxVariants];
 
-    bool enableTextureMaps = RenderDispCnt & (1<<0);
+    bool enableTextureMaps = gpu.GPU3D.RenderDispCnt & (1<<0);
 
-    for (int i = 0; i < RenderNumPolygons; i++)
+    for (int i = 0; i < gpu.GPU3D.RenderNumPolygons; i++)
     {
-        Polygon* polygon = RenderPolygonRAM[i];
+        Polygon* polygon = gpu.GPU3D.RenderPolygonRAM[i];
 
         u32 nverts = polygon->NumVertices;
         u32 vtop = polygon->VTop, vbot = polygon->VBottom;
@@ -553,7 +634,7 @@ void ComputeRenderer::RenderFrame()
         {
             // if the whole texture attribute matches
             // the texture layer will also match
-            Polygon* prevPolygon = RenderPolygonRAM[i - 1];
+            Polygon* prevPolygon = gpu.GPU3D.RenderPolygonRAM[i - 1];
             foundVariant = prevPolygon->TexParam == polygon->TexParam
                 && prevPolygon->TexPalette == polygon->TexPalette
                 && (prevPolygon->Attr & 0x30) == (polygon->Attr & 0x30)
@@ -570,7 +651,7 @@ void ComputeRenderer::RenderFrame()
             // we always need to look up the texture to get the layer of the array texture
             if (enableTextureMaps && (polygon->TexParam >> 26) & 0x7)
             {
-                Texcache.GetTexture(polygon->TexParam, polygon->TexPalette, variant.Texture, prevTexLayer, textureLastVariant);
+                Texcache.GetTexture(gpu, polygon->TexParam, polygon->TexPalette, variant.Texture, prevTexLayer, textureLastVariant);
                 bool wrapS = (polygon->TexParam >> 16) & 1;
                 bool wrapT = (polygon->TexParam >> 17) & 1;
                 bool mirrorS = (polygon->TexParam >> 18) & 1;
@@ -763,7 +844,7 @@ void ComputeRenderer::RenderFrame()
         glBufferSubData(GL_TEXTURE_BUFFER, 0, numSetupIndices*4*2, YSpanIndices.data());
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, RenderPolygonMemory);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, RenderNumPolygons*sizeof(RenderPolygon), RenderPolygons);
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, gpu.GPU3D.RenderNumPolygons*sizeof(RenderPolygon), RenderPolygons);
         // we haven't accessed image data yet, so we don't need to invalidate anything
     }
 
@@ -780,22 +861,22 @@ void ComputeRenderer::RenderFrame()
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, WorkDescMemory);
 
     MetaUniform meta;
-    meta.DispCnt = RenderDispCnt;
-    meta.NumPolygons = RenderNumPolygons;
+    meta.DispCnt = gpu.GPU3D.RenderDispCnt;
+    meta.NumPolygons = gpu.GPU3D.RenderNumPolygons;
     meta.NumVariants = numVariants;
-    meta.AlphaRef = RenderAlphaRef;
+    meta.AlphaRef = gpu.GPU3D.RenderAlphaRef;
     {
-        u32 r = (RenderClearAttr1 << 1) & 0x3E; if (r) r++;
-        u32 g = (RenderClearAttr1 >> 4) & 0x3E; if (g) g++;
-        u32 b = (RenderClearAttr1 >> 9) & 0x3E; if (b) b++;
-        u32 a = (RenderClearAttr1 >> 16) & 0x1F;
+        u32 r = (gpu.GPU3D.RenderClearAttr1 << 1) & 0x3E; if (r) r++;
+        u32 g = (gpu.GPU3D.RenderClearAttr1 >> 4) & 0x3E; if (g) g++;
+        u32 b = (gpu.GPU3D.RenderClearAttr1 >> 9) & 0x3E; if (b) b++;
+        u32 a = (gpu.GPU3D.RenderClearAttr1 >> 16) & 0x1F;
         meta.ClearColor = r | (g << 8) | (b << 16) | (a << 24);
-        meta.ClearDepth = ((RenderClearAttr2 & 0x7FFF) * 0x200) + 0x1FF;
-        meta.ClearAttr = RenderClearAttr1 & 0x3F008000;
+        meta.ClearDepth = ((gpu.GPU3D.RenderClearAttr2 & 0x7FFF) * 0x200) + 0x1FF;
+        meta.ClearAttr = gpu.GPU3D.RenderClearAttr1 & 0x3F008000;
     }
     for (u32 i = 0; i < 32; i++)
     {
-        u32 color = RenderToonTable[i];
+        u32 color = gpu.GPU3D.RenderToonTable[i];
         u32 r = (color << 1) & 0x3E;
         u32 g = (color >> 4) & 0x3E;
         u32 b = (color >> 9) & 0x3E;
@@ -807,11 +888,11 @@ void ComputeRenderer::RenderFrame()
     }
     for (u32 i = 0; i < 34; i++)
     {
-        meta.ToonTable[i*4+1] = RenderFogDensityTable[i];
+        meta.ToonTable[i*4+1] = gpu.GPU3D.RenderFogDensityTable[i];
     }
     for (u32 i = 0; i < 8; i++)
     {
-        u32 color = RenderEdgeTable[i];
+        u32 color = gpu.GPU3D.RenderEdgeTable[i];
         u32 r = (color << 1) & 0x3E;
         u32 g = (color >> 4) & 0x3E;
         u32 b = (color >> 9) & 0x3E;
@@ -821,13 +902,13 @@ void ComputeRenderer::RenderFrame()
 
         meta.ToonTable[i*4+2] = r | (g << 8) | (b << 16);
     }
-    meta.FogOffset = RenderFogOffset;
-    meta.FogShift = RenderFogShift;
+    meta.FogOffset = gpu.GPU3D.RenderFogOffset;
+    meta.FogShift = gpu.GPU3D.RenderFogShift;
     {
-        u32 fogR = (RenderFogColor << 1) & 0x3E; if (fogR) fogR++;
-        u32 fogG = (RenderFogColor >> 4) & 0x3E; if (fogG) fogG++;
-        u32 fogB = (RenderFogColor >> 9) & 0x3E; if (fogB) fogB++;
-        u32 fogA = (RenderFogColor >> 16) & 0x1F;
+        u32 fogR = (gpu.GPU3D.RenderFogColor << 1) & 0x3E; if (fogR) fogR++;
+        u32 fogG = (gpu.GPU3D.RenderFogColor >> 4) & 0x3E; if (fogG) fogG++;
+        u32 fogB = (gpu.GPU3D.RenderFogColor >> 9) & 0x3E; if (fogB) fogB++;
+        u32 fogA = (gpu.GPU3D.RenderFogColor >> 16) & 0x1F;
         meta.FogColor = fogR | (fogG << 8) | (fogB << 16) | (fogA << 24);
     }
 
@@ -841,7 +922,7 @@ void ComputeRenderer::RenderFrame()
     bool wbuffer = false;
     if (numYSpans > 0)
     {
-        wbuffer = RenderPolygonRAM[0]->WBuffer;
+        wbuffer = gpu.GPU3D.RenderPolygonRAM[0]->WBuffer;
 
         glUseProgram(ShaderClearIndirectWorkCount);
         glDispatchCompute((numVariants+31)/32, 1, 1);
@@ -854,7 +935,7 @@ void ComputeRenderer::RenderFrame()
 
         // bin polygons
         glUseProgram(ShaderBinCombined);
-        glDispatchCompute(((RenderNumPolygons + 31) / 32), ScreenWidth/CoarseTileW, ScreenHeight/CoarseTileH);
+        glDispatchCompute(((gpu.GPU3D.RenderNumPolygons + 31) / 32), ScreenWidth/CoarseTileW, ScreenHeight/CoarseTileH);
         glMemoryBarrier(GL_SHADER_STORAGE_BUFFER);
 
         // calculate list offsets
@@ -875,7 +956,7 @@ void ComputeRenderer::RenderFrame()
 
         // rasterise
         {
-            bool highLightMode = RenderDispCnt & (1<<1);
+            bool highLightMode = gpu.GPU3D.RenderDispCnt & (1<<1);
 
             GLuint shadersNoTexture[] =
             {
@@ -945,11 +1026,11 @@ void ComputeRenderer::RenderFrame()
     glBindImageTexture(0, Framebuffer, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8);
     glBindImageTexture(1, LowResFramebuffer, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA8UI);
     u32 finalPassShader = 0;
-    if (RenderDispCnt & (1<<4))
+    if (gpu.GPU3D.RenderDispCnt & (1<<4))
         finalPassShader |= 0x4;
-    if (RenderDispCnt & (1<<7))
+    if (gpu.GPU3D.RenderDispCnt & (1<<7))
         finalPassShader |= 0x2;
-    if (RenderDispCnt & (1<<5))
+    if (gpu.GPU3D.RenderDispCnt & (1<<5))
         finalPassShader |= 0x1;
     
     glUseProgram(ShaderFinalPass[finalPassShader]);
@@ -1005,7 +1086,7 @@ void ComputeRenderer::RenderFrame()
     }*/
 }
 
-void ComputeRenderer::RestartFrame()
+void ComputeRenderer::RestartFrame(GPU& gpu)
 {
 
 }
@@ -1035,6 +1116,21 @@ void ComputeRenderer::PrepareCaptureFrame()
     glBindBuffer(GL_PIXEL_PACK_BUFFER, PixelBuffer);
     glBindTexture(GL_TEXTURE_2D, LowResFramebuffer);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, nullptr);
+}
+
+void ComputeRenderer::BindOutputTexture(int buffer)
+{
+    CurGLCompositor.BindOutputTexture(buffer);
+}
+
+void ComputeRenderer::Blit(const GPU &gpu)
+{
+    CurGLCompositor.RenderFrame(gpu, *this);
+}
+
+void ComputeRenderer::Stop(const GPU &gpu)
+{
+    CurGLCompositor.Stop(gpu);
 }
 
 }

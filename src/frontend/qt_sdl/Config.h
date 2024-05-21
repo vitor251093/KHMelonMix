@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2023 melonDS team
 
     This file is part of melonDS.
 
@@ -44,22 +44,21 @@ enum
 
 enum
 {
-    screenSizing_Even,
-    screenSizing_EmphTop,
-    screenSizing_EmphBot,
-    screenSizing_Auto,
-    screenSizing_TopOnly,
-    screenSizing_BotOnly,
-    screenSizing_MAX,
-};
-
-enum
-{
     micInputType_Silence,
     micInputType_External,
     micInputType_Noise,
     micInputType_Wav,
     micInputType_MAX,
+};
+
+enum
+{
+    renderer3D_Software = 0,
+#ifdef OGLRENDERER_ENABLED
+    renderer3D_OpenGL,
+    renderer3D_OpenGLCompute,
+#endif
+    renderer3D_Max,
 };
 
 namespace Config
@@ -68,9 +67,9 @@ namespace Config
 struct ConfigEntry
 {
     char Name[32];
-    int Type;           // 0=int 1=bool 2=string
+    int Type;           // 0=int 1=bool 2=string 3=64bit int
     void* Value;        // pointer to the value variable
-    std::variant<int, bool, std::string> Default;
+    std::variant<int, bool, std::string, int64_t> Default;
     bool InstanceUnique; // whether the setting can exist individually for each instance in multiplayer
 };
 
@@ -117,6 +116,7 @@ extern bool GL_BetterPolygons;
 extern bool GL_HiresCoordinates;
 
 extern bool LimitFPS;
+extern int MaxFPS;
 extern bool AudioSync;
 extern bool ShowOSD;
 
@@ -164,6 +164,7 @@ extern int FirmwareBirthdayDay;
 extern int FirmwareFavouriteColour;
 extern std::string FirmwareMessage;
 extern std::string FirmwareMAC;
+extern std::string WifiSettingsPath;
 
 extern int MPAudioMode;
 extern int MPRecvTimeout;
@@ -174,10 +175,11 @@ extern bool DirectLAN;
 extern bool SavestateRelocSRAM;
 
 extern int AudioInterp;
-extern int AudioBitrate;
+extern int AudioBitDepth;
 extern int AudioVolume;
 extern bool DSiVolumeSync;
 extern int MicInputType;
+extern std::string MicDevice;
 extern std::string MicWavPath;
 
 extern std::string LastROMFolder;
@@ -194,15 +196,26 @@ extern bool EnableCheats;
 extern bool MouseHide;
 extern int MouseHideSeconds;
 extern bool PauseLostFocus;
+extern std::string UITheme;
+
+extern int64_t RTCOffset;
 
 extern bool DSBatteryLevelOkay;
 extern int DSiBatteryLevel;
 extern bool DSiBatteryCharging;
 
+extern bool DSiFullBIOSBoot;
+
 extern CameraConfig Camera[2];
 
+extern bool GdbEnabled;
+extern int GdbPortARM7;
+extern int GdbPortARM9;
+extern bool GdbARM7BreakOnStartup;
+extern bool GdbARM9BreakOnStartup;
 
-void Load();
+
+bool Load();
 void Save();
 
 }
