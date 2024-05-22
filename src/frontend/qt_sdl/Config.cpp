@@ -313,7 +313,7 @@ ConfigEntry ConfigFile[] =
     {"DirectBoot", 1, &DirectBoot, true, false},
 
 #ifdef JIT_ENABLED
-    {"JIT_Enable", 1, &JIT_Enable, false, false},
+    {"JIT_Enable", 1, &JIT_Enable, false, false}, // Is believed that enabling this may cause issues (#94)
     {"JIT_MaxBlockSize", 0, &JIT_MaxBlockSize, 32, false},
     {"JIT_BranchOptimisations", 1, &JIT_BranchOptimisations, true, false},
     {"JIT_LiteralOptimisations", 1, &JIT_LiteralOptimisations, true, false},
