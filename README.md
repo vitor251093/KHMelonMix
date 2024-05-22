@@ -5,6 +5,8 @@ melonDS, sorta
 The goal of this project is to turn "Kingdom Hearts 358/2 Days" into a playable PC game, with a single screen and controls compatible with a regular controller.
 
 This is basically melonDS, but with some modifications made specifically to improve this specific game experience. Any issues you have with KHDays Melon Mix should be reported in this same repository, and not in melonDS repository.
+
+Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the latest updates and/or to help with the project.
 <hr>
 
 ## How to play
