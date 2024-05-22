@@ -73,11 +73,12 @@ bool BuildShaderProgram(const char* vs, const char* fs, GLuint* ids, const char*
         glGetShaderInfoLog(ids[1], res+1, NULL, log);
         Log(LogLevel::Error, "OpenGL: failed to compile fragment shader %s: %s\n", name, log);
         //printf("shader source:\n--\n%s\n--\n", fs);
-        delete[] log;
 
+        len = strlen(log);
         Platform::FileHandle* logf = Platform::OpenFile("shaderfail.log", Platform::FileMode::WriteText);
-        Platform::FileWrite(fs, len+1, 1, logf);
+        Platform::FileWrite(log, len+1, 1, logf);
         Platform::CloseFile(logf);
+        delete[] log;
 
         glDeleteShader(ids[0]);
         glDeleteShader(ids[1]);
