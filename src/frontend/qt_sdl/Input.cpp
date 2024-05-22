@@ -289,11 +289,11 @@ Sint16 JoystickButtonDown(int val)
         switch (axisdir)
         {
         case 0: // positive
-            if (axisval > 0) return (axisval >> 10);
+            if (axisval > 16384) return (axisval >> 10);
             break;
 
         case 1: // negative
-            if (axisval < -1) return ((~axisval) >> 10);
+            if (axisval < -16384) return ((~axisval) >> 10);
             break;
 
         case 2: // trigger
