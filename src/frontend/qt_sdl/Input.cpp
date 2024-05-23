@@ -294,11 +294,11 @@ Sint16 JoystickButtonDown(int val)
         switch (axisdir)
         {
         case 0: // positive
-            if (axisval > 0) return (axisval >> 10);
+            if (axisval > 16384) return (axisval >> 10);
             break;
 
         case 1: // negative
-            if (axisval < -1) return ((~axisval) >> 10);
+            if (axisval < -16384) return ((~axisval) >> 10);
             break;
 
         case 2: // trigger
@@ -330,13 +330,16 @@ void Process()
 
     JoyInputMask = 0xFFF;
     JoyTouchInputMask = 0xFFFF;
-    for (int i = 0; i < 12; i++)
-        if (JoystickButtonDown(Config::JoyMapping[i]) != 0)
-            JoyInputMask &= ~(1<<i);
-    for (int i = 0; i < 4; i++) {
-        Sint16 joyValue = JoystickButtonDown(Config::TouchJoyMapping[i]);
-        if (joyValue != 0)
-            JoyTouchInputMask &= ~(joyValue << (i*4));
+    if (Joystick)
+    {
+        for (int i = 0; i < 12; i++)
+            if (JoystickButtonDown(Config::JoyMapping[i]) != 0)
+                JoyInputMask &= ~(1<<i);
+        for (int i = 0; i < 4; i++) {
+            Sint16 joyValue = JoystickButtonDown(Config::TouchJoyMapping[i]);
+            if (joyValue != 0)
+                JoyTouchInputMask &= ~(joyValue << (i*4));
+        }
     }
 
     InputMask = KeyInputMask & JoyInputMask;
@@ -344,12 +347,15 @@ void Process()
 
     JoyHotkeyMask = 0;
     JoyCmdMenuInputMask = 0;
-    for (int i = 0; i < HK_MAX; i++)
-        if (JoystickButtonDown(Config::HKJoyMapping[i]) != 0)
-            JoyHotkeyMask |= (1<<i);
-    for (int i = 0; i < 4; i++)
-        if (JoystickButtonDown(Config::CmdMenuJoyMapping[i]) != 0)
-            JoyCmdMenuInputMask |= (1<<i);
+    if (Joystick)
+    {
+        for (int i = 0; i < HK_MAX; i++)
+            if (JoystickButtonDown(Config::HKJoyMapping[i]) != 0)
+                JoyHotkeyMask |= (1<<i);
+        for (int i = 0; i < 4; i++)
+            if (JoystickButtonDown(Config::CmdMenuJoyMapping[i]) != 0)
+                JoyCmdMenuInputMask |= (1<<i);
+    }
 
     HotkeyMask = KeyHotkeyMask | JoyHotkeyMask;
     HotkeyPress = HotkeyMask & ~LastHotkeyMask;

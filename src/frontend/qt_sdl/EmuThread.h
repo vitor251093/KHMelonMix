@@ -130,9 +130,6 @@ private:
 
     ScreenPanelGL* screenGL;
 
-    int videoRenderer;
-    bool videoSettingsDirty;
-
     void refreshGameScene();
 
     int lastVideoRenderer = -1;

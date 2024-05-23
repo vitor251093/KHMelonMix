@@ -277,7 +277,7 @@ bool CompileComputeProgram(GLuint& result, const std::string& source, const std:
         {
         }
     }*/
-    //Log(LogLevel::Error, "Shader %s from cache was rejected\n", name.c_str());
+    Log(LogLevel::Error, "Shader %s from cache was rejected\n", name.c_str());
 
     GLuint shader;
     bool linkingSucess = false;

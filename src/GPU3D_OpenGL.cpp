@@ -329,7 +329,6 @@ void GLRenderer::SetAspectRatio(float aspectRatio) noexcept
 {
     CurGLCompositor.SetAspectRatio(aspectRatio);
 }
-
 void GLRenderer::SetScaleFactor(int scale) noexcept
 {
     SetRenderSettings(BetterPolygons, scale);

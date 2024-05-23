@@ -111,7 +111,7 @@ public:
             invalidate:
                 FreeTextures[entry.WidthLog2][entry.HeightLog2].push_back(entry.Texture);
 
-                // printf("invalidating texture %u\n", it->first);
+                //printf("invalidating texture %d\n", entry.ImageDescriptor);
 
                 it = Cache.erase(it);
             }

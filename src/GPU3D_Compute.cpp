@@ -315,7 +315,7 @@ void ComputeRenderer::SetRenderSettings(int scale, bool highResolutionCoordinate
 
     HiresCoordinates = highResolutionCoordinates;
 
-    MaxWorkTiles = TilesPerLine*TileLines*8;
+    MaxWorkTiles = TilesPerLine*TileLines*16;
 
     for (int i = 0; i < tilememoryLayer_Num; i++)
     {
@@ -591,6 +591,7 @@ struct Variant
 
 void ComputeRenderer::RenderFrame(GPU& gpu)
 {
+    assert(!NeedsShaderCompile());
     if (!Texcache.Update(gpu) && gpu.GPU3D.RenderFrameIdentical)
     {
         return;
