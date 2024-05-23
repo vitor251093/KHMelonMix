@@ -411,7 +411,7 @@ bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
     }
 
     // Updating GameScene inside shader
-    static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).GetCompositor().SetGameScene(newGameScene);
+    static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
     return updated;
 }
 
