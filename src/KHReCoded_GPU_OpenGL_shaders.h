@@ -232,6 +232,13 @@ vec2 getSingleSquaredScreenTextureCoordinates(float xpos, float ypos, int screen
     return initialScreenMargin + clearVect;
 }
 
+vec2 getSingleScreenTextureCoordinates(float xpos, float ypos, int screenIndex)
+{
+    vec2 texPosition3d = vec2(xpos, ypos);
+    vec2 initialScreenMargin = (screenIndex == 2 ? vec2(0, 192.0) : vec2(0, 0));
+    return texPosition3d + initialScreenMargin;
+}
+
 vec2 getHorizontalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearVect)
 {
     int screenScale = 2;
@@ -510,10 +517,10 @@ ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
     //     return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
     // }
     if (isScreenBlack(1)) {
-        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(-1, 0)));
+        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 1));
     }
     if (isScreenBlack(0)) {
-        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(-1, 0)));
+        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 2));
     }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
 }
@@ -609,7 +616,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
         float sourceScreenWidth = 256.0;
         float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*u3DScale)/2;
-        float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
+        float screenTopMargin = (sourceScreenHeight*u3DScale - screenHeight)/2;
         float screenLeftMargin = 0.0;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
@@ -627,7 +634,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
         float sourceScreenWidth = 256.0;
         float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*u3DScale)/2;
-        float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
+        float screenTopMargin = (sourceScreenHeight*u3DScale - screenHeight)/2;
         float screenLeftMargin = screenWidth;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
@@ -657,7 +664,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
         float screenHeight = (sourceScreenHeight*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*heightScale*u3DScale)/2;
         float screenTopMargin = 0.0;
-        float screenLeftMargin = (256.0*u3DScale - screenWidth)/2;
+        float screenLeftMargin = (sourceScreenWidth*u3DScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
             texPosition3d.y <= (screenHeight + screenTopMargin) && 
@@ -676,7 +683,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
         float screenHeight = (sourceScreenHeight*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*heightScale*u3DScale)/2;
         float screenTopMargin = screenHeight;
-        float screenLeftMargin = (256.0*u3DScale - screenWidth)/2;
+        float screenLeftMargin = (sourceScreenWidth*u3DScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
             texPosition3d.y <= (screenHeight + screenTopMargin) && 

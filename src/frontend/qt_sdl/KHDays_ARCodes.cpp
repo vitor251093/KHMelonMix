@@ -107,15 +107,15 @@ bool KHDaysARCodes::Load()
         curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (US)", 0x02023C9C));
 
         // TODO: This cheat code is making some save files look corrupted when they aren't (issue #69)
-        curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)", 0x02194CC3));
+        // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)", 0x02194CC3));
     }
     if (CartValidator::isEuropeCart()) {
         curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (EU)", 0x02023CBC));
-        curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (EU)", 0x02195AA3));
+        // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (EU)", 0x02195AA3));
     }
     if (CartValidator::isJapanCart()) {
         curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP)",      0x02193E23));
-        curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP Rev1)", 0x02193DA3));
+        // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP Rev1)", 0x02193DA3));
     }
 
     Categories.push_back(curcat);
