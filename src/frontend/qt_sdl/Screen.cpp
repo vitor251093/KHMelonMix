@@ -126,7 +126,6 @@ void ScreenPanel::setupScreenLayout()
     Config::WindowWidth = w;
 
     if (emuThread != nullptr && emuThread->NDS != nullptr) {
-        static_cast<GLRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).SetAspectRatio(aspectTop);
         static_cast<ComputeRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).SetAspectRatio(aspectTop);
     }
 }
