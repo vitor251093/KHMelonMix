@@ -24,7 +24,7 @@
 #include "Platform.h"
 #include "Config.h"
 #include "GPU.h"
-
+#include "CartValidator.h"
 
 namespace Config
 {
@@ -303,7 +303,7 @@ ConfigEntry ConfigFile[] =
     {"3DRenderer", 0, &_3DRenderer, 2, false},
     {"Threaded3D", 1, &Threaded3D, true, false},
 
-    {"GL_ScaleFactor", 0, &GL_ScaleFactor, 5, false},
+    {"GL_ScaleFactor", 0, &GL_ScaleFactor, 3, false},
     {"GL_BetterPolygons", 1, &GL_BetterPolygons, false, false},
     {"GL_HiresCoordinates", 1, &GL_HiresCoordinates, true, false},
 
@@ -503,13 +503,17 @@ bool Load()
         case 3: *(int64_t*)entry->Value = std::get<int64_t>(entry->Default); break;
         }
     }
-    
+
     int inst = Platform::InstanceID();
 
     bool ret = LoadFile(0, inst);
     if (inst > 0)
         ret = LoadFile(inst, inst);
 
+    if (CartValidator::isValid()) {
+        _3DRenderer = 2;
+    }
+    
     return ret;
 }
 
