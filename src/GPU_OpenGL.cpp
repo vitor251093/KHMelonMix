@@ -42,7 +42,7 @@ std::optional<GLCompositor> GLCompositor::New() noexcept
     GLuint CompShader {};
 
     if (CartValidator::isDays()) {
-        if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, kCompositorFS_Nearest, "CompositorShader",
+        if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, kCompositorFS_KhDays, "CompositorShader",
             {{"vPosition", 0}, {"vTexcoord", 1}}, {{"oColor", 0}}))
             return std::nullopt;
     }
