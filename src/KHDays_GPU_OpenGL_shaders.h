@@ -616,7 +616,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
         float sourceScreenWidth = 256.0;
         float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*u3DScale)/2;
-        float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
+        float screenTopMargin = (sourceScreenHeight*u3DScale - screenHeight)/2;
         float screenLeftMargin = 0.0;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
@@ -634,7 +634,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
         float sourceScreenWidth = 256.0;
         float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*u3DScale)/2;
-        float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
+        float screenTopMargin = (sourceScreenHeight*u3DScale - screenHeight)/2;
         float screenLeftMargin = screenWidth;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
@@ -664,7 +664,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
         float screenHeight = (sourceScreenHeight*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*heightScale*u3DScale)/2;
         float screenTopMargin = 0.0;
-        float screenLeftMargin = (256.0*u3DScale - screenWidth)/2;
+        float screenLeftMargin = (sourceScreenWidth*u3DScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
             texPosition3d.y <= (screenHeight + screenTopMargin) && 
@@ -683,7 +683,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
         float screenHeight = (sourceScreenHeight*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*heightScale*u3DScale)/2;
         float screenTopMargin = screenHeight;
-        float screenLeftMargin = (256.0*u3DScale - screenWidth)/2;
+        float screenLeftMargin = (sourceScreenWidth*u3DScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
             texPosition3d.y <= (screenHeight + screenTopMargin) && 
