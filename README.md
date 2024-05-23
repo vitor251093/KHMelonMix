@@ -1,5 +1,11 @@
 <p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/res/icon/khDaysMM_128x128.png"></p>
 <h2 align="center"><b>Kingdom Hearts 358/2 Days - Melon Mix</b></h2>
+<p align="center">
+<a href="https://www.gnu.org/licenses/gpl-3.0" alt="License: GPLv3"><img src="https://img.shields.io/badge/License-GPL%20v3-%23ff554d.svg"></a>
+<a href="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-windows.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-windows.yml/badge.svg" /></a>
+<a href="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-ubuntu.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-ubuntu.yml/badge.svg" /></a>
+<a href="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-macos.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-macos.yml/badge.svg" /></a>
+</p>
 melonDS, sorta
 
 The goal of this project is to turn "Kingdom Hearts 358/2 Days" into a playable PC game, with a single screen and controls compatible with a regular controller.
