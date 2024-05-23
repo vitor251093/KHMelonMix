@@ -11,7 +11,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 
 ## How to play
 
-First, download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system (not the source code zip). Then, you will need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Place that NDS file inside a "rom" folder, next to the downloaded Melon Mix executable (which was inside the zip file that you downloaded), and name it game.nds. Now you just need to launch the Melon Mix executable.
+First, download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system (not the source code zip). Then, you will need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Rename that NDS file to "game.nds", place it inside a folder named "rom", and then place that folder next to the downloaded Melon Mix executable (which was inside the zip file that you downloaded). Now you just need to launch the Melon Mix executable.
 
 ### Steam Deck
 
