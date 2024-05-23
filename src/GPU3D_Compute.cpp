@@ -295,6 +295,15 @@ void ComputeRenderer::Reset(GPU& gpu)
     Texcache.Reset();
 }
 
+void ComputeRenderer::SetGameScene(int gameScene)
+{
+    CurGLCompositor.SetGameScene(gameScene);
+}
+void ComputeRenderer::SetAspectRatio(float aspectRatio)
+{
+    CurGLCompositor.SetAspectRatio(aspectRatio);
+}
+
 void ComputeRenderer::SetRenderSettings(int scale, bool highResolutionCoordinates)
 {
     CurGLCompositor.SetScaleFactor(scale);
