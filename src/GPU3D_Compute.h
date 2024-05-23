@@ -43,6 +43,9 @@ public:
 
     void Reset(GPU& gpu) override;
 
+    void SetGameScene(int gameScene);
+    void SetAspectRatio(float aspectRatio);
+
     void SetRenderSettings(int scale, bool highResolutionCoordinates);
 
     void VCount144(GPU& gpu) override;
