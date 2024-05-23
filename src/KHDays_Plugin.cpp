@@ -1,11 +1,13 @@
 #include "KHDays_Plugin.h"
 
+#include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
 
 #include <math.h>
 
-namespace melonDS
-{
+using namespace melonDS;
+
+extern int videoRenderer;
 
 int KHDaysPlugin::GameScene = -1;
 int KHDaysPlugin::priorGameScene = -1;
@@ -411,7 +413,17 @@ bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
     }
 
     // Updating GameScene inside shader
-    static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+    switch (videoRenderer)
+    {
+        case 1:
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            break;
+        case 2:
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            break;
+        default: break;
+    }
+
     return updated;
 }
 
@@ -437,5 +449,3 @@ void KHDaysPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
     printf("\n");
 }
 
-
-}

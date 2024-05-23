@@ -510,8 +510,6 @@ bool Load()
     if (inst > 0)
         ret = LoadFile(inst, inst);
 
-    _3DRenderer = 2; // OpenGL renderer (Compute shader)
-    
     return ret;
 }
 
