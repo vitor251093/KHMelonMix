@@ -472,11 +472,30 @@ void EmuThread::run()
             // microphone input
             AudioInOut::MicProcess(*NDS);
 
+            refreshGameScene();
+
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
             {
-                refreshGameScene();
-                int guess = Frontend::screenSizing_TopOnly;
+                mainScreenPos[2] = mainScreenPos[1];
+                mainScreenPos[1] = mainScreenPos[0];
+                mainScreenPos[0] = NDS->PowerControl9 >> 15;
+
+                int guess;
+                if (mainScreenPos[0] == mainScreenPos[2] &&
+                    mainScreenPos[0] != mainScreenPos[1])
+                {
+                    // constant flickering, likely displaying 3D on both screens
+                    // TODO: when both screens are used for 2D only...???
+                    guess = Frontend::screenSizing_Even;
+                }
+                else
+                {
+                    if (mainScreenPos[0] == 1)
+                        guess = Frontend::screenSizing_EmphTop;
+                    else
+                        guess = Frontend::screenSizing_EmphBot;
+                }
 
                 if (guess != autoScreenSizing)
                 {

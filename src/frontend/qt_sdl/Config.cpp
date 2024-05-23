@@ -290,7 +290,7 @@ ConfigEntry ConfigFile[] =
     {"ScreenGap",      0, &ScreenGap,      0,     true},
     {"ScreenLayout",   0, &ScreenLayout,   2,     true},
     {"ScreenSwap",     1, &ScreenSwap,     false, true},
-    {"ScreenSizing",   0, &ScreenSizing,   3,     true},
+    {"ScreenSizing",   0, &ScreenSizing,   4,     true},
     {"IntegerScaling", 1, &IntegerScaling, false, true},
     {"ScreenAspectTop",0, &ScreenAspectTop,3,     true},
     {"ScreenAspectBot",0, &ScreenAspectBot,0,     true},
