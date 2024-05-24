@@ -290,7 +290,12 @@ void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
 }
 void InputConfigDialog::on_cbJoystickAuto_stateChanged(int state)
 {
-    Config::JoystickAuto = (state != 0);
-    Input::OpenJoystick();
+    keypadJoyAuto = (state != 0);
+
+    if (keypadJoyAuto) {
+        Config::JoystickAuto = true;
+        Input::OpenJoystick();
+        Config::JoystickAuto = false;
+    }
 }
 
