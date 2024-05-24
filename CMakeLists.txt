@@ -15,7 +15,7 @@ if (USE_VCPKG)
 	include(ConfigureVcpkg)
 endif()
 
-project(melonDS
+project(khDaysMM
     VERSION 0.2.1
     DESCRIPTION "DS emulator, sorta"
     HOMEPAGE_URL "https://github.com/vitor251093/KHDays_FM"
