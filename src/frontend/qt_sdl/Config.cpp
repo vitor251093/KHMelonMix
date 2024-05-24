@@ -24,7 +24,6 @@
 #include "Platform.h"
 #include "Config.h"
 #include "GPU.h"
-#include "CartValidator.h"
 
 namespace Config
 {
