@@ -30,8 +30,8 @@ jobs:
         DESTDIR=AppDir cmake --install build
     - uses: actions/upload-artifact@v4
       with:
-        name: melonDS-ubuntu-x86_64
-        path: AppDir/usr/bin/melonDS
+        name: khDaysMM-ubuntu-x86_64
+        path: AppDir/usr/bin/khDaysMM
     - name: Fetch AppImage tools
       run: |
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
@@ -44,8 +44,8 @@ jobs:
         ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt --output appimage
     - uses: actions/upload-artifact@v4
       with:
-        name: melonDS-appimage-x86_64
-        path: melonDS*.AppImage
+        name: khDaysMM-appimage-x86_64
+        path: khDaysMM*.AppImage
 
   build-aarch64:
     name: aarch64
@@ -81,5 +81,5 @@ jobs:
           cmake --build build
       - uses: actions/upload-artifact@v4
         with:
-          name: melonDS-ubuntu-aarch64
-          path: build/melonDS
+          name: khDaysMM-ubuntu-aarch64
+          path: build/khDaysMM
