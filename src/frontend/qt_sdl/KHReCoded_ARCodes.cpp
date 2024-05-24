@@ -23,6 +23,7 @@
 #include "Screen.h"
 #include "Config.h"
 #include <math.h>
+#include "CartValidator.h"
 
 namespace melonDS
 {
@@ -102,12 +103,18 @@ bool KHReCodedARCodes::Load()
     curcat.Name = "KHRecodedCheats";
     curcat.Codes.clear();
 
-    curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (US)", 0x0202A810));
-    curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (EU)", 0x0202A824));
-    curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (JP)", 0x0202A728));
-    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)", 0x02194CC3));
-    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (EU)", 0x02195AA3));
-    // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP)", 0x02193E23));
+    if (CartValidator::isUsaCart()) {
+        curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (US)", 0x0202A810));
+        // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)", 0x02194CC3));
+    }
+    if (CartValidator::isEuropeCart()) {
+        curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (EU)", 0x0202A824));
+        // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (EU)", 0x02195AA3));
+    }
+    if (CartValidator::isJapanCart()) {
+        curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (JP)", 0x0202A728));
+        // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP)", 0x02193E23));
+    }
 
     Categories.push_back(curcat);
     return true;
