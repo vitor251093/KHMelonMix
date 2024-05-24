@@ -371,7 +371,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         // Pause Menu
-        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8;
+        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
         if (inMissionPauseMenu)
         {
             return gameScene_PauseMenu;
