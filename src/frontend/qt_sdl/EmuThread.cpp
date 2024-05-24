@@ -455,6 +455,8 @@ void EmuThread::run()
 
                 updateRenderer();
 
+                emit screenLayoutChange();
+
                 videoSettingsDirty = false;
             }
 
@@ -681,20 +683,20 @@ void EmuThread::run()
 
 void EmuThread::refreshGameScene()
 {
+    bool enableDebug = false;
+
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
     int newGameScene = KHPlugin::detectGameScene(&nds);
 
-#ifdef _DEBUG
-    KHPlugin::debugLogs(&nds, newGameScene);
-#endif
+    if (enableDebug) {
+        KHPlugin::debugLogs(&nds, newGameScene);
+    }
 
     bool updated = KHPlugin::setGameScene(&nds, newGameScene);
-    if (updated) 
+    if (updated && enableDebug)
     {
-#ifdef _DEBUG
         mainWindow->osdAddMessage(0, KHPlugin::getNameByGameScene(newGameScene));
-#endif
     }
 }
 
