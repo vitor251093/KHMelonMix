@@ -306,7 +306,7 @@ void EmuThread::run()
 {
     u32 mainScreenPos[3];
     Platform::FileHandle* file;
-    u32 lastRomLoaded = CartValidator::get();
+    u32 lastRomLoaded = 0;
 
     UpdateConsole(nullptr, nullptr);
     // No carts are inserted when melonDS first boots
@@ -374,6 +374,7 @@ void EmuThread::run()
             if (lastRomLoaded != CartValidator::get())
             {
                 lastRomLoaded = CartValidator::get();
+                lastVideoRenderer = -1;
                 videoSettingsDirty = true;
             }
 
