@@ -11,6 +11,9 @@ extern int videoRenderer;
 
 int KHDaysPlugin::GameScene = -1;
 int KHDaysPlugin::priorGameScene = -1;
+bool KHDaysPlugin::ShowMap = true;
+bool KHDaysPlugin::ShowTarget = false;
+bool KHDaysPlugin::ShowMissionGauge = false;
 
 bool KHDaysPlugin::_olderHad3DOnTopScreen = false;
 bool KHDaysPlugin::_olderHad3DOnBottomScreen = false;
@@ -417,9 +420,15 @@ bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
     {
         case 1:
             static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
             break;
         case 2:
             static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
             break;
         default: break;
     }

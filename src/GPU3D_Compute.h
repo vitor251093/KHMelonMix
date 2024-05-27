@@ -45,6 +45,9 @@ public:
 
     void SetGameScene(int gameScene);
     void SetAspectRatio(float aspectRatio);
+    void SetShowMap(bool showMap);
+    void SetShowTarget(bool showTarget);
+    void SetShowMissionGauge(bool showMissionGauge);
 
     void SetRenderSettings(int scale, bool highResolutionCoordinates);
 

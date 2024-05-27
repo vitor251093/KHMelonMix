@@ -16,6 +16,9 @@ public:
 private:
     static int GameScene;
     static int priorGameScene;
+    static bool ShowMap;
+    static bool ShowTarget;
+    static bool ShowMissionGauge;
 
     static bool _olderHad3DOnTopScreen;
     static bool _olderHad3DOnBottomScreen;

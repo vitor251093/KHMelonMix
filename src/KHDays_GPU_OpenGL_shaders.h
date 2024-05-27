@@ -28,6 +28,9 @@ uniform int u3DXPos;
 uniform int KHGameScene;
 uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
+uniform bool ShowMap;
+uniform bool ShowTarget;
+uniform bool ShowMissionGauge;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -389,7 +392,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
-    if (KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowMap && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         // minimap
         float bottomMinimapWidth = 60.0;
@@ -738,54 +741,57 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
-    if (KHGameScene == 5 && isMinimapVisible() && !isDialogVisible() && !isMissionInformationVisible()) // gameScene_InGameWithMap
+    if (ShowMap && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        int iuScale = KHUIScale;
-        float iuTexScale = (6.0)/iuScale;
-        vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-        float heightScale = 1.0/TopScreenAspectRatio;
-        float widthScale = TopScreenAspectRatio;
+        if (!isDialogVisible() && !isMissionInformationVisible()) // gameScene_InGameWithMap
+        {
+            int iuScale = KHUIScale;
+            float iuTexScale = (6.0)/iuScale;
+            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+            float heightScale = 1.0/TopScreenAspectRatio;
+            float widthScale = TopScreenAspectRatio;
 
-        // minimap
-        float bottomMinimapWidth = 60.0;
-        float bottomMinimapHeight = 60.0;
-        float minimapWidth = bottomMinimapWidth*heightScale;
-        float minimapHeight = bottomMinimapHeight;
-        float minimapRightMargin = 9.0;
-        float minimapTopMargin = 30.0;
-        float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
-        float blurBorder = 5.0;
-        if (texPosition3d.x >= minimapLeftMargin &&
-            texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
-            texPosition3d.y <= minimapHeight + minimapTopMargin && 
-            texPosition3d.y >= minimapTopMargin) {
+            // minimap
+            float bottomMinimapWidth = 60.0;
+            float bottomMinimapHeight = 60.0;
+            float minimapWidth = bottomMinimapWidth*heightScale;
+            float minimapHeight = bottomMinimapHeight;
+            float minimapRightMargin = 9.0;
+            float minimapTopMargin = 30.0;
+            float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
+            float blurBorder = 5.0;
+            if (texPosition3d.x >= minimapLeftMargin &&
+                texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
+                texPosition3d.y <= minimapHeight + minimapTopMargin && 
+                texPosition3d.y >= minimapTopMargin) {
 
-            bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
-            if (isShadeOfGray) {
-                color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
-            }
-
-            if (index == 2)
-            {
-                int xBlur = 16;
-                if (texPosition3d.x - minimapLeftMargin <= (blurBorder*heightScale)) {
-                    xBlur = int(((texPosition3d.x - minimapLeftMargin)*16.0)/(blurBorder*heightScale));
-                }
-                if ((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x <= (blurBorder*heightScale)) {
-                    xBlur = int((((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x)*16.0)/(blurBorder*heightScale));
+                bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+                if (isShadeOfGray) {
+                    color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
                 }
 
-                int yBlur = 16;
-                if (texPosition3d.y - minimapTopMargin <= blurBorder) {
-                    yBlur = int(((texPosition3d.y - minimapTopMargin)*16.0)/blurBorder);
-                }
-                if ((minimapHeight + minimapTopMargin) - texPosition3d.y <= blurBorder) {
-                    yBlur = int((((minimapHeight + minimapTopMargin) - texPosition3d.y)*16.0)/blurBorder);
-                }
+                if (index == 2)
+                {
+                    int xBlur = 16;
+                    if (texPosition3d.x - minimapLeftMargin <= (blurBorder*heightScale)) {
+                        xBlur = int(((texPosition3d.x - minimapLeftMargin)*16.0)/(blurBorder*heightScale));
+                    }
+                    if ((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x <= (blurBorder*heightScale)) {
+                        xBlur = int((((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x)*16.0)/(blurBorder*heightScale));
+                    }
 
-                float transparency = 15.0/16;
-                int blur = int((xBlur * yBlur * transparency)/16);
-                color = ivec4(color.r, blur, 16 - blur, 0x01);
+                    int yBlur = 16;
+                    if (texPosition3d.y - minimapTopMargin <= blurBorder) {
+                        yBlur = int(((texPosition3d.y - minimapTopMargin)*16.0)/blurBorder);
+                    }
+                    if ((minimapHeight + minimapTopMargin) - texPosition3d.y <= blurBorder) {
+                        yBlur = int((((minimapHeight + minimapTopMargin) - texPosition3d.y)*16.0)/blurBorder);
+                    }
+
+                    float transparency = 15.0/16;
+                    int blur = int((xBlur * yBlur * transparency)/16);
+                    color = ivec4(color.r, blur, 16 - blur, 0x01);
+                }
             }
         }
     }
