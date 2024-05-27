@@ -415,6 +415,28 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                 vec2(0, 192.0) + vec2(bottomMinimapLeftMargin, bottomMinimapTopMargin);
         }
     }
+    if (ShowTarget && KHGameScene == 5 isMinimapVisible())
+    {
+        // target
+        float bottomMinimapWidth = 64.0;
+        float bottomMinimapHeight = 76.0;
+        float minimapWidth = bottomMinimapWidth*heightScale;
+        float minimapHeight = bottomMinimapHeight;
+        float minimapRightMargin = 9.0;
+        float minimapTopMargin = 30.0;
+        float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
+        float bottomMinimapCenterX = 64.0;
+        float bottomMinimapCenterY = 102.0;
+        float bottomMinimapLeftMargin = bottomMinimapCenterX - bottomMinimapWidth/2;
+        float bottomMinimapTopMargin = bottomMinimapCenterY - bottomMinimapHeight/2;
+        if (texPosition3d.x >= minimapLeftMargin &&
+            texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
+            texPosition3d.y <= minimapHeight + minimapTopMargin && 
+            texPosition3d.y >= minimapTopMargin) {
+            return fixStretch*(texPosition3d - vec2(minimapLeftMargin, minimapTopMargin)) +
+                vec2(0, 192.0) + vec2(bottomMinimapLeftMargin, bottomMinimapTopMargin);
+        }
+    }
 
     // enemy health
     float sourceEnemyHealthHeight = 22.0;
