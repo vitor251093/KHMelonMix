@@ -417,43 +417,45 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
     if (ShowTarget && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
+        float increaseTargetSize = 1.5;
+
         // target label
-        float bottomTargetLabelWidth = 64.0;
-        float bottomTargetLabelHeight = 9.0;
+        float bottomTargetLabelWidth = 42.0;
+        float bottomTargetLabelHeight = 6.0;
         float targetLabelWidth = bottomTargetLabelWidth*heightScale;
         float targetLabelHeight = bottomTargetLabelHeight;
         float targetLabelRightMargin = 9.0;
         float targetLabelTopMargin = 30.0;
         float targetLabelLeftMargin = 256.0*iuTexScale - targetLabelWidth - targetLabelRightMargin;
-        float bottomTargetLabelCenterX = 64.0;
-        float bottomTargetLabelCenterY = 55.5;
+        float bottomTargetLabelCenterX = 54.0;
+        float bottomTargetLabelCenterY = 54.0;
         float bottomTargetLabelLeftMargin = bottomTargetLabelCenterX - bottomTargetLabelWidth/2;
         float bottomTargetLabelTopMargin = bottomTargetLabelCenterY - bottomTargetLabelHeight/2;
         if (texPosition3d.x >= targetLabelLeftMargin &&
             texPosition3d.x < (256.0*iuTexScale - targetLabelRightMargin) && 
             texPosition3d.y <= targetLabelHeight + targetLabelTopMargin && 
             texPosition3d.y >= targetLabelTopMargin) {
-            return fixStretch*(texPosition3d - vec2(targetLabelLeftMargin, targetLabelTopMargin)) +
+            return increaseTargetSize*fixStretch*(texPosition3d - vec2(targetLabelLeftMargin, targetLabelTopMargin)) +
                 vec2(0, 192.0) + vec2(bottomTargetLabelLeftMargin, bottomTargetLabelTopMargin);
         }
 
         // target
-        float bottomTargetWidth = 64.0;
-        float bottomTargetHeight = 76.0;
+        float bottomTargetWidth = 42.0;
+        float bottomTargetHeight = 50.0;
         float targetWidth = bottomTargetWidth*heightScale;
         float targetHeight = bottomTargetHeight;
         float targetRightMargin = 9.0;
-        float targetTopMargin = 41.0;
+        float targetTopMargin = 38.0;
         float targetLeftMargin = 256.0*iuTexScale - targetWidth - targetRightMargin;
-        float bottomTargetCenterX = 64.0;
-        float bottomTargetCenterY = 102.0;
+        float bottomTargetCenterX = 54.0;
+        float bottomTargetCenterY = 92.0;
         float bottomTargetLeftMargin = bottomTargetCenterX - bottomTargetWidth/2;
         float bottomTargetTopMargin = bottomTargetCenterY - bottomTargetHeight/2;
         if (texPosition3d.x >= targetLeftMargin &&
             texPosition3d.x < (256.0*iuTexScale - targetRightMargin) && 
             texPosition3d.y <= targetHeight + targetTopMargin && 
             texPosition3d.y >= targetTopMargin) {
-            return fixStretch*(texPosition3d - vec2(targetLeftMargin, targetTopMargin)) +
+            return increaseTargetSize*fixStretch*(texPosition3d - vec2(targetLeftMargin, targetTopMargin)) +
                 vec2(0, 192.0) + vec2(bottomTargetLeftMargin, bottomTargetTopMargin);
         }
     }
@@ -850,20 +852,16 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             float widthScale = TopScreenAspectRatio;
 
             // target label
-            float bottomTargetLabelWidth = 64.0;
-            float bottomTargetLabelHeight = 9.0;
+            float bottomTargetLabelWidth = 42.0;
+            float bottomTargetLabelHeight = 6.0;
             float targetLabelWidth = bottomTargetLabelWidth*heightScale;
             float targetLabelHeight = bottomTargetLabelHeight;
             float targetLabelRightMargin = 9.0;
             float targetLabelTopMargin = 30.0;
             float targetLabelLeftMargin = 256.0*iuTexScale - targetLabelWidth - targetLabelRightMargin;
-            float bottomTargetLabelCenterX = 64.0;
-            float bottomTargetLabelCenterY = 55.5;
-            float bottomTargetLabelLeftMargin = bottomTargetLabelCenterX - bottomTargetLabelWidth/2;
-            float bottomTargetLabelTopMargin = bottomTargetLabelCenterY - bottomTargetLabelHeight/2;
             if (((texPosition3d.x >= targetLabelLeftMargin &&
-                  texPosition3d.x <  targetLabelLeftMargin + 8) ||
-                 (texPosition3d.x >= (256.0*iuTexScale - targetLabelRightMargin) - 8 &&
+                  texPosition3d.x <  targetLabelLeftMargin + (targetLabelWidth/5)) ||
+                 (texPosition3d.x >= (256.0*iuTexScale - targetLabelRightMargin) - (targetLabelWidth/5) &&
                   texPosition3d.x <  (256.0*iuTexScale - targetLabelRightMargin))) && 
                 texPosition3d.y <= targetLabelHeight + targetLabelTopMargin && 
                 texPosition3d.y >= targetLabelTopMargin) {
@@ -881,23 +879,19 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             }
 
             // target
-            float bottomTargetWidth = 64.0;
-            float bottomTargetHeight = 76.0;
+            float bottomTargetWidth = 42.0;
+            float bottomTargetHeight = 50.0;
             float targetWidth = bottomTargetWidth*heightScale;
             float targetHeight = bottomTargetHeight;
             float targetRightMargin = 9.0;
-            float targetTopMargin = 41.0;
+            float targetTopMargin = 38.0;
             float targetLeftMargin = 256.0*iuTexScale - targetWidth - targetRightMargin;
-            float bottomTargetCenterX = 64.0;
-            float bottomTargetCenterY = 102.0;
-            float bottomTargetLeftMargin = bottomTargetCenterX - bottomTargetWidth/2;
-            float bottomTargetTopMargin = bottomTargetCenterY - bottomTargetHeight/2;
             if (texPosition3d.x >= targetLeftMargin &&
                 texPosition3d.x < (256.0*iuTexScale - targetRightMargin) && 
-                ((texPosition3d.y <= targetTopMargin + 5 && 
+                ((texPosition3d.y <= targetTopMargin + (targetHeight/15) && 
                   texPosition3d.y >= targetTopMargin) ||
                  (texPosition3d.y <= targetHeight + targetTopMargin && 
-                  texPosition3d.y >= targetHeight + targetTopMargin - 5))) {
+                  texPosition3d.y >= targetHeight + targetTopMargin - (targetHeight/15)))) {
                 
                 if (index == 0)
                 {
