@@ -12,6 +12,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include "KH_Plugin.h"
+
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash/xxhash.h"
 
@@ -257,9 +259,10 @@ public:
             std::string uniqueIdentifier = oss.str();
             
             std::filesystem::path currentPath = std::filesystem::current_path();
+            std::string assetsFolder = KHPlugin::assetsFolder();
             std::string filename = uniqueIdentifier + ".png";
-            std::filesystem::path fullPath = currentPath / "textures" / filename;
-            std::filesystem::path fullPathTmp = currentPath / "textures_tmp" / filename;
+            std::filesystem::path fullPath = currentPath / "assets" / assetsFolder / "textures" / filename;
+            std::filesystem::path fullPathTmp = currentPath / "assets" / assetsFolder / "textures_tmp" / filename;
 #ifdef _WIN32
             const char* path = fullPath.string().c_str();
             const char* pathTmp = fullPathTmp.string().c_str();

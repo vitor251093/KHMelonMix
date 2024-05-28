@@ -64,6 +64,15 @@ public:
             KHReCodedPlugin::debugLogs(nds, gameScene);
         }
     }
+    static std::string assetsFolder() {
+        if (CartValidator::isDays()) {
+            return "days";
+        }
+        if (CartValidator::isRecoded()) {
+            return "recoded";
+        }
+        return "other";
+    }
 };
 }
 
