@@ -333,6 +333,18 @@ void GLRenderer::SetScaleFactor(int scale) noexcept
 {
     SetRenderSettings(BetterPolygons, scale);
 }
+void GLRenderer::SetShowMap(bool showMap) noexcept
+{
+    CurGLCompositor.SetShowMap(showMap);
+}
+void GLRenderer::SetShowTarget(bool showTarget) noexcept
+{
+    CurGLCompositor.SetShowTarget(showTarget);
+}
+void GLRenderer::SetShowMissionGauge(bool showMissionGauge) noexcept
+{
+    CurGLCompositor.SetShowMissionGauge(showMissionGauge);
+}
 
 
 void GLRenderer::SetRenderSettings(bool betterpolygons, int scale) noexcept

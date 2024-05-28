@@ -39,6 +39,7 @@ enum
     HK_PowerButton,
     HK_VolumeUp,
     HK_VolumeDown,
+    HK_HUDToggle,
     HK_MAX
 };
 

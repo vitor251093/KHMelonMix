@@ -84,6 +84,11 @@ u32 KHReCodedPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMa
     return InputMask;
 }
 
+void KHReCodedPlugin::hudToggle(melonDS::NDS* nds)
+{
+    printf("HUD Toggle\n");
+}
+
 const char* KHReCodedPlugin::getNameByGameScene(int newGameScene)
 {
     switch (newGameScene) {

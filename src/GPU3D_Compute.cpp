@@ -303,6 +303,18 @@ void ComputeRenderer::SetAspectRatio(float aspectRatio)
 {
     CurGLCompositor.SetAspectRatio(aspectRatio);
 }
+void ComputeRenderer::SetShowMap(bool showMap)
+{
+    CurGLCompositor.SetShowMap(showMap);
+}
+void ComputeRenderer::SetShowTarget(bool showTarget)
+{
+    CurGLCompositor.SetShowTarget(showTarget);
+}
+void ComputeRenderer::SetShowMissionGauge(bool showMissionGauge)
+{
+    CurGLCompositor.SetShowMissionGauge(showMissionGauge);
+}
 
 void ComputeRenderer::SetRenderSettings(int scale, bool highResolutionCoordinates)
 {

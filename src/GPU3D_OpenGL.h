@@ -38,6 +38,9 @@ public:
     void SetGameScene(int gameScene) noexcept;
     void SetAspectRatio(float aspectRatio) noexcept;
     void SetScaleFactor(int scale) noexcept;
+    void SetShowMap(bool showMap) noexcept;
+    void SetShowTarget(bool showTarget) noexcept;
+    void SetShowMissionGauge(bool showMissionGauge) noexcept;
     [[nodiscard]] bool GetBetterPolygons() const noexcept { return BetterPolygons; }
     [[nodiscard]] int GetScaleFactor() const noexcept { return ScaleFactor; }
 
