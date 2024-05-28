@@ -118,7 +118,7 @@ void SetAutoJoystickConfig(int a, int b, int select, int start, int right, int l
     Config::HKJoyMapping[HK_VolumeDown] = -1;
     Config::HKJoyMapping[HK_HUDToggle] = -1;
 }
-void OpenJoystick()
+void OpenJoystick(bool autoMapping)
 {
     if (Joystick) SDL_JoystickClose(Joystick);
 
@@ -138,7 +138,7 @@ void OpenJoystick()
     JoystickDeviceID = SDL_JoystickGetDeviceProduct(JoystickID);
 
     printf("Joystick - Vendor ID %04x - Device ID %04x\n", JoystickVendorID, JoystickDeviceID);
-    if (Config::JoystickAuto)
+    if (autoMapping)
     {
         if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268) { // PS3 Controller
 
@@ -326,7 +326,7 @@ void Process()
     if (!Joystick && (SDL_NumJoysticks() > 0))
     {
         JoystickID = Config::JoystickID;
-        OpenJoystick();
+        OpenJoystick(false);
     }
 
     JoyInputMask = 0xFFF;
