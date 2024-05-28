@@ -71,27 +71,6 @@ ARCode KHDaysARCodes::ChangeAspectRatio(std::string codeName, u32 address)
     return curcode;
 }
 
-ARCode KHDaysARCodes::AlwaysEnableXAndDPadToControlCommandMenu(std::string codeName, u32 address)
-{
-    // Example:
-    // if (mem16[0x02194CC2] < 0x4300) {
-    //     if (mem16[0x02194CC2] > 0x41FF) {
-    //         mem8[0x02194CC3] = 0x40;
-    //     }
-    // }
-
-    ARCode curcode2;
-    curcode2.Name = codeName;
-    curcode2.Enabled = true;
-    curcode2.Code.clear();
-    curcode2.Code.push_back((0x70000000 | address) - 0x1); curcode2.Code.push_back(0x4300);
-    curcode2.Code.push_back((0x80000000 | address) - 0x1); curcode2.Code.push_back(0x41FF);
-    curcode2.Code.push_back( 0x20000000 | address);        curcode2.Code.push_back(0x40);
-    curcode2.Code.push_back( 0xD2000000);                  curcode2.Code.push_back(0x00000000);
-    curcode2.Code.push_back( 0xD2000000);                  curcode2.Code.push_back(0x00000000);
-    return curcode2;
-}
-
 bool KHDaysARCodes::Load()
 {
     // References
@@ -105,17 +84,12 @@ bool KHDaysARCodes::Load()
 
     if (CartValidator::isUsaCart()) {
         curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (US)", 0x02023C9C));
-
-        // TODO: This cheat code is making some save files look corrupted when they aren't (issue #69)
-        // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (US)", 0x02194CC3));
     }
     if (CartValidator::isEuropeCart()) {
         curcat.Codes.push_back(ChangeAspectRatio("Auto Resolution (EU)", 0x02023CBC));
-        // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (EU)", 0x02195AA3));
     }
     if (CartValidator::isJapanCart()) {
-        curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP)",      0x02193E23));
-        // curcat.Codes.push_back(AlwaysEnableXAndDPadToControlCommandMenu("Always X + D-Pad (JP Rev1)", 0x02193DA3));
+        // TODO: Add auto resolution for Japanese cart
     }
 
     Categories.push_back(curcat);

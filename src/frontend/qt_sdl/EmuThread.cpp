@@ -460,14 +460,15 @@ void EmuThread::run()
                 videoSettingsDirty = false;
             }
 
+            melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
+
             // process input and hotkeys
-            Input::InputMask = KHPlugin::applyCommandMenuInputMask(Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
+            Input::InputMask = KHPlugin::applyCommandMenuInputMask(&nds, Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
             NDS->SetKeyMask(Input::InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
 
             if (Input::HotkeyPressed(HK_HUDToggle))
             {
-                melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
                 KHPlugin::hudToggle(&nds);
             }
 
