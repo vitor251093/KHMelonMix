@@ -465,7 +465,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     {
         // mission gauge
         float sourceMissionGaugeHeight = 40.0;
-        float sourceMissionGaugeWidth = 248.0;
+        float sourceMissionGaugeWidth = 246.0;
         float missionGaugeHeight = sourceMissionGaugeHeight;
         float missionGaugeWidth = sourceMissionGaugeWidth*heightScale;
         float missionGaugeRightMargin = (256.0*iuTexScale - missionGaugeWidth)/2;
@@ -477,8 +477,13 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             texPosition3d.x <= (256.0*iuTexScale - missionGaugeRightMargin) &&
             texPosition3d.y >= (192.0*iuTexScale - missionGaugeHeight) &&
             texPosition3d.y < (192.0*iuTexScale)) {
-            return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
-                vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
+
+            vec2 finalPos = fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
+                    vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
+            if (finalPos.x + finalPos.y > 355.0 && finalPos.y - finalPos.x > 99.0)
+            {
+                return finalPos;
+            }
         }
     }
 
