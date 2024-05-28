@@ -415,6 +415,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                 vec2(0, 192.0) + vec2(bottomMinimapLeftMargin, bottomMinimapTopMargin);
         }
     }
+
     if (ShowTarget && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         float increaseTargetSize = 1.5;
@@ -457,6 +458,27 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             texPosition3d.y >= targetTopMargin) {
             return increaseTargetSize*fixStretch*(texPosition3d - vec2(targetLeftMargin, targetTopMargin)) +
                 vec2(0, 192.0) + vec2(bottomTargetLeftMargin, bottomTargetTopMargin);
+        }
+    }
+
+    if (ShowMissionGauge && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    {
+        // mission gauge
+        float sourceMissionGaugeHeight = 40.0;
+        float sourceMissionGaugeWidth = 248.0;
+        float missionGaugeHeight = sourceMissionGaugeHeight;
+        float missionGaugeWidth = sourceMissionGaugeWidth*heightScale;
+        float missionGaugeRightMargin = (256.0*iuTexScale - missionGaugeWidth)/2;
+        float bottomMissionGaugeCenterX = 128.0;
+        float bottomMissionGaugeCenterY = 172.0;
+        float bottomMissionGaugeLeftMargin = bottomMissionGaugeCenterX - sourceMissionGaugeWidth/2;
+        float bottomMissionGaugeTopMargin = bottomMissionGaugeCenterY - sourceMissionGaugeHeight/2;
+        if (texPosition3d.x >= (256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin) &&
+            texPosition3d.x <= (256.0*iuTexScale - missionGaugeRightMargin) &&
+            texPosition3d.y >= (192.0*iuTexScale - missionGaugeHeight) &&
+            texPosition3d.y < (192.0*iuTexScale)) {
+            return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
+                vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
         }
     }
 
