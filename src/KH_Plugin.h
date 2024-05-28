@@ -21,6 +21,14 @@ public:
         }
         return InputMask;
     }
+    static void hudToggle(melonDS::NDS* nds) {
+        if (CartValidator::isDays()) {
+            return KHDaysPlugin::hudToggle(nds);
+        }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::hudToggle(nds);
+        }
+    }
     static const char* getNameByGameScene(int newGameScene) {
         if (CartValidator::isDays()) {
             return KHDaysPlugin::getNameByGameScene(newGameScene);
