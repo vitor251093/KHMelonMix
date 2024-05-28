@@ -12,12 +12,12 @@ namespace melonDS
 class KHPlugin
 {
 public:
-    static u32 applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask) {
+    static u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask) {
         if (CartValidator::isDays()) {
-            return KHDaysPlugin::applyCommandMenuInputMask(InputMask, CmdMenuInputMask, PriorCmdMenuInputMask);
+            return KHDaysPlugin::applyCommandMenuInputMask(nds, InputMask, CmdMenuInputMask, PriorCmdMenuInputMask);
         }
         if (CartValidator::isRecoded()) {
-            return KHReCodedPlugin::applyCommandMenuInputMask(InputMask, CmdMenuInputMask, PriorCmdMenuInputMask);
+            return KHReCodedPlugin::applyCommandMenuInputMask(nds, InputMask, CmdMenuInputMask, PriorCmdMenuInputMask);
         }
         return InputMask;
     }

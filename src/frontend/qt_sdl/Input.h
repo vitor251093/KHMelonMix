@@ -40,7 +40,7 @@ extern u32 PriorPriorCmdMenuInputMask;
 void Init();
 
 // set joystickID before calling openJoystick()
-void OpenJoystick();
+void OpenJoystick(bool autoMapping);
 void CloseJoystick();
 
 void KeyPress(QKeyEvent* event);

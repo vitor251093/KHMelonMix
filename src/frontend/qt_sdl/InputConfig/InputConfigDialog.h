@@ -133,7 +133,7 @@ private slots:
     void on_btnKeyMapSwitch_clicked();
     void on_btnJoyMapSwitch_clicked();
     void on_cbxJoystick_currentIndexChanged(int id);
-    void on_cbJoystickAuto_stateChanged(int state);
+    void on_btnJoystickAuto_clicked();
 
 private:
     void populatePage(QWidget* page,
@@ -145,7 +145,6 @@ private:
 
     Ui::InputConfigDialog* ui;
 
-    bool keypadJoyAuto;
     int keypadKeyMap[12], keypadJoyMap[12];
     int addonsKeyMap[hk_addons.size()], addonsJoyMap[hk_addons.size()];
     int hkGeneralKeyMap[hk_general.size()], hkGeneralJoyMap[hk_general.size()];

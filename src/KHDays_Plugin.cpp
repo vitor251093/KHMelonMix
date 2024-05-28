@@ -2,6 +2,7 @@
 
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
+#include "CartValidator.h"
 
 #include <math.h>
 
@@ -46,9 +47,28 @@ enum
     gameScene_Other               // 16
 };
 
-u32 KHDaysPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
+u32 KHDaysPlugin::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
+        // Enabling X + D-Pad
+        if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) { // D-pad
+            u32 dpadMenuAddress = 0;
+            if (CartValidator::isUsaCart()) {
+                dpadMenuAddress = 0x02194CC3;
+            }
+            if (CartValidator::isEuropeCart()) {
+                dpadMenuAddress = 0x02195AA3;
+            }
+            if (CartValidator::isJapanCart()) {
+                dpadMenuAddress = 0x02193E23;
+                // TODO: Add support to Rev1 (0x02193DA3)
+            }
+
+            if (nds->ARM7Read8(dpadMenuAddress) & 0x02) {
+                nds->ARM7Write8(dpadMenuAddress, nds->ARM7Read8(dpadMenuAddress) - 0x02);
+            }
+        }
+
         // So the arrow keys can be used to control the command menu
         if (CmdMenuInputMask & (1 << 1)) { // D-pad left
             InputMask &= ~(1<<1); // B
@@ -139,8 +159,7 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
 
 int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 {
-    // printf("0x021D08B8: %d\n",   nds->ARM7Read8(0x021D08B8));
-    // printf("0x0223D38C: %d\n\n", nds->ARM7Read8(0x0223D38C));
+    // printf("0x02194CBF: %08x %08x\n", nds->ARM7Read32(0x02194CBF), nds->ARM7Read32(0x02194CC3));
 
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;

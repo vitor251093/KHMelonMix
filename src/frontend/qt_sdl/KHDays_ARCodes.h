@@ -41,7 +41,6 @@ private:
     float ScreenAspect;
 
     ARCode ChangeAspectRatio(std::string codeName, u32 address);
-    ARCode AlwaysEnableXAndDPadToControlCommandMenu(std::string codeName, u32 address);
 };
 
 }
