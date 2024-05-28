@@ -257,31 +257,47 @@ public:
                     oss << static_cast<char32_t>(entry.TextureHash[i]);
             }
             std::string uniqueIdentifier = oss.str();
+            oss << "-";
+            oss << palBase;
+            std::string uniqueIdentifier2 = oss.str();
             
             std::filesystem::path currentPath = std::filesystem::current_path();
             std::string assetsFolder = KHPlugin::assetsFolder();
             std::string filename = uniqueIdentifier + ".png";
+            std::string filename2 = uniqueIdentifier2 + ".png";
             std::filesystem::path fullPath = currentPath / "assets" / assetsFolder / "textures" / filename;
-            std::filesystem::path fullPathTmp = currentPath / "assets" / assetsFolder / "textures_tmp" / filename;
+            std::filesystem::path fullPath2 = currentPath / "assets" / assetsFolder / "textures" / filename2;
+            std::filesystem::path fullPathTmp = currentPath / "assets" / assetsFolder / "textures_tmp" / filename2;
 #ifdef _WIN32
             const char* path = fullPath.string().c_str();
+            const char* path2 = fullPath2.string().c_str();
             const char* pathTmp = fullPathTmp.string().c_str();
 #else
             const char* path = fullPath.c_str();
+            const char* path2 = fullPath2.c_str();
             const char* pathTmp = fullPathTmp.c_str();
 #endif
 
             int channels = 4;
             int r_width, r_height, r_channels;
-            imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+            imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
             if (imageData != nullptr) {
-                printf("Loading texture %s (key: %u)\n", path, key);
+                printf("Loading texture %s\n", path2);
                 width = r_width;
                 height = r_height;
             }
             else {
-                imageData = (unsigned char*)DecodingBuffer;
-                Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+                imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+                if (imageData != nullptr) {
+                    printf("Loading texture %s\n", path);
+                    width = r_width;
+                    height = r_height;
+                }
+                else {
+                    printf("Saving texture %s\n", pathTmp);
+                    imageData = (unsigned char*)DecodingBuffer;
+                    Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+                }
             }
 
             widthLog2 = RightmostBit(width) - 3;

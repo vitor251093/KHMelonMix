@@ -54,9 +54,12 @@ unsigned char* LoadTextureFromFile(const char* path, int* width, int* height, in
 
 void ExportTextureAsFile(unsigned char* data, const char* path, u32 width, u32 height, u32 channels)
 {
+    unsigned char* newImageData = (unsigned char*)malloc((height) * (width) * (channels) * sizeof(unsigned char[4]));
+
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             unsigned char* pixel = ((unsigned char*)data) + (y * width + x) * (channels);
+            unsigned char* newPixel = ((unsigned char*)newImageData) + (y * width + x) * (channels);
             unsigned char r = pixel[0];
             unsigned char g = pixel[1];
             unsigned char b = pixel[2];
@@ -66,31 +69,13 @@ void ExportTextureAsFile(unsigned char* data, const char* path, u32 width, u32 h
             b = (b << 2);
             alpha = (alpha + 1 << 3) - 1;
             if (alpha <= 0x7) alpha = 0;
-            pixel[0] = r;
-            pixel[1] = g;
-            pixel[2] = b;
-            pixel[3] = alpha;
+            newPixel[0] = r;
+            newPixel[1] = g;
+            newPixel[2] = b;
+            newPixel[3] = alpha;
         }
     }
 
-    stbi_write_png(path, width, height, channels, data, width * channels);
-
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            unsigned char* pixel = ((unsigned char*)data) + (y * width + x) * (channels);
-            unsigned char r = pixel[0];
-            unsigned char g = pixel[1];
-            unsigned char b = pixel[2];
-            unsigned char alpha = pixel[3];
-            r = (r >> 2);
-            g = (g >> 2);
-            b = (b >> 2);
-            alpha = (alpha >> 3);
-            pixel[0] = r;
-            pixel[1] = g;
-            pixel[2] = b;
-            pixel[3] = alpha;
-        }
-    }
+    stbi_write_png(path, width, height, channels, newImageData, width * channels);
 }
 }
