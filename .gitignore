@@ -35,4 +35,5 @@ compile_commands.json
 CMakeFiles
 CMakeCache.txt
 
-textures_tmp/*.png
+assets/days/textures_tmp/*.png
+assets/recoded/textures_tmp/*.png
