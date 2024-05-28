@@ -28,6 +28,9 @@ uniform int u3DXPos;
 uniform int KHGameScene;
 uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
+uniform bool ShowMap;
+uniform bool ShowTarget;
+uniform bool ShowMissionGauge;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -187,7 +190,7 @@ vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
 {
     vec2 texPosition3d = vec2(xpos, ypos);
     float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = 1.0/heightScale;
+    float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     float sourceHeight = 192.0;
@@ -209,7 +212,7 @@ vec2 getSingleSquaredScreenTextureCoordinates(float xpos, float ypos, int screen
 {
     vec2 texPosition3d = vec2(xpos, ypos);
     float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = 1.0/heightScale;
+    float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
     vec2 initialScreenMargin = (screenIndex == 2 ? vec2(0, 192.0) : vec2(0, 0));
 
@@ -244,7 +247,7 @@ vec2 getHorizontalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clea
     int screenScale = 2;
     vec2 texPosition3d = vec2(xpos*screenScale, ypos*screenScale);
     float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = 1.0/heightScale;
+    float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(1.0, heightScale);
 
     // screen 1
@@ -292,7 +295,7 @@ vec2 getVerticalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearV
     int screenScale = 2;
     vec2 texPosition3d = vec2(xpos*screenScale, ypos*screenScale);
     float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = 1.0/heightScale;
+    float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     // screen 1
@@ -341,7 +344,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float iuTexScale = (6.0)/iuScale;
     vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
     float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = 1.0/heightScale;
+    float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     if (isDialogVisible()) {
@@ -389,7 +392,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
-    if (KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowMap && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         // minimap
         float bottomMinimapWidth = 60.0;
@@ -410,6 +413,77 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             texPosition3d.y >= minimapTopMargin) {
             return increaseMapSize*fixStretch*(texPosition3d - vec2(minimapLeftMargin, minimapTopMargin)) +
                 vec2(0, 192.0) + vec2(bottomMinimapLeftMargin, bottomMinimapTopMargin);
+        }
+    }
+
+    if (ShowTarget && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    {
+        float increaseTargetSize = 1.5;
+
+        // target label
+        float bottomTargetLabelWidth = 42.0;
+        float bottomTargetLabelHeight = 6.0;
+        float targetLabelWidth = bottomTargetLabelWidth*heightScale;
+        float targetLabelHeight = bottomTargetLabelHeight;
+        float targetLabelRightMargin = 9.0;
+        float targetLabelTopMargin = 30.0;
+        float targetLabelLeftMargin = 256.0*iuTexScale - targetLabelWidth - targetLabelRightMargin;
+        float bottomTargetLabelCenterX = 54.0;
+        float bottomTargetLabelCenterY = 54.0;
+        float bottomTargetLabelLeftMargin = bottomTargetLabelCenterX - bottomTargetLabelWidth/2;
+        float bottomTargetLabelTopMargin = bottomTargetLabelCenterY - bottomTargetLabelHeight/2;
+        if (texPosition3d.x >= targetLabelLeftMargin &&
+            texPosition3d.x < (256.0*iuTexScale - targetLabelRightMargin) && 
+            texPosition3d.y <= targetLabelHeight + targetLabelTopMargin && 
+            texPosition3d.y >= targetLabelTopMargin) {
+            return increaseTargetSize*fixStretch*(texPosition3d - vec2(targetLabelLeftMargin, targetLabelTopMargin)) +
+                vec2(0, 192.0) + vec2(bottomTargetLabelLeftMargin, bottomTargetLabelTopMargin);
+        }
+
+        // target
+        float bottomTargetWidth = 42.0;
+        float bottomTargetHeight = 50.0;
+        float targetWidth = bottomTargetWidth*heightScale;
+        float targetHeight = bottomTargetHeight;
+        float targetRightMargin = 9.0;
+        float targetTopMargin = 38.0;
+        float targetLeftMargin = 256.0*iuTexScale - targetWidth - targetRightMargin;
+        float bottomTargetCenterX = 54.0;
+        float bottomTargetCenterY = 92.0;
+        float bottomTargetLeftMargin = bottomTargetCenterX - bottomTargetWidth/2;
+        float bottomTargetTopMargin = bottomTargetCenterY - bottomTargetHeight/2;
+        if (texPosition3d.x >= targetLeftMargin &&
+            texPosition3d.x < (256.0*iuTexScale - targetRightMargin) && 
+            texPosition3d.y <= targetHeight + targetTopMargin && 
+            texPosition3d.y >= targetTopMargin) {
+            return increaseTargetSize*fixStretch*(texPosition3d - vec2(targetLeftMargin, targetTopMargin)) +
+                vec2(0, 192.0) + vec2(bottomTargetLeftMargin, bottomTargetTopMargin);
+        }
+    }
+
+    if (ShowMissionGauge && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    {
+        // mission gauge
+        float sourceMissionGaugeHeight = 39.0;
+        float sourceMissionGaugeWidth = 246.0;
+        float missionGaugeHeight = sourceMissionGaugeHeight;
+        float missionGaugeWidth = sourceMissionGaugeWidth*heightScale;
+        float missionGaugeRightMargin = (256.0*iuTexScale - missionGaugeWidth)/2;
+        float bottomMissionGaugeCenterX = 128.0;
+        float bottomMissionGaugeCenterY = 172.5;
+        float bottomMissionGaugeLeftMargin = bottomMissionGaugeCenterX - sourceMissionGaugeWidth/2;
+        float bottomMissionGaugeTopMargin = bottomMissionGaugeCenterY - sourceMissionGaugeHeight/2;
+        if (texPosition3d.x >= (256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin) &&
+            texPosition3d.x <= (256.0*iuTexScale - missionGaugeRightMargin) &&
+            texPosition3d.y >= (192.0*iuTexScale - missionGaugeHeight) &&
+            texPosition3d.y < (192.0*iuTexScale)) {
+
+            vec2 finalPos = fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
+                    vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
+            if (finalPos.x + finalPos.y > 355.0 && finalPos.y - finalPos.x > 99.0)
+            {
+                return finalPos;
+            }
         }
     }
 
@@ -483,14 +557,35 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     int iuScale = KHUIScale;
     float iuTexScale = (6.0)/iuScale;
     vec2 texPosition3d = vec2(vec2(xpos, ypos)*iuTexScale);
+    float heightScale = 1.0/TopScreenAspectRatio;
+    float widthScale = TopScreenAspectRatio;
+    vec2 fixStretch = vec2(widthScale, 1.0);
 
     if (KHGameScene == 10) // gameScene_PauseMenu
     {
-        // gauge bar
-        float gaugeBarHeight = 33.0*iuTexScale;
-        if (texPosition3d.y >= (192.0*iuTexScale - gaugeBarHeight)) {
-            if (!isScreenBlack(1)) {
-                return vec2(fTexcoord) + vec2(0,192);
+        if (!isScreenBlack(1))
+        {
+            // mission gauge
+            float sourceMissionGaugeHeight = 39.0;
+            float sourceMissionGaugeWidth = 246.0;
+            float missionGaugeHeight = sourceMissionGaugeHeight;
+            float missionGaugeWidth = sourceMissionGaugeWidth*heightScale;
+            float missionGaugeRightMargin = (256.0*iuTexScale - missionGaugeWidth)/2;
+            float bottomMissionGaugeCenterX = 128.0;
+            float bottomMissionGaugeCenterY = 172.5;
+            float bottomMissionGaugeLeftMargin = bottomMissionGaugeCenterX - sourceMissionGaugeWidth/2;
+            float bottomMissionGaugeTopMargin = bottomMissionGaugeCenterY - sourceMissionGaugeHeight/2;
+            if (texPosition3d.x >= (256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin) &&
+                texPosition3d.x <= (256.0*iuTexScale - missionGaugeRightMargin) &&
+                texPosition3d.y >= (192.0*iuTexScale - missionGaugeHeight) &&
+                texPosition3d.y < (192.0*iuTexScale)) {
+
+                vec2 finalPos = fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
+                        vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
+                if (finalPos.x + finalPos.y > 355.0 && finalPos.y - finalPos.x > 99.0)
+                {
+                    return finalPos;
+                }
             }
         }
     }
@@ -579,7 +674,7 @@ ivec4 getSingleSquaredScreen3DColor(float xpos, float ypos)
 {
     vec2 texPosition3d = vec2(xpos, ypos);
     float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = 1.0/heightScale;
+    float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     float sourceScreenHeight = 192.0;
@@ -607,7 +702,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
     float _3dxpos = float(u3DXPos);
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
     float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = 1.0/heightScale;
+    float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(1.0, heightScale);
 
     // screen 1
@@ -616,7 +711,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
         float sourceScreenWidth = 256.0;
         float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*u3DScale)/2;
-        float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
+        float screenTopMargin = (sourceScreenHeight*u3DScale - screenHeight)/2;
         float screenLeftMargin = 0.0;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
@@ -634,7 +729,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
         float sourceScreenWidth = 256.0;
         float screenHeight = (sourceScreenHeight*widthScale*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*u3DScale)/2;
-        float screenTopMargin = (192.0*u3DScale - screenHeight)/2;
+        float screenTopMargin = (sourceScreenHeight*u3DScale - screenHeight)/2;
         float screenLeftMargin = screenWidth;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
@@ -654,7 +749,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
     float _3dxpos = float(u3DXPos);
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
     float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = 1.0/heightScale;
+    float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     // screen 1
@@ -664,7 +759,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
         float screenHeight = (sourceScreenHeight*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*heightScale*u3DScale)/2;
         float screenTopMargin = 0.0;
-        float screenLeftMargin = (256.0*u3DScale - screenWidth)/2;
+        float screenLeftMargin = (sourceScreenWidth*u3DScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
             texPosition3d.y <= (screenHeight + screenTopMargin) && 
@@ -683,7 +778,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
         float screenHeight = (sourceScreenHeight*u3DScale)/2;
         float screenWidth = (sourceScreenWidth*heightScale*u3DScale)/2;
         float screenTopMargin = screenHeight;
-        float screenLeftMargin = (256.0*u3DScale - screenWidth)/2;
+        float screenLeftMargin = (sourceScreenWidth*u3DScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
             texPosition3d.x < (screenWidth + screenLeftMargin) && 
             texPosition3d.y <= (screenHeight + screenTopMargin) && 
@@ -738,54 +833,124 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
-    if (KHGameScene == 5 && isMinimapVisible() && !isDialogVisible() && !isMissionInformationVisible()) // gameScene_InGameWithMap
+    if (ShowMap && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        int iuScale = KHUIScale;
-        float iuTexScale = (6.0)/iuScale;
-        vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-        float heightScale = 1.0/TopScreenAspectRatio;
-        float widthScale = 1.0/heightScale;
+        if (!isDialogVisible() && !isMissionInformationVisible())
+        {
+            int iuScale = KHUIScale;
+            float iuTexScale = (6.0)/iuScale;
+            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+            float heightScale = 1.0/TopScreenAspectRatio;
+            float widthScale = TopScreenAspectRatio;
 
-        // minimap
-        float bottomMinimapWidth = 60.0;
-        float bottomMinimapHeight = 60.0;
-        float minimapWidth = bottomMinimapWidth*heightScale;
-        float minimapHeight = bottomMinimapHeight;
-        float minimapRightMargin = 9.0;
-        float minimapTopMargin = 30.0;
-        float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
-        float blurBorder = 5.0;
-        if (texPosition3d.x >= minimapLeftMargin &&
-            texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
-            texPosition3d.y <= minimapHeight + minimapTopMargin && 
-            texPosition3d.y >= minimapTopMargin) {
+            // minimap
+            float bottomMinimapWidth = 60.0;
+            float bottomMinimapHeight = 60.0;
+            float minimapWidth = bottomMinimapWidth*heightScale;
+            float minimapHeight = bottomMinimapHeight;
+            float minimapRightMargin = 9.0;
+            float minimapTopMargin = 30.0;
+            float minimapLeftMargin = 256.0*iuTexScale - minimapWidth - minimapRightMargin;
+            float blurBorder = 5.0;
+            if (texPosition3d.x >= minimapLeftMargin &&
+                texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
+                texPosition3d.y <= minimapHeight + minimapTopMargin && 
+                texPosition3d.y >= minimapTopMargin) {
 
-            bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
-            if (isShadeOfGray) {
-                color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+                bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+                if (isShadeOfGray) {
+                    color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+                }
+
+                if (index == 2)
+                {
+                    int xBlur = 16;
+                    if (texPosition3d.x - minimapLeftMargin <= (blurBorder*heightScale)) {
+                        xBlur = int(((texPosition3d.x - minimapLeftMargin)*16.0)/(blurBorder*heightScale));
+                    }
+                    if ((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x <= (blurBorder*heightScale)) {
+                        xBlur = int((((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x)*16.0)/(blurBorder*heightScale));
+                    }
+
+                    int yBlur = 16;
+                    if (texPosition3d.y - minimapTopMargin <= blurBorder) {
+                        yBlur = int(((texPosition3d.y - minimapTopMargin)*16.0)/blurBorder);
+                    }
+                    if ((minimapHeight + minimapTopMargin) - texPosition3d.y <= blurBorder) {
+                        yBlur = int((((minimapHeight + minimapTopMargin) - texPosition3d.y)*16.0)/blurBorder);
+                    }
+
+                    float transparency = 15.0/16;
+                    int blur = int((xBlur * yBlur * transparency)/16);
+                    color = ivec4(color.r, blur, 16 - blur, 0x01);
+                }
+            }
+        }
+    }
+
+
+    if (ShowTarget && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    {
+        if (!isDialogVisible() && !isMissionInformationVisible())
+        {
+            int iuScale = KHUIScale;
+            float iuTexScale = (6.0)/iuScale;
+            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+            float heightScale = 1.0/TopScreenAspectRatio;
+            float widthScale = TopScreenAspectRatio;
+
+            // target label
+            float bottomTargetLabelWidth = 42.0;
+            float bottomTargetLabelHeight = 6.0;
+            float targetLabelWidth = bottomTargetLabelWidth*heightScale;
+            float targetLabelHeight = bottomTargetLabelHeight;
+            float targetLabelRightMargin = 9.0;
+            float targetLabelTopMargin = 30.0;
+            float targetLabelLeftMargin = 256.0*iuTexScale - targetLabelWidth - targetLabelRightMargin;
+            if (((texPosition3d.x >= targetLabelLeftMargin &&
+                  texPosition3d.x <  targetLabelLeftMargin + (targetLabelWidth/5)) ||
+                 (texPosition3d.x >= (256.0*iuTexScale - targetLabelRightMargin) - (targetLabelWidth/5) &&
+                  texPosition3d.x <  (256.0*iuTexScale - targetLabelRightMargin))) && 
+                texPosition3d.y <= targetLabelHeight + targetLabelTopMargin && 
+                texPosition3d.y >= targetLabelTopMargin) {
+                
+                if (index == 0)
+                {
+                    color = ivec4(0, 0, 0, 31);
+                }
+                if (index == 2)
+                {
+                    ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                    int blur = int((63 - colorZero.r)/2);
+                    color = ivec4(color.r, blur, 16 - blur, 0x01);
+                }
             }
 
-            if (index == 2)
-            {
-                int xBlur = 16;
-                if (texPosition3d.x - minimapLeftMargin <= (blurBorder*heightScale)) {
-                    xBlur = int(((texPosition3d.x - minimapLeftMargin)*16.0)/(blurBorder*heightScale));
+            // target
+            float bottomTargetWidth = 42.0;
+            float bottomTargetHeight = 50.0;
+            float targetWidth = bottomTargetWidth*heightScale;
+            float targetHeight = bottomTargetHeight;
+            float targetRightMargin = 9.0;
+            float targetTopMargin = 38.0;
+            float targetLeftMargin = 256.0*iuTexScale - targetWidth - targetRightMargin;
+            if (texPosition3d.x >= targetLeftMargin &&
+                texPosition3d.x < (256.0*iuTexScale - targetRightMargin) && 
+                ((texPosition3d.y <= targetTopMargin + (targetHeight/15) && 
+                  texPosition3d.y >= targetTopMargin) ||
+                 (texPosition3d.y <= targetHeight + targetTopMargin && 
+                  texPosition3d.y >= targetHeight + targetTopMargin - (targetHeight/15)))) {
+                
+                if (index == 0)
+                {
+                    color = ivec4(0, 0, 0, 31);
                 }
-                if ((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x <= (blurBorder*heightScale)) {
-                    xBlur = int((((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x)*16.0)/(blurBorder*heightScale));
+                if (index == 2)
+                {
+                    ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                    int blur = int((63 - colorZero.r)/2);
+                    color = ivec4(color.r, blur, 16 - blur, 0x01);
                 }
-
-                int yBlur = 16;
-                if (texPosition3d.y - minimapTopMargin <= blurBorder) {
-                    yBlur = int(((texPosition3d.y - minimapTopMargin)*16.0)/blurBorder);
-                }
-                if ((minimapHeight + minimapTopMargin) - texPosition3d.y <= blurBorder) {
-                    yBlur = int((((minimapHeight + minimapTopMargin) - texPosition3d.y)*16.0)/blurBorder);
-                }
-
-                float transparency = 15.0/16;
-                int blur = int((xBlur * yBlur * transparency)/16);
-                color = ivec4(color.r, blur, 16 - blur, 0x01);
             }
         }
     }

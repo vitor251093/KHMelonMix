@@ -1,5 +1,11 @@
 <p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/res/icon/khDaysMM_128x128.png"></p>
 <h2 align="center"><b>Kingdom Hearts 358/2 Days - Melon Mix</b></h2>
+<p align="center">
+<a href="https://www.gnu.org/licenses/gpl-3.0" alt="License: GPLv3"><img src="https://img.shields.io/badge/License-GPL%20v3-%23ff554d.svg"></a>
+<a href="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-windows.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-windows.yml/badge.svg" /></a>
+<a href="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-ubuntu.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-ubuntu.yml/badge.svg" /></a>
+<a href="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-macos.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHDays_FM/actions/workflows/build-macos.yml/badge.svg" /></a>
+</p>
 melonDS, sorta
 
 The goal of this project is to turn "Kingdom Hearts 358/2 Days" into a playable PC game, with a single screen and controls compatible with a regular controller.
@@ -11,7 +17,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 
 ## How to play
 
-First, download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system (not the source code zip). Then, you will need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Place that NDS file inside a "rom" folder, next to the downloaded Melon Mix executable (which was inside the zip file that you downloaded), and name it game.nds. Now you just need to launch the Melon Mix executable.
+First, download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system (not the source code zip). Then, you will need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Rename that NDS file to "game.nds", place it inside a folder named "rom", and then place that folder next to the downloaded Melon Mix executable (which was inside the zip file that you downloaded). Now you just need to launch the Melon Mix executable.
 
 ### Steam Deck
 

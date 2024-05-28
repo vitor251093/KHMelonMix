@@ -1,14 +1,19 @@
 #include "KHDays_Plugin.h"
 
+#include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
 
 #include <math.h>
 
-namespace melonDS
-{
+using namespace melonDS;
+
+extern int videoRenderer;
 
 int KHDaysPlugin::GameScene = -1;
 int KHDaysPlugin::priorGameScene = -1;
+bool KHDaysPlugin::ShowMap = true;
+bool KHDaysPlugin::ShowTarget = false;
+bool KHDaysPlugin::ShowMissionGauge = false;
 
 bool KHDaysPlugin::_olderHad3DOnTopScreen = false;
 bool KHDaysPlugin::_olderHad3DOnBottomScreen = false;
@@ -80,6 +85,32 @@ u32 KHDaysPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask,
         }
     }
     return InputMask;
+}
+
+void KHDaysPlugin::hudRefresh(melonDS::NDS* nds)
+{
+    switch (videoRenderer)
+    {
+        case 1:
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
+            break;
+        case 2:
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
+            break;
+        default: break;
+    }
+}
+
+void KHDaysPlugin::hudToggle(melonDS::NDS* nds)
+{
+    ShowMap = !ShowMap;
+    ShowTarget = !ShowTarget;
+    ShowMissionGauge = !ShowMissionGauge;
+    hudRefresh(nds);
 }
 
 const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
@@ -369,7 +400,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         // Pause Menu
-        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8;
+        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
         if (inMissionPauseMenu)
         {
             return gameScene_PauseMenu;
@@ -411,7 +442,19 @@ bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
     }
 
     // Updating GameScene inside shader
-    static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+    switch (videoRenderer)
+    {
+        case 1:
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            break;
+        case 2:
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            break;
+        default: break;
+    }
+
+    hudRefresh(nds);
+
     return updated;
 }
 
@@ -437,5 +480,3 @@ void KHDaysPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
     printf("\n");
 }
 
-
-}

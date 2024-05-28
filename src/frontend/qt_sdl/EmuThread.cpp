@@ -306,7 +306,7 @@ void EmuThread::run()
 {
     u32 mainScreenPos[3];
     Platform::FileHandle* file;
-    u32 lastRomLoaded = CartValidator::get();
+    u32 lastRomLoaded = 0;
 
     UpdateConsole(nullptr, nullptr);
     // No carts are inserted when melonDS first boots
@@ -374,6 +374,7 @@ void EmuThread::run()
             if (lastRomLoaded != CartValidator::get())
             {
                 lastRomLoaded = CartValidator::get();
+                lastVideoRenderer = -1;
                 videoSettingsDirty = true;
             }
 
@@ -454,6 +455,8 @@ void EmuThread::run()
 
                 updateRenderer();
 
+                emit screenLayoutChange();
+
                 videoSettingsDirty = false;
             }
 
@@ -461,6 +464,12 @@ void EmuThread::run()
             Input::InputMask = KHPlugin::applyCommandMenuInputMask(Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
             NDS->SetKeyMask(Input::InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
+
+            if (Input::HotkeyPressed(HK_HUDToggle))
+            {
+                melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
+                KHPlugin::hudToggle(&nds);
+            }
 
             if (Input::HotkeyPressed(HK_Lid))
             {
@@ -472,11 +481,30 @@ void EmuThread::run()
             // microphone input
             AudioInOut::MicProcess(*NDS);
 
+            refreshGameScene();
+
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
             {
-                refreshGameScene();
-                int guess = Frontend::screenSizing_TopOnly;
+                mainScreenPos[2] = mainScreenPos[1];
+                mainScreenPos[1] = mainScreenPos[0];
+                mainScreenPos[0] = NDS->PowerControl9 >> 15;
+
+                int guess;
+                if (mainScreenPos[0] == mainScreenPos[2] &&
+                    mainScreenPos[0] != mainScreenPos[1])
+                {
+                    // constant flickering, likely displaying 3D on both screens
+                    // TODO: when both screens are used for 2D only...???
+                    guess = Frontend::screenSizing_Even;
+                }
+                else
+                {
+                    if (mainScreenPos[0] == 1)
+                        guess = Frontend::screenSizing_EmphTop;
+                    else
+                        guess = Frontend::screenSizing_EmphBot;
+                }
 
                 if (guess != autoScreenSizing)
                 {
@@ -661,20 +689,20 @@ void EmuThread::run()
 
 void EmuThread::refreshGameScene()
 {
+    bool enableDebug = false;
+
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
     int newGameScene = KHPlugin::detectGameScene(&nds);
 
-#ifdef _DEBUG
-    KHPlugin::debugLogs(&nds, newGameScene);
-#endif
+    if (enableDebug) {
+        KHPlugin::debugLogs(&nds, newGameScene);
+    }
 
     bool updated = KHPlugin::setGameScene(&nds, newGameScene);
-    if (updated) 
+    if (updated && enableDebug)
     {
-#ifdef _DEBUG
         mainWindow->osdAddMessage(0, KHPlugin::getNameByGameScene(newGameScene));
-#endif
     }
 }
 

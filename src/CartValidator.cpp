@@ -11,7 +11,7 @@ u32 recodedUsGamecode = 1161382722;
 u32 recodedEuGamecode = 1345932098;
 u32 recodedJpGamecode = 1245268802;
 
-u32 GameCode = 1162300249;
+u32 GameCode = 0;
 
 u32 CartValidator::get()
 {

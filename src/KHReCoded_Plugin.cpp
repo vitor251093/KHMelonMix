@@ -1,11 +1,13 @@
 #include "KHReCoded_Plugin.h"
 
 #include "GPU3D_OpenGL.h"
+#include "GPU3D_Compute.h"
 
 #include <math.h>
 
-namespace melonDS
-{
+using namespace melonDS;
+
+extern int videoRenderer;
 
 int KHReCodedPlugin::GameScene = -1;
 int KHReCodedPlugin::priorGameScene = -1;
@@ -80,6 +82,11 @@ u32 KHReCodedPlugin::applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMa
         }
     }
     return InputMask;
+}
+
+void KHReCodedPlugin::hudToggle(melonDS::NDS* nds)
+{
+    printf("HUD Toggle\n");
 }
 
 const char* KHReCodedPlugin::getNameByGameScene(int newGameScene)
@@ -406,7 +413,16 @@ bool KHReCodedPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
     }
 
     // Updating GameScene inside shader
-    static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+    switch (videoRenderer)
+    {
+        case 1:
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            break;
+        case 2:
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            break;
+        default: break;
+    }
     return updated;
 }
 
@@ -432,5 +448,3 @@ void KHReCodedPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
     printf("\n");
 }
 
-
-}

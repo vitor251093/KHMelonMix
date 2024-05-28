@@ -66,6 +66,9 @@ GLCompositor::GLCompositor(GLuint compShader) noexcept : CompShader(compShader)
     Comp3DXPosLoc = glGetUniformLocation(CompShader, "u3DXPos");
     CompGameSceneLoc = glGetUniformLocation(CompShader, "KHGameScene");
     CompAspectRatioLoc = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompShowMapLoc = glGetUniformLocation(CompShader, "ShowMap");
+    CompShowTargetLoc = glGetUniformLocation(CompShader, "ShowTarget");
+    CompShowMissionGaugeLoc = glGetUniformLocation(CompShader, "ShowMissionGauge");
 
     glUseProgram(CompShader);
     GLuint screenTextureUniform = glGetUniformLocation(CompShader, "ScreenTex");
@@ -157,10 +160,16 @@ GLCompositor::GLCompositor(GLCompositor&& other) noexcept :
     ScreenW(other.ScreenW),
     GameScene(other.GameScene),
     AspectRatio(other.AspectRatio),
+    ShowMap(other.ShowMap),
+    ShowTarget(other.ShowTarget),
+    ShowMissionGauge(other.ShowMissionGauge),
     CompScaleLoc(other.CompScaleLoc),
     Comp3DXPosLoc(other.Comp3DXPosLoc),
     CompGameSceneLoc(other.CompGameSceneLoc),
     CompAspectRatioLoc(other.CompAspectRatioLoc),
+    CompShowMapLoc(other.CompShowMapLoc),
+    CompShowTargetLoc(other.CompShowTargetLoc),
+    CompShowMissionGaugeLoc(other.CompShowMissionGaugeLoc),
     CompVertices(other.CompVertices),
     CompShader(other.CompShader),
     CompVertexBufferID(other.CompVertexBufferID),
@@ -186,10 +195,16 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
         ScreenW = other.ScreenW;
         GameScene = other.GameScene;
         AspectRatio = other.AspectRatio;
+        ShowMap = other.ShowMap;
+        ShowTarget = other.ShowTarget;
+        ShowMissionGauge = other.ShowMissionGauge;
         CompScaleLoc = other.CompScaleLoc;
         Comp3DXPosLoc = other.Comp3DXPosLoc;
         CompGameSceneLoc = other.CompGameSceneLoc;
         CompAspectRatioLoc = other.CompAspectRatioLoc;
+        CompShowMapLoc = other.CompShowMapLoc;
+        CompShowTargetLoc = other.CompShowTargetLoc;
+        CompShowMissionGaugeLoc = other.CompShowMissionGaugeLoc;
         CompVertices = other.CompVertices;
 
         // Clean up these resources before overwriting them
@@ -235,6 +250,27 @@ void GLCompositor::SetAspectRatio(float aspectRatio) noexcept
         return;
 
     AspectRatio = aspectRatio;
+}
+void GLCompositor::SetShowMap(bool showMap) noexcept
+{
+    if (showMap == ShowMap)
+        return;
+
+    ShowMap = showMap;
+}
+void GLCompositor::SetShowTarget(bool showTarget) noexcept
+{
+    if (showTarget == ShowTarget)
+        return;
+
+    ShowTarget = showTarget;
+}
+void GLCompositor::SetShowMissionGauge(bool showMissionGauge) noexcept
+{
+    if (showMissionGauge == ShowMissionGauge)
+        return;
+
+    ShowMissionGauge = showMissionGauge;
 }
 void GLCompositor::SetScaleFactor(int scale) noexcept
 {
@@ -296,6 +332,9 @@ void GLCompositor::RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept
     glUniform1ui(CompScaleLoc, Scale);
     glUniform1i(CompGameSceneLoc, GameScene);
     glUniform1f(CompAspectRatioLoc, AspectRatio);
+    glUniform1i(CompShowMapLoc, ShowMap ? 1 : 0);
+    glUniform1i(CompShowTargetLoc, ShowTarget ? 1 : 0);
+    glUniform1i(CompShowMissionGaugeLoc, ShowMissionGauge ? 1 : 0);
 
     // TODO: support setting this midframe, if ever needed
     glUniform1i(Comp3DXPosLoc, ((int)gpu.GPU3D.GetRenderXPos() << 23) >> 23);
