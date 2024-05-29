@@ -20,16 +20,6 @@
 namespace melonDS
 {
 
-inline u32 TextureWidth(u32 texparam)
-{
-    return 8 << ((texparam >> 20) & 0x7);
-}
-
-inline u32 TextureHeight(u32 texparam)
-{
-    return 8 << ((texparam >> 23) & 0x7);
-}
-
 enum
 {
     outputFmt_RGB6A5,
@@ -136,7 +126,7 @@ public:
         return c;
     }
 
-    void GetTexture(GPU& gpu, u32 texParam, u32 palBase, TexHandleT& textureHandle, u32& layer, u32*& helper)
+    void GetTexture(GPU& gpu, u32 texParam, u32& width, u32& height, u32 palBase, TexHandleT& textureHandle, u32& layer, u32*& helper)
     {
         // remove sampling and texcoord gen params
         texParam &= ~0xC00F0000;
@@ -159,14 +149,16 @@ public:
         {
             textureHandle = it->second.Texture.TextureID;
             layer = it->second.Texture.Layer;
+            width = it->second.Texture.Width;
+            height = it->second.Texture.Height;
             helper = &it->second.LastVariant;
             return;
         }
 
         u32 widthLog2 = (texParam >> 20) & 0x7;
         u32 heightLog2 = (texParam >> 23) & 0x7;
-        u32 width = 8 << widthLog2;
-        u32 height = 8 << heightLog2;
+        width = 8 << widthLog2;
+        height = 8 << heightLog2;
 
         u32 addr = (texParam & 0xFFFF) * 8;
 
@@ -247,6 +239,8 @@ public:
         if (entry.TexPalSize)
             entry.TexPalHash = XXH3_64bits(&gpu.VRAMFlat_TexPal[entry.TexPalStart], entry.TexPalSize);
 
+        int oldWidth = width;
+        int oldHeight = height;
         unsigned char* imageData = (unsigned char*)DecodingBuffer;
         bool textureReplacementEnabled = true;
         if (textureReplacementEnabled) {
@@ -314,7 +308,7 @@ public:
             texArrays.resize(texArrays.size()+1);
             TexHandleT& array = texArrays[texArrays.size()-1];
 
-            u32 layers = std::min<u32>((8*1024*1024) / (width*height*4), 64);
+            u32 layers = 1;
 
             // allocate new array texture
             //printf("allocating new layer set for %d %d %d %d\n", width, height, texArrays.size()-1, array.ImageDescriptor);
@@ -322,13 +316,15 @@ public:
 
             for (u32 i = 0; i < layers; i++)
             {
-                freeTextures.push_back(TexArrayEntry{array, i});
+                freeTextures.push_back(TexArrayEntry{array, i, width, height});
             }
         }
 
         TexArrayEntry storagePlace = freeTextures[freeTextures.size()-1];
         freeTextures.pop_back();
 
+        storagePlace.Width = oldWidth;
+        storagePlace.Height = oldHeight;
         entry.Texture = storagePlace;
 
         TexLoader.UploadTexture(storagePlace.TextureID, width, height, storagePlace.Layer, imageData);
@@ -358,6 +354,8 @@ private:
     {
         TexHandleT TextureID;
         u32 Layer;
+        u32 Width;
+        u32 Height;
     };
 
     struct TexCacheEntry
