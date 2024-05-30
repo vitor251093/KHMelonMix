@@ -439,8 +439,17 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         return gameScene_InGameWithMap;
     }
 
-    if (GameScene == gameScene_InGameWithMap || has3DOnBottomScreen)
+    if (GameScene == gameScene_InGameWithMap)
     {
+        return gameScene_InGameWithCutscene;
+    }
+    if (has3DOnBottomScreen)
+    {
+        if (nds->GPU.GPU3D.RenderNumPolygons < 100)
+        {
+            return gameScene_InGameMenu;
+        }
+
         return gameScene_InGameWithCutscene;
     }
     
