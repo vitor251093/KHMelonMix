@@ -21,6 +21,8 @@ bool KHDaysPlugin::_olderHad3DOnBottomScreen = false;
 bool KHDaysPlugin::_had3DOnTopScreen = false;
 bool KHDaysPlugin::_had3DOnBottomScreen = false;
 
+bool KHDaysPlugin::_hasVisible3DOnBottomScreen = false;
+
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -155,6 +157,46 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
         case gameScene_Other: return "Game scene: Unknown (3D)";
         default: return "Game scene: Unknown";
     }
+}
+
+bool isBufferBlack(unsigned int* buffer)
+{
+    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
+    bool newIsNullScreen = true;
+    bool newIsBlackScreen = true;
+    for (int i = 0; i < 192*256; i++) {
+        unsigned int color = buffer[i] & 0xFFFFFF;
+        newIsNullScreen = newIsNullScreen && color == 0;
+        newIsBlackScreen = newIsBlackScreen &&
+                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
+        if (!newIsBlackScreen) {
+            break;
+        }
+    }
+    return !newIsNullScreen && newIsBlackScreen;
+}
+
+bool KHDaysPlugin::shouldSkipFrame(melonDS::NDS* nds, int FrontBuffer)
+{
+    if (CartValidator::isDays() && GameScene == 12)
+    {
+        if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
+        {
+            u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
+            if (bottomBuffer) {
+                _hasVisible3DOnBottomScreen = !isBufferBlack(bottomBuffer);
+            }
+            if (!_hasVisible3DOnBottomScreen) {
+                return true;
+            }
+        }
+        else // 3D on bottom screen
+        {
+            return _hasVisible3DOnBottomScreen;
+        }
+    }
+
+    return false;
 }
 
 int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)

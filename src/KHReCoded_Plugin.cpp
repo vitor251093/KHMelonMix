@@ -113,6 +113,11 @@ const char* KHReCodedPlugin::getNameByGameScene(int newGameScene)
     }
 }
 
+bool KHReCodedPlugin::shouldSkipFrame(melonDS::NDS* nds, int FrontBuffer)
+{
+    return false;
+}
+
 int KHReCodedPlugin::detectGameScene(melonDS::NDS* nds)
 {
     return gameScene_InGameWithCutscene;

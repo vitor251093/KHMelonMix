@@ -656,7 +656,10 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
     if (KHGameScene == 12) { // gameScene_InGameWithCutscene
-        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
+        if (!is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(256/2, 190))) {
+            return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
+        }
+        return ivec2(-1, -1);
     }
     if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
         return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
@@ -812,9 +815,6 @@ ivec4 getTopScreen3DColor()
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
     if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
-        return getHorizontalDualScreen3DColor(xpos, ypos);
-    }
-    if (KHGameScene == 12) { // gameScene_InGameWithCutscene
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
     if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview

@@ -545,7 +545,11 @@ void EmuThread::run()
             else
             {
                 FrontBuffer = NDS->GPU.FrontBuffer;
-                screenGL->drawScreenGL();
+
+                if (!KHPlugin::shouldSkipFrame(&nds, FrontBuffer))
+                {
+                    screenGL->drawScreenGL();
+                }
             }
 
 #ifdef MELONCAP
