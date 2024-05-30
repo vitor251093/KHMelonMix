@@ -186,6 +186,9 @@ bool KHDaysPlugin::shouldSkipFrame(melonDS::NDS* nds, int FrontBuffer)
             if (bottomBuffer) {
                 _hasVisible3DOnBottomScreen = !isBufferBlack(bottomBuffer);
             }
+            if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
+                _hasVisible3DOnBottomScreen = false;
+            }
             if (!_hasVisible3DOnBottomScreen) {
                 return true;
             }

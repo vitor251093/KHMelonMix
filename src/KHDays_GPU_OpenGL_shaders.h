@@ -656,7 +656,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
     if (KHGameScene == 12) { // gameScene_InGameWithCutscene
-        if (!is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(256/2, 190))) {
+        if (!is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(130, 190))) {
             return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
         }
         return ivec2(-1, -1);
