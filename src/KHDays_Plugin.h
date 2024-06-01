@@ -11,7 +11,7 @@ public:
     static u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask);
     static void hudToggle(melonDS::NDS* nds);
     static const char* getNameByGameScene(int newGameScene);
-    static bool shouldSkipFrame(melonDS::NDS* nds, int FrontBuffer);
+    static bool shouldSkipFrame(melonDS::NDS* nds);
     static int detectGameScene(melonDS::NDS* nds);
     static bool setGameScene(melonDS::NDS* nds, int newGameScene);
     static void debugLogs(melonDS::NDS* nds, int gameScene);

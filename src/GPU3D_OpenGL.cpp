@@ -321,6 +321,14 @@ void GLRenderer::SetBetterPolygons(bool betterpolygons) noexcept
     SetRenderSettings(betterpolygons, ScaleFactor);
 }
 
+void GLRenderer::SetIsBottomScreen2DTextureBlack(bool isBlack) noexcept
+{
+    CurGLCompositor.SetIsBottomScreen2DTextureBlack(isBlack);
+}
+void GLRenderer::SetIsTopScreen2DTextureBlack(bool isBlack) noexcept
+{
+    CurGLCompositor.SetIsTopScreen2DTextureBlack(isBlack);
+}
 void GLRenderer::SetGameScene(int gameScene) noexcept
 {
     CurGLCompositor.SetGameScene(gameScene);

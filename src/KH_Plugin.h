@@ -38,12 +38,12 @@ public:
         }
         return "";
     }
-    static bool shouldSkipFrame(melonDS::NDS* nds, int FrontBuffer) {
+    static bool shouldSkipFrame(melonDS::NDS* nds) {
         if (CartValidator::isDays()) {
-            return KHDaysPlugin::shouldSkipFrame(nds, FrontBuffer);
+            return KHDaysPlugin::shouldSkipFrame(nds);
         }
         if (CartValidator::isRecoded()) {
-            return KHReCodedPlugin::shouldSkipFrame(nds, FrontBuffer);
+            return KHReCodedPlugin::shouldSkipFrame(nds);
         }
         return false;
     }

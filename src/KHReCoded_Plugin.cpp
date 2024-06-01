@@ -128,7 +128,7 @@ const char* KHReCodedPlugin::getNameByGameScene(int newGameScene)
     }
 }
 
-bool KHReCodedPlugin::shouldSkipFrame(melonDS::NDS* nds, int FrontBuffer)
+bool KHReCodedPlugin::shouldSkipFrame(melonDS::NDS* nds)
 {
     return false;
 }

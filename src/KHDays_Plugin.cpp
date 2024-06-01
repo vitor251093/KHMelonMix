@@ -161,6 +161,10 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
 
 bool isBufferBlack(unsigned int* buffer)
 {
+    if (!buffer) {
+        return true;
+    }
+
     // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
     bool newIsNullScreen = true;
     bool newIsBlackScreen = true;
@@ -176,16 +180,44 @@ bool isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
-bool KHDaysPlugin::shouldSkipFrame(melonDS::NDS* nds, int FrontBuffer)
+bool isTopScreen2DTextureBlack(melonDS::NDS* nds)
 {
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
+    return isBufferBlack(topBuffer);
+}
+
+bool isBottomScreen2DTextureBlack(melonDS::NDS* nds)
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
+    return isBufferBlack(bottomBuffer);
+}
+
+bool KHDaysPlugin::shouldSkipFrame(melonDS::NDS* nds)
+{
+    bool isTopBlack = isTopScreen2DTextureBlack(nds);
+    bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
+
+    switch (videoRenderer)
+    {
+        case 1:
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
+            break;
+        case 2:
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
+            break;
+        default: break;
+    }
+
     if (CartValidator::isDays() && GameScene == 12)
     {
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
         {
-            u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
-            if (bottomBuffer) {
-                _hasVisible3DOnBottomScreen = !isBufferBlack(bottomBuffer);
-            }
+            _hasVisible3DOnBottomScreen = !isBottomBlack;
+
             if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
                 _hasVisible3DOnBottomScreen = false;
             }
@@ -373,7 +405,12 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
         if (has3DOnBottomScreen)
         {
-            return gameScene_InGameMenu;
+            if (nds->GPU.GPU3D.RenderNumPolygons > 0)
+            {
+                return gameScene_InGameMenu;
+            }
+
+            return gameScene_Cutscene;
         }
 
         // Bottom cutscene

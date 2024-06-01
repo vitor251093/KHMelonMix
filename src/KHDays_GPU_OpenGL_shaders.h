@@ -35,6 +35,9 @@ uniform bool ShowMissionGauge;
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
 
+uniform bool IsBottomScreen2DTextureBlack;
+uniform bool IsTopScreen2DTextureBlack;
+
 smooth in vec2 fTexcoord;
 
 out vec4 oColor;
@@ -173,17 +176,6 @@ bool isScreenBackgroundBlack(int index)
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0));
-}
-bool isCreditsScreen()
-{
-    return isColorVeryBlack(getSimpleColorAtCoordinate(255, 0)) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0*(1.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0*(2.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 - 1.0)) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 0)) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0*(1.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0*(2.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0 - 1.0));
 }
 
 vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
@@ -608,13 +600,10 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    // if (isCreditsScreen()) {
-    //     return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
-    // }
-    if (isScreenBlack(1)) {
+    if (IsBottomScreen2DTextureBlack) {
         return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 1));
     }
-    if (isScreenBlack(0)) {
+    if (IsTopScreen2DTextureBlack) {
         return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 2));
     }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
