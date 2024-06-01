@@ -483,6 +483,7 @@ void EmuThread::run()
             AudioInOut::MicProcess(*NDS);
 
             refreshGameScene();
+            bool shouldSkipFrame = KHPlugin::shouldSkipFrame(&nds, FrontBuffer);
 
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
@@ -545,7 +546,11 @@ void EmuThread::run()
             else
             {
                 FrontBuffer = NDS->GPU.FrontBuffer;
-                screenGL->drawScreenGL();
+
+                if (!shouldSkipFrame)
+                {
+                    screenGL->drawScreenGL();
+                }
             }
 
 #ifdef MELONCAP

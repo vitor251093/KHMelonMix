@@ -38,6 +38,15 @@ public:
         }
         return "";
     }
+    static bool shouldSkipFrame(melonDS::NDS* nds, int FrontBuffer) {
+        if (CartValidator::isDays()) {
+            return KHDaysPlugin::shouldSkipFrame(nds, FrontBuffer);
+        }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::shouldSkipFrame(nds, FrontBuffer);
+        }
+        return false;
+    }
     static int detectGameScene(melonDS::NDS* nds) {
         if (CartValidator::isDays()) {
             return KHDaysPlugin::detectGameScene(nds);
