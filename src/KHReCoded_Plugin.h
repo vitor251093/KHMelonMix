@@ -18,11 +18,14 @@ public:
 private:
     static int GameScene;
     static int priorGameScene;
+    static bool ShowMap;
 
     static bool _olderHad3DOnTopScreen;
     static bool _olderHad3DOnBottomScreen;
     static bool _had3DOnTopScreen;
     static bool _had3DOnBottomScreen;
+
+    static void hudRefresh(melonDS::NDS* nds);
 };
 }
 
