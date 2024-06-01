@@ -483,6 +483,7 @@ void EmuThread::run()
             AudioInOut::MicProcess(*NDS);
 
             refreshGameScene();
+            bool shouldSkipFrame = KHPlugin::shouldSkipFrame(&nds, FrontBuffer);
 
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
@@ -546,7 +547,7 @@ void EmuThread::run()
             {
                 FrontBuffer = NDS->GPU.FrontBuffer;
 
-                if (!KHPlugin::shouldSkipFrame(&nds, FrontBuffer))
+                if (!shouldSkipFrame)
                 {
                     screenGL->drawScreenGL();
                 }
