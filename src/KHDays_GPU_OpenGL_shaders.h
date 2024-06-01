@@ -563,7 +563,7 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
     if (KHGameScene == 10) // gameScene_PauseMenu
     {
-        if (!isScreenBlack(1))
+        if (!isScreenBlack(1) && isMinimapVisible())
         {
             // mission gauge
             float sourceMissionGaugeHeight = 39.0;
