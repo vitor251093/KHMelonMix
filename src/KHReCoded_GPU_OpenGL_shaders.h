@@ -123,6 +123,11 @@ bool isMinimapVisible()
     return minimapSecurityPixel.r < 5 && minimapSecurityPixel.g < 15 && minimapSecurityPixel.b > 39;
 }
 
+bool isCommandMenuVisible()
+{
+    return is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(35, 185));
+}
+
 bool isHealthVisible()
 {
     return is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(225, 170));
@@ -434,10 +439,57 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         }
     }
 
-    if (!isHealthVisible())
+    if (isHealthVisible())
+    {
+        // player health
+        float sourcePlayerHealthHeight = 78.0;
+        float sourcePlayerHealthWidth = 108.0;
+        float playerHealthHeight = sourcePlayerHealthHeight;
+        float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
+        float playerHealthRightMargin = 8.0;
+        float playerHealthBottomMargin = 3.0;
+        if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
+            texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
+            texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
+            texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
+            return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin, 192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
+                vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
+        }
+    }
+
+    if (isCommandMenuVisible())
+    {
+        // command menu
+        float sourceCommandMenuHeight = 88.0;
+        float sourceCommandMenuWidth = 108.0;
+        float commandMenuHeight = sourceCommandMenuHeight;
+        float commandMenuWidth = sourceCommandMenuWidth*heightScale;
+        float commandMenuLeftMargin = 10.0;
+        float commandMenuBottomMargin = 0.0;
+        if (texPosition3d.x >= commandMenuLeftMargin &&
+            texPosition3d.x <= commandMenuWidth + commandMenuLeftMargin &&
+            texPosition3d.y >= (192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin) &&
+            texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
+            return fixStretch*(texPosition3d - vec2(commandMenuLeftMargin, 192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin)) +
+                vec2(0, 192.0 - sourceCommandMenuHeight);
+        }
+    }
+
+    if (!isHealthVisible() && !isCommandMenuVisible())
     {
         // texts over screen, like in the tutorial
-        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(225, 170));
+        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(128, 170));
+    }
+
+    if (!isHealthVisible() || !isCommandMenuVisible())
+    {
+        // texts over screen, like in the tutorial
+        if (texPosition3d.y >= 115.0*iuTexScale)
+        {
+            return vec2(0, 0); // fake health
+        }
+
+        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(128, 170));
     }
 
     if (isDialogVisible()) {
@@ -510,36 +562,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         texPosition3d.y >= miscTopMargin) {
         return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - miscWidth - miscRightMargin, miscTopMargin)) + 
             vec2(256.0 - sourceMiscWidth, sourceMiscTopMargin);
-    }
-
-    // command menu
-    float sourceCommandMenuHeight = 106.0;
-    float sourceCommandMenuWidth = 108.0;
-    float commandMenuHeight = sourceCommandMenuHeight;
-    float commandMenuWidth = sourceCommandMenuWidth*heightScale;
-    float commandMenuLeftMargin = 10.0;
-    float commandMenuBottomMargin = 0.0;
-    if (texPosition3d.x >= commandMenuLeftMargin &&
-        texPosition3d.x <= commandMenuWidth + commandMenuLeftMargin &&
-        texPosition3d.y >= (192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin) &&
-        texPosition3d.y < (192.0*iuTexScale - commandMenuBottomMargin)) {
-        return fixStretch*(texPosition3d - vec2(commandMenuLeftMargin, 192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin)) +
-            vec2(0, 192.0 - sourceCommandMenuHeight);
-    }
-
-    // player health
-    float sourcePlayerHealthHeight = 128.0;
-    float sourcePlayerHealthWidth = 108.0;
-    float playerHealthHeight = sourcePlayerHealthHeight;
-    float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
-    float playerHealthRightMargin = 8.0;
-    float playerHealthBottomMargin = 3.0;
-    if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
-        texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
-        texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
-        texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
-        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin, 192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
-            vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
     }
 
     // nothing (clear screen)

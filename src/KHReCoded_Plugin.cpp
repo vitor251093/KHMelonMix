@@ -186,8 +186,6 @@ bool KHReCodedPlugin::shouldSkipFrame(melonDS::NDS* nds)
 
 int KHReCodedPlugin::detectGameScene(melonDS::NDS* nds)
 {
-    return gameScene_Other;
-
     // printf("0x021D08B8: %d\n",   nds->ARM7Read8(0x021D08B8));
     // printf("0x0223D38C: %d\n\n", nds->ARM7Read8(0x0223D38C));
 
@@ -271,10 +269,10 @@ int KHReCodedPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         // Main menu
-        if (mayBeMainMenu)
-        {
-            return gameScene_MainMenu;
-        }
+        // if (mayBeMainMenu)
+        // {
+        //     return gameScene_MainMenu;
+        // }
 
         // Intro
         if (GameScene == -1 || GameScene == gameScene_Intro)
@@ -302,7 +300,8 @@ int KHReCodedPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InGameSaveMenu;
         }
 
-        mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
+        mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0 &&
+                        nds->GPU.GPU2D_A.BlendCnt == 0;
         if (mayBeMainMenu)
         {
             return gameScene_MainMenu;
@@ -382,15 +381,15 @@ int KHReCodedPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         // Pause Menu
-        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
-        if (inMissionPauseMenu)
-        {
-            return gameScene_PauseMenu;
-        }
-        else if (GameScene == gameScene_PauseMenu)
-        {
-            return priorGameScene;
-        }
+        // bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
+        // if (inMissionPauseMenu)
+        // {
+        //     return gameScene_PauseMenu;
+        // }
+        // else if (GameScene == gameScene_PauseMenu)
+        // {
+        //     return priorGameScene;
+        // }
 
         // Regular gameplay
         return gameScene_InGameWithMap;
