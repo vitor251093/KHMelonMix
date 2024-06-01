@@ -128,8 +128,59 @@ const char* KHReCodedPlugin::getNameByGameScene(int newGameScene)
     }
 }
 
+bool KHReCodedPlugin::isBufferBlack(unsigned int* buffer)
+{
+    if (!buffer) {
+        return true;
+    }
+
+    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
+    bool newIsNullScreen = true;
+    bool newIsBlackScreen = true;
+    for (int i = 0; i < 192*256; i++) {
+        unsigned int color = buffer[i] & 0xFFFFFF;
+        newIsNullScreen = newIsNullScreen && color == 0;
+        newIsBlackScreen = newIsBlackScreen &&
+                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
+        if (!newIsBlackScreen) {
+            break;
+        }
+    }
+    return !newIsNullScreen && newIsBlackScreen;
+}
+
+bool KHReCodedPlugin::isTopScreen2DTextureBlack(melonDS::NDS* nds)
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
+    return isBufferBlack(topBuffer);
+}
+
+bool KHReCodedPlugin::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
+    return isBufferBlack(bottomBuffer);
+}
+
 bool KHReCodedPlugin::shouldSkipFrame(melonDS::NDS* nds)
 {
+    bool isTopBlack = isTopScreen2DTextureBlack(nds);
+    bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
+
+    switch (videoRenderer)
+    {
+        case 1:
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
+            break;
+        case 2:
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
+            break;
+        default: break;
+    }
+
     return false;
 }
 

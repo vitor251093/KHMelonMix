@@ -29,6 +29,9 @@ private:
 
     static bool _hasVisible3DOnBottomScreen;
 
+    static bool isBufferBlack(unsigned int* buffer);
+    static bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
+    static bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
     static void hudRefresh(melonDS::NDS* nds);
 };
 }

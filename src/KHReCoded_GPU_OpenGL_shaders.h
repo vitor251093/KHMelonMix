@@ -35,6 +35,9 @@ uniform bool ShowMissionGauge;
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
 
+uniform bool IsBottomScreen2DTextureBlack;
+uniform bool IsTopScreen2DTextureBlack;
+
 smooth in vec2 fTexcoord;
 
 out vec4 oColor;
@@ -120,6 +123,11 @@ bool isMinimapVisible()
     return minimapSecurityPixel.r < 5 && minimapSecurityPixel.g < 15 && minimapSecurityPixel.b > 39;
 }
 
+bool isHealthVisible()
+{
+    return is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(225, 170));
+}
+
 bool isColorBlack(ivec4 pixel)
 {
     return pixel.r < 5 && pixel.g < 5 && pixel.b < 5;
@@ -168,17 +176,6 @@ bool isScreenBackgroundBlack(int index)
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0));
-}
-bool isCreditsScreen()
-{
-    return isColorVeryBlack(getSimpleColorAtCoordinate(255, 0)) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0*(1.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0*(2.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 - 1.0)) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 0)) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0*(1.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0*(2.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0 - 1.0));
 }
 
 vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
@@ -342,47 +339,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (isDialogVisible()) {
-        return vec2(fTexcoord);
-    }
-
-    if (isMissionInformationVisible()) {
-        return vec2(fTexcoord);
-    }
-
-    if (isScreenBackgroundBlack(0) && isScreenBackgroundBlack(1)) {
-        return getGenericHudTextureCoordinates(xpos, ypos);
-    }
-
-    // item notification
-    float sourceItemNotificationHeight = 86.0;
-    float sourceItemNotificationWidth = 108.0;
-    float itemNotificationHeight = sourceItemNotificationHeight;
-    float itemNotificationWidth = sourceItemNotificationWidth*heightScale;
-    float itemNotificationLeftMargin = 0.0;
-    float itemNotificationTopMargin = 15.0*iuTexScale;
-    if (texPosition3d.x <= itemNotificationWidth + itemNotificationLeftMargin &&
-        texPosition3d.x > itemNotificationLeftMargin &&
-        texPosition3d.y <= itemNotificationHeight + itemNotificationTopMargin &&
-        texPosition3d.y >= itemNotificationTopMargin) {
-        return fixStretch*(texPosition3d - vec2(itemNotificationLeftMargin, itemNotificationTopMargin));
-    }
-
-    // countdown and locked on
-    float sourceCountdownHeight = 20.0;
-    float sourceCountdownWidth = 70.0;
-    float countdownHeight = sourceCountdownHeight;
-    float countdownWidth = sourceCountdownWidth*heightScale;
-    float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
-    float countdownTopMargin = 9.0;
-    if (texPosition3d.x >= (256.0*iuTexScale - countdownWidth - countdownRightMargin) &&
-        texPosition3d.x < (256.0*iuTexScale - countdownRightMargin) && 
-        texPosition3d.y <= countdownHeight + countdownTopMargin && 
-        texPosition3d.y >= countdownTopMargin) {
-        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - countdownWidth - countdownRightMargin, countdownTopMargin)) + 
-            vec2(128.0 - sourceCountdownWidth/2, 0);
-    }
-
     if (ShowMap && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         // minimap
@@ -476,6 +432,53 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                 return finalPos;
             }
         }
+    }
+
+    if (!isHealthVisible())
+    {
+        // texts over screen, like in the tutorial
+        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(225, 170));
+    }
+
+    if (isDialogVisible()) {
+        return vec2(fTexcoord);
+    }
+
+    if (isMissionInformationVisible()) {
+        return vec2(fTexcoord);
+    }
+
+    if (isScreenBackgroundBlack(0) && isScreenBackgroundBlack(1)) {
+        return getGenericHudTextureCoordinates(xpos, ypos);
+    }
+
+    // item notification
+    float sourceItemNotificationHeight = 86.0;
+    float sourceItemNotificationWidth = 108.0;
+    float itemNotificationHeight = sourceItemNotificationHeight;
+    float itemNotificationWidth = sourceItemNotificationWidth*heightScale;
+    float itemNotificationLeftMargin = 0.0;
+    float itemNotificationTopMargin = 15.0*iuTexScale;
+    if (texPosition3d.x <= itemNotificationWidth + itemNotificationLeftMargin &&
+        texPosition3d.x > itemNotificationLeftMargin &&
+        texPosition3d.y <= itemNotificationHeight + itemNotificationTopMargin &&
+        texPosition3d.y >= itemNotificationTopMargin) {
+        return fixStretch*(texPosition3d - vec2(itemNotificationLeftMargin, itemNotificationTopMargin));
+    }
+
+    // countdown and locked on
+    float sourceCountdownHeight = 20.0;
+    float sourceCountdownWidth = 70.0;
+    float countdownHeight = sourceCountdownHeight;
+    float countdownWidth = sourceCountdownWidth*heightScale;
+    float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
+    float countdownTopMargin = 9.0;
+    if (texPosition3d.x >= (256.0*iuTexScale - countdownWidth - countdownRightMargin) &&
+        texPosition3d.x < (256.0*iuTexScale - countdownRightMargin) && 
+        texPosition3d.y <= countdownHeight + countdownTopMargin && 
+        texPosition3d.y >= countdownTopMargin) {
+        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - countdownWidth - countdownRightMargin, countdownTopMargin)) + 
+            vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
     // enemy health
@@ -599,13 +602,10 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    // if (isCreditsScreen()) {
-    //     return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
-    // }
-    if (isScreenBlack(1)) {
+    if (IsBottomScreen2DTextureBlack) {
         return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 1));
     }
-    if (isScreenBlack(0)) {
+    if (IsTopScreen2DTextureBlack) {
         return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 2));
     }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));

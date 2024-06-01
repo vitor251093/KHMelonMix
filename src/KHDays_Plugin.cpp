@@ -159,7 +159,7 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
     }
 }
 
-bool isBufferBlack(unsigned int* buffer)
+bool KHDaysPlugin::isBufferBlack(unsigned int* buffer)
 {
     if (!buffer) {
         return true;
@@ -180,14 +180,14 @@ bool isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
-bool isTopScreen2DTextureBlack(melonDS::NDS* nds)
+bool KHDaysPlugin::isTopScreen2DTextureBlack(melonDS::NDS* nds)
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
     u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
     return isBufferBlack(topBuffer);
 }
 
-bool isBottomScreen2DTextureBlack(melonDS::NDS* nds)
+bool KHDaysPlugin::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
     u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
