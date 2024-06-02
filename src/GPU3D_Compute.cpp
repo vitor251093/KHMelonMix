@@ -295,6 +295,14 @@ void ComputeRenderer::Reset(GPU& gpu)
     Texcache.Reset();
 }
 
+void ComputeRenderer::SetIsBottomScreen2DTextureBlack(bool isBlack)
+{
+    CurGLCompositor.SetIsBottomScreen2DTextureBlack(isBlack);
+}
+void ComputeRenderer::SetIsTopScreen2DTextureBlack(bool isBlack)
+{
+    CurGLCompositor.SetIsTopScreen2DTextureBlack(isBlack);
+}
 void ComputeRenderer::SetGameScene(int gameScene)
 {
     CurGLCompositor.SetGameScene(gameScene);

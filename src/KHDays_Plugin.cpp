@@ -21,6 +21,8 @@ bool KHDaysPlugin::_olderHad3DOnBottomScreen = false;
 bool KHDaysPlugin::_had3DOnTopScreen = false;
 bool KHDaysPlugin::_had3DOnBottomScreen = false;
 
+bool KHDaysPlugin::_hasVisible3DOnBottomScreen = false;
+
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -70,19 +72,16 @@ u32 KHDaysPlugin::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u3
         }
 
         // So the arrow keys can be used to control the command menu
-        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
-            InputMask &= ~(1<<1); // B
-        }
-        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
-            InputMask &= ~(1<<0); // A
-        }
-        if (CmdMenuInputMask & ((1 << 2) | (1 << 3))) {
+        if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) {
             InputMask &= ~(1<<10); // X
-            if (CmdMenuInputMask & (1 << 2)) { // D-pad up
-                // If you press the up arrow while having the player moving priorly, it may make it go down instead
-                InputMask |= (1<<6); // up
-                InputMask |= (1<<7); // down
-            }
+            InputMask |= (1<<4); // right
+            InputMask |= (1<<5); // left
+            InputMask |= (1<<6); // up
+            InputMask |= (1<<7); // down
+            if (PriorCmdMenuInputMask & (1 << 0)) // Old D-pad right
+                InputMask &= ~(1<<4); // right
+            if (PriorCmdMenuInputMask & (1 << 1)) // Old D-pad left
+                InputMask &= ~(1<<5); // left
             if (PriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
                 InputMask &= ~(1<<6); // up
             if (PriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
@@ -157,6 +156,81 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
     }
 }
 
+bool KHDaysPlugin::isBufferBlack(unsigned int* buffer)
+{
+    if (!buffer) {
+        return true;
+    }
+
+    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
+    bool newIsNullScreen = true;
+    bool newIsBlackScreen = true;
+    for (int i = 0; i < 192*256; i++) {
+        unsigned int color = buffer[i] & 0xFFFFFF;
+        newIsNullScreen = newIsNullScreen && color == 0;
+        newIsBlackScreen = newIsBlackScreen &&
+                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
+        if (!newIsBlackScreen) {
+            break;
+        }
+    }
+    return !newIsNullScreen && newIsBlackScreen;
+}
+
+bool KHDaysPlugin::isTopScreen2DTextureBlack(melonDS::NDS* nds)
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
+    return isBufferBlack(topBuffer);
+}
+
+bool KHDaysPlugin::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
+    return isBufferBlack(bottomBuffer);
+}
+
+bool KHDaysPlugin::shouldSkipFrame(melonDS::NDS* nds)
+{
+    bool isTopBlack = isTopScreen2DTextureBlack(nds);
+    bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
+
+    switch (videoRenderer)
+    {
+        case 1:
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
+            break;
+        case 2:
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
+            break;
+        default: break;
+    }
+
+    if (CartValidator::isDays() && GameScene == 12)
+    {
+        if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
+        {
+            _hasVisible3DOnBottomScreen = !isBottomBlack;
+
+            if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
+                _hasVisible3DOnBottomScreen = false;
+            }
+            if (_hasVisible3DOnBottomScreen) {
+                return true;
+            }
+        }
+        else // 3D on bottom screen
+        {
+            return !_hasVisible3DOnBottomScreen;
+        }
+    }
+
+    return false;
+}
+
 int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 {
     // printf("0x02194CBF: %08x %08x\n", nds->ARM7Read32(0x02194CBF), nds->ARM7Read32(0x02194CC3));
@@ -177,8 +251,8 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     _olderHad3DOnBottomScreen = _had3DOnBottomScreen;
     _had3DOnTopScreen = has3DOnTopScreen;
     _had3DOnBottomScreen = has3DOnBottomScreen;
-    bool has3DOnBothScreens = (!olderHad3DOnTopScreen && had3DOnTopScreen && !has3DOnTopScreen) ||
-                              (!olderHad3DOnBottomScreen && had3DOnBottomScreen && !has3DOnBottomScreen);
+    bool has3DOnBothScreens = (olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
+                              (olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
     // The second screen can still look black and not be empty (invisible elements)
     bool noElementsOnBottomScreen = nds->GPU.GPU2D_B.BlendCnt == 0;
@@ -328,7 +402,12 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
         if (has3DOnBottomScreen)
         {
-            return gameScene_InGameMenu;
+            if (nds->GPU.GPU3D.RenderNumPolygons > 0)
+            {
+                return gameScene_InGameMenu;
+            }
+
+            return gameScene_Cutscene;
         }
 
         // Bottom cutscene

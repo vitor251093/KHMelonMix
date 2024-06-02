@@ -35,6 +35,9 @@ uniform bool ShowMissionGauge;
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
 
+uniform bool IsBottomScreen2DTextureBlack;
+uniform bool IsTopScreen2DTextureBlack;
+
 smooth in vec2 fTexcoord;
 
 out vec4 oColor;
@@ -173,17 +176,6 @@ bool isScreenBackgroundBlack(int index)
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0));
-}
-bool isCreditsScreen()
-{
-    return isColorVeryBlack(getSimpleColorAtCoordinate(255, 0)) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0*(1.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0*(2.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 - 1.0)) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 0)) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0*(1.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0*(2.0/3.0))) &&
-           isColorVeryBlack(getSimpleColorAtCoordinate(255, 192.0 + 192.0 - 1.0));
 }
 
 vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
@@ -563,7 +555,7 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
     if (KHGameScene == 10) // gameScene_PauseMenu
     {
-        if (!isScreenBlack(1))
+        if (!isScreenBlack(1) && isMinimapVisible())
         {
             // mission gauge
             float sourceMissionGaugeHeight = 39.0;
@@ -608,13 +600,10 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    // if (isCreditsScreen()) {
-    //     return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
-    // }
-    if (isScreenBlack(1)) {
+    if (IsBottomScreen2DTextureBlack) {
         return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 1));
     }
-    if (isScreenBlack(0)) {
+    if (IsTopScreen2DTextureBlack) {
         return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 2));
     }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
@@ -656,7 +645,10 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
     if (KHGameScene == 12) { // gameScene_InGameWithCutscene
-        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
+        if (!is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(130, 190))) {
+            return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
+        }
+        return ivec2(-1, -1);
     }
     if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
         return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
@@ -812,9 +804,6 @@ ivec4 getTopScreen3DColor()
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
     if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
-        return getHorizontalDualScreen3DColor(xpos, ypos);
-    }
-    if (KHGameScene == 12) { // gameScene_InGameWithCutscene
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
     if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview

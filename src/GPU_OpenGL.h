@@ -39,12 +39,16 @@ public:
     GLCompositor& operator=(GLCompositor&&) noexcept;
     ~GLCompositor();
 
+    void SetIsBottomScreen2DTextureBlack(bool isBlack) noexcept;
+    void SetIsTopScreen2DTextureBlack(bool isBlack) noexcept;
     void SetGameScene(int gameScene) noexcept;
     void SetAspectRatio(float aspectRatio) noexcept;
     void SetScaleFactor(int scale) noexcept;
     void SetShowMap(bool showMap) noexcept;
     void SetShowTarget(bool showTarget) noexcept;
     void SetShowMissionGauge(bool showMissionGauge) noexcept;
+    [[nodiscard]] bool GetIsBottomScreen2DTextureBlack() const noexcept { return IsBottomScreen2DTextureBlack; }
+    [[nodiscard]] bool GetIsTopScreen2DTextureBlack() const noexcept { return IsTopScreen2DTextureBlack; }
     [[nodiscard]] int GetGameScene() const noexcept { return GameScene; }
     [[nodiscard]] float GetAspectRatio() const noexcept { return AspectRatio; }
     [[nodiscard]] int GetScaleFactor() const noexcept { return Scale; }
@@ -61,6 +65,8 @@ private:
     int ScreenH = 0, ScreenW = 0;
     int GameScene = 0;
     float AspectRatio = 0;
+    bool IsBottomScreen2DTextureBlack = false;
+    bool IsTopScreen2DTextureBlack = false;
     bool ShowMap = false;
     bool ShowTarget = false;
     bool ShowMissionGauge = false;
@@ -68,6 +74,8 @@ private:
     GLuint CompShader {};
     GLuint CompScaleLoc = 0;
     GLuint Comp3DXPosLoc = 0;
+    GLuint CompIsBottomScreen2DTextureBlackLoc = 0;
+    GLuint CompIsTopScreen2DTextureBlackLoc = 0;
     GLuint CompGameSceneLoc = 0;
     GLuint CompAspectRatioLoc = 0;
     GLuint CompShowMapLoc = 0;

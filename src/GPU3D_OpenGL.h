@@ -35,6 +35,9 @@ public:
 
     void SetRenderSettings(bool betterpolygons, int scale) noexcept;
     void SetBetterPolygons(bool betterpolygons) noexcept;
+
+    void SetIsBottomScreen2DTextureBlack(bool isBlack) noexcept;
+    void SetIsTopScreen2DTextureBlack(bool isBlack) noexcept;
     void SetGameScene(int gameScene) noexcept;
     void SetAspectRatio(float aspectRatio) noexcept;
     void SetScaleFactor(int scale) noexcept;
