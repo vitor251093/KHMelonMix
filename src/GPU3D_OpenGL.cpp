@@ -24,6 +24,9 @@
 #include "NDS.h"
 #include "GPU.h"
 #include "GPU3D_OpenGL_shaders.h"
+#include "CartValidator.h"
+#include "KHDays_GPU3D_OpenGL_shaders.h"
+#include "KHReCoded_GPU3D_OpenGL_shaders.h"
 
 namespace melonDS
 {
@@ -127,25 +130,36 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
 
-    if (!result->BuildRenderShader(0, kRenderVS_Z, kRenderFS_ZO))
+    const char* renderVS_Z;
+    if (CartValidator::isDays()) {
+        renderVS_Z = kRenderVS_Z_KhDays;
+    }
+    else if (CartValidator::isRecoded()) {
+        renderVS_Z = kRenderVS_Z_KhReCoded;
+    }
+    else {
+        renderVS_Z = kRenderVS_Z;
+    }
+
+    if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WO))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_Edge, kRenderVS_Z, kRenderFS_ZE))
+    if (!result->BuildRenderShader(RenderFlag_Edge, renderVS_Z, kRenderFS_ZE))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_Edge | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WE))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_Trans, kRenderVS_Z, kRenderFS_ZT))
+    if (!result->BuildRenderShader(RenderFlag_Trans, renderVS_Z, kRenderFS_ZT))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_Trans | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WT))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_ShadowMask, kRenderVS_Z, kRenderFS_ZSM))
+    if (!result->BuildRenderShader(RenderFlag_ShadowMask, renderVS_Z, kRenderFS_ZSM))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_ShadowMask | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WSM))

@@ -105,11 +105,18 @@ bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
     return (!(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b));
 }
 
+bool is2DGraphicEqualToColor(ivec4 diffColor, ivec2 texcoord)
+{
+    ivec4 val1 = ivec4(texelFetch(ScreenTex, texcoord, 0));
+    ivec4 val2 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(256,0), 0));
+    ivec4 val3 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(512,0), 0));
+    ivec4 pixel = combineLayers(diffColor, val1, val2, val3);
+    return (pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
+}
+
 bool isMissionInformationVisible()
 {
-    return ((ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0))).a & 0xF) == 1 ||
-           ((ivec4(texelFetch(ScreenTex, ivec2(0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1 ||
-           ((ivec4(texelFetch(ScreenTex, ivec2(255.0 - 1.0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1;
+    return is2DGraphicEqualToColor(ivec4(0,7,42,31), ivec2(86, 12));
 }
 
 bool isDialogVisible()
@@ -496,16 +503,12 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return vec2(fTexcoord);
     }
 
-    if (isMissionInformationVisible()) {
-        return vec2(fTexcoord);
-    }
-
     if (isScreenBackgroundBlack(0) && isScreenBackgroundBlack(1)) {
         return getGenericHudTextureCoordinates(xpos, ypos);
     }
 
     // item notification
-    float sourceItemNotificationHeight = 86.0;
+    float sourceItemNotificationHeight = 98.0;
     float sourceItemNotificationWidth = 108.0;
     float itemNotificationHeight = sourceItemNotificationHeight;
     float itemNotificationWidth = sourceItemNotificationWidth*heightScale;
@@ -516,21 +519,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         texPosition3d.y <= itemNotificationHeight + itemNotificationTopMargin &&
         texPosition3d.y >= itemNotificationTopMargin) {
         return fixStretch*(texPosition3d - vec2(itemNotificationLeftMargin, itemNotificationTopMargin));
-    }
-
-    // countdown and locked on
-    float sourceCountdownHeight = 20.0;
-    float sourceCountdownWidth = 70.0;
-    float countdownHeight = sourceCountdownHeight;
-    float countdownWidth = sourceCountdownWidth*heightScale;
-    float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
-    float countdownTopMargin = 9.0;
-    if (texPosition3d.x >= (256.0*iuTexScale - countdownWidth - countdownRightMargin) &&
-        texPosition3d.x < (256.0*iuTexScale - countdownRightMargin) && 
-        texPosition3d.y <= countdownHeight + countdownTopMargin && 
-        texPosition3d.y >= countdownTopMargin) {
-        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - countdownWidth - countdownRightMargin, countdownTopMargin)) + 
-            vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
     // enemy health
@@ -548,6 +536,27 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             vec2(256.0 - sourceEnemyHealthWidth, 0);
     }
 
+    if (isMissionInformationVisible())
+    {
+        // mission information
+        float sourceCountdownHeight = 20.0;
+        float sourceCountdownWidth = 256.0;
+        float countdownHeight = sourceCountdownHeight;
+        float countdownWidth = sourceCountdownWidth*heightScale;
+        float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
+        float countdownTopMargin = 9.0;
+        if (texPosition3d.x >= (256.0*iuTexScale - countdownWidth - countdownRightMargin) &&
+            texPosition3d.x < (256.0*iuTexScale - countdownRightMargin) && 
+            texPosition3d.y <= countdownHeight + countdownTopMargin && 
+            texPosition3d.y >= countdownTopMargin) {
+            return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - countdownWidth - countdownRightMargin, countdownTopMargin)) + 
+                vec2(128.0 - sourceCountdownWidth/2, 0);
+        }
+        if (texPosition3d.x < (256.0*iuTexScale - countdownRightMargin)) {
+            return vec2(128, 191);
+        }
+    }
+
     // sigils and death counter
     float sourceMiscHeight = 30.0;
     float sourceMiscWidth = 93.0;
@@ -562,6 +571,21 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         texPosition3d.y >= miscTopMargin) {
         return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - miscWidth - miscRightMargin, miscTopMargin)) + 
             vec2(256.0 - sourceMiscWidth, sourceMiscTopMargin);
+    }
+
+    // countdown and locked on
+    float sourceCountdownHeight = 20.0;
+    float sourceCountdownWidth = 70.0;
+    float countdownHeight = sourceCountdownHeight;
+    float countdownWidth = sourceCountdownWidth*heightScale;
+    float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
+    float countdownTopMargin = 9.0;
+    if (texPosition3d.x >= (256.0*iuTexScale - countdownWidth - countdownRightMargin) &&
+        texPosition3d.x < (256.0*iuTexScale - countdownRightMargin) && 
+        texPosition3d.y <= countdownHeight + countdownTopMargin && 
+        texPosition3d.y >= countdownTopMargin) {
+        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - countdownWidth - countdownRightMargin, countdownTopMargin)) + 
+            vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
     // nothing (clear screen)
@@ -968,6 +992,10 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
 ivec4 brightness()
 {
+    if (fTexcoord.y >= 192) {
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    }
+
     if (KHGameScene == 1) { // gameScene_MainMenu
         ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
         int brightmode = mbright.g >> 6;
