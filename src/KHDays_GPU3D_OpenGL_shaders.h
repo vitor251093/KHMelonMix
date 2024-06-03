@@ -23,28 +23,29 @@ namespace melonDS
 {
 const char* kRenderVS_Z_KhDays = R"(
 
+float TopScreenAspectRatio = 16.0/9.0;
+
 void main()
 {
     int attr = vPolygonAttr.x;
     int zshift = (attr >> 16) & 0x1F;
 
     vec4 fpos;
+    float u3DScale = uScreenSize.x/256.0;
     fpos.xy = (((vec2(vPosition.xy) ) * 2.0) / uScreenSize) - 1.0;
     fpos.z = (float(vPosition.z << zshift) / 8388608.0) - 1.0;
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    // float aspectRatio = (16.0/9.0)/(1.38);
-    // float commandMenuLeftMargin = 10.0*4;
-    // float commandMenuWidth = 256.0*2;
-    // float commandMenuHeight = 192.0*2;
-    // if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.375)*fpos.w &&
-    //     fpos.y >= -(0.25)*fpos.w && fpos.y <= +(1.00)*fpos.w &&
-    //     fpos.z == -1.0*fpos.w &&
-    //     vColor.r < 200.0) {
-    //     fpos.x = ((((fpos.x/fpos.w + 1.0)*(commandMenuWidth/aspectRatio) + commandMenuLeftMargin)/uScreenSize.x)*2.0 - 1.0)*fpos.w;
-    //     fpos.y = (1.0 - (((1.0 - fpos.y/fpos.w)*(commandMenuHeight))/uScreenSize.y)*2.0)*fpos.w;
-    // }
+    float aspectRatio = TopScreenAspectRatio/(1.38);
+    float heartWidth = (256.0*u3DScale)/2.5;
+    float heartHeight = (192.0*u3DScale)/2.5;
+    if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.500)*fpos.w &&
+        fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.666)*fpos.w &&
+        fpos.z < -0.75*fpos.w) {
+        fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/aspectRatio))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
+        fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight))/uScreenSize.y)*2.0 - 1.0)*fpos.w;
+    }
 
     fColor = vec4(vColor) / vec4(255.0,255.0,255.0,31.0);
     fTexcoord = vec2(vTexcoord) / 16.0;
