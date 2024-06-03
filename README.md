@@ -17,19 +17,18 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 
 ## How to play
 
-1. Download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system (not the source code zip).
-2. Open the downloaded ZIP file and copy the contents to an empty folder
-3. Dump an original copy of "Kingdom Hearts 358/2 Days" and copy the NDS file to your computer.
-4. Rename that NDS file to "game.nds", place it inside a folder named "rom", and then place that folder next to the Melon Mix executable that you just copied.
+1. Download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system (not the source code zip);
+2. Open the downloaded ZIP file and copy the contents to an empty folder;
+3. Dump an original copy of "Kingdom Hearts 358/2 Days" and copy the NDS file to your computer;
+4. Rename that NDS file to "game.nds", place it inside a folder named "rom", and then place that folder next to the Melon Mix executable that you just copied;
 5. Now you just need to launch the Melon Mix executable.
 
-## Recommended Controller Binds
+### Recommended Controller Binds
 * Map the DS D-Pad to your controller's left analog stick
 * Map the DS Touch Screen to your controller's right analog stick
 * Map the command menu to your controller's D-Pad
 
 ### Steam Deck
-
 The AppImage build is compatible with the Steam Deck. In order to use it, download the AppImage build, extract the zip, right click the AppImage and go to "Properties". Then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Don't forget the NDS file, like mentioned above.
 
 <p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/screenshot.png"></p>
