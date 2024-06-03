@@ -37,7 +37,7 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    float aspectRatio = TopScreenAspectRatio/(1.38);
+    float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
     float commandMenuLeftMargin = 10.0*4;
     float commandMenuWidth = (256.0*u3DScale)/4.0;
     float commandMenuHeight = (192.0*u3DScale)/3.0;

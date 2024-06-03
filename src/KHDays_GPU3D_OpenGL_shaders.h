@@ -37,7 +37,7 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    float aspectRatio = TopScreenAspectRatio/(1.38);
+    float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
     float heartWidth = (256.0*u3DScale)/2.5;
     float heartHeight = (192.0*u3DScale)/2.5;
     if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.500)*fpos.w &&
