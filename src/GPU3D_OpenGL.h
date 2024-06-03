@@ -106,6 +106,7 @@ private:
     GLuint ClearShaderPlain {};
 
     GLuint RenderShader[16] {};
+    GLuint RenderShaderAspectRatio[16] {};
     GLuint CurShaderID = -1;
 
     GLuint FinalPassEdgeShader {};

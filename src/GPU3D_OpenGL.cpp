@@ -67,6 +67,9 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
+    uni_id = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    RenderShaderAspectRatio[flags] = uni_id;
+
     RenderShader[flags] = prog;
 
     return true;
@@ -77,6 +80,9 @@ void GLRenderer::UseRenderShader(u32 flags)
     if (CurShaderID == flags) return;
     glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
+
+    float aspectRatio = CurGLCompositor.GetAspectRatio();
+    glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -129,6 +135,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
     result->ClearUniformLoc[3] = glGetUniformLocation(result->ClearShaderPlain, "uFogFlag");
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
+    memset(result->RenderShaderAspectRatio, 0, sizeof(RenderShaderAspectRatio));
 
     const char* renderVS_Z;
     if (CartValidator::isDays()) {

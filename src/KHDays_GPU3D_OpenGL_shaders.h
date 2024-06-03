@@ -23,7 +23,7 @@ namespace melonDS
 {
 const char* kRenderVS_Z_KhDays = R"(
 
-float TopScreenAspectRatio = 16.0/9.0;
+uniform float TopScreenAspectRatio;
 
 void main()
 {
