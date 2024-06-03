@@ -8,23 +8,31 @@
 </p>
 melonDS, sorta
 
-The goal of this project is to turn "Kingdom Hearts 358/2 Days" into a playable PC game, with a single screen and controls compatible with a regular controller.
+This project aims to turn "Kingdom Hearts 358/2 Days" into a playable PC game with a single screen and controls suited for a regular controller.
 
-This is basically melonDS, but with some modifications made specifically to improve this specific game experience. Any issues you have with KHDays Melon Mix should be reported in this same repository, and not in melonDS repository.
+This is a version of melonDS with some modifications made specifically to improve this specific game experience. Any issues you have with KHDays Melon Mix should be reported in this same repository, and not in melonDS repository.
 
 Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the latest updates and/or to help with the project.
 <hr>
 
 ## How to play
 
-First, download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system (not the source code zip). Then, you will need an original copy of "Kingdom Hearts 358/2 Days" in order to dump it into a NDS file. Rename that NDS file to "game.nds", place it inside a folder named "rom", and then place that folder next to the downloaded Melon Mix executable (which was inside the zip file that you downloaded). Now you just need to launch the Melon Mix executable.
+1. Download the [latest version](https://github.com/vitor251093/KHDays_FM/releases/latest) for your system (not the source code zip);
+2. Open the downloaded ZIP file and copy the contents to an empty folder;
+3. Dump an original copy of "Kingdom Hearts 358/2 Days" and copy the NDS file to your computer;
+4. Rename that NDS file to "game.nds", place it inside a folder named "rom", and then place that folder next to the Melon Mix executable that you just copied;
+5. Now you just need to launch the Melon Mix executable.
+
+### Recommended Controller Binds
+* Map the DS D-Pad to your controller's left analog stick
+* Map the DS Touch Screen to your controller's right analog stick
+* Map the command menu to your controller's D-Pad
 
 ### Steam Deck
-
 The AppImage build is compatible with the Steam Deck. In order to use it, download the AppImage build, extract the zip, right click the AppImage and go to "Properties". Then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Don't forget the NDS file, like mentioned above.
 
 <p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHDays_FM/master/screenshot.png"></p>
-<p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.2 (upcoming)</i></p>
+<p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.2</i></p>
 
 ## How to build from scratch
 
