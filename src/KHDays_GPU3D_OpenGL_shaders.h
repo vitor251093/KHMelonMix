@@ -23,6 +23,7 @@ namespace melonDS
 {
 const char* kRenderVS_Z_KhDays = R"(
 
+uniform int KHGameScene;
 uniform float TopScreenAspectRatio;
 
 void main()
@@ -37,14 +38,17 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
-    float heartWidth = (256.0*u3DScale)/2.5;
-    float heartHeight = (192.0*u3DScale)/2.5;
-    if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.500)*fpos.w &&
-        fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.666)*fpos.w &&
-        fpos.z < -0.75*fpos.w) {
-        fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/aspectRatio))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
-        fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight))/uScreenSize.y)*2.0 - 1.0)*fpos.w;
+    if (KHGameScene == 5 || KHGameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
+    {
+        float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
+        float heartWidth = (256.0*u3DScale)/2.5;
+        float heartHeight = (192.0*u3DScale)/2.5;
+        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.500)*fpos.w &&
+            fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.666)*fpos.w &&
+            fpos.z < -0.75*fpos.w) {
+            fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/aspectRatio))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
+            fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight))/uScreenSize.y)*2.0 - 1.0)*fpos.w;
+        }
     }
 
     fColor = vec4(vColor) / vec4(255.0,255.0,255.0,31.0);

@@ -70,6 +70,9 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TopScreenAspectRatio");
     RenderShaderAspectRatio[flags] = uni_id;
 
+    uni_id = glGetUniformLocation(prog, "KHGameScene");
+    RenderShaderGameScene[flags] = uni_id;
+
     RenderShader[flags] = prog;
 
     return true;
@@ -83,6 +86,9 @@ void GLRenderer::UseRenderShader(u32 flags)
 
     float aspectRatio = CurGLCompositor.GetAspectRatio();
     glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
+
+    float gameScene = CurGLCompositor.GetGameScene();
+    glUniform1i(RenderShaderGameScene[flags], gameScene);
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -136,6 +142,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
     memset(result->RenderShaderAspectRatio, 0, sizeof(RenderShaderAspectRatio));
+    memset(result->RenderShaderGameScene, 0, sizeof(RenderShaderGameScene));
 
     const char* renderVS_Z;
     if (CartValidator::isDays()) {
