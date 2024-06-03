@@ -23,6 +23,8 @@ namespace melonDS
 {
 const char* kRenderVS_Z_KhReCoded = R"(
 
+uniform float TopScreenAspectRatio;
+
 void main()
 {
     int attr = vPolygonAttr.x;
@@ -34,7 +36,7 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    float aspectRatio = (16.0/9.0)/(1.38);
+    float aspectRatio = TopScreenAspectRatio/(1.38);
     float commandMenuLeftMargin = 10.0*4;
     float commandMenuWidth = 256.0*2;
     float commandMenuHeight = 192.0*2;
