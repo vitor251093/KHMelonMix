@@ -340,17 +340,16 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     // dialog
-    float height = 192.0;
-    float width = 256.0;
-    float countdownWidth = width*heightScale;
-    float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
-    float x1 = (256.0*iuTexScale - countdownWidth - countdownRightMargin);
-    float x2 = (256.0*iuTexScale - countdownRightMargin);
+    float scale = 1.0;
+    float height = 192.0*scale;
+    float width = 256.0*scale*heightScale;
+    float x1 = (256.0*iuTexScale - width)/2;
+    float x2 = x1 + width;
     float y1 = 192.0*iuTexScale*(95.0/100.0) - height;
     float y2 = y1 + height;
     if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
     {
-        return fixStretch*(texPosition3d - vec2(x1, y1));
+        return fixStretch*(texPosition3d - vec2(x1, y1))*(1/scale);
     }
 
     // nothing (clear screen)
