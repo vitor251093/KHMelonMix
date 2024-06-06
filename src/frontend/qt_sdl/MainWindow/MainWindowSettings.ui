@@ -16,42 +16,48 @@
   <property name="styleSheet">
    <string notr="true">#grp_ControlPad, #grp_ABXY, #grp_ControlPad_2, #grp_ABXY_2 { border: none }</string>
   </property>
-  <widget class="QWidget" name="centralwidget" >
-    <layout class="QGridLayout" name="gridLayout_4">
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout_4">
     <property name="sizeConstraint">
-      <enum>QLayout::SetFixedSize</enum>
+     <enum>QLayout::SetFixedSize</enum>
     </property>
     <item row="4" column="0">
-      <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="frame">
       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
-        </sizepolicy>
+       </sizepolicy>
       </property>
       <property name="minimumSize">
-        <size>
+       <size>
         <width>530</width>
         <height>400</height>
-        </size>
+       </size>
       </property>
       <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="frameShadow">
-        <enum>QFrame::Raised</enum>
+       <enum>QFrame::Raised</enum>
       </property>
       <widget class="QPushButton" name="pushButton">
-        <property name="geometry">
+       <property name="geometry">
         <rect>
-          <x>90</x>
-          <y>20</y>
-          <width>400</width>
-          <height>40</height>
+         <x>90</x>
+         <y>20</y>
+         <width>400</width>
+         <height>40</height>
         </rect>
-        </property>
-        <property name="styleSheet">
-        <string notr="true">border-color: rgb(144, 108, 28);
+       </property>
+       <property name="font">
+        <font>
+         <family>KH2 ALL MENU</family>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(144, 108, 28);
   border-style: solid;
   border-width: 2px;
   border-top-left-radius: 25px;
@@ -59,22 +65,28 @@
   background-color: rgb(3, 2, 1);
   text-align: left;
   padding-left: 25px;</string>
-        </property>
-        <property name="text">
+       </property>
+       <property name="text">
         <string>General</string>
-        </property>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_2">
-        <property name="geometry">
+       <property name="geometry">
         <rect>
-          <x>90</x>
-          <y>70</y>
-          <width>400</width>
-          <height>40</height>
+         <x>90</x>
+         <y>70</y>
+         <width>400</width>
+         <height>40</height>
         </rect>
-        </property>
-        <property name="styleSheet">
-        <string notr="true">border-color: rgb(144, 108, 28);
+       </property>
+       <property name="font">
+        <font>
+         <family>KH2 ALL MENU</family>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(144, 108, 28);
   border-style: solid;
   border-width: 2px;
   border-top-left-radius: 25px;
@@ -82,22 +94,28 @@
   background-color: rgb(3, 2, 1);
   text-align: left;
   padding-left: 25px;</string>
-        </property>
-        <property name="text">
+       </property>
+       <property name="text">
         <string>Display</string>
-        </property>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_3">
-        <property name="geometry">
+       <property name="geometry">
         <rect>
-          <x>90</x>
-          <y>120</y>
-          <width>400</width>
-          <height>40</height>
+         <x>90</x>
+         <y>120</y>
+         <width>400</width>
+         <height>40</height>
         </rect>
-        </property>
-        <property name="styleSheet">
-        <string notr="true">border-color: rgb(144, 108, 28);
+       </property>
+       <property name="font">
+        <font>
+         <family>KH2 ALL MENU</family>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(144, 108, 28);
   border-style: solid;
   border-width: 2px;
   border-top-left-radius: 25px;
@@ -105,22 +123,28 @@
   background-color: rgb(3, 2, 1);
   text-align: left;
   padding-left: 25px;</string>
-        </property>
-        <property name="text">
+       </property>
+       <property name="text">
         <string>Sound</string>
-        </property>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_4">
-        <property name="geometry">
+       <property name="geometry">
         <rect>
-          <x>90</x>
-          <y>220</y>
-          <width>400</width>
-          <height>40</height>
+         <x>90</x>
+         <y>220</y>
+         <width>400</width>
+         <height>40</height>
         </rect>
-        </property>
-        <property name="styleSheet">
-        <string notr="true">border-color: rgb(144, 108, 28);
+       </property>
+       <property name="font">
+        <font>
+         <family>KH2 ALL MENU</family>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(144, 108, 28);
   border-style: solid;
   border-width: 2px;
   border-top-left-radius: 25px;
@@ -128,22 +152,28 @@
   background-color: rgb(3, 2, 1);
   text-align: left;
   padding-left: 25px;</string>
-        </property>
-        <property name="text">
+       </property>
+       <property name="text">
         <string>Keyboard</string>
-        </property>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_5">
-        <property name="geometry">
+       <property name="geometry">
         <rect>
-          <x>90</x>
-          <y>270</y>
-          <width>400</width>
-          <height>40</height>
+         <x>90</x>
+         <y>270</y>
+         <width>400</width>
+         <height>40</height>
         </rect>
-        </property>
-        <property name="styleSheet">
-        <string notr="true">border-color: rgb(144, 108, 28);
+       </property>
+       <property name="font">
+        <font>
+         <family>KH2 ALL MENU</family>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(144, 108, 28);
   border-style: solid;
   border-width: 2px;
   border-top-left-radius: 25px;
@@ -151,22 +181,28 @@
   background-color: rgb(3, 2, 1);
   text-align: left;
   padding-left: 25px;</string>
-        </property>
-        <property name="text">
+       </property>
+       <property name="text">
         <string>Multiplayer</string>
-        </property>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_6">
-        <property name="geometry">
+       <property name="geometry">
         <rect>
-          <x>90</x>
-          <y>170</y>
-          <width>400</width>
-          <height>40</height>
+         <x>90</x>
+         <y>170</y>
+         <width>400</width>
+         <height>40</height>
         </rect>
-        </property>
-        <property name="styleSheet">
-        <string notr="true">border-color: rgb(144, 108, 28);
+       </property>
+       <property name="font">
+        <font>
+         <family>KH2 ALL MENU</family>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(144, 108, 28);
   border-style: solid;
   border-width: 2px;
   border-top-left-radius: 25px;
@@ -174,22 +210,28 @@
   background-color: rgb(3, 2, 1);
   text-align: left;
   padding-left: 25px;</string>
-        </property>
-        <property name="text">
+       </property>
+       <property name="text">
         <string>Gamepad</string>
-        </property>
+       </property>
       </widget>
       <widget class="QPushButton" name="pushButton_7">
-        <property name="geometry">
+       <property name="geometry">
         <rect>
-          <x>90</x>
-          <y>320</y>
-          <width>400</width>
-          <height>40</height>
+         <x>90</x>
+         <y>320</y>
+         <width>400</width>
+         <height>40</height>
         </rect>
-        </property>
-        <property name="styleSheet">
-        <string notr="true">border-color: rgb(144, 108, 28);
+       </property>
+       <property name="font">
+        <font>
+         <family>KH2 ALL MENU</family>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);
+border-color: rgb(144, 108, 28);
   border-style: solid;
   border-width: 2px;
   border-top-left-radius: 25px;
@@ -197,121 +239,121 @@
   background-color: rgb(3, 2, 1);
   text-align: left;
   padding-left: 25px;</string>
-        </property>
-        <property name="text">
+       </property>
+       <property name="text">
         <string>Quit Game</string>
-        </property>
+       </property>
       </widget>
-      </widget>
+     </widget>
     </item>
     <item row="4" column="1">
-      <widget class="QFrame" name="frame_3">
+     <widget class="QFrame" name="frame_3">
       <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+       <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="frameShadow">
-        <enum>QFrame::Raised</enum>
+       <enum>QFrame::Raised</enum>
       </property>
-      </widget>
+     </widget>
     </item>
     <item row="0" column="0" colspan="2">
-      <spacer name="verticalSpacer">
+     <spacer name="verticalSpacer">
       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+       <enum>Qt::Vertical</enum>
       </property>
       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
+       <enum>QSizePolicy::Fixed</enum>
       </property>
       <property name="sizeHint" stdset="0">
-        <size>
+       <size>
         <width>20</width>
         <height>120</height>
-        </size>
+       </size>
       </property>
-      </spacer>
+     </spacer>
     </item>
     <item row="1" column="0" colspan="2">
-      <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-        <widget class="QFrame" name="frame_2">
+       <widget class="QFrame" name="frame_2">
         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
-          </sizepolicy>
+         </sizepolicy>
         </property>
         <property name="minimumSize">
-          <size>
+         <size>
           <width>770</width>
           <height>50</height>
-          </size>
+         </size>
         </property>
         <property name="styleSheet">
-          <string notr="true">background-color: rgb(210, 134, 0);
+         <string notr="true">background-color: rgb(210, 134, 0);
   border-top-right-radius: 25px;
   border-bottom-right-radius: 25px;</string>
         </property>
         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
+         <enum>QFrame::StyledPanel</enum>
         </property>
         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
+         <enum>QFrame::Raised</enum>
         </property>
         <widget class="QLabel" name="label">
-          <property name="geometry">
+         <property name="geometry">
           <rect>
-            <x>100</x>
-            <y>0</y>
-            <width>311</width>
-            <height>51</height>
+           <x>100</x>
+           <y>0</y>
+           <width>311</width>
+           <height>51</height>
           </rect>
-          </property>
-          <property name="font">
+         </property>
+         <property name="font">
           <font>
-            <family>KHGummi</family>
-            <pointsize>15</pointsize>
-            <italic>true</italic>
-            <bold>false</bold>
+           <family>KH2 ALL MENU</family>
+           <pointsize>15</pointsize>
+           <italic>true</italic>
+           <bold>false</bold>
           </font>
-          </property>
-          <property name="styleSheet">
+         </property>
+         <property name="styleSheet">
           <string notr="true">color: rgb(12, 1, 1); font: italic &quot;KHGummi&quot;;</string>
-          </property>
-          <property name="text">
+         </property>
+         <property name="text">
           <string>Game Settings</string>
-          </property>
+         </property>
         </widget>
-        </widget>
+       </widget>
       </item>
       <item>
-        <spacer name="horizontalSpacer">
+       <spacer name="horizontalSpacer">
         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+         <enum>Qt::Horizontal</enum>
         </property>
         <property name="sizeHint" stdset="0">
-          <size>
+         <size>
           <width>40</width>
           <height>20</height>
-          </size>
+         </size>
         </property>
-        </spacer>
+       </spacer>
       </item>
-      </layout>
+     </layout>
     </item>
     <item row="5" column="0" colspan="2">
-      <spacer name="verticalSpacer_2">
+     <spacer name="verticalSpacer_2">
       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+       <enum>Qt::Vertical</enum>
       </property>
       <property name="sizeHint" stdset="0">
-        <size>
+       <size>
         <width>20</width>
         <height>40</height>
-        </size>
+       </size>
       </property>
-      </spacer>
+     </spacer>
     </item>
-    </layout>
+   </layout>
   </widget>
  </widget>
  <resources>
