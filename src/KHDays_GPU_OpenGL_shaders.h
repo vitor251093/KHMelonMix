@@ -346,6 +346,26 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     float dialogX2 = dialogX1 + dialogWidth;
     float dialogY1 = 192.0*iuTexScale*(95.0/100.0) - dialogHeight;
     float dialogY2 = dialogY1 + dialogHeight;
+
+    {
+        // portrait label
+        float sourceWidth = 78.0;
+        float sourceHeight = 14.0;
+        float sourceXCenter = 223.0;
+        float sourceMarginTop = 170.0;
+        float width = sourceWidth*heightScale;
+        float centerX = sourceXCenter*heightScale;
+        float x1 = dialogX1 + centerX - width/2;
+        float x2 = x1 + width;
+        float y1 = dialogY1 + sourceMarginTop;
+        float y2 = y1 + sourceHeight;
+        if (texPosition3d.x >= x1 + 70.0*heightScale && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
+        {
+            vec2 pos = fixStretch*(texPosition3d - vec2(x1, y1));
+            return vec2(sourceWidth - pos.x, pos.y) + vec2(sourceXCenter - sourceWidth/2, sourceMarginTop);
+        }
+    }
+
     if (texPosition3d.x >= dialogX1 && texPosition3d.x < dialogX2 && texPosition3d.y >= dialogY1 && texPosition3d.y < dialogY2)
     {
         return fixStretch*(texPosition3d - vec2(dialogX1, dialogY1));
