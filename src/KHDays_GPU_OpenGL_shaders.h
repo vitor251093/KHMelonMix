@@ -362,7 +362,10 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
         if (texPosition3d.x >= x1 + 70.0*heightScale && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
         {
             vec2 pos = fixStretch*(texPosition3d - vec2(x1, y1));
-            return vec2(sourceWidth - pos.x, pos.y) + vec2(sourceXCenter - sourceWidth/2, sourceMarginTop);
+            vec2 finalPos = vec2(sourceWidth - pos.x, pos.y) + vec2(sourceXCenter - sourceWidth/2, sourceMarginTop);
+            if (finalPos.x + finalPos.y > 360.0 && finalPos.y - finalPos.x < -6.0) {
+                return finalPos;
+            }
         }
     }
 
