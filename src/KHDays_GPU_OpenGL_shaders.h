@@ -340,16 +340,29 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     // dialog
-    float scale = 1.0;
-    float height = 192.0*scale;
-    float width = 256.0*scale*heightScale;
-    float x1 = (256.0*iuTexScale - width)/2;
-    float x2 = x1 + width;
-    float y1 = 192.0*iuTexScale*(95.0/100.0) - height;
-    float y2 = y1 + height;
-    if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
+    float dialogHeight = 192.0;
+    float dialogWidth = 256.0*heightScale;
+    float dialogX1 = (256.0*iuTexScale - dialogWidth)/2;
+    float dialogX2 = dialogX1 + dialogWidth;
+    float dialogY1 = 192.0*iuTexScale*(95.0/100.0) - dialogHeight;
+    float dialogY2 = dialogY1 + dialogHeight;
+    if (texPosition3d.x >= dialogX1 && texPosition3d.x < dialogX2 && texPosition3d.y >= dialogY1 && texPosition3d.y < dialogY2)
     {
-        return fixStretch*(texPosition3d - vec2(x1, y1))*(1/scale);
+        return fixStretch*(texPosition3d - vec2(dialogX1, dialogY1));
+    }
+
+    {
+        // dialog left side
+        float width = 10.0;
+        float x1 = dialogX1 - width*heightScale;
+        float x2 = dialogX1;
+        float y1 = dialogY1 + 128.0;
+        float y2 = y1 + 54.0;
+        if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
+        {
+            vec2 pos = (texPosition3d - vec2(x1, y1));
+            return vec2(pos.y, 122.0 + pos.x/heightScale);
+        }
     }
 
     // nothing (clear screen)
