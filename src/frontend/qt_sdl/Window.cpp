@@ -56,6 +56,7 @@
 #include "DateTimeDialog.h"
 #include "EmuSettingsDialog.h"
 #include "InputConfig/InputConfigDialog.h"
+#include "MainWindow/MainWindowSettings.h"
 #include "VideoSettingsDialog.h"
 #include "CameraSettingsDialog.h"
 #include "AudioSettingsDialog.h"
@@ -197,7 +198,7 @@ static void signalHandler(int)
 }
 #endif
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
+MainWindow::MainWindow(QWidget* parent) : MainWindowSettings(parent)
 {
 #ifndef _WIN32
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, signalFd))

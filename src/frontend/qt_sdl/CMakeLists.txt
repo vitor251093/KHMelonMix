@@ -19,6 +19,9 @@ set(SOURCES_QT_SDL
     InputConfig/InputConfigDialog.cpp
     InputConfig/MapButton.h
     InputConfig/resources/ds.qrc
+    MainWindow/MainWindowSettings.cpp
+    MainWindow/MapButton.h
+    MainWindow/resources/ds.qrc
     VideoSettingsDialog.cpp
     CameraSettingsDialog.cpp
     AudioSettingsDialog.cpp
