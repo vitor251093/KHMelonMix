@@ -353,11 +353,11 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
 
     {
         // dialog left side
-        float width = 10.0;
+        float width = 9.0;
         float x1 = dialogX1 - width*heightScale;
         float x2 = dialogX1;
         float y1 = dialogY1 + 128.0;
-        float y2 = y1 + 54.0;
+        float y2 = y1 + 56.0;
         if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
         {
             vec2 pos = (texPosition3d - vec2(x1, y1));
