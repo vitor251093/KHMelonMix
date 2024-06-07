@@ -344,7 +344,7 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     float dialogWidth = 256.0*heightScale;
     float dialogX1 = (256.0*iuTexScale - dialogWidth)/2;
     float dialogX2 = dialogX1 + dialogWidth;
-    float dialogY1 = 192.0*iuTexScale*(95.0/100.0) - dialogHeight;
+    float dialogY1 = 192.0*iuTexScale*(97.0/100.0) - dialogHeight;
     float dialogY2 = dialogY1 + dialogHeight;
 
     {
