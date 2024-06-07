@@ -339,7 +339,7 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    // dialog
+    // dialog (part 1)
     float dialogHeight = 192.0;
     float dialogWidth = 256.0*heightScale;
     float dialogX1 = (256.0*iuTexScale - dialogWidth)/2;
@@ -369,6 +369,7 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
         }
     }
 
+    // dialog (part 2)
     if (texPosition3d.x >= dialogX1 && texPosition3d.x < dialogX2 && texPosition3d.y >= dialogY1 && texPosition3d.y < dialogY2)
     {
         return fixStretch*(texPosition3d - vec2(dialogX1, dialogY1));
