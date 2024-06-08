@@ -102,7 +102,7 @@ bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
     ivec4 val2 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(256,0), 0));
     ivec4 val3 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(512,0), 0));
     ivec4 pixel = combineLayers(diffColor, val1, val2, val3);
-    return (!(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b));
+    return !(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
 }
 
 bool isMissionInformationVisible()
@@ -347,7 +347,7 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     float dialogY1 = 192.0*iuTexScale*(97.0/100.0) - dialogHeight;
     float dialogY2 = dialogY1 + dialogHeight;
 
-    {
+    if (isColorBlack(ivec4(texelFetch(ScreenTex, ivec2(250, 183), 0)))) {
         // portrait label
         float sourceWidth = 78.0;
         float sourceHeight = 14.0;
