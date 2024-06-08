@@ -18,6 +18,7 @@ public:
 private:
     static int GameScene;
     static int priorGameScene;
+    static int HUDState;
     static bool ShowMap;
     static bool ShowTarget;
     static bool ShowMissionGauge;

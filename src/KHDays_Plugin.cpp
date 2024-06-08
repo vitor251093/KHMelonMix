@@ -12,6 +12,7 @@ extern int videoRenderer;
 
 int KHDaysPlugin::GameScene = -1;
 int KHDaysPlugin::priorGameScene = -1;
+int KHDaysPlugin::HUDState = 0;
 bool KHDaysPlugin::ShowMap = true;
 bool KHDaysPlugin::ShowTarget = false;
 bool KHDaysPlugin::ShowMissionGauge = false;
@@ -126,9 +127,22 @@ void KHDaysPlugin::hudRefresh(melonDS::NDS* nds)
 
 void KHDaysPlugin::hudToggle(melonDS::NDS* nds)
 {
-    ShowMap = !ShowMap;
-    ShowTarget = !ShowTarget;
-    ShowMissionGauge = !ShowMissionGauge;
+    HUDState = (HUDState + 1) % 3;
+    if (HUDState == 0) {
+        ShowMap = true;
+        ShowTarget = false;
+        ShowMissionGauge = false;
+    }
+    else if (HUDState == 1) {
+        ShowMap = false;
+        ShowTarget = true;
+        ShowMissionGauge = true;
+    }
+    else {
+        ShowMap = false;
+        ShowTarget = false;
+        ShowMissionGauge = false;
+    }
     hudRefresh(nds);
 }
 
