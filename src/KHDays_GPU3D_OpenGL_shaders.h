@@ -51,6 +51,19 @@ void main()
         }
     }
 
+    if (KHGameScene == 10) // gameScene_PauseMenu
+    {
+        float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
+        float heartWidth = (256.0*u3DScale)/2.5;
+        float heartHeight = (192.0*u3DScale)/2.5;
+        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.500)*fpos.w &&
+            fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.666)*fpos.w &&
+            fpos.z < -0.75*fpos.w) {
+            fpos.x = (0 - 1.0)*fpos.w;
+            fpos.y = (0 - 1.0)*fpos.w;
+        }
+    }
+
     fColor = vec4(vColor) / vec4(255.0,255.0,255.0,31.0);
     fTexcoord = vec2(vTexcoord) / 16.0;
     fPolygonAttr = vPolygonAttr;
