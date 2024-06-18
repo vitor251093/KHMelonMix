@@ -339,6 +339,15 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
+    if (ypos < 96.0)
+    {
+        if (isCutsceneFromChallengeMissionVisible()) {
+            return vec2(fTexcoord);
+        }
+
+        return vec2(128, 96);
+    }
+
     // dialog (part 1)
     float dialogHeight = 192.0;
     float dialogWidth = 256.0*heightScale;
@@ -412,7 +421,7 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     }
 
     // nothing (clear screen)
-    return vec2(0, 0);
+    return vec2(128, 96);
 }
 
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
