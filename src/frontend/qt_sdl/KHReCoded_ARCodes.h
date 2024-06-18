@@ -31,10 +31,9 @@ namespace melonDS
 class KHReCodedARCodes: public ARCodeFile
 {
 public:
-    KHReCodedARCodes();
+    KHReCodedARCodes(const std::string& filename);
 
     bool Load() override;
-    bool Save() override;
 
 
 private:

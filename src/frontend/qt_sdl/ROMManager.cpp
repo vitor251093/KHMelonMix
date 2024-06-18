@@ -516,10 +516,10 @@ void LoadCheats(NDS& nds)
     if (CheatFile->Categories.empty())
     {
         if (CartValidator::isDays()) {
-            CheatFile = new KHDaysARCodes();
+            CheatFile = new KHDaysARCodes(filename);
         }
         if (CartValidator::isRecoded()) {
-            CheatFile = new KHReCodedARCodes();
+            CheatFile = new KHReCodedARCodes(filename);
         }
     }
 

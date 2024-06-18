@@ -29,8 +29,10 @@ namespace melonDS
 {
 using namespace Platform;
 
-KHReCodedARCodes::KHReCodedARCodes()
+KHReCodedARCodes::KHReCodedARCodes(const std::string& filename)
 {
+    Filename = filename;
+
     Error = false;
 
     float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
@@ -94,6 +96,12 @@ ARCode KHReCodedARCodes::AlwaysEnableXAndDPadToControlCommandMenu(std::string co
 
 bool KHReCodedARCodes::Load()
 {
+    FileHandle* f = OpenFile(Filename, FileMode::ReadText);
+    if (f) {
+        CloseFile(f);
+        return ARCodeFile::Load();
+    }
+
     // References
     // https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf
 
@@ -118,11 +126,6 @@ bool KHReCodedARCodes::Load()
 
     Categories.push_back(curcat);
     return true;
-}
-
-bool KHReCodedARCodes::Save()
-{
-    return false;
 }
 
 }

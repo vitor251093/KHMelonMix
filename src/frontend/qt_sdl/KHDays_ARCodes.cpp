@@ -29,8 +29,10 @@ namespace melonDS
 {
 using namespace Platform;
 
-KHDaysARCodes::KHDaysARCodes()
+KHDaysARCodes::KHDaysARCodes(const std::string& filename)
 {
+    Filename = filename;
+
     Error = false;
 
     float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
@@ -73,6 +75,12 @@ ARCode KHDaysARCodes::ChangeAspectRatio(std::string codeName, u32 address)
 
 bool KHDaysARCodes::Load()
 {
+    FileHandle* f = OpenFile(Filename, FileMode::ReadText);
+    if (f) {
+        CloseFile(f);
+        return ARCodeFile::Load();
+    }
+
     // References
     // https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf
 
@@ -94,11 +102,6 @@ bool KHDaysARCodes::Load()
 
     Categories.push_back(curcat);
     return true;
-}
-
-bool KHDaysARCodes::Save()
-{
-    return false;
 }
 
 }

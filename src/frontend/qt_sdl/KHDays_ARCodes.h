@@ -31,10 +31,9 @@ namespace melonDS
 class KHDaysARCodes: public ARCodeFile
 {
 public:
-    KHDaysARCodes();
+    KHDaysARCodes(const std::string& filename);
 
     bool Load() override;
-    bool Save() override;
 
 
 private:
