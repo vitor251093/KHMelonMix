@@ -375,13 +375,21 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
         return fixStretch*(texPosition3d - vec2(dialogX1, dialogY1));
     }
 
+    float dialogMarginY1 = dialogY1 + 128.0;
+    float dialogMarginY2 = dialogMarginY1 + 56.0;
+    if (is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(256/2, 192*0.6314))) {
+        // dialogs with selectable options are positioned in a different way
+        dialogMarginY1 = dialogY1 + 120.0;
+        dialogMarginY2 = dialogMarginY1 + 64.0;
+    }
+
     {
         // dialog left side
         float marginWidth = 9.0;
         float x1 = dialogX1 - marginWidth*heightScale;
         float x2 = dialogX1;
-        float y1 = dialogY1 + 128.0;
-        float y2 = y1 + 56.0;
+        float y1 = dialogMarginY1;
+        float y2 = dialogMarginY2;
         if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
         {
             vec2 pos = vec2((x2 - x1) - (texPosition3d.x - x1), texPosition3d.y - y1);
@@ -394,8 +402,8 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
         float marginWidth = 9.0;
         float x1 = dialogX2;
         float x2 = dialogX2 + marginWidth*heightScale;
-        float y1 = dialogY1 + 128.0;
-        float y2 = y1 + 56.0;
+        float y1 = dialogMarginY1;
+        float y2 = dialogMarginY2;
         if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
         {
             vec2 pos = (texPosition3d - vec2(x1, y1));
