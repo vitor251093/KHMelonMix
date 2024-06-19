@@ -260,7 +260,7 @@ void InputConfigDialog::on_InputConfigDialog_accepted()
 void InputConfigDialog::on_InputConfigDialog_rejected()
 {
     Input::JoystickID = Config::JoystickID;
-    Input::OpenJoystick();
+    Input::OpenJoystick(false);
 
     closeDlg();
 }
@@ -281,5 +281,10 @@ void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
     if (ui->cbxJoystick->count() < 2) return;
 
     Input::JoystickID = id;
-    Input::OpenJoystick();
+    Input::OpenJoystick(false);
 }
+void InputConfigDialog::on_btnJoystickAuto_clicked()
+{
+    Input::OpenJoystick(true);
+}
+

@@ -28,6 +28,8 @@ namespace Input
 
 using namespace melonDS;
 extern int JoystickID;
+extern int JoystickVendorID;
+extern int JoystickDeviceID;
 extern SDL_Joystick* Joystick;
 
 extern u32 InputMask;
@@ -38,11 +40,12 @@ extern u32 PriorPriorCmdMenuInputMask;
 void Init();
 
 // set joystickID before calling openJoystick()
-void OpenJoystick();
+void OpenJoystick(bool autoMapping);
 void CloseJoystick();
 
 void KeyPress(QKeyEvent* event);
 void KeyRelease(QKeyEvent* event);
+void KeyReleaseAll();
 
 void Process();
 

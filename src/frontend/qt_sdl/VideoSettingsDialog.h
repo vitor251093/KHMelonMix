@@ -66,10 +66,12 @@ private slots:
 
     void on_cbxGLResolution_currentIndexChanged(int idx);
     void on_cbBetterPolygons_stateChanged(int state);
+    void on_cbxComputeHiResCoords_stateChanged(int state);
 
     void on_cbSoftwareThreaded_stateChanged(int state);
 private:
     void setVsyncControlEnable(bool hasOGL);
+    void setEnabled();
 
     Ui::VideoSettingsDialog* ui;
 
@@ -83,6 +85,7 @@ private:
     int oldGLScale;
     int oldGLBetterPolygons;
     int oldAutoFullscreen;
+    int oldHiresCoordinates;
 };
 
 #endif // VIDEOSETTINGSDIALOG_H

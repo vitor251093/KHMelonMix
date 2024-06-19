@@ -5,36 +5,36 @@
 
 namespace melonDS
 {
-enum
-{
-    gameScene_Intro,              // 0
-    gameScene_MainMenu,           // 1
-    gameScene_IntroLoadMenu,      // 2
-    gameScene_DayCounter,         // 3
-    gameScene_Cutscene,           // 4
-    gameScene_InGameWithMap,      // 5
-    gameScene_InGameWithoutMap,   // 6
-    gameScene_InGameMenu,         // 7
-    gameScene_InGameSaveMenu,     // 8
-    gameScene_InHoloMissionMenu,  // 9
-    gameScene_PauseMenu,          // 10
-    gameScene_Tutorial,           // 11
-    gameScene_InGameWithCutscene, // 12
-    gameScene_MultiplayerMissionReview, // 13
-    gameScene_Shop,               // 14
-    gameScene_Other2D,            // 15
-    gameScene_Other               // 16
-};
-
 class KHDaysPlugin
 {
 public:
-    static u32 applyCommandMenuInputMask(u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask);
+    static u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask);
+    static void hudToggle(melonDS::NDS* nds);
     static const char* getNameByGameScene(int newGameScene);
+    static bool shouldSkipFrame(melonDS::NDS* nds);
     static int detectGameScene(melonDS::NDS* nds);
     static bool setGameScene(melonDS::NDS* nds, int newGameScene);
 private:
     static void debugLogs(melonDS::NDS* nds, int gameScene);
+
+    static int GameScene;
+    static int priorGameScene;
+    static int HUDState;
+    static bool ShowMap;
+    static bool ShowTarget;
+    static bool ShowMissionGauge;
+
+    static bool _olderHad3DOnTopScreen;
+    static bool _olderHad3DOnBottomScreen;
+    static bool _had3DOnTopScreen;
+    static bool _had3DOnBottomScreen;
+
+    static bool _hasVisible3DOnBottomScreen;
+
+    static bool isBufferBlack(unsigned int* buffer);
+    static bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
+    static bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
+    static void hudRefresh(melonDS::NDS* nds);
 };
 }
 

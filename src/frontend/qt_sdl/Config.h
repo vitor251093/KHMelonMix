@@ -39,6 +39,7 @@ enum
     HK_PowerButton,
     HK_VolumeUp,
     HK_VolumeDown,
+    HK_HUDToggle,
     HK_MAX
 };
 
@@ -49,6 +50,16 @@ enum
     micInputType_Noise,
     micInputType_Wav,
     micInputType_MAX,
+};
+
+enum
+{
+    renderer3D_Software = 0,
+#ifdef OGLRENDERER_ENABLED
+    renderer3D_OpenGL,
+    renderer3D_OpenGLCompute,
+#endif
+    renderer3D_Max,
 };
 
 namespace Config
@@ -109,6 +120,7 @@ extern bool Threaded3D;
 
 extern int GL_ScaleFactor;
 extern bool GL_BetterPolygons;
+extern bool GL_HiresCoordinates;
 
 extern bool LimitFPS;
 extern int MaxFPS;
@@ -192,6 +204,7 @@ extern bool EnableCheats;
 extern bool MouseHide;
 extern int MouseHideSeconds;
 extern bool PauseLostFocus;
+extern std::string UITheme;
 
 extern int64_t RTCOffset;
 
@@ -210,7 +223,7 @@ extern bool GdbARM7BreakOnStartup;
 extern bool GdbARM9BreakOnStartup;
 
 
-void Load();
+bool Load();
 void Save();
 
 }

@@ -58,7 +58,7 @@ public:
 
     ARCodeCatList Categories;
 
-private:
+protected:
     std::string Filename;
 };
 

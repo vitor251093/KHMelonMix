@@ -16,10 +16,32 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#ifndef VERSION_H
-#define VERSION_H
+#ifndef KHRECODEDARCODES_H
+#define KHRECODEDARCODES_H
 
-#define MELONDS_URL        "https://github.com/vitor251093/KHDays_FM"
+#include "ARCodeFile.h"
+#include <string>
+#include <list>
+#include <vector>
+#include "types.h"
 
-#endif // VERSION_H
+namespace melonDS
+{
 
+class KHReCodedARCodes: public ARCodeFile
+{
+public:
+    KHReCodedARCodes(const std::string& filename);
+
+    bool Load() override;
+
+
+private:
+    float ScreenAspect;
+
+    ARCode ChangeAspectRatio(std::string codeName, u32 address);
+    ARCode AlwaysEnableXAndDPadToControlCommandMenu(std::string codeName, u32 address);
+};
+
+}
+#endif // KHRECODEDARCODES_H

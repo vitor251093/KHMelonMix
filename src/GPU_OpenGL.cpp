@@ -27,7 +27,9 @@
 #include "GPU3D_OpenGL.h"
 #include "OpenGLSupport.h"
 #include "GPU_OpenGL_shaders.h"
+#include "CartValidator.h"
 #include "KHDays_GPU_OpenGL_shaders.h"
+#include "KHReCoded_GPU_OpenGL_shaders.h"
 
 namespace melonDS
 {
@@ -37,36 +39,45 @@ using namespace OpenGL;
 std::optional<GLCompositor> GLCompositor::New() noexcept
 {
     assert(glBindAttribLocation != nullptr);
+    GLuint CompShader {};
 
-    std::array<GLuint, 3> CompShader {};
-    if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_KhDays, &CompShader[0], "CompositorShader"))
-        return std::nullopt;
-
-    glBindAttribLocation(CompShader[2], 0, "vPosition");
-    glBindAttribLocation(CompShader[2], 1, "vTexcoord");
-    glBindFragDataLocation(CompShader[2], 0, "oColor");
-
-    if (!OpenGL::LinkShaderProgram(CompShader.data()))
-        // OpenGL::LinkShaderProgram already deletes the shader program object
-        // if linking the shaders together failed.
-        return std::nullopt;
+    if (CartValidator::isDays()) {
+        if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, kCompositorFS_KhDays, "CompositorShader",
+            {{"vPosition", 0}, {"vTexcoord", 1}}, {{"oColor", 0}}))
+            return std::nullopt;
+    }
+    else if (CartValidator::isRecoded()) {
+        if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, kCompositorFS_KhReCoded, "CompositorShader",
+            {{"vPosition", 0}, {"vTexcoord", 1}}, {{"oColor", 0}}))
+            return std::nullopt;
+    }
+    else {
+        if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, kCompositorFS_Nearest, "CompositorShader",
+            {{"vPosition", 0}, {"vTexcoord", 1}}, {{"oColor", 0}}))
+            return std::nullopt;
+    }
 
     return { GLCompositor(CompShader) };
 }
 
-GLCompositor::GLCompositor(std::array<GLuint, 3> compShader) noexcept : CompShader(compShader)
+GLCompositor::GLCompositor(GLuint compShader) noexcept : CompShader(compShader)
 {
-    CompScaleLoc = glGetUniformLocation(CompShader[2], "u3DScale");
-    Comp3DXPosLoc = glGetUniformLocation(CompShader[2], "u3DXPos");
-    CompGameSceneLoc = glGetUniformLocation(CompShader[2], "KHGameScene");
-    CompAspectRatioLoc = glGetUniformLocation(CompShader[2], "TopScreenAspectRatio");
+    CompScaleLoc = glGetUniformLocation(CompShader, "u3DScale");
+    Comp3DXPosLoc = glGetUniformLocation(CompShader, "u3DXPos");
+    CompIsBottomScreen2DTextureBlackLoc = glGetUniformLocation(CompShader, "IsBottomScreen2DTextureBlack");
+    CompIsTopScreen2DTextureBlackLoc = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
+    CompGameSceneLoc = glGetUniformLocation(CompShader, "KHGameScene");
+    CompAspectRatioLoc = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompShowMapLoc = glGetUniformLocation(CompShader, "ShowMap");
+    CompShowTargetLoc = glGetUniformLocation(CompShader, "ShowTarget");
+    CompShowMissionGaugeLoc = glGetUniformLocation(CompShader, "ShowMissionGauge");
 
-    glUseProgram(CompShader[2]);
-    GLuint screenTextureUniform = glGetUniformLocation(CompShader[2], "ScreenTex");
+    glUseProgram(CompShader);
+    GLuint screenTextureUniform = glGetUniformLocation(CompShader, "ScreenTex");
     glUniform1i(screenTextureUniform, 0);
-    GLuint _3dTextureUniform = glGetUniformLocation(CompShader[2], "_3DTex");
+    GLuint _3dTextureUniform = glGetUniformLocation(CompShader, "_3DTex");
     glUniform1i(_3dTextureUniform, 1);
-    GLuint khUiScaleUniform = glGetUniformLocation(CompShader[2], "KHUIScale");
+    GLuint khUiScaleUniform = glGetUniformLocation(CompShader, "KHUIScale");
     glUniform1i(khUiScaleUniform, 4);
 
     // all this mess is to prevent bleeding
@@ -141,7 +152,7 @@ GLCompositor::~GLCompositor()
     glDeleteVertexArrays(1, &CompVertexArrayID);
     glDeleteBuffers(1, &CompVertexBufferID);
 
-    OpenGL::DeleteShaderProgram(CompShader.data());
+    glDeleteProgram(CompShader);
 }
 
 
@@ -149,12 +160,22 @@ GLCompositor::GLCompositor(GLCompositor&& other) noexcept :
     Scale(other.Scale),
     ScreenH(other.ScreenH),
     ScreenW(other.ScreenW),
+    IsBottomScreen2DTextureBlack(other.IsBottomScreen2DTextureBlack),
+    IsTopScreen2DTextureBlack(other.IsTopScreen2DTextureBlack),
     GameScene(other.GameScene),
     AspectRatio(other.AspectRatio),
+    ShowMap(other.ShowMap),
+    ShowTarget(other.ShowTarget),
+    ShowMissionGauge(other.ShowMissionGauge),
     CompScaleLoc(other.CompScaleLoc),
     Comp3DXPosLoc(other.Comp3DXPosLoc),
+    CompIsBottomScreen2DTextureBlackLoc(other.CompIsBottomScreen2DTextureBlackLoc),
+    CompIsTopScreen2DTextureBlackLoc(other.CompIsTopScreen2DTextureBlackLoc),
     CompGameSceneLoc(other.CompGameSceneLoc),
     CompAspectRatioLoc(other.CompAspectRatioLoc),
+    CompShowMapLoc(other.CompShowMapLoc),
+    CompShowTargetLoc(other.CompShowTargetLoc),
+    CompShowMissionGaugeLoc(other.CompShowMissionGaugeLoc),
     CompVertices(other.CompVertices),
     CompShader(other.CompShader),
     CompVertexBufferID(other.CompVertexBufferID),
@@ -178,16 +199,26 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
         Scale = other.Scale;
         ScreenH = other.ScreenH;
         ScreenW = other.ScreenW;
+        IsBottomScreen2DTextureBlack = other.IsBottomScreen2DTextureBlack;
+        IsTopScreen2DTextureBlack = other.IsTopScreen2DTextureBlack;
         GameScene = other.GameScene;
         AspectRatio = other.AspectRatio;
+        ShowMap = other.ShowMap;
+        ShowTarget = other.ShowTarget;
+        ShowMissionGauge = other.ShowMissionGauge;
         CompScaleLoc = other.CompScaleLoc;
         Comp3DXPosLoc = other.Comp3DXPosLoc;
+        CompIsBottomScreen2DTextureBlackLoc = other.CompIsBottomScreen2DTextureBlackLoc;
+        CompIsTopScreen2DTextureBlackLoc = other.CompIsTopScreen2DTextureBlackLoc;
         CompGameSceneLoc = other.CompGameSceneLoc;
         CompAspectRatioLoc = other.CompAspectRatioLoc;
+        CompShowMapLoc = other.CompShowMapLoc;
+        CompShowTargetLoc = other.CompShowTargetLoc;
+        CompShowMissionGaugeLoc = other.CompShowMissionGaugeLoc;
         CompVertices = other.CompVertices;
 
         // Clean up these resources before overwriting them
-        OpenGL::DeleteShaderProgram(CompShader.data());
+        glDeleteProgram(CompShader);
         CompShader = other.CompShader;
 
         glDeleteBuffers(1, &CompVertexBufferID);
@@ -216,6 +247,20 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
     return *this;
 }
 
+void GLCompositor::SetIsBottomScreen2DTextureBlack(bool isBlack) noexcept
+{
+    if (isBlack == IsBottomScreen2DTextureBlack)
+        return;
+
+    IsBottomScreen2DTextureBlack = isBlack;
+}
+void GLCompositor::SetIsTopScreen2DTextureBlack(bool isBlack) noexcept
+{
+    if (isBlack == IsTopScreen2DTextureBlack)
+        return;
+
+    IsTopScreen2DTextureBlack = isBlack;
+}
 void GLCompositor::SetGameScene(int gameScene) noexcept
 {
     if (gameScene == GameScene)
@@ -229,6 +274,27 @@ void GLCompositor::SetAspectRatio(float aspectRatio) noexcept
         return;
 
     AspectRatio = aspectRatio;
+}
+void GLCompositor::SetShowMap(bool showMap) noexcept
+{
+    if (showMap == ShowMap)
+        return;
+
+    ShowMap = showMap;
+}
+void GLCompositor::SetShowTarget(bool showTarget) noexcept
+{
+    if (showTarget == ShowTarget)
+        return;
+
+    ShowTarget = showTarget;
+}
+void GLCompositor::SetShowMissionGauge(bool showMissionGauge) noexcept
+{
+    if (showMissionGauge == ShowMissionGauge)
+        return;
+
+    ShowMissionGauge = showMissionGauge;
 }
 void GLCompositor::SetScaleFactor(int scale) noexcept
 {
@@ -270,11 +336,11 @@ void GLCompositor::Stop(const GPU& gpu) noexcept
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GLCompositor::RenderFrame(const GPU& gpu, GLRenderer& renderer) noexcept
+void GLCompositor::RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept
 {
-    int frontbuf = gpu.FrontBuffer;
+    int backbuf = gpu.FrontBuffer ^ 1;
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, CompScreenOutputFB[frontbuf]);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, CompScreenOutputFB[backbuf]);
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
@@ -286,10 +352,15 @@ void GLCompositor::RenderFrame(const GPU& gpu, GLRenderer& renderer) noexcept
     glClear(GL_COLOR_BUFFER_BIT);
 
     // TODO: select more shaders (filtering, etc)
-    OpenGL::UseShaderProgram(CompShader.data());
+    glUseProgram(CompShader);
     glUniform1ui(CompScaleLoc, Scale);
+    glUniform1i(CompIsBottomScreen2DTextureBlackLoc, IsBottomScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompIsTopScreen2DTextureBlackLoc, IsTopScreen2DTextureBlack ? 1 : 0);
     glUniform1i(CompGameSceneLoc, GameScene);
     glUniform1f(CompAspectRatioLoc, AspectRatio);
+    glUniform1i(CompShowMapLoc, ShowMap ? 1 : 0);
+    glUniform1i(CompShowTargetLoc, ShowTarget ? 1 : 0);
+    glUniform1i(CompShowMissionGaugeLoc, ShowMissionGauge ? 1 : 0);
 
     // TODO: support setting this midframe, if ever needed
     glUniform1i(Comp3DXPosLoc, ((int)gpu.GPU3D.GetRenderXPos() << 23) >> 23);
@@ -297,12 +368,12 @@ void GLCompositor::RenderFrame(const GPU& gpu, GLRenderer& renderer) noexcept
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, CompScreenInputTex);
 
-    if (gpu.Framebuffer[frontbuf][0] && gpu.Framebuffer[frontbuf][1])
+    if (gpu.Framebuffer[backbuf][0] && gpu.Framebuffer[backbuf][1])
     {
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256*3 + 1, 192, GL_RGBA_INTEGER,
-                        GL_UNSIGNED_BYTE, gpu.Framebuffer[frontbuf][0].get());
+                        GL_UNSIGNED_BYTE, gpu.Framebuffer[backbuf][0].get());
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192, 256*3 + 1, 192, GL_RGBA_INTEGER,
-                        GL_UNSIGNED_BYTE, gpu.Framebuffer[frontbuf][1].get());
+                        GL_UNSIGNED_BYTE, gpu.Framebuffer[backbuf][1].get());
     }
 
     glActiveTexture(GL_TEXTURE1);

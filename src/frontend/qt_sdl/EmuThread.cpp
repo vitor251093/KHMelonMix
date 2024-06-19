@@ -16,7 +16,8 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#include "KHDays_Plugin.h"
+#include "KH_Plugin.h"
+#include "CartValidator.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -54,10 +55,12 @@
 #include "DSi_I2C.h"
 #include "GPU3D_Soft.h"
 #include "GPU3D_OpenGL.h"
+#include "GPU3D_Compute.h"
 
 #include "Savestate.h"
 
 #include "ROMManager.h"
+#include "EmuThread.h"
 //#include "ArchiveUtil.h"
 //#include "CameraManager.h"
 
@@ -95,9 +98,8 @@ EmuThread::EmuThread(QObject* parent) : QThread(parent)
 }
 
 std::unique_ptr<NDS> EmuThread::CreateConsole(
-    std::unique_ptr<melonDS::NDSCart::CartCommon>&& ndscart,
-    std::unique_ptr<melonDS::GBACart::CartCommon>&& gbacart
-) noexcept
+    std::unique_ptr<melonDS::NDSCart::CartCommon> &&ndscart,
+    std::unique_ptr<melonDS::GBACart::CartCommon> &&gbacart) noexcept
 {
     auto arm7bios = ROMManager::LoadARM7BIOS();
     if (!arm7bios)
@@ -132,8 +134,8 @@ std::unique_ptr<NDS> EmuThread::CreateConsole(
     NDSArgs ndsargs {
         std::move(ndscart),
         std::move(gbacart),
-        *arm9bios,
-        *arm7bios,
+        std::move(arm9bios),
+        std::move(arm7bios),
         std::move(*firmware),
 #ifdef JIT_ENABLED
         Config::JIT_Enable ? std::make_optional(jitargs) : std::nullopt,
@@ -166,8 +168,8 @@ std::unique_ptr<NDS> EmuThread::CreateConsole(
         auto sdcard = ROMManager::LoadDSiSDCard();
         DSiArgs args {
             std::move(ndsargs),
-            *arm9ibios,
-            *arm7ibios,
+            std::move(arm9ibios),
+            std::move(arm7ibios),
             std::move(*nand),
             std::move(sdcard),
             Config::DSiFullBIOSBoot,
@@ -304,6 +306,7 @@ void EmuThread::run()
 {
     u32 mainScreenPos[3];
     Platform::FileHandle* file;
+    u32 lastRomLoaded = 0;
 
     UpdateConsole(nullptr, nullptr);
     // No carts are inserted when melonDS first boots
@@ -327,21 +330,12 @@ void EmuThread::run()
         videoRenderer = 0;
     }
 
-    if (videoRenderer == 0)
-    { // If we're using the software renderer...
-        NDS->GPU.SetRenderer3D(std::make_unique<SoftRenderer>(Config::Threaded3D != 0));
-    }
-    else
-    {
-        auto glrenderer =  melonDS::GLRenderer::New();
-        glrenderer->SetRenderSettings(Config::GL_BetterPolygons, Config::GL_ScaleFactor);
-        NDS->GPU.SetRenderer3D(std::move(glrenderer));
-    }
+    updateRenderer();
 
     Input::Init();
 
     u32 nframes = 0;
-    double perfCountsSec = 1.0 / SDL_GetPerformanceFrequency();
+    perfCountsSec = 1.0 / SDL_GetPerformanceFrequency();
     double lastTime = SDL_GetPerformanceCounter() * perfCountsSec;
     double frameLimitError = 0.0;
     double lastMeasureTime = lastTime;
@@ -377,6 +371,13 @@ void EmuThread::run()
 
         if (EmuRunning == emuStatus_Running || EmuRunning == emuStatus_FrameStep)
         {
+            if (lastRomLoaded != CartValidator::get())
+            {
+                lastRomLoaded = CartValidator::get();
+                lastVideoRenderer = -1;
+                videoSettingsDirty = true;
+            }
+
             EmuStatus = emuStatus_Running;
             if (EmuRunning == emuStatus_FrameStep) EmuRunning = emuStatus_Paused;
 
@@ -452,26 +453,24 @@ void EmuThread::run()
                     videoRenderer = 0;
                 }
 
-                videoRenderer = screenGL ? Config::_3DRenderer : 0;
+                updateRenderer();
+
+                emit screenLayoutChange();
 
                 videoSettingsDirty = false;
-
-                if (videoRenderer == 0)
-                { // If we're using the software renderer...
-                    NDS->GPU.SetRenderer3D(std::make_unique<SoftRenderer>(Config::Threaded3D != 0));
-                }
-                else
-                {
-                    auto glrenderer =  melonDS::GLRenderer::New();
-                    glrenderer->SetRenderSettings(Config::GL_BetterPolygons, Config::GL_ScaleFactor);
-                    NDS->GPU.SetRenderer3D(std::move(glrenderer));
-                }
             }
 
+            melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
+
             // process input and hotkeys
-            Input::InputMask = KHDaysPlugin::applyCommandMenuInputMask(Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
+            Input::InputMask = KHPlugin::applyCommandMenuInputMask(&nds, Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
             NDS->SetKeyMask(Input::InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
+
+            if (Input::HotkeyPressed(HK_HUDToggle))
+            {
+                KHPlugin::hudToggle(&nds);
+            }
 
             if (Input::HotkeyPressed(HK_Lid))
             {
@@ -483,11 +482,31 @@ void EmuThread::run()
             // microphone input
             AudioInOut::MicProcess(*NDS);
 
+            refreshGameScene();
+            bool shouldSkipFrame = KHPlugin::shouldSkipFrame(&nds);
+
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
             {
-                refreshGameScene();
-                int guess = Frontend::screenSizing_TopOnly;
+                mainScreenPos[2] = mainScreenPos[1];
+                mainScreenPos[1] = mainScreenPos[0];
+                mainScreenPos[0] = NDS->PowerControl9 >> 15;
+
+                int guess;
+                if (mainScreenPos[0] == mainScreenPos[2] &&
+                    mainScreenPos[0] != mainScreenPos[1])
+                {
+                    // constant flickering, likely displaying 3D on both screens
+                    // TODO: when both screens are used for 2D only...???
+                    guess = Frontend::screenSizing_Even;
+                }
+                else
+                {
+                    if (mainScreenPos[0] == 1)
+                        guess = Frontend::screenSizing_EmphTop;
+                    else
+                        guess = Frontend::screenSizing_EmphBot;
+                }
 
                 if (guess != autoScreenSizing)
                 {
@@ -498,7 +517,16 @@ void EmuThread::run()
 
 
             // emulate
-            u32 nlines = NDS->RunFrame();
+            u32 nlines;
+            if (NDS->GPU.GetRenderer3D().NeedsShaderCompile())
+            {
+                compileShaders();
+                nlines = 1;
+            }
+            else
+            {
+                nlines = NDS->RunFrame();
+            }
 
             if (ROMManager::NDSSave)
                 ROMManager::NDSSave->CheckFlush();
@@ -518,7 +546,11 @@ void EmuThread::run()
             else
             {
                 FrontBuffer = NDS->GPU.FrontBuffer;
-                screenGL->drawScreenGL();
+
+                if (!shouldSkipFrame)
+                {
+                    screenGL->drawScreenGL();
+                }
             }
 
 #ifdef MELONCAP
@@ -663,15 +695,16 @@ void EmuThread::run()
 
 void EmuThread::refreshGameScene()
 {
+    bool enableDebug = false;
+
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
-    int newGameScene = KHDaysPlugin::detectGameScene(&nds);
-    bool updated = KHDaysPlugin::setGameScene(&nds, newGameScene);
-    if (updated)
+    int newGameScene = KHPlugin::detectGameScene(&nds);
+
+    bool updated = KHPlugin::setGameScene(&nds, newGameScene);
+    if (updated && enableDebug)
     {
-#ifdef _DEBUG
-        mainWindow->osdAddMessage(0, KHDaysPlugin::getNameByGameScene(newGameScene));
-#endif
+        mainWindow->osdAddMessage(0, KHPlugin::getNameByGameScene(newGameScene));
     }
 }
 
@@ -749,4 +782,54 @@ bool EmuThread::emuIsRunning()
 bool EmuThread::emuIsActive()
 {
     return (RunningSomething == 1);
+}
+
+void EmuThread::updateRenderer()
+{
+    if (videoRenderer != lastVideoRenderer)
+    {
+        printf("creating renderer %d\n", videoRenderer);
+        switch (videoRenderer)
+        {
+        case renderer3D_Software:
+            NDS->GPU.SetRenderer3D(std::make_unique<SoftRenderer>());
+            break;
+        case renderer3D_OpenGL:
+                NDS->GPU.SetRenderer3D(GLRenderer::New());
+            break;
+        case renderer3D_OpenGLCompute:
+            NDS->GPU.SetRenderer3D(ComputeRenderer::New());
+            break;
+        default: __builtin_unreachable();
+        }
+    }
+    lastVideoRenderer = videoRenderer;
+
+    switch (videoRenderer)
+    {
+    case renderer3D_Software:
+        static_cast<SoftRenderer&>(NDS->GPU.GetRenderer3D()).SetThreaded(Config::Threaded3D, NDS->GPU);
+        break;
+    case renderer3D_OpenGL:
+        static_cast<GLRenderer&>(NDS->GPU.GetRenderer3D()).SetRenderSettings(Config::GL_BetterPolygons, Config::GL_ScaleFactor);
+        break;
+    case renderer3D_OpenGLCompute:
+        static_cast<ComputeRenderer&>(NDS->GPU.GetRenderer3D()).SetRenderSettings(Config::GL_ScaleFactor, Config::GL_HiresCoordinates);
+        break;
+    default: __builtin_unreachable();
+    }
+}
+
+void EmuThread::compileShaders()
+{
+    int currentShader, shadersCount;
+    u64 startTime = SDL_GetPerformanceCounter();
+    // kind of hacky to look at the wallclock, though it is easier than
+    // than disabling vsync
+    do
+    {
+        NDS->GPU.GetRenderer3D().ShaderCompileStep(currentShader, shadersCount);
+    } while (NDS->GPU.GetRenderer3D().NeedsShaderCompile() &&
+        (SDL_GetPerformanceCounter() - startTime) * perfCountsSec < 1.0 / 6.0);
+    mainWindow->osdAddMessage(0, "Compiling shader %d/%d", currentShader+1, shadersCount);
 }

@@ -31,17 +31,15 @@ namespace melonDS
 class KHDaysARCodes: public ARCodeFile
 {
 public:
-    KHDaysARCodes();
+    KHDaysARCodes(const std::string& filename);
 
     bool Load() override;
-    bool Save() override;
 
 
 private:
     float ScreenAspect;
 
     ARCode ChangeAspectRatio(std::string codeName, u32 address);
-    ARCode AlwaysEnableXAndDPadToControlCommandMenu(std::string codeName, u32 address);
 };
 
 }

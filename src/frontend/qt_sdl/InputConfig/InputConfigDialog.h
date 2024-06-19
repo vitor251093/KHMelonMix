@@ -57,7 +57,8 @@ static constexpr std::initializer_list<int> hk_general =
     HK_SwapScreenEmphasis,
     HK_PowerButton,
     HK_VolumeUp,
-    HK_VolumeDown
+    HK_VolumeDown,
+    HK_HUDToggle
 };
 
 static constexpr std::initializer_list<const char*> hk_general_labels =
@@ -74,7 +75,8 @@ static constexpr std::initializer_list<const char*> hk_general_labels =
     "Swap screen emphasis",
     "DSi Power button",
     "DSi Volume up",
-    "DSi Volume down"
+    "DSi Volume down",
+    "HUD Toggle"
 };
 
 static_assert(hk_general.size() == hk_general_labels.size());
@@ -131,6 +133,7 @@ private slots:
     void on_btnKeyMapSwitch_clicked();
     void on_btnJoyMapSwitch_clicked();
     void on_cbxJoystick_currentIndexChanged(int id);
+    void on_btnJoystickAuto_clicked();
 
 private:
     void populatePage(QWidget* page,

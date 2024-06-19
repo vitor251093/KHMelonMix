@@ -23,7 +23,7 @@
 #include <inttypes.h>
 #include "Platform.h"
 #include "Config.h"
-
+#include "GPU.h"
 
 namespace Config
 {
@@ -66,6 +66,7 @@ bool Threaded3D;
 
 int GL_ScaleFactor;
 bool GL_BetterPolygons;
+bool GL_HiresCoordinates;
 
 bool LimitFPS;
 int MaxFPS;
@@ -150,6 +151,7 @@ bool MouseHide;
 int MouseHideSeconds;
 
 bool PauseLostFocus;
+std::string UITheme;
 
 int64_t RTCOffset;
 
@@ -238,6 +240,7 @@ ConfigEntry ConfigFile[] =
     {"HKKey_PowerButton",         0, &HKKeyMapping[HK_PowerButton],         -1, true},
     {"HKKey_VolumeUp",            0, &HKKeyMapping[HK_VolumeUp],            -1, true},
     {"HKKey_VolumeDown",          0, &HKKeyMapping[HK_VolumeDown],          -1, true},
+    {"HKKey_HUDToggle",           0, &HKKeyMapping[HK_HUDToggle],           -1, true},
 
     {"HKJoy_Lid",                 0, &HKJoyMapping[HK_Lid],                 -1, true},
     {"HKJoy_Mic",                 0, &HKJoyMapping[HK_Mic],                 -1, true},
@@ -254,6 +257,7 @@ ConfigEntry ConfigFile[] =
     {"HKJoy_PowerButton",         0, &HKJoyMapping[HK_PowerButton],         -1, true},
     {"HKJoy_VolumeUp",            0, &HKJoyMapping[HK_VolumeUp],            -1, true},
     {"HKJoy_VolumeDown",          0, &HKJoyMapping[HK_VolumeDown],          -1, true},
+    {"HKJoy_HUDToggle",           0, &HKJoyMapping[HK_HUDToggle],           -1, true},
 
     {"Key_TouchRight", 0, &TouchKeyMapping[0], -1, true},
     {"Key_TouchLeft",  0, &TouchKeyMapping[1], -1, true},
@@ -285,7 +289,7 @@ ConfigEntry ConfigFile[] =
     {"ScreenGap",      0, &ScreenGap,      0,     true},
     {"ScreenLayout",   0, &ScreenLayout,   2,     true},
     {"ScreenSwap",     1, &ScreenSwap,     false, true},
-    {"ScreenSizing",   0, &ScreenSizing,   3,     true},
+    {"ScreenSizing",   0, &ScreenSizing,   4,     true},
     {"IntegerScaling", 1, &IntegerScaling, false, true},
     {"ScreenAspectTop",0, &ScreenAspectTop,3,     true},
     {"ScreenAspectBot",0, &ScreenAspectBot,3,     true},
@@ -298,8 +302,9 @@ ConfigEntry ConfigFile[] =
     {"3DRenderer", 0, &_3DRenderer, 1, false},
     {"Threaded3D", 1, &Threaded3D, true, false},
 
-    {"GL_ScaleFactor", 0, &GL_ScaleFactor, 5, false},
+    {"GL_ScaleFactor", 0, &GL_ScaleFactor, 3, false},
     {"GL_BetterPolygons", 1, &GL_BetterPolygons, false, false},
+    {"GL_HiresCoordinates", 1, &GL_HiresCoordinates, true, false},
 
     {"LimitFPS", 1, &LimitFPS, true, false},
     {"MaxFPS", 0, &MaxFPS, 1000, false},
@@ -311,7 +316,7 @@ ConfigEntry ConfigFile[] =
     {"DirectBoot", 1, &DirectBoot, true, false},
 
 #ifdef JIT_ENABLED
-    {"JIT_Enable", 1, &JIT_Enable, false, false},
+    {"JIT_Enable", 1, &JIT_Enable, false, false}, // Is believed that enabling this may cause issues (#94)
     {"JIT_MaxBlockSize", 0, &JIT_MaxBlockSize, 32, false},
     {"JIT_BranchOptimisations", 1, &JIT_BranchOptimisations, true, false},
     {"JIT_LiteralOptimisations", 1, &JIT_LiteralOptimisations, true, false},
@@ -395,6 +400,7 @@ ConfigEntry ConfigFile[] =
     {"MouseHide",        1, &MouseHide,        true, false},
     {"MouseHideSeconds", 0, &MouseHideSeconds, 2, false},
     {"PauseLostFocus",   1, &PauseLostFocus,   false, false},
+    {"UITheme",          2, &UITheme, (std::string)"", false},
 
     {"RTCOffset",       3, &RTCOffset,       (int64_t)0, true},
 
@@ -427,7 +433,7 @@ ConfigEntry ConfigFile[] =
 };
 
 
-void LoadFile(int inst)
+bool LoadFile(int inst, int actualinst)
 {
     Platform::FileHandle* f;
     if (inst > 0)
@@ -435,11 +441,17 @@ void LoadFile(int inst)
         char name[100] = {0};
         snprintf(name, 99, kUniqueConfigFile, inst+1);
         f = Platform::OpenLocalFile(name, Platform::FileMode::ReadText);
+
+        if (!Platform::CheckLocalFileWritable(name)) return false;
     }
     else
+    {
         f = Platform::OpenLocalFile(kConfigFile, Platform::FileMode::ReadText);
 
-    if (!f) return;
+        if (actualinst == 0 && !Platform::CheckLocalFileWritable(kConfigFile)) return false;
+    }
+
+    if (!f) return true;
 
     char linebuf[1024];
     char entryname[32];
@@ -474,9 +486,10 @@ void LoadFile(int inst)
     }
 
     CloseFile(f);
+    return true;
 }
 
-void Load()
+bool Load()
 {
 
     for (ConfigEntry* entry = &ConfigFile[0]; entry->Value; entry++)
@@ -490,11 +503,13 @@ void Load()
         }
     }
 
-    LoadFile(0);
-
     int inst = Platform::InstanceID();
+
+    bool ret = LoadFile(0, inst);
     if (inst > 0)
-        LoadFile(inst);
+        ret = LoadFile(inst, inst);
+
+    return ret;
 }
 
 void Save()
