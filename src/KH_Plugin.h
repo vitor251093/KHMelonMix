@@ -29,6 +29,7 @@ public:
             return KHReCodedPlugin::hudToggle(nds);
         }
     }
+
     static const char* getNameByGameScene(int newGameScene) {
         if (CartValidator::isDays()) {
             return KHDaysPlugin::getNameByGameScene(newGameScene);
@@ -37,15 +38,6 @@ public:
             return KHReCodedPlugin::getNameByGameScene(newGameScene);
         }
         return "";
-    }
-    static bool shouldSkipFrame(melonDS::NDS* nds) {
-        if (CartValidator::isDays()) {
-            return KHDaysPlugin::shouldSkipFrame(nds);
-        }
-        if (CartValidator::isRecoded()) {
-            return KHReCodedPlugin::shouldSkipFrame(nds);
-        }
-        return false;
     }
     static int detectGameScene(melonDS::NDS* nds) {
         if (CartValidator::isDays()) {
@@ -64,6 +56,33 @@ public:
             return KHReCodedPlugin::setGameScene(nds, newGameScene);
         }
         return false;
+    }
+
+    static bool shouldSkipFrame(melonDS::NDS* nds) {
+        if (CartValidator::isDays()) {
+            return KHDaysPlugin::shouldSkipFrame(nds);
+        }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::shouldSkipFrame(nds);
+        }
+        return false;
+    }
+    static void extraRenderer(melonDS::NDS* nds) {
+        if (CartValidator::isDays()) {
+            KHDaysPlugin::extraRenderer(nds);
+        }
+        if (CartValidator::isRecoded()) {
+            KHReCodedPlugin::extraRenderer(nds);
+        }
+    }
+
+    static void debugLogs(melonDS::NDS* nds, int gameScene) {
+        if (CartValidator::isDays()) {
+            KHDaysPlugin::debugLogs(nds, gameScene);
+        }
+        if (CartValidator::isRecoded()) {
+            KHReCodedPlugin::debugLogs(nds, gameScene);
+        }
     }
 };
 }

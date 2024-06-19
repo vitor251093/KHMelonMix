@@ -553,6 +553,8 @@ void EmuThread::run()
                 }
             }
 
+            KHPlugin::extraRenderer(&nds);
+
 #ifdef MELONCAP
             MelonCap::Update();
 #endif // MELONCAP

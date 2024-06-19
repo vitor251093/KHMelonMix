@@ -183,6 +183,10 @@ bool KHReCodedPlugin::shouldSkipFrame(melonDS::NDS* nds)
 
     return false;
 }
+void KHReCodedPlugin::extraRenderer(melonDS::NDS* nds)
+{
+
+}
 
 int KHReCodedPlugin::detectGameScene(melonDS::NDS* nds)
 {
