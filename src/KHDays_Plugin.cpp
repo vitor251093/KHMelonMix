@@ -279,7 +279,7 @@ GLuint KHDaysPlugin::loadImageAsOpenGLTexture(const char* path, int* width, int*
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glTexImage2D(GL_TEXTURE_2D, 0, (*channels == 3) ? GL_RGB : GL_RGBA, *width, *height, 0, 
-                                   (*channels == 3) ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+                                   (*channels == 3) ? GL_BGR : GL_BGRA, GL_UNSIGNED_BYTE, image_data);
 
     // stbi_image_free(image_data);
 
