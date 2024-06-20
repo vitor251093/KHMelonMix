@@ -16,22 +16,22 @@ unsigned char* LoadTextureFromFile(const char* path, bool asDsTexture, int* widt
         return nullptr;
     }
 
-    if (asDsTexture) {
-        if (*channels == 3) {
-            unsigned char* newImageData = (unsigned char*)malloc((*height) * (*width) * (*channels) * sizeof(unsigned char[4]));
-            for (int y = 0; y < (*height); ++y) {
-                for (int x = 0; x < (*width); ++x) {
-                    unsigned char* old_pixel = imageData + (y * (*width) + x) * 3;
-                    unsigned char* new_pixel = newImageData + (y * (*width) + x) * 4;
-                    new_pixel[0] = old_pixel[0];
-                    new_pixel[1] = old_pixel[1];
-                    new_pixel[2] = old_pixel[2];
-                    new_pixel[3] = 255;
-                }
+    if (*channels == 3) {
+        unsigned char* newImageData = (unsigned char*)malloc((*height) * (*width) * (*channels) * sizeof(unsigned char[4]));
+        for (int y = 0; y < (*height); ++y) {
+            for (int x = 0; x < (*width); ++x) {
+                unsigned char* old_pixel = imageData + (y * (*width) + x) * 3;
+                unsigned char* new_pixel = newImageData + (y * (*width) + x) * 4;
+                new_pixel[0] = old_pixel[0];
+                new_pixel[1] = old_pixel[1];
+                new_pixel[2] = old_pixel[2];
+                new_pixel[3] = 255;
             }
-            imageData = newImageData;
-            *channels = 4;
         }
+        imageData = newImageData;
+        *channels = 4;
+    }
+    if (asDsTexture) {
         for (int y = 0; y < (*height); ++y) {
             for (int x = 0; x < (*width); ++x) {
                 unsigned char* pixel = imageData + (y * (*width) + x) * 4;

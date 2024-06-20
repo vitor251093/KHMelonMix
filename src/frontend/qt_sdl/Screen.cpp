@@ -940,8 +940,10 @@ void ScreenPanelGL::drawScreenGL()
         glDrawArrays(GL_TRIANGLES, screenKind[i] == 0 ? 0 : 2*3, 2*3);
     }
 
-    melonDS::NDS& nds = static_cast<melonDS::NDS&>(*emuThread->NDS);
-    KHPlugin::extraRenderer(&nds, w, h);
+    {
+        melonDS::NDS& nds = static_cast<melonDS::NDS&>(*emuThread->NDS);
+        KHPlugin::extraRenderer(&nds, w, h);
+    }
 
     screenSettingsLock.unlock();
 
