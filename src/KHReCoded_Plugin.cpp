@@ -183,7 +183,7 @@ bool KHReCodedPlugin::shouldSkipFrame(melonDS::NDS* nds)
 
     return false;
 }
-void KHReCodedPlugin::extraRenderer(melonDS::NDS* nds)
+void KHReCodedPlugin::extraRenderer(melonDS::NDS* nds, int ScreenW, int ScreenH)
 {
 
 }

@@ -260,7 +260,7 @@ bool KHDaysPlugin::shouldSkipFrame(melonDS::NDS* nds)
 
 GLuint KHDaysPlugin::loadImageAsOpenGLTexture(const char* path, int width, int height, int channels)
 {
-    unsigned char* image_data = Texreplace::LoadTextureFromFile(path, &width, &height, &channels);
+    unsigned char* image_data = Texreplace::LoadTextureFromFile(path, false, &width, &height, &channels);
     if (!image_data)
     {
         return NULL;
@@ -282,25 +282,33 @@ GLuint KHDaysPlugin::loadImageAsOpenGLTexture(const char* path, int width, int h
     return texture_id;
 }
 
-void KHDaysPlugin::extraRenderer(melonDS::NDS* nds)
+void KHDaysPlugin::extraRenderer(melonDS::NDS* nds, int ScreenW, int ScreenH)
 {
-    if (!mainMenuBgImageTextureId)
+    if (GameScene == gameScene_MainMenu)
     {
-        std::filesystem::path currentPath = std::filesystem::current_path();
-        //std::string assetsFolder = KHPlugin::assetsFolder();
-        std::filesystem::path fullPath = currentPath / "res" / "images" / "mainmenu_bg.jpg";
-        const char* path = CharArrayFromFileSystem(fullPath);
+        int mainMenuBgHeight = 1230;
+        int mainMenuBgWidth = 1000;
 
-        mainMenuBgImageTextureId = loadImageAsOpenGLTexture(path, 1000, 1230, 3);
-        if (!mainMenuBgImageTextureId) {
-            printf("\n\nFailed to load main menu background image\n\n");
+        if (!mainMenuBgImageTextureId)
+        {
+            std::filesystem::path currentPath = std::filesystem::current_path();
+            //std::string assetsFolder = KHPlugin::assetsFolder();
+            std::filesystem::path fullPath = currentPath / "res" / "images" / "mainmenu_bg.jpg";
+            const char* path = CharArrayFromFileSystem(fullPath);
+
+            mainMenuBgImageTextureId = loadImageAsOpenGLTexture(path, mainMenuBgWidth, mainMenuBgHeight, 3);
+            if (!mainMenuBgImageTextureId) {
+                printf("\n\nFailed to load main menu background image\n\n");
+            }
         }
+
+        glBindTexture(GL_TEXTURE_2D, mainMenuBgImageTextureId);
+
+        int mainMenuBgRealWidth = (mainMenuBgWidth*ScreenH)/mainMenuBgHeight;
+        glViewport(ScreenW - mainMenuBgRealWidth, 0, mainMenuBgRealWidth, ScreenH);
+        // glDrawArrays(GL_TRIANGLE_STRIP, 0, 2*3);
+        glDrawArrays(GL_TRIANGLES, 0, 4*3);
     }
-
-    glBindTexture(GL_TEXTURE_2D, mainMenuBgImageTextureId);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 2*3);
-    // glDrawArrays(GL_TRIANGLES, 0, 4*3);
 }
 
 int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)

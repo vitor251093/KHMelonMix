@@ -16,7 +16,7 @@ public:
     static bool setGameScene(melonDS::NDS* nds, int newGameScene);
 
     static bool shouldSkipFrame(melonDS::NDS* nds);
-    static void extraRenderer(melonDS::NDS* nds);
+    static void extraRenderer(melonDS::NDS* nds, int ScreenW, int ScreenH);
 
     static void debugLogs(melonDS::NDS* nds, int gameScene);
 private:

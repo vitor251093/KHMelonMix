@@ -67,12 +67,12 @@ public:
         }
         return false;
     }
-    static void extraRenderer(melonDS::NDS* nds) {
+    static void extraRenderer(melonDS::NDS* nds, int ScreenW, int ScreenH) {
         if (CartValidator::isDays()) {
-            KHDaysPlugin::extraRenderer(nds);
+            KHDaysPlugin::extraRenderer(nds, ScreenW, ScreenH);
         }
         if (CartValidator::isRecoded()) {
-            KHReCodedPlugin::extraRenderer(nds);
+            KHReCodedPlugin::extraRenderer(nds, ScreenW, ScreenH);
         }
     }
 

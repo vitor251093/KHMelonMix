@@ -54,6 +54,8 @@
 #include "OSD_shaders.h"
 #include "font.h"
 
+#include "KH_Plugin.h"
+
 using namespace melonDS;
 
 
@@ -937,6 +939,9 @@ void ScreenPanelGL::drawScreenGL()
         glUniformMatrix2x3fv(screenShaderTransformULoc, 1, GL_TRUE, screenMatrix[i]);
         glDrawArrays(GL_TRIANGLES, screenKind[i] == 0 ? 0 : 2*3, 2*3);
     }
+
+    melonDS::NDS& nds = static_cast<melonDS::NDS&>(*emuThread->NDS);
+    KHPlugin::extraRenderer(&nds, w, h);
 
     screenSettingsLock.unlock();
 
