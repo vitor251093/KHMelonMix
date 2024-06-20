@@ -37,13 +37,16 @@ private:
     static bool _hasVisible3DOnBottomScreen;
 
     static GLuint mainMenuBgImageTextureId;
+    static int mainMenuBgImageHeight;
+    static int mainMenuBgImageWidth;
+    static int mainMenuBgImageChannels;
 
     static bool isBufferBlack(unsigned int* buffer);
     static bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
     static bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
     static void hudRefresh(melonDS::NDS* nds);
 
-    static GLuint loadImageAsOpenGLTexture(const char* path, int width, int height, int channels);
+    static GLuint loadImageAsOpenGLTexture(const char* path, int* width, int* height, int* channels);
 };
 }
 

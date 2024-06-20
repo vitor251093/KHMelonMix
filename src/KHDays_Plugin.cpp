@@ -36,6 +36,9 @@ bool KHDaysPlugin::_had3DOnBottomScreen = false;
 bool KHDaysPlugin::_hasVisible3DOnBottomScreen = false;
 
 GLuint KHDaysPlugin::mainMenuBgImageTextureId = 0;
+int KHDaysPlugin::mainMenuBgImageHeight = 0;
+int KHDaysPlugin::mainMenuBgImageWidth = 0;
+int KHDaysPlugin::mainMenuBgImageChannels = 0;
 
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
@@ -258,9 +261,9 @@ bool KHDaysPlugin::shouldSkipFrame(melonDS::NDS* nds)
     return false;
 }
 
-GLuint KHDaysPlugin::loadImageAsOpenGLTexture(const char* path, int width, int height, int channels)
+GLuint KHDaysPlugin::loadImageAsOpenGLTexture(const char* path, int* width, int* height, int* channels)
 {
-    unsigned char* image_data = Texreplace::LoadTextureFromFile(path, false, &width, &height, &channels);
+    unsigned char* image_data = Texreplace::LoadTextureFromFile(path, false, width, height, channels);
     if (!image_data)
     {
         return NULL;
@@ -275,7 +278,8 @@ GLuint KHDaysPlugin::loadImageAsOpenGLTexture(const char* path, int width, int h
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+    glTexImage2D(GL_TEXTURE_2D, 0, (*channels == 3) ? GL_RGB : GL_RGBA, *width, *height, 0, 
+                                   (*channels == 3) ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, image_data);
 
     // stbi_image_free(image_data);
 
@@ -286,9 +290,6 @@ void KHDaysPlugin::extraRenderer(melonDS::NDS* nds, int ScreenW, int ScreenH)
 {
     if (GameScene == gameScene_MainMenu)
     {
-        int mainMenuBgHeight = 1230;
-        int mainMenuBgWidth = 1000;
-
         if (!mainMenuBgImageTextureId)
         {
             std::filesystem::path currentPath = std::filesystem::current_path();
@@ -296,7 +297,7 @@ void KHDaysPlugin::extraRenderer(melonDS::NDS* nds, int ScreenW, int ScreenH)
             std::filesystem::path fullPath = currentPath / "res" / "images" / "mainmenu_bg.jpg";
             const char* path = CharArrayFromFileSystem(fullPath);
 
-            mainMenuBgImageTextureId = loadImageAsOpenGLTexture(path, mainMenuBgWidth, mainMenuBgHeight, 3);
+            mainMenuBgImageTextureId = loadImageAsOpenGLTexture(path, &mainMenuBgImageWidth, &mainMenuBgImageHeight, &mainMenuBgImageChannels);
             if (!mainMenuBgImageTextureId) {
                 printf("\n\nFailed to load main menu background image\n\n");
             }
@@ -304,9 +305,8 @@ void KHDaysPlugin::extraRenderer(melonDS::NDS* nds, int ScreenW, int ScreenH)
 
         glBindTexture(GL_TEXTURE_2D, mainMenuBgImageTextureId);
 
-        int mainMenuBgRealWidth = (mainMenuBgWidth*ScreenH)/mainMenuBgHeight;
+        int mainMenuBgRealWidth = (mainMenuBgImageWidth*ScreenH)/mainMenuBgImageHeight;
         glViewport(ScreenW - mainMenuBgRealWidth, 0, mainMenuBgRealWidth, ScreenH);
-        // glDrawArrays(GL_TRIANGLE_STRIP, 0, 2*3);
         glDrawArrays(GL_TRIANGLES, 0, 4*3);
     }
 }
