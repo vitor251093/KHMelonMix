@@ -40,6 +40,11 @@ int KHDaysPlugin::mainMenuBgImageHeight = 0;
 int KHDaysPlugin::mainMenuBgImageWidth = 0;
 int KHDaysPlugin::mainMenuBgImageChannels = 0;
 
+GLuint KHDaysPlugin::mainMenuHeartImageTextureId = 0;
+int KHDaysPlugin::mainMenuHeartImageHeight = 0;
+int KHDaysPlugin::mainMenuHeartImageWidth = 0;
+int KHDaysPlugin::mainMenuHeartImageChannels = 0;
+
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -300,15 +305,41 @@ void KHDaysPlugin::extraRenderer(melonDS::NDS* nds, int ScreenW, int ScreenH)
                 printf("\n\nFailed to load main menu background image\n\n");
             }
         }
+        if (!mainMenuHeartImageTextureId)
+        {
+            std::filesystem::path currentPath = std::filesystem::current_path();
+            //std::string assetsFolder = KHPlugin::assetsFolder();
+            std::filesystem::path fullPath = currentPath / "res" / "images" / "logo-no-days-3.png";
+            const char* path = CharArrayFromFileSystem(fullPath);
+
+            mainMenuHeartImageTextureId = loadImageAsOpenGLTexture(path, &mainMenuHeartImageWidth, &mainMenuHeartImageHeight, &mainMenuHeartImageChannels);
+            if (!mainMenuHeartImageTextureId) {
+                printf("\n\nFailed to load main menu heart image\n\n");
+            }
+        }
+
+        glBindTexture(GL_TEXTURE_2D, mainMenuHeartImageTextureId);
+
+        int mainMenuHeartRealHeight = (ScreenH*2)/3;
+        int mainMenuHeartRealWidth = (mainMenuHeartImageWidth*mainMenuHeartRealHeight)/mainMenuHeartImageHeight;
+        int mainMenuHeartRealX = ScreenH/25;
+
+        glViewport(mainMenuHeartRealX, ScreenH - mainMenuHeartRealHeight, mainMenuHeartRealWidth, mainMenuHeartRealHeight/2);
+        glDrawArrays(GL_TRIANGLES, 0, 4*3);
+
+        glViewport(mainMenuHeartRealX, ScreenH - mainMenuHeartRealHeight + mainMenuHeartRealHeight/2, mainMenuHeartRealWidth, mainMenuHeartRealHeight/2);
+        glDrawArrays(GL_TRIANGLES, 0, 2*3);
+
 
         glBindTexture(GL_TEXTURE_2D, mainMenuBgImageTextureId);
 
-        int mainMenuBgRealWidth = (mainMenuBgImageWidth*ScreenH)/mainMenuBgImageHeight;
+        int mainMenuBgRealHeight = ScreenH;
+        int mainMenuBgRealWidth = (mainMenuBgImageWidth*mainMenuBgRealHeight)/mainMenuBgImageHeight;
 
-        glViewport(ScreenW - mainMenuBgRealWidth, 0, mainMenuBgRealWidth, ScreenH/2);
+        glViewport(ScreenW - mainMenuBgRealWidth, 0, mainMenuBgRealWidth, mainMenuBgRealHeight/2);
         glDrawArrays(GL_TRIANGLES, 0, 4*3);
 
-        glViewport(ScreenW - mainMenuBgRealWidth, ScreenH/2, mainMenuBgRealWidth, ScreenH/2);
+        glViewport(ScreenW - mainMenuBgRealWidth, mainMenuBgRealHeight/2, mainMenuBgRealWidth, mainMenuBgRealHeight/2);
         glDrawArrays(GL_TRIANGLES, 0, 2*3);
     }
 }

@@ -41,6 +41,11 @@ private:
     static int mainMenuBgImageWidth;
     static int mainMenuBgImageChannels;
 
+    static GLuint mainMenuHeartImageTextureId;
+    static int mainMenuHeartImageHeight;
+    static int mainMenuHeartImageWidth;
+    static int mainMenuHeartImageChannels;
+
     static bool isBufferBlack(unsigned int* buffer);
     static bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
     static bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
