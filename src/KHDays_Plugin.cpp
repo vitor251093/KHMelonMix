@@ -281,8 +281,6 @@ GLuint KHDaysPlugin::loadImageAsOpenGLTexture(const char* path, int* width, int*
     glTexImage2D(GL_TEXTURE_2D, 0, (*channels == 3) ? GL_RGB : GL_RGBA, *width, *height, 0, 
                                    (*channels == 3) ? GL_BGR : GL_BGRA, GL_UNSIGNED_BYTE, image_data);
 
-    // stbi_image_free(image_data);
-
     return texture_id;
 }
 
@@ -306,8 +304,12 @@ void KHDaysPlugin::extraRenderer(melonDS::NDS* nds, int ScreenW, int ScreenH)
         glBindTexture(GL_TEXTURE_2D, mainMenuBgImageTextureId);
 
         int mainMenuBgRealWidth = (mainMenuBgImageWidth*ScreenH)/mainMenuBgImageHeight;
-        glViewport(ScreenW - mainMenuBgRealWidth, 0, mainMenuBgRealWidth, ScreenH);
+
+        glViewport(ScreenW - mainMenuBgRealWidth, 0, mainMenuBgRealWidth, ScreenH/2);
         glDrawArrays(GL_TRIANGLES, 0, 4*3);
+
+        glViewport(ScreenW - mainMenuBgRealWidth, ScreenH/2, mainMenuBgRealWidth, ScreenH/2);
+        glDrawArrays(GL_TRIANGLES, 0, 2*3);
     }
 }
 
