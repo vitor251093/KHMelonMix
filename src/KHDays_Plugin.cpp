@@ -10,6 +10,8 @@ using namespace melonDS;
 
 extern int videoRenderer;
 
+bool KHDaysPlugin::isDebugEnabled = false;
+
 int KHDaysPlugin::GameScene = -1;
 int KHDaysPlugin::priorGameScene = -1;
 int KHDaysPlugin::HUDState = 0;
@@ -159,9 +161,9 @@ void KHDaysPlugin::hudToggle(melonDS::NDS* nds)
     hudRefresh(nds);
 }
 
-const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
+const char* KHDaysPlugin::getGameSceneName()
 {
-    switch (newGameScene) {
+    switch (GameScene) {
         case gameScene_Intro: return "Game scene: Intro";
         case gameScene_MainMenu: return "Game scene: Main menu";
         case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
@@ -622,6 +624,17 @@ bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
     hudRefresh(nds);
 
     return updated;
+}
+
+bool KHDaysPlugin::refreshGameScene(melonDS::NDS* nds)
+{
+    int newGameScene = detectGameScene(nds);
+
+    if (isDebugEnabled) {
+        debugLogs(nds, newGameScene);
+    }
+
+    return setGameScene(nds, newGameScene);
 }
 
 void KHDaysPlugin::debugLogs(melonDS::NDS* nds, int gameScene)

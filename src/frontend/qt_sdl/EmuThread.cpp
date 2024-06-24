@@ -695,20 +695,12 @@ void EmuThread::run()
 
 void EmuThread::refreshGameScene()
 {
-    bool enableDebug = false;
-
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
-    int newGameScene = KHPlugin::detectGameScene(&nds);
-
-    if (enableDebug) {
-        KHPlugin::debugLogs(&nds, newGameScene);
-    }
-
-    bool updated = KHPlugin::setGameScene(&nds, newGameScene);
-    if (updated && enableDebug)
+    bool updated = KHPlugin::refreshGameScene(&nds);
+    if (updated && KHPlugin::isDebugEnabled())
     {
-        mainWindow->osdAddMessage(0, KHPlugin::getNameByGameScene(newGameScene));
+        mainWindow->osdAddMessage(0, KHPlugin::getGameSceneName());
     }
 
     float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;

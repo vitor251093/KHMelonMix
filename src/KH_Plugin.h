@@ -15,6 +15,16 @@ namespace melonDS
 class KHPlugin
 {
 public:
+    static bool isDebugEnabled() {
+        if (CartValidator::isDays()) {
+            return KHDaysPlugin::isDebugEnabled;
+        }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::isDebugEnabled;
+        }
+        return false;
+    }
+
     static u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask) {
         if (CartValidator::isDays()) {
             return KHDaysPlugin::applyCommandMenuInputMask(nds, InputMask, CmdMenuInputMask, PriorCmdMenuInputMask);
@@ -32,12 +42,12 @@ public:
             return KHReCodedPlugin::hudToggle(nds);
         }
     }
-    static const char* getNameByGameScene(int newGameScene) {
+    static const char* getGameSceneName() {
         if (CartValidator::isDays()) {
-            return KHDaysPlugin::getNameByGameScene(newGameScene);
+            return KHDaysPlugin::getGameSceneName();
         }
         if (CartValidator::isRecoded()) {
-            return KHReCodedPlugin::getNameByGameScene(newGameScene);
+            return KHReCodedPlugin::getGameSceneName();
         }
         return "";
     }
@@ -50,14 +60,14 @@ public:
         }
         return false;
     }
-    static int detectGameScene(melonDS::NDS* nds) {
+    static bool refreshGameScene(melonDS::NDS* nds) {
         if (CartValidator::isDays()) {
-            return KHDaysPlugin::detectGameScene(nds);
+            return KHDaysPlugin::refreshGameScene(nds);
         }
         if (CartValidator::isRecoded()) {
-            return KHReCodedPlugin::detectGameScene(nds);
+            return KHReCodedPlugin::refreshGameScene(nds);
         }
-        return -1;
+        return false;
     }
     static void setAspectRatio(melonDS::NDS* nds, float aspectRatio) {
         if (CartValidator::isDays()) {
@@ -66,15 +76,6 @@ public:
         if (CartValidator::isRecoded()) {
             return KHReCodedPlugin::setAspectRatio(nds, aspectRatio);
         }
-    }
-    static bool setGameScene(melonDS::NDS* nds, int newGameScene) {
-        if (CartValidator::isDays()) {
-            return KHDaysPlugin::setGameScene(nds, newGameScene);
-        }
-        if (CartValidator::isRecoded()) {
-            return KHReCodedPlugin::setGameScene(nds, newGameScene);
-        }
-        return false;
     }
     static void debugLogs(melonDS::NDS* nds, int gameScene) {
         if (CartValidator::isDays()) {

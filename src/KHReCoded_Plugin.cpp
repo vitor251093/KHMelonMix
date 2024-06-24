@@ -10,6 +10,8 @@ using namespace melonDS;
 
 extern int videoRenderer;
 
+bool KHReCodedPlugin::isDebugEnabled = false;
+
 int KHReCodedPlugin::GameScene = -1;
 int KHReCodedPlugin::priorGameScene = -1;
 bool KHReCodedPlugin::ShowMap = true;
@@ -114,9 +116,9 @@ void KHReCodedPlugin::hudToggle(melonDS::NDS* nds)
     hudRefresh(nds);
 }
 
-const char* KHReCodedPlugin::getNameByGameScene(int newGameScene)
+const char* KHReCodedPlugin::getGameSceneName()
 {
-    switch (newGameScene) {
+    switch (GameScene) {
         case gameScene_Intro: return "Game scene: Intro";
         case gameScene_MainMenu: return "Game scene: Main menu";
         case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
@@ -478,6 +480,17 @@ bool KHReCodedPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
     hudRefresh(nds);
 
     return updated;
+}
+
+bool KHReCodedPlugin::refreshGameScene(melonDS::NDS* nds)
+{
+    int newGameScene = detectGameScene(nds);
+
+    if (isDebugEnabled) {
+        debugLogs(nds, newGameScene);
+    }
+
+    return setGameScene(nds, newGameScene);
 }
 
 void KHReCodedPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
