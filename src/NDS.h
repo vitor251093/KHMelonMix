@@ -209,8 +209,7 @@ enum
 // supported GBA slot addon types
 enum
 {
-    GBAAddon_RAMExpansion = 1,
-    GBAAddon_AnalogStick = 2
+    GBAAddon_RAMExpansion = 1
 };
 
 class SPU;
