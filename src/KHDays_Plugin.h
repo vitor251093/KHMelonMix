@@ -13,6 +13,7 @@ public:
     static const char* getNameByGameScene(int newGameScene);
     static bool shouldSkipFrame(melonDS::NDS* nds);
     static int detectGameScene(melonDS::NDS* nds);
+    static void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
     static bool setGameScene(melonDS::NDS* nds, int newGameScene);
     static void debugLogs(melonDS::NDS* nds, int gameScene);
 private:

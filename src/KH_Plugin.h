@@ -6,6 +6,9 @@
 #include "CartValidator.h"
 #include "NDS.h"
 
+// References for cheat codes
+// https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf
+
 namespace melonDS
 {
 
@@ -55,6 +58,14 @@ public:
             return KHReCodedPlugin::detectGameScene(nds);
         }
         return -1;
+    }
+    static void setAspectRatio(melonDS::NDS* nds, float aspectRatio) {
+        if (CartValidator::isDays()) {
+            return KHDaysPlugin::setAspectRatio(nds, aspectRatio);
+        }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::setAspectRatio(nds, aspectRatio);
+        }
     }
     static bool setGameScene(melonDS::NDS* nds, int newGameScene) {
         if (CartValidator::isDays()) {

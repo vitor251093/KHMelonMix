@@ -710,6 +710,17 @@ void EmuThread::refreshGameScene()
     {
         mainWindow->osdAddMessage(0, KHPlugin::getNameByGameScene(newGameScene));
     }
+
+    float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
+    for (auto ratio : aspectRatios)
+    {
+        if (ratio.id == Config::ScreenAspectTop)
+            aspectTop = ratio.ratio * 4.0/3;
+    }
+    if (aspectTop == 0) {
+        aspectTop = 16.0 / 9;
+    }
+    KHPlugin::setAspectRatio(&nds, aspectTop);
 }
 
 void EmuThread::changeWindowTitle(char* title)

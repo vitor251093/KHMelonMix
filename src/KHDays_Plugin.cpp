@@ -24,6 +24,16 @@ bool KHDaysPlugin::_had3DOnBottomScreen = false;
 
 bool KHDaysPlugin::_hasVisible3DOnBottomScreen = false;
 
+#define ASPECT_RATIO_ADDRESS_US      0x02023C9C
+#define ASPECT_RATIO_ADDRESS_EU      0x02023CBC
+#define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
+#define ASPECT_RATIO_ADDRESS_JP_DEV1 0x02023C9C
+
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
+
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -31,23 +41,23 @@ bool KHDaysPlugin::_hasVisible3DOnBottomScreen = false;
 
 enum
 {
-    gameScene_Intro,              // 0
-    gameScene_MainMenu,           // 1
-    gameScene_IntroLoadMenu,      // 2
-    gameScene_DayCounter,         // 3
-    gameScene_Cutscene,           // 4
-    gameScene_InGameWithMap,      // 5
-    gameScene_InGameWithoutMap,   // 6
-    gameScene_InGameMenu,         // 7
-    gameScene_InGameSaveMenu,     // 8
-    gameScene_InHoloMissionMenu,  // 9
-    gameScene_PauseMenu,          // 10
-    gameScene_Tutorial,           // 11
-    gameScene_InGameWithCutscene, // 12
+    gameScene_Intro,                    // 0
+    gameScene_MainMenu,                 // 1
+    gameScene_IntroLoadMenu,            // 2
+    gameScene_DayCounter,               // 3
+    gameScene_Cutscene,                 // 4
+    gameScene_InGameWithMap,            // 5
+    gameScene_InGameWithoutMap,         // 6
+    gameScene_InGameMenu,               // 7
+    gameScene_InGameSaveMenu,           // 8
+    gameScene_InHoloMissionMenu,        // 9
+    gameScene_PauseMenu,                // 10
+    gameScene_Tutorial,                 // 11
+    gameScene_InGameWithCutscene,       // 12
     gameScene_MultiplayerMissionReview, // 13
-    gameScene_Shop,               // 14
-    gameScene_Other2D,            // 15
-    gameScene_Other               // 16
+    gameScene_Shop,                     // 14
+    gameScene_Other2D,                  // 15
+    gameScene_Other                     // 16
 };
 
 u32 KHDaysPlugin::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
@@ -57,14 +67,14 @@ u32 KHDaysPlugin::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u3
         if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) { // D-pad
             u32 dpadMenuAddress = 0;
             if (CartValidator::isUsaCart()) {
-                dpadMenuAddress = 0x02194CC3;
+                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US;
             }
             if (CartValidator::isEuropeCart()) {
-                dpadMenuAddress = 0x02195AA3;
+                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU;
             }
             if (CartValidator::isJapanCart()) {
-                dpadMenuAddress = 0x02193E23;
-                // TODO: Add support to Rev1 (0x02193DA3)
+                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP;
+                // TODO: Add support to Rev1 (INGAME_MENU_COMMAND_LIST_SETTIGS_ADDRESS_JP_REV1)
             }
 
             if (nds->ARM7Read8(dpadMenuAddress) & 0x02) {
@@ -548,6 +558,27 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     
     // Unknown
     return gameScene_Other;
+}
+
+void KHDaysPlugin::setAspectRatio(melonDS::NDS* nds, float aspectRatio)
+{
+    int aspectRatioKey = (int)round(0x1000 * aspectRatio);
+
+    u32 aspectRatioMenuAddress = 0;
+    if (CartValidator::isUsaCart()) {
+        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_US;
+    }
+    if (CartValidator::isEuropeCart()) {
+        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_EU;
+    }
+    if (CartValidator::isJapanCart()) {
+        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP;
+        // TODO: Add support to Rev1 (ASPECT_RATIO_ADDRESS_JP_REV1)
+    }
+
+    if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
+        nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
+    }
 }
 
 bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
