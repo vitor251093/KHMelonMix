@@ -2,6 +2,7 @@
 
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
+#include "CartValidator.h"
 
 #include <math.h>
 
@@ -27,6 +28,9 @@ bool KHReCodedPlugin::_had3DOnBottomScreen = false;
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
 #define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
+
+#define renderer3D_OpenGL        1
+#define renderer3D_OpenGLCompute 2
 
 enum
 {
@@ -94,10 +98,10 @@ void KHReCodedPlugin::hudRefresh(melonDS::NDS* nds)
 {
     switch (videoRenderer)
     {
-        case 1:
+        case renderer3D_OpenGL:
             static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
             break;
-        case 2:
+        case renderer3D_OpenGLCompute:
             static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
             break;
         default: break;
@@ -175,11 +179,11 @@ bool KHReCodedPlugin::shouldSkipFrame(melonDS::NDS* nds)
 
     switch (videoRenderer)
     {
-        case 1:
+        case renderer3D_OpenGL:
             static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
             static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
             break;
-        case 2:
+        case renderer3D_OpenGLCompute:
             static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
             static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
             break;
@@ -434,6 +438,17 @@ void KHReCodedPlugin::setAspectRatio(melonDS::NDS* nds, float aspectRatio)
     if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
         nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
     }
+
+    switch (videoRenderer)
+    {
+        case renderer3D_OpenGL:
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetAspectRatio(aspectRatio / (4.f / 3.f));
+            break;
+        case renderer3D_OpenGLCompute:
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetAspectRatio(aspectRatio / (4.f / 3.f));
+            break;
+        default: break;
+    }
 }
 
 bool KHReCodedPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
@@ -451,10 +466,10 @@ bool KHReCodedPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
     // Updating GameScene inside shader
     switch (videoRenderer)
     {
-        case 1:
+        case renderer3D_OpenGL:
             static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
             break;
-        case 2:
+        case renderer3D_OpenGLCompute:
             static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
             break;
         default: break;

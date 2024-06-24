@@ -124,19 +124,6 @@ void ScreenPanel::setupScreenLayout()
 
     Config::WindowHeight = h;
     Config::WindowWidth = w;
-
-    if (emuThread != nullptr && emuThread->NDS != nullptr) {
-        switch (videoRenderer)
-        {
-            case renderer3D_OpenGL:
-                static_cast<GLRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).SetAspectRatio(aspectTop);
-                break;
-            case renderer3D_OpenGLCompute:
-                static_cast<ComputeRenderer&>(emuThread->NDS->GPU.GetRenderer3D()).SetAspectRatio(aspectTop);
-                break;
-            default: break;
-        }
-    }
 }
 
 QSize ScreenPanel::screenGetMinSize(int factor = 1)
