@@ -38,6 +38,10 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake --build .
+    
+    - name: Preparing artifacts
+      working-directory: ${{runner.workspace}}/build
+      run: |
         mv melonDS.exe MelonMix.exe
         echo "MelonMix.exe roms/days.nds"    > ./MelonMix_KHDays.bat
         echo "MelonMix.exe roms/recoded.nds" > ./MelonMix_KHReCoded.bat
