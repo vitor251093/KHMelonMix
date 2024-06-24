@@ -39,8 +39,8 @@ jobs:
       run: |
         cmake --build .
         mv melonDS.exe MelonMix.exe
-        echo "MelonMix.exe roms/days.nds"    > MelonMix_KHDays.bat
-        echo "MelonMix.exe roms/recoded.nds" > MelonMix_KHReCoded.bat
+        echo "MelonMix.exe roms/days.nds"    > ./MelonMix_KHDays.bat
+        echo "MelonMix.exe roms/recoded.nds" > ./MelonMix_KHReCoded.bat
 
     - uses: actions/upload-artifact@v1
       with:
