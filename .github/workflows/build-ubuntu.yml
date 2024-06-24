@@ -31,8 +31,8 @@ jobs:
         mv AppDir/usr/bin/melonDS AppDir/usr/bin/MelonMix
     - name: Preparing artifacts (ubuntu-x86_64)
       run: |
-        echo "#!/bin/bash\n./MelonMix roms/days.nds"    > ./MelonMix_KHDays.sh
-        echo "#!/bin/bash\n./MelonMix roms/recoded.nds" > ./MelonMix_KHReCoded.sh
+        echo -ne "#!/bin/bash\n./MelonMix roms/days.nds"    > ./MelonMix_KHDays.sh
+        echo -ne "#!/bin/bash\n./MelonMix roms/recoded.nds" > ./MelonMix_KHReCoded.sh
         chmod +x ./MelonMix_KHDays.sh
         chmod +x ./MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
@@ -55,8 +55,8 @@ jobs:
     - name: Preparing artifacts (appimage-x86_64)
       run: |
         mv khDaysMM*.AppImage MelonMix.AppImage
-        echo "#!/bin/bash\n./MelonMix.AppImage roms/days.nds"    > ./MelonMix_KHDays.sh
-        echo "#!/bin/bash\n./MelonMix.AppImage roms/recoded.nds" > ./MelonMix_KHReCoded.sh
+        echo -ne "#!/bin/bash\n./MelonMix.AppImage roms/days.nds"    > ./MelonMix_KHDays.sh
+        echo -ne "#!/bin/bash\n./MelonMix.AppImage roms/recoded.nds" > ./MelonMix_KHReCoded.sh
         chmod +x ./MelonMix_KHDays.sh
         chmod +x ./MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
@@ -100,8 +100,8 @@ jobs:
         run: |
           cmake --build build
           mv build/melonDS build/MelonMix
-          echo "#!/bin/bash\n./MelonMix roms/days.nds"    > build/MelonMix_KHDays.sh
-          echo "#!/bin/bash\n./MelonMix roms/recoded.nds" > build/MelonMix_KHReCoded.sh
+          echo -ne "#!/bin/bash\n./MelonMix roms/days.nds"    > build/MelonMix_KHDays.sh
+          echo -ne "#!/bin/bash\n./MelonMix roms/recoded.nds" > build/MelonMix_KHReCoded.sh
           chmod +x build/MelonMix_KHDays.sh
           chmod +x build/MelonMix_KHReCoded.sh
       - uses: actions/upload-artifact@v4
