@@ -1606,7 +1606,7 @@ std::unique_ptr<CartCommon> ParseROM(std::unique_ptr<u8[]>&& romdata, u32 romlen
     CartValidator::load(gamecode);
     Log(LogLevel::Info, "Game code: %u\n", gamecode);
     if (!CartValidator::isValid()) {
-        return nullptr;
+        Log(LogLevel::Warn, "No Melon Mix plugin available for this ROM.\n");
     }
 
     u32 arm9base = header.ARM9ROMOffset;
