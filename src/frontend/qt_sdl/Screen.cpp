@@ -46,7 +46,6 @@
 #include "GPU.h"
 #include "GPU3D_Soft.h"
 #include "GPU3D_OpenGL.h"
-#include "GPU3D_Compute.h"
 #include "Platform.h"
 #include "Config.h"
 
