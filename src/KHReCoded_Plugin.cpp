@@ -2,6 +2,7 @@
 
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
+#include "CartValidator.h"
 
 #include <math.h>
 
