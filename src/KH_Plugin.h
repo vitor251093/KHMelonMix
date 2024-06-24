@@ -77,14 +77,6 @@ public:
             return KHReCodedPlugin::setAspectRatio(nds, aspectRatio);
         }
     }
-    static void debugLogs(melonDS::NDS* nds, int gameScene) {
-        if (CartValidator::isDays()) {
-            KHDaysPlugin::debugLogs(nds, gameScene);
-        }
-        if (CartValidator::isRecoded()) {
-            KHReCodedPlugin::debugLogs(nds, gameScene);
-        }
-    }
 };
 }
 
