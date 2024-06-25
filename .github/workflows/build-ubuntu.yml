@@ -54,7 +54,7 @@ jobs:
         ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt --output appimage
     - name: Preparing artifacts (appimage-x86_64)
       run: |
-        mv khDaysMM*.AppImage MelonMix.AppImage
+        mv MelonMix*.AppImage MelonMix.AppImage
         echo -ne "#!/bin/bash\n./MelonMix.AppImage roms/days.nds"    > ./MelonMix_KHDays.sh
         echo -ne "#!/bin/bash\n./MelonMix.AppImage roms/recoded.nds" > ./MelonMix_KHReCoded.sh
         chmod +x ./MelonMix_KHDays.sh
