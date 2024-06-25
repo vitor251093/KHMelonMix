@@ -381,7 +381,7 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         {
             return gameScene_DayCounter;
         }
-        if (GameScene != gameScene_Intro)
+        if (GameScene != gameScene_Intro && has3DOnTopScreen)
         {
             if (nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1)
             {
