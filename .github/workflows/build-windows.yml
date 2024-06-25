@@ -45,8 +45,6 @@ jobs:
         mv melonDS.exe ./MelonMix.exe
         echo "MelonMix.exe roms/days.nds"    > ./MelonMix_KHDays.bat
         echo "MelonMix.exe roms/recoded.nds" > ./MelonMix_KHReCoded.bat
-        pwd
-        ls
 
     - uses: actions/upload-artifact@v4
       with:
