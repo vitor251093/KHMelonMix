@@ -52,6 +52,6 @@ jobs:
       with:
         name: MelonMix-windows-x86_64
         path: |
-          ${{runner.workspace}}\build\MelonMix.exe
-          ${{runner.workspace}}\build\MelonMix_KHDays.bat
-          ${{runner.workspace}}\build\MelonMix_KHReCoded.bat
+          ${{runner.workspace}}/build/MelonMix.exe
+          ${{runner.workspace}}/build/MelonMix_KHDays.bat
+          ${{runner.workspace}}/build/MelonMix_KHReCoded.bat
