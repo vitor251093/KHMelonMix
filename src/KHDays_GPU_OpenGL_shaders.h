@@ -1051,6 +1051,9 @@ ivec4 brightness()
         }
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
+    if (KHGameScene == 10) { // gameScene_PauseMenu
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+    }
     if (KHGameScene == 11) { // gameScene_Tutorial
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     }
