@@ -58,7 +58,7 @@ void main()
         float heartHeight = (192.0*u3DScale)/2.5;
         if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.500)*fpos.w &&
             fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.666)*fpos.w &&
-            fpos.z < -0.75*fpos.w) {
+            fpos.z < -0.95*fpos.w) {
             fpos.x = (0 - 1.0)*fpos.w;
             fpos.y = (0 - 1.0)*fpos.w;
         }
