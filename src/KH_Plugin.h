@@ -84,7 +84,7 @@ public:
         if (CartValidator::isRecoded()) {
             return "recoded";
         }
-        return "other";
+        return std::to_string(CartValidator::get());
     }
 };
 }

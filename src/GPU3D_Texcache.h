@@ -255,13 +255,16 @@ public:
             oss << palBase;
             std::string uniqueIdentifier2 = oss.str();
             
-            std::filesystem::path currentPath = std::filesystem::current_path();
-            std::string assetsFolder = KHPlugin::assetsFolder();
             std::string filename = uniqueIdentifier + ".png";
             std::string filename2 = uniqueIdentifier2 + ".png";
-            std::filesystem::path fullPath = currentPath / "assets" / assetsFolder / "textures" / filename;
-            std::filesystem::path fullPath2 = currentPath / "assets" / assetsFolder / "textures" / filename2;
-            std::filesystem::path fullPathTmp = currentPath / "assets" / assetsFolder / "textures_tmp" / filename2;
+
+            std::string assetsFolder = KHPlugin::assetsFolder();
+            std::filesystem::path currentPath = std::filesystem::current_path();
+            std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolder;
+            std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";
+            std::filesystem::path fullPath = assetsFolderPath / "textures" / filename;
+            std::filesystem::path fullPath2 = assetsFolderPath / "textures" / filename2;
+            std::filesystem::path fullPathTmp = tmpFolderPath / filename2;
 #ifdef _WIN32
             const char* path = fullPath.string().c_str();
             const char* path2 = fullPath2.string().c_str();
@@ -271,6 +274,13 @@ public:
             const char* path2 = fullPath2.c_str();
             const char* pathTmp = fullPathTmp.c_str();
 #endif
+
+            if (!std::filesystem::exists(assetsFolderPath)) {
+                std::filesystem::create_directory(assetsFolderPath);
+            }
+            if (!std::filesystem::exists(tmpFolderPath)) {
+                std::filesystem::create_directory(tmpFolderPath);
+            }
 
             int channels = 4;
             int r_width, r_height, r_channels;
