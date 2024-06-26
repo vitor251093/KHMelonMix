@@ -6,12 +6,25 @@
 #include "CartValidator.h"
 #include "NDS.h"
 
+// References for cheat codes
+// https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf
+
 namespace melonDS
 {
 
 class KHPlugin
 {
 public:
+    static bool isDebugEnabled() {
+        if (CartValidator::isDays()) {
+            return KHDaysPlugin::isDebugEnabled;
+        }
+        if (CartValidator::isRecoded()) {
+            return KHReCodedPlugin::isDebugEnabled;
+        }
+        return false;
+    }
+
     static u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask) {
         if (CartValidator::isDays()) {
             return KHDaysPlugin::applyCommandMenuInputMask(nds, InputMask, CmdMenuInputMask, PriorCmdMenuInputMask);
@@ -29,12 +42,12 @@ public:
             return KHReCodedPlugin::hudToggle(nds);
         }
     }
-    static const char* getNameByGameScene(int newGameScene) {
+    static const char* getGameSceneName() {
         if (CartValidator::isDays()) {
-            return KHDaysPlugin::getNameByGameScene(newGameScene);
+            return KHDaysPlugin::getGameSceneName();
         }
         if (CartValidator::isRecoded()) {
-            return KHReCodedPlugin::getNameByGameScene(newGameScene);
+            return KHReCodedPlugin::getGameSceneName();
         }
         return "";
     }
@@ -47,30 +60,21 @@ public:
         }
         return false;
     }
-    static int detectGameScene(melonDS::NDS* nds) {
+    static bool refreshGameScene(melonDS::NDS* nds) {
         if (CartValidator::isDays()) {
-            return KHDaysPlugin::detectGameScene(nds);
+            return KHDaysPlugin::refreshGameScene(nds);
         }
         if (CartValidator::isRecoded()) {
-            return KHReCodedPlugin::detectGameScene(nds);
-        }
-        return -1;
-    }
-    static bool setGameScene(melonDS::NDS* nds, int newGameScene) {
-        if (CartValidator::isDays()) {
-            return KHDaysPlugin::setGameScene(nds, newGameScene);
-        }
-        if (CartValidator::isRecoded()) {
-            return KHReCodedPlugin::setGameScene(nds, newGameScene);
+            return KHReCodedPlugin::refreshGameScene(nds);
         }
         return false;
     }
-    static void debugLogs(melonDS::NDS* nds, int gameScene) {
+    static void setAspectRatio(melonDS::NDS* nds, float aspectRatio) {
         if (CartValidator::isDays()) {
-            KHDaysPlugin::debugLogs(nds, gameScene);
+            return KHDaysPlugin::setAspectRatio(nds, aspectRatio);
         }
         if (CartValidator::isRecoded()) {
-            KHReCodedPlugin::debugLogs(nds, gameScene);
+            return KHReCodedPlugin::setAspectRatio(nds, aspectRatio);
         }
     }
     static std::string assetsFolder() {
