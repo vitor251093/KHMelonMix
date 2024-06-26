@@ -6,20 +6,10 @@
 
 #include <math.h>
 
-using namespace melonDS;
-
 extern int videoRenderer;
 
-bool KHReCodedPlugin::isDebugEnabled = false;
-
-int KHReCodedPlugin::GameScene = -1;
-int KHReCodedPlugin::priorGameScene = -1;
-bool KHReCodedPlugin::ShowMap = true;
-
-bool KHReCodedPlugin::_olderHad3DOnTopScreen = false;
-bool KHReCodedPlugin::_olderHad3DOnBottomScreen = false;
-bool KHReCodedPlugin::_had3DOnTopScreen = false;
-bool KHReCodedPlugin::_had3DOnBottomScreen = false;
+namespace Plugins
+{
 
 #define ASPECT_RATIO_ADDRESS_US      0x0202A810
 #define ASPECT_RATIO_ADDRESS_EU      0x0202A824
@@ -54,6 +44,20 @@ enum
     gameScene_Other2D,            // 15
     gameScene_Other               // 16
 };
+
+KHReCodedPlugin::KHReCodedPlugin()
+{
+    isDebugEnabled = false;
+
+    GameScene = -1;
+    priorGameScene = -1;
+    ShowMap = true;
+
+    _olderHad3DOnTopScreen = false;
+    _olderHad3DOnBottomScreen = false;
+    _had3DOnTopScreen = false;
+    _had3DOnBottomScreen = false;
+}
 
 u32 KHReCodedPlugin::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {
@@ -515,3 +519,4 @@ void KHReCodedPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
     printf("\n");
 }
 
+}

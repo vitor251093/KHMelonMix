@@ -6,25 +6,10 @@
 
 #include <math.h>
 
-using namespace melonDS;
-
 extern int videoRenderer;
 
-bool KHDaysPlugin::isDebugEnabled = false;
-
-int KHDaysPlugin::GameScene = -1;
-int KHDaysPlugin::priorGameScene = -1;
-int KHDaysPlugin::HUDState = 0;
-bool KHDaysPlugin::ShowMap = true;
-bool KHDaysPlugin::ShowTarget = false;
-bool KHDaysPlugin::ShowMissionGauge = false;
-
-bool KHDaysPlugin::_olderHad3DOnTopScreen = false;
-bool KHDaysPlugin::_olderHad3DOnBottomScreen = false;
-bool KHDaysPlugin::_had3DOnTopScreen = false;
-bool KHDaysPlugin::_had3DOnBottomScreen = false;
-
-bool KHDaysPlugin::_hasVisible3DOnBottomScreen = false;
+namespace Plugins
+{
 
 #define ASPECT_RATIO_ADDRESS_US      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_EU      0x02023CBC
@@ -64,6 +49,25 @@ enum
     gameScene_Other2D,                  // 15
     gameScene_Other                     // 16
 };
+
+KHDaysPlugin::KHDaysPlugin()
+{
+    isDebugEnabled = false;
+
+    GameScene = -1;
+    priorGameScene = -1;
+    HUDState = 0;
+    ShowMap = true;
+    ShowTarget = false;
+    ShowMissionGauge = false;
+
+    _olderHad3DOnTopScreen = false;
+    _olderHad3DOnBottomScreen = false;
+    _had3DOnTopScreen = false;
+    _had3DOnBottomScreen = false;
+
+    _hasVisible3DOnBottomScreen = false;
+}
 
 u32 KHDaysPlugin::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {
@@ -659,3 +663,4 @@ void KHDaysPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
     printf("\n");
 }
 
+}

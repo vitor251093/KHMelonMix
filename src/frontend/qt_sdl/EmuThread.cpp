@@ -16,7 +16,7 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#include "KH_Plugin.h"
+#include "PluginManager.h"
 #include "CartValidator.h"
 
 #include <stdlib.h>
@@ -304,6 +304,8 @@ bool EmuThread::UpdateConsole(UpdateConsoleNDSArgs&& ndsargs, UpdateConsoleGBAAr
 
 void EmuThread::run()
 {
+    plugin = nullptr;
+
     u32 mainScreenPos[3];
     Platform::FileHandle* file;
     u32 lastRomLoaded = 0;
@@ -376,6 +378,7 @@ void EmuThread::run()
                 lastRomLoaded = CartValidator::get();
                 lastVideoRenderer = -1;
                 videoSettingsDirty = true;
+                plugin = Plugins::PluginManager::load();
             }
 
             EmuStatus = emuStatus_Running;
@@ -463,13 +466,13 @@ void EmuThread::run()
             melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
             // process input and hotkeys
-            Input::InputMask = KHPlugin::applyCommandMenuInputMask(&nds, Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
+            Input::InputMask = plugin->applyCommandMenuInputMask(&nds, Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
             NDS->SetKeyMask(Input::InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
 
             if (Input::HotkeyPressed(HK_HUDToggle))
             {
-                KHPlugin::hudToggle(&nds);
+                plugin->hudToggle(&nds);
             }
 
             if (Input::HotkeyPressed(HK_Lid))
@@ -483,7 +486,7 @@ void EmuThread::run()
             AudioInOut::MicProcess(*NDS);
 
             refreshGameScene();
-            bool shouldSkipFrame = KHPlugin::shouldSkipFrame(&nds);
+            bool shouldSkipFrame = plugin->shouldSkipFrame(&nds);
 
             // auto screen layout
             if (Config::ScreenSizing == Frontend::screenSizing_Auto)
@@ -697,10 +700,10 @@ void EmuThread::refreshGameScene()
 {
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
-    bool updated = KHPlugin::refreshGameScene(&nds);
-    if (updated && KHPlugin::isDebugEnabled())
+    bool updated = plugin->refreshGameScene(&nds);
+    if (updated && plugin->isDebugEnabled)
     {
-        mainWindow->osdAddMessage(0, KHPlugin::getGameSceneName());
+        mainWindow->osdAddMessage(0, plugin->getGameSceneName());
     }
 
     float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
@@ -712,7 +715,7 @@ void EmuThread::refreshGameScene()
     if (aspectTop == 0) {
         aspectTop = 16.0 / 9;
     }
-    KHPlugin::setAspectRatio(&nds, aspectTop);
+    plugin->setAspectRatio(&nds, aspectTop);
 }
 
 void EmuThread::changeWindowTitle(char* title)
