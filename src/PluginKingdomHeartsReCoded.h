@@ -1,5 +1,5 @@
-#ifndef KHDAYS_PLUGIN_H
-#define KHDAYS_PLUGIN_H
+#ifndef KHRECODED_PLUGIN_H
+#define KHRECODED_PLUGIN_H
 
 #include "Plugin.h"
 #include "NDS.h"
@@ -8,10 +8,10 @@ namespace Plugins
 {
 using namespace melonDS;
 
-class KHDaysPlugin : public Plugin
+class PluginKingdomHeartsReCoded : public Plugin
 {
 public:
-    KHDaysPlugin();
+    PluginKingdomHeartsReCoded();
 
     bool isDebugEnabled;
 
@@ -25,17 +25,12 @@ public:
 private:
     int GameScene;
     int priorGameScene;
-    int HUDState;
     bool ShowMap;
-    bool ShowTarget;
-    bool ShowMissionGauge;
 
     bool _olderHad3DOnTopScreen;
     bool _olderHad3DOnBottomScreen;
     bool _had3DOnTopScreen;
     bool _had3DOnBottomScreen;
-
-    bool _hasVisible3DOnBottomScreen;
 
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);

@@ -2,8 +2,8 @@
 #define PLUGIN_MANAGER_H
 
 #include "PluginDefault.h"
-#include "KHDays_Plugin.h"
-#include "KHReCoded_Plugin.h"
+#include "PluginKingdomHeartsDays.h"
+#include "PluginKingdomHeartsReCoded.h"
 #include "CartValidator.h"
 
 namespace Plugins
@@ -14,10 +14,10 @@ class PluginManager
 public:
     static Plugin* load() {
         if (CartValidator::isDays()) {
-            return new KHDaysPlugin();
+            return new PluginKingdomHeartsDays();
         }
         if (CartValidator::isRecoded()) {
-            return new KHReCodedPlugin();
+            return new PluginKingdomHeartsReCoded();
         }
         return new PluginDefault();
     }

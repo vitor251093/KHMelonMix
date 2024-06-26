@@ -37,8 +37,8 @@ add_library(core STATIC
     GPU3D_Soft.cpp
     GPU3D_Texcache.cpp
     GPU3D_Texcache.h
-    KHDays_Plugin.cpp
-    KHReCoded_Plugin.cpp
+    PluginKingdomHeartsDays.cpp
+    PluginKingdomHeartsReCoded.cpp
     CartValidator.cpp
     melonDLDI.h
     NDS.cpp
