@@ -20,8 +20,8 @@ public:
     virtual bool isEuropeCart() { return false; };
     virtual bool isJapanCart()  { return false; };
 
-    virtual const char* gpuOpenGLShader() { return nullptr; };
-    virtual const char* gpu3DOpenGLShader() { return nullptr; };
+    virtual const char* gpuOpenGLFragmentShader() { return nullptr; };
+    virtual const char* gpu3DOpenGLVertexShader() { return nullptr; };
 
     virtual u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask) = 0;
 

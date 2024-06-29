@@ -39,7 +39,7 @@ std::optional<GLCompositor> GLCompositor::New() noexcept
     assert(glBindAttribLocation != nullptr);
     GLuint CompShader {};
 
-    const char* kCompositorFS_Custom = Plugins::PluginManager::get()->gpuOpenGLShader();
+    const char* kCompositorFS_Custom = Plugins::PluginManager::get()->gpuOpenGLFragmentShader();
     if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, (kCompositorFS_Custom == nullptr ? kCompositorFS_Nearest : kCompositorFS_Custom), "CompositorShader",
             {{"vPosition", 0}, {"vTexcoord", 1}}, {{"oColor", 0}}))
             return std::nullopt;

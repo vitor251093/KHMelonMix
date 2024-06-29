@@ -142,7 +142,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
     memset(result->RenderShaderAspectRatio, 0, sizeof(RenderShaderAspectRatio));
     memset(result->RenderShaderGameScene, 0, sizeof(RenderShaderGameScene));
 
-    const char* renderVS_Z_Custom = Plugins::PluginManager::get()->gpu3DOpenGLShader();
+    const char* renderVS_Z_Custom = Plugins::PluginManager::get()->gpu3DOpenGLVertexShader();
     const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
 
     if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))

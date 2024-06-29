@@ -3,8 +3,8 @@
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
 
-#include "KHDays_GPU_OpenGL_shaders.h"
-#include "KHDays_GPU3D_OpenGL_shaders.h"
+#include "PluginKingdomHeartsDays_GPU_OpenGL_shaders.h"
+#include "PluginKingdomHeartsDays_GPU3D_OpenGL_shaders.h"
 
 #include <math.h>
 
@@ -76,11 +76,11 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _hasVisible3DOnBottomScreen = false;
 }
 
-const char* PluginKingdomHeartsDays::gpuOpenGLShader() {
+const char* PluginKingdomHeartsDays::gpuOpenGLFragmentShader() {
     return kCompositorFS_KhDays;
 };
 
-const char* PluginKingdomHeartsDays::gpu3DOpenGLShader() {
+const char* PluginKingdomHeartsDays::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhDays;
 };
 

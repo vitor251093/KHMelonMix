@@ -3,8 +3,8 @@
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
 
-#include "KHReCoded_GPU_OpenGL_shaders.h"
-#include "KHReCoded_GPU3D_OpenGL_shaders.h"
+#include "PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h"
+#include "PluginKingdomHeartsReCoded_GPU3D_OpenGL_shaders.h"
 
 #include <math.h>
 
@@ -66,11 +66,11 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _had3DOnBottomScreen = false;
 }
 
-const char* PluginKingdomHeartsReCoded::gpuOpenGLShader() {
+const char* PluginKingdomHeartsReCoded::gpuOpenGLFragmentShader() {
     return kCompositorFS_KhReCoded;
 };
 
-const char* PluginKingdomHeartsReCoded::gpu3DOpenGLShader() {
+const char* PluginKingdomHeartsReCoded::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhReCoded;
 };
 

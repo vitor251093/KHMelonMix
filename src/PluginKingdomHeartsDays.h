@@ -24,8 +24,8 @@ public:
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
-    const char* gpuOpenGLShader();
-    const char* gpu3DOpenGLShader();
+    const char* gpuOpenGLFragmentShader();
+    const char* gpu3DOpenGLVertexShader();
 
     u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask);
     void hudToggle(melonDS::NDS* nds);
