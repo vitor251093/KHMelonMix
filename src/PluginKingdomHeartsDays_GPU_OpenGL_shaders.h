@@ -345,7 +345,7 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
             return vec2(fTexcoord);
         }
 
-        return vec2(128, 96);
+        return vec2(128, 60);
     }
 
     // dialog (part 1)
@@ -386,10 +386,12 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
 
     float dialogMarginY1 = dialogY1 + 128.0;
     float dialogMarginY2 = dialogMarginY1 + 56.0;
-    if (is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(256/2, 192*0.6314))) {
+    for (int y = 90; y <= 130; y++) {
         // dialogs with selectable options are positioned in a different way
-        dialogMarginY1 = dialogY1 + 120.0;
-        dialogMarginY2 = dialogMarginY1 + 64.0;
+        if (is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(256/2, y))) {
+            dialogMarginY1 = dialogY1 + y;
+            break;
+        }
     }
 
     {
@@ -421,7 +423,7 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     }
 
     // nothing (clear screen)
-    return vec2(128, 96);
+    return vec2(128, 60);
 }
 
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
