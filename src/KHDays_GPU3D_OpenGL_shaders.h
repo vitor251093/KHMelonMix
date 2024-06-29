@@ -19,7 +19,7 @@
 #ifndef KHDAYS_GPU3D_OPENGL_SHADERS_H
 #define KHDAYS_GPU3D_OPENGL_SHADERS_H
 
-namespace melonDS
+namespace Plugins
 {
 const char* kRenderVS_Z_KhDays = R"(
 

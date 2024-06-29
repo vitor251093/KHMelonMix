@@ -14,6 +14,15 @@ public:
 
     bool isDebugEnabled = false;
 
+    u32 GameCode = 0;
+    static bool isCart(u32 gameCode) {return true;};
+    virtual bool isUsaCart()    { return false; };
+    virtual bool isEuropeCart() { return false; };
+    virtual bool isJapanCart()  { return false; };
+
+    virtual const char* gpuOpenGLShader() { return nullptr; };
+    virtual const char* gpu3DOpenGLShader() { return nullptr; };
+
     virtual u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask) = 0;
 
     virtual void hudToggle(melonDS::NDS* nds) = 0;

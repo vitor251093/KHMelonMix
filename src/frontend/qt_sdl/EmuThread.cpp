@@ -17,7 +17,6 @@
 */
 
 #include "PluginManager.h"
-#include "CartValidator.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -373,12 +372,13 @@ void EmuThread::run()
 
         if (EmuRunning == emuStatus_Running || EmuRunning == emuStatus_FrameStep)
         {
-            if (lastRomLoaded != CartValidator::get())
+            if (plugin == nullptr || lastRomLoaded != Plugins::PluginManager::getGameCode())
             {
-                lastRomLoaded = CartValidator::get();
+                lastRomLoaded = Plugins::PluginManager::getGameCode();
                 lastVideoRenderer = -1;
                 videoSettingsDirty = true;
-                plugin = Plugins::PluginManager::load();
+                plugin = Plugins::PluginManager::load(lastRomLoaded);
+                printf("Loading plugin %s\n", typeid(*plugin).name());
             }
 
             EmuStatus = emuStatus_Running;

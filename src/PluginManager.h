@@ -2,9 +2,6 @@
 #define PLUGIN_MANAGER_H
 
 #include "PluginDefault.h"
-#include "PluginKingdomHeartsDays.h"
-#include "PluginKingdomHeartsReCoded.h"
-#include "CartValidator.h"
 
 namespace Plugins
 {
@@ -12,15 +9,12 @@ namespace Plugins
 class PluginManager
 {
 public:
-    static Plugin* load() {
-        if (CartValidator::isDays()) {
-            return new PluginKingdomHeartsDays();
-        }
-        if (CartValidator::isRecoded()) {
-            return new PluginKingdomHeartsReCoded();
-        }
-        return new PluginDefault();
-    }
+    static Plugin* load(u32 gameCode);
+    static Plugin* get();
+    static u32 getGameCode();
+
+private:
+    static u32 GameCode;
 };
 }
 

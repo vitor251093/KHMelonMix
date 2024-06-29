@@ -11,9 +11,21 @@ using namespace melonDS;
 class PluginKingdomHeartsReCoded : public Plugin
 {
 public:
-    PluginKingdomHeartsReCoded();
+    PluginKingdomHeartsReCoded(u32 gameCode);
 
     bool isDebugEnabled;
+
+    u32 GameCode;
+    static u32 usGamecode;
+    static u32 euGamecode;
+    static u32 jpGamecode;
+    static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
+    bool isUsaCart()    { return GameCode == usGamecode; };
+    bool isEuropeCart() { return GameCode == euGamecode; };
+    bool isJapanCart()  { return GameCode == jpGamecode; };
+
+    const char* gpuOpenGLShader();
+    const char* gpu3DOpenGLShader();
 
     u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask);
     void hudToggle(melonDS::NDS* nds);

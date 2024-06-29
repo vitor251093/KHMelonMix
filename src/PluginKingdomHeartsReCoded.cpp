@@ -2,7 +2,9 @@
 
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
-#include "CartValidator.h"
+
+#include "KHReCoded_GPU_OpenGL_shaders.h"
+#include "KHReCoded_GPU3D_OpenGL_shaders.h"
 
 #include <math.h>
 
@@ -10,6 +12,10 @@ extern int videoRenderer;
 
 namespace Plugins
 {
+
+u32 PluginKingdomHeartsReCoded::usGamecode = 1161382722;
+u32 PluginKingdomHeartsReCoded::euGamecode = 1345932098;
+u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 
 #define ASPECT_RATIO_ADDRESS_US      0x0202A810
 #define ASPECT_RATIO_ADDRESS_EU      0x0202A824
@@ -45,8 +51,9 @@ enum
     gameScene_Other               // 16
 };
 
-PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded()
+PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 {
+    GameCode = gameCode;
     isDebugEnabled = false;
 
     GameScene = -1;
@@ -58,6 +65,14 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded()
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
 }
+
+const char* PluginKingdomHeartsReCoded::gpuOpenGLShader() {
+    return kCompositorFS_KhReCoded;
+};
+
+const char* PluginKingdomHeartsReCoded::gpu3DOpenGLShader() {
+    return kRenderVS_Z_KhReCoded;
+};
 
 u32 PluginKingdomHeartsReCoded::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {
@@ -430,13 +445,13 @@ void PluginKingdomHeartsReCoded::setAspectRatio(melonDS::NDS* nds, float aspectR
     int aspectRatioKey = (int)round(0x1000 * aspectRatio);
 
     u32 aspectRatioMenuAddress = 0;
-    if (CartValidator::isUsaCart()) {
+    if (isUsaCart()) {
         aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_US;
     }
-    if (CartValidator::isEuropeCart()) {
+    if (isEuropeCart()) {
         aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_EU;
     }
-    if (CartValidator::isJapanCart()) {
+    if (isJapanCart()) {
         aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP;
         // TODO: Add support to Rev1 (ASPECT_RATIO_ADDRESS_JP_REV1)
     }

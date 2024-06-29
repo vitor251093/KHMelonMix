@@ -2,7 +2,9 @@
 
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
-#include "CartValidator.h"
+
+#include "KHDays_GPU_OpenGL_shaders.h"
+#include "KHDays_GPU3D_OpenGL_shaders.h"
 
 #include <math.h>
 
@@ -10,6 +12,10 @@ extern int videoRenderer;
 
 namespace Plugins
 {
+
+u32 PluginKingdomHeartsDays::usGamecode = 1162300249;
+u32 PluginKingdomHeartsDays::euGamecode = 1346849625;
+u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 #define ASPECT_RATIO_ADDRESS_US      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_EU      0x02023CBC
@@ -50,8 +56,9 @@ enum
     gameScene_Other                     // 16
 };
 
-PluginKingdomHeartsDays::PluginKingdomHeartsDays()
+PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
+    GameCode = gameCode;
     isDebugEnabled = false;
 
     GameScene = -1;
@@ -69,19 +76,27 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays()
     _hasVisible3DOnBottomScreen = false;
 }
 
+const char* PluginKingdomHeartsDays::gpuOpenGLShader() {
+    return kCompositorFS_KhDays;
+};
+
+const char* PluginKingdomHeartsDays::gpu3DOpenGLShader() {
+    return kRenderVS_Z_KhDays;
+};
+
 u32 PluginKingdomHeartsDays::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
         if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) { // D-pad
             u32 dpadMenuAddress = 0;
-            if (CartValidator::isUsaCart()) {
+            if (isUsaCart()) {
                 dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US;
             }
-            if (CartValidator::isEuropeCart()) {
+            if (isEuropeCart()) {
                 dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU;
             }
-            if (CartValidator::isJapanCart()) {
+            if (isJapanCart()) {
                 dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP;
                 // TODO: Add support to Rev1 (INGAME_MENU_COMMAND_LIST_SETTIGS_ADDRESS_JP_REV1)
             }
@@ -242,7 +257,7 @@ bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
         default: break;
     }
 
-    if (CartValidator::isDays() && GameScene == 12)
+    if (GameScene == 12)
     {
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
         {
@@ -574,13 +589,13 @@ void PluginKingdomHeartsDays::setAspectRatio(melonDS::NDS* nds, float aspectRati
     int aspectRatioKey = (int)round(0x1000 * aspectRatio);
 
     u32 aspectRatioMenuAddress = 0;
-    if (CartValidator::isUsaCart()) {
+    if (isUsaCart()) {
         aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_US;
     }
-    if (CartValidator::isEuropeCart()) {
+    if (isEuropeCart()) {
         aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_EU;
     }
-    if (CartValidator::isJapanCart()) {
+    if (isJapanCart()) {
         aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP;
         // TODO: Add support to Rev1 (ASPECT_RATIO_ADDRESS_JP_REV1)
     }

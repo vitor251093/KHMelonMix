@@ -14,7 +14,7 @@ public:
     PluginDefault() {};
 
     bool isDebugEnabled = false;
-
+    
     u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask) {
         return InputMask;
     }

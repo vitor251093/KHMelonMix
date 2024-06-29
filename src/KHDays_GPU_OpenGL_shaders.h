@@ -19,7 +19,7 @@
 #ifndef KHDAYS_GPU_OPENGL_SHADERS_H
 #define KHDAYS_GPU_OPENGL_SHADERS_H
 
-namespace melonDS
+namespace Plugins
 {
 const char* kCompositorFS_KhDays = R"(#version 140
 

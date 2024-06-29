@@ -19,7 +19,7 @@
 #ifndef KHRECODED_GPU_OPENGL_SHADERS_H
 #define KHRECODED_GPU_OPENGL_SHADERS_H
 
-namespace melonDS
+namespace Plugins
 {
 const char* kCompositorFS_KhReCoded = R"(#version 140
 

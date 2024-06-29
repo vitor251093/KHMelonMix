@@ -27,9 +27,7 @@
 #include "GPU3D_OpenGL.h"
 #include "OpenGLSupport.h"
 #include "GPU_OpenGL_shaders.h"
-#include "CartValidator.h"
-#include "KHDays_GPU_OpenGL_shaders.h"
-#include "KHReCoded_GPU_OpenGL_shaders.h"
+#include "PluginManager.h"
 
 namespace melonDS
 {
@@ -41,21 +39,10 @@ std::optional<GLCompositor> GLCompositor::New() noexcept
     assert(glBindAttribLocation != nullptr);
     GLuint CompShader {};
 
-    if (CartValidator::isDays()) {
-        if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, kCompositorFS_KhDays, "CompositorShader",
+    const char* kCompositorFS_Custom = Plugins::PluginManager::get()->gpuOpenGLShader();
+    if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, (kCompositorFS_Custom == nullptr ? kCompositorFS_Nearest : kCompositorFS_Custom), "CompositorShader",
             {{"vPosition", 0}, {"vTexcoord", 1}}, {{"oColor", 0}}))
             return std::nullopt;
-    }
-    else if (CartValidator::isRecoded()) {
-        if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, kCompositorFS_KhReCoded, "CompositorShader",
-            {{"vPosition", 0}, {"vTexcoord", 1}}, {{"oColor", 0}}))
-            return std::nullopt;
-    }
-    else {
-        if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, kCompositorFS_Nearest, "CompositorShader",
-            {{"vPosition", 0}, {"vTexcoord", 1}}, {{"oColor", 0}}))
-            return std::nullopt;
-    }
 
     return { GLCompositor(CompShader) };
 }
