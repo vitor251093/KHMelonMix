@@ -3,6 +3,10 @@
 #include "PluginKingdomHeartsDays.h"
 #include "PluginKingdomHeartsReCoded.h"
 
+#define LOAD_PLUGINS \
+    LOAD_PLUGIN(PluginKingdomHeartsDays) \
+    LOAD_PLUGIN(PluginKingdomHeartsReCoded)
+
 namespace Plugins
 {
 
@@ -22,10 +26,9 @@ template< typename Type > struct Factory : public IFactory {
    }
 };
 
-IFactory* factories[] = {
-  new Factory<PluginKingdomHeartsDays>,
-  new Factory<PluginKingdomHeartsReCoded>
-};
+#define LOAD_PLUGIN(x) new Factory<x>,
+IFactory* factories[] = {LOAD_PLUGINS};
+#undef LOAD_PLUGIN
 
 Plugin* PluginManager::load(u32 gameCode) {
     GameCode = gameCode;
