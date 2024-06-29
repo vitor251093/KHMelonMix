@@ -62,6 +62,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     isDebugEnabled = false;
 
     GameScene = -1;
+    AspectRatio = 0;
     priorGameScene = -1;
     HUDState = 0;
     ShowMap = true;
@@ -602,6 +603,11 @@ void PluginKingdomHeartsDays::setAspectRatio(melonDS::NDS* nds, float aspectRati
 
     if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
         nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
+    }
+
+    if (AspectRatio != aspectRatio) {
+        AspectRatio = aspectRatio;
+        return;
     }
 
     switch (videoRenderer)

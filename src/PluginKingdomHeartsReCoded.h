@@ -36,6 +36,7 @@ public:
     void debugLogs(melonDS::NDS* nds, int gameScene);
 private:
     int GameScene;
+    float AspectRatio;
     int priorGameScene;
     bool ShowMap;
 
