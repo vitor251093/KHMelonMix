@@ -53,6 +53,7 @@ GLCompositor::GLCompositor(GLuint compShader) noexcept : CompShader(compShader)
     Comp3DXPosLoc = glGetUniformLocation(CompShader, "u3DXPos");
     CompIsBottomScreen2DTextureBlackLoc = glGetUniformLocation(CompShader, "IsBottomScreen2DTextureBlack");
     CompIsTopScreen2DTextureBlackLoc = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
+    CompPriorGameSceneLoc = glGetUniformLocation(CompShader, "KHPriorGameScene");
     CompGameSceneLoc = glGetUniformLocation(CompShader, "KHGameScene");
     CompAspectRatioLoc = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
     CompShowMapLoc = glGetUniformLocation(CompShader, "ShowMap");
@@ -149,6 +150,7 @@ GLCompositor::GLCompositor(GLCompositor&& other) noexcept :
     ScreenW(other.ScreenW),
     IsBottomScreen2DTextureBlack(other.IsBottomScreen2DTextureBlack),
     IsTopScreen2DTextureBlack(other.IsTopScreen2DTextureBlack),
+    PriorGameScene(other.PriorGameScene),
     GameScene(other.GameScene),
     AspectRatio(other.AspectRatio),
     ShowMap(other.ShowMap),
@@ -158,6 +160,7 @@ GLCompositor::GLCompositor(GLCompositor&& other) noexcept :
     Comp3DXPosLoc(other.Comp3DXPosLoc),
     CompIsBottomScreen2DTextureBlackLoc(other.CompIsBottomScreen2DTextureBlackLoc),
     CompIsTopScreen2DTextureBlackLoc(other.CompIsTopScreen2DTextureBlackLoc),
+    CompPriorGameSceneLoc(other.CompPriorGameSceneLoc),
     CompGameSceneLoc(other.CompGameSceneLoc),
     CompAspectRatioLoc(other.CompAspectRatioLoc),
     CompShowMapLoc(other.CompShowMapLoc),
@@ -188,6 +191,7 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
         ScreenW = other.ScreenW;
         IsBottomScreen2DTextureBlack = other.IsBottomScreen2DTextureBlack;
         IsTopScreen2DTextureBlack = other.IsTopScreen2DTextureBlack;
+        PriorGameScene = other.PriorGameScene;
         GameScene = other.GameScene;
         AspectRatio = other.AspectRatio;
         ShowMap = other.ShowMap;
@@ -197,6 +201,7 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
         Comp3DXPosLoc = other.Comp3DXPosLoc;
         CompIsBottomScreen2DTextureBlackLoc = other.CompIsBottomScreen2DTextureBlackLoc;
         CompIsTopScreen2DTextureBlackLoc = other.CompIsTopScreen2DTextureBlackLoc;
+        CompPriorGameSceneLoc = other.CompPriorGameSceneLoc;
         CompGameSceneLoc = other.CompGameSceneLoc;
         CompAspectRatioLoc = other.CompAspectRatioLoc;
         CompShowMapLoc = other.CompShowMapLoc;
@@ -253,6 +258,7 @@ void GLCompositor::SetGameScene(int gameScene) noexcept
     if (gameScene == GameScene)
         return;
 
+    PriorGameScene = GameScene;
     GameScene = gameScene;
 }
 void GLCompositor::SetAspectRatio(float aspectRatio) noexcept
@@ -343,6 +349,7 @@ void GLCompositor::RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept
     glUniform1ui(CompScaleLoc, Scale);
     glUniform1i(CompIsBottomScreen2DTextureBlackLoc, IsBottomScreen2DTextureBlack ? 1 : 0);
     glUniform1i(CompIsTopScreen2DTextureBlackLoc, IsTopScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompPriorGameSceneLoc, PriorGameScene);
     glUniform1i(CompGameSceneLoc, GameScene);
     glUniform1f(CompAspectRatioLoc, AspectRatio);
     glUniform1i(CompShowMapLoc, ShowMap ? 1 : 0);

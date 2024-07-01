@@ -45,7 +45,6 @@ public:
     void SetShowTarget(bool showTarget) noexcept;
     void SetShowMissionGauge(bool showMissionGauge) noexcept;
     [[nodiscard]] bool GetBetterPolygons() const noexcept { return BetterPolygons; }
-    [[nodiscard]] int GetScaleFactor() const noexcept { return ScaleFactor; }
 
     void VCount144(GPU& gpu) override {};
     void RenderFrame(GPU& gpu) override;

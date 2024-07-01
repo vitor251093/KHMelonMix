@@ -25,6 +25,7 @@ const char* kCompositorFS_KhDays = R"(#version 140
 
 uniform uint u3DScale;
 uniform int u3DXPos;
+uniform int KHPriorGameScene;
 uniform int KHGameScene;
 uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
@@ -651,7 +652,7 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
     if (KHGameScene == 10) // gameScene_PauseMenu
     {
-        if (!isScreenBlack(1))
+        if (!isScreenBlack(1) && KHPriorGameScene != 12) // gameScene_InGameWithCutscene
         {
             // mission gauge
             float sourceMissionGaugeHeight = 39.0;

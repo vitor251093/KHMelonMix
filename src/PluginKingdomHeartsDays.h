@@ -36,6 +36,7 @@ public:
     void debugLogs(melonDS::NDS* nds, int gameScene);
 private:
     int GameScene;
+    bool PausedInGame;
     float AspectRatio;
     int priorGameScene;
     int HUDState;
