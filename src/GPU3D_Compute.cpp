@@ -315,6 +315,10 @@ void ComputeRenderer::SetGameScene(int gameScene)
 {
     CurGLCompositor.SetGameScene(gameScene);
 }
+void ComputeRenderer::SetUIScale(int uiScale)
+{
+    CurGLCompositor.SetUIScale(uiScale);
+}
 void ComputeRenderer::SetAspectRatio(float aspectRatio)
 {
     CurGLCompositor.SetAspectRatio(aspectRatio);

@@ -634,14 +634,18 @@ bool PluginKingdomHeartsDays::setGameScene(melonDS::NDS* nds, int newGameScene)
         GameScene = newGameScene;
     }
 
+    int uiScale = 4;
+
     // Updating GameScene inside shader
     switch (videoRenderer)
     {
         case renderer3D_OpenGL:
             static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetUIScale(uiScale);
             break;
         case renderer3D_OpenGLCompute:
             static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetUIScale(uiScale);
             break;
         default: break;
     }

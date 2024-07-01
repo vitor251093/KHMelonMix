@@ -55,6 +55,7 @@ GLCompositor::GLCompositor(GLuint compShader) noexcept : CompShader(compShader)
     CompIsTopScreen2DTextureBlackLoc = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
     CompPriorGameSceneLoc = glGetUniformLocation(CompShader, "PriorGameScene");
     CompGameSceneLoc = glGetUniformLocation(CompShader, "GameScene");
+    CompUIScaleLoc = glGetUniformLocation(CompShader, "KHUIScale");
     CompAspectRatioLoc = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
     CompShowMapLoc = glGetUniformLocation(CompShader, "ShowMap");
     CompShowTargetLoc = glGetUniformLocation(CompShader, "ShowTarget");
@@ -65,8 +66,6 @@ GLCompositor::GLCompositor(GLuint compShader) noexcept : CompShader(compShader)
     glUniform1i(screenTextureUniform, 0);
     GLuint _3dTextureUniform = glGetUniformLocation(CompShader, "_3DTex");
     glUniform1i(_3dTextureUniform, 1);
-    GLuint khUiScaleUniform = glGetUniformLocation(CompShader, "KHUIScale");
-    glUniform1i(khUiScaleUniform, 4);
 
     // all this mess is to prevent bleeding
 #define SETVERTEX(i, x, y, offset) \
@@ -152,6 +151,7 @@ GLCompositor::GLCompositor(GLCompositor&& other) noexcept :
     IsTopScreen2DTextureBlack(other.IsTopScreen2DTextureBlack),
     PriorGameScene(other.PriorGameScene),
     GameScene(other.GameScene),
+    UIScale(other.UIScale),
     AspectRatio(other.AspectRatio),
     ShowMap(other.ShowMap),
     ShowTarget(other.ShowTarget),
@@ -162,6 +162,7 @@ GLCompositor::GLCompositor(GLCompositor&& other) noexcept :
     CompIsTopScreen2DTextureBlackLoc(other.CompIsTopScreen2DTextureBlackLoc),
     CompPriorGameSceneLoc(other.CompPriorGameSceneLoc),
     CompGameSceneLoc(other.CompGameSceneLoc),
+    CompUIScaleLoc(other.CompUIScaleLoc),
     CompAspectRatioLoc(other.CompAspectRatioLoc),
     CompShowMapLoc(other.CompShowMapLoc),
     CompShowTargetLoc(other.CompShowTargetLoc),
@@ -193,6 +194,7 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
         IsTopScreen2DTextureBlack = other.IsTopScreen2DTextureBlack;
         PriorGameScene = other.PriorGameScene;
         GameScene = other.GameScene;
+        UIScale = other.UIScale;
         AspectRatio = other.AspectRatio;
         ShowMap = other.ShowMap;
         ShowTarget = other.ShowTarget;
@@ -203,6 +205,7 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
         CompIsTopScreen2DTextureBlackLoc = other.CompIsTopScreen2DTextureBlackLoc;
         CompPriorGameSceneLoc = other.CompPriorGameSceneLoc;
         CompGameSceneLoc = other.CompGameSceneLoc;
+        CompUIScaleLoc = other.CompUIScaleLoc;
         CompAspectRatioLoc = other.CompAspectRatioLoc;
         CompShowMapLoc = other.CompShowMapLoc;
         CompShowTargetLoc = other.CompShowTargetLoc;
@@ -260,6 +263,13 @@ void GLCompositor::SetGameScene(int gameScene) noexcept
 
     PriorGameScene = GameScene;
     GameScene = gameScene;
+}
+void GLCompositor::SetUIScale(int uiScale) noexcept
+{
+    if (uiScale == UIScale)
+        return;
+
+    UIScale = uiScale;
 }
 void GLCompositor::SetAspectRatio(float aspectRatio) noexcept
 {
@@ -351,6 +361,7 @@ void GLCompositor::RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept
     glUniform1i(CompIsTopScreen2DTextureBlackLoc, IsTopScreen2DTextureBlack ? 1 : 0);
     glUniform1i(CompPriorGameSceneLoc, PriorGameScene);
     glUniform1i(CompGameSceneLoc, GameScene);
+    glUniform1i(CompUIScaleLoc, UIScale);
     glUniform1f(CompAspectRatioLoc, AspectRatio);
     glUniform1i(CompShowMapLoc, ShowMap ? 1 : 0);
     glUniform1i(CompShowTargetLoc, ShowTarget ? 1 : 0);

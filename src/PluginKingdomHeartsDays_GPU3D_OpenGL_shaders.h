@@ -24,6 +24,7 @@ namespace Plugins
 const char* kRenderVS_Z_KhDays = R"(
 
 uniform int GameScene;
+uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
 
 void main()
@@ -40,6 +41,8 @@ void main()
 
     if (GameScene == 5 || GameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
     {
+        int iuScale = KHUIScale;
+        float iuTexScale = (6.0)/iuScale;
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;
         if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.500)*fpos.w &&
