@@ -25,7 +25,7 @@ const char* kCompositorFS_KhReCoded = R"(#version 140
 
 uniform uint u3DScale;
 uniform int u3DXPos;
-uniform int KHGameScene;
+uniform int GameScene;
 uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
 uniform bool ShowMap;
@@ -351,7 +351,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (ShowMap && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         // minimap
         float bottomMinimapWidth = 60.0;
@@ -375,7 +375,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         }
     }
 
-    if (ShowTarget && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         float increaseTargetSize = 1.5;
 
@@ -420,7 +420,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         }
     }
 
-    if (ShowMissionGauge && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowMissionGauge && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         // mission gauge
         float sourceMissionGaugeHeight = 39.0;
@@ -601,7 +601,7 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (KHGameScene == 10) // gameScene_PauseMenu
+    if (GameScene == 10) // gameScene_PauseMenu
     {
         if (!isScreenBlack(1))
         {
@@ -659,52 +659,52 @@ ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
-    if (KHGameScene == 0) { // gameScene_Intro
+    if (GameScene == 0) { // gameScene_Intro
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
     }
-    if (KHGameScene == 1) { // gameScene_MainMenu
+    if (GameScene == 1) { // gameScene_MainMenu
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
     }
-    if (KHGameScene == 2) { // gameScene_IntroLoadMenu
+    if (GameScene == 2) { // gameScene_IntroLoadMenu
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(255, 191)));
     }
-    if (KHGameScene == 3) { // gameScene_DayCounter
+    if (GameScene == 3) { // gameScene_DayCounter
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
     }
-    if (KHGameScene == 4) { // gameScene_Cutscene
+    if (GameScene == 4) { // gameScene_Cutscene
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
-    if (KHGameScene == 5) { // gameScene_InGameWithMap
+    if (GameScene == 5) { // gameScene_InGameWithMap
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
-    if (KHGameScene == 6) { // gameScene_InGameWithoutMap
+    if (GameScene == 6) { // gameScene_InGameWithoutMap
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
-    if (KHGameScene == 7) { // gameScene_InGameMenu
+    if (GameScene == 7) { // gameScene_InGameMenu
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 191)));
     }
-    if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
+    if (GameScene == 9) { // gameScene_InHoloMissionMenu
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
     }
-    if (KHGameScene == 10) { // gameScene_PauseMenu
+    if (GameScene == 10) { // gameScene_PauseMenu
         return ivec2(getPauseHudTextureCoordinates(xpos, ypos));
     }
-    if (KHGameScene == 11) { // gameScene_Tutorial
+    if (GameScene == 11) { // gameScene_Tutorial
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
-    if (KHGameScene == 12) { // gameScene_InGameWithCutscene
+    if (GameScene == 12) { // gameScene_InGameWithCutscene
         if (!is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(130, 190))) {
             return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
         }
         return ivec2(-1, -1);
     }
-    if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
+    if (GameScene == 13) { // gameScene_MultiplayerMissionReview
         return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
     }
-    if (KHGameScene == 14) { // gameScene_Shop
+    if (GameScene == 14) { // gameScene_Shop
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
-    if (KHGameScene == 15) { // gameScene_Other2D
+    if (GameScene == 15) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -842,22 +842,22 @@ ivec4 getTopScreen3DColor()
     ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
 
-    if (KHGameScene == 1) { // gameScene_MainMenu
+    if (GameScene == 1) { // gameScene_MainMenu
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 3) { // gameScene_DayCounter
+    if (GameScene == 3) { // gameScene_DayCounter
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 7) { // gameScene_InGameMenu
+    if (GameScene == 7) { // gameScene_InGameMenu
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
+    if (GameScene == 9) { // gameScene_InHoloMissionMenu
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
+    if (GameScene == 13) { // gameScene_MultiplayerMissionReview
         return getVerticalDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 14) { // gameScene_Shop
+    if (GameScene == 14) { // gameScene_Shop
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
 
@@ -870,7 +870,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
-    if (ShowMap && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         if (!isDialogVisible() && !isMissionInformationVisible())
         {
@@ -921,7 +921,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     }
 
 
-    if (ShowTarget && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         if (!isDialogVisible() && !isMissionInformationVisible())
         {
@@ -996,7 +996,7 @@ ivec4 brightness()
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
 
-    if (KHGameScene == 1) { // gameScene_MainMenu
+    if (GameScene == 1) { // gameScene_MainMenu
         ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
         int brightmode = mbright.g >> 6;
         if ((mbright.b & 0x3) != 0 && brightmode == 2) {
@@ -1004,25 +1004,25 @@ ivec4 brightness()
         }
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (KHGameScene == 4) { // gameScene_Cutscene
+    if (GameScene == 4) { // gameScene_Cutscene
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (KHGameScene == 5) { // gameScene_InGameWithMap
+    if (GameScene == 5) { // gameScene_InGameWithMap
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (KHGameScene == 11) { // gameScene_Tutorial
+    if (GameScene == 11) { // gameScene_Tutorial
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     }
-    if (KHGameScene == 12) { // gameScene_InGameWithCutscene
+    if (GameScene == 12) { // gameScene_InGameWithCutscene
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
+    if (GameScene == 13) { // gameScene_MultiplayerMissionReview
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (KHGameScene == 14) { // gameScene_Shop
+    if (GameScene == 14) { // gameScene_Shop
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (KHGameScene == 15) { // gameScene_Other2D
+    if (GameScene == 15) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
 

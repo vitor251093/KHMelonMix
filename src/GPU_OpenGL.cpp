@@ -53,8 +53,8 @@ GLCompositor::GLCompositor(GLuint compShader) noexcept : CompShader(compShader)
     Comp3DXPosLoc = glGetUniformLocation(CompShader, "u3DXPos");
     CompIsBottomScreen2DTextureBlackLoc = glGetUniformLocation(CompShader, "IsBottomScreen2DTextureBlack");
     CompIsTopScreen2DTextureBlackLoc = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
-    CompPriorGameSceneLoc = glGetUniformLocation(CompShader, "KHPriorGameScene");
-    CompGameSceneLoc = glGetUniformLocation(CompShader, "KHGameScene");
+    CompPriorGameSceneLoc = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompGameSceneLoc = glGetUniformLocation(CompShader, "GameScene");
     CompAspectRatioLoc = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
     CompShowMapLoc = glGetUniformLocation(CompShader, "ShowMap");
     CompShowTargetLoc = glGetUniformLocation(CompShader, "ShowTarget");

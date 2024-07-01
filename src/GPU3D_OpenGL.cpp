@@ -68,7 +68,7 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TopScreenAspectRatio");
     RenderShaderAspectRatio[flags] = uni_id;
 
-    uni_id = glGetUniformLocation(prog, "KHGameScene");
+    uni_id = glGetUniformLocation(prog, "GameScene");
     RenderShaderGameScene[flags] = uni_id;
 
     RenderShader[flags] = prog;

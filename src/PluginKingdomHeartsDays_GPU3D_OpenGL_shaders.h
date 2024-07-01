@@ -23,7 +23,7 @@ namespace Plugins
 {
 const char* kRenderVS_Z_KhDays = R"(
 
-uniform int KHGameScene;
+uniform int GameScene;
 uniform float TopScreenAspectRatio;
 
 void main()
@@ -38,7 +38,7 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    if (KHGameScene == 5 || KHGameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
+    if (GameScene == 5 || GameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
     {
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;
@@ -50,7 +50,7 @@ void main()
         }
     }
 
-    if (KHGameScene == 10) // gameScene_PauseMenu
+    if (GameScene == 10) // gameScene_PauseMenu
     {
         float heartWidth = (256.0*u3DScale)/2.5;
         float heartHeight = (192.0*u3DScale)/2.5;
