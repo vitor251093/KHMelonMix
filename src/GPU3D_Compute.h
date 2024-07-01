@@ -46,6 +46,7 @@ public:
     void SetIsBottomScreen2DTextureBlack(bool isBlack);
     void SetIsTopScreen2DTextureBlack(bool isBlack);
     void SetGameScene(int gameScene);
+    void SetUIScale(int uiScale);
     void SetAspectRatio(float aspectRatio);
     void SetShowMap(bool showMap);
     void SetShowTarget(bool showTarget);
