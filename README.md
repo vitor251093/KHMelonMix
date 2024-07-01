@@ -26,7 +26,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 4. Rename that NDS file to "days.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
 5. Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat" (or MelonMix_KHDays.sh if you are not on Windows).
 
-## How to play "Kingdom Hearts Re:Coded"
+## How to play "Kingdom Hearts Re:Coded" (still a WIP; only for testing purposes)
 
 1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for your system (not the source code zip);
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
