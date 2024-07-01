@@ -59,7 +59,7 @@ enum
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
-    isDebugEnabled = false;
+    isDebugEnabled = DEBUG_MODE_ENABLED;
 
     GameScene = -1;
     AspectRatio = 0;
@@ -346,7 +346,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
              nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
             (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
             (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
-        bool mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
+        bool mayBeMainMenu = has3DOnTopScreen && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
 
         if (isIntroLoadMenu)
         {
@@ -383,7 +383,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
                 return gameScene_Cutscene;
             }
 
-            mayBeMainMenu = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
+            mayBeMainMenu = has3DOnTopScreen && nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
             if (mayBeMainMenu) {
                 return gameScene_MainMenu;
             }
@@ -426,7 +426,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
         // Intro
         if (GameScene == -1 || GameScene == gameScene_Intro)
         {
-            mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
+            mayBeMainMenu = has3DOnTopScreen && nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
             return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
         }
 
@@ -468,7 +468,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             return gameScene_Cutscene;
         }
 
-        mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
+        mayBeMainMenu = has3DOnTopScreen && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
         if (mayBeMainMenu)
         {
             return gameScene_MainMenu;

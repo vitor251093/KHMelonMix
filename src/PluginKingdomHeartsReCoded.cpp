@@ -54,7 +54,7 @@ enum
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 {
     GameCode = gameCode;
-    isDebugEnabled = false;
+    isDebugEnabled = DEBUG_MODE_ENABLED;
 
     GameScene = -1;
     AspectRatio = 0;

@@ -1,6 +1,8 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#define DEBUG_MODE_ENABLED false
+
 #include "NDS.h"
 
 namespace Plugins
@@ -12,7 +14,7 @@ class Plugin
 public:
     virtual ~Plugin() { };
 
-    bool isDebugEnabled = false;
+    bool isDebugEnabled = DEBUG_MODE_ENABLED;
 
     u32 GameCode = 0;
     static bool isCart(u32 gameCode) {return true;};
