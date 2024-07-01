@@ -38,11 +38,15 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake --build .
-        mv melonDS.exe MelonMix.exe
+    
+    - name: Preparing artifacts
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        mv melonDS.exe ./MelonMix.exe
         echo "MelonMix.exe roms/days.nds"    > ./MelonMix_KHDays.bat
         echo "MelonMix.exe roms/recoded.nds" > ./MelonMix_KHReCoded.bat
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-windows-x86_64
         path: |

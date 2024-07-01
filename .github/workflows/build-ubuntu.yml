@@ -28,11 +28,21 @@ jobs:
       run: |
         cmake --build build
         DESTDIR=AppDir cmake --install build
-        mv AppDir/usr/bin/melonDS AppDir/usr/bin/khDaysMM
+        mv AppDir/usr/bin/melonDS AppDir/usr/bin/MelonMix
+    - name: Preparing artifacts (ubuntu-x86_64)
+      run: |
+        cp AppDir/usr/bin/MelonMix ./MelonMix
+        echo -ne "#!/bin/bash\n./MelonMix roms/days.nds"    > ./MelonMix_KHDays.sh
+        echo -ne "#!/bin/bash\n./MelonMix roms/recoded.nds" > ./MelonMix_KHReCoded.sh
+        chmod +x ./MelonMix_KHDays.sh
+        chmod +x ./MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
       with:
-        name: khDaysMM-ubuntu-x86_64
-        path: AppDir/usr/bin/khDaysMM
+        name: MelonMix-ubuntu-x86_64
+        path: |
+          MelonMix
+          MelonMix_KHDays.sh
+          MelonMix_KHReCoded.sh
     - name: Fetch AppImage tools
       run: |
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
@@ -43,11 +53,13 @@ jobs:
         QMAKE: /usr/lib/qt6/bin/qmake
       run: |
         ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt --output appimage
-        mv khDaysMM*.AppImage MelonMix.AppImage
-        echo "#!/bin/bash\n./MelonMix.AppImage roms/days.nds"    > MelonMix_KHDays.sh
-        echo "#!/bin/bash\n./MelonMix.AppImage roms/recoded.nds" > MelonMix_KHReCoded.sh
-        chmod +x MelonMix_KHDays.sh
-        chmod +x MelonMix_KHReCoded.sh
+    - name: Preparing artifacts (appimage-x86_64)
+      run: |
+        mv MelonMix*.AppImage MelonMix.AppImage
+        echo -ne "#!/bin/bash\n./MelonMix.AppImage roms/days.nds"    > ./MelonMix_KHDays.sh
+        echo -ne "#!/bin/bash\n./MelonMix.AppImage roms/recoded.nds" > ./MelonMix_KHReCoded.sh
+        chmod +x ./MelonMix_KHDays.sh
+        chmod +x ./MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-appimage-x86_64
@@ -89,8 +101,8 @@ jobs:
         run: |
           cmake --build build
           mv build/melonDS build/MelonMix
-          echo "#!/bin/bash\n./MelonMix roms/days.nds"    > build/MelonMix_KHDays.sh
-          echo "#!/bin/bash\n./MelonMix roms/recoded.nds" > build/MelonMix_KHReCoded.sh
+          echo -ne "#!/bin/bash\n./MelonMix roms/days.nds"    > build/MelonMix_KHDays.sh
+          echo -ne "#!/bin/bash\n./MelonMix roms/recoded.nds" > build/MelonMix_KHReCoded.sh
           chmod +x build/MelonMix_KHDays.sh
           chmod +x build/MelonMix_KHReCoded.sh
       - uses: actions/upload-artifact@v4

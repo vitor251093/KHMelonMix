@@ -37,9 +37,9 @@ add_library(core STATIC
     GPU3D_Soft.cpp
     GPU3D_Texcache.cpp
     GPU3D_Texcache.h
-    KHDays_Plugin.cpp
-    KHReCoded_Plugin.cpp
-    CartValidator.cpp
+    PluginManager.cpp
+    PluginKingdomHeartsDays.cpp
+    PluginKingdomHeartsReCoded.cpp
     melonDLDI.h
     NDS.cpp
     NDSCart.cpp
@@ -82,8 +82,8 @@ if (ENABLE_OGLRENDERER)
     target_sources(core PRIVATE
         GPU_OpenGL.cpp
         GPU_OpenGL_shaders.h
-        KHDays_GPU_OpenGL_shaders.h
-        KHReCoded_GPU_OpenGL_shaders.h
+        PluginKingdomHeartsDays_GPU_OpenGL_shaders.h
+        PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h
         GPU3D_OpenGL.cpp
         GPU3D_Compute.cpp
         GPU3D_TexcacheOpenGL.cpp
