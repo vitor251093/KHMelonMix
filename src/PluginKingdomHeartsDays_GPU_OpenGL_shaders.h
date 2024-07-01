@@ -441,24 +441,39 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     if (isMissionInformationVisibleOnTopScreen()) {
-        // mission information
-        float sourceCommandMenuHeight = 106.0;
-        float sourceCommandMenuWidth = 256.0;
-        float commandMenuHeight = sourceCommandMenuHeight;
-        float commandMenuWidth = sourceCommandMenuWidth*heightScale;
-        float commandMenuLeftMargin = 0.0;
-        float commandMenuTopMargin = 0.0;
-        float commandMenuY1 = commandMenuTopMargin;
-        float commandMenuY2 = commandMenuHeight + commandMenuTopMargin;
-        if (texPosition3d.x >= commandMenuLeftMargin &&
-            texPosition3d.x <= commandMenuWidth + commandMenuLeftMargin &&
-            texPosition3d.y >= commandMenuY1 &&
-            texPosition3d.y <  commandMenuY2) {
-            return fixStretch*(texPosition3d - vec2(commandMenuLeftMargin, commandMenuY1));
+        // mission information (top screen)
+        float sourceMissionInfoHeight = 106.0;
+        float sourceMissionInfoWidth = 256.0;
+        float missionInfoHeight = sourceMissionInfoHeight;
+        float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+        float missionInfoLeftMargin = 0.0;
+        float missionInfoTopMargin = 0.0;
+        float missionInfoY1 = missionInfoTopMargin;
+        float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
+        if (texPosition3d.x >= missionInfoLeftMargin &&
+            texPosition3d.x <= missionInfoWidth + missionInfoLeftMargin &&
+            texPosition3d.y >= missionInfoY1 &&
+            texPosition3d.y <  missionInfoY2) {
+            return fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1));
         }
 
         // nothing (clear screen)
         return vec2(255, 191);
+    }
+    else if (isMinimapVisible()) {
+        // mission information (bottom screen)
+        float bottomMissionInfoWidth = 256.0;
+        float bottomMissionInfoHeight = 24.0;
+        float missionInfoWidth = bottomMissionInfoWidth*heightScale;
+        float missionInfoHeight = bottomMissionInfoHeight;
+        float missionInfoTopMargin = 0.0;
+        float missionInfoLeftMargin = 0.0;
+        if (texPosition3d.x >= missionInfoLeftMargin &&
+            texPosition3d.x < 256.0*iuTexScale && 
+            texPosition3d.y <= missionInfoHeight + missionInfoTopMargin && 
+            texPosition3d.y >= missionInfoTopMargin) {
+            return fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoTopMargin)) + vec2(0, 192.0);
+        }
     }
 
     if (isCutsceneFromChallengeMissionVisible()) {
