@@ -106,7 +106,7 @@ bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
     return !(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
 }
 
-bool isMissionInformationVisible()
+bool isMissionInformationVisibleOnTopScreen()
 {
     return ((ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0))).a & 0xF) == 1 ||
            ((ivec4(texelFetch(ScreenTex, ivec2(0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1 ||
@@ -440,8 +440,25 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return getIngameDialogTextureCoordinates(xpos, ypos);
     }
 
-    if (isMissionInformationVisible()) {
-        return vec2(fTexcoord);
+    if (isMissionInformationVisibleOnTopScreen()) {
+        // mission information
+        float sourceCommandMenuHeight = 106.0;
+        float sourceCommandMenuWidth = 256.0;
+        float commandMenuHeight = sourceCommandMenuHeight;
+        float commandMenuWidth = sourceCommandMenuWidth*heightScale;
+        float commandMenuLeftMargin = 0.0;
+        float commandMenuTopMargin = 0.0;
+        float commandMenuY1 = commandMenuTopMargin;
+        float commandMenuY2 = commandMenuHeight + commandMenuTopMargin;
+        if (texPosition3d.x >= commandMenuLeftMargin &&
+            texPosition3d.x <= commandMenuWidth + commandMenuLeftMargin &&
+            texPosition3d.y >= commandMenuY1 &&
+            texPosition3d.y <  commandMenuY2) {
+            return fixStretch*(texPosition3d - vec2(commandMenuLeftMargin, commandMenuY1));
+        }
+
+        // nothing (clear screen)
+        return vec2(255, 191);
     }
 
     if (isCutsceneFromChallengeMissionVisible()) {
@@ -921,7 +938,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (!isDialogVisible() && !isMissionInformationVisible())
+        if (!isDialogVisible() && !isMissionInformationVisibleOnTopScreen())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
@@ -977,7 +994,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (!isDialogVisible() && !isMissionInformationVisible())
+        if (!isDialogVisible() && !isMissionInformationVisibleOnTopScreen())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
