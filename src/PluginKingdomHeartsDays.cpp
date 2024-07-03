@@ -113,37 +113,35 @@ u32 PluginKingdomHeartsDays::applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 I
         // So the arrow keys can be used to control the command menu
         if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
             InputMask &= ~(1<<10); // X
-            InputMask |= (1<<4); // left
-            InputMask |= (1<<5); // right
+            InputMask |= (1<<5); // left
+            InputMask |= (1<<4); // right
             InputMask |= (1<<6); // up
             InputMask |= (1<<7); // down
             if (PriorPriorHotkeyMask & (1 << 18)) // Old D-pad left
-                InputMask &= ~(1<<4); // left
+                InputMask &= ~(1<<5); // left
             if (PriorPriorHotkeyMask & (1 << 19)) // Old D-pad right
-                InputMask &= ~(1<<5); // right
+                InputMask &= ~(1<<4); // right
             if (PriorPriorHotkeyMask & (1 << 20)) // Old D-pad up
                 InputMask &= ~(1<<6); // up
             if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad down
                 InputMask &= ~(1<<7); // down
         }
 
-        // Lock On
-        if (HotkeyMask & (1 << 16)) {
+        if (HotkeyMask & (1 << 16)) { // R / Lock On
 
         }
 
-        // Switch Target
-        if (HotkeyMask & (1 << 17)) {
-
+        if (HotkeyMask & (1 << 17)) { // Switch Target
+            InputMask &= ~(1<<8); // R
         }
     }
     else {
         // So the arrow keys can be used as directionals
         if (HotkeyMask & (1 << 18)) { // D-pad left
-            InputMask &= ~(1<<4); // left
+            InputMask &= ~(1<<5); // left
         }
         if (HotkeyMask & (1 << 19)) { // D-pad right
-            InputMask &= ~(1<<5); // right
+            InputMask &= ~(1<<4); // right
         }
         if (HotkeyMask & (1 << 20)) { // D-pad up
             InputMask &= ~(1<<6); // up
@@ -152,9 +150,8 @@ u32 PluginKingdomHeartsDays::applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 I
             InputMask &= ~(1<<7); // down
         }
 
-        // R
-        if (HotkeyMask & (1 << 16)) {
-
+        if (HotkeyMask & (1 << 16)) { // R / Lock On
+            InputMask &= ~(1<<8); // R
         }
     }
 
