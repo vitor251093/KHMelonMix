@@ -27,6 +27,9 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
+#define SWITCH_TARGET_PRESS_FRAME_LIMIT 100
+#define LOCK_ON_PRESS_FRAME_LIMIT       100
+
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -78,6 +81,9 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
+
+    LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
+    LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
 }
 
 const char* PluginKingdomHeartsDays::gpuOpenGLFragmentShader() {
@@ -134,15 +140,12 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
         // R / Lock On
         {
             if (HotkeyPress & (1 << 16)) {
+                LastLockOnPress = 0;
+            }
+            if (LastLockOnPress == 0 || LastLockOnPress == 1) {
                 InputMask &= ~(1<<8); // R
             }
-            if (PriorHotkeyPress & (1 << 16)) {
-                InputMask &= ~(1<<8); // R
-            }
-            if (PriorPriorPriorPriorHotkeyPress & (1 << 16)) {
-                InputMask &= ~(1<<8); // R (two frames later)
-            }
-            if (PriorPriorPriorPriorPriorHotkeyPress & (1 << 16)) {
+            if (LastLockOnPress == 4 || LastLockOnPress == 5) {
                 InputMask &= ~(1<<8); // R (two frames later)
             }
         }
@@ -174,11 +177,8 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
     PriorPriorHotkeyMask = PriorHotkeyMask;
     PriorHotkeyMask = HotkeyMask;
 
-    PriorPriorPriorPriorPriorHotkeyPress = PriorPriorPriorPriorHotkeyPress;
-    PriorPriorPriorPriorHotkeyPress = PriorPriorPriorHotkeyPress;
-    PriorPriorPriorHotkeyPress = PriorPriorHotkeyPress;
-    PriorPriorHotkeyPress = PriorHotkeyPress;
-    PriorHotkeyPress = HotkeyPress;
+    if (LastSwitchTargetPress < SWITCH_TARGET_PRESS_FRAME_LIMIT) LastSwitchTargetPress++;
+    if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
 
     return InputMask;
 }

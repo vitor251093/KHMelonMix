@@ -51,7 +51,7 @@ private:
     bool _hasVisible3DOnBottomScreen;
 
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
-    u32 PriorHotkeyPress, PriorPriorHotkeyPress, PriorPriorPriorHotkeyPress, PriorPriorPriorPriorHotkeyPress, PriorPriorPriorPriorPriorHotkeyPress;
+    u32 LastLockOnPress, LastSwitchTargetPress;
 
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);
