@@ -40,6 +40,8 @@ enum
     HK_VolumeUp,
     HK_VolumeDown,
     HK_HUDToggle,
+    HK_LockOn,
+    HK_RSwitchTarget,
     HK_MAX
 };
 

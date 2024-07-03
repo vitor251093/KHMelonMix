@@ -242,6 +242,8 @@ ConfigEntry ConfigFile[] =
     {"HKKey_VolumeDown",          0, &HKKeyMapping[HK_VolumeDown],          -1, true},
 
     {"HKKey_HUDToggle",           0, &HKKeyMapping[HK_HUDToggle],           -1, true},
+    {"HKKey_LockOn",              0, &HKKeyMapping[HK_LockOn],              -1, true},
+    {"HKKey_RSwitchTarget",       0, &HKKeyMapping[HK_RSwitchTarget],       -1, true},
 
     {"HKJoy_Lid",                 0, &HKJoyMapping[HK_Lid],                 -1, true},
     {"HKJoy_Mic",                 0, &HKJoyMapping[HK_Mic],                 -1, true},
@@ -260,6 +262,8 @@ ConfigEntry ConfigFile[] =
     {"HKJoy_VolumeDown",          0, &HKJoyMapping[HK_VolumeDown],          -1, true},
 
     {"HKJoy_HUDToggle",           0, &HKJoyMapping[HK_HUDToggle],           -1, true},
+    {"HKJoy_LockOn",              0, &HKJoyMapping[HK_LockOn],              -1, true},
+    {"HKJoy_RSwitchTarget",       0, &HKJoyMapping[HK_RSwitchTarget],       -1, true},
 
     {"Key_TouchRight", 0, &TouchKeyMapping[0], -1, true},
     {"Key_TouchLeft",  0, &TouchKeyMapping[1], -1, true},

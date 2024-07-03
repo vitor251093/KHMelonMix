@@ -118,6 +118,8 @@ void SetAutoJoystickConfig(int a, int b, int select, int start, int right, int l
     Config::HKJoyMapping[HK_VolumeDown] = -1;
 
     Config::HKJoyMapping[HK_HUDToggle] = -1;
+    Config::HKJoyMapping[HK_LockOn] = -1;
+    Config::HKJoyMapping[HK_RSwitchTarget] = -1;
 }
 void OpenJoystick(bool autoMapping)
 {
