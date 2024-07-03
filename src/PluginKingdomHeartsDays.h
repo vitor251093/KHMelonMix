@@ -27,7 +27,7 @@ public:
     const char* gpuOpenGLFragmentShader();
     const char* gpu3DOpenGLVertexShader();
 
-    u32 applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask);
+    u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     void hudToggle(melonDS::NDS* nds);
     const char* getGameSceneName();
     bool shouldSkipFrame(melonDS::NDS* nds);
@@ -52,6 +52,7 @@ private:
     bool _hasVisible3DOnBottomScreen;
 
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
+    u32 PriorHotkeyPress, PriorPriorHotkeyPress, PriorPriorPriorHotkeyPress, PriorPriorPriorPriorHotkeyPress, PriorPriorPriorPriorPriorHotkeyPress;
 
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);

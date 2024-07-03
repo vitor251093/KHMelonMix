@@ -25,7 +25,7 @@ public:
     virtual const char* gpuOpenGLFragmentShader() { return nullptr; };
     virtual const char* gpu3DOpenGLVertexShader() { return nullptr; };
 
-    virtual u32 applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask) = 0;
+    virtual u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
 
     virtual void hudToggle(melonDS::NDS* nds) = 0;
 

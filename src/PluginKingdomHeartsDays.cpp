@@ -88,7 +88,7 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhDays;
 };
 
-u32 PluginKingdomHeartsDays::applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask)
+u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
@@ -127,8 +127,20 @@ u32 PluginKingdomHeartsDays::applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 I
                 InputMask &= ~(1<<7); // down
         }
 
-        if (HotkeyMask & (1 << 16)) { // R / Lock On
-
+        // R / Lock On
+        {
+            if (HotkeyPress & (1 << 16)) {
+                InputMask &= ~(1<<8); // R
+            }
+            if (PriorHotkeyPress & (1 << 16)) {
+                InputMask &= ~(1<<8); // R
+            }
+            if (PriorPriorPriorPriorHotkeyPress & (1 << 16)) {
+                InputMask &= ~(1<<8); // R (two frames later)
+            }
+            if (PriorPriorPriorPriorPriorHotkeyPress & (1 << 16)) {
+                InputMask &= ~(1<<8); // R (two frames later)
+            }
         }
 
         if (HotkeyMask & (1 << 17)) { // Switch Target
@@ -157,6 +169,12 @@ u32 PluginKingdomHeartsDays::applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 I
 
     PriorPriorHotkeyMask = PriorHotkeyMask;
     PriorHotkeyMask = HotkeyMask;
+
+    PriorPriorPriorPriorPriorHotkeyPress = PriorPriorPriorPriorHotkeyPress;
+    PriorPriorPriorPriorHotkeyPress = PriorPriorPriorHotkeyPress;
+    PriorPriorPriorHotkeyPress = PriorPriorHotkeyPress;
+    PriorPriorHotkeyPress = PriorHotkeyPress;
+    PriorHotkeyPress = HotkeyPress;
 
     return InputMask;
 }

@@ -78,7 +78,7 @@ const char* PluginKingdomHeartsReCoded::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhReCoded;
 };
 
-u32 PluginKingdomHeartsReCoded::applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask)
+u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
