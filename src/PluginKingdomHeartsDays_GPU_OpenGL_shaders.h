@@ -465,10 +465,11 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                 return coord;
             }
             if (showMissionInformationBottomScreen) {
-                if ((texPosition3d.x <  66.0*heightScale && texPosition3d.y >= 1.0) ||
-                    (texPosition3d.x >= 72.0*heightScale && texPosition3d.y >= 8.0) ||
-                    (texPosition3d.x >= 66.0*heightScale && texPosition3d.x < 72.0*heightScale &&
-                        texPosition3d.y >= 1.0 + (texPosition3d.x - 66.0*heightScale)/heightScale)) {
+                float cropMarginLeft = -0.5;
+                if ((texPosition3d.x <  (66.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 1.0) ||
+                    (texPosition3d.x >= (72.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 8.0) ||
+                    (texPosition3d.x >= (66.0 + cropMarginLeft)*heightScale && texPosition3d.x < (72.0 + cropMarginLeft)*heightScale &&
+                        texPosition3d.y >= 1.0 + (texPosition3d.x - (66.0 + cropMarginLeft)*heightScale)/heightScale)) {
                     return coord;
                 }
             }
