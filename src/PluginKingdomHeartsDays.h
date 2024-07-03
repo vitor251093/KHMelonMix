@@ -43,6 +43,7 @@ private:
     bool ShowMap;
     bool ShowTarget;
     bool ShowMissionGauge;
+    bool ShowMissionInfo;
 
     bool _olderHad3DOnTopScreen;
     bool _olderHad3DOnBottomScreen;

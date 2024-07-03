@@ -68,6 +68,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     ShowMap = true;
     ShowTarget = false;
     ShowMissionGauge = false;
+    ShowMissionInfo = false;
 
     _olderHad3DOnTopScreen = false;
     _olderHad3DOnBottomScreen = false;
@@ -150,11 +151,13 @@ void PluginKingdomHeartsDays::hudRefresh(melonDS::NDS* nds)
             static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
             static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
             static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
+            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionInfo(ShowMissionInfo);
             break;
         case renderer3D_OpenGLCompute:
             static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
             static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
             static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
+            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionInfo(ShowMissionInfo);
             break;
         default: break;
     }
@@ -167,16 +170,19 @@ void PluginKingdomHeartsDays::hudToggle(melonDS::NDS* nds)
         ShowMap = true;
         ShowTarget = false;
         ShowMissionGauge = false;
+        ShowMissionInfo = false;
     }
     else if (HUDState == 1) {
         ShowMap = false;
         ShowTarget = true;
         ShowMissionGauge = true;
+        ShowMissionInfo = false;
     }
     else {
         ShowMap = false;
         ShowTarget = false;
         ShowMissionGauge = false;
+        ShowMissionInfo = true;
     }
     hudRefresh(nds);
 }

@@ -335,6 +335,10 @@ void ComputeRenderer::SetShowMissionGauge(bool showMissionGauge)
 {
     CurGLCompositor.SetShowMissionGauge(showMissionGauge);
 }
+void ComputeRenderer::SetShowMissionInfo(bool showMissionInfo)
+{
+    CurGLCompositor.SetShowMissionInfo(showMissionInfo);
+}
 
 void ComputeRenderer::SetRenderSettings(int scale, bool highResolutionCoordinates)
 {

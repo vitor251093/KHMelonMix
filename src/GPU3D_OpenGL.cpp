@@ -382,6 +382,10 @@ void GLRenderer::SetShowMissionGauge(bool showMissionGauge) noexcept
 {
     CurGLCompositor.SetShowMissionGauge(showMissionGauge);
 }
+void GLRenderer::SetShowMissionInfo(bool showMissionInfo) noexcept
+{
+    CurGLCompositor.SetShowMissionInfo(showMissionInfo);
+}
 
 
 void GLRenderer::SetRenderSettings(bool betterpolygons, int scale) noexcept

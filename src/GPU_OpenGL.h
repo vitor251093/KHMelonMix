@@ -53,6 +53,7 @@ public:
     void SetShowMap(bool showMap) noexcept;
     void SetShowTarget(bool showTarget) noexcept;
     void SetShowMissionGauge(bool showMissionGauge) noexcept;
+    void SetShowMissionInfo(bool showMissionInfo) noexcept;
 
     void Stop(const GPU& gpu) noexcept;
     void RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept;
@@ -72,6 +73,7 @@ private:
     bool ShowMap = false;
     bool ShowTarget = false;
     bool ShowMissionGauge = false;
+    bool ShowMissionInfo = false;
 
     GLuint CompShader {};
     GLuint CompScaleLoc = 0;
@@ -85,6 +87,7 @@ private:
     GLuint CompShowMapLoc = 0;
     GLuint CompShowTargetLoc = 0;
     GLuint CompShowMissionGaugeLoc = 0;
+    GLuint CompShowMissionInfoLoc = 0;
 
     GLuint CompVertexBufferID = 0;
     GLuint CompVertexArrayID = 0;

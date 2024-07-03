@@ -32,6 +32,7 @@ uniform float TopScreenAspectRatio;
 uniform bool ShowMap;
 uniform bool ShowTarget;
 uniform bool ShowMissionGauge;
+uniform bool ShowMissionInfo;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -460,7 +461,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         // nothing (clear screen)
         return vec2(255, 191);
     }
-    else if (isMinimapVisible()) {
+    else if (ShowMissionInfo && isMinimapVisible()) {
         // mission information (bottom screen)
         float bottomMissionInfoWidth = 256.0;
         float bottomMissionInfoHeight = 24.0;
@@ -469,7 +470,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         float missionInfoTopMargin = 0.0;
         float missionInfoLeftMargin = 0.0;
         if (texPosition3d.x >= missionInfoLeftMargin &&
-            texPosition3d.x < 256.0*iuTexScale && 
+            texPosition3d.x < 256.0*iuTexScale*(3.0/4) &&
             texPosition3d.y <= missionInfoHeight + missionInfoTopMargin && 
             texPosition3d.y >= missionInfoTopMargin) {
             return fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoTopMargin)) + vec2(0, 192.0);
