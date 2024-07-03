@@ -470,11 +470,6 @@ void EmuThread::run()
             NDS->SetKeyMask(Input::InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
 
-            if (Input::HotkeyPressed(HK_HUDToggle))
-            {
-                plugin->hudToggle(&nds);
-            }
-
             if (Input::HotkeyPressed(HK_Lid))
             {
                 bool lid = !NDS->IsLidClosed();

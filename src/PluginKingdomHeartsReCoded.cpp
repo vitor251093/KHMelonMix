@@ -80,6 +80,10 @@ const char* PluginKingdomHeartsReCoded::gpu3DOpenGLVertexShader() {
 
 u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
+    if (HotkeyPress & (1 << 15)) { // HUD Toggle
+        hudToggle(nds);
+    }
+
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
         if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {

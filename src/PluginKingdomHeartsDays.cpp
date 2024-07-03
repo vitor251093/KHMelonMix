@@ -90,6 +90,10 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLVertexShader() {
 
 u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
+    if (HotkeyPress & (1 << 15)) { // HUD Toggle
+        hudToggle(nds);
+    }
+
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
         if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) { // D-pad

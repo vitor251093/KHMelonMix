@@ -28,7 +28,6 @@ public:
     const char* gpu3DOpenGLVertexShader();
 
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
-    void hudToggle(melonDS::NDS* nds);
     const char* getGameSceneName();
     bool shouldSkipFrame(melonDS::NDS* nds);
     void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
@@ -54,6 +53,7 @@ private:
     bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
     bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
     void hudRefresh(melonDS::NDS* nds);
+    void hudToggle(melonDS::NDS* nds);
 };
 }
 

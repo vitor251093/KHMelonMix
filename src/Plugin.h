@@ -27,8 +27,6 @@ public:
 
     virtual u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
 
-    virtual void hudToggle(melonDS::NDS* nds) = 0;
-
     virtual const char* getGameSceneName() = 0;
 
     virtual bool shouldSkipFrame(melonDS::NDS* nds) = 0;
