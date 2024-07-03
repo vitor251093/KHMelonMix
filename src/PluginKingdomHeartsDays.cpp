@@ -126,6 +126,16 @@ u32 PluginKingdomHeartsDays::applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 I
             if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad down
                 InputMask &= ~(1<<7); // down
         }
+
+        // Lock On
+        if (HotkeyMask & (1 << 16)) {
+
+        }
+
+        // Switch Target
+        if (HotkeyMask & (1 << 17)) {
+
+        }
     }
     else {
         // So the arrow keys can be used as directionals
@@ -140,6 +150,11 @@ u32 PluginKingdomHeartsDays::applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 I
         }
         if (HotkeyMask & (1 << 21)) { // D-pad down
             InputMask &= ~(1<<7); // down
+        }
+
+        // R
+        if (HotkeyMask & (1 << 16)) {
+
         }
     }
 
