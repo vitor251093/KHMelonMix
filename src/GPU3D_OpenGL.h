@@ -45,6 +45,7 @@ public:
     void SetShowMap(bool showMap) noexcept;
     void SetShowTarget(bool showTarget) noexcept;
     void SetShowMissionGauge(bool showMissionGauge) noexcept;
+    void SetShowMissionInfo(bool showMissionInfo) noexcept;
     [[nodiscard]] bool GetBetterPolygons() const noexcept { return BetterPolygons; }
 
     void VCount144(GPU& gpu) override {};

@@ -51,6 +51,7 @@ public:
     void SetShowMap(bool showMap);
     void SetShowTarget(bool showTarget);
     void SetShowMissionGauge(bool showMissionGauge);
+    void SetShowMissionInfo(bool showMissionInfo);
 
     void SetRenderSettings(int scale, bool highResolutionCoordinates);
 

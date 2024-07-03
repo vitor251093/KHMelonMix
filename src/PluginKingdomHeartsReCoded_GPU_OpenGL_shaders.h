@@ -31,6 +31,7 @@ uniform float TopScreenAspectRatio;
 uniform bool ShowMap;
 uniform bool ShowTarget;
 uniform bool ShowMissionGauge;
+uniform bool ShowMissionInfo;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;

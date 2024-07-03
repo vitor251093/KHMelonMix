@@ -32,6 +32,7 @@ uniform float TopScreenAspectRatio;
 uniform bool ShowMap;
 uniform bool ShowTarget;
 uniform bool ShowMissionGauge;
+uniform bool ShowMissionInfo;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -106,7 +107,7 @@ bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
     return !(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
 }
 
-bool isMissionInformationVisible()
+bool isMissionInformationVisibleOnTopScreen()
 {
     return ((ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0))).a & 0xF) == 1 ||
            ((ivec4(texelFetch(ScreenTex, ivec2(0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1 ||
@@ -440,8 +441,44 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return getIngameDialogTextureCoordinates(xpos, ypos);
     }
 
-    if (isMissionInformationVisible()) {
-        return vec2(fTexcoord);
+    bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
+    bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo && isMinimapVisible();
+
+    if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
+        // mission information
+        float sourceMissionInfoHeight = 24.0;
+        float sourceMissionInfoWidth = 256.0;
+        float missionInfoHeight = sourceMissionInfoHeight;
+        float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+        float missionInfoLeftMargin = 0.0;
+        float missionInfoTopMargin = 0.0;
+        float missionInfoY1 = missionInfoTopMargin;
+        float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
+        if (texPosition3d.x >= missionInfoLeftMargin &&
+            texPosition3d.x <  256.0*iuTexScale*(3.0/4) &&
+            texPosition3d.y >= missionInfoY1 &&
+            texPosition3d.y <  missionInfoY2) {
+            vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
+                (showMissionInformationBottomScreen ? vec2(0, 192.0) : vec2(0, 0));
+
+            if (showMissionInformationTopScreen) {
+                return coord;
+            }
+            if (showMissionInformationBottomScreen) {
+                float cropMarginLeft = -0.5;
+                if ((texPosition3d.x <  (66.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 1.0) ||
+                    (texPosition3d.x >= (72.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 8.0) ||
+                    (texPosition3d.x >= (66.0 + cropMarginLeft)*heightScale && texPosition3d.x < (72.0 + cropMarginLeft)*heightScale &&
+                        texPosition3d.y >= 1.0 + (texPosition3d.x - (66.0 + cropMarginLeft)*heightScale)/heightScale)) {
+                    return coord;
+                }
+            }
+        }
+
+        if (showMissionInformationTopScreen) {
+            // nothing (clear screen)
+            return vec2(255, 191);
+        }
     }
 
     if (isCutsceneFromChallengeMissionVisible()) {
@@ -921,7 +958,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (!isDialogVisible() && !isMissionInformationVisible())
+        if (!isDialogVisible() && !isMissionInformationVisibleOnTopScreen())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
@@ -977,7 +1014,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (!isDialogVisible() && !isMissionInformationVisible())
+        if (!isDialogVisible() && !isMissionInformationVisibleOnTopScreen())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
