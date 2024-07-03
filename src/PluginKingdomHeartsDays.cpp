@@ -156,7 +156,10 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
         // Switch Target
         {
             if (HotkeyMask & (1 << 17)) {
-                if (LastSwitchTargetPress > SWITCH_TARGET_TIME_BETWEEN_SWITCH) {
+                if (LastSwitchTargetPress == 1) {
+                    LastSwitchTargetPress = 0;
+                }
+                else if (LastSwitchTargetPress > SWITCH_TARGET_TIME_BETWEEN_SWITCH) {
                     LastSwitchTargetPress = 0;
                 }
                 else {
