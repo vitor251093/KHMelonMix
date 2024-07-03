@@ -141,14 +141,14 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
 
         // R / Lock On
         {
-            if (HotkeyPress & (1 << 16)) {
+            if (HotkeyPress & (1 << 16) && LastLockOnPress > 10) {
                 LastLockOnPress = 0;
             }
-            if (LastLockOnPress == 0 || LastLockOnPress == 1) {
+            if (LastLockOnPress == 0 || LastLockOnPress == 1 || LastLockOnPress == 2) {
                 InputMask &= ~(1<<8); // R
             }
-            if (LastLockOnPress == 4 || LastLockOnPress == 5) {
-                InputMask &= ~(1<<8); // R (two frames later)
+            if (LastLockOnPress == 6 || LastLockOnPress == 7 || LastLockOnPress == 8) {
+                InputMask &= ~(1<<8); // R (three frames later)
             }
         }
 
