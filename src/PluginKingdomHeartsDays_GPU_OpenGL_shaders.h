@@ -442,7 +442,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
-    bool showMissionInformationBottomScreen = ShowMissionInfo && isMinimapVisible();
+    bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo && isMinimapVisible();
 
     if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
         // mission information
@@ -458,8 +458,20 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             texPosition3d.x <  256.0*iuTexScale*(3.0/4) &&
             texPosition3d.y >= missionInfoY1 &&
             texPosition3d.y <  missionInfoY2) {
-            return fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
+            vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
                 (showMissionInformationBottomScreen ? vec2(0, 192.0) : vec2(0, 0));
+
+            if (showMissionInformationTopScreen) {
+                return coord;
+            }
+            if (showMissionInformationBottomScreen) {
+                if ((texPosition3d.x <  66.0*heightScale && texPosition3d.y >= 1.0) ||
+                    (texPosition3d.x >= 72.0*heightScale && texPosition3d.y >= 8.0) ||
+                    (texPosition3d.x >= 66.0*heightScale && texPosition3d.x < 72.0*heightScale &&
+                        texPosition3d.y >= 1.0 + (texPosition3d.x - 66.0*heightScale)/heightScale)) {
+                    return coord;
+                }
+            }
         }
 
         if (showMissionInformationTopScreen) {
