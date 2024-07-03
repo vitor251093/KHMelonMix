@@ -75,6 +75,9 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _had3DOnBottomScreen = false;
 
     _hasVisible3DOnBottomScreen = false;
+
+    PriorCmdMenuInputMask = 0;
+    PriorPriorCmdMenuInputMask = 0;
 }
 
 const char* PluginKingdomHeartsDays::gpuOpenGLFragmentShader() {
@@ -85,7 +88,7 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhDays;
 };
 
-u32 PluginKingdomHeartsDays::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
+u32 PluginKingdomHeartsDays::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
@@ -114,13 +117,13 @@ u32 PluginKingdomHeartsDays::applyCommandMenuInputMask(melonDS::NDS* nds, u32 In
             InputMask |= (1<<5); // left
             InputMask |= (1<<6); // up
             InputMask |= (1<<7); // down
-            if (PriorCmdMenuInputMask & (1 << 0)) // Old D-pad right
+            if (PriorPriorCmdMenuInputMask & (1 << 0)) // Old D-pad right
                 InputMask &= ~(1<<4); // right
-            if (PriorCmdMenuInputMask & (1 << 1)) // Old D-pad left
+            if (PriorPriorCmdMenuInputMask & (1 << 1)) // Old D-pad left
                 InputMask &= ~(1<<5); // left
-            if (PriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
+            if (PriorPriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
                 InputMask &= ~(1<<6); // up
-            if (PriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
+            if (PriorPriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
                 InputMask &= ~(1<<7); // down
         }
     }
@@ -139,6 +142,10 @@ u32 PluginKingdomHeartsDays::applyCommandMenuInputMask(melonDS::NDS* nds, u32 In
             InputMask &= ~(1<<7); // down
         }
     }
+
+    PriorPriorCmdMenuInputMask = PriorCmdMenuInputMask;
+    PriorCmdMenuInputMask = CmdMenuInputMask;
+
     return InputMask;
 }
 

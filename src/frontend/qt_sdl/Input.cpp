@@ -40,7 +40,7 @@ u32 HotkeyMask, LastHotkeyMask;
 u32 HotkeyPress, HotkeyRelease;
 
 u32 InputMask, TouchInputMask;
-u32 CmdMenuInputMask, PriorCmdMenuInputMask, PriorPriorCmdMenuInputMask;
+u32 CmdMenuInputMask;
 
 
 void Init()
@@ -60,8 +60,6 @@ void Init()
     KeyCmdMenuInputMask = 0;
     JoyCmdMenuInputMask = 0;
     CmdMenuInputMask = 0;
-    PriorCmdMenuInputMask = 0;
-    PriorPriorCmdMenuInputMask = 0;
 }
 
 
@@ -366,8 +364,6 @@ void Process()
     HotkeyRelease = LastHotkeyMask & ~HotkeyMask;
     LastHotkeyMask = HotkeyMask;
 
-    PriorPriorCmdMenuInputMask = PriorCmdMenuInputMask;
-    PriorCmdMenuInputMask = CmdMenuInputMask;
     CmdMenuInputMask = KeyCmdMenuInputMask | JoyCmdMenuInputMask;
 }
 

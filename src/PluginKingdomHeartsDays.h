@@ -27,7 +27,7 @@ public:
     const char* gpuOpenGLFragmentShader();
     const char* gpu3DOpenGLVertexShader();
 
-    u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask);
+    u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask);
     void hudToggle(melonDS::NDS* nds);
     const char* getGameSceneName();
     bool shouldSkipFrame(melonDS::NDS* nds);
@@ -50,6 +50,8 @@ private:
     bool _had3DOnBottomScreen;
 
     bool _hasVisible3DOnBottomScreen;
+
+    u32 PriorCmdMenuInputMask, PriorPriorCmdMenuInputMask;
 
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);

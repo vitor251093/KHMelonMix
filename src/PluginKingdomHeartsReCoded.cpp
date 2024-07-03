@@ -65,6 +65,9 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _olderHad3DOnBottomScreen = false;
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
+
+    PriorCmdMenuInputMask = 0;
+    PriorPriorCmdMenuInputMask = 0;
 }
 
 const char* PluginKingdomHeartsReCoded::gpuOpenGLFragmentShader() {
@@ -75,7 +78,7 @@ const char* PluginKingdomHeartsReCoded::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhReCoded;
 };
 
-u32 PluginKingdomHeartsReCoded::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
+u32 PluginKingdomHeartsReCoded::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
@@ -113,6 +116,10 @@ u32 PluginKingdomHeartsReCoded::applyCommandMenuInputMask(melonDS::NDS* nds, u32
             InputMask &= ~(1<<7); // down
         }
     }
+
+    PriorPriorCmdMenuInputMask = PriorCmdMenuInputMask;
+    PriorCmdMenuInputMask = CmdMenuInputMask;
+
     return InputMask;
 }
 
