@@ -35,12 +35,10 @@ SDL_Joystick* Joystick = nullptr;
 u32 KeyInputMask, JoyInputMask;
 u32 KeyTouchInputMask, JoyTouchInputMask;
 u32 KeyHotkeyMask, JoyHotkeyMask;
-u32 KeyCmdMenuInputMask, JoyCmdMenuInputMask;
 u32 HotkeyMask, LastHotkeyMask;
 u32 HotkeyPress, HotkeyRelease;
 
 u32 InputMask, TouchInputMask;
-u32 CmdMenuInputMask, PriorCmdMenuInputMask, PriorPriorCmdMenuInputMask;
 
 
 void Init()
@@ -56,12 +54,6 @@ void Init()
     JoyHotkeyMask = 0;
     HotkeyMask = 0;
     LastHotkeyMask = 0;
-
-    KeyCmdMenuInputMask = 0;
-    JoyCmdMenuInputMask = 0;
-    CmdMenuInputMask = 0;
-    PriorCmdMenuInputMask = 0;
-    PriorPriorCmdMenuInputMask = 0;
 }
 
 
@@ -96,11 +88,6 @@ void SetAutoJoystickConfig(int a, int b, int select, int start, int right, int l
     Config::TouchJoyMapping[2] = camUp;
     Config::TouchJoyMapping[3] = camDown;
 
-    Config::CmdMenuJoyMapping[0] = cmdLeft;
-    Config::CmdMenuJoyMapping[1] = cmdRight;
-    Config::CmdMenuJoyMapping[2] = cmdUp;
-    Config::CmdMenuJoyMapping[3] = cmdDown;
-
     Config::HKJoyMapping[HK_Lid] = -1;
     Config::HKJoyMapping[HK_Mic] = -1;
     Config::HKJoyMapping[HK_Pause] = pause;
@@ -116,7 +103,14 @@ void SetAutoJoystickConfig(int a, int b, int select, int start, int right, int l
     Config::HKJoyMapping[HK_PowerButton] = -1;
     Config::HKJoyMapping[HK_VolumeUp] = -1;
     Config::HKJoyMapping[HK_VolumeDown] = -1;
+
     Config::HKJoyMapping[HK_HUDToggle] = -1;
+    Config::HKJoyMapping[HK_RLockOn] = -1;
+    Config::HKJoyMapping[HK_SwitchTarget] = -1;
+    Config::HKJoyMapping[HK_CommandMenuLeft] = cmdLeft;
+    Config::HKJoyMapping[HK_CommandMenuRight] = cmdRight;
+    Config::HKJoyMapping[HK_CommandMenuUp] = cmdUp;
+    Config::HKJoyMapping[HK_CommandMenuDown] = cmdDown;
 }
 void OpenJoystick(bool autoMapping)
 {
@@ -219,10 +213,6 @@ void KeyPress(QKeyEvent* event)
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == Config::HKKeyMapping[i])
             KeyHotkeyMask |= (1<<i);
-
-    for (int i = 0; i < 4; i++)
-        if (keyKP == Config::CmdMenuKeyMapping[i])
-            KeyCmdMenuInputMask |= (1<<i);
 }
 
 void KeyRelease(QKeyEvent* event)
@@ -243,10 +233,6 @@ void KeyRelease(QKeyEvent* event)
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == Config::HKKeyMapping[i])
             KeyHotkeyMask &= ~(1<<i);
-
-    for (int i = 0; i < 4; i++)
-        if (keyKP == Config::CmdMenuKeyMapping[i])
-            KeyCmdMenuInputMask &= ~(1<<i);
 }
 
 void KeyReleaseAll()
@@ -347,25 +333,17 @@ void Process()
     TouchInputMask = KeyTouchInputMask & JoyTouchInputMask;
 
     JoyHotkeyMask = 0;
-    JoyCmdMenuInputMask = 0;
     if (Joystick)
     {
         for (int i = 0; i < HK_MAX; i++)
             if (JoystickButtonDown(Config::HKJoyMapping[i]) != 0)
                 JoyHotkeyMask |= (1<<i);
-        for (int i = 0; i < 4; i++)
-            if (JoystickButtonDown(Config::CmdMenuJoyMapping[i]) != 0)
-                JoyCmdMenuInputMask |= (1<<i);
     }
 
     HotkeyMask = KeyHotkeyMask | JoyHotkeyMask;
     HotkeyPress = HotkeyMask & ~LastHotkeyMask;
     HotkeyRelease = LastHotkeyMask & ~HotkeyMask;
     LastHotkeyMask = HotkeyMask;
-
-    PriorPriorCmdMenuInputMask = PriorCmdMenuInputMask;
-    PriorCmdMenuInputMask = CmdMenuInputMask;
-    CmdMenuInputMask = KeyCmdMenuInputMask | JoyCmdMenuInputMask;
 }
 
 

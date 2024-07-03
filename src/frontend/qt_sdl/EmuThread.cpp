@@ -466,14 +466,9 @@ void EmuThread::run()
             melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
             // process input and hotkeys
-            Input::InputMask = plugin->applyCommandMenuInputMask(&nds, Input::InputMask, Input::CmdMenuInputMask, Input::PriorPriorCmdMenuInputMask);
+            Input::InputMask = plugin->applyHotkeyToInputMask(&nds, Input::InputMask, Input::HotkeyMask, Input::HotkeyPress);
             NDS->SetKeyMask(Input::InputMask);
             NDS->SetTouchKeyMask(Input::TouchInputMask);
-
-            if (Input::HotkeyPressed(HK_HUDToggle))
-            {
-                plugin->hudToggle(&nds);
-            }
 
             if (Input::HotkeyPressed(HK_Lid))
             {

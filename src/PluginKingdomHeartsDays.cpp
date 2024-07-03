@@ -27,6 +27,10 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
+#define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
+#define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
+#define LOCK_ON_PRESS_FRAME_LIMIT         100
+
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -76,6 +80,13 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _had3DOnBottomScreen = false;
 
     _hasVisible3DOnBottomScreen = false;
+
+    PriorHotkeyMask = 0;
+    PriorPriorHotkeyMask = 0;
+
+    LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
+    LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
+    SwitchTargetPressOnHold = false;
 }
 
 const char* PluginKingdomHeartsDays::gpuOpenGLFragmentShader() {
@@ -86,11 +97,15 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhDays;
 };
 
-u32 PluginKingdomHeartsDays::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
+u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
+    if (HotkeyPress & (1 << 15)) { // HUD Toggle
+        hudToggle(nds);
+    }
+
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
-        if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) { // D-pad
+        if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) { // D-pad
             u32 dpadMenuAddress = 0;
             if (isUsaCart()) {
                 dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US;
@@ -109,37 +124,84 @@ u32 PluginKingdomHeartsDays::applyCommandMenuInputMask(melonDS::NDS* nds, u32 In
         }
 
         // So the arrow keys can be used to control the command menu
-        if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) {
+        if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
             InputMask &= ~(1<<10); // X
-            InputMask |= (1<<4); // right
             InputMask |= (1<<5); // left
+            InputMask |= (1<<4); // right
             InputMask |= (1<<6); // up
             InputMask |= (1<<7); // down
-            if (PriorCmdMenuInputMask & (1 << 0)) // Old D-pad right
-                InputMask &= ~(1<<4); // right
-            if (PriorCmdMenuInputMask & (1 << 1)) // Old D-pad left
+            if (PriorPriorHotkeyMask & (1 << 18)) // Old D-pad left
                 InputMask &= ~(1<<5); // left
-            if (PriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
+            if (PriorPriorHotkeyMask & (1 << 19)) // Old D-pad right
+                InputMask &= ~(1<<4); // right
+            if (PriorPriorHotkeyMask & (1 << 20)) // Old D-pad up
                 InputMask &= ~(1<<6); // up
-            if (PriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
+            if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad down
                 InputMask &= ~(1<<7); // down
+        }
+
+        // R / Lock On
+        {
+            if (HotkeyPress & (1 << 16) && LastLockOnPress > 10) {
+                LastLockOnPress = 0;
+            }
+            if (LastLockOnPress == 0 || LastLockOnPress == 1 || LastLockOnPress == 2) {
+                InputMask &= ~(1<<8); // R
+            }
+            if (LastLockOnPress == 6 || LastLockOnPress == 7 || LastLockOnPress == 8) {
+                InputMask &= ~(1<<8); // R (three frames later)
+            }
+        }
+
+        // Switch Target
+        {
+            if (HotkeyMask & (1 << 17)) {
+                if (LastSwitchTargetPress > SWITCH_TARGET_TIME_BETWEEN_SWITCH) {
+                    LastSwitchTargetPress = 0;
+                }
+                else {
+                    SwitchTargetPressOnHold = true;
+                }
+            }
+            if (SwitchTargetPressOnHold) {
+                if (LastSwitchTargetPress == SWITCH_TARGET_TIME_BETWEEN_SWITCH ||
+                    LastSwitchTargetPress == SWITCH_TARGET_TIME_BETWEEN_SWITCH + 1 ||
+                    LastSwitchTargetPress == SWITCH_TARGET_TIME_BETWEEN_SWITCH + 2) {
+                    LastSwitchTargetPress = 0;
+                    SwitchTargetPressOnHold = false;
+                }
+            }
+            if (LastSwitchTargetPress == 0 || LastSwitchTargetPress == 1 || LastSwitchTargetPress == 2) {
+                InputMask &= ~(1<<8); // R
+            }
         }
     }
     else {
         // So the arrow keys can be used as directionals
-        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
-            InputMask &= ~(1<<4); // right
-        }
-        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+        if (HotkeyMask & (1 << 18)) { // D-pad left
             InputMask &= ~(1<<5); // left
         }
-        if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+        if (HotkeyMask & (1 << 19)) { // D-pad right
+            InputMask &= ~(1<<4); // right
+        }
+        if (HotkeyMask & (1 << 20)) { // D-pad up
             InputMask &= ~(1<<6); // up
         }
-        if (CmdMenuInputMask & (1 << 3)) { // D-pad down
+        if (HotkeyMask & (1 << 21)) { // D-pad down
             InputMask &= ~(1<<7); // down
         }
+
+        if (HotkeyMask & (1 << 16)) { // R / Lock On
+            InputMask &= ~(1<<8); // R
+        }
     }
+
+    PriorPriorHotkeyMask = PriorHotkeyMask;
+    PriorHotkeyMask = HotkeyMask;
+
+    if (LastSwitchTargetPress < SWITCH_TARGET_PRESS_FRAME_LIMIT) LastSwitchTargetPress++;
+    if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
+
     return InputMask;
 }
 

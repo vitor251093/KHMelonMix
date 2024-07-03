@@ -15,10 +15,8 @@ public:
 
     bool isDebugEnabled = false;
     
-    u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask) {
+    u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) {
         return InputMask;
-    }
-    void hudToggle(melonDS::NDS* nds) {
     }
     const char* getGameSceneName() {
         return "";
