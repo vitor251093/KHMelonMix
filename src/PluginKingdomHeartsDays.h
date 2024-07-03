@@ -52,6 +52,7 @@ private:
 
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
     u32 LastLockOnPress, LastSwitchTargetPress;
+    bool SwitchTargetPressOnHold;
 
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);

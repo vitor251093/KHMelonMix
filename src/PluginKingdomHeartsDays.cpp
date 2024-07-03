@@ -27,8 +27,9 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
-#define SWITCH_TARGET_PRESS_FRAME_LIMIT 100
-#define LOCK_ON_PRESS_FRAME_LIMIT       100
+#define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
+#define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
+#define LOCK_ON_PRESS_FRAME_LIMIT         100
 
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
@@ -84,6 +85,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
+    SwitchTargetPressOnHold = false;
 }
 
 const char* PluginKingdomHeartsDays::gpuOpenGLFragmentShader() {
@@ -150,8 +152,27 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
             }
         }
 
-        if (HotkeyMask & (1 << 17)) { // Switch Target
-            InputMask &= ~(1<<8); // R
+        // Switch Target
+        {
+            if (HotkeyMask & (1 << 17)) {
+                if (LastSwitchTargetPress > SWITCH_TARGET_TIME_BETWEEN_SWITCH) {
+                    LastSwitchTargetPress = 0;
+                }
+                else {
+                    SwitchTargetPressOnHold = true;
+                }
+            }
+            if (SwitchTargetPressOnHold) {
+                if (LastSwitchTargetPress == SWITCH_TARGET_TIME_BETWEEN_SWITCH ||
+                    LastSwitchTargetPress == SWITCH_TARGET_TIME_BETWEEN_SWITCH + 1 ||
+                    LastSwitchTargetPress == SWITCH_TARGET_TIME_BETWEEN_SWITCH + 2) {
+                    LastSwitchTargetPress = 0;
+                    SwitchTargetPressOnHold = false;
+                }
+            }
+            if (LastSwitchTargetPress == 0 || LastSwitchTargetPress == 1 || LastSwitchTargetPress == 2) {
+                InputMask &= ~(1<<8); // R
+            }
         }
     }
     else {
