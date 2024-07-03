@@ -40,8 +40,12 @@ enum
     HK_VolumeUp,
     HK_VolumeDown,
     HK_HUDToggle,
-    HK_LockOn,
-    HK_RSwitchTarget,
+    HK_RLockOn,
+    HK_SwitchTarget,
+    HK_CommandMenuLeft,
+    HK_CommandMenuRight,
+    HK_CommandMenuUp,
+    HK_CommandMenuDown,
     HK_MAX
 };
 
@@ -93,9 +97,6 @@ extern int HKJoyMapping[HK_MAX];
 
 extern int TouchKeyMapping[4];
 extern int TouchJoyMapping[4];
-
-extern int CmdMenuKeyMapping[4];
-extern int CmdMenuJoyMapping[4];
 
 extern int JoystickID;
 

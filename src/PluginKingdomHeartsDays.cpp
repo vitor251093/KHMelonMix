@@ -76,8 +76,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     _hasVisible3DOnBottomScreen = false;
 
-    PriorCmdMenuInputMask = 0;
-    PriorPriorCmdMenuInputMask = 0;
+    PriorHotkeyMask = 0;
+    PriorPriorHotkeyMask = 0;
 }
 
 const char* PluginKingdomHeartsDays::gpuOpenGLFragmentShader() {
@@ -88,11 +88,11 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhDays;
 };
 
-u32 PluginKingdomHeartsDays::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask)
+u32 PluginKingdomHeartsDays::applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
-        if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) { // D-pad
+        if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) { // D-pad
             u32 dpadMenuAddress = 0;
             if (isUsaCart()) {
                 dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US;
@@ -111,40 +111,40 @@ u32 PluginKingdomHeartsDays::applyCommandMenuInputMask(melonDS::NDS* nds, u32 In
         }
 
         // So the arrow keys can be used to control the command menu
-        if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) {
+        if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
             InputMask &= ~(1<<10); // X
-            InputMask |= (1<<4); // right
             InputMask |= (1<<5); // left
+            InputMask |= (1<<4); // right
             InputMask |= (1<<6); // up
             InputMask |= (1<<7); // down
-            if (PriorPriorCmdMenuInputMask & (1 << 0)) // Old D-pad right
-                InputMask &= ~(1<<4); // right
-            if (PriorPriorCmdMenuInputMask & (1 << 1)) // Old D-pad left
+            if (PriorPriorHotkeyMask & (1 << 18)) // Old D-pad left
                 InputMask &= ~(1<<5); // left
-            if (PriorPriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
+            if (PriorPriorHotkeyMask & (1 << 19)) // Old D-pad right
+                InputMask &= ~(1<<4); // right
+            if (PriorPriorHotkeyMask & (1 << 20)) // Old D-pad up
                 InputMask &= ~(1<<6); // up
-            if (PriorPriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
+            if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad down
                 InputMask &= ~(1<<7); // down
         }
     }
     else {
         // So the arrow keys can be used as directionals
-        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
-            InputMask &= ~(1<<4); // right
-        }
-        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+        if (HotkeyMask & (1 << 18)) { // D-pad left
             InputMask &= ~(1<<5); // left
         }
-        if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+        if (HotkeyMask & (1 << 19)) { // D-pad right
+            InputMask &= ~(1<<4); // right
+        }
+        if (HotkeyMask & (1 << 20)) { // D-pad up
             InputMask &= ~(1<<6); // up
         }
-        if (CmdMenuInputMask & (1 << 3)) { // D-pad down
+        if (HotkeyMask & (1 << 21)) { // D-pad down
             InputMask &= ~(1<<7); // down
         }
     }
 
-    PriorPriorCmdMenuInputMask = PriorCmdMenuInputMask;
-    PriorCmdMenuInputMask = CmdMenuInputMask;
+    PriorPriorHotkeyMask = PriorHotkeyMask;
+    PriorHotkeyMask = HotkeyMask;
 
     return InputMask;
 }

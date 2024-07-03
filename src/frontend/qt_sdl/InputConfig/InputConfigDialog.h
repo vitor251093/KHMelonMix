@@ -27,15 +27,18 @@
 
 static constexpr int keypad_num = 12;
 static constexpr int touchscreen_num = 4;
-static constexpr int cmdmenu_num = 4;
 
 static constexpr std::initializer_list<int> hk_addons =
 {
     HK_SolarSensorIncrease,
     HK_SolarSensorDecrease,
     HK_HUDToggle,
-    HK_LockOn,
-    HK_RSwitchTarget,
+    HK_RLockOn,
+    HK_SwitchTarget,
+    HK_CommandMenuLeft,
+    HK_CommandMenuRight,
+    HK_CommandMenuUp,
+    HK_CommandMenuDown,
 };
 
 static constexpr std::initializer_list<const char*> hk_addons_labels =
@@ -45,6 +48,10 @@ static constexpr std::initializer_list<const char*> hk_addons_labels =
     "[KH Days] HUD Toggle",
     "[KH Days] (R1) R / Lock On",
     "[KH Days] (R2) Switch Target",
+    "[KH Days] Command Menu - Left",
+    "[KH Days] Command Menu - Right",
+    "[KH Days] Command Menu - Up",
+    "[KH Days] Command Menu - Down",
 };
 
 static_assert(hk_addons.size() == hk_addons_labels.size());
@@ -145,7 +152,6 @@ private:
         int* keymap, int* joymap);
     void setupKeypadPage();
     void setupTouchScreenPage();
-    void setupCommandMenuPage();
 
     Ui::InputConfigDialog* ui;
 
@@ -153,7 +159,6 @@ private:
     int addonsKeyMap[hk_addons.size()], addonsJoyMap[hk_addons.size()];
     int hkGeneralKeyMap[hk_general.size()], hkGeneralJoyMap[hk_general.size()];
     int touchScreenKeyMap[4], touchScreenJoyMap[4];
-    int cmdMenuKeyMap[4], cmdMenuJoyMap[4];
 };
 
 

@@ -15,7 +15,7 @@ public:
 
     bool isDebugEnabled = false;
     
-    u32 applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask) {
+    u32 applyHotkeyMaskToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask) {
         return InputMask;
     }
     void hudToggle(melonDS::NDS* nds) {
