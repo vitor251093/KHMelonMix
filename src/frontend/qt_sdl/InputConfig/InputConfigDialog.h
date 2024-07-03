@@ -33,12 +33,14 @@ static constexpr std::initializer_list<int> hk_addons =
 {
     HK_SolarSensorIncrease,
     HK_SolarSensorDecrease,
+    HK_HUDToggle,
 };
 
 static constexpr std::initializer_list<const char*> hk_addons_labels =
 {
     "[Boktai] Sunlight + ",
     "[Boktai] Sunlight - ",
+    "[KH Days] HUD Toggle",
 };
 
 static_assert(hk_addons.size() == hk_addons_labels.size());
@@ -57,8 +59,7 @@ static constexpr std::initializer_list<int> hk_general =
     HK_SwapScreenEmphasis,
     HK_PowerButton,
     HK_VolumeUp,
-    HK_VolumeDown,
-    HK_HUDToggle
+    HK_VolumeDown
 };
 
 static constexpr std::initializer_list<const char*> hk_general_labels =
@@ -75,8 +76,7 @@ static constexpr std::initializer_list<const char*> hk_general_labels =
     "Swap screen emphasis",
     "DSi Power button",
     "DSi Volume up",
-    "DSi Volume down",
-    "HUD Toggle"
+    "DSi Volume down"
 };
 
 static_assert(hk_general.size() == hk_general_labels.size());

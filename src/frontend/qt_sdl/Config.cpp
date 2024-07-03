@@ -240,6 +240,7 @@ ConfigEntry ConfigFile[] =
     {"HKKey_PowerButton",         0, &HKKeyMapping[HK_PowerButton],         -1, true},
     {"HKKey_VolumeUp",            0, &HKKeyMapping[HK_VolumeUp],            -1, true},
     {"HKKey_VolumeDown",          0, &HKKeyMapping[HK_VolumeDown],          -1, true},
+
     {"HKKey_HUDToggle",           0, &HKKeyMapping[HK_HUDToggle],           -1, true},
 
     {"HKJoy_Lid",                 0, &HKJoyMapping[HK_Lid],                 -1, true},
@@ -257,6 +258,7 @@ ConfigEntry ConfigFile[] =
     {"HKJoy_PowerButton",         0, &HKJoyMapping[HK_PowerButton],         -1, true},
     {"HKJoy_VolumeUp",            0, &HKJoyMapping[HK_VolumeUp],            -1, true},
     {"HKJoy_VolumeDown",          0, &HKJoyMapping[HK_VolumeDown],          -1, true},
+
     {"HKJoy_HUDToggle",           0, &HKJoyMapping[HK_HUDToggle],           -1, true},
 
     {"Key_TouchRight", 0, &TouchKeyMapping[0], -1, true},
