@@ -19,6 +19,8 @@ public:
     u32 GameCode = 0;
     static bool isCart(u32 gameCode) {return true;};
 
+    virtual std::string assetsFolder() = 0;
+
     virtual const char* gpuOpenGL_FS() { return nullptr; };
     virtual const char* gpu3DOpenGL_VS_Z() { return nullptr; };
 

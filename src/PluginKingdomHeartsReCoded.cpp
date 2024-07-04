@@ -69,6 +69,10 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     PriorPriorHotkeyMask = 0;
 }
 
+std::string PluginKingdomHeartsReCoded::assetsFolder() {
+    return "recoded";
+}
+
 const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
     return kCompositorFS_KhReCoded;
 };

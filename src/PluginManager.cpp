@@ -45,7 +45,7 @@ Plugin* PluginManager::get() {
             return PluginsCache.at(GameCode).get();
         }
     }
-    PluginsCache[GameCode] = std::unique_ptr<Plugin>(new PluginDefault());
+    PluginsCache[GameCode] = std::unique_ptr<Plugin>(new PluginDefault(GameCode));
     return PluginsCache.at(GameCode).get();
 }
 u32 PluginManager::getGameCode() {
