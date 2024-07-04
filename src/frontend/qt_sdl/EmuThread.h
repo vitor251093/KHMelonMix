@@ -129,6 +129,8 @@ private:
 
     ScreenPanelGL* screenGL;
 
+    int autoScreenSizing;
+
     Plugins::Plugin* plugin;
     void refreshGameScene();
 
