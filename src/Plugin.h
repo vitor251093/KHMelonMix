@@ -20,9 +20,6 @@ public:
 
     u32 GameCode = 0;
     static bool isCart(u32 gameCode) {return true;};
-    virtual bool isUsaCart()    { return false; };
-    virtual bool isEuropeCart() { return false; };
-    virtual bool isJapanCart()  { return false; };
 
     virtual const char* gpuOpenGLFragmentShader() { return nullptr; };
     virtual const char* gpu3DOpenGLVertexShader() { return nullptr; };
