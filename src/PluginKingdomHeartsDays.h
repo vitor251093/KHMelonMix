@@ -31,11 +31,14 @@ public:
     void gpu3DOpenGL_VS_Z_updateVariables(u32 flags);
 
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
+
     const char* getGameSceneName();
+
     bool shouldSkipFrame(melonDS::NDS* nds);
+
     void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
+
     bool refreshGameScene(melonDS::NDS* nds);
-    void debugLogs(melonDS::NDS* nds, int gameScene);
 private:
     bool PausedInGame;
     int HUDState;
@@ -67,11 +70,13 @@ private:
 
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);
+    std::optional<std::string> detectCutscene(melonDS::NDS* nds);
 
     bool isBufferBlack(unsigned int* buffer);
     bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
     bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
     void hudToggle(melonDS::NDS* nds);
+    void debugLogs(melonDS::NDS* nds, int gameScene);
 };
 }
 

@@ -704,10 +704,35 @@ bool PluginKingdomHeartsDays::setGameScene(melonDS::NDS* nds, int newGameScene)
     return updated;
 }
 
+std::optional<std::string> PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
+{
+    u32 cutsceneAddress = nds->ARM7Read32(0x02093A4C);
+    if (cutsceneAddress == 0) {
+        return std::nullopt;
+    }
+
+    switch(cutsceneAddress) {
+        case 0x09b80600: return "3_the_dark_margin";
+        case 0x09ff8000: return "4_the_main_in_black_reflects";
+        case 0x0a13f600: return "5_xions_defeat";
+        default: return std::nullopt;
+    }
+    return std::nullopt;
+}
+
 bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)
 {
     int newGameScene = detectGameScene(nds);
+    
+    if (newGameScene == gameScene_Cutscene) {
+        std::optional<std::string> cutsceneName = detectCutscene(nds);
+        if (cutsceneName) {
+            // printf("Cutscene: %s\n", cutsceneName.value().c_str());
+        }
+    }
+
     debugLogs(nds, newGameScene);
+
     return setGameScene(nds, newGameScene);
 }
 
