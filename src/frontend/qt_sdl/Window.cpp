@@ -743,21 +743,23 @@ void MainWindow::createVideoPlayer()
 {
     QString filePath = "/home/vitor/Downloads/KHDays - 60 FPS Mod-2-1-5-1667958998/DOP.mp4";
 
-    player = new QMediaPlayer;
+    player = new QMediaPlayer(this);
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
+        qDebug() << "MediaStatus " << status;
         if (status == QMediaPlayer::LoadedMedia) {
             qDebug() << "Video loaded successfully";
+            player->play();
         }
     });
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
         qDebug() << "Error: " << player->errorString();
     });
 
-    QVideoWidget *videoWidget = new QVideoWidget;
-    player->setVideoOutput(videoWidget);
+    // QVideoWidget *videoWidget = new QVideoWidget;
+    // player->setVideoOutput(videoWidget);
     player->setMedia(QUrl::fromLocalFile(filePath));
-    player->play();
-    videoWidget->show();
+    
+    // videoWidget->show();
 }
 
 GL::Context* MainWindow::getOGLContext()
