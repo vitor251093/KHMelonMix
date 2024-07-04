@@ -28,6 +28,7 @@
 
 #include "NDSCart.h"
 #include "GBACart.h"
+#include "Plugin.h"
 
 extern int autoScreenSizing;
 
@@ -130,6 +131,7 @@ private:
 
     ScreenPanelGL* screenGL;
 
+    Plugins::Plugin* plugin;
     void refreshGameScene();
 
     int lastVideoRenderer = -1;

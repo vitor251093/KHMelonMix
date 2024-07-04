@@ -34,8 +34,8 @@ extern SDL_Joystick* Joystick;
 
 extern u32 InputMask;
 extern u32 TouchInputMask;
-extern u32 CmdMenuInputMask;
-extern u32 PriorPriorCmdMenuInputMask;
+extern u32 HotkeyMask;
+extern u32 HotkeyPress;
 
 void Init();
 

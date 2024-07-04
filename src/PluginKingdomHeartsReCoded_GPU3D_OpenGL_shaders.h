@@ -19,7 +19,7 @@
 #ifndef KHRECODED_GPU3D_OPENGL_SHADERS_H
 #define KHRECODED_GPU3D_OPENGL_SHADERS_H
 
-namespace melonDS
+namespace Plugins
 {
 const char* kRenderVS_Z_KhReCoded = R"(
 

@@ -315,6 +315,10 @@ void ComputeRenderer::SetGameScene(int gameScene)
 {
     CurGLCompositor.SetGameScene(gameScene);
 }
+void ComputeRenderer::SetUIScale(int uiScale)
+{
+    CurGLCompositor.SetUIScale(uiScale);
+}
 void ComputeRenderer::SetAspectRatio(float aspectRatio)
 {
     CurGLCompositor.SetAspectRatio(aspectRatio);
@@ -330,6 +334,10 @@ void ComputeRenderer::SetShowTarget(bool showTarget)
 void ComputeRenderer::SetShowMissionGauge(bool showMissionGauge)
 {
     CurGLCompositor.SetShowMissionGauge(showMissionGauge);
+}
+void ComputeRenderer::SetShowMissionInfo(bool showMissionInfo)
+{
+    CurGLCompositor.SetShowMissionInfo(showMissionInfo);
 }
 
 void ComputeRenderer::SetRenderSettings(int scale, bool highResolutionCoordinates)

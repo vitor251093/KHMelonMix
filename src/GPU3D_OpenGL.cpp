@@ -24,9 +24,7 @@
 #include "NDS.h"
 #include "GPU.h"
 #include "GPU3D_OpenGL_shaders.h"
-#include "CartValidator.h"
-#include "KHDays_GPU3D_OpenGL_shaders.h"
-#include "KHReCoded_GPU3D_OpenGL_shaders.h"
+#include "PluginManager.h"
 
 namespace melonDS
 {
@@ -70,8 +68,11 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TopScreenAspectRatio");
     RenderShaderAspectRatio[flags] = uni_id;
 
-    uni_id = glGetUniformLocation(prog, "KHGameScene");
+    uni_id = glGetUniformLocation(prog, "GameScene");
     RenderShaderGameScene[flags] = uni_id;
+
+    uni_id = glGetUniformLocation(prog, "KHUIScale");
+    RenderShaderUIScale[flags] = uni_id;
 
     RenderShader[flags] = prog;
 
@@ -89,6 +90,9 @@ void GLRenderer::UseRenderShader(u32 flags)
 
     float gameScene = CurGLCompositor.GetGameScene();
     glUniform1i(RenderShaderGameScene[flags], gameScene);
+
+    int uiScale = CurGLCompositor.GetUIScale();
+    glUniform1i(RenderShaderUIScale[flags], uiScale);
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -143,17 +147,10 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
     memset(result->RenderShader, 0, sizeof(RenderShader));
     memset(result->RenderShaderAspectRatio, 0, sizeof(RenderShaderAspectRatio));
     memset(result->RenderShaderGameScene, 0, sizeof(RenderShaderGameScene));
+    memset(result->RenderShaderUIScale, 0, sizeof(RenderShaderUIScale));
 
-    const char* renderVS_Z;
-    if (CartValidator::isDays()) {
-        renderVS_Z = kRenderVS_Z_KhDays;
-    }
-    else if (CartValidator::isRecoded()) {
-        renderVS_Z = kRenderVS_Z_KhReCoded;
-    }
-    else {
-        renderVS_Z = kRenderVS_Z;
-    }
+    const char* renderVS_Z_Custom = Plugins::PluginManager::get()->gpu3DOpenGLVertexShader();
+    const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
 
     if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))
         return nullptr;
@@ -361,6 +358,10 @@ void GLRenderer::SetGameScene(int gameScene) noexcept
 {
     CurGLCompositor.SetGameScene(gameScene);
 }
+void GLRenderer::SetUIScale(int uiScale) noexcept
+{
+    CurGLCompositor.SetUIScale(uiScale);
+}
 void GLRenderer::SetAspectRatio(float aspectRatio) noexcept
 {
     CurGLCompositor.SetAspectRatio(aspectRatio);
@@ -380,6 +381,10 @@ void GLRenderer::SetShowTarget(bool showTarget) noexcept
 void GLRenderer::SetShowMissionGauge(bool showMissionGauge) noexcept
 {
     CurGLCompositor.SetShowMissionGauge(showMissionGauge);
+}
+void GLRenderer::SetShowMissionInfo(bool showMissionInfo) noexcept
+{
+    CurGLCompositor.SetShowMissionInfo(showMissionInfo);
 }
 
 

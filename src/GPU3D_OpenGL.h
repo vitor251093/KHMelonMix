@@ -39,13 +39,14 @@ public:
     void SetIsBottomScreen2DTextureBlack(bool isBlack) noexcept;
     void SetIsTopScreen2DTextureBlack(bool isBlack) noexcept;
     void SetGameScene(int gameScene) noexcept;
+    void SetUIScale(int uiScale) noexcept;
     void SetAspectRatio(float aspectRatio) noexcept;
     void SetScaleFactor(int scale) noexcept;
     void SetShowMap(bool showMap) noexcept;
     void SetShowTarget(bool showTarget) noexcept;
     void SetShowMissionGauge(bool showMissionGauge) noexcept;
+    void SetShowMissionInfo(bool showMissionInfo) noexcept;
     [[nodiscard]] bool GetBetterPolygons() const noexcept { return BetterPolygons; }
-    [[nodiscard]] int GetScaleFactor() const noexcept { return ScaleFactor; }
 
     void VCount144(GPU& gpu) override {};
     void RenderFrame(GPU& gpu) override;
@@ -108,6 +109,7 @@ private:
     GLuint RenderShader[16] {};
     GLuint RenderShaderAspectRatio[16] {};
     GLuint RenderShaderGameScene[16] {};
+    GLuint RenderShaderUIScale[16] {};
     GLuint CurShaderID = -1;
 
     GLuint FinalPassEdgeShader {};
