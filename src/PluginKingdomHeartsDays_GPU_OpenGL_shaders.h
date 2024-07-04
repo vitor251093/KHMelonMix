@@ -455,7 +455,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         float missionInfoY1 = missionInfoTopMargin;
         float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
         if (texPosition3d.x >= missionInfoLeftMargin &&
-            texPosition3d.x <  256.0*iuTexScale*(3.0/4) &&
+            texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
             texPosition3d.y >= missionInfoY1 &&
             texPosition3d.y <  missionInfoY2) {
             vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
@@ -687,31 +687,52 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (GameScene == 10) // gameScene_PauseMenu
+    if (!isScreenBlack(1) && PriorGameScene != 12) // gameScene_InGameWithCutscene
     {
-        if (!isScreenBlack(1) && PriorGameScene != 12) // gameScene_InGameWithCutscene
-        {
-            // mission gauge
-            float sourceMissionGaugeHeight = 39.0;
-            float sourceMissionGaugeWidth = 246.0;
-            float missionGaugeHeight = sourceMissionGaugeHeight;
-            float missionGaugeWidth = sourceMissionGaugeWidth*heightScale;
-            float missionGaugeRightMargin = (256.0*iuTexScale - missionGaugeWidth)/2;
-            float bottomMissionGaugeCenterX = 128.0;
-            float bottomMissionGaugeCenterY = 172.5;
-            float bottomMissionGaugeLeftMargin = bottomMissionGaugeCenterX - sourceMissionGaugeWidth/2;
-            float bottomMissionGaugeTopMargin = bottomMissionGaugeCenterY - sourceMissionGaugeHeight/2;
-            if (texPosition3d.x >= (256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin) &&
-                texPosition3d.x <= (256.0*iuTexScale - missionGaugeRightMargin) &&
-                texPosition3d.y >= (192.0*iuTexScale - missionGaugeHeight) &&
-                texPosition3d.y < (192.0*iuTexScale)) {
+        // mission information
+        float sourceMissionInfoHeight = 24.0;
+        float sourceMissionInfoWidth = 256.0;
+        float missionInfoHeight = sourceMissionInfoHeight;
+        float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+        float missionInfoLeftMargin = 0.0;
+        float missionInfoTopMargin = 0.0;
+        float missionInfoY1 = missionInfoTopMargin;
+        float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
+        if (texPosition3d.x >= missionInfoLeftMargin &&
+            texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
+            texPosition3d.y >= missionInfoY1 &&
+            texPosition3d.y <  missionInfoY2) {
+            vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) + vec2(0, 192.0);
 
-                vec2 finalPos = fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
-                        vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
-                if (finalPos.x + finalPos.y > 355.0 && finalPos.y - finalPos.x > 99.0)
-                {
-                    return finalPos;
-                }
+            float cropMarginLeft = -0.5;
+            if ((texPosition3d.x <  (66.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 1.0) ||
+                (texPosition3d.x >= (72.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 8.0) ||
+                (texPosition3d.x >= (66.0 + cropMarginLeft)*heightScale && texPosition3d.x < (72.0 + cropMarginLeft)*heightScale &&
+                    texPosition3d.y >= 1.0 + (texPosition3d.x - (66.0 + cropMarginLeft)*heightScale)/heightScale)) {
+                return coord;
+            }
+        }
+
+        // mission gauge
+        float sourceMissionGaugeHeight = 39.0;
+        float sourceMissionGaugeWidth = 246.0;
+        float missionGaugeHeight = sourceMissionGaugeHeight;
+        float missionGaugeWidth = sourceMissionGaugeWidth*heightScale;
+        float missionGaugeRightMargin = (256.0*iuTexScale - missionGaugeWidth)/2;
+        float bottomMissionGaugeCenterX = 128.0;
+        float bottomMissionGaugeCenterY = 172.5;
+        float bottomMissionGaugeLeftMargin = bottomMissionGaugeCenterX - sourceMissionGaugeWidth/2;
+        float bottomMissionGaugeTopMargin = bottomMissionGaugeCenterY - sourceMissionGaugeHeight/2;
+        if (texPosition3d.x >= (256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin) &&
+            texPosition3d.x <= (256.0*iuTexScale - missionGaugeRightMargin) &&
+            texPosition3d.y >= (192.0*iuTexScale - missionGaugeHeight) &&
+            texPosition3d.y < (192.0*iuTexScale)) {
+
+            vec2 finalPos = fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
+                    vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
+            if (finalPos.x + finalPos.y > 355.0 && finalPos.y - finalPos.x > 99.0)
+            {
+                return finalPos;
             }
         }
     }
