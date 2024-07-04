@@ -33,7 +33,6 @@
 #include <QScreen>
 #include <QCloseEvent>
 #include <QMediaPlayer>
-#include <QVideoWidget>
 
 #include "Screen.h"
 

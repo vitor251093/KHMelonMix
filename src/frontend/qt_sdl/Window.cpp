@@ -755,11 +755,7 @@ void MainWindow::createVideoPlayer()
         qDebug() << "Error: " << player->errorString();
     });
 
-    // QVideoWidget *videoWidget = new QVideoWidget;
-    // player->setVideoOutput(videoWidget);
     player->setMedia(QUrl::fromLocalFile(filePath));
-    
-    // videoWidget->show();
 }
 
 GL::Context* MainWindow::getOGLContext()
