@@ -506,16 +506,16 @@ bool PluginKingdomHeartsReCoded::setGameScene(melonDS::NDS* nds, int newGameScen
 bool PluginKingdomHeartsReCoded::refreshGameScene(melonDS::NDS* nds)
 {
     int newGameScene = detectGameScene(nds);
-
-    if (DEBUG_MODE_ENABLED) {
-        debugLogs(nds, newGameScene);
-    }
-
+    debugLogs(nds, newGameScene);
     return setGameScene(nds, newGameScene);
 }
 
 void PluginKingdomHeartsReCoded::debugLogs(melonDS::NDS* nds, int gameScene)
 {
+    if (!DEBUG_MODE_ENABLED) {
+        return;
+    }
+
     printf("Game scene: %d\n", gameScene);
     printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);
     printf("NDS->GPU.GPU3D.NumPolygons: %d\n",        nds->GPU.GPU3D.NumPolygons);
