@@ -8,6 +8,14 @@ namespace Plugins
 {
 using namespace melonDS;
 
+struct CutsceneEntry
+{
+    char Name[40];
+    int usAddress;
+    int euAddress;
+    int jpAddress;
+};
+
 class PluginKingdomHeartsDays : public Plugin
 {
 public:

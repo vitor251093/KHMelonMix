@@ -60,6 +60,38 @@ enum
     gameScene_Other                     // 16
 };
 
+CutsceneEntry Cutscenes[] =
+{
+    // {"1_opening", 0x00000000, 0x00000000, 0x00000000}, // still couldn't find a proper way to detect the opening
+    {"2_meet_xion",                      0x0987ec00, 0x0987ec00, 0x0987ec00},
+    {"3_the_dark_margin",                0x09b80600, 0x09b80600, 0x09b80600},
+    {"4_the_main_in_black_reflects",     0x09ff8000, 0x09ff8000, 0x09ff8000},
+    {"5_xions_defeat",                   0x0a13f600, 0x0a13f600, 0x0a13f600},
+    {"6_namine_and_diz",                 0x0a857600, 0x0a857600, 0x0a857600},
+    {"7_why_the_sun_sets_red",           0x0ab4be00, 0x0ab4be00, 0x0ab4be00},
+    {"8_snarl_of_memories",              0x0b043e00, 0x0b043e00, 0x0b043e00},
+    {"9_riku_takes_care_of_xion",        0x0b514600, 0x0b514600, 0x0b514600},
+    {"10_roxas_passes_by",               0x0b5b5e00, 0x0b5b5e00, 0x0b5b5e00},
+    {"11_xions_dream",                   0x0b65a200, 0x0b65a200, 0x0b65a200},
+    {"12_xions_capture",                 0x0b8a7a00, 0x0b8a7a00, 0x0b8a7a00},
+    {"13_axel_and_saix",                 0x0e75bc00, 0x0e75bc00, 0x0e75bc00},
+    {"14_xion_and_riku",                 0x0bedf200, 0x0bedf200, 0x0bedf200},
+    {"15_rikus_resolve",                 0x0c76a800, 0x0c76a800, 0x0c76a800},
+    {"16_mickey_and_riku_ansem",         0x0c863a00, 0x0c863a00, 0x0c863a00},
+    {"17_roxas_leaves_the_organization", 0x0e9c2000, 0x0e9c2000, 0x0e9c2000},
+    {"18_xion_and_namine",               0x0ca47c00, 0x0ca47c00, 0x0ca47c00},
+    {"19_xion_and_axel_face_off",        0x0cb01c00, 0x0cb01c00, 0x0cb01c00},
+    {"20_xion_attacks",                  0x0cee2000, 0x0cee2000, 0x0cee2000},
+    {"21_xions_end",                     0x0eb91800, 0x0eb91800, 0x0eb91800},
+    {"22_winner",                        0x0d45bc00, 0x0d45bc00, 0x0d45bc00},
+    {"23_skyscrapper_battle",            0x0d5e0400, 0x0d5e0400, 0x0d5e0400},
+    {"24_roxas_and_riku",                0x0d6f9400, 0x0d6f9400, 0x0d6f9400},
+    {"25_riku_turns_into_ansem",         0x0da1ea00, 0x0da1ea00, 0x0da1ea00},
+    {"26_after_the_battle",              0x0e0f5e00, 0x0e0f5e00, 0x0e0f5e00},
+    {"27_a_new_day",                     0x0e4bd400, 0x0e4bd400, 0x0e4bd400},
+    {"28_the_usual_spot",                0x0e641200, 0x0e641200, 0x0e641200}
+};
+
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
@@ -721,41 +753,14 @@ std::optional<std::string> PluginKingdomHeartsDays::detectCutscene(melonDS::NDS*
     }
 
     if (isUsaCart()) {
-        switch (cutsceneAddress) {
-            //case 0x00000000: return "1_opening"; // still couldn't find a proper way to detect the opening
-            case 0x0987ec00: return "2_meet_xion";
-            case 0x09b80600: return "3_the_dark_margin";
-            case 0x09ff8000: return "4_the_main_in_black_reflects";
-            case 0x0a13f600: return "5_xions_defeat";
-            case 0x0a857600: return "6_namine_and_diz";
-            case 0x0ab4be00: return "7_why_the_sun_sets_red";
-            case 0x0b043e00: return "8_snarl_of_memories";
-            case 0x0b514600: return "9_riku_takes_care_of_xion";
-            case 0x0b5b5e00: return "10_roxas_passes_by";
-            case 0x0b65a200: return "11_xions_dream";
-            case 0x0b8a7a00: return "12_xions_capture";
-            case 0x0e75bc00: return "13_axel_and_saix";
-            case 0x0bedf200: return "14_xion_and_riku";
-            case 0x0c76a800: return "15_rikus_resolve";
-            case 0x0c863a00: return "16_mickey_and_riku_ansem";
-            case 0x0e9c2000: return "17_roxas_leaves_the_organization";
-            case 0x0ca47c00: return "18_xion_and_namine";
-            case 0x0cb01c00: return "19_xion_and_axel_face_off";
-            case 0x0cee2000: return "20_xion_attacks";
-            case 0x0eb91800: return "21_xions_end";
-            case 0x0d45bc00: return "22_winner";
-            case 0x0d5e0400: return "23_skyscrapper_battle";
-            case 0x0d6f9400: return "24_roxas_and_riku";
-            case 0x0da1ea00: return "25_riku_turns_into_ansem";
-            case 0x0e0f5e00: return "26_after_the_battle";
-            case 0x0e4bd400: return "27_a_new_day";
-            case 0x0e641200: return "28_the_usual_spot";
-            default: printf("Unknown cutscene: 0x%08x\n", cutsceneAddress);
+        for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+            if (entry->usAddress == cutsceneAddress) {
+                return entry->Name;
+            }
         }
     }
-    else {
-        printf("Unknown cutscene: 0x%08x\n", cutsceneAddress);
-    }
+
+    printf("Unknown cutscene: 0x%08x\n", cutsceneAddress);
 
     return std::nullopt;
 }
