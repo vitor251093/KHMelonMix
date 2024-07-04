@@ -97,6 +97,48 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhDays;
 };
 
+void PluginKingdomHeartsDays::initGpuOpenGLCompositorVariables(GLuint CompShader) {
+    CompLoc[CompShader][0] = glGetUniformLocation(CompShader, "IsBottomScreen2DTextureBlack");
+    CompLoc[CompShader][1] = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
+    CompLoc[CompShader][2] = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompLoc[CompShader][3] = glGetUniformLocation(CompShader, "GameScene");
+    CompLoc[CompShader][4] = glGetUniformLocation(CompShader, "KHUIScale");
+    CompLoc[CompShader][5] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMap");
+    CompLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowTarget");
+    CompLoc[CompShader][8] = glGetUniformLocation(CompShader, "ShowMissionGauge");
+    CompLoc[CompShader][9] = glGetUniformLocation(CompShader, "ShowMissionInfo");
+}
+
+void PluginKingdomHeartsDays::updateGpuOpenGLCompositorVariables(GLuint CompShader) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    glUniform1i(CompLoc[CompShader][0], IsBottomScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompLoc[CompShader][1], IsTopScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompLoc[CompShader][2], priorGameScene);
+    glUniform1i(CompLoc[CompShader][3], GameScene);
+    glUniform1i(CompLoc[CompShader][4], UIScale);
+    glUniform1f(CompLoc[CompShader][5], aspectRatio);
+    glUniform1i(CompLoc[CompShader][6], ShowMap ? 1 : 0);
+    glUniform1i(CompLoc[CompShader][7], ShowTarget ? 1 : 0);
+    glUniform1i(CompLoc[CompShader][8], ShowMissionGauge ? 1 : 0);
+    glUniform1i(CompLoc[CompShader][9], ShowMissionInfo ? 1 : 0);
+}
+
+void PluginKingdomHeartsDays::initGpu3DOpenGLCompositorVariables(GLuint prog, u32 flags)
+{
+    RenderShaderAspectRatio[flags] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    RenderShaderGameScene[flags] = glGetUniformLocation(prog, "GameScene");
+    RenderShaderUIScale[flags] = glGetUniformLocation(prog, "KHUIScale");
+}
+
+void PluginKingdomHeartsDays::updateGpu3DOpenGLCompositorVariables(u32 flags)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
+    glUniform1i(RenderShaderGameScene[flags], GameScene);
+    glUniform1i(RenderShaderUIScale[flags], UIScale);
+}
+
 u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
     if (HotkeyPress & (1 << 15)) { // HUD Toggle
@@ -208,26 +250,6 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
     return InputMask;
 }
 
-void PluginKingdomHeartsDays::hudRefresh(melonDS::NDS* nds)
-{
-    switch (videoRenderer)
-    {
-        case renderer3D_OpenGL:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionInfo(ShowMissionInfo);
-            break;
-        case renderer3D_OpenGLCompute:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionInfo(ShowMissionInfo);
-            break;
-        default: break;
-    }
-}
-
 void PluginKingdomHeartsDays::hudToggle(melonDS::NDS* nds)
 {
     HUDState = (HUDState + 1) % 3;
@@ -249,7 +271,6 @@ void PluginKingdomHeartsDays::hudToggle(melonDS::NDS* nds)
         ShowMissionGauge = false;
         ShowMissionInfo = true;
     }
-    hudRefresh(nds);
 }
 
 const char* PluginKingdomHeartsDays::getGameSceneName()
@@ -316,20 +337,10 @@ bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
     bool isTopBlack = isTopScreen2DTextureBlack(nds);
     bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
 
-    switch (videoRenderer)
-    {
-        case renderer3D_OpenGL:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
-            break;
-        case renderer3D_OpenGLCompute:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
-            break;
-        default: break;
-    }
+    IsBottomScreen2DTextureBlack = isBottomBlack;
+    IsTopScreen2DTextureBlack = isTopBlack;
 
-    if (GameScene == 12)
+    if (GameScene == gameScene_InGameWithCutscene)
     {
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
         {
@@ -676,21 +687,7 @@ void PluginKingdomHeartsDays::setAspectRatio(melonDS::NDS* nds, float aspectRati
         nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
     }
 
-    if (AspectRatio != aspectRatio) {
-        AspectRatio = aspectRatio;
-        return;
-    }
-
-    switch (videoRenderer)
-    {
-        case renderer3D_OpenGL:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetAspectRatio(aspectRatio / (4.f / 3.f));
-            break;
-        case renderer3D_OpenGLCompute:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetAspectRatio(aspectRatio / (4.f / 3.f));
-            break;
-        default: break;
-    }
+    AspectRatio = aspectRatio;
 }
 
 bool PluginKingdomHeartsDays::setGameScene(melonDS::NDS* nds, int newGameScene)
@@ -704,24 +701,6 @@ bool PluginKingdomHeartsDays::setGameScene(melonDS::NDS* nds, int newGameScene)
         priorGameScene = GameScene;
         GameScene = newGameScene;
     }
-
-    int uiScale = 4;
-
-    // Updating GameScene inside shader
-    switch (videoRenderer)
-    {
-        case renderer3D_OpenGL:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetUIScale(uiScale);
-            break;
-        case renderer3D_OpenGLCompute:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetUIScale(uiScale);
-            break;
-        default: break;
-    }
-
-    hudRefresh(nds);
 
     return updated;
 }

@@ -65,14 +65,7 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
-    uni_id = glGetUniformLocation(prog, "TopScreenAspectRatio");
-    RenderShaderAspectRatio[flags] = uni_id;
-
-    uni_id = glGetUniformLocation(prog, "GameScene");
-    RenderShaderGameScene[flags] = uni_id;
-
-    uni_id = glGetUniformLocation(prog, "KHUIScale");
-    RenderShaderUIScale[flags] = uni_id;
+    Plugins::PluginManager::get()->initGpu3DOpenGLCompositorVariables(prog, flags);
 
     RenderShader[flags] = prog;
 
@@ -85,14 +78,7 @@ void GLRenderer::UseRenderShader(u32 flags)
     glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
 
-    float aspectRatio = CurGLCompositor.GetAspectRatio();
-    glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
-
-    float gameScene = CurGLCompositor.GetGameScene();
-    glUniform1i(RenderShaderGameScene[flags], gameScene);
-
-    int uiScale = CurGLCompositor.GetUIScale();
-    glUniform1i(RenderShaderUIScale[flags], uiScale);
+    Plugins::PluginManager::get()->updateGpu3DOpenGLCompositorVariables(flags);
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -145,9 +131,6 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
     result->ClearUniformLoc[3] = glGetUniformLocation(result->ClearShaderPlain, "uFogFlag");
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
-    memset(result->RenderShaderAspectRatio, 0, sizeof(RenderShaderAspectRatio));
-    memset(result->RenderShaderGameScene, 0, sizeof(RenderShaderGameScene));
-    memset(result->RenderShaderUIScale, 0, sizeof(RenderShaderUIScale));
 
     const char* renderVS_Z_Custom = Plugins::PluginManager::get()->gpu3DOpenGLVertexShader();
     const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
@@ -346,47 +329,10 @@ void GLRenderer::SetBetterPolygons(bool betterpolygons) noexcept
     SetRenderSettings(betterpolygons, ScaleFactor);
 }
 
-void GLRenderer::SetIsBottomScreen2DTextureBlack(bool isBlack) noexcept
-{
-    CurGLCompositor.SetIsBottomScreen2DTextureBlack(isBlack);
-}
-void GLRenderer::SetIsTopScreen2DTextureBlack(bool isBlack) noexcept
-{
-    CurGLCompositor.SetIsTopScreen2DTextureBlack(isBlack);
-}
-void GLRenderer::SetGameScene(int gameScene) noexcept
-{
-    CurGLCompositor.SetGameScene(gameScene);
-}
-void GLRenderer::SetUIScale(int uiScale) noexcept
-{
-    CurGLCompositor.SetUIScale(uiScale);
-}
-void GLRenderer::SetAspectRatio(float aspectRatio) noexcept
-{
-    CurGLCompositor.SetAspectRatio(aspectRatio);
-}
 void GLRenderer::SetScaleFactor(int scale) noexcept
 {
     SetRenderSettings(BetterPolygons, scale);
 }
-void GLRenderer::SetShowMap(bool showMap) noexcept
-{
-    CurGLCompositor.SetShowMap(showMap);
-}
-void GLRenderer::SetShowTarget(bool showTarget) noexcept
-{
-    CurGLCompositor.SetShowTarget(showTarget);
-}
-void GLRenderer::SetShowMissionGauge(bool showMissionGauge) noexcept
-{
-    CurGLCompositor.SetShowMissionGauge(showMissionGauge);
-}
-void GLRenderer::SetShowMissionInfo(bool showMissionInfo) noexcept
-{
-    CurGLCompositor.SetShowMissionInfo(showMissionInfo);
-}
-
 
 void GLRenderer::SetRenderSettings(bool betterpolygons, int scale) noexcept
 {

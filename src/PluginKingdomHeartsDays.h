@@ -27,6 +27,11 @@ public:
     const char* gpuOpenGLFragmentShader();
     const char* gpu3DOpenGLVertexShader();
 
+    void initGpuOpenGLCompositorVariables(GLuint CompShader);
+    void updateGpuOpenGLCompositorVariables(GLuint CompShader);
+    void initGpu3DOpenGLCompositorVariables(GLuint prog, u32 flags);
+    void updateGpu3DOpenGLCompositorVariables(u32 flags);
+
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     const char* getGameSceneName();
     bool shouldSkipFrame(melonDS::NDS* nds);
@@ -34,15 +39,25 @@ public:
     bool refreshGameScene(melonDS::NDS* nds);
     void debugLogs(melonDS::NDS* nds, int gameScene);
 private:
-    int GameScene;
     bool PausedInGame;
-    float AspectRatio;
-    int priorGameScene;
     int HUDState;
+
+    bool IsBottomScreen2DTextureBlack;
+    bool IsTopScreen2DTextureBlack;
+    int priorGameScene;
+    int GameScene;
+    int UIScale = 4;
+    float AspectRatio;
     bool ShowMap;
     bool ShowTarget;
     bool ShowMissionGauge;
     bool ShowMissionInfo;
+
+    std::map<GLuint, GLuint[10]> CompLoc{};
+
+    GLuint RenderShaderAspectRatio[16] {};
+    GLuint RenderShaderGameScene[16] {};
+    GLuint RenderShaderUIScale[16] {};
 
     bool _olderHad3DOnTopScreen;
     bool _olderHad3DOnBottomScreen;
@@ -61,7 +76,6 @@ private:
     bool isBufferBlack(unsigned int* buffer);
     bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
     bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
-    void hudRefresh(melonDS::NDS* nds);
     void hudToggle(melonDS::NDS* nds);
 };
 }

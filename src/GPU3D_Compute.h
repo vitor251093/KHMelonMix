@@ -43,16 +43,6 @@ public:
 
     void Reset(GPU& gpu) override;
 
-    void SetIsBottomScreen2DTextureBlack(bool isBlack);
-    void SetIsTopScreen2DTextureBlack(bool isBlack);
-    void SetGameScene(int gameScene);
-    void SetUIScale(int uiScale);
-    void SetAspectRatio(float aspectRatio);
-    void SetShowMap(bool showMap);
-    void SetShowTarget(bool showTarget);
-    void SetShowMissionGauge(bool showMissionGauge);
-    void SetShowMissionInfo(bool showMissionInfo);
-
     void SetRenderSettings(int scale, bool highResolutionCoordinates);
 
     void VCount144(GPU& gpu) override;

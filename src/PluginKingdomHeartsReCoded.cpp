@@ -78,6 +78,48 @@ const char* PluginKingdomHeartsReCoded::gpu3DOpenGLVertexShader() {
     return kRenderVS_Z_KhReCoded;
 };
 
+void PluginKingdomHeartsReCoded::initGpuOpenGLCompositorVariables(GLuint CompShader) {
+    CompLoc[CompShader][0] = glGetUniformLocation(CompShader, "IsBottomScreen2DTextureBlack");
+    CompLoc[CompShader][1] = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
+    CompLoc[CompShader][2] = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompLoc[CompShader][3] = glGetUniformLocation(CompShader, "GameScene");
+    CompLoc[CompShader][4] = glGetUniformLocation(CompShader, "KHUIScale");
+    CompLoc[CompShader][5] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMap");
+    // CompLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowTarget");
+    // CompLoc[CompShader][8] = glGetUniformLocation(CompShader, "ShowMissionGauge");
+    // CompLoc[CompShader][9] = glGetUniformLocation(CompShader, "ShowMissionInfo");
+}
+
+void PluginKingdomHeartsReCoded::updateGpuOpenGLCompositorVariables(GLuint CompShader) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    glUniform1i(CompLoc[CompShader][0], IsBottomScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompLoc[CompShader][1], IsTopScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompLoc[CompShader][2], priorGameScene);
+    glUniform1i(CompLoc[CompShader][3], GameScene);
+    glUniform1i(CompLoc[CompShader][4], UIScale);
+    glUniform1f(CompLoc[CompShader][5], aspectRatio);
+    glUniform1i(CompLoc[CompShader][6], ShowMap ? 1 : 0);
+    // glUniform1i(CompLoc[CompShader][7], ShowTarget ? 1 : 0);
+    // glUniform1i(CompLoc[CompShader][8], ShowMissionGauge ? 1 : 0);
+    // glUniform1i(CompLoc[CompShader][9], ShowMissionInfo ? 1 : 0);
+}
+
+void PluginKingdomHeartsReCoded::initGpu3DOpenGLCompositorVariables(GLuint prog, u32 flags)
+{
+    RenderShaderAspectRatio[flags] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    RenderShaderGameScene[flags] = glGetUniformLocation(prog, "GameScene");
+    RenderShaderUIScale[flags] = glGetUniformLocation(prog, "KHUIScale");
+}
+
+void PluginKingdomHeartsReCoded::updateGpu3DOpenGLCompositorVariables(u32 flags)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
+    glUniform1i(RenderShaderGameScene[flags], GameScene);
+    glUniform1i(RenderShaderUIScale[flags], UIScale);
+}
+
 u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
     if (HotkeyPress & (1 << 15)) { // HUD Toggle
@@ -124,24 +166,9 @@ u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(melonDS::NDS* nds, u32 In
     return InputMask;
 }
 
-void PluginKingdomHeartsReCoded::hudRefresh(melonDS::NDS* nds)
-{
-    switch (videoRenderer)
-    {
-        case renderer3D_OpenGL:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
-            break;
-        case renderer3D_OpenGLCompute:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
-            break;
-        default: break;
-    }
-}
-
 void PluginKingdomHeartsReCoded::hudToggle(melonDS::NDS* nds)
 {
     ShowMap = !ShowMap;
-    hudRefresh(nds);
 }
 
 const char* PluginKingdomHeartsReCoded::getGameSceneName()
@@ -207,18 +234,8 @@ bool PluginKingdomHeartsReCoded::shouldSkipFrame(melonDS::NDS* nds)
     bool isTopBlack = isTopScreen2DTextureBlack(nds);
     bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
 
-    switch (videoRenderer)
-    {
-        case renderer3D_OpenGL:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
-            break;
-        case renderer3D_OpenGLCompute:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
-            break;
-        default: break;
-    }
+    IsBottomScreen2DTextureBlack = isBottomBlack;
+    IsTopScreen2DTextureBlack = isTopBlack;
 
     return false;
 }
@@ -469,21 +486,7 @@ void PluginKingdomHeartsReCoded::setAspectRatio(melonDS::NDS* nds, float aspectR
         nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
     }
 
-    if (AspectRatio != aspectRatio) {
-        AspectRatio = aspectRatio;
-        return;
-    }
-
-    switch (videoRenderer)
-    {
-        case renderer3D_OpenGL:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetAspectRatio(aspectRatio / (4.f / 3.f));
-            break;
-        case renderer3D_OpenGLCompute:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetAspectRatio(aspectRatio / (4.f / 3.f));
-            break;
-        default: break;
-    }
+    AspectRatio = aspectRatio;
 }
 
 bool PluginKingdomHeartsReCoded::setGameScene(melonDS::NDS* nds, int newGameScene)
@@ -497,24 +500,6 @@ bool PluginKingdomHeartsReCoded::setGameScene(melonDS::NDS* nds, int newGameScen
         priorGameScene = GameScene;
         GameScene = newGameScene;
     }
-
-    int uiScale = 4;
-
-    // Updating GameScene inside shader
-    switch (videoRenderer)
-    {
-        case renderer3D_OpenGL:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetUIScale(uiScale);
-            break;
-        case renderer3D_OpenGLCompute:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetUIScale(uiScale);
-            break;
-        default: break;
-    }
-
-    hudRefresh(nds);
 
     return updated;
 }

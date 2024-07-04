@@ -15,6 +15,7 @@ public:
 
 private:
     static u32 GameCode;
+    static std::map<u32, std::unique_ptr<Plugin>> PluginsCache;
 };
 }
 

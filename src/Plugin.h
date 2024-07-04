@@ -5,6 +5,8 @@
 
 #include "NDS.h"
 
+#include "OpenGLSupport.h"
+
 namespace Plugins
 {
 using namespace melonDS;
@@ -24,6 +26,11 @@ public:
 
     virtual const char* gpuOpenGLFragmentShader() { return nullptr; };
     virtual const char* gpu3DOpenGLVertexShader() { return nullptr; };
+
+    virtual void initGpuOpenGLCompositorVariables(GLuint CompShader) { };
+    virtual void updateGpuOpenGLCompositorVariables(GLuint CompShader) { };
+    virtual void initGpu3DOpenGLCompositorVariables(GLuint prog, u32 flags) { };
+    virtual void updateGpu3DOpenGLCompositorVariables(u32 flags) { };
 
     virtual u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
 
