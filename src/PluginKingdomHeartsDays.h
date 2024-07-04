@@ -64,6 +64,8 @@ private:
 
     bool _hasVisible3DOnBottomScreen;
 
+    u32 LastCutsceneAddress;
+
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
     u32 LastLockOnPress, LastSwitchTargetPress;
     bool SwitchTargetPressOnHold;
