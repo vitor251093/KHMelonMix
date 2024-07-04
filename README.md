@@ -55,9 +55,9 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
 
 ### Linux
 1. Install dependencies:
-   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev`
-   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev`
-   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia libarchive zstd`
+   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev libqt5multimedia5-plugins libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`
+   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev libqt5multimedia5-plugins libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`
+   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia libarchive zstd ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libqt5multimedia5-plugins libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`
 3. Download the KH Melon Mix repository and prepare:
    ```bash
    git clone https://github.com/vitor251093/KHMelonMix

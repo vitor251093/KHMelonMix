@@ -595,6 +595,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         show();
 
     createScreenPanel();
+    createVideoPlayer();
 
     actEjectCart->setEnabled(false);
     actEjectGBACart->setEnabled(false);
@@ -736,6 +737,27 @@ void MainWindow::createScreenPanel()
 
     connect(this, SIGNAL(screenLayoutChange()), panel, SLOT(onScreenLayoutChanged()));
     emit screenLayoutChange();
+}
+
+void MainWindow::createVideoPlayer()
+{
+    QString filePath = "/home/vitor/Downloads/KHDays - 60 FPS Mod-2-1-5-1667958998/DOP.mp4";
+
+    player = new QMediaPlayer;
+    connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
+        if (status == QMediaPlayer::LoadedMedia) {
+            qDebug() << "Video loaded successfully";
+        }
+    });
+    connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
+        qDebug() << "Error: " << player->errorString();
+    });
+
+    QVideoWidget *videoWidget = new QVideoWidget;
+    player->setVideoOutput(videoWidget);
+    player->setMedia(QUrl::fromLocalFile(filePath));
+    player->play();
+    videoWidget->show();
 }
 
 GL::Context* MainWindow::getOGLContext()

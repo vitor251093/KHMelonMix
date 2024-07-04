@@ -32,6 +32,8 @@
 #include <QMutex>
 #include <QScreen>
 #include <QCloseEvent>
+#include <QMediaPlayer>
+#include <QVideoWidget>
 
 #include "Screen.h"
 
@@ -222,6 +224,7 @@ private:
     void updateCartInserted(bool gba);
 
     void createScreenPanel();
+    void createVideoPlayer();
 
     bool pausedManually = false;
 
@@ -230,6 +233,7 @@ private:
 
 public:
     ScreenPanel* panel;
+    QMediaPlayer* player;
 
     QAction* actOpenROM;
     QAction* actBootFirmware;
