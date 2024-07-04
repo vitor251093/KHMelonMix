@@ -16,8 +16,6 @@ class Plugin
 public:
     virtual ~Plugin() { };
 
-    bool isDebugEnabled = DEBUG_MODE_ENABLED;
-
     u32 GameCode = 0;
     static bool isCart(u32 gameCode) {return true;};
 

@@ -697,7 +697,7 @@ void EmuThread::refreshGameScene()
     melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
 
     bool updated = plugin->refreshGameScene(&nds);
-    if (updated && plugin->isDebugEnabled)
+    if (updated && DEBUG_MODE_ENABLED)
     {
         mainWindow->osdAddMessage(0, plugin->getGameSceneName());
     }

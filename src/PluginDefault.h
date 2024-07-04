@@ -13,8 +13,6 @@ class PluginDefault : public Plugin
 public:
     PluginDefault() {};
 
-    bool isDebugEnabled = false;
-    
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) {
         return InputMask;
     }

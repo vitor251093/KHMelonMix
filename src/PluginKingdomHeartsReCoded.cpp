@@ -54,7 +54,6 @@ enum
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 {
     GameCode = gameCode;
-    isDebugEnabled = DEBUG_MODE_ENABLED;
 
     GameScene = -1;
     AspectRatio = 0;
@@ -508,7 +507,7 @@ bool PluginKingdomHeartsReCoded::refreshGameScene(melonDS::NDS* nds)
 {
     int newGameScene = detectGameScene(nds);
 
-    if (isDebugEnabled) {
+    if (DEBUG_MODE_ENABLED) {
         debugLogs(nds, newGameScene);
     }
 

@@ -13,8 +13,6 @@ class PluginKingdomHeartsReCoded : public Plugin
 public:
     PluginKingdomHeartsReCoded(u32 gameCode);
 
-    bool isDebugEnabled;
-
     u32 GameCode;
     static u32 usGamecode;
     static u32 euGamecode;
