@@ -39,7 +39,7 @@ std::optional<GLCompositor> GLCompositor::New() noexcept
     assert(glBindAttribLocation != nullptr);
     GLuint CompShader {};
 
-    const char* kCompositorFS_Custom = Plugins::PluginManager::get()->gpuOpenGLFragmentShader();
+    const char* kCompositorFS_Custom = Plugins::PluginManager::get()->gpuOpenGL_FS();
     const char* compositorFS = kCompositorFS_Custom == nullptr ? kCompositorFS_Nearest : kCompositorFS_Custom;
     if (!OpenGL::CompileVertexFragmentProgram(CompShader,
             kCompositorVS, compositorFS,
@@ -56,7 +56,7 @@ GLCompositor::GLCompositor(GLuint compShader) noexcept : CompShader(compShader)
     CompScaleLoc = glGetUniformLocation(CompShader, "u3DScale");
     Comp3DXPosLoc = glGetUniformLocation(CompShader, "u3DXPos");
 
-    Plugins::PluginManager::get()->initGpuOpenGLCompositorVariables(CompShader);
+    Plugins::PluginManager::get()->gpuOpenGL_FS_initVariables(CompShader);
 
     glUseProgram(CompShader);
     GLuint screenTextureUniform = glGetUniformLocation(CompShader, "ScreenTex");
@@ -263,7 +263,7 @@ void GLCompositor::RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept
     glUseProgram(CompShader);
     glUniform1ui(CompScaleLoc, Scale);
 
-    Plugins::PluginManager::get()->updateGpuOpenGLCompositorVariables(CompShader);
+    Plugins::PluginManager::get()->gpuOpenGL_FS_updateVariables(CompShader);
 
     // TODO: support setting this midframe, if ever needed
     glUniform1i(Comp3DXPosLoc, ((int)gpu.GPU3D.GetRenderXPos() << 23) >> 23);

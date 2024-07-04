@@ -22,13 +22,13 @@ public:
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
-    const char* gpuOpenGLFragmentShader();
-    const char* gpu3DOpenGLVertexShader();
+    const char* gpuOpenGL_FS();
+    const char* gpu3DOpenGL_VS_Z();
 
-    void initGpuOpenGLCompositorVariables(GLuint CompShader);
-    void updateGpuOpenGLCompositorVariables(GLuint CompShader);
-    void initGpu3DOpenGLCompositorVariables(GLuint prog, u32 flags);
-    void updateGpu3DOpenGLCompositorVariables(u32 flags);
+    void gpuOpenGL_FS_initVariables(GLuint CompShader);
+    void gpuOpenGL_FS_updateVariables(GLuint CompShader);
+    void gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags);
+    void gpu3DOpenGL_VS_Z_updateVariables(u32 flags);
 
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     const char* getGameSceneName();
@@ -51,11 +51,8 @@ private:
     bool ShowMissionGauge;
     bool ShowMissionInfo;
 
-    std::map<GLuint, GLuint[10]> CompLoc{};
-
-    GLuint RenderShaderAspectRatio[16] {};
-    GLuint RenderShaderGameScene[16] {};
-    GLuint RenderShaderUIScale[16] {};
+    std::map<GLuint, GLuint[10]> CompGpuLoc{};
+    std::map<u32, GLuint[3]> CompGpu3DLoc{};
 
     bool _olderHad3DOnTopScreen;
     bool _olderHad3DOnBottomScreen;

@@ -65,7 +65,7 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
-    Plugins::PluginManager::get()->initGpu3DOpenGLCompositorVariables(prog, flags);
+    Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z_initVariables(prog, flags);
 
     RenderShader[flags] = prog;
 
@@ -78,7 +78,7 @@ void GLRenderer::UseRenderShader(u32 flags)
     glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
 
-    Plugins::PluginManager::get()->updateGpu3DOpenGLCompositorVariables(flags);
+    Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z_updateVariables(flags);
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -132,7 +132,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
 
-    const char* renderVS_Z_Custom = Plugins::PluginManager::get()->gpu3DOpenGLVertexShader();
+    const char* renderVS_Z_Custom = Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z();
     const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
 
     if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))

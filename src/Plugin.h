@@ -19,13 +19,13 @@ public:
     u32 GameCode = 0;
     static bool isCart(u32 gameCode) {return true;};
 
-    virtual const char* gpuOpenGLFragmentShader() { return nullptr; };
-    virtual const char* gpu3DOpenGLVertexShader() { return nullptr; };
+    virtual const char* gpuOpenGL_FS() { return nullptr; };
+    virtual const char* gpu3DOpenGL_VS_Z() { return nullptr; };
 
-    virtual void initGpuOpenGLCompositorVariables(GLuint CompShader) { };
-    virtual void updateGpuOpenGLCompositorVariables(GLuint CompShader) { };
-    virtual void initGpu3DOpenGLCompositorVariables(GLuint prog, u32 flags) { };
-    virtual void updateGpu3DOpenGLCompositorVariables(u32 flags) { };
+    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) { };
+    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) { };
+    virtual void gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags) { };
+    virtual void gpu3DOpenGL_VS_Z_updateVariables(u32 flags) { };
 
     virtual u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
 

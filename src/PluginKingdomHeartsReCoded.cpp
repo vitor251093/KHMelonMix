@@ -69,54 +69,54 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     PriorPriorHotkeyMask = 0;
 }
 
-const char* PluginKingdomHeartsReCoded::gpuOpenGLFragmentShader() {
+const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
     return kCompositorFS_KhReCoded;
 };
 
-const char* PluginKingdomHeartsReCoded::gpu3DOpenGLVertexShader() {
+const char* PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z() {
     return kRenderVS_Z_KhReCoded;
 };
 
-void PluginKingdomHeartsReCoded::initGpuOpenGLCompositorVariables(GLuint CompShader) {
-    CompLoc[CompShader][0] = glGetUniformLocation(CompShader, "IsBottomScreen2DTextureBlack");
-    CompLoc[CompShader][1] = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
-    CompLoc[CompShader][2] = glGetUniformLocation(CompShader, "PriorGameScene");
-    CompLoc[CompShader][3] = glGetUniformLocation(CompShader, "GameScene");
-    CompLoc[CompShader][4] = glGetUniformLocation(CompShader, "KHUIScale");
-    CompLoc[CompShader][5] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
-    CompLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMap");
-    // CompLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowTarget");
-    // CompLoc[CompShader][8] = glGetUniformLocation(CompShader, "ShowMissionGauge");
-    // CompLoc[CompShader][9] = glGetUniformLocation(CompShader, "ShowMissionInfo");
+void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "IsBottomScreen2DTextureBlack");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "GameScene");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "KHUIScale");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMap");
+    // CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowTarget");
+    // CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "ShowMissionGauge");
+    // CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "ShowMissionInfo");
 }
 
-void PluginKingdomHeartsReCoded::updateGpuOpenGLCompositorVariables(GLuint CompShader) {
+void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    glUniform1i(CompLoc[CompShader][0], IsBottomScreen2DTextureBlack ? 1 : 0);
-    glUniform1i(CompLoc[CompShader][1], IsTopScreen2DTextureBlack ? 1 : 0);
-    glUniform1i(CompLoc[CompShader][2], priorGameScene);
-    glUniform1i(CompLoc[CompShader][3], GameScene);
-    glUniform1i(CompLoc[CompShader][4], UIScale);
-    glUniform1f(CompLoc[CompShader][5], aspectRatio);
-    glUniform1i(CompLoc[CompShader][6], ShowMap ? 1 : 0);
-    // glUniform1i(CompLoc[CompShader][7], ShowTarget ? 1 : 0);
-    // glUniform1i(CompLoc[CompShader][8], ShowMissionGauge ? 1 : 0);
-    // glUniform1i(CompLoc[CompShader][9], ShowMissionInfo ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][0], IsBottomScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][1], IsTopScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][2], priorGameScene);
+    glUniform1i(CompGpuLoc[CompShader][3], GameScene);
+    glUniform1i(CompGpuLoc[CompShader][4], UIScale);
+    glUniform1f(CompGpuLoc[CompShader][5], aspectRatio);
+    glUniform1i(CompGpuLoc[CompShader][6], ShowMap ? 1 : 0);
+    // glUniform1i(CompGpuLoc[CompShader][7], ShowTarget ? 1 : 0);
+    // glUniform1i(CompGpuLoc[CompShader][8], ShowMissionGauge ? 1 : 0);
+    // glUniform1i(CompGpuLoc[CompShader][9], ShowMissionInfo ? 1 : 0);
 }
 
-void PluginKingdomHeartsReCoded::initGpu3DOpenGLCompositorVariables(GLuint prog, u32 flags)
+void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
 {
-    RenderShaderAspectRatio[flags] = glGetUniformLocation(prog, "TopScreenAspectRatio");
-    RenderShaderGameScene[flags] = glGetUniformLocation(prog, "GameScene");
-    RenderShaderUIScale[flags] = glGetUniformLocation(prog, "KHUIScale");
+    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
+    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
 }
 
-void PluginKingdomHeartsReCoded::updateGpu3DOpenGLCompositorVariables(u32 flags)
+void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
 {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
-    glUniform1i(RenderShaderGameScene[flags], GameScene);
-    glUniform1i(RenderShaderUIScale[flags], UIScale);
+    glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
+    glUniform1i(CompGpu3DLoc[flags][1], GameScene);
+    glUniform1i(CompGpu3DLoc[flags][2], UIScale);
 }
 
 u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
