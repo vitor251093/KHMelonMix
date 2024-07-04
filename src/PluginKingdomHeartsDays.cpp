@@ -89,6 +89,11 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     SwitchTargetPressOnHold = false;
 }
 
+
+std::string PluginKingdomHeartsDays::assetsFolder() {
+    return "days";
+}
+
 const char* PluginKingdomHeartsDays::gpuOpenGLFragmentShader() {
     return kCompositorFS_KhDays;
 };

@@ -22,6 +22,8 @@ public:
     virtual bool isEuropeCart() { return false; };
     virtual bool isJapanCart()  { return false; };
 
+    virtual std::string assetsFolder() = 0;
+
     virtual const char* gpuOpenGLFragmentShader() { return nullptr; };
     virtual const char* gpu3DOpenGLVertexShader() { return nullptr; };
 

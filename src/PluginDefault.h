@@ -11,9 +11,13 @@ using namespace melonDS;
 class PluginDefault : public Plugin
 {
 public:
-    PluginDefault() {};
+    PluginDefault(u32 gameCode) {GameCode = gameCode;};
 
     bool isDebugEnabled = false;
+
+    std::string assetsFolder() {
+        return std::to_string(GameCode);
+    }
     
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) {
         return InputMask;

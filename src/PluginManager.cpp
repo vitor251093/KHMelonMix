@@ -40,7 +40,7 @@ Plugin* PluginManager::get() {
             return factory->create(GameCode);
         }
     }
-    return new PluginDefault();
+    return new PluginDefault(GameCode);
 }
 u32 PluginManager::getGameCode() {
     return GameCode;

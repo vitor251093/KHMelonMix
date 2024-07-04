@@ -63,6 +63,9 @@ struct Polygon
     u32 TexParam;
     u32 TexPalette;
 
+    u32 Width;
+    u32 Height;
+
     bool Degenerate;
 
     bool FacingView;
