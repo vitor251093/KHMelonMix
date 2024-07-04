@@ -35,9 +35,14 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 5. Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.bat" (or MelonMix_KHReCoded.sh if you are not on Windows).
 
 ### Recommended Controller Binds
-* Map the DS D-Pad to your controller's left analog stick
-* Map the DS Touch Screen to your controller's right analog stick
-* Map the command menu to your controller's D-Pad
+* (DS Keypad tab) Map the DS D-Pad to your controller's left analog stick
+* (DS Keypad tab) Map the Select/Start buttons to the equivalent keys in your controller
+* (DS Keypad tab) Map the A/B/X/Y buttons to the equivalent keys in your controller
+* (Touch Screen tab) Map the DS Touch Screen to your controller's right analog stick
+* (Add-ons tab) Map the command menu to your controller's D-Pad
+* (Add-ons tab) Map R1 and R2 rather than the R button from the DS keypad tab
+* (Add-ons tab) Map the HUD Toggle to an available button of your preference
+* (General hotkeys) Map Toggle fullscreen to an available button of your preference
 
 ### Steam Deck
 The AppImage build is compatible with the Steam Deck. In order to use it, download the AppImage build, extract the zip, right click the AppImage and go to "Properties". Then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Don't forget the NDS file, like mentioned above.
