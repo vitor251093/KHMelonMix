@@ -92,14 +92,6 @@ static constexpr std::initializer_list<const char*> hk_general_labels =
 
 static_assert(hk_general.size() == hk_general_labels.size());
 
-static constexpr std::initializer_list<const char*> cmd_menu_labels =
-{
-    "Command Menu Left",
-    "Command Menu Right",
-    "Command Menu Up",
-    "Command Menu Down",
-};
-
 static constexpr std::initializer_list<const char*> ds_touch_key_labels =
 {
     "Left",

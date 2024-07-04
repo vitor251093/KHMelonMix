@@ -35,9 +35,9 @@ public:
 
     void SetRenderSettings(bool betterpolygons, int scale) noexcept;
     void SetBetterPolygons(bool betterpolygons) noexcept;
-
     void SetScaleFactor(int scale) noexcept;
     [[nodiscard]] bool GetBetterPolygons() const noexcept { return BetterPolygons; }
+    [[nodiscard]] int GetScaleFactor() const noexcept { return ScaleFactor; }
 
     void VCount144(GPU& gpu) override {};
     void RenderFrame(GPU& gpu) override;

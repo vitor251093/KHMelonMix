@@ -199,6 +199,7 @@ GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
     return *this;
 }
 
+
 void GLCompositor::SetScaleFactor(int scale) noexcept
 {
     if (scale == Scale)

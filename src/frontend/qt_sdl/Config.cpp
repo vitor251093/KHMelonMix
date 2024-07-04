@@ -25,6 +25,7 @@
 #include "Config.h"
 #include "GPU.h"
 
+
 namespace Config
 {
 using namespace melonDS;

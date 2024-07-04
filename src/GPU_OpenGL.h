@@ -40,6 +40,7 @@ public:
     ~GLCompositor();
 
     void SetScaleFactor(int scale) noexcept;
+    [[nodiscard]] int GetScaleFactor() const noexcept { return Scale; }
 
     void Stop(const GPU& gpu) noexcept;
     void RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept;
