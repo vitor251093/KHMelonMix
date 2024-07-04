@@ -72,7 +72,7 @@ private:
 
     bool _hasVisible3DOnBottomScreen;
 
-    u32 LastCutsceneAddress;
+    CutsceneEntry* CurrentCutscene;
 
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
     u32 LastLockOnPress, LastSwitchTargetPress;
@@ -80,7 +80,11 @@ private:
 
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);
-    std::optional<std::string> detectCutscene(melonDS::NDS* nds);
+
+    CutsceneEntry* detectCutscene(melonDS::NDS* nds);
+    void refreshCutscene(melonDS::NDS* nds);
+    void onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene);
+    void onIngameCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene);
 
     bool isBufferBlack(unsigned int* buffer);
     bool isTopScreen2DTextureBlack(melonDS::NDS* nds);

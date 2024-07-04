@@ -112,7 +112,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     _hasVisible3DOnBottomScreen = false;
 
-    LastCutsceneAddress = 0;
+    CurrentCutscene = nullptr;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -738,47 +738,72 @@ bool PluginKingdomHeartsDays::setGameScene(melonDS::NDS* nds, int newGameScene)
     return updated;
 }
 
-std::optional<std::string> PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
+CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
 {
     u32 cutsceneAddress = nds->ARM7Read32(0x02093A4C);
-    if (LastCutsceneAddress == cutsceneAddress) {
-        return std::nullopt;
-    }
-
-    u32 lastCutsceneAddress = LastCutsceneAddress;
-    LastCutsceneAddress = cutsceneAddress;
 
     if (cutsceneAddress == 0) {
-        return std::nullopt;
+        return nullptr;
     }
 
     if (isUsaCart()) {
         for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
             if (entry->usAddress == cutsceneAddress) {
-                return entry->Name;
+                return entry;
             }
         }
     }
 
     printf("Unknown cutscene: 0x%08x\n", cutsceneAddress);
 
-    return std::nullopt;
+    return nullptr;
+}
+
+void PluginKingdomHeartsDays::onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene)
+{
+    printf("Starting cutscene: %s\n", cutscene->Name);
+}
+
+void PluginKingdomHeartsDays::onIngameCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene)
+{
+    printf("Stopping cutscene\n");
+}
+
+void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
+{
+    CutsceneEntry* lastCutscene = CurrentCutscene;
+    CutsceneEntry* cutscene = nullptr;
+    if (GameScene == gameScene_Cutscene) {
+        cutscene = detectCutscene(nds);
+    }
+    if (cutscene == nullptr) {
+        if (lastCutscene != nullptr) {
+            onIngameCutsceneEnd(nds, lastCutscene);
+        }
+    }
+    else {
+        if (lastCutscene == nullptr) {
+            onIngameCutsceneStart(nds, cutscene);
+        }
+        if (lastCutscene != nullptr && cutscene->usAddress != lastCutscene->usAddress) {
+            onIngameCutsceneEnd(nds, lastCutscene);
+            onIngameCutsceneStart(nds, cutscene);
+        }
+    }
+    CurrentCutscene = cutscene;
 }
 
 bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)
 {
     int newGameScene = detectGameScene(nds);
     
-    if (newGameScene == gameScene_Cutscene) {
-        std::optional<std::string> cutsceneName = detectCutscene(nds);
-        if (cutsceneName) {
-            printf("Cutscene: %s\n", cutsceneName.value().c_str());
-        }
-    }
-
     debugLogs(nds, newGameScene);
 
-    return setGameScene(nds, newGameScene);
+    bool updated = setGameScene(nds, newGameScene);
+
+    refreshCutscene(nds);
+
+    return updated;
 }
 
 void PluginKingdomHeartsDays::debugLogs(melonDS::NDS* nds, int gameScene)
