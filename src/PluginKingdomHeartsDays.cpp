@@ -109,7 +109,6 @@ CutsceneEntry Cutscenes[] =
     {"846.mods",    "846_axel_and_saix",                 0x0e75bc00, 0x0e75bc00, 0x0e75bc00},
     {"847.mods",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0e9c2000, 0x0e9c2000},
     {"848.mods",    "848_xions_end",                     0x0eb91800, 0x0eb91800, 0x0eb91800},
-    {"dummy.dat",   "dummy",                             0x0f50ba00, 0x0f50ba00, 0x0f50ba00},
 };
 
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
