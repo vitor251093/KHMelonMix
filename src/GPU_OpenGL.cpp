@@ -40,9 +40,13 @@ std::optional<GLCompositor> GLCompositor::New() noexcept
     GLuint CompShader {};
 
     const char* kCompositorFS_Custom = Plugins::PluginManager::get()->gpuOpenGLFragmentShader();
-    if (!OpenGL::CompileVertexFragmentProgram(CompShader, kCompositorVS, (kCompositorFS_Custom == nullptr ? kCompositorFS_Nearest : kCompositorFS_Custom), "CompositorShader",
-            {{"vPosition", 0}, {"vTexcoord", 1}}, {{"oColor", 0}}))
-            return std::nullopt;
+    const char* compositorFS = kCompositorFS_Custom == nullptr ? kCompositorFS_Nearest : kCompositorFS_Custom;
+    if (!OpenGL::CompileVertexFragmentProgram(CompShader,
+            kCompositorVS, compositorFS,
+            "CompositorShader",
+            {{"vPosition", 0}, {"vTexcoord", 1}},
+            {{"oColor", 0}}))
+        return std::nullopt;
 
     return { GLCompositor(CompShader) };
 }
