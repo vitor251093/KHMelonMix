@@ -164,6 +164,8 @@ bool RunningSomething;
 MainWindow* mainWindow;
 EmuThread* emuThread;
 
+int autoScreenSizing = 0;
+
 int videoRenderer;
 bool videoSettingsDirty;
 

@@ -334,6 +334,7 @@ void GLRenderer::SetScaleFactor(int scale) noexcept
     SetRenderSettings(BetterPolygons, scale);
 }
 
+
 void GLRenderer::SetRenderSettings(bool betterpolygons, int scale) noexcept
 {
     if (betterpolygons == BetterPolygons && scale == ScaleFactor)

@@ -30,8 +30,6 @@
 #include "GBACart.h"
 #include "Plugin.h"
 
-extern int autoScreenSizing;
-
 using Keep = std::monostate;
 using UpdateConsoleNDSArgs = std::variant<Keep, std::unique_ptr<melonDS::NDSCart::CartCommon>>;
 using UpdateConsoleGBAArgs = std::variant<Keep, std::unique_ptr<melonDS::GBACart::CartCommon>>;
