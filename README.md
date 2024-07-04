@@ -38,6 +38,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 * (DS Keypad tab) Map the DS D-Pad to your controller's left analog stick
 * (DS Keypad tab) Map the Select/Start buttons to the equivalent keys in your controller
 * (DS Keypad tab) Map the A/B/X/Y buttons to the equivalent keys in your controller
+* (DS Keypad tab) Map the L button to the L/L1/LB button in your controller
 * (Touch Screen tab) Map the DS Touch Screen to your controller's right analog stick
 * (Add-ons tab) Map the command menu to your controller's D-Pad
 * (Add-ons tab) Map R1 and R2 rather than the R button from the DS keypad tab
