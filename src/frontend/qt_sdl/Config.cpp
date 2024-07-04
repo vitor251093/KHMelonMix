@@ -70,7 +70,6 @@ bool LimitFPS;
 int MaxFPS;
 bool AudioSync;
 bool ShowOSD;
-bool AutoFullscreen;
 
 int ConsoleType;
 bool DirectBoot;
@@ -312,7 +311,6 @@ ConfigEntry ConfigFile[] =
     {"MaxFPS", 0, &MaxFPS, 1000, false},
     {"AudioSync", 1, &AudioSync, false},
     {"ShowOSD", 1, &ShowOSD, true, false},
-    {"AutoFullscreen", 1, &AutoFullscreen, false, false},
 
     {"ConsoleType", 0, &ConsoleType, 0, false},
     {"DirectBoot", 1, &DirectBoot, true, false},

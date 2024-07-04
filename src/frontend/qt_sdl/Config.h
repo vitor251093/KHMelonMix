@@ -129,7 +129,6 @@ extern bool LimitFPS;
 extern int MaxFPS;
 extern bool AudioSync;
 extern bool ShowOSD;
-extern bool AutoFullscreen;
 
 extern int ConsoleType;
 extern bool DirectBoot;
