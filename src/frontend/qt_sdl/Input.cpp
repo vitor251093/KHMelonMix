@@ -112,7 +112,46 @@ void SetAutoJoystickConfig(int a, int b, int select, int start, int right, int l
     Config::HKJoyMapping[HK_CommandMenuUp] = cmdUp;
     Config::HKJoyMapping[HK_CommandMenuDown] = cmdDown;
 }
-void OpenJoystick(bool autoMapping)
+
+void AutoMapJoystick()
+{
+    JoystickVendorID = SDL_JoystickGetDeviceVendor(JoystickID);
+    JoystickDeviceID = SDL_JoystickGetDeviceProduct(JoystickID);
+
+    printf("Joystick - Vendor ID %04x - Device ID %04x\n", JoystickVendorID, JoystickDeviceID);
+    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268) { // PS3 Controller
+
+    }
+    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4) { // PS4 Controller V1
+
+    }
+    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc) { // PS4 Controller V2
+        SetAutoJoystickConfig(1, 0, 4, 6, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048778, 69271561, 3, 2,
+                                0x201FFFF, 0x211FFFF, 0x311FFFF, 0x301FFFF,
+                                0x102, 0x108, 0x101, 0x104,
+                                69271559, 86048776);
+    }
+    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
+        SetAutoJoystickConfig(1, 0, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048773, 35717124, 3, 2,
+                                0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
+                                0x102, 0x108, 0x101, 0x104,
+                                9, 10);
+    }
+    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028f) { // Xbox 360 Controller (Wireless)
+
+    }
+    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x02d1) { // Xbox One Controller
+
+    }
+    if (JoystickVendorID == 0x28de) { // Valve controllers
+        SetAutoJoystickConfig(0, 1, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 5, 4, 3, 2,
+                                0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
+                                0x102, 0x108, 0x101, 0x104,
+                                0x221FFFF, 0x521FFFF);
+    }
+}
+
+void OpenJoystick()
 {
     if (Joystick) SDL_JoystickClose(Joystick);
 
@@ -127,44 +166,6 @@ void OpenJoystick(bool autoMapping)
         JoystickID = 0;
 
     Joystick = SDL_JoystickOpen(JoystickID);
-
-    JoystickVendorID = SDL_JoystickGetDeviceVendor(JoystickID);
-    JoystickDeviceID = SDL_JoystickGetDeviceProduct(JoystickID);
-
-    printf("Joystick - Vendor ID %04x - Device ID %04x\n", JoystickVendorID, JoystickDeviceID);
-    if (autoMapping)
-    {
-        if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268) { // PS3 Controller
-
-        }
-        if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4) { // PS4 Controller V1
-
-        }
-        if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc) { // PS4 Controller V2
-            SetAutoJoystickConfig(1, 0, 4, 6, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048778, 69271561, 3, 2,
-                                  0x201FFFF, 0x211FFFF, 0x311FFFF, 0x301FFFF,
-                                  0x102, 0x108, 0x101, 0x104,
-                                  69271559, 86048776);
-        }
-        if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
-            SetAutoJoystickConfig(1, 0, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048773, 35717124, 3, 2,
-                                  0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
-                                  0x102, 0x108, 0x101, 0x104,
-                                  9, 10);
-        }
-        if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028f) { // Xbox 360 Controller (Wireless)
-
-        }
-        if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x02d1) { // Xbox One Controller
-
-        }
-        if (JoystickVendorID == 0x28de) { // Valve controllers
-            SetAutoJoystickConfig(0, 1, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 5, 4, 3, 2,
-                                  0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
-                                  0x102, 0x108, 0x101, 0x104,
-                                  0x221FFFF, 0x521FFFF);
-        }
-    }
 }
 
 void CloseJoystick()
@@ -312,7 +313,7 @@ void Process()
     if (!Joystick && (SDL_NumJoysticks() > 0))
     {
         JoystickID = Config::JoystickID;
-        OpenJoystick(false);
+        OpenJoystick();
     }
 
     JoyInputMask = 0xFFF;

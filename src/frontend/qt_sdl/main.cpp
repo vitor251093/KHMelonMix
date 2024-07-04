@@ -370,7 +370,7 @@ int main(int argc, char** argv)
     }
 
     Input::JoystickID = Config::JoystickID;
-    Input::OpenJoystick(false);
+    Input::OpenJoystick();
 
     mainWindow = new MainWindow();
     if (options->fullscreen)

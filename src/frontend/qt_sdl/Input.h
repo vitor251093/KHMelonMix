@@ -40,7 +40,8 @@ extern u32 HotkeyPress;
 void Init();
 
 // set joystickID before calling openJoystick()
-void OpenJoystick(bool autoMapping);
+void OpenJoystick();
+void AutoMapJoystick();
 void CloseJoystick();
 
 void KeyPress(QKeyEvent* event);
