@@ -117,7 +117,6 @@ public:
     void osdAddMessage(unsigned int color, const char* fmt, ...);
 
 protected:
-    void showEvent(QShowEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     void changeEvent(QEvent* event) override;
 
@@ -228,8 +227,6 @@ private:
 
     int oldW, oldH;
     bool oldMax;
-
-    void loadMostRecentFile();
 
 public:
     ScreenPanel* panel;
