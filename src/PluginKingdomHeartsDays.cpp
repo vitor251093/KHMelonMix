@@ -27,6 +27,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
+#define TOUCH_SCREEN_CONTROLS_ADDRESS_US      0x0204C1A4
+#define TOUCH_SCREEN_CONTROLS_ADDRESS_EU      0x0204C1C4
+#define TOUCH_SCREEN_CONTROLS_ADDRESS_JP      0x0204C604
+#define TOUCH_SCREEN_CONTROLS_ADDRESS_JP_REV1 0x0204C5C4
+
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
@@ -306,10 +311,10 @@ void PluginKingdomHeartsDays::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchM
             cameraPosY = CAMERA_CENTER_Y;
         }
 
-        u32 initialAddress = 0x0204C1A4;
-        if (isEuropeCart())    initialAddress = 0x0204C1C4;
-        if (isJapanCart())     initialAddress = 0x0204C604;
-        if (isJapanCartRev1()) initialAddress = 0x0204C5C4;
+        u32 initialAddress = TOUCH_SCREEN_CONTROLS_ADDRESS_US;
+        if (isEuropeCart())    initialAddress = TOUCH_SCREEN_CONTROLS_ADDRESS_EU;
+        if (isJapanCart())     initialAddress = TOUCH_SCREEN_CONTROLS_ADDRESS_JP;
+        if (isJapanCartRev1()) initialAddress = TOUCH_SCREEN_CONTROLS_ADDRESS_JP_REV1;
 
         nds->ARM7Write32(initialAddress + 0x00, movementValue);
         nds->ARM7Write32(initialAddress + 0x04, movingValue);
