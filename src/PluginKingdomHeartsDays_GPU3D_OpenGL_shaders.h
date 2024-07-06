@@ -47,9 +47,9 @@ void main()
         float heartTopMargin = 16.0*u3DScale;
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;
-        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
-            fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
-            fpos.z <  -(0.30)*fpos.w && fpos.z >= -(0.900)*fpos.w) {
+        if (fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.180)*fpos.w &&
+            fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
+            fpos.z >= -(0.900)*fpos.w && fpos.z <= -(0.300)*fpos.w) {
             fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/(iuTexScale*aspectRatio)))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
             fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/uScreenSize.y)*2.0 - 1.0)*fpos.w;
         }
