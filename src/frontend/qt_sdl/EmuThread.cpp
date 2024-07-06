@@ -468,8 +468,8 @@ void EmuThread::run()
 
             // process input and hotkeys
             Input::InputMask = plugin->applyHotkeyToInputMask(&nds, Input::InputMask, Input::HotkeyMask, Input::HotkeyPress);
+            plugin->applyTouchScreenMask(&nds, Input::TouchInputMask);
             NDS->SetKeyMask(Input::InputMask);
-            NDS->SetTouchKeyMask(Input::TouchInputMask);
 
             if (Input::HotkeyPressed(HK_Lid))
             {

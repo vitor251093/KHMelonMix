@@ -31,6 +31,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
 
+#define CAMERA_CENTER_X 0x800
+#define CAMERA_CENTER_Y 0x60
+#define CAMERA_LIMIT_X 0xFFF
+#define CAMERA_LIMIT_Y 0xFF
+
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -115,10 +120,16 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
 
-    GameScene = -1;
-    AspectRatio = 0;
-    priorGameScene = -1;
     HUDState = 0;
+
+    isCameraMoving = false;
+    cameraPosX = CAMERA_CENTER_X;
+    cameraPosY = CAMERA_CENTER_Y;
+
+    priorGameScene = -1;
+    GameScene = -1;
+    UIScale = 4;
+    AspectRatio = 0;
     ShowMap = true;
     ShowTarget = false;
     ShowMissionGauge = false;
@@ -240,13 +251,18 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
 
         // R / Lock On
         {
-            if (HotkeyPress & (1 << 16) && LastLockOnPress > 10) {
-                LastLockOnPress = 0;
+            if (HotkeyMask & (1 << 16)) {
+                if (LastLockOnPress == 1) {
+                    LastLockOnPress = 0;
+                }
+                else if (LastLockOnPress > 10) {
+                    LastLockOnPress = 0;
+                }
             }
-            if (LastLockOnPress == 0 || LastLockOnPress == 1 || LastLockOnPress == 2) {
+            if (LastLockOnPress == 0) {
                 InputMask &= ~(1<<8); // R
             }
-            if (LastLockOnPress == 6 || LastLockOnPress == 7 || LastLockOnPress == 8) {
+            if (LastLockOnPress == 4 || LastLockOnPress == 5 || LastLockOnPress == 6) {
                 InputMask &= ~(1<<8); // R (three frames later)
             }
         }
@@ -304,6 +320,59 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
 
     return InputMask;
+}
+
+void PluginKingdomHeartsDays::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchMask)
+{
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene)
+    {
+        u16 deadZone = 0x2;
+        u16 right = ((~TouchMask) & 0xF);
+        u16 left  = ((((~TouchMask) >> 4))  & 0xF);
+        u16 up    = ((((~TouchMask) >> 8))  & 0xF);
+        u16 down  = ((((~TouchMask) >> 12)) & 0xF);
+        if (right < deadZone) right = 0;
+        if (left  < deadZone)  left = 0;
+        if (up    < deadZone)    up = 0;
+        if (down  < deadZone)  down = 0;
+        bool isMoving = (right > 0 || left > 0 || up > 0 || down > 0);
+
+        u32 movingValue = 0x00030000;
+        u32 movementValue = 0;
+        if (isMoving) {
+            movingValue = 0x00000001;
+
+            s32 movementValueY = (down > 0) ? (0 - down) : up;
+            s32 movementValueX = (left > 0) ? (0 - left) : right;
+
+            s32 newCameraPosX = ((s32)cameraPosX) + movementValueX*0x8;
+            s32 newCameraPosY = ((s32)cameraPosY) + movementValueY*0x2;
+            if (newCameraPosX > 0 && newCameraPosX < CAMERA_LIMIT_X) {
+                cameraPosX = (u32)newCameraPosX;
+            }
+            if (newCameraPosY > 0 && newCameraPosY < CAMERA_LIMIT_Y) {
+                cameraPosY = (u32)newCameraPosY;
+            }
+
+            movementValue = (cameraPosY << 20) | cameraPosX;
+        }
+        else {
+            cameraPosX = CAMERA_CENTER_X;
+            cameraPosY = CAMERA_CENTER_Y;
+        }
+
+        nds->ARM7Write32(0x0204C1A8, movingValue);
+        nds->ARM7Write32(0x0204C1B0, movingValue);
+        nds->ARM7Write32(0x0204C1B8, movingValue);
+        nds->ARM7Write32(0x0204C1C0, movingValue);
+        nds->ARM7Write32(0x0204C1C8, movingValue);
+        
+        nds->ARM7Write32(0x0204C1A4, movementValue);
+        nds->ARM7Write32(0x0204C1AC, movementValue);
+        nds->ARM7Write32(0x0204C1B4, movementValue);
+        nds->ARM7Write32(0x0204C1BC, movementValue);
+        nds->ARM7Write32(0x0204C1C4, movementValue);
+    }
 }
 
 void PluginKingdomHeartsDays::hudToggle(melonDS::NDS* nds)
@@ -420,8 +489,6 @@ bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
 
 int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
 {
-    // printf("0x02194CBF: %08x %08x\n", nds->ARM7Read32(0x02194CBF), nds->ARM7Read32(0x02194CC3));
-
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
 
@@ -829,8 +896,53 @@ bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)
     return updated;
 }
 
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  ((byte) & 0x80000000 ? '1' : '0'), \
+  ((byte) & 0x40000000 ? '1' : '0'), \
+  ((byte) & 0x20000000 ? '1' : '0'), \
+  ((byte) & 0x10000000 ? '1' : '0'), \
+  ((byte) & 0x08000000 ? '1' : '0'), \
+  ((byte) & 0x04000000 ? '1' : '0'), \
+  ((byte) & 0x02000000 ? '1' : '0'), \
+  ((byte) & 0x01000000 ? '1' : '0'), \
+  ((byte) & 0x00800000 ? '1' : '0'), \
+  ((byte) & 0x00400000 ? '1' : '0'), \
+  ((byte) & 0x00200000 ? '1' : '0'), \
+  ((byte) & 0x00100000 ? '1' : '0'), \
+  ((byte) & 0x00080000 ? '1' : '0'), \
+  ((byte) & 0x00040000 ? '1' : '0'), \
+  ((byte) & 0x00020000 ? '1' : '0'), \
+  ((byte) & 0x00010000 ? '1' : '0'), \
+  ((byte) & 0x00008000 ? '1' : '0'), \
+  ((byte) & 0x00004000 ? '1' : '0'), \
+  ((byte) & 0x00002000 ? '1' : '0'), \
+  ((byte) & 0x00001000 ? '1' : '0'), \
+  ((byte) & 0x00000800 ? '1' : '0'), \
+  ((byte) & 0x00000400 ? '1' : '0'), \
+  ((byte) & 0x00000200 ? '1' : '0'), \
+  ((byte) & 0x00000100 ? '1' : '0'), \
+  ((byte) & 0x00000080 ? '1' : '0'), \
+  ((byte) & 0x00000040 ? '1' : '0'), \
+  ((byte) & 0x00000020 ? '1' : '0'), \
+  ((byte) & 0x00000010 ? '1' : '0'), \
+  ((byte) & 0x00000008 ? '1' : '0'), \
+  ((byte) & 0x00000004 ? '1' : '0'), \
+  ((byte) & 0x00000002 ? '1' : '0'), \
+  ((byte) & 0x00000001 ? '1' : '0') 
+
+#define PRINT_AS_32_BIT_HEX(ADDRESS) printf(#ADDRESS": 0x%08x\n", nds->ARM7Read32(ADDRESS))
+#define PRINT_AS_32_BIT_BIN(ADDRESS) printf(#ADDRESS": "BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))
+
 void PluginKingdomHeartsDays::debugLogs(melonDS::NDS* nds, int gameScene)
 {
+    // PRINT_AS_32_BIT_HEX(0x0204C1A4);
+    // PRINT_AS_32_BIT_HEX(0x0204C1AC);
+    // PRINT_AS_32_BIT_HEX(0x0204C1B4);
+    // PRINT_AS_32_BIT_HEX(0x0204C1BC);
+    // PRINT_AS_32_BIT_HEX(0x0204C1C4);
+    // printf("\n");
+
     if (!DEBUG_MODE_ENABLED) {
         return;
     }
