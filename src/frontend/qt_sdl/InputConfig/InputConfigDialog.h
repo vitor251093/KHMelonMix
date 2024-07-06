@@ -95,10 +95,10 @@ static_assert(hk_general.size() == hk_general_labels.size());
 
 static constexpr std::initializer_list<const char*> ds_touch_key_labels =
 {
-    "Left",
-    "Right",
-    "Up",
-    "Down"
+    "Touch Left",
+    "Touch Right",
+    "Touch Up",
+    "Touch Down"
 };
 
 namespace Ui { class InputConfigDialog; }

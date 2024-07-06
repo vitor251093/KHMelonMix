@@ -68,10 +68,10 @@ const char* EmuInstance::hotkeyNames[HK_MAX] =
 
 const char* EmuInstance::touchButtonNames[4] =
 {
-    "Right",
-    "Left",
-    "Up",
-    "Down"
+    "CameraRight",
+    "CameraLeft",
+    "CameraUp",
+    "CameraDown"
 };
 
 
