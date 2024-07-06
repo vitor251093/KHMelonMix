@@ -12,8 +12,6 @@ set(SOURCES_QT_SDL
     Config.cpp
     DateTimeDialog.cpp
     EmuSettingsDialog.cpp
-    KHDays_ARCodes.cpp
-    KHReCoded_ARCodes.cpp
     PowerManagement/PowerManagementDialog.cpp
     PowerManagement/resources/battery.qrc
     InputConfig/InputConfigDialog.cpp

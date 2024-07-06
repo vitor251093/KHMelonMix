@@ -19,11 +19,12 @@
 #ifndef KHDAYS_GPU3D_OPENGL_SHADERS_H
 #define KHDAYS_GPU3D_OPENGL_SHADERS_H
 
-namespace melonDS
+namespace Plugins
 {
 const char* kRenderVS_Z_KhDays = R"(
 
-uniform int KHGameScene;
+uniform int GameScene;
+uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
 
 void main()
@@ -38,16 +39,31 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    if (KHGameScene == 5 || KHGameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
+    if (GameScene == 5 || GameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
     {
         float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
+        int iuScale = KHUIScale;
+        float iuTexScale = (4.0)/iuScale;
+        float heartTopMargin = 16.0*u3DScale;
+        float heartWidth = (256.0*u3DScale*9)/20.0;
+        float heartHeight = (192.0*u3DScale)/2.5;
+        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
+            fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
+            fpos.z <  -(0.30)*fpos.w && fpos.z >= -(0.900)*fpos.w) {
+            fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/(iuTexScale*aspectRatio)))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
+            fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/uScreenSize.y)*2.0 - 1.0)*fpos.w;
+        }
+    }
+
+    if (GameScene == 10) // gameScene_PauseMenu
+    {
         float heartWidth = (256.0*u3DScale)/2.5;
         float heartHeight = (192.0*u3DScale)/2.5;
-        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.500)*fpos.w &&
-            fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.666)*fpos.w &&
-            fpos.z < -0.75*fpos.w) {
-            fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/aspectRatio))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
-            fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight))/uScreenSize.y)*2.0 - 1.0)*fpos.w;
+        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
+            fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
+            fpos.z <  -(0.30)*fpos.w && fpos.z >= -(0.900)*fpos.w) {
+            fpos.x = (0 - 1.0)*fpos.w;
+            fpos.y = (0 - 1.0)*fpos.w;
         }
     }
 

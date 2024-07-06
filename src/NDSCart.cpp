@@ -26,7 +26,7 @@
 #include "melonDLDI.h"
 #include "FATStorage.h"
 #include "Utils.h"
-#include "CartValidator.h"
+#include "PluginManager.h"
 
 namespace melonDS
 {
@@ -1603,11 +1603,8 @@ std::unique_ptr<CartCommon> ParseROM(std::unique_ptr<u8[]>&& romdata, u32 romlen
     const char *gametitle = header.GameTitle;
     u32 gamecode = header.GameCodeAsU32();
 
-    CartValidator::load(gamecode);
+    Plugins::PluginManager::load(gamecode);
     Log(LogLevel::Info, "Game code: %u\n", gamecode);
-    if (!CartValidator::isValid()) {
-        return nullptr;
-    }
 
     u32 arm9base = header.ARM9ROMOffset;
     bool homebrew = header.IsHomebrew();

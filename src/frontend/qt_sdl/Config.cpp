@@ -25,6 +25,7 @@
 #include "Config.h"
 #include "GPU.h"
 
+
 namespace Config
 {
 using namespace melonDS;
@@ -37,9 +38,6 @@ int HKJoyMapping[HK_MAX];
 
 int TouchKeyMapping[4];
 int TouchJoyMapping[4];
-
-int CmdMenuKeyMapping[4];
-int CmdMenuJoyMapping[4];
 
 int JoystickID;
 
@@ -72,7 +70,6 @@ bool LimitFPS;
 int MaxFPS;
 bool AudioSync;
 bool ShowOSD;
-bool AutoFullscreen;
 
 int ConsoleType;
 bool DirectBoot;
@@ -240,7 +237,14 @@ ConfigEntry ConfigFile[] =
     {"HKKey_PowerButton",         0, &HKKeyMapping[HK_PowerButton],         -1, true},
     {"HKKey_VolumeUp",            0, &HKKeyMapping[HK_VolumeUp],            -1, true},
     {"HKKey_VolumeDown",          0, &HKKeyMapping[HK_VolumeDown],          -1, true},
+
     {"HKKey_HUDToggle",           0, &HKKeyMapping[HK_HUDToggle],           -1, true},
+    {"HKKey_LockOn",              0, &HKKeyMapping[HK_RLockOn],             -1, true},
+    {"HKKey_RSwitchTarget",       0, &HKKeyMapping[HK_SwitchTarget],        -1, true},
+    {"Key_CmdMenuLeft",           0, &HKKeyMapping[HK_CommandMenuLeft],     -1, true},
+    {"Key_CmdMenuRight",          0, &HKKeyMapping[HK_CommandMenuRight],    -1, true},
+    {"Key_CmdMenuUp",             0, &HKKeyMapping[HK_CommandMenuUp],       -1, true},
+    {"Key_CmdMenuDown",           0, &HKKeyMapping[HK_CommandMenuDown],     -1, true},
 
     {"HKJoy_Lid",                 0, &HKJoyMapping[HK_Lid],                 -1, true},
     {"HKJoy_Mic",                 0, &HKJoyMapping[HK_Mic],                 -1, true},
@@ -257,7 +261,14 @@ ConfigEntry ConfigFile[] =
     {"HKJoy_PowerButton",         0, &HKJoyMapping[HK_PowerButton],         -1, true},
     {"HKJoy_VolumeUp",            0, &HKJoyMapping[HK_VolumeUp],            -1, true},
     {"HKJoy_VolumeDown",          0, &HKJoyMapping[HK_VolumeDown],          -1, true},
+
     {"HKJoy_HUDToggle",           0, &HKJoyMapping[HK_HUDToggle],           -1, true},
+    {"HKJoy_LockOn",              0, &HKJoyMapping[HK_RLockOn],             -1, true},
+    {"HKJoy_RSwitchTarget",       0, &HKJoyMapping[HK_SwitchTarget],        -1, true},
+    {"Joy_CmdMenuLeft",           0, &HKJoyMapping[HK_CommandMenuLeft],     -1, true},
+    {"Joy_CmdMenuRight",          0, &HKJoyMapping[HK_CommandMenuRight],    -1, true},
+    {"Joy_CmdMenuUp",             0, &HKJoyMapping[HK_CommandMenuUp],       -1, true},
+    {"Joy_CmdMenuDown",           0, &HKJoyMapping[HK_CommandMenuDown],     -1, true},
 
     {"Key_TouchRight", 0, &TouchKeyMapping[0], -1, true},
     {"Key_TouchLeft",  0, &TouchKeyMapping[1], -1, true},
@@ -268,16 +279,6 @@ ConfigEntry ConfigFile[] =
     {"Joy_TouchLeft",  0, &TouchJoyMapping[1], -1, true},
     {"Joy_TouchUp",    0, &TouchJoyMapping[2], -1, true},
     {"Joy_TouchDown",  0, &TouchJoyMapping[3], -1, true},
-
-    {"Key_CmdMenuLeft",  0, &CmdMenuKeyMapping[0], -1, true},
-    {"Key_CmdMenuRight", 0, &CmdMenuKeyMapping[1], -1, true},
-    {"Key_CmdMenuUp",    0, &CmdMenuKeyMapping[2], -1, true},
-    {"Key_CmdMenuDown",  0, &CmdMenuKeyMapping[3], -1, true},
-
-    {"Joy_CmdMenuLeft",  0, &CmdMenuJoyMapping[0], -1, true},
-    {"Joy_CmdMenuRight", 0, &CmdMenuJoyMapping[1], -1, true},
-    {"Joy_CmdMenuUp",    0, &CmdMenuJoyMapping[2], -1, true},
-    {"Joy_CmdMenuDown",  0, &CmdMenuJoyMapping[3], -1, true},
 
     {"JoystickID", 0, &JoystickID, 0, true},
 
@@ -310,7 +311,6 @@ ConfigEntry ConfigFile[] =
     {"MaxFPS", 0, &MaxFPS, 1000, false},
     {"AudioSync", 1, &AudioSync, false},
     {"ShowOSD", 1, &ShowOSD, true, false},
-    {"AutoFullscreen", 1, &AutoFullscreen, false, false},
 
     {"ConsoleType", 0, &ConsoleType, 0, false},
     {"DirectBoot", 1, &DirectBoot, true, false},

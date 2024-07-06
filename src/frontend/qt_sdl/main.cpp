@@ -164,6 +164,8 @@ bool RunningSomething;
 MainWindow* mainWindow;
 EmuThread* emuThread;
 
+int autoScreenSizing = 0;
+
 int videoRenderer;
 bool videoSettingsDirty;
 
@@ -368,7 +370,7 @@ int main(int argc, char** argv)
     }
 
     Input::JoystickID = Config::JoystickID;
-    Input::OpenJoystick(false);
+    Input::OpenJoystick();
 
     mainWindow = new MainWindow();
     if (options->fullscreen)

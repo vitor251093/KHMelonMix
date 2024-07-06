@@ -58,7 +58,6 @@ VideoSettingsDialog::VideoSettingsDialog(QWidget* parent) : QDialog(parent), ui(
     oldSoftThreaded = Config::Threaded3D;
     oldGLScale = Config::GL_ScaleFactor;
     oldGLBetterPolygons = Config::GL_BetterPolygons;
-    oldAutoFullscreen = Config::AutoFullscreen;
     oldHiresCoordinates = Config::GL_HiresCoordinates;
 
     grp3DRenderer = new QButtonGroup(this);
@@ -94,8 +93,6 @@ VideoSettingsDialog::VideoSettingsDialog(QWidget* parent) : QDialog(parent), ui(
     ui->cbBetterPolygons->setChecked(Config::GL_BetterPolygons != 0);
     ui->cbxComputeHiResCoords->setChecked(Config::GL_HiresCoordinates != 0);
 
-    ui->cbAutoFullscreen->setChecked(Config::AutoFullscreen != 0);
-
     if (!Config::ScreenVSync)
         ui->sbVSyncInterval->setEnabled(false);
     setVsyncControlEnable(UsesGL());
@@ -126,7 +123,6 @@ void VideoSettingsDialog::on_VideoSettingsDialog_rejected()
     Config::Threaded3D = oldSoftThreaded;
     Config::GL_ScaleFactor = oldGLScale;
     Config::GL_BetterPolygons = oldGLBetterPolygons;
-    Config::AutoFullscreen = oldAutoFullscreen;
     Config::GL_HiresCoordinates = oldHiresCoordinates;
 
     emit updateVideoSettings(old_gl != UsesGL());
@@ -180,12 +176,6 @@ void VideoSettingsDialog::on_cbSoftwareThreaded_stateChanged(int state)
 {
     Config::Threaded3D = (state != 0);
 
-    emit updateVideoSettings(false);
-}
-
-void VideoSettingsDialog::on_cbAutoFullscreen_stateChanged(int state)
-{
-    Config::AutoFullscreen = (state != 0);
     emit updateVideoSettings(false);
 }
 

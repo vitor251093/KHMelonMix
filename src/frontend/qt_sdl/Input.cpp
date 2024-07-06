@@ -35,12 +35,10 @@ SDL_Joystick* Joystick = nullptr;
 u32 KeyInputMask, JoyInputMask;
 u32 KeyTouchInputMask, JoyTouchInputMask;
 u32 KeyHotkeyMask, JoyHotkeyMask;
-u32 KeyCmdMenuInputMask, JoyCmdMenuInputMask;
 u32 HotkeyMask, LastHotkeyMask;
 u32 HotkeyPress, HotkeyRelease;
 
 u32 InputMask, TouchInputMask;
-u32 CmdMenuInputMask, PriorCmdMenuInputMask, PriorPriorCmdMenuInputMask;
 
 
 void Init()
@@ -56,12 +54,6 @@ void Init()
     JoyHotkeyMask = 0;
     HotkeyMask = 0;
     LastHotkeyMask = 0;
-
-    KeyCmdMenuInputMask = 0;
-    JoyCmdMenuInputMask = 0;
-    CmdMenuInputMask = 0;
-    PriorCmdMenuInputMask = 0;
-    PriorPriorCmdMenuInputMask = 0;
 }
 
 
@@ -96,11 +88,6 @@ void SetAutoJoystickConfig(int a, int b, int select, int start, int right, int l
     Config::TouchJoyMapping[2] = camUp;
     Config::TouchJoyMapping[3] = camDown;
 
-    Config::CmdMenuJoyMapping[0] = cmdLeft;
-    Config::CmdMenuJoyMapping[1] = cmdRight;
-    Config::CmdMenuJoyMapping[2] = cmdUp;
-    Config::CmdMenuJoyMapping[3] = cmdDown;
-
     Config::HKJoyMapping[HK_Lid] = -1;
     Config::HKJoyMapping[HK_Mic] = -1;
     Config::HKJoyMapping[HK_Pause] = pause;
@@ -116,9 +103,55 @@ void SetAutoJoystickConfig(int a, int b, int select, int start, int right, int l
     Config::HKJoyMapping[HK_PowerButton] = -1;
     Config::HKJoyMapping[HK_VolumeUp] = -1;
     Config::HKJoyMapping[HK_VolumeDown] = -1;
+
     Config::HKJoyMapping[HK_HUDToggle] = -1;
+    Config::HKJoyMapping[HK_RLockOn] = -1;
+    Config::HKJoyMapping[HK_SwitchTarget] = -1;
+    Config::HKJoyMapping[HK_CommandMenuLeft] = cmdLeft;
+    Config::HKJoyMapping[HK_CommandMenuRight] = cmdRight;
+    Config::HKJoyMapping[HK_CommandMenuUp] = cmdUp;
+    Config::HKJoyMapping[HK_CommandMenuDown] = cmdDown;
 }
-void OpenJoystick(bool autoMapping)
+
+void AutoMapJoystick()
+{
+    JoystickVendorID = SDL_JoystickGetDeviceVendor(JoystickID);
+    JoystickDeviceID = SDL_JoystickGetDeviceProduct(JoystickID);
+
+    printf("Joystick - Vendor ID %04x - Device ID %04x\n", JoystickVendorID, JoystickDeviceID);
+    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268) { // PS3 Controller
+
+    }
+    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4) { // PS4 Controller V1
+
+    }
+    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc) { // PS4 Controller V2
+        SetAutoJoystickConfig(1, 0, 4, 6, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048778, 69271561, 3, 2,
+                                0x201FFFF, 0x211FFFF, 0x311FFFF, 0x301FFFF,
+                                0x102, 0x108, 0x101, 0x104,
+                                69271559, 86048776);
+    }
+    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
+        SetAutoJoystickConfig(1, 0, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048773, 35717124, 3, 2,
+                                0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
+                                0x102, 0x108, 0x101, 0x104,
+                                9, 10);
+    }
+    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028f) { // Xbox 360 Controller (Wireless)
+
+    }
+    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x02d1) { // Xbox One Controller
+
+    }
+    if (JoystickVendorID == 0x28de) { // Valve controllers
+        SetAutoJoystickConfig(0, 1, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 5, 4, 3, 2,
+                                0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
+                                0x102, 0x108, 0x101, 0x104,
+                                0x221FFFF, 0x521FFFF);
+    }
+}
+
+void OpenJoystick()
 {
     if (Joystick) SDL_JoystickClose(Joystick);
 
@@ -133,44 +166,6 @@ void OpenJoystick(bool autoMapping)
         JoystickID = 0;
 
     Joystick = SDL_JoystickOpen(JoystickID);
-
-    JoystickVendorID = SDL_JoystickGetDeviceVendor(JoystickID);
-    JoystickDeviceID = SDL_JoystickGetDeviceProduct(JoystickID);
-
-    printf("Joystick - Vendor ID %04x - Device ID %04x\n", JoystickVendorID, JoystickDeviceID);
-    if (autoMapping)
-    {
-        if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268) { // PS3 Controller
-
-        }
-        if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4) { // PS4 Controller V1
-
-        }
-        if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc) { // PS4 Controller V2
-            SetAutoJoystickConfig(1, 0, 4, 6, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048778, 69271561, 3, 2,
-                                  0x201FFFF, 0x211FFFF, 0x311FFFF, 0x301FFFF,
-                                  0x102, 0x108, 0x101, 0x104,
-                                  69271559, 86048776);
-        }
-        if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
-            SetAutoJoystickConfig(1, 0, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048773, 35717124, 3, 2,
-                                  0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
-                                  0x102, 0x108, 0x101, 0x104,
-                                  9, 10);
-        }
-        if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028f) { // Xbox 360 Controller (Wireless)
-
-        }
-        if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x02d1) { // Xbox One Controller
-
-        }
-        if (JoystickVendorID == 0x28de) { // Valve controllers
-            SetAutoJoystickConfig(0, 1, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 5, 4, 3, 2,
-                                  0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
-                                  0x102, 0x108, 0x101, 0x104,
-                                  0x221FFFF, 0x521FFFF);
-        }
-    }
 }
 
 void CloseJoystick()
@@ -219,10 +214,6 @@ void KeyPress(QKeyEvent* event)
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == Config::HKKeyMapping[i])
             KeyHotkeyMask |= (1<<i);
-
-    for (int i = 0; i < 4; i++)
-        if (keyKP == Config::CmdMenuKeyMapping[i])
-            KeyCmdMenuInputMask |= (1<<i);
 }
 
 void KeyRelease(QKeyEvent* event)
@@ -243,10 +234,6 @@ void KeyRelease(QKeyEvent* event)
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == Config::HKKeyMapping[i])
             KeyHotkeyMask &= ~(1<<i);
-
-    for (int i = 0; i < 4; i++)
-        if (keyKP == Config::CmdMenuKeyMapping[i])
-            KeyCmdMenuInputMask &= ~(1<<i);
 }
 
 void KeyReleaseAll()
@@ -326,7 +313,7 @@ void Process()
     if (!Joystick && (SDL_NumJoysticks() > 0))
     {
         JoystickID = Config::JoystickID;
-        OpenJoystick(false);
+        OpenJoystick();
     }
 
     JoyInputMask = 0xFFF;
@@ -347,25 +334,17 @@ void Process()
     TouchInputMask = KeyTouchInputMask & JoyTouchInputMask;
 
     JoyHotkeyMask = 0;
-    JoyCmdMenuInputMask = 0;
     if (Joystick)
     {
         for (int i = 0; i < HK_MAX; i++)
             if (JoystickButtonDown(Config::HKJoyMapping[i]) != 0)
                 JoyHotkeyMask |= (1<<i);
-        for (int i = 0; i < 4; i++)
-            if (JoystickButtonDown(Config::CmdMenuJoyMapping[i]) != 0)
-                JoyCmdMenuInputMask |= (1<<i);
     }
 
     HotkeyMask = KeyHotkeyMask | JoyHotkeyMask;
     HotkeyPress = HotkeyMask & ~LastHotkeyMask;
     HotkeyRelease = LastHotkeyMask & ~HotkeyMask;
     LastHotkeyMask = HotkeyMask;
-
-    PriorPriorCmdMenuInputMask = PriorCmdMenuInputMask;
-    PriorCmdMenuInputMask = CmdMenuInputMask;
-    CmdMenuInputMask = KeyCmdMenuInputMask | JoyCmdMenuInputMask;
 }
 
 

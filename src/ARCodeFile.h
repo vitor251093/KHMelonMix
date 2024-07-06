@@ -47,14 +47,13 @@ typedef std::list<ARCodeCat> ARCodeCatList;
 class ARCodeFile
 {
 public:
-    ARCodeFile();
     ARCodeFile(const std::string& filename);
     ~ARCodeFile();
 
     bool Error;
 
-    virtual bool Load();
-    virtual bool Save();
+    bool Load();
+    bool Save();
 
     ARCodeCatList Categories;
 

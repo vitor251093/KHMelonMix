@@ -771,13 +771,6 @@ void MainWindow::drawScreenGL()
     return glpanel->drawScreenGL();
 }*/
 
-void MainWindow::showEvent(QShowEvent* event)
-{
-    QMainWindow::showEvent(event);
-
-    QMetaObject::invokeMethod(this, &MainWindow::loadMostRecentFile, Qt::ConnectionType::QueuedConnection);
-}
-
 void MainWindow::resizeEvent(QResizeEvent* event)
 {
     int w = event->size().width();
@@ -2063,43 +2056,5 @@ void MainWindow::onUpdateVideoSettings(bool glchange)
     {
         if (hasOGL) emuThread->initContext();
         emuThread->emuUnpause();
-    }
-}
-
-void MainWindow::loadMostRecentFile()
-{
-    if (emuThread->NDS->IsRunning()) {
-        return;
-    }
-
-    std::string item = Config::RecentROMList[0];
-    if (item.empty()) {
-        return;
-    }
-
-    QString filename = QString::fromStdString(item);
-    QStringList file = filename.split('|');
-
-    if (!ROMManager::LoadROM(mainWindow, emuThread, file, true))
-    {
-        // TODO: better error reporting?
-        QMessageBox::critical(this, "melonDS", "Failed to load the ROM.");
-        emuThread->emuUnpause();
-        return;
-    }
-
-    recentFileList.removeAll(filename);
-    recentFileList.prepend(filename);
-    updateRecentFilesMenu();
-
-    assert(emuThread->NDS != nullptr);
-    emuThread->NDS->Start();
-    emuThread->emuRun();
-
-    updateCartInserted(false);
-
-    if (Config::AutoFullscreen)
-    {
-        emuThread->windowFullscreenToggle();
     }
 }

@@ -28,8 +28,7 @@
 
 #include "NDSCart.h"
 #include "GBACart.h"
-
-extern int autoScreenSizing;
+#include "Plugin.h"
 
 using Keep = std::monostate;
 using UpdateConsoleNDSArgs = std::variant<Keep, std::unique_ptr<melonDS::NDSCart::CartCommon>>;
@@ -130,6 +129,9 @@ private:
 
     ScreenPanelGL* screenGL;
 
+    int autoScreenSizing;
+
+    Plugins::Plugin* plugin;
     void refreshGameScene();
 
     int lastVideoRenderer = -1;

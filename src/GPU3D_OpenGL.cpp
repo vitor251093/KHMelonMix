@@ -24,9 +24,7 @@
 #include "NDS.h"
 #include "GPU.h"
 #include "GPU3D_OpenGL_shaders.h"
-#include "CartValidator.h"
-#include "KHDays_GPU3D_OpenGL_shaders.h"
-#include "KHReCoded_GPU3D_OpenGL_shaders.h"
+#include "PluginManager.h"
 
 namespace melonDS
 {
@@ -67,11 +65,7 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
-    uni_id = glGetUniformLocation(prog, "TopScreenAspectRatio");
-    RenderShaderAspectRatio[flags] = uni_id;
-
-    uni_id = glGetUniformLocation(prog, "KHGameScene");
-    RenderShaderGameScene[flags] = uni_id;
+    Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z_initVariables(prog, flags);
 
     RenderShader[flags] = prog;
 
@@ -84,11 +78,7 @@ void GLRenderer::UseRenderShader(u32 flags)
     glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
 
-    float aspectRatio = CurGLCompositor.GetAspectRatio();
-    glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
-
-    float gameScene = CurGLCompositor.GetGameScene();
-    glUniform1i(RenderShaderGameScene[flags], gameScene);
+    Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z_updateVariables(flags);
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -141,19 +131,9 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
     result->ClearUniformLoc[3] = glGetUniformLocation(result->ClearShaderPlain, "uFogFlag");
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
-    memset(result->RenderShaderAspectRatio, 0, sizeof(RenderShaderAspectRatio));
-    memset(result->RenderShaderGameScene, 0, sizeof(RenderShaderGameScene));
 
-    const char* renderVS_Z;
-    if (CartValidator::isDays()) {
-        renderVS_Z = kRenderVS_Z_KhDays;
-    }
-    else if (CartValidator::isRecoded()) {
-        renderVS_Z = kRenderVS_Z_KhReCoded;
-    }
-    else {
-        renderVS_Z = kRenderVS_Z;
-    }
+    const char* renderVS_Z_Custom = Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z();
+    const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
 
     if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))
         return nullptr;
@@ -349,37 +329,9 @@ void GLRenderer::SetBetterPolygons(bool betterpolygons) noexcept
     SetRenderSettings(betterpolygons, ScaleFactor);
 }
 
-void GLRenderer::SetIsBottomScreen2DTextureBlack(bool isBlack) noexcept
-{
-    CurGLCompositor.SetIsBottomScreen2DTextureBlack(isBlack);
-}
-void GLRenderer::SetIsTopScreen2DTextureBlack(bool isBlack) noexcept
-{
-    CurGLCompositor.SetIsTopScreen2DTextureBlack(isBlack);
-}
-void GLRenderer::SetGameScene(int gameScene) noexcept
-{
-    CurGLCompositor.SetGameScene(gameScene);
-}
-void GLRenderer::SetAspectRatio(float aspectRatio) noexcept
-{
-    CurGLCompositor.SetAspectRatio(aspectRatio);
-}
 void GLRenderer::SetScaleFactor(int scale) noexcept
 {
     SetRenderSettings(BetterPolygons, scale);
-}
-void GLRenderer::SetShowMap(bool showMap) noexcept
-{
-    CurGLCompositor.SetShowMap(showMap);
-}
-void GLRenderer::SetShowTarget(bool showTarget) noexcept
-{
-    CurGLCompositor.SetShowTarget(showTarget);
-}
-void GLRenderer::SetShowMissionGauge(bool showMissionGauge) noexcept
-{
-    CurGLCompositor.SetShowMissionGauge(showMissionGauge);
 }
 
 

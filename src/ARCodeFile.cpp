@@ -29,11 +29,6 @@ using namespace Platform;
 // TODO: more user-friendly error reporting
 
 
-ARCodeFile::ARCodeFile()
-{
-    Error = true;
-}
-
 ARCodeFile::ARCodeFile(const std::string& filename)
 {
     Filename = filename;

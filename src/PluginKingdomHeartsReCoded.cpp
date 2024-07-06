@@ -1,32 +1,34 @@
-#include "KHDays_Plugin.h"
+#include "PluginKingdomHeartsReCoded.h"
 
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
-#include "CartValidator.h"
+
+#include "PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h"
+#include "PluginKingdomHeartsReCoded_GPU3D_OpenGL_shaders.h"
 
 #include <math.h>
 
-using namespace melonDS;
-
 extern int videoRenderer;
 
-int KHDaysPlugin::GameScene = -1;
-int KHDaysPlugin::priorGameScene = -1;
-bool KHDaysPlugin::ShowMap = true;
-bool KHDaysPlugin::ShowTarget = false;
-bool KHDaysPlugin::ShowMissionGauge = false;
+namespace Plugins
+{
 
-bool KHDaysPlugin::_olderHad3DOnTopScreen = false;
-bool KHDaysPlugin::_olderHad3DOnBottomScreen = false;
-bool KHDaysPlugin::_had3DOnTopScreen = false;
-bool KHDaysPlugin::_had3DOnBottomScreen = false;
+u32 PluginKingdomHeartsReCoded::usGamecode = 1161382722;
+u32 PluginKingdomHeartsReCoded::euGamecode = 1345932098;
+u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 
-bool KHDaysPlugin::_hasVisible3DOnBottomScreen = false;
+#define ASPECT_RATIO_ADDRESS_US      0x0202A810
+#define ASPECT_RATIO_ADDRESS_EU      0x0202A824
+#define ASPECT_RATIO_ADDRESS_JP      0x0202A728
+#define ASPECT_RATIO_ADDRESS_JP_DEV1 0x0202A728
 
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
 #define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
+
+#define renderer3D_OpenGL        1
+#define renderer3D_OpenGLCompute 2
 
 enum
 {
@@ -36,7 +38,7 @@ enum
     gameScene_DayCounter,         // 3
     gameScene_Cutscene,           // 4
     gameScene_InGameWithMap,      // 5
-    gameScene_InGameWithoutMap,   // 6
+    gameScene_InGameWithoutMap,   // 6 (unused)
     gameScene_InGameMenu,         // 7
     gameScene_InGameSaveMenu,     // 8
     gameScene_InHoloMissionMenu,  // 9
@@ -49,99 +51,139 @@ enum
     gameScene_Other               // 16
 };
 
-u32 KHDaysPlugin::applyCommandMenuInputMask(melonDS::NDS* nds, u32 InputMask, u32 CmdMenuInputMask, u32 PriorCmdMenuInputMask)
+PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 {
+    GameCode = gameCode;
+
+    GameScene = -1;
+    AspectRatio = 0;
+    priorGameScene = -1;
+    ShowMap = true;
+
+    _olderHad3DOnTopScreen = false;
+    _olderHad3DOnBottomScreen = false;
+    _had3DOnTopScreen = false;
+    _had3DOnBottomScreen = false;
+
+    PriorHotkeyMask = 0;
+    PriorPriorHotkeyMask = 0;
+}
+
+const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
+    return kCompositorFS_KhReCoded;
+};
+
+const char* PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z() {
+    return kRenderVS_Z_KhReCoded;
+};
+
+void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "IsBottomScreen2DTextureBlack");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "GameScene");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "KHUIScale");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMap");
+    // CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowTarget");
+    // CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "ShowMissionGauge");
+    // CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "ShowMissionInfo");
+}
+
+void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    glUniform1i(CompGpuLoc[CompShader][0], IsBottomScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][1], IsTopScreen2DTextureBlack ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][2], priorGameScene);
+    glUniform1i(CompGpuLoc[CompShader][3], GameScene);
+    glUniform1i(CompGpuLoc[CompShader][4], UIScale);
+    glUniform1f(CompGpuLoc[CompShader][5], aspectRatio);
+    glUniform1i(CompGpuLoc[CompShader][6], ShowMap ? 1 : 0);
+    // glUniform1i(CompGpuLoc[CompShader][7], ShowTarget ? 1 : 0);
+    // glUniform1i(CompGpuLoc[CompShader][8], ShowMissionGauge ? 1 : 0);
+    // glUniform1i(CompGpuLoc[CompShader][9], ShowMissionInfo ? 1 : 0);
+}
+
+void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
+{
+    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
+    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
+}
+
+void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
+    glUniform1i(CompGpu3DLoc[flags][1], GameScene);
+    glUniform1i(CompGpu3DLoc[flags][2], UIScale);
+}
+
+u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
+{
+    if (HotkeyPress & (1 << 15)) { // HUD Toggle
+        hudToggle(nds);
+    }
+
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
-        // Enabling X + D-Pad
-        if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) { // D-pad
-            u32 dpadMenuAddress = 0;
-            if (CartValidator::isUsaCart()) {
-                dpadMenuAddress = 0x02194CC3;
-            }
-            if (CartValidator::isEuropeCart()) {
-                dpadMenuAddress = 0x02195AA3;
-            }
-            if (CartValidator::isJapanCart()) {
-                dpadMenuAddress = 0x02193E23;
-                // TODO: Add support to Rev1 (0x02193DA3)
-            }
-
-            if (nds->ARM7Read8(dpadMenuAddress) & 0x02) {
-                nds->ARM7Write8(dpadMenuAddress, nds->ARM7Read8(dpadMenuAddress) - 0x02);
-            }
-        }
-
         // So the arrow keys can be used to control the command menu
-        if (CmdMenuInputMask & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3))) {
+        if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
             InputMask &= ~(1<<10); // X
-            InputMask |= (1<<4); // right
             InputMask |= (1<<5); // left
+            InputMask |= (1<<4); // right
             InputMask |= (1<<6); // up
             InputMask |= (1<<7); // down
-            if (PriorCmdMenuInputMask & (1 << 0)) // Old D-pad right
-                InputMask &= ~(1<<4); // right
-            if (PriorCmdMenuInputMask & (1 << 1)) // Old D-pad left
+            if (PriorPriorHotkeyMask & (1 << 18)) // Old D-pad left
                 InputMask &= ~(1<<5); // left
-            if (PriorCmdMenuInputMask & (1 << 2)) // Old D-pad up
+            if (PriorPriorHotkeyMask & (1 << 19)) // Old D-pad right
+                InputMask &= ~(1<<4); // right
+            if (PriorPriorHotkeyMask & (1 << 20)) // Old D-pad up
                 InputMask &= ~(1<<6); // up
-            if (PriorCmdMenuInputMask & (1 << 3)) // Old D-pad down
+            if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad down
                 InputMask &= ~(1<<7); // down
         }
     }
     else {
         // So the arrow keys can be used as directionals
-        if (CmdMenuInputMask & (1 << 0)) { // D-pad right
-            InputMask &= ~(1<<4); // right
-        }
-        if (CmdMenuInputMask & (1 << 1)) { // D-pad left
+        if (HotkeyMask & (1 << 18)) { // D-pad left
             InputMask &= ~(1<<5); // left
         }
-        if (CmdMenuInputMask & (1 << 2)) { // D-pad up
+        if (HotkeyMask & (1 << 19)) { // D-pad right
+            InputMask &= ~(1<<4); // right
+        }
+        if (HotkeyMask & (1 << 20)) { // D-pad up
             InputMask &= ~(1<<6); // up
         }
-        if (CmdMenuInputMask & (1 << 3)) { // D-pad down
+        if (HotkeyMask & (1 << 21)) { // D-pad down
             InputMask &= ~(1<<7); // down
         }
     }
+
+    PriorPriorHotkeyMask = PriorHotkeyMask;
+    PriorHotkeyMask = HotkeyMask;
+
     return InputMask;
 }
 
-void KHDaysPlugin::hudRefresh(melonDS::NDS* nds)
+void PluginKingdomHeartsReCoded::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchMask)
 {
-    switch (videoRenderer)
-    {
-        case 1:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
-            break;
-        case 2:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMap(ShowMap);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowTarget(ShowTarget);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetShowMissionGauge(ShowMissionGauge);
-            break;
-        default: break;
-    }
+
 }
 
-void KHDaysPlugin::hudToggle(melonDS::NDS* nds)
+void PluginKingdomHeartsReCoded::hudToggle(melonDS::NDS* nds)
 {
     ShowMap = !ShowMap;
-    ShowTarget = !ShowTarget;
-    ShowMissionGauge = !ShowMissionGauge;
-    hudRefresh(nds);
 }
 
-const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
+const char* PluginKingdomHeartsReCoded::getGameSceneName()
 {
-    switch (newGameScene) {
+    switch (GameScene) {
         case gameScene_Intro: return "Game scene: Intro";
         case gameScene_MainMenu: return "Game scene: Main menu";
         case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
         case gameScene_DayCounter: return "Game scene: Day counter";
         case gameScene_Cutscene: return "Game scene: Cutscene";
         case gameScene_InGameWithMap: return "Game scene: Ingame (with minimap)";
-        case gameScene_InGameWithoutMap: return "Game scene: Ingame (without minimap)";
         case gameScene_InGameMenu: return "Game scene: Ingame menu";
         case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
         case gameScene_InHoloMissionMenu: return "Game scene: Holo mission menu";
@@ -156,7 +198,7 @@ const char* KHDaysPlugin::getNameByGameScene(int newGameScene)
     }
 }
 
-bool KHDaysPlugin::isBufferBlack(unsigned int* buffer)
+bool PluginKingdomHeartsReCoded::isBufferBlack(unsigned int* buffer)
 {
     if (!buffer) {
         return true;
@@ -177,63 +219,37 @@ bool KHDaysPlugin::isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
-bool KHDaysPlugin::isTopScreen2DTextureBlack(melonDS::NDS* nds)
+bool PluginKingdomHeartsReCoded::isTopScreen2DTextureBlack(melonDS::NDS* nds)
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
     u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
     return isBufferBlack(topBuffer);
 }
 
-bool KHDaysPlugin::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
+bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
     u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
     return isBufferBlack(bottomBuffer);
 }
 
-bool KHDaysPlugin::shouldSkipFrame(melonDS::NDS* nds)
+bool PluginKingdomHeartsReCoded::shouldSkipFrame(melonDS::NDS* nds)
 {
     bool isTopBlack = isTopScreen2DTextureBlack(nds);
     bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
 
-    switch (videoRenderer)
-    {
-        case 1:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
-            break;
-        case 2:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsBottomScreen2DTextureBlack(isBottomBlack);
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetIsTopScreen2DTextureBlack(isTopBlack);
-            break;
-        default: break;
-    }
-
-    if (CartValidator::isDays() && GameScene == 12)
-    {
-        if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
-        {
-            _hasVisible3DOnBottomScreen = !isBottomBlack;
-
-            if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
-                _hasVisible3DOnBottomScreen = false;
-            }
-            if (_hasVisible3DOnBottomScreen) {
-                return true;
-            }
-        }
-        else // 3D on bottom screen
-        {
-            return !_hasVisible3DOnBottomScreen;
-        }
-    }
+    IsBottomScreen2DTextureBlack = isBottomBlack;
+    IsTopScreen2DTextureBlack = isTopBlack;
 
     return false;
 }
 
-int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
+int PluginKingdomHeartsReCoded::detectGameScene(melonDS::NDS* nds)
 {
-    // printf("0x02194CBF: %08x %08x\n", nds->ARM7Read32(0x02194CBF), nds->ARM7Read32(0x02194CC3));
+    // return gameScene_Other2D;
+
+    // printf("0x021D08B8: %d\n",   nds->ARM7Read8(0x021D08B8));
+    // printf("0x0223D38C: %d\n\n", nds->ARM7Read8(0x0223D38C));
 
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
@@ -272,20 +288,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
 
     if (has3DOnBothScreens)
     {
-        bool isMissionVictory = (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 0) ||
-                                (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 130) ||
-                                (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 2625) ||
-                                (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 2114) ||
-                                (nds->GPU.GPU2D_A.BlendCnt == 130 && nds->GPU.GPU2D_B.BlendCnt == 0) ||
-                                (nds->GPU.GPU2D_A.BlendCnt == 322 && nds->GPU.GPU2D_B.BlendCnt == 0) ||
-                                (nds->GPU.GPU2D_A.BlendCnt == 840 && nds->GPU.GPU2D_B.BlendCnt == 0);
-        if (isMissionVictory)
-        {
-            if (GameScene != gameScene_InGameWithCutscene)
-            {
-                return gameScene_MultiplayerMissionReview;
-            }
-        }
         return gameScene_InGameWithCutscene;
     }
 
@@ -315,21 +317,9 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             }
         }
 
-        if (has3DOnBottomScreen && GameScene == gameScene_InGameMenu)
-        {
-            return gameScene_InGameMenu;
-        }
-
-        // Mission Mode / Story Mode - Challenges
-        bool inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && (nds->GPU.GPU2D_B.BlendCnt >= 143 && nds->GPU.GPU2D_B.BlendCnt <= 207);
-        if (inHoloMissionMenu)
-        {
-            return gameScene_InHoloMissionMenu;
-        }
-
         if (GameScene == gameScene_MainMenu)
         {
-            if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 1)
+            if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0)
             {
                 return gameScene_Cutscene;
             }
@@ -340,39 +330,11 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             }
         }
 
-        // Day 50 specific condition
-        if (GameScene == gameScene_InGameWithMap && nds->GPU.GPU2D_B.BlendCnt == 172 && nds->GPU.GPU2D_B.BlendAlpha == 16 &&
-                                                    nds->GPU.GPU2D_B.EVA == 16 && nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0)
-        {
-            return gameScene_InGameWithMap;
-        }
-
-        // Day counter
-        if (GameScene == gameScene_DayCounter && !no3D)
-        {
-            return gameScene_DayCounter;
-        }
-        if (GameScene != gameScene_Intro)
-        {
-            if (nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1)
-            {
-                return gameScene_DayCounter; // 1 digit
-            }
-            if (nds->GPU.GPU3D.NumVertices == 8 && nds->GPU.GPU3D.NumPolygons == 2 && nds->GPU.GPU3D.RenderNumPolygons == 2)
-            {
-                return gameScene_DayCounter; // 2 digits
-            }
-            if (nds->GPU.GPU3D.NumVertices == 12 && nds->GPU.GPU3D.NumPolygons == 3 && nds->GPU.GPU3D.RenderNumPolygons == 3)
-            {
-                return gameScene_DayCounter; // 3 digits
-            }
-        }
-
         // Main menu
-        if (mayBeMainMenu)
-        {
-            return gameScene_MainMenu;
-        }
+        // if (mayBeMainMenu)
+        // {
+        //     return gameScene_MainMenu;
+        // }
 
         // Intro
         if (GameScene == -1 || GameScene == gameScene_Intro)
@@ -400,29 +362,21 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
             return gameScene_InGameSaveMenu;
         }
 
-        if (has3DOnBottomScreen)
-        {
-            if (nds->GPU.GPU3D.RenderNumPolygons > 0)
-            {
-                return gameScene_InGameMenu;
-            }
-
-            return gameScene_Cutscene;
-        }
-
-        // Bottom cutscene
-        bool isBottomCutscene = nds->GPU.GPU2D_A.BlendCnt == 0 && 
-             nds->GPU.GPU2D_A.EVA == 16 && nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 9 &&
-             nds->GPU.GPU2D_B.EVA == 16 && nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0;
-        if (isBottomCutscene)
-        {
-            return gameScene_Cutscene;
-        }
-
-        mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
+        mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0 &&
+                        nds->GPU.GPU2D_A.BlendCnt == 0;
         if (mayBeMainMenu)
         {
             return gameScene_MainMenu;
+        }
+
+        if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0)
+        {
+            return gameScene_Cutscene;
+        }
+
+        if (has3DOnBottomScreen)
+        {
+            return gameScene_Cutscene;
         }
 
         // Unknown 2D
@@ -451,15 +405,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         bool inGameMenu = (nds->GPU.GPU3D.NumVertices > 940 || nds->GPU.GPU3D.NumVertices == 0) &&
                           nds->GPU.GPU3D.RenderNumPolygons > 340 && nds->GPU.GPU3D.RenderNumPolygons < 370 &&
                           (nds->GPU.GPU2D_A.BlendCnt == 0 || nds->GPU.GPU2D_A.BlendCnt == 2625) && nds->GPU.GPU2D_B.BlendCnt == 0;
-        if (inGameMenu)
-        {
-            return gameScene_InGameMenu;
-        }
-
-        // After exiting a mission from Mission Mode
-        inGameMenu = (nds->GPU.GPU3D.NumVertices > 940 || nds->GPU.GPU3D.NumVertices == 0) &&
-                      nds->GPU.GPU3D.RenderNumPolygons > 370 && nds->GPU.GPU3D.RenderNumPolygons < 400 &&
-                      (nds->GPU.GPU2D_A.BlendCnt == 0 || nds->GPU.GPU2D_A.BlendCnt == 2625) && nds->GPU.GPU2D_B.BlendCnt == 0;
         if (inGameMenu)
         {
             return gameScene_InGameMenu;
@@ -498,23 +443,17 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
         }
 
         // Pause Menu
-        bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
-        if (inMissionPauseMenu)
-        {
-            return gameScene_PauseMenu;
-        }
-        else if (GameScene == gameScene_PauseMenu)
-        {
-            return priorGameScene;
-        }
+        // bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
+        // if (inMissionPauseMenu)
+        // {
+        //     return gameScene_PauseMenu;
+        // }
+        // else if (GameScene == gameScene_PauseMenu)
+        // {
+        //     return priorGameScene;
+        // }
 
-        // Regular gameplay without a map
-        if (noElementsOnBottomScreen)
-        {
-            return gameScene_InGameWithoutMap;
-        }
-
-        // Regular gameplay with a map
+        // Regular gameplay
         return gameScene_InGameWithMap;
     }
 
@@ -524,11 +463,6 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     }
     if (has3DOnBottomScreen)
     {
-        if (nds->GPU.GPU3D.RenderNumPolygons < 100)
-        {
-            return gameScene_InGameMenu;
-        }
-
         return gameScene_InGameWithCutscene;
     }
     
@@ -536,7 +470,30 @@ int KHDaysPlugin::detectGameScene(melonDS::NDS* nds)
     return gameScene_Other;
 }
 
-bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
+void PluginKingdomHeartsReCoded::setAspectRatio(melonDS::NDS* nds, float aspectRatio)
+{
+    int aspectRatioKey = (int)round(0x1000 * aspectRatio);
+
+    u32 aspectRatioMenuAddress = 0;
+    if (isUsaCart()) {
+        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_US;
+    }
+    if (isEuropeCart()) {
+        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_EU;
+    }
+    if (isJapanCart()) {
+        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP;
+        // TODO: Add support to Rev1 (ASPECT_RATIO_ADDRESS_JP_REV1)
+    }
+
+    if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
+        nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
+    }
+
+    AspectRatio = aspectRatio;
+}
+
+bool PluginKingdomHeartsReCoded::setGameScene(melonDS::NDS* nds, int newGameScene)
 {
     bool updated = false;
     if (GameScene != newGameScene) 
@@ -548,25 +505,22 @@ bool KHDaysPlugin::setGameScene(melonDS::NDS* nds, int newGameScene)
         GameScene = newGameScene;
     }
 
-    // Updating GameScene inside shader
-    switch (videoRenderer)
-    {
-        case 1:
-            static_cast<GLRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
-            break;
-        case 2:
-            static_cast<ComputeRenderer&>(nds->GPU.GetRenderer3D()).SetGameScene(newGameScene);
-            break;
-        default: break;
-    }
-
-    hudRefresh(nds);
-
     return updated;
 }
 
-void KHDaysPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
+bool PluginKingdomHeartsReCoded::refreshGameScene(melonDS::NDS* nds)
 {
+    int newGameScene = detectGameScene(nds);
+    debugLogs(nds, newGameScene);
+    return setGameScene(nds, newGameScene);
+}
+
+void PluginKingdomHeartsReCoded::debugLogs(melonDS::NDS* nds, int gameScene)
+{
+    if (!DEBUG_MODE_ENABLED) {
+        return;
+    }
+
     printf("Game scene: %d\n", gameScene);
     printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);
     printf("NDS->GPU.GPU3D.NumPolygons: %d\n",        nds->GPU.GPU3D.NumPolygons);
@@ -587,3 +541,4 @@ void KHDaysPlugin::debugLogs(melonDS::NDS* nds, int gameScene)
     printf("\n");
 }
 
+}

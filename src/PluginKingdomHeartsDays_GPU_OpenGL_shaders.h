@@ -19,18 +19,20 @@
 #ifndef KHDAYS_GPU_OPENGL_SHADERS_H
 #define KHDAYS_GPU_OPENGL_SHADERS_H
 
-namespace melonDS
+namespace Plugins
 {
 const char* kCompositorFS_KhDays = R"(#version 140
 
 uniform uint u3DScale;
 uniform int u3DXPos;
-uniform int KHGameScene;
+uniform int PriorGameScene;
+uniform int GameScene;
 uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
 uniform bool ShowMap;
 uniform bool ShowTarget;
 uniform bool ShowMissionGauge;
+uniform bool ShowMissionInfo;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -102,10 +104,10 @@ bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
     ivec4 val2 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(256,0), 0));
     ivec4 val3 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(512,0), 0));
     ivec4 pixel = combineLayers(diffColor, val1, val2, val3);
-    return (!(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b));
+    return !(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
 }
 
-bool isMissionInformationVisible()
+bool isMissionInformationVisibleOnTopScreen()
 {
     return ((ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0))).a & 0xF) == 1 ||
            ((ivec4(texelFetch(ScreenTex, ivec2(0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1 ||
@@ -330,6 +332,141 @@ vec2 getVerticalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearV
     return clearVect;
 }
 
+vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
+{
+    int iuScale = KHUIScale;
+    float iuTexScale = (6.0)/iuScale;
+    vec2 texPosition3d = vec2(vec2(xpos, ypos)*iuTexScale);
+    float heightScale = 1.0/TopScreenAspectRatio;
+    float widthScale = TopScreenAspectRatio;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
+    if (ypos < 96.0)
+    {
+        if (isCutsceneFromChallengeMissionVisible()) {
+            return vec2(fTexcoord);
+        }
+
+        return vec2(128, 60);
+    }
+
+    // dialog (part 1)
+    float dialogHeight = 192.0;
+    float dialogWidth = 256.0*heightScale;
+    float dialogX1 = (256.0*iuTexScale - dialogWidth)/2;
+    float dialogX2 = dialogX1 + dialogWidth;
+    float dialogY1 = 192.0*iuTexScale*(97.0/100.0) - dialogHeight;
+    float dialogY2 = dialogY1 + dialogHeight;
+
+    if (isColorBlack(ivec4(texelFetch(ScreenTex, ivec2(250, 183), 0)))) {
+        // portrait label
+        float sourceWidth = 78.0;
+        float sourceHeight = 14.0;
+        float sourceXCenter = 223.0;
+        float sourceMarginTop = 170.0;
+        float width = sourceWidth*heightScale;
+        float centerX = sourceXCenter*heightScale;
+        float x1 = dialogX1 + centerX - width/2;
+        float x2 = x1 + width;
+        float y1 = dialogY1 + sourceMarginTop;
+        float y2 = y1 + sourceHeight;
+        if (texPosition3d.x >= x1 + 70.0*heightScale && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
+        {
+            vec2 pos = fixStretch*(texPosition3d - vec2(x1, y1));
+            vec2 finalPos = vec2(sourceWidth - pos.x, pos.y) + vec2(sourceXCenter - sourceWidth/2, sourceMarginTop);
+            if (finalPos.x + finalPos.y > 360.0 && finalPos.y - finalPos.x < -6.0) {
+                return finalPos;
+            }
+        }
+    }
+
+    // dialog (part 2)
+    if (texPosition3d.x >= dialogX1 && texPosition3d.x < dialogX2 && texPosition3d.y >= dialogY1 && texPosition3d.y < dialogY2)
+    {
+        return fixStretch*(texPosition3d - vec2(dialogX1, dialogY1));
+    }
+
+    float dialogMarginY1 = dialogY1 + 128.0;
+    float dialogMarginY2 = dialogMarginY1 + 56.0;
+    for (int y = 90; y <= 130; y++) {
+        // dialogs with selectable options are positioned in a different way
+        if (is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(256/2, y))) {
+            dialogMarginY1 = dialogY1 + y;
+            break;
+        }
+    }
+
+    {
+        // dialog left side
+        float marginWidth = 9.0;
+        float x1 = dialogX1 - marginWidth*heightScale;
+        float x2 = dialogX1;
+        float y1 = dialogMarginY1;
+        float y2 = dialogMarginY2;
+        if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
+        {
+            vec2 pos = vec2((x2 - x1) - (texPosition3d.x - x1), texPosition3d.y - y1);
+            return vec2(pos.y, 181.0 + pos.x/heightScale);
+        }
+    }
+
+    {
+        // dialog right side
+        float marginWidth = 9.0;
+        float x1 = dialogX2;
+        float x2 = dialogX2 + marginWidth*heightScale;
+        float y1 = dialogMarginY1;
+        float y2 = dialogMarginY2;
+        if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
+        {
+            vec2 pos = (texPosition3d - vec2(x1, y1));
+            return vec2(pos.y, 181.0 + pos.x/heightScale);
+        }
+    }
+
+    // nothing (clear screen)
+    return vec2(128, 60);
+}
+
+vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInformationTopScreen, bool showMissionInformationBottomScreen)
+{
+    float heightScale = 1.0/TopScreenAspectRatio;
+    float widthScale = TopScreenAspectRatio;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
+    // mission information
+    float sourceMissionInfoHeight = 24.0;
+    float sourceMissionInfoWidth = 256.0;
+    float missionInfoHeight = sourceMissionInfoHeight;
+    float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+    float missionInfoLeftMargin = 0.0;
+    float missionInfoTopMargin = 0.0;
+    float missionInfoY1 = missionInfoTopMargin;
+    float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
+    if (texPosition3d.x >= missionInfoLeftMargin &&
+        texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
+        texPosition3d.y >= missionInfoY1 &&
+        texPosition3d.y <  missionInfoY2) {
+        vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
+            (showMissionInformationBottomScreen ? vec2(0, 192.0) : vec2(0, 0));
+
+        if (showMissionInformationTopScreen) {
+            return coord;
+        }
+        if (showMissionInformationBottomScreen) {
+            float cropMarginLeft = -0.5;
+            if ((texPosition3d.x <  (66.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 1.0) ||
+                (texPosition3d.x >= (72.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 8.0) ||
+                (texPosition3d.x >= (66.0 + cropMarginLeft)*heightScale && texPosition3d.x < (72.0 + cropMarginLeft)*heightScale &&
+                    texPosition3d.y >= 1.0 + (texPosition3d.x - (66.0 + cropMarginLeft)*heightScale)/heightScale)) {
+                return coord;
+            }
+        }
+    }
+
+    return vec2(-1, -1);
+}
+
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
@@ -340,11 +477,22 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     if (isDialogVisible()) {
-        return vec2(fTexcoord);
+        return getIngameDialogTextureCoordinates(xpos, ypos);
     }
 
-    if (isMissionInformationVisible()) {
-        return vec2(fTexcoord);
+    bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
+    bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo && isMinimapVisible();
+
+    if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
+        vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, showMissionInformationTopScreen, showMissionInformationBottomScreen);
+        if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
+            return missionInfoCoords;
+        }
+
+        if (showMissionInformationTopScreen) {
+            // nothing (clear screen)
+            return vec2(255, 191);
+        }
     }
 
     if (isCutsceneFromChallengeMissionVisible()) {
@@ -384,7 +532,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
-    if (ShowMap && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         // minimap
         float bottomMinimapWidth = 60.0;
@@ -408,7 +556,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         }
     }
 
-    if (ShowTarget && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         float increaseTargetSize = 1.5;
 
@@ -453,7 +601,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         }
     }
 
-    if (ShowMissionGauge && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowMissionGauge && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
         // mission gauge
         float sourceMissionGaugeHeight = 39.0;
@@ -553,31 +701,33 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (KHGameScene == 10) // gameScene_PauseMenu
+    if (!isScreenBlack(1) && PriorGameScene != 12) // gameScene_InGameWithCutscene
     {
-        if (!isScreenBlack(1) && isMinimapVisible())
-        {
-            // mission gauge
-            float sourceMissionGaugeHeight = 39.0;
-            float sourceMissionGaugeWidth = 246.0;
-            float missionGaugeHeight = sourceMissionGaugeHeight;
-            float missionGaugeWidth = sourceMissionGaugeWidth*heightScale;
-            float missionGaugeRightMargin = (256.0*iuTexScale - missionGaugeWidth)/2;
-            float bottomMissionGaugeCenterX = 128.0;
-            float bottomMissionGaugeCenterY = 172.5;
-            float bottomMissionGaugeLeftMargin = bottomMissionGaugeCenterX - sourceMissionGaugeWidth/2;
-            float bottomMissionGaugeTopMargin = bottomMissionGaugeCenterY - sourceMissionGaugeHeight/2;
-            if (texPosition3d.x >= (256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin) &&
-                texPosition3d.x <= (256.0*iuTexScale - missionGaugeRightMargin) &&
-                texPosition3d.y >= (192.0*iuTexScale - missionGaugeHeight) &&
-                texPosition3d.y < (192.0*iuTexScale)) {
+        vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, false, true);
+        if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
+            return missionInfoCoords;
+        }
 
-                vec2 finalPos = fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
-                        vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
-                if (finalPos.x + finalPos.y > 355.0 && finalPos.y - finalPos.x > 99.0)
-                {
-                    return finalPos;
-                }
+        // mission gauge
+        float sourceMissionGaugeHeight = 39.0;
+        float sourceMissionGaugeWidth = 246.0;
+        float missionGaugeHeight = sourceMissionGaugeHeight;
+        float missionGaugeWidth = sourceMissionGaugeWidth*heightScale;
+        float missionGaugeRightMargin = (256.0*iuTexScale - missionGaugeWidth)/2;
+        float bottomMissionGaugeCenterX = 128.0;
+        float bottomMissionGaugeCenterY = 172.5;
+        float bottomMissionGaugeLeftMargin = bottomMissionGaugeCenterX - sourceMissionGaugeWidth/2;
+        float bottomMissionGaugeTopMargin = bottomMissionGaugeCenterY - sourceMissionGaugeHeight/2;
+        if (texPosition3d.x >= (256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin) &&
+            texPosition3d.x <= (256.0*iuTexScale - missionGaugeRightMargin) &&
+            texPosition3d.y >= (192.0*iuTexScale - missionGaugeHeight) &&
+            texPosition3d.y < (192.0*iuTexScale)) {
+
+            vec2 finalPos = fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
+                    vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
+            if (finalPos.x + finalPos.y > 355.0 && finalPos.y - finalPos.x > 99.0)
+            {
+                return finalPos;
             }
         }
     }
@@ -611,52 +761,52 @@ ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
-    if (KHGameScene == 0) { // gameScene_Intro
+    if (GameScene == 0) { // gameScene_Intro
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
     }
-    if (KHGameScene == 1) { // gameScene_MainMenu
+    if (GameScene == 1) { // gameScene_MainMenu
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
     }
-    if (KHGameScene == 2) { // gameScene_IntroLoadMenu
+    if (GameScene == 2) { // gameScene_IntroLoadMenu
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(255, 191)));
     }
-    if (KHGameScene == 3) { // gameScene_DayCounter
+    if (GameScene == 3) { // gameScene_DayCounter
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
     }
-    if (KHGameScene == 4) { // gameScene_Cutscene
+    if (GameScene == 4) { // gameScene_Cutscene
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
-    if (KHGameScene == 5) { // gameScene_InGameWithMap
+    if (GameScene == 5) { // gameScene_InGameWithMap
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
-    if (KHGameScene == 6) { // gameScene_InGameWithoutMap
+    if (GameScene == 6) { // gameScene_InGameWithoutMap
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
-    if (KHGameScene == 7) { // gameScene_InGameMenu
+    if (GameScene == 7) { // gameScene_InGameMenu
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 191)));
     }
-    if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
+    if (GameScene == 9) { // gameScene_InHoloMissionMenu
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
     }
-    if (KHGameScene == 10) { // gameScene_PauseMenu
+    if (GameScene == 10) { // gameScene_PauseMenu
         return ivec2(getPauseHudTextureCoordinates(xpos, ypos));
     }
-    if (KHGameScene == 11) { // gameScene_Tutorial
+    if (GameScene == 11) { // gameScene_Tutorial
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
-    if (KHGameScene == 12) { // gameScene_InGameWithCutscene
+    if (GameScene == 12) { // gameScene_InGameWithCutscene
         if (!is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(130, 190))) {
             return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
         }
         return ivec2(-1, -1);
     }
-    if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
+    if (GameScene == 13) { // gameScene_MultiplayerMissionReview
         return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
     }
-    if (KHGameScene == 14) { // gameScene_Shop
+    if (GameScene == 14) { // gameScene_Shop
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
-    if (KHGameScene == 15) { // gameScene_Other2D
+    if (GameScene == 15) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -794,22 +944,22 @@ ivec4 getTopScreen3DColor()
     ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
                 * vec4(63,63,63,31));
 
-    if (KHGameScene == 1) { // gameScene_MainMenu
+    if (GameScene == 1) { // gameScene_MainMenu
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 3) { // gameScene_DayCounter
+    if (GameScene == 3) { // gameScene_DayCounter
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 7) { // gameScene_InGameMenu
+    if (GameScene == 7) { // gameScene_InGameMenu
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 9) { // gameScene_InHoloMissionMenu
+    if (GameScene == 9) { // gameScene_InHoloMissionMenu
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
+    if (GameScene == 13) { // gameScene_MultiplayerMissionReview
         return getVerticalDualScreen3DColor(xpos, ypos);
     }
-    if (KHGameScene == 14) { // gameScene_Shop
+    if (GameScene == 14) { // gameScene_Shop
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
 
@@ -822,9 +972,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
-    if (ShowMap && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (!isDialogVisible() && !isMissionInformationVisible())
+        if (!isDialogVisible() && !isMissionInformationVisibleOnTopScreen())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
@@ -878,9 +1028,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     }
 
 
-    if (ShowTarget && KHGameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (!isDialogVisible() && !isMissionInformationVisible())
+        if (!isDialogVisible() && !isMissionInformationVisibleOnTopScreen())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
@@ -949,7 +1099,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
 ivec4 brightness()
 {
-    if (KHGameScene == 1) { // gameScene_MainMenu
+    if (GameScene == 1) { // gameScene_MainMenu
         ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
         int brightmode = mbright.g >> 6;
         if ((mbright.b & 0x3) != 0 && brightmode == 2) {
@@ -957,19 +1107,22 @@ ivec4 brightness()
         }
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (KHGameScene == 11) { // gameScene_Tutorial
+    if (GameScene == 10) { // gameScene_PauseMenu
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+    }
+    if (GameScene == 11) { // gameScene_Tutorial
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     }
-    if (KHGameScene == 12) { // gameScene_InGameWithCutscene
+    if (GameScene == 12) { // gameScene_InGameWithCutscene
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (KHGameScene == 13) { // gameScene_MultiplayerMissionReview
+    if (GameScene == 13) { // gameScene_MultiplayerMissionReview
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (KHGameScene == 14) { // gameScene_Shop
+    if (GameScene == 14) { // gameScene_Shop
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (KHGameScene == 15) { // gameScene_Other2D
+    if (GameScene == 15) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
 
