@@ -304,17 +304,21 @@ void PluginKingdomHeartsDays::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchM
             cameraPosY = CAMERA_CENTER_Y;
         }
 
-        nds->ARM7Write32(0x0204C1A8, movingValue);
-        nds->ARM7Write32(0x0204C1B0, movingValue);
-        nds->ARM7Write32(0x0204C1B8, movingValue);
-        nds->ARM7Write32(0x0204C1C0, movingValue);
-        nds->ARM7Write32(0x0204C1C8, movingValue);
-        
-        nds->ARM7Write32(0x0204C1A4, movementValue);
-        nds->ARM7Write32(0x0204C1AC, movementValue);
-        nds->ARM7Write32(0x0204C1B4, movementValue);
-        nds->ARM7Write32(0x0204C1BC, movementValue);
-        nds->ARM7Write32(0x0204C1C4, movementValue);
+        u32 initialAddress = 0x0204C1A4;
+        if (isEuropeCart())    initialAddress = 0x0204C1C4;
+        if (isJapanCart())     initialAddress = 0x0204C604;
+        if (isJapanCartRev1()) initialAddress = 0x0204C5C4;
+
+        nds->ARM7Write32(initialAddress + 0x00, movementValue);
+        nds->ARM7Write32(initialAddress + 0x04, movingValue);
+        nds->ARM7Write32(initialAddress + 0x08, movementValue);
+        nds->ARM7Write32(initialAddress + 0x0C, movingValue);
+        nds->ARM7Write32(initialAddress + 0x10, movementValue);
+        nds->ARM7Write32(initialAddress + 0x14, movingValue);
+        nds->ARM7Write32(initialAddress + 0x18, movementValue);
+        nds->ARM7Write32(initialAddress + 0x1C, movingValue);
+        nds->ARM7Write32(initialAddress + 0x20, movementValue);
+        nds->ARM7Write32(initialAddress + 0x24, movingValue);
     }
 }
 
