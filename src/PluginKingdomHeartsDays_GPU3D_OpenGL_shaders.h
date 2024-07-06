@@ -25,7 +25,6 @@ const char* kRenderVS_Z_KhDays = R"(
 
 uniform int GameScene;
 uniform int KHUIScale;
-uniform float TopScreenAspectRatio;
 
 void main()
 {
@@ -44,7 +43,6 @@ void main()
         float chainLabelLayer = -0.300; // also includes the blue shine behind the heart counter
         float heartCounterLayer = -0.900; // also includes timer
 
-        float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
         int iuScale = KHUIScale;
         float iuTexScale = (4.0)/iuScale;
         float heartTopMargin = 16.0*u3DScale;
@@ -57,7 +55,7 @@ void main()
             (fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.200)*fpos.w &&
              fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.000)*fpos.w &&
              (abs(fpos.z - heartCounterLayer * fpos.w) < 0.01))) {
-            fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/(iuTexScale*aspectRatio)))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
+            fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/iuTexScale))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
             fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/uScreenSize.y)*2.0 - 1.0)*fpos.w;
         }
     }
