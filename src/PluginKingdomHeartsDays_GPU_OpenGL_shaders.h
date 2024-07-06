@@ -24,7 +24,6 @@ namespace Plugins
 const char* kCompositorFS_KhDays = R"(#version 140
 
 uniform uint u3DScale;
-uniform int u3DXPos;
 uniform int PriorGameScene;
 uniform int GameScene;
 uniform int KHUIScale;
@@ -841,7 +840,9 @@ ivec4 getSingleSquaredScreen3DColor(float xpos, float ypos)
 
 ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
 {
-    float _3dxpos = float(u3DXPos);
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
+
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
     float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = TopScreenAspectRatio;
@@ -888,7 +889,9 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
 
 ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 {
-    float _3dxpos = float(u3DXPos);
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
+
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
     float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = TopScreenAspectRatio;
@@ -936,7 +939,9 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 
 ivec4 getTopScreen3DColor()
 {
-    float _3dxpos = float(u3DXPos);
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
+
     float xpos = fTexcoord.x + _3dxpos;
     float ypos = mod(fTexcoord.y, 192);
 
