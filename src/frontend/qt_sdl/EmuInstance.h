@@ -139,6 +139,7 @@ public:
     void setJoystick(int id);
     int getJoystickID() { return joystickID; }
     SDL_Joystick* getJoystick() { return joystick; }
+    void autoMapJoystick();
 
 private:
     static int lastSep(const std::string& path);
@@ -213,7 +214,11 @@ private:
     void onKeyRelease(QKeyEvent* event);
     void keyReleaseAll();
 
-    void autoMapJoystick();
+    void setAutoJoystickConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
+                               int camRight, int camLeft, int camUp, int camDown,
+                               int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
+                               int pause, int fullscreen);
+
     void openJoystick();
     void closeJoystick();
     bool joystickButtonDown(int val);

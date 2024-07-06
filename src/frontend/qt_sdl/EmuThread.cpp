@@ -256,16 +256,15 @@ void EmuThread::run()
 
                 updateRenderer();
 
-                emit screenLayoutChange();
+                // TODO: KH may break something
+                // emit screenLayoutChange();
 
                 videoSettingsDirty = false;
             }
 
-            melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
-
             // process input and hotkeys
-            emuInstance->inputMask = plugin->applyHotkeyToInputMask(&nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
-            plugin->applyTouchScreenMask(&nds, emuInstance->touchInputMask);
+            emuInstance->inputMask = plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
+            plugin->applyTouchScreenMask(emuInstance->nds, emuInstance->touchInputMask);
             emuInstance->nds->SetKeyMask(emuInstance->inputMask);
 
             if (emuInstance->hotkeyPressed(HK_Lid))
@@ -279,7 +278,7 @@ void EmuThread::run()
             emuInstance->micProcess();
 
             refreshGameScene();
-            bool shouldSkipFrame = plugin->shouldSkipFrame(&nds);
+            bool shouldSkipFrame = plugin->shouldSkipFrame(emuInstance->nds);
 
             // auto screen layout
             {
@@ -596,24 +595,25 @@ void EmuThread::handleMessages()
 
 void EmuThread::refreshGameScene()
 {
-    melonDS::NDS& nds = static_cast<melonDS::NDS&>(*NDS);
-
-    bool updated = plugin->refreshGameScene(&nds);
+    bool updated = plugin->refreshGameScene(emuInstance->nds);
     if (updated && DEBUG_MODE_ENABLED)
     {
-        mainWindow->osdAddMessage(0, plugin->getGameSceneName());
+        emuInstance->osdAddMessage(0, plugin->getGameSceneName());
     }
 
-    float aspectTop = (Config::WindowWidth * 1.f) / Config::WindowHeight;
+    auto& cfg = emuInstance->getGlobalConfig();
+    int screenAspectTop = cfg.GetInt("ScreenAspectTop");
+    
+    float aspectTop = (cfg.GetInt("Width") * 1.f) / cfg.GetInt("Height");
     for (auto ratio : aspectRatios)
     {
-        if (ratio.id == Config::ScreenAspectTop)
+        if (ratio.id == screenAspectTop)
             aspectTop = ratio.ratio * 4.0/3;
     }
     if (aspectTop == 0) {
         aspectTop = 16.0 / 9;
     }
-    plugin->setAspectRatio(&nds, aspectTop);
+    plugin->setAspectRatio(emuInstance->nds, aspectTop);
 }
 
 void EmuThread::changeWindowTitle(char* title)

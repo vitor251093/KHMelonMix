@@ -74,8 +74,7 @@ DefaultList<int> DefaultInts =
     {"Instance*.Joystick", -1},
     {"Instance*.Window*.Width", 256},
     {"Instance*.Window*.Height", 384},
-    {"Instance*.Window*.ScreenAspectTop", 3};
-    {"Instance*.Window*.ScreenLayout", 2},
+    {"Instance*.Window*.ScreenAspectTop", 3},
     {"Instance*.Window*.ScreenSizing", 4},
     {"Screen.VSyncInterval", 1},
     {"3D.Renderer", renderer3D_OpenGL},
@@ -142,7 +141,7 @@ DefaultList<std::string> DefaultStrings =
     {"DLDI.ImagePath",                  "dldi.bin"},
     {"DSi.SD.ImagePath",                "dsisd.bin"},
     {"Instance*.Firmware.Username",     "melonDS"},
-    {"LastROMFolder":                   "rom"},
+    {"LastROMFolder",                   "rom"},
     {"RecentROM[0]",                    "rom/game.nds"}
 };
 

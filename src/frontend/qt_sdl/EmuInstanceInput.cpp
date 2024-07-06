@@ -101,13 +101,19 @@ void EmuInstance::inputDeInit()
 
 void EmuInstance::inputLoadConfig()
 {
-    table keycfg = localCfg.GetTable("Keyboard");
-    table joycfg = localCfg.GetTable("Joystick");
+    auto keycfg = localCfg.GetTable("Keyboard");
+    auto joycfg = localCfg.GetTable("Joystick");
 
     for (int i = 0; i < 12; i++)
     {
         keyMapping[i] = keycfg.GetInt(buttonNames[i]);
         joyMapping[i] = joycfg.GetInt(buttonNames[i]);
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        touchKeyMapping[i] = keycfg.GetInt(touchButtonNames[i]);
+        touchJoyMapping[i] = joycfg.GetInt(touchButtonNames[i]);
     }
 
     for (int i = 0; i < HK_MAX; i++)
@@ -126,10 +132,10 @@ void EmuInstance::setJoystick(int id)
     openJoystick();
 }
 
-void setAutoJoystickConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
-                           int camRight, int camLeft, int camUp, int camDown,
-                           int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
-                           int pause, int fullscreen)
+void EmuInstance::setAutoJoystickConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
+                                        int camRight, int camLeft, int camUp, int camDown,
+                                        int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
+                                        int pause, int fullscreen)
 {
     bool shouldUpdate = (joyMapping[0] == -1) && (joyMapping[1]  && -1) || (joyMapping[2]  && -1) ||
                         (joyMapping[3] == -1) && (joyMapping[4]  && -1) || (joyMapping[5]  && -1) ||
@@ -184,8 +190,8 @@ void setAutoJoystickConfig(int a, int b, int select, int start, int right, int l
 
 void EmuInstance::autoMapJoystick()
 {
-    int JoystickVendorID = SDL_JoystickGetDeviceVendor(JoystickID);
-    int JoystickDeviceID = SDL_JoystickGetDeviceProduct(JoystickID);
+    int JoystickVendorID = SDL_JoystickGetDeviceVendor(joystickID);
+    int JoystickDeviceID = SDL_JoystickGetDeviceProduct(joystickID);
 
     printf("Joystick - Vendor ID %04x - Device ID %04x\n", JoystickVendorID, JoystickDeviceID);
     if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268) { // PS3 Controller
@@ -411,7 +417,7 @@ void EmuInstance::inputProcess()
             if (joystickButtonDown(joyMapping[i]))
                 joyInputMask &= ~(1 << i);
         for (int i = 0; i < 4; i++) {
-            Sint16 joyValue = JoystickButtonDown(touchJoyMapping[i]);
+            Sint16 joyValue = joystickButtonDown(touchJoyMapping[i]);
             if (joyValue != 0)
                 joyTouchInputMask &= ~(joyValue << (i*4));
         }

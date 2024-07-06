@@ -79,8 +79,9 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
 
     for (int i = 0; i < touchscreen_num; i++)
     {
-        touchScreenKeyMap[i] = Config::TouchKeyMapping[dstouchkeyorder[i]];
-        touchScreenJoyMap[i] = Config::TouchJoyMapping[dstouchkeyorder[i]];
+        const char* btn = EmuInstance::touchButtonNames[dstouchkeyorder[i]];
+        touchScreenKeyMap[i] = keycfg.GetInt(btn);
+        touchScreenJoyMap[i] = joycfg.GetInt(btn);
     }
 
     populatePage(ui->tabAddons, hk_addons_labels, addonsKeyMap, addonsJoyMap);
@@ -283,7 +284,6 @@ SDL_Joystick* InputConfigDialog::getJoystick()
 }
 void InputConfigDialog::on_btnJoystickAuto_clicked()
 {
-    emuInstance->openJoystick();
     emuInstance->autoMapJoystick();
 }
 
