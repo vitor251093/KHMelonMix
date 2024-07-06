@@ -21,7 +21,7 @@ public:
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
-    bool isJapanCartRev1() { return false; };
+    bool isJapanCartRev1() { return false; }; // TODO: KH Add support to Rev1
 
     const char* gpuOpenGL_FS();
     const char* gpu3DOpenGL_VS_Z();

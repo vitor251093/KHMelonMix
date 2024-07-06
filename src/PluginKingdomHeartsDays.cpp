@@ -167,7 +167,9 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
             }
             if (isJapanCart()) {
                 dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP;
-                // TODO: Add support to Rev1 (INGAME_MENU_COMMAND_LIST_SETTIGS_ADDRESS_JP_REV1)
+            }
+            if (isJapanCartRev1()) {
+                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTIGS_ADDRESS_JP_REV1;
             }
 
             if (nds->ARM7Read8(dpadMenuAddress) & 0x02) {
@@ -750,7 +752,9 @@ void PluginKingdomHeartsDays::setAspectRatio(melonDS::NDS* nds, float aspectRati
     }
     if (isJapanCart()) {
         aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP;
-        // TODO: Add support to Rev1 (ASPECT_RATIO_ADDRESS_JP_REV1)
+    }
+    if (isJapanCartRev1()) {
+        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP_REV1;
     }
 
     if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
