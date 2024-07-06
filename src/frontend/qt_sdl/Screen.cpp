@@ -237,8 +237,6 @@ void ScreenPanel::refreshAspectRatio()
     if (aspectTop == 0) {
         aspectTop = 16.0 / 9;
     }
-    printf("screenAspectTop %d - aspectRatio %f\n", screenAspectTop, aspectTop);
-
     auto plugin = Plugins::PluginManager::get();
     plugin->setAspectRatio(emuInstance->getNDS(), aspectTop);
 }
