@@ -340,7 +340,7 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (ypos < 96.0)
+    if (ypos < 70.0)
     {
         if (isCutsceneFromChallengeMissionVisible()) {
             return vec2(fTexcoord);
