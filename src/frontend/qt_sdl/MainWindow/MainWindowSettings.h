@@ -119,7 +119,10 @@ private slots:
     void on_btnKeyMapSwitch_clicked();
     void on_btnJoyMapSwitch_clicked();
     void on_cbxJoystick_currentIndexChanged(int id);
-    void on_btnJoystickAuto_clicked();
+
+protected:
+    QWidget* settingsWidget;
+    bool showingSettings;
 
 private:
     void populatePage(QWidget* page,

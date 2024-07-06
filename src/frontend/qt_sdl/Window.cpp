@@ -39,6 +39,7 @@
 #include <QMimeData>
 #include <QVector>
 #include <QCommandLineParser>
+#include <QStackedWidget>
 #ifndef _WIN32
 #include <QGuiApplication>
 #include <QSocketNotifier>
@@ -730,7 +731,9 @@ void MainWindow::createScreenPanel()
         panel = panelNative;
         panel->show();
     }
-    setCentralWidget(panel);
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->addWidget(panel);
+    centralWidget->setCurrentWidget(panel);
 
     actScreenFiltering->setEnabled(hasOGL);
     panel->osdSetEnabled(Config::ShowOSD);
@@ -808,6 +811,17 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     // TODO!! REMOVE ME IN RELEASE BUILDS!!
     //if (event->key() == Qt::Key_F11) emuThread->NDS->debug(0);
+
+    if (event->key() == Qt::Key_Escape) {
+        QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+
+        if (showingSettings) {
+            centralWidget->setCurrentWidget(panel);
+        } else {
+            centralWidget->setCurrentWidget(settingsWidget);
+        }
+        showingSettings = !showingSettings;
+    }
 
     Input::KeyPress(event);
 }

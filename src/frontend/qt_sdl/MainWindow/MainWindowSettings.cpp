@@ -22,6 +22,7 @@
 #include <QDebug>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QStackedWidget>
 
 #include <SDL2/SDL.h>
 
@@ -47,6 +48,10 @@ using namespace melonDS;
 MainWindowSettings::MainWindowSettings(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindowSettings)
 {
     ui->setupUi(this);
+
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    settingsWidget = centralWidget->currentWidget();
+    showingSettings = false;
     // setAttribute(Qt::WA_DeleteOnClose);
 
     // for (int i = 0; i < keypad_num; i++)
@@ -259,7 +264,6 @@ void MainWindowSettings::on_MainWindowSettings_accepted()
 void MainWindowSettings::on_MainWindowSettings_rejected()
 {
     Input::JoystickID = Config::JoystickID;
-    Input::OpenJoystick(false);
 
     closeDlg();
 }
@@ -280,10 +284,5 @@ void MainWindowSettings::on_cbxJoystick_currentIndexChanged(int id)
     // if (ui->cbxJoystick->count() < 2) return;
 
     Input::JoystickID = id;
-    Input::OpenJoystick(false);
-}
-void MainWindowSettings::on_btnJoystickAuto_clicked()
-{
-    Input::OpenJoystick(true);
 }
 
