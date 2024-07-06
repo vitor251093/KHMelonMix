@@ -264,10 +264,15 @@ void PluginKingdomHeartsDays::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchM
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene)
     {
+        u16 deadZone = 0x2;
         u16 right = ((~TouchMask) & 0xF);
         u16 left  = ((((~TouchMask) >> 4))  & 0xF);
         u16 up    = ((((~TouchMask) >> 8))  & 0xF);
         u16 down  = ((((~TouchMask) >> 12)) & 0xF);
+        if (right < deadZone) right = 0;
+        if (left < deadZone)  left = 0;
+        if (up < deadZone)    up = 0;
+        if (down < deadZone)  down = 0;
         bool isMoving = (right > 0 || left > 0 || up > 0 || down > 0);
 
         u32 movingValue = 0x00030000;
@@ -278,7 +283,7 @@ void PluginKingdomHeartsDays::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchM
             s32 movementValueY = (down > 0) ? (0 - down) : up;
             s32 movementValueX = (left > 0) ? (0 - left) : right;
 
-            s32 newCameraPosX = ((s32)cameraPosX) + movementValueX*0xF;
+            s32 newCameraPosX = ((s32)cameraPosX) + movementValueX*0x8;
             s32 newCameraPosY = ((s32)cameraPosY) + movementValueY*0x2;
             if (newCameraPosX > 0 && newCameraPosX < CAMERA_LIMIT_X) {
                 cameraPosX = (u32)newCameraPosX;
@@ -808,6 +813,13 @@ bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)
 
 void PluginKingdomHeartsDays::debugLogs(melonDS::NDS* nds, int gameScene)
 {
+    // PRINT_AS_32_BIT_HEX(0x0204C1A4);
+    // PRINT_AS_32_BIT_HEX(0x0204C1AC);
+    // PRINT_AS_32_BIT_HEX(0x0204C1B4);
+    // PRINT_AS_32_BIT_HEX(0x0204C1BC);
+    // PRINT_AS_32_BIT_HEX(0x0204C1C4);
+    // printf("\n");
+
     if (!DEBUG_MODE_ENABLED) {
         return;
     }
