@@ -270,9 +270,9 @@ void PluginKingdomHeartsDays::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchM
         u16 up    = ((((~TouchMask) >> 8))  & 0xF);
         u16 down  = ((((~TouchMask) >> 12)) & 0xF);
         if (right < deadZone) right = 0;
-        if (left < deadZone)  left = 0;
-        if (up < deadZone)    up = 0;
-        if (down < deadZone)  down = 0;
+        if (left  < deadZone)  left = 0;
+        if (up    < deadZone)    up = 0;
+        if (down  < deadZone)  down = 0;
         bool isMoving = (right > 0 || left > 0 || up > 0 || down > 0);
 
         u32 movingValue = 0x00030000;
