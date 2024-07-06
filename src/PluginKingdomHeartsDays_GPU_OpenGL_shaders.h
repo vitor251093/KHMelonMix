@@ -508,7 +508,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float itemNotificationHeight = sourceItemNotificationHeight;
     float itemNotificationWidth = sourceItemNotificationWidth*heightScale;
     float itemNotificationLeftMargin = 0.0;
-    float itemNotificationTopMargin = 15.0*iuTexScale;
+    float itemNotificationTopMargin = 35.0;
     if (texPosition3d.x <= itemNotificationWidth + itemNotificationLeftMargin &&
         texPosition3d.x > itemNotificationLeftMargin &&
         texPosition3d.y <= itemNotificationHeight + itemNotificationTopMargin &&
