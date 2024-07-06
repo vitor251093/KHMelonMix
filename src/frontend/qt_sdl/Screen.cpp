@@ -47,6 +47,8 @@
 #include "OSD_shaders.h"
 #include "font.h"
 
+#include "PluginManager.h"
+
 using namespace melonDS;
 
 
@@ -217,6 +219,28 @@ void ScreenPanel::resizeEvent(QResizeEvent* event)
 {
     setupScreenLayout();
     QWidget::resizeEvent(event);
+
+    refreshAspectRatio();
+}
+
+void ScreenPanel::refreshAspectRatio()
+{
+    auto& cfg = mainWindow->getWindowConfig();
+    int screenAspectTop = cfg.GetInt("ScreenAspectTop");
+
+    float aspectTop = (cfg.GetInt("Width") * 1.f) / cfg.GetInt("Height");
+    for (auto ratio : aspectRatios)
+    {
+        if (ratio.id == screenAspectTop)
+            aspectTop = ratio.ratio * 4.0/3;
+    }
+    if (aspectTop == 0) {
+        aspectTop = 16.0 / 9;
+    }
+    printf("screenAspectTop %d - aspectRatio %f\n", screenAspectTop, aspectTop);
+
+    auto plugin = Plugins::PluginManager::get();
+    plugin->setAspectRatio(emuInstance->getNDS(), aspectTop);
 }
 
 void ScreenPanel::mousePressEvent(QMouseEvent* event)
@@ -933,6 +957,8 @@ void ScreenPanelGL::drawScreenGL()
 
     auto nds = emuInstance->getNDS();
     if (!nds) return;
+
+    refreshAspectRatio();
 
     auto emuThread = emuInstance->getEmuThread();
 

@@ -600,20 +600,6 @@ void EmuThread::refreshGameScene()
     {
         emuInstance->osdAddMessage(0, plugin->getGameSceneName());
     }
-
-    auto& cfg = emuInstance->getGlobalConfig();
-    int screenAspectTop = cfg.GetInt("ScreenAspectTop");
-    
-    float aspectTop = (cfg.GetInt("Width") * 1.f) / cfg.GetInt("Height");
-    for (auto ratio : aspectRatios)
-    {
-        if (ratio.id == screenAspectTop)
-            aspectTop = ratio.ratio * 4.0/3;
-    }
-    if (aspectTop == 0) {
-        aspectTop = 16.0 / 9;
-    }
-    plugin->setAspectRatio(emuInstance->nds, aspectTop);
 }
 
 void EmuThread::changeWindowTitle(char* title)
