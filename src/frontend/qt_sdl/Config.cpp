@@ -216,10 +216,6 @@ LegacyEntry LegacyFile[] =
     {"HKJoy_PowerButton",         0, "Joystick.HK_PowerButton", true},
     {"HKJoy_VolumeUp",            0, "Joystick.HK_VolumeUp", true},
     {"HKJoy_VolumeDown",          0, "Joystick.HK_VolumeDown", true},
-    {"Joy_TouchRight",            0, "Joystick.HK_CameraRight", true},
-    {"Joy_TouchLeft",             0, "Joystick.HK_CameraLeft", true},
-    {"Joy_TouchUp",               0, "Joystick.HK_CameraUp", true},
-    {"Joy_TouchDown",             0, "Joystick.HK_CameraDown", true},
 
     {"HKJoy_HUDToggle",           0, "Joystick.HK_HUDToggle", true},
     {"HKJoy_LockOn",              0, "Joystick.HK_RLockOn", true},
@@ -228,6 +224,10 @@ LegacyEntry LegacyFile[] =
     {"Joy_CmdMenuRight",          0, "Joystick.HK_CmdMenuRight", true},
     {"Joy_CmdMenuUp",             0, "Joystick.HK_CmdMenuUp", true},
     {"Joy_CmdMenuDown",           0, "Joystick.HK_CmdMenuDown", true},
+    {"Joy_TouchRight",            0, "Joystick.HK_CameraRight", true},
+    {"Joy_TouchLeft",             0, "Joystick.HK_CameraLeft", true},
+    {"Joy_TouchUp",               0, "Joystick.HK_CameraUp", true},
+    {"Joy_TouchDown",             0, "Joystick.HK_CameraDown", true},
 
     {"JoystickID", 0, "JoystickID", true},
 
