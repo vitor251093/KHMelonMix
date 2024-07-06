@@ -428,6 +428,45 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     return vec2(128, 60);
 }
 
+vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInformationTopScreen, bool showMissionInformationBottomScreen)
+{
+    float heightScale = 1.0/TopScreenAspectRatio;
+    float widthScale = TopScreenAspectRatio;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
+    // mission information
+    float sourceMissionInfoHeight = 24.0;
+    float sourceMissionInfoWidth = 256.0;
+    float missionInfoHeight = sourceMissionInfoHeight;
+    float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+    float missionInfoLeftMargin = 0.0;
+    float missionInfoTopMargin = 0.0;
+    float missionInfoY1 = missionInfoTopMargin;
+    float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
+    if (texPosition3d.x >= missionInfoLeftMargin &&
+        texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
+        texPosition3d.y >= missionInfoY1 &&
+        texPosition3d.y <  missionInfoY2) {
+        vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
+            (showMissionInformationBottomScreen ? vec2(0, 192.0) : vec2(0, 0));
+
+        if (showMissionInformationTopScreen) {
+            return coord;
+        }
+        if (showMissionInformationBottomScreen) {
+            float cropMarginLeft = -0.5;
+            if ((texPosition3d.x <  (66.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 1.0) ||
+                (texPosition3d.x >= (72.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 8.0) ||
+                (texPosition3d.x >= (66.0 + cropMarginLeft)*heightScale && texPosition3d.x < (72.0 + cropMarginLeft)*heightScale &&
+                    texPosition3d.y >= 1.0 + (texPosition3d.x - (66.0 + cropMarginLeft)*heightScale)/heightScale)) {
+                return coord;
+            }
+        }
+    }
+
+    return vec2(-1, -1);
+}
+
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
@@ -445,34 +484,9 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo && isMinimapVisible();
 
     if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
-        // mission information
-        float sourceMissionInfoHeight = 24.0;
-        float sourceMissionInfoWidth = 256.0;
-        float missionInfoHeight = sourceMissionInfoHeight;
-        float missionInfoWidth = sourceMissionInfoWidth*heightScale;
-        float missionInfoLeftMargin = 0.0;
-        float missionInfoTopMargin = 0.0;
-        float missionInfoY1 = missionInfoTopMargin;
-        float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
-        if (texPosition3d.x >= missionInfoLeftMargin &&
-            texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
-            texPosition3d.y >= missionInfoY1 &&
-            texPosition3d.y <  missionInfoY2) {
-            vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
-                (showMissionInformationBottomScreen ? vec2(0, 192.0) : vec2(0, 0));
-
-            if (showMissionInformationTopScreen) {
-                return coord;
-            }
-            if (showMissionInformationBottomScreen) {
-                float cropMarginLeft = -0.5;
-                if ((texPosition3d.x <  (66.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 1.0) ||
-                    (texPosition3d.x >= (72.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 8.0) ||
-                    (texPosition3d.x >= (66.0 + cropMarginLeft)*heightScale && texPosition3d.x < (72.0 + cropMarginLeft)*heightScale &&
-                        texPosition3d.y >= 1.0 + (texPosition3d.x - (66.0 + cropMarginLeft)*heightScale)/heightScale)) {
-                    return coord;
-                }
-            }
+        vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, showMissionInformationTopScreen, showMissionInformationBottomScreen);
+        if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
+            return missionInfoCoords;
         }
 
         if (showMissionInformationTopScreen) {
@@ -689,28 +703,9 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
     if (!isScreenBlack(1) && PriorGameScene != 12) // gameScene_InGameWithCutscene
     {
-        // mission information
-        float sourceMissionInfoHeight = 24.0;
-        float sourceMissionInfoWidth = 256.0;
-        float missionInfoHeight = sourceMissionInfoHeight;
-        float missionInfoWidth = sourceMissionInfoWidth*heightScale;
-        float missionInfoLeftMargin = 0.0;
-        float missionInfoTopMargin = 0.0;
-        float missionInfoY1 = missionInfoTopMargin;
-        float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
-        if (texPosition3d.x >= missionInfoLeftMargin &&
-            texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
-            texPosition3d.y >= missionInfoY1 &&
-            texPosition3d.y <  missionInfoY2) {
-            vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) + vec2(0, 192.0);
-
-            float cropMarginLeft = -0.5;
-            if ((texPosition3d.x <  (66.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 1.0) ||
-                (texPosition3d.x >= (72.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 8.0) ||
-                (texPosition3d.x >= (66.0 + cropMarginLeft)*heightScale && texPosition3d.x < (72.0 + cropMarginLeft)*heightScale &&
-                    texPosition3d.y >= 1.0 + (texPosition3d.x - (66.0 + cropMarginLeft)*heightScale)/heightScale)) {
-                return coord;
-            }
+        vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, false, true);
+        if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
+            return missionInfoCoords;
         }
 
         // mission gauge
