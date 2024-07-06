@@ -1,0 +1,145 @@
+/*
+    Copyright 2016-2023 melonDS team
+
+    This file is part of melonDS.
+
+    melonDS is free software: you can redistribute it and/or modify it under
+    the terms of the GNU General Public License as published by the Free
+    Software Foundation, either version 3 of the License, or (at your option)
+    any later version.
+
+    melonDS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with melonDS. If not, see http://www.gnu.org/licenses/.
+*/
+
+#ifndef MAINWINDOWSETTINGS_H
+#define MAINWINDOWSETTINGS_H
+
+#include <QMainWindow>
+#include <QPushButton>
+#include <initializer_list>
+
+#include "Config.h"
+
+// static constexpr int keypad_num = 12;
+// static constexpr int touchscreen_num = 4;
+// static constexpr int cmdmenu_num = 4;
+
+// static constexpr std::initializer_list<int> hk_addons =
+// {
+//     HK_SolarSensorIncrease,
+//     HK_SolarSensorDecrease,
+// };
+
+// static constexpr std::initializer_list<const char*> hk_addons_labels =
+// {
+//     "[Boktai] Sunlight + ",
+//     "[Boktai] Sunlight - ",
+// };
+
+// static_assert(hk_addons.size() == hk_addons_labels.size());
+
+// static constexpr std::initializer_list<int> hk_general =
+// {
+//     HK_Pause,
+//     HK_Reset,
+//     HK_FrameStep,
+//     HK_FastForward,
+//     HK_FastForwardToggle,
+//     HK_FullscreenToggle,
+//     HK_Lid,
+//     HK_Mic,
+//     HK_SwapScreens,
+//     HK_SwapScreenEmphasis,
+//     HK_PowerButton,
+//     HK_VolumeUp,
+//     HK_VolumeDown,
+//     HK_HUDToggle
+// };
+
+// static constexpr std::initializer_list<const char*> hk_general_labels =
+// {
+//     "Pause/resume",
+//     "Reset",
+//     "Frame step",
+//     "Fast forward",
+//     "Toggle FPS limit",
+//     "Toggle fullscreen",
+//     "Close/open lid",
+//     "Microphone",
+//     "Swap screens",
+//     "Swap screen emphasis",
+//     "DSi Power button",
+//     "DSi Volume up",
+//     "DSi Volume down",
+//     "HUD Toggle"
+// };
+
+// static_assert(hk_general.size() == hk_general_labels.size());
+
+// static constexpr std::initializer_list<const char*> cmd_menu_labels =
+// {
+//     "Command Menu Left",
+//     "Command Menu Right",
+//     "Command Menu Up",
+//     "Command Menu Down",
+// };
+
+// static constexpr std::initializer_list<const char*> ds_touch_key_labels =
+// {
+//     "Left",
+//     "Right",
+//     "Up",
+//     "Down"
+// };
+
+namespace Ui { class MainWindowSettings; }
+class MainWindowSettings;
+
+class MainWindowSettings : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    explicit MainWindowSettings(QWidget* parent);
+    ~MainWindowSettings();
+
+    static void closeDlg()
+    {
+    }
+
+private slots:
+    void on_MainWindowSettings_accepted();
+    void on_MainWindowSettings_rejected();
+
+    void on_btnKeyMapSwitch_clicked();
+    void on_btnJoyMapSwitch_clicked();
+    void on_cbxJoystick_currentIndexChanged(int id);
+
+protected:
+    QWidget* settingsWidget;
+    bool showingSettings;
+
+private:
+    void populatePage(QWidget* page,
+        const std::initializer_list<const char*>& labels,
+        int* keymap, int* joymap);
+    void setupKeypadPage();
+    void setupTouchScreenPage();
+    void setupCommandMenuPage();
+
+    Ui::MainWindowSettings* ui;
+
+    // int keypadKeyMap[12], keypadJoyMap[12];
+    // int addonsKeyMap[hk_addons.size()], addonsJoyMap[hk_addons.size()];
+    // int hkGeneralKeyMap[hk_general.size()], hkGeneralJoyMap[hk_general.size()];
+    // int touchScreenKeyMap[4], touchScreenJoyMap[4];
+    // int cmdMenuKeyMap[4], cmdMenuJoyMap[4];
+};
+
+
+#endif // MAINWINDOWSETTINGS_H

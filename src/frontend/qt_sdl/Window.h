@@ -35,6 +35,7 @@
 #include <QMediaPlayer>
 
 #include "Screen.h"
+#include "MainWindow/MainWindowSettings.h"
 
 
 class EmuThread;
@@ -96,7 +97,7 @@ public:
     ScreenPanel* panel;
 };*/
 
-class MainWindow : public QMainWindow
+class MainWindow : public MainWindowSettings
 {
     Q_OBJECT
 

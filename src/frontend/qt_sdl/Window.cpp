@@ -39,6 +39,7 @@
 #include <QMimeData>
 #include <QVector>
 #include <QCommandLineParser>
+#include <QStackedWidget>
 #ifndef _WIN32
 #include <QGuiApplication>
 #include <QSocketNotifier>
@@ -56,6 +57,7 @@
 #include "DateTimeDialog.h"
 #include "EmuSettingsDialog.h"
 #include "InputConfig/InputConfigDialog.h"
+#include "MainWindow/MainWindowSettings.h"
 #include "VideoSettingsDialog.h"
 #include "CameraSettingsDialog.h"
 #include "AudioSettingsDialog.h"
@@ -197,7 +199,7 @@ static void signalHandler(int)
 }
 #endif
 
-MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
+MainWindow::MainWindow(QWidget* parent) : MainWindowSettings(parent)
 {
 #ifndef _WIN32
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, signalFd))
@@ -730,7 +732,9 @@ void MainWindow::createScreenPanel()
         panel = panelNative;
         panel->show();
     }
-    setCentralWidget(panel);
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->addWidget(panel);
+    centralWidget->setCurrentWidget(panel);
 
     actScreenFiltering->setEnabled(hasOGL);
     panel->osdSetEnabled(Config::ShowOSD);
@@ -827,6 +831,17 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     // TODO!! REMOVE ME IN RELEASE BUILDS!!
     //if (event->key() == Qt::Key_F11) emuThread->NDS->debug(0);
+
+    if (event->key() == Qt::Key_Escape) {
+        QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+
+        if (showingSettings) {
+            centralWidget->setCurrentWidget(panel);
+        } else {
+            centralWidget->setCurrentWidget(settingsWidget);
+        }
+        showingSettings = !showingSettings;
+    }
 
     Input::KeyPress(event);
 }
