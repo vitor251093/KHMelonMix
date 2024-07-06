@@ -41,15 +41,22 @@ void main()
 
     if (GameScene == 5 || GameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
     {
+        float chainLabelLayer = -0.300; // also includes the blue shine behind the heart counter
+        float heartCounterLayer = -0.900; // also includes timer
+
         float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
         int iuScale = KHUIScale;
         float iuTexScale = (4.0)/iuScale;
         float heartTopMargin = 16.0*u3DScale;
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;
-        if (fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.180)*fpos.w &&
-            fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
-            fpos.z >= -(0.900)*fpos.w && fpos.z <= -(0.300)*fpos.w) {
+        if ((fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
+             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.000)*fpos.w &&
+             (abs(fpos.z - chainLabelLayer   * fpos.w) < 0.01))
+            ||
+            (fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.200)*fpos.w &&
+             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.000)*fpos.w &&
+             (abs(fpos.z - heartCounterLayer * fpos.w) < 0.01))) {
             fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/(iuTexScale*aspectRatio)))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
             fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/uScreenSize.y)*2.0 - 1.0)*fpos.w;
         }
