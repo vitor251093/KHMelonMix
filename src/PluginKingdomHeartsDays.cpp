@@ -20,7 +20,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_US      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_EU      0x02023CBC
 #define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
-#define ASPECT_RATIO_ADDRESS_JP_DEV1 0x02023C9C
+#define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C9C
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
@@ -169,7 +169,7 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
                 dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP;
             }
             if (isJapanCartRev1()) {
-                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTIGS_ADDRESS_JP_REV1;
+                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1;
             }
 
             if (nds->ARM7Read8(dpadMenuAddress) & 0x02) {
