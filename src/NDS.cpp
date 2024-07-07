@@ -1200,56 +1200,34 @@ void NDS::SetTouchKeyMask(u32 mask)
 
     if (left)
     {
-        if (TouchX <= left)
-        {
-            invalidNextPosition = true;
-        }
-        else
+        if (TouchX > left)
         {
             TouchX -= left;
         }
     }
     if (right)
     {
-        if (TouchX + right >= 255)
-        {
-            invalidNextPosition = true;
-        }
-        else
+        if (TouchX + right < 255)
         {
             TouchX += right;
         }
     }
     if (down)
     {
-        if (TouchY <= down)
-        {
-            invalidNextPosition = true;
-        }
-        else
+        if (TouchY > down)
         {
             TouchY -= down;
         }
     }
     if (up)
     {
-        if (TouchY + up >= 191)
-        {
-            invalidNextPosition = true;
-        }
-        else
+        if (TouchY + up < 191)
         {
             TouchY += up;
         }
     }
 
-    if (invalidNextPosition)
-    {
-        ReleaseScreen();
-    }
-    else {
-        TouchScreen(TouchX, TouchY);
-    }
+    TouchScreen(TouchX, TouchY);
 }
 
 bool NDS::IsLidClosed() const
