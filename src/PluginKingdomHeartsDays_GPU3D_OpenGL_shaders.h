@@ -25,6 +25,7 @@ const char* kRenderVS_Z_KhDays = R"(
 
 uniform int GameScene;
 uniform int KHUIScale;
+uniform bool ShowMissionInfo;
 
 void main()
 {
@@ -45,7 +46,7 @@ void main()
 
         int iuScale = KHUIScale;
         float iuTexScale = (4.0)/iuScale;
-        float heartTopMargin = 16.0*u3DScale;
+        float heartTopMargin = ShowMissionInfo ? 16.0*u3DScale : 0.0;
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;
         if ((fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.000)*fpos.w &&

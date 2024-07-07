@@ -135,6 +135,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 fl
     CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
     CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
     CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
+    CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
 }
 
 void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
@@ -143,6 +144,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
     glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
     glUniform1i(CompGpu3DLoc[flags][1], GameScene);
     glUniform1i(CompGpu3DLoc[flags][2], UIScale);
+    glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
 }
 
 u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
