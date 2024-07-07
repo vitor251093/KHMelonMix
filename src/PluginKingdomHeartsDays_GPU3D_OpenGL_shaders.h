@@ -50,11 +50,11 @@ void main()
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;
         if ((fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
-             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.000)*fpos.w &&
+             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.200)*fpos.w &&
              (abs(fpos.z - chainLabelLayer   * fpos.w) < 0.01))
             ||
             (fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.200)*fpos.w &&
-             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.000)*fpos.w &&
+             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.200)*fpos.w &&
              (abs(fpos.z - heartCounterLayer * fpos.w) < 0.01))) {
             fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/iuTexScale))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
             fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/uScreenSize.y)*2.0 - 1.0)*fpos.w;
