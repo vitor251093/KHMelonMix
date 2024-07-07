@@ -36,11 +36,6 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
 
-#define CAMERA_CENTER_X 0x800
-#define CAMERA_CENTER_Y 0x60
-#define CAMERA_LIMIT_X 0xFFF
-#define CAMERA_LIMIT_Y 0xFF
-
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -75,10 +70,6 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     GameCode = gameCode;
 
     HUDState = 0;
-
-    isCameraMoving = false;
-    cameraPosX = CAMERA_CENTER_X;
-    cameraPosY = CAMERA_CENTER_Y;
 
     priorGameScene = -1;
     GameScene = -1;
@@ -272,63 +263,6 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
     return InputMask;
 }
 
-void PluginKingdomHeartsDays::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchMask)
-{
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene)
-    {
-        u16 deadZone = 0x2;
-        u16 right = ((~TouchMask) & 0xF);
-        u16 left  = ((((~TouchMask) >> 4))  & 0xF);
-        u16 up    = ((((~TouchMask) >> 8))  & 0xF);
-        u16 down  = ((((~TouchMask) >> 12)) & 0xF);
-        if (right < deadZone) right = 0;
-        if (left  < deadZone)  left = 0;
-        if (up    < deadZone)    up = 0;
-        if (down  < deadZone)  down = 0;
-        bool isMoving = (right > 0 || left > 0 || up > 0 || down > 0);
-
-        u32 movingValue = 0x00030000;
-        u32 movementValue = 0;
-        if (isMoving) {
-            movingValue = 0x00000001;
-
-            s32 movementValueY = (down > 0) ? (0 - down) : up;
-            s32 movementValueX = (left > 0) ? (0 - left) : right;
-
-            s32 newCameraPosX = ((s32)cameraPosX) + movementValueX*0x8;
-            s32 newCameraPosY = ((s32)cameraPosY) + movementValueY*0x2;
-            if (newCameraPosX > 0 && newCameraPosX < CAMERA_LIMIT_X) {
-                cameraPosX = (u32)newCameraPosX;
-            }
-            if (newCameraPosY > 0 && newCameraPosY < CAMERA_LIMIT_Y) {
-                cameraPosY = (u32)newCameraPosY;
-            }
-
-            movementValue = (cameraPosY << 20) | cameraPosX;
-        }
-        else {
-            cameraPosX = CAMERA_CENTER_X;
-            cameraPosY = CAMERA_CENTER_Y;
-        }
-
-        u32 initialAddress = TOUCH_SCREEN_CONTROLS_ADDRESS_US;
-        if (isEuropeCart())    initialAddress = TOUCH_SCREEN_CONTROLS_ADDRESS_EU;
-        if (isJapanCart())     initialAddress = TOUCH_SCREEN_CONTROLS_ADDRESS_JP;
-        if (isJapanCartRev1()) initialAddress = TOUCH_SCREEN_CONTROLS_ADDRESS_JP_REV1;
-
-        nds->ARM7Write32(initialAddress + 0x00, movementValue);
-        nds->ARM7Write32(initialAddress + 0x04, movingValue);
-        nds->ARM7Write32(initialAddress + 0x08, movementValue);
-        nds->ARM7Write32(initialAddress + 0x0C, movingValue);
-        nds->ARM7Write32(initialAddress + 0x10, movementValue);
-        nds->ARM7Write32(initialAddress + 0x14, movingValue);
-        nds->ARM7Write32(initialAddress + 0x18, movementValue);
-        nds->ARM7Write32(initialAddress + 0x1C, movingValue);
-        nds->ARM7Write32(initialAddress + 0x20, movementValue);
-        nds->ARM7Write32(initialAddress + 0x24, movingValue);
-    }
-}
-
 void PluginKingdomHeartsDays::hudToggle(melonDS::NDS* nds)
 {
     HUDState = (HUDState + 1) % 3;
@@ -443,6 +377,8 @@ bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
 
 int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
 {
+    // printf("0x02194CBF: %08x %08x\n", nds->ARM7Read32(0x02194CBF), nds->ARM7Read32(0x02194CC3));
+
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
 
@@ -831,13 +767,6 @@ bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)
 
 void PluginKingdomHeartsDays::debugLogs(melonDS::NDS* nds, int gameScene)
 {
-    // PRINT_AS_32_BIT_HEX(0x0204C1A4);
-    // PRINT_AS_32_BIT_HEX(0x0204C1AC);
-    // PRINT_AS_32_BIT_HEX(0x0204C1B4);
-    // PRINT_AS_32_BIT_HEX(0x0204C1BC);
-    // PRINT_AS_32_BIT_HEX(0x0204C1C4);
-    // printf("\n");
-
     if (!DEBUG_MODE_ENABLED) {
         return;
     }

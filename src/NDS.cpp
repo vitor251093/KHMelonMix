@@ -1167,6 +1167,91 @@ void NDS::SetKeyMask(u32 mask)
     CheckKeyIRQ(1, oldkey, KeyInput);
 }
 
+void NDS::SetTouchKeyMask(u32 mask)
+{
+    u16 right = ((~mask) & 0xF) >> 1;
+    u16 left  = ((((~mask) >> 4))  & 0xF) >> 1;
+    u16 up    = ((((~mask) >> 8))  & 0xF) >> 1;
+    u16 down  = ((((~mask) >> 12)) & 0xF) >> 1;
+
+    u16 frames = 2;
+    if (right == 3) right = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
+    if (left  == 3) left  = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
+    if (right == 2) right = (NumFrames % (8*frames) >= (4*frames)) ? 0 : 4;
+    if (left  == 2) left  = (NumFrames % (8*frames) >= (4*frames)) ? 0 : 4;
+    if (right == 1) right = (NumFrames % (8*frames) >= (2*frames)) ? 0 : 4;
+    if (left  == 1) left  = (NumFrames % (8*frames) >= (2*frames)) ? 0 : 4;
+
+    if (up   == 3) right = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
+    if (down == 3) left  = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
+    if (up   == 2) right = (NumFrames % (8*frames) >= (4*frames)) ? 0 : 4;
+    if (down == 2) left  = (NumFrames % (8*frames) >= (4*frames)) ? 0 : 4;
+    if (up   == 1) right = (NumFrames % (8*frames) >= (2*frames)) ? 0 : 4;
+    if (down == 1) left  = (NumFrames % (8*frames) >= (2*frames)) ? 0 : 4;
+
+    if (!(right | left | up | down)) {
+        ReleaseScreen();
+        return;
+    }
+    
+    u16 TouchX = SPI.GetTSC()->GetTouchX();
+    u16 TouchY = SPI.GetTSC()->GetTouchY();
+    bool invalidNextPosition = false;
+
+    if (left)
+    {
+        if (TouchX <= left)
+        {
+            invalidNextPosition = true;
+        }
+        else
+        {
+            TouchX -= left;
+        }
+    }
+    if (right)
+    {
+        if (TouchX + right >= 255)
+        {
+            invalidNextPosition = true;
+        }
+        else
+        {
+            TouchX += right;
+        }
+    }
+    if (down)
+    {
+        if (TouchY <= down)
+        {
+            invalidNextPosition = true;
+        }
+        else
+        {
+            TouchY -= down;
+        }
+    }
+    if (up)
+    {
+        if (TouchY + up >= 191)
+        {
+            invalidNextPosition = true;
+        }
+        else
+        {
+            TouchY += up;
+        }
+    }
+
+    if (invalidNextPosition)
+    {
+        ReleaseScreen();
+    }
+    else {
+        TouchScreen(TouchX, TouchY);
+    }
+}
+
 bool NDS::IsLidClosed() const
 {
     if (KeyInput & (1<<23)) return true;
