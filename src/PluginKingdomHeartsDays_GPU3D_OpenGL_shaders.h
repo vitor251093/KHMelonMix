@@ -46,7 +46,7 @@ void main()
 
         int iuScale = KHUIScale;
         float iuTexScale = (4.0)/iuScale;
-        float heartTopMargin = ShowMissionInfo ? 16.0*u3DScale : 0.0;
+        float heartTopMargin = (ShowMissionInfo ? 16.0 : -1.0)*u3DScale;
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;
         if ((fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
