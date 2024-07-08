@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -16,20 +16,13 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#include <stdlib.h>
-#include <time.h>
-#include <stdio.h>
 #include <string.h>
 
 #include <optional>
-#include <vector>
-#include <string>
-#include <algorithm>
 #include <cmath>
 
 #include <QPaintEvent>
 #include <QPainter>
-#include <QDebug>
 #ifndef _WIN32
 #ifndef APPLE
 #include <qpa/qplatformnativeinterface.h>
@@ -41,6 +34,7 @@
 #include "duckstation/gl/context.h"
 
 #include "main.h"
+#include "EmuInstance.h"
 
 #include "NDS.h"
 #include "GPU.h"
@@ -53,17 +47,10 @@
 #include "OSD_shaders.h"
 #include "font.h"
 
+#include "PluginManager.h"
+
 using namespace melonDS;
 
-
-// TEMP
-extern MainWindow* mainWindow;
-extern EmuThread* emuThread;
-extern bool RunningSomething;
-extern int autoScreenSizing;
-
-extern int videoRenderer;
-extern bool videoSettingsDirty;
 
 const u32 kOSDMargin = 6;
 
@@ -72,11 +59,29 @@ ScreenPanel::ScreenPanel(QWidget* parent) : QWidget(parent)
 {
     setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
+
+    QWidget* w = parent;
+    for (;;)
+    {
+        mainWindow = qobject_cast<MainWindow*>(w);
+        if (mainWindow) break;
+        w = w->parentWidget();
+        if (!w) break;
+    }
+
+    emuInstance = mainWindow->getEmuInstance();
+
+    mouseHide = false;
+    mouseHideDelay = 0;
+
     QTimer* mouseTimer = setupMouseTimer();
-    connect(mouseTimer, &QTimer::timeout, [=] { if (Config::MouseHide) setCursor(Qt::BlankCursor);});
+    connect(mouseTimer, &QTimer::timeout, [=] { if (mouseHide) setCursor(Qt::BlankCursor);});
 
     osdEnabled = false;
     osdID = 1;
+    
+    loadConfig();
+    setFilter(mainWindow->getWindowConfig().GetBool("ScreenFilter"));
 }
 
 ScreenPanel::~ScreenPanel()
@@ -85,21 +90,48 @@ ScreenPanel::~ScreenPanel()
     delete mouseTimer;
 }
 
+void ScreenPanel::loadConfig()
+{
+    auto& cfg = mainWindow->getWindowConfig();
+    
+    screenRotation = cfg.GetInt("ScreenRotation");
+    screenGap = cfg.GetInt("ScreenGap");
+    screenLayout = cfg.GetInt("ScreenLayout");
+    screenSwap = cfg.GetBool("ScreenSwap");
+    screenSizing = cfg.GetInt("ScreenSizing");
+    integerScaling = cfg.GetBool("IntegerScaling");
+    screenAspectTop = cfg.GetInt("ScreenAspectTop");
+    screenAspectBot = cfg.GetInt("ScreenAspectBot");
+}
+
+void ScreenPanel::setFilter(bool filter)
+{
+    this->filter = filter;
+}
+
+void ScreenPanel::setMouseHide(bool enable, int delay)
+{
+    mouseHide = enable;
+    mouseHideDelay = delay;
+
+    mouseTimer->setInterval(mouseHideDelay);
+}
+
 void ScreenPanel::setupScreenLayout()
 {
     int w = width();
     int h = height();
 
-    int sizing = Config::ScreenSizing;
-    if (sizing == 3) sizing = autoScreenSizing;
+    int sizing = screenSizing;
+    if (sizing == screenSizing_Auto) sizing = autoScreenSizing;
 
     float aspectTop, aspectBot;
 
     for (auto ratio : aspectRatios)
     {
-        if (ratio.id == Config::ScreenAspectTop)
+        if (ratio.id == screenAspectTop)
             aspectTop = ratio.ratio;
-        if (ratio.id == Config::ScreenAspectBot)
+        if (ratio.id == screenAspectBot)
             aspectBot = ratio.ratio;
     }
 
@@ -109,52 +141,49 @@ void ScreenPanel::setupScreenLayout()
     if (aspectBot == 0)
         aspectBot = ((float) w / h) / (4.f / 3.f);
 
-    Frontend::SetupScreenLayout(w, h,
-                                static_cast<Frontend::ScreenLayout>(Config::ScreenLayout),
-                                static_cast<Frontend::ScreenRotation>(Config::ScreenRotation),
-                                static_cast<Frontend::ScreenSizing>(sizing),
-                                Config::ScreenGap,
-                                Config::IntegerScaling != 0,
-                                Config::ScreenSwap != 0,
-                                aspectTop,
-                                aspectBot);
+    layout.Setup(w, h,
+                static_cast<ScreenLayoutType>(screenLayout),
+                static_cast<ScreenRotation>(screenRotation),
+                static_cast<ScreenSizing>(sizing),
+                screenGap,
+                integerScaling != 0,
+                screenSwap != 0,
+                aspectTop,
+                aspectBot);
 
-    numScreens = Frontend::GetScreenTransforms(screenMatrix[0], screenKind);
-
-    Config::WindowHeight = h;
-    Config::WindowWidth = w;
+    numScreens = layout.GetScreenTransforms(screenMatrix[0], screenKind);
 }
 
 QSize ScreenPanel::screenGetMinSize(int factor = 1)
 {
-    bool isHori = (Config::ScreenRotation == Frontend::screenRot_90Deg
-        || Config::ScreenRotation == Frontend::screenRot_270Deg);
-    int gap = Config::ScreenGap * factor;
+    bool isHori = (screenRotation == screenRot_90Deg
+        || screenRotation == screenRot_270Deg);
+    int gap = screenGap * factor;
 
     int w = 256 * factor;
     int h = 192 * factor;
 
-    if (Config::ScreenSizing == Frontend::screenSizing_TopOnly
-        || Config::ScreenSizing == Frontend::screenSizing_BotOnly)
+    if (screenSizing == screenSizing_TopOnly
+        || screenSizing == screenSizing_BotOnly)
     {
         return QSize(w, h);
     }
 
-    if (Config::ScreenLayout == Frontend::screenLayout_Natural)
+    if (screenLayout == screenLayout_Natural)
     {
         if (isHori)
             return QSize(h+gap+h, w);
         else
             return QSize(w, h+gap+h);
     }
-    else if (Config::ScreenLayout == Frontend::screenLayout_Vertical)
+    else if (screenLayout == screenLayout_Vertical)
     {
         if (isHori)
             return QSize(h, w+gap+w);
         else
             return QSize(w, h+gap+h);
     }
-    else if (Config::ScreenLayout == Frontend::screenLayout_Horizontal)
+    else if (screenLayout == screenLayout_Horizontal)
     {
         if (isHori)
             return QSize(h+gap+h, w);
@@ -172,7 +201,17 @@ QSize ScreenPanel::screenGetMinSize(int factor = 1)
 
 void ScreenPanel::onScreenLayoutChanged()
 {
+    loadConfig();
+
     setMinimumSize(screenGetMinSize());
+    setupScreenLayout();
+}
+
+void ScreenPanel::onAutoScreenSizingChanged(int sizing)
+{
+    autoScreenSizing = sizing;
+    if (screenSizing != screenSizing_Auto) return;
+
     setupScreenLayout();
 }
 
@@ -180,6 +219,26 @@ void ScreenPanel::resizeEvent(QResizeEvent* event)
 {
     setupScreenLayout();
     QWidget::resizeEvent(event);
+
+    refreshAspectRatio();
+}
+
+void ScreenPanel::refreshAspectRatio()
+{
+    auto& cfg = mainWindow->getWindowConfig();
+    int screenAspectTop = cfg.GetInt("ScreenAspectTop");
+
+    float aspectTop = (cfg.GetInt("Width") * 1.f) / cfg.GetInt("Height");
+    for (auto ratio : aspectRatios)
+    {
+        if (ratio.id == screenAspectTop)
+            aspectTop = ratio.ratio * 4.0/3;
+    }
+    if (aspectTop == 0) {
+        aspectTop = 16.0 / 9;
+    }
+    auto plugin = Plugins::PluginManager::get();
+    plugin->setAspectRatio(emuInstance->getNDS(), aspectTop);
 }
 
 void ScreenPanel::mousePressEvent(QMouseEvent* event)
@@ -190,11 +249,11 @@ void ScreenPanel::mousePressEvent(QMouseEvent* event)
     int x = event->pos().x();
     int y = event->pos().y();
 
-    if (Frontend::GetTouchCoords(x, y, false))
+    if (layout.GetTouchCoords(x, y, false))
     {
         touching = true;
-        assert(emuThread->NDS != nullptr);
-        emuThread->NDS->TouchScreen(x, y);
+        assert(emuInstance->getNDS() != nullptr);
+        emuInstance->getNDS()->TouchScreen(x, y);
     }
 }
 
@@ -206,8 +265,8 @@ void ScreenPanel::mouseReleaseEvent(QMouseEvent* event)
     if (touching)
     {
         touching = false;
-        assert(emuThread->NDS != nullptr);
-        emuThread->NDS->ReleaseScreen();
+        assert(emuInstance->getNDS() != nullptr);
+        emuInstance->getNDS()->ReleaseScreen();
     }
 }
 
@@ -223,10 +282,10 @@ void ScreenPanel::mouseMoveEvent(QMouseEvent* event)
     int x = event->pos().x();
     int y = event->pos().y();
 
-    if (Frontend::GetTouchCoords(x, y, true))
+    if (layout.GetTouchCoords(x, y, true))
     {
-        assert(emuThread->NDS != nullptr);
-        emuThread->NDS->TouchScreen(x, y);
+        assert(emuInstance->getNDS() != nullptr);
+        emuInstance->getNDS()->TouchScreen(x, y);
     }
 }
 
@@ -242,19 +301,19 @@ void ScreenPanel::tabletEvent(QTabletEvent* event)
             int x = event->x();
             int y = event->y();
 
-            if (Frontend::GetTouchCoords(x, y, event->type()==QEvent::TabletMove))
+            if (layout.GetTouchCoords(x, y, event->type()==QEvent::TabletMove))
             {
                 touching = true;
-                assert(emuThread->NDS != nullptr);
-                emuThread->NDS->TouchScreen(x, y);
+                assert(emuInstance->getNDS() != nullptr);
+                emuInstance->getNDS()->TouchScreen(x, y);
             }
         }
         break;
     case QEvent::TabletRelease:
         if (touching)
         {
-            assert(emuThread->NDS != nullptr);
-            emuThread->NDS->ReleaseScreen();
+            assert(emuInstance->getNDS() != nullptr);
+            emuInstance->getNDS()->ReleaseScreen();
             touching = false;
         }
         break;
@@ -277,19 +336,19 @@ void ScreenPanel::touchEvent(QTouchEvent* event)
             int x = (int)lastPosition.x();
             int y = (int)lastPosition.y();
 
-            if (Frontend::GetTouchCoords(x, y, event->type()==QEvent::TouchUpdate))
+            if (layout.GetTouchCoords(x, y, event->type()==QEvent::TouchUpdate))
             {
                 touching = true;
-                assert(emuThread->NDS != nullptr);
-                emuThread->NDS->TouchScreen(x, y);
+                assert(emuInstance->getNDS() != nullptr);
+                emuInstance->getNDS()->TouchScreen(x, y);
             }
         }
         break;
     case QEvent::TouchEnd:
         if (touching)
         {
-            assert(emuThread->NDS != nullptr);
-            emuThread->NDS->ReleaseScreen();
+            assert(emuInstance->getNDS() != nullptr);
+            emuInstance->getNDS()->ReleaseScreen();
             touching = false;
         }
         break;
@@ -321,7 +380,7 @@ QTimer* ScreenPanel::setupMouseTimer()
 {
     mouseTimer = new QTimer();
     mouseTimer->setSingleShot(true);
-    mouseTimer->setInterval(Config::MouseHideSeconds*1000);
+    mouseTimer->setInterval(mouseHideDelay);
     mouseTimer->start();
 
     return mouseTimer;
@@ -621,19 +680,23 @@ void ScreenPanelNative::paintEvent(QPaintEvent* event)
     // fill background
     painter.fillRect(event->rect(), QColor::fromRgb(0, 0, 0));
 
+    auto emuThread = emuInstance->getEmuThread();
+
     if (emuThread->emuIsActive())
     {
-        assert(emuThread->NDS != nullptr);
+        auto nds = emuInstance->getNDS();
+
+        assert(nds != nullptr);
         emuThread->FrontBufferLock.lock();
         int frontbuf = emuThread->FrontBuffer;
-        if (!emuThread->NDS->GPU.Framebuffer[frontbuf][0] || !emuThread->NDS->GPU.Framebuffer[frontbuf][1])
+        if (!nds->GPU.Framebuffer[frontbuf][0] || !nds->GPU.Framebuffer[frontbuf][1])
         {
             emuThread->FrontBufferLock.unlock();
             return;
         }
 
-        memcpy(screen[0].scanLine(0), emuThread->NDS->GPU.Framebuffer[frontbuf][0].get(), 256 * 192 * 4);
-        memcpy(screen[1].scanLine(0), emuThread->NDS->GPU.Framebuffer[frontbuf][1].get(), 256 * 192 * 4);
+        memcpy(screen[0].scanLine(0), nds->GPU.Framebuffer[frontbuf][0].get(), 256 * 192 * 4);
+        memcpy(screen[1].scanLine(0), nds->GPU.Framebuffer[frontbuf][1].get(), 256 * 192 * 4);
         emuThread->FrontBufferLock.unlock();
 
         QRect screenrc(0, 0, 256, 192);
@@ -686,14 +749,29 @@ ScreenPanelGL::~ScreenPanelGL()
 
 bool ScreenPanelGL::createContext()
 {
-    std::optional<WindowInfo> windowInfo = getWindowInfo();
-    std::array<GL::Context::Version, 2> versionsToTry = {
-        GL::Context::Version{GL::Context::Profile::Core, 4, 3},
-        GL::Context::Version{GL::Context::Profile::Core, 3, 2}};
-    if (windowInfo.has_value())
+    std::optional<WindowInfo> windowinfo = getWindowInfo();
+
+    // if our parent window is parented to another window, we will
+    // share our OpenGL context with that window
+    MainWindow* parentwin = (MainWindow*)parentWidget()->parentWidget();
+    if (parentwin)
     {
-        glContext = GL::Context::Create(*getWindowInfo(), versionsToTry);
-        glContext->DoneCurrent();
+        if (windowinfo.has_value())
+        {
+            glContext = parentwin->getOGLContext()->CreateSharedContext(*windowinfo);
+            glContext->DoneCurrent();
+        }
+    }
+    else
+    {
+        std::array<GL::Context::Version, 2> versionsToTry = {
+                GL::Context::Version{GL::Context::Profile::Core, 4, 3},
+                GL::Context::Version{GL::Context::Profile::Core, 3, 2}};
+        if (windowinfo.has_value())
+        {
+            glContext = GL::Context::Create(*windowinfo, versionsToTry);
+            glContext->DoneCurrent();
+        }
     }
 
     return glContext != nullptr;
@@ -713,10 +791,10 @@ void ScreenPanelGL::initOpenGL()
     glContext->MakeCurrent();
 
     OpenGL::CompileVertexFragmentProgram(screenShaderProgram,
-        kScreenVS, kScreenFS,
-        "ScreenShader",
-        {{"vPosition", 0}, {"vTexcoord", 1}},
-        {{"oColor", 0}});
+                                         kScreenVS, kScreenFS,
+                                         "ScreenShader",
+                                         {{"vPosition", 0}, {"vTexcoord", 1}},
+                                         {{"oColor", 0}});
 
     glUseProgram(screenShaderProgram);
     glUniform1i(glGetUniformLocation(screenShaderProgram, "ScreenTex"), 0);
@@ -770,11 +848,12 @@ void ScreenPanelGL::initOpenGL()
     memset(zeroData, 0, sizeof(zeroData));
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192, 256, 2, GL_RGBA, GL_UNSIGNED_BYTE, zeroData);
 
+
     OpenGL::CompileVertexFragmentProgram(osdShader,
-        kScreenVS_OSD, kScreenFS_OSD,
-        "OSDShader",
-        {{"vPosition", 0}},
-        {{"oColor", 0}});
+                                         kScreenVS_OSD, kScreenFS_OSD,
+                                         "OSDShader",
+                                         {{"vPosition", 0}},
+                                         {{"oColor", 0}});
 
     glUseProgram(osdShader);
     glUniform1i(glGetUniformLocation(osdShader, "OSDTex"), 0);
@@ -803,8 +882,6 @@ void ScreenPanelGL::initOpenGL()
     glEnableVertexAttribArray(0); // position
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0));
 
-
-    glContext->SetSwapInterval(Config::ScreenVSync ? Config::ScreenVSyncInterval : 0);
     transferLayout();
 }
 
@@ -819,6 +896,7 @@ void ScreenPanelGL::deinitOpenGL()
 
     glDeleteProgram(screenShaderProgram);
 
+
     for (const auto& [key, tex] : osdTextures)
     {
         glDeleteTextures(1, &tex);
@@ -830,9 +908,17 @@ void ScreenPanelGL::deinitOpenGL()
 
     glDeleteProgram(osdShader);
 
+
     glContext->DoneCurrent();
 
     lastScreenWidth = lastScreenHeight = -1;
+}
+
+void ScreenPanelGL::makeCurrentGL()
+{
+    if (!glContext) return;
+
+    glContext->MakeCurrent();
 }
 
 void ScreenPanelGL::osdRenderItem(OSDItem* item)
@@ -866,7 +952,15 @@ void ScreenPanelGL::osdDeleteItem(OSDItem* item)
 void ScreenPanelGL::drawScreenGL()
 {
     if (!glContext) return;
-    if (!emuThread->NDS) return;
+
+    auto nds = emuInstance->getNDS();
+    if (!nds) return;
+
+    refreshAspectRatio();
+
+    auto emuThread = emuInstance->getEmuThread();
+
+    glContext->MakeCurrent();
 
     int w = windowInfo.surface_width;
     int h = windowInfo.surface_height;
@@ -889,10 +983,10 @@ void ScreenPanelGL::drawScreenGL()
     glActiveTexture(GL_TEXTURE0);
 
 #ifdef OGLRENDERER_ENABLED
-    if (emuThread->NDS->GPU.GetRenderer3D().Accelerated)
+    if (nds->GPU.GetRenderer3D().Accelerated)
     {
         // hardware-accelerated render
-        emuThread->NDS->GPU.GetRenderer3D().BindOutputTexture(frontbuf);
+        nds->GPU.GetRenderer3D().BindOutputTexture(frontbuf);
     }
     else
 #endif
@@ -900,12 +994,12 @@ void ScreenPanelGL::drawScreenGL()
         // regular render
         glBindTexture(GL_TEXTURE_2D, screenTexture);
 
-        if (emuThread->NDS->GPU.Framebuffer[frontbuf][0] && emuThread->NDS->GPU.Framebuffer[frontbuf][1])
+        if (nds->GPU.Framebuffer[frontbuf][0] && nds->GPU.Framebuffer[frontbuf][1])
         {
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 192, GL_RGBA,
-                            GL_UNSIGNED_BYTE, emuThread->NDS->GPU.Framebuffer[frontbuf][0].get());
+                            GL_UNSIGNED_BYTE, nds->GPU.Framebuffer[frontbuf][0].get());
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192+2, 256, 192, GL_RGBA,
-                            GL_UNSIGNED_BYTE, emuThread->NDS->GPU.Framebuffer[frontbuf][1].get());
+                            GL_UNSIGNED_BYTE, nds->GPU.Framebuffer[frontbuf][1].get());
         }
     }
 
@@ -1022,7 +1116,8 @@ std::optional<WindowInfo> ScreenPanelGL::getWindowInfo()
     }
     else
     {
-        qCritical() << "Unknown PNI platform " << platform_name;
+        //qCritical() << "Unknown PNI platform " << platform_name;
+        Platform::Log(LogLevel::Error, "Unknown PNI platform %s\n", platform_name.toStdString().c_str());
         return std::nullopt;
     }
     #endif
@@ -1061,7 +1156,6 @@ void ScreenPanelGL::transferLayout()
             lastScreenHeight = windowInfo->surface_height;
         }
 
-        this->filter = Config::ScreenFilter;
         this->windowInfo = *windowInfo;
 
         screenSettingsLock.unlock();

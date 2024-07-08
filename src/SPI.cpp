@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -260,7 +260,7 @@ void FirmwareMem::Release()
 
         // Request that the start of the Wi-fi/userdata settings region
         // through the end of the firmware blob be flushed to disk
-        Platform::WriteFirmware(FirmwareData, wifioffset, FirmwareData.Length() - wifioffset);
+        Platform::WriteFirmware(FirmwareData, wifioffset, FirmwareData.Length() - wifioffset, NDS.UserData);
     }
 
     SPIDevice::Release();
@@ -381,6 +381,24 @@ void TSC::DoSavestate(Savestate* file)
     file->Var8(&Data);
 
     file->Var16(&ConvResult);
+}
+
+u16 TSC::GetTouchX()
+{
+    if ((NDS.KeyInput >> 22) & 0x1)
+    {
+        return 128;
+    }
+    return (TouchX >> 4) & 0xFF;
+}
+
+u16 TSC::GetTouchY()
+{
+    if ((NDS.KeyInput >> 22) & 0x1)
+    {
+        return 96;
+    }
+    return (TouchY >> 4) & 0xFF;
 }
 
 void TSC::SetTouchCoords(u16 x, u16 y)

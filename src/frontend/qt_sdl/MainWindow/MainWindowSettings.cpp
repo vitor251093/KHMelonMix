@@ -30,7 +30,6 @@
 #include "Platform.h"
 
 // #include "MapButton.h"
-#include "Input.h"
 #include "MainWindowSettings.h"
 #include "ui_MainWindowSettings.h"
 
@@ -263,7 +262,7 @@ void MainWindowSettings::on_MainWindowSettings_accepted()
 
 void MainWindowSettings::on_MainWindowSettings_rejected()
 {
-    Input::JoystickID = Config::JoystickID;
+    // Input::JoystickID = Config::JoystickID;
 
     closeDlg();
 }
@@ -283,6 +282,6 @@ void MainWindowSettings::on_cbxJoystick_currentIndexChanged(int id)
     // prevent a spurious change
     // if (ui->cbxJoystick->count() < 2) return;
 
-    Input::JoystickID = id;
+    // Input::JoystickID = id;
 }
 

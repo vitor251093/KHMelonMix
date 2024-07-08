@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -120,6 +120,8 @@ public:
     virtual void Reset() override;
     virtual void DoSavestate(Savestate* file) override;
 
+    virtual u16 GetTouchX();
+    virtual u16 GetTouchY();
     virtual void SetTouchCoords(u16 x, u16 y);
     virtual void MicInputFrame(const s16* data, int samples);
 

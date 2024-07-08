@@ -21,6 +21,7 @@ public:
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
+    bool isJapanCartRev1() { return false; }; // TODO: KH Add support to Rev1
 
     const char* gpuOpenGL_FS();
     const char* gpu3DOpenGL_VS_Z();
@@ -31,7 +32,6 @@ public:
     void gpu3DOpenGL_VS_Z_updateVariables(u32 flags);
 
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
-    void applyTouchScreenMask(melonDS::NDS* nds, u32 TouchMask);
     const char* getGameSceneName();
     bool shouldSkipFrame(melonDS::NDS* nds);
     void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
@@ -41,15 +41,11 @@ private:
     bool PausedInGame;
     int HUDState;
 
-    bool isCameraMoving;
-    u32 cameraPosX;
-    u32 cameraPosY;
-
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
     int priorGameScene;
     int GameScene;
-    int UIScale;
+    int UIScale = 4;
     float AspectRatio;
     bool ShowMap;
     bool ShowTarget;

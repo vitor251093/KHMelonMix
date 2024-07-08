@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -229,6 +229,8 @@ private:
 #endif
 
 public: // TODO: Encapsulate the rest of these members
+    void* UserData;
+
     int ConsoleType;
     int CurCPU;
 
@@ -389,6 +391,7 @@ public: // TODO: Encapsulate the rest of these members
     void ReleaseScreen();
 
     void SetKeyMask(u32 mask);
+    void SetTouchKeyMask(u32 mask);
 
     bool IsLidClosed() const;
     void SetLidClosed(bool closed);
@@ -522,7 +525,7 @@ private:
     template <bool EnableJIT>
     u32 RunFrame();
 public:
-    NDS(NDSArgs&& args) noexcept : NDS(std::move(args), 0) {}
+    NDS(NDSArgs&& args, void* userdata = nullptr) noexcept : NDS(std::move(args), 0, userdata) {}
     NDS() noexcept;
     virtual ~NDS() noexcept;
     NDS(const NDS&) = delete;
@@ -532,7 +535,7 @@ public:
     // The frontend should set and unset this manually after creating and destroying the NDS object.
     [[deprecated("Temporary workaround until JIT code generation is revised to accommodate multiple NDS objects.")]] static NDS* Current;
 protected:
-    explicit NDS(NDSArgs&& args, int type) noexcept;
+    explicit NDS(NDSArgs&& args, int type, void* userdata) noexcept;
     virtual void DoSavestateExtra(Savestate* file) {}
 };
 
