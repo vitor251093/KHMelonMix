@@ -438,7 +438,7 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
     float sourceMissionInfoWidth = 256.0;
     float missionInfoHeight = sourceMissionInfoHeight;
     float missionInfoWidth = sourceMissionInfoWidth*heightScale;
-    float missionInfoLeftMargin = 8.0;
+    float missionInfoLeftMargin = 8.0*heightScale;
     float missionInfoTopMargin = 0.0;
     float missionInfoY1 = missionInfoTopMargin;
     float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
@@ -1098,6 +1098,44 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 {
                     ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
                     int blur = int((63 - colorZero.r)/2);
+                    color = ivec4(color.r, blur, 16 - blur, 0x01);
+                }
+            }
+        }
+    }
+
+    if (GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    {
+        bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
+        bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo;
+
+        if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
+            int iuScale = KHUIScale;
+            float iuTexScale = (6.0)/iuScale;
+            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+            float heightScale = 1.0/TopScreenAspectRatio;
+            float widthScale = TopScreenAspectRatio;
+
+            // mission information
+            float sourceMissionInfoHeight = 24.0;
+            float sourceMissionInfoWidth = 256.0;
+            float missionInfoHeight = sourceMissionInfoHeight;
+            float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+            float missionInfoLeftMargin = 8.0*heightScale;
+            float missionInfoTopMargin = 0.0;
+            float missionInfoY1 = missionInfoTopMargin;
+            float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
+            float blurBorder = 64.0*heightScale;
+            if (texPosition3d.x >= missionInfoLeftMargin + missionInfoWidth - blurBorder &&
+                texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
+                texPosition3d.y >= missionInfoY1 + 8.0 &&
+                texPosition3d.y <  missionInfoY2) {
+
+                if (index == 2)
+                {
+                    int xBlur = int(16.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
+                    float transparency = 15.0/16;
+                    int blur = int((16.0 - xBlur) * transparency);
                     color = ivec4(color.r, blur, 16 - blur, 0x01);
                 }
             }
