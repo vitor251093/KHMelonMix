@@ -809,13 +809,13 @@ void MainWindow::createVideoPlayer()
 
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->addWidget(playerWidget);
-    // centralWidget->setCurrentWidget(playerWidget);
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         qDebug() << "MediaStatus " << status;
         if (status == QMediaPlayer::LoadedMedia) {
             qDebug() << "Video loaded successfully";
             player->setVideoOutput(playerWidget);
+            centralWidget->setCurrentWidget(playerWidget);
             player->play();
         }
     });
