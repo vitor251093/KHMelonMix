@@ -324,8 +324,7 @@
          </property>
         </widget>
        </widget>
-       <widget class="QFrame" name="settingWidgetOptionsGamepad">
-       </widget>
+       <widget class="QFrame" name="settingWidgetOptionsGamepad"/>
        <widget class="QFrame" name="settingWidgetOptionsGeneral">
         <widget class="QComboBox" name="comboBox">
          <property name="geometry">
@@ -400,8 +399,89 @@
         </widget>
        </widget>
        <widget class="QFrame" name="settingWidgetOptionsKeyboard"/>
-       <widget class="QFrame" name="settingWidgetOptionsMultiplayer"/>
-       <widget class="QFrame" name="settingWidgetOptionsSound"/>
+       <widget class="QFrame" name="settingWidgetOptionsMultiplayer">
+        <widget class="QLabel" name="label_5">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>20</y>
+           <width>151</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <family>KH2 ALL MENU</family>
+           <pointsize>9</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>Player Name</string>
+         </property>
+        </widget>
+        <widget class="QPlainTextEdit" name="plainTextEdit">
+         <property name="geometry">
+          <rect>
+           <x>60</x>
+           <y>40</y>
+           <width>261</width>
+           <height>31</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QFrame" name="settingWidgetOptionsSound">
+        <widget class="QSlider" name="horizontalSlider">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>40</y>
+           <width>211</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="maximum">
+          <number>10</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_3">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>20</y>
+           <width>191</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <family>KH2 ALL MENU</family>
+           <pointsize>9</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>Master Volume</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_4">
+         <property name="geometry">
+          <rect>
+           <x>50</x>
+           <y>40</y>
+           <width>21</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>10</string>
+         </property>
+        </widget>
+       </widget>
       </widget>
      </item>
      <item row="1" column="0" colspan="2">
