@@ -22,7 +22,6 @@
 #include <QDebug>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QStackedWidget>
 
 #include <SDL2/SDL.h>
 
@@ -48,8 +47,8 @@ MainWindowSettings::MainWindowSettings(QWidget* parent) : QMainWindow(parent), u
 {
     ui->setupUi(this);
 
-    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    settingsWidget = centralWidget->currentWidget();
+    settingsWidget = findChild<QWidget*>("settingsWidget");
+    settingWidgetOptions = findChild<QStackedWidget*>("settingWidgetOptions");
     showingSettings = false;
     // setAttribute(Qt::WA_DeleteOnClose);
 
@@ -216,6 +215,35 @@ void MainWindowSettings::populatePage(QWidget* page,
     // group->setMinimumWidth(275);
 
     // page->setLayout(main_layout);
+}
+
+void MainWindowSettings::on_displayButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(0);
+}
+void MainWindowSettings::on_gamepadButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(1);
+}
+void MainWindowSettings::on_generalButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(2);
+}
+void MainWindowSettings::on_keyboardButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(3);
+}
+void MainWindowSettings::on_multiplayerButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(4);
+}
+void MainWindowSettings::on_quitGameButton_clicked()
+{
+    
+}
+void MainWindowSettings::on_soundButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(5);
 }
 
 void MainWindowSettings::on_MainWindowSettings_accepted()

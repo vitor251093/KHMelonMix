@@ -17,47 +17,47 @@
    <string notr="true">#grp_ControlPad, #grp_ABXY, #grp_ControlPad_2, #grp_ABXY_2 { border: none }</string>
   </property>
   <widget class="QStackedWidget" name="centralwidget">
-    <widget class="QWidget" name="settingswidget">
+   <widget class="QWidget" name="settingsWidget">
     <layout class="QGridLayout" name="gridLayout_4">
-      <property name="sizeConstraint">
+     <property name="sizeConstraint">
       <enum>QLayout::SetFixedSize</enum>
-      </property>
-      <item row="4" column="0">
+     </property>
+     <item row="4" column="0">
       <widget class="QFrame" name="frame">
-        <property name="sizePolicy">
+       <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
         </sizepolicy>
-        </property>
-        <property name="minimumSize">
+       </property>
+       <property name="minimumSize">
         <size>
-          <width>530</width>
-          <height>400</height>
+         <width>530</width>
+         <height>400</height>
         </size>
-        </property>
-        <property name="frameShape">
+       </property>
+       <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
+       </property>
+       <property name="frameShadow">
         <enum>QFrame::Raised</enum>
-        </property>
-        <widget class="QPushButton" name="pushButton">
+       </property>
+       <widget class="QPushButton" name="generalButton">
         <property name="geometry">
-          <rect>
+         <rect>
           <x>90</x>
           <y>20</y>
           <width>400</width>
           <height>40</height>
-          </rect>
+         </rect>
         </property>
         <property name="font">
-          <font>
+         <font>
           <family>KH2 ALL MENU</family>
-          </font>
+         </font>
         </property>
         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 255, 255);
+         <string notr="true">color: rgb(255, 255, 255);
   border-color: rgb(144, 108, 28);
     border-style: solid;
     border-width: 2px;
@@ -68,25 +68,25 @@
     padding-left: 25px;</string>
         </property>
         <property name="text">
-          <string>General</string>
+         <string>General</string>
         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_2">
+       </widget>
+       <widget class="QPushButton" name="displayButton">
         <property name="geometry">
-          <rect>
+         <rect>
           <x>90</x>
           <y>70</y>
           <width>400</width>
           <height>40</height>
-          </rect>
+         </rect>
         </property>
         <property name="font">
-          <font>
+         <font>
           <family>KH2 ALL MENU</family>
-          </font>
+         </font>
         </property>
         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 255, 255);
+         <string notr="true">color: rgb(255, 255, 255);
   border-color: rgb(144, 108, 28);
     border-style: solid;
     border-width: 2px;
@@ -97,25 +97,25 @@
     padding-left: 25px;</string>
         </property>
         <property name="text">
-          <string>Display</string>
+         <string>Display</string>
         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_3">
+       </widget>
+       <widget class="QPushButton" name="soundButton">
         <property name="geometry">
-          <rect>
+         <rect>
           <x>90</x>
           <y>120</y>
           <width>400</width>
           <height>40</height>
-          </rect>
+         </rect>
         </property>
         <property name="font">
-          <font>
+         <font>
           <family>KH2 ALL MENU</family>
-          </font>
+         </font>
         </property>
         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 255, 255);
+         <string notr="true">color: rgb(255, 255, 255);
   border-color: rgb(144, 108, 28);
     border-style: solid;
     border-width: 2px;
@@ -126,25 +126,25 @@
     padding-left: 25px;</string>
         </property>
         <property name="text">
-          <string>Sound</string>
+         <string>Sound</string>
         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_4">
+       </widget>
+       <widget class="QPushButton" name="keyboardButton">
         <property name="geometry">
-          <rect>
+         <rect>
           <x>90</x>
           <y>220</y>
           <width>400</width>
           <height>40</height>
-          </rect>
+         </rect>
         </property>
         <property name="font">
-          <font>
+         <font>
           <family>KH2 ALL MENU</family>
-          </font>
+         </font>
         </property>
         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 255, 255);
+         <string notr="true">color: rgb(255, 255, 255);
   border-color: rgb(144, 108, 28);
     border-style: solid;
     border-width: 2px;
@@ -155,25 +155,25 @@
     padding-left: 25px;</string>
         </property>
         <property name="text">
-          <string>Keyboard</string>
+         <string>Keyboard</string>
         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_5">
+       </widget>
+       <widget class="QPushButton" name="multiplayerButton">
         <property name="geometry">
-          <rect>
+         <rect>
           <x>90</x>
           <y>270</y>
           <width>400</width>
           <height>40</height>
-          </rect>
+         </rect>
         </property>
         <property name="font">
-          <font>
+         <font>
           <family>KH2 ALL MENU</family>
-          </font>
+         </font>
         </property>
         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 255, 255);
+         <string notr="true">color: rgb(255, 255, 255);
   border-color: rgb(144, 108, 28);
     border-style: solid;
     border-width: 2px;
@@ -184,25 +184,25 @@
     padding-left: 25px;</string>
         </property>
         <property name="text">
-          <string>Multiplayer</string>
+         <string>Multiplayer</string>
         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_6">
+       </widget>
+       <widget class="QPushButton" name="gamepadButton">
         <property name="geometry">
-          <rect>
+         <rect>
           <x>90</x>
           <y>170</y>
           <width>400</width>
           <height>40</height>
-          </rect>
+         </rect>
         </property>
         <property name="font">
-          <font>
+         <font>
           <family>KH2 ALL MENU</family>
-          </font>
+         </font>
         </property>
         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 255, 255);
+         <string notr="true">color: rgb(255, 255, 255);
   border-color: rgb(144, 108, 28);
     border-style: solid;
     border-width: 2px;
@@ -213,25 +213,25 @@
     padding-left: 25px;</string>
         </property>
         <property name="text">
-          <string>Gamepad</string>
+         <string>Gamepad</string>
         </property>
-        </widget>
-        <widget class="QPushButton" name="pushButton_7">
+       </widget>
+       <widget class="QPushButton" name="quitGameButton">
         <property name="geometry">
-          <rect>
+         <rect>
           <x>90</x>
           <y>320</y>
           <width>400</width>
           <height>40</height>
-          </rect>
+         </rect>
         </property>
         <property name="font">
-          <font>
+         <font>
           <family>KH2 ALL MENU</family>
-          </font>
+         </font>
         </property>
         <property name="styleSheet">
-          <string notr="true">color: rgb(255, 255, 255);
+         <string notr="true">color: rgb(255, 255, 255);
   border-color: rgb(144, 108, 28);
     border-style: solid;
     border-width: 2px;
@@ -242,120 +242,202 @@
     padding-left: 25px;</string>
         </property>
         <property name="text">
-          <string>Quit Game</string>
+         <string>Quit Game</string>
         </property>
-        </widget>
+       </widget>
       </widget>
-      </item>
-      <item row="6" column="0" colspan="2">
+     </item>
+     <item row="6" column="0" colspan="2">
       <spacer name="verticalSpacer_2">
-        <property name="orientation">
+       <property name="orientation">
         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
+       </property>
+       <property name="sizeHint" stdset="0">
         <size>
-          <width>20</width>
-          <height>40</height>
+         <width>20</width>
+         <height>40</height>
         </size>
-        </property>
+       </property>
       </spacer>
-      </item>
-      <item row="4" column="1">
-      <widget class="QFrame" name="frame_3">
-        <property name="frameShape">
+     </item>
+     <item row="4" column="1">
+      <widget class="QStackedWidget" name="settingWidgetOptions">
+       <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
+       </property>
+       <property name="frameShadow">
         <enum>QFrame::Raised</enum>
-        </property>
+       </property>
+       <property name="currentIndex">
+        <number>3</number>
+       </property>
+       <widget class="QFrame" name="settingWidgetOptionsDisplay">
+       </widget>
+       <widget class="QFrame" name="settingWidgetOptionsGamepad"/>
+       <widget class="QFrame" name="settingWidgetOptionsGeneral">
+        <widget class="QComboBox" name="comboBox">
+         <property name="geometry">
+          <rect>
+           <x>50</x>
+           <y>40</y>
+           <width>251</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 255, 255);
+  border-color: rgb(144, 108, 28);
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 12px;
+    background-color: rgb(3, 2, 1);
+    text-align: left;
+    padding-left: 25px;
+</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>English</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>French</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>German</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Italian</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Spanish</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Japanese</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>20</y>
+           <width>151</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <family>KH2 ALL MENU</family>
+           <pointsize>9</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>Language</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QFrame" name="settingWidgetOptionsKeyboard"/>
+       <widget class="QFrame" name="settingWidgetOptionsMultiplayer"/>
+       <widget class="QFrame" name="settingWidgetOptionsSound"/>
       </widget>
-      </item>
-      <item row="1" column="0" colspan="2">
+     </item>
+     <item row="1" column="0" colspan="2">
       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
+       <item>
         <widget class="QFrame" name="frame_2">
-          <property name="sizePolicy">
+         <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
           </sizepolicy>
-          </property>
-          <property name="minimumSize">
+         </property>
+         <property name="minimumSize">
           <size>
-            <width>770</width>
-            <height>50</height>
+           <width>770</width>
+           <height>50</height>
           </size>
-          </property>
-          <property name="styleSheet">
+         </property>
+         <property name="styleSheet">
           <string notr="true">background-color: rgb(210, 134, 0);
     border-top-right-radius: 25px;
     border-bottom-right-radius: 25px;</string>
-          </property>
-          <property name="frameShape">
+         </property>
+         <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
-          </property>
-          <property name="frameShadow">
+         </property>
+         <property name="frameShadow">
           <enum>QFrame::Raised</enum>
-          </property>
-          <widget class="QLabel" name="label">
+         </property>
+         <widget class="QLabel" name="label">
           <property name="geometry">
-            <rect>
+           <rect>
             <x>100</x>
             <y>0</y>
             <width>311</width>
             <height>51</height>
-            </rect>
+           </rect>
           </property>
           <property name="font">
-            <font>
+           <font>
             <family>KH2 ALL MENU</family>
             <pointsize>15</pointsize>
             <italic>true</italic>
             <bold>false</bold>
-            </font>
+           </font>
           </property>
           <property name="styleSheet">
-            <string notr="true">color: rgb(12, 1, 1); font: italic &quot;KHGummi&quot;;</string>
+           <string notr="true">color: rgb(12, 1, 1); font: italic &quot;KHGummi&quot;;</string>
           </property>
           <property name="text">
-            <string>Game Settings</string>
+           <string>Game Settings</string>
           </property>
-          </widget>
+         </widget>
         </widget>
-        </item>
-        <item>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
-          <property name="orientation">
+         <property name="orientation">
           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
+         </property>
+         <property name="sizeHint" stdset="0">
           <size>
-            <width>40</width>
-            <height>20</height>
+           <width>40</width>
+           <height>20</height>
           </size>
-          </property>
+         </property>
         </spacer>
-        </item>
+       </item>
       </layout>
-      </item>
-      <item row="0" column="0" colspan="2">
+     </item>
+     <item row="0" column="0" colspan="2">
       <spacer name="verticalSpacer">
-        <property name="orientation">
+       <property name="orientation">
         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeType">
+       </property>
+       <property name="sizeType">
         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
+       </property>
+       <property name="sizeHint" stdset="0">
         <size>
-          <width>20</width>
-          <height>120</height>
+         <width>20</width>
+         <height>120</height>
         </size>
-        </property>
+       </property>
       </spacer>
-      </item>
+     </item>
     </layout>
-    </widget>
+   </widget>
   </widget>
  </widget>
  <resources>
