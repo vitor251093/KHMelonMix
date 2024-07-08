@@ -269,11 +269,63 @@
         <enum>QFrame::Raised</enum>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>2</number>
        </property>
        <widget class="QFrame" name="settingWidgetOptionsDisplay">
+        <widget class="QComboBox" name="comboBox">
+         <property name="geometry">
+          <rect>
+           <x>50</x>
+           <y>40</y>
+           <width>251</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">color: rgb(255, 255, 255);
+  border-color: rgb(144, 108, 28);
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 12px;
+    background-color: rgb(3, 2, 1);
+    text-align: left;
+    padding-left: 25px;
+</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>Fullscreen</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Windowed</string>
+          </property>
+         </item>
+        </widget>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>20</y>
+           <width>151</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <family>KH2 ALL MENU</family>
+           <pointsize>9</pointsize>
+           <italic>true</italic>
+          </font>
+         </property>
+         <property name="text">
+          <string>Screen Mode</string>
+         </property>
+        </widget>
        </widget>
-       <widget class="QFrame" name="settingWidgetOptionsGamepad"/>
+       <widget class="QFrame" name="settingWidgetOptionsGamepad">
+       </widget>
        <widget class="QFrame" name="settingWidgetOptionsGeneral">
         <widget class="QComboBox" name="comboBox">
          <property name="geometry">
