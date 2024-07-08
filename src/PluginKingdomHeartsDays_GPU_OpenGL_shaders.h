@@ -438,26 +438,31 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
     float sourceMissionInfoWidth = 256.0;
     float missionInfoHeight = sourceMissionInfoHeight;
     float missionInfoWidth = sourceMissionInfoWidth*heightScale;
-    float missionInfoLeftMargin = 0.0;
+    float missionInfoLeftMargin = 8.0;
     float missionInfoTopMargin = 0.0;
     float missionInfoY1 = missionInfoTopMargin;
     float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
-    if (texPosition3d.x >= missionInfoLeftMargin &&
+    if (texPosition3d.x >= 0 &&
         texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
         texPosition3d.y >= missionInfoY1 &&
         texPosition3d.y <  missionInfoY2) {
         vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
             (showMissionInformationBottomScreen ? vec2(0, 192.0) : vec2(0, 0));
 
+        if (texPosition3d.x < missionInfoLeftMargin) {
+            coord.x = 0;
+        }
+
         if (showMissionInformationTopScreen) {
             return coord;
         }
         if (showMissionInformationBottomScreen) {
             float cropMarginLeft = -0.5;
-            if ((texPosition3d.x <  (66.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 1.0) ||
-                (texPosition3d.x >= (72.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 8.0) ||
-                (texPosition3d.x >= (66.0 + cropMarginLeft)*heightScale && texPosition3d.x < (72.0 + cropMarginLeft)*heightScale &&
-                    texPosition3d.y >= 1.0 + (texPosition3d.x - (66.0 + cropMarginLeft)*heightScale)/heightScale)) {
+            float texPosition3dX = texPosition3d.x - missionInfoLeftMargin;
+            if ((texPosition3dX <  (66.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 1.0) ||
+                (texPosition3dX >= (72.0 + cropMarginLeft)*heightScale && texPosition3d.y >= 8.0) ||
+                (texPosition3dX >= (66.0 + cropMarginLeft)*heightScale && texPosition3dX < (72.0 + cropMarginLeft)*heightScale &&
+                    texPosition3d.y >= 1.0 + (texPosition3dX - (66.0 + cropMarginLeft)*heightScale)/heightScale)) {
                 return coord;
             }
         }
