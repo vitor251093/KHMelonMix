@@ -43,6 +43,12 @@ smooth in vec2 fTexcoord;
 
 out vec4 oColor;
 
+ivec4 fixTransparencyLayer(ivec4 layer) {
+    layer.g = layer.g << 2;
+    layer.b = layer.b << 2;
+    return layer;
+}
+
 ivec4 combineLayers(ivec4 _3dpix, ivec4 val1, ivec4 val2, ivec4 val3)
 {
     int compmode = val3.a & 0xF;
@@ -72,7 +78,7 @@ ivec4 combineLayers(ivec4 _3dpix, ivec4 val1, ivec4 val2, ivec4 val3)
             eva = val3.g;
             evb = val3.b;
 
-            val1 = ((val1 * eva) + (_3dpix * evb) + 0x8) >> 4;
+            val1 = ((val1 * eva) + (_3dpix * evb) + (0x8 << 2)) >> 6;
             val1 = min(val1, 0x3F);
         }
         else
@@ -84,7 +90,7 @@ ivec4 combineLayers(ivec4 _3dpix, ivec4 val1, ivec4 val2, ivec4 val3)
 
         if (_3dpix.a > 0)
         {
-            evy = val3.g;
+            evy = val3.g >> 2;
 
             val1 = _3dpix;
             if      (compmode == 2) val1 += (((0x3F - val1) * evy) + 0x8) >> 4;
@@ -101,7 +107,7 @@ bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
 {
     ivec4 val1 = ivec4(texelFetch(ScreenTex, texcoord, 0));
     ivec4 val2 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(256,0), 0));
-    ivec4 val3 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(512,0), 0));
+    ivec4 val3 = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, texcoord + ivec2(512,0), 0)));
     ivec4 pixel = combineLayers(diffColor, val1, val2, val3);
     return !(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
 }
@@ -150,7 +156,7 @@ ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
     vec2 texcoord = vec2(xpos, ypos);
     ivec4 val1 = ivec4(texelFetch(ScreenTex, ivec2(texcoord), 0));
     ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(256,0), 0));
-    ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0));
+    ivec4 val3 = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0)));
     return combineLayers(_3dpix, val1, val2, val3);
 }
 bool isScreenWhite(int index)
@@ -981,6 +987,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+    if (index == 2) {
+        color = fixTransparencyLayer(color);
+    }
 
     if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
@@ -1029,9 +1038,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                         yBlur = int((((minimapHeight + minimapTopMargin) - texPosition3d.y)*16.0)/blurBorder);
                     }
 
-                    float transparency = 15.0/16;
+                    float transparency = 63.0/16;
                     int blur = int((xBlur * yBlur * transparency)/16);
-                    color = ivec4(color.r, blur, 16 - blur, 0x01);
+                    color = ivec4(color.r, blur, 64 - blur, 0x01);
                 }
             }
         }
@@ -1070,8 +1079,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 if (index == 2)
                 {
                     ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                    int blur = int((63 - colorZero.r)/2);
-                    color = ivec4(color.r, blur, 16 - blur, 0x01);
+                    int blur = int((63 - colorZero.r)*2);
+                    color = ivec4(color.r, blur, 64 - blur, 0x01);
                 }
             }
 
@@ -1097,8 +1106,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 if (index == 2)
                 {
                     ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                    int blur = int((63 - colorZero.r)/2);
-                    color = ivec4(color.r, blur, 16 - blur, 0x01);
+                    int blur = int((63 - colorZero.r)*2);
+                    color = ivec4(color.r, blur, 64 - blur, 0x01);
                 }
             }
         }
@@ -1133,10 +1142,10 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                 if (index == 2)
                 {
-                    int xBlur = int(16.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
-                    float transparency = 15.0/16;
-                    int blur = int((16.0 - xBlur) * transparency);
-                    color = ivec4(color.r, blur, 16 - blur, 0x01);
+                    int xBlur = int(64.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
+                    float transparency = 63.0/64;
+                    int blur = int((64.0 - xBlur) * transparency);
+                    color = ivec4(color.r, blur, 64 - blur, 0x01);
                 }
             }
         }
