@@ -818,6 +818,9 @@ void MainWindow::createVideoPlayer()
             centralWidget->setCurrentWidget(playerWidget);
             player->play();
         }
+        if (status == QMediaPlayer::InvalidMedia) {
+            qDebug() << "Error: " << player->errorString();
+        }
     });
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
         qDebug() << "Error: " << player->errorString();
