@@ -263,19 +263,19 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
 void PluginKingdomHeartsDays::hudToggle(melonDS::NDS* nds)
 {
     HUDState = (HUDState + 1) % 3;
-    if (HUDState == 0) {
+    if (HUDState == 0) { // exploration mode
         ShowMap = true;
         ShowTarget = false;
         ShowMissionGauge = false;
         ShowMissionInfo = false;
     }
-    else if (HUDState == 1) {
+    else if (HUDState == 1) { // mission details mode
         ShowMap = false;
         ShowTarget = true;
         ShowMissionGauge = true;
         ShowMissionInfo = false;
     }
-    else {
+    else { // mission mode
         ShowMap = false;
         ShowTarget = false;
         ShowMissionGauge = false;
