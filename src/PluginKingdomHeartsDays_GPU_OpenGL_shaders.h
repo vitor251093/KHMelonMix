@@ -126,7 +126,12 @@ bool isCutsceneFromChallengeMissionVisible()
 
 bool isDialogVisible()
 {
-    return is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(256/2, 192*0.809));
+    for (int y = 161; y >= 141; y--) {
+        if (is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(256/2, y))) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool isMinimapVisible()
