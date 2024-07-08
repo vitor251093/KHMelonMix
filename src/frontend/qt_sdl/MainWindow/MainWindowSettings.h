@@ -20,6 +20,7 @@
 #define MAINWINDOWSETTINGS_H
 
 #include <QMainWindow>
+#include <QStackedWidget>
 #include <QPushButton>
 #include <initializer_list>
 
@@ -113,6 +114,14 @@ public:
     }
 
 private slots:
+    void on_generalButton_clicked();
+    void on_displayButton_clicked();
+    void on_soundButton_clicked();
+    void on_keyboardButton_clicked();
+    void on_multiplayerButton_clicked();
+    void on_gamepadButton_clicked();
+    void on_quitGameButton_clicked();
+
     void on_MainWindowSettings_accepted();
     void on_MainWindowSettings_rejected();
 
@@ -122,6 +131,7 @@ private slots:
 
 protected:
     QWidget* settingsWidget;
+    QStackedWidget* settingWidgetOptions;
     bool showingSettings;
 
 private:

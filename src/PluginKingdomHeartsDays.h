@@ -30,6 +30,7 @@ public:
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
+    bool isJapanCartRev1() { return false; }; // TODO: KH Add support to Rev1
 
     std::string assetsFolder();
 
@@ -55,15 +56,11 @@ private:
     bool PausedInGame;
     int HUDState;
 
-    bool isCameraMoving;
-    u32 cameraPosX;
-    u32 cameraPosY;
-
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
     int priorGameScene;
     int GameScene;
-    int UIScale;
+    int UIScale = 4;
     float AspectRatio;
     bool ShowMap;
     bool ShowTarget;

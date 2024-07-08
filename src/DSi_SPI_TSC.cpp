@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -79,6 +79,24 @@ void DSi_TSC::DoSavestate(Savestate* file)
 void DSi_TSC::SetMode(u8 mode)
 {
     TSCMode = mode;
+}
+
+u16 DSi_TSC::GetTouchX()
+{
+    if (TouchX & 0x7000)
+    {
+        return 128;
+    }
+    return (TouchX & ~0x8000) >> 4;
+}
+
+u16 DSi_TSC::GetTouchY()
+{
+    if (TouchY & 0x7000)
+    {
+        return 95;
+    }
+    return (TouchY & ~0x8000) >> 4;
 }
 
 void DSi_TSC::SetTouchCoords(u16 x, u16 y)

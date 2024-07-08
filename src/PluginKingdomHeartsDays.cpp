@@ -20,21 +20,21 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_US      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_EU      0x02023CBC
 #define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
-#define ASPECT_RATIO_ADDRESS_JP_DEV1 0x02023C9C
+#define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C9C
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
+#define TOUCH_SCREEN_CONTROLS_ADDRESS_US      0x0204C1A4
+#define TOUCH_SCREEN_CONTROLS_ADDRESS_EU      0x0204C1C4
+#define TOUCH_SCREEN_CONTROLS_ADDRESS_JP      0x0204C604
+#define TOUCH_SCREEN_CONTROLS_ADDRESS_JP_REV1 0x0204C5C4
+
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
-
-#define CAMERA_CENTER_X 0x800
-#define CAMERA_CENTER_Y 0x60
-#define CAMERA_LIMIT_X 0xFFF
-#define CAMERA_LIMIT_Y 0xFF
 
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
@@ -122,10 +122,6 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     HUDState = 0;
 
-    isCameraMoving = false;
-    cameraPosX = CAMERA_CENTER_X;
-    cameraPosY = CAMERA_CENTER_Y;
-
     priorGameScene = -1;
     GameScene = -1;
     UIScale = 4;
@@ -196,6 +192,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 fl
     CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
     CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
     CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
+    CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
 }
 
 void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
@@ -204,6 +201,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
     glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
     glUniform1i(CompGpu3DLoc[flags][1], GameScene);
     glUniform1i(CompGpu3DLoc[flags][2], UIScale);
+    glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
 }
 
 u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
@@ -224,7 +222,9 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
             }
             if (isJapanCart()) {
                 dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP;
-                // TODO: Add support to Rev1 (INGAME_MENU_COMMAND_LIST_SETTIGS_ADDRESS_JP_REV1)
+            }
+            if (isJapanCartRev1()) {
+                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1;
             }
 
             if (nds->ARM7Read8(dpadMenuAddress) & 0x02) {
@@ -320,59 +320,6 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
 
     return InputMask;
-}
-
-void PluginKingdomHeartsDays::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchMask)
-{
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene)
-    {
-        u16 deadZone = 0x2;
-        u16 right = ((~TouchMask) & 0xF);
-        u16 left  = ((((~TouchMask) >> 4))  & 0xF);
-        u16 up    = ((((~TouchMask) >> 8))  & 0xF);
-        u16 down  = ((((~TouchMask) >> 12)) & 0xF);
-        if (right < deadZone) right = 0;
-        if (left  < deadZone)  left = 0;
-        if (up    < deadZone)    up = 0;
-        if (down  < deadZone)  down = 0;
-        bool isMoving = (right > 0 || left > 0 || up > 0 || down > 0);
-
-        u32 movingValue = 0x00030000;
-        u32 movementValue = 0;
-        if (isMoving) {
-            movingValue = 0x00000001;
-
-            s32 movementValueY = (down > 0) ? (0 - down) : up;
-            s32 movementValueX = (left > 0) ? (0 - left) : right;
-
-            s32 newCameraPosX = ((s32)cameraPosX) + movementValueX*0x8;
-            s32 newCameraPosY = ((s32)cameraPosY) + movementValueY*0x2;
-            if (newCameraPosX > 0 && newCameraPosX < CAMERA_LIMIT_X) {
-                cameraPosX = (u32)newCameraPosX;
-            }
-            if (newCameraPosY > 0 && newCameraPosY < CAMERA_LIMIT_Y) {
-                cameraPosY = (u32)newCameraPosY;
-            }
-
-            movementValue = (cameraPosY << 20) | cameraPosX;
-        }
-        else {
-            cameraPosX = CAMERA_CENTER_X;
-            cameraPosY = CAMERA_CENTER_Y;
-        }
-
-        nds->ARM7Write32(0x0204C1A8, movingValue);
-        nds->ARM7Write32(0x0204C1B0, movingValue);
-        nds->ARM7Write32(0x0204C1B8, movingValue);
-        nds->ARM7Write32(0x0204C1C0, movingValue);
-        nds->ARM7Write32(0x0204C1C8, movingValue);
-        
-        nds->ARM7Write32(0x0204C1A4, movementValue);
-        nds->ARM7Write32(0x0204C1AC, movementValue);
-        nds->ARM7Write32(0x0204C1B4, movementValue);
-        nds->ARM7Write32(0x0204C1BC, movementValue);
-        nds->ARM7Write32(0x0204C1C4, movementValue);
-    }
 }
 
 void PluginKingdomHeartsDays::hudToggle(melonDS::NDS* nds)
@@ -489,6 +436,8 @@ bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
 
 int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
 {
+    // printf("0x02194CBF: %08x %08x\n", nds->ARM7Read32(0x02194CBF), nds->ARM7Read32(0x02194CC3));
+
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
 
@@ -803,7 +752,9 @@ void PluginKingdomHeartsDays::setAspectRatio(melonDS::NDS* nds, float aspectRati
     }
     if (isJapanCart()) {
         aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP;
-        // TODO: Add support to Rev1 (ASPECT_RATIO_ADDRESS_JP_REV1)
+    }
+    if (isJapanCartRev1()) {
+        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP_REV1;
     }
 
     if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
@@ -936,13 +887,6 @@ bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)
 
 void PluginKingdomHeartsDays::debugLogs(melonDS::NDS* nds, int gameScene)
 {
-    // PRINT_AS_32_BIT_HEX(0x0204C1A4);
-    // PRINT_AS_32_BIT_HEX(0x0204C1AC);
-    // PRINT_AS_32_BIT_HEX(0x0204C1B4);
-    // PRINT_AS_32_BIT_HEX(0x0204C1BC);
-    // PRINT_AS_32_BIT_HEX(0x0204C1C4);
-    // printf("\n");
-
     if (!DEBUG_MODE_ENABLED) {
         return;
     }

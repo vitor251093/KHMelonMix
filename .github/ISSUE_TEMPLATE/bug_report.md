@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create the report of a bug
+about: Create the report of a bug (bugs involving Re:Coded are currently not being accepted)
 title: ''
 labels: bug
 assignees: ''

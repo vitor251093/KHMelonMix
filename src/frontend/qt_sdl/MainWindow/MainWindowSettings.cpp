@@ -22,7 +22,6 @@
 #include <QDebug>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QStackedWidget>
 
 #include <SDL2/SDL.h>
 
@@ -30,7 +29,6 @@
 #include "Platform.h"
 
 // #include "MapButton.h"
-#include "Input.h"
 #include "MainWindowSettings.h"
 #include "ui_MainWindowSettings.h"
 
@@ -49,8 +47,8 @@ MainWindowSettings::MainWindowSettings(QWidget* parent) : QMainWindow(parent), u
 {
     ui->setupUi(this);
 
-    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    settingsWidget = centralWidget->currentWidget();
+    settingsWidget = findChild<QWidget*>("settingsWidget");
+    settingWidgetOptions = findChild<QStackedWidget*>("settingWidgetOptions");
     showingSettings = false;
     // setAttribute(Qt::WA_DeleteOnClose);
 
@@ -219,6 +217,35 @@ void MainWindowSettings::populatePage(QWidget* page,
     // page->setLayout(main_layout);
 }
 
+void MainWindowSettings::on_displayButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(0);
+}
+void MainWindowSettings::on_gamepadButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(1);
+}
+void MainWindowSettings::on_generalButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(2);
+}
+void MainWindowSettings::on_keyboardButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(3);
+}
+void MainWindowSettings::on_multiplayerButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(4);
+}
+void MainWindowSettings::on_quitGameButton_clicked()
+{
+    
+}
+void MainWindowSettings::on_soundButton_clicked()
+{
+    settingWidgetOptions->setCurrentIndex(5);
+}
+
 void MainWindowSettings::on_MainWindowSettings_accepted()
 {
     // for (int i = 0; i < keypad_num; i++)
@@ -263,7 +290,7 @@ void MainWindowSettings::on_MainWindowSettings_accepted()
 
 void MainWindowSettings::on_MainWindowSettings_rejected()
 {
-    Input::JoystickID = Config::JoystickID;
+    // Input::JoystickID = Config::JoystickID;
 
     closeDlg();
 }
@@ -283,6 +310,6 @@ void MainWindowSettings::on_cbxJoystick_currentIndexChanged(int id)
     // prevent a spurious change
     // if (ui->cbxJoystick->count() < 2) return;
 
-    Input::JoystickID = id;
+    // Input::JoystickID = id;
 }
 

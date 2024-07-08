@@ -169,11 +169,6 @@ u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(melonDS::NDS* nds, u32 In
     return InputMask;
 }
 
-void PluginKingdomHeartsReCoded::applyTouchScreenMask(melonDS::NDS* nds, u32 TouchMask)
-{
-
-}
-
 void PluginKingdomHeartsReCoded::hudToggle(melonDS::NDS* nds)
 {
     ShowMap = !ShowMap;

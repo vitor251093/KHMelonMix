@@ -20,9 +20,6 @@ public:
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) {
         return InputMask;
     }
-    void applyTouchScreenMask(melonDS::NDS* nds, u32 TouchMask)
-    {
-    }
     const char* getGameSceneName() {
         return "";
     }
