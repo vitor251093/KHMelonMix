@@ -127,7 +127,8 @@ bool isCutsceneFromChallengeMissionVisible()
 bool isDialogVisible()
 {
     for (int y = 161; y >= 141; y--) {
-        if (is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(256/2, y))) {
+        ivec4 val3 = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, ivec2(512 + 256/2, y), 0)));
+        if (val3.b >= 12) {
             return true;
         }
     }
