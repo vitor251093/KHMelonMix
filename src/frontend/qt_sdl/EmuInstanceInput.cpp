@@ -336,9 +336,9 @@ void EmuInstance::keyReleaseAll()
     keyHotkeyMask = 0;
 }
 
-bool EmuInstance::joystickButtonDown(int val)
+Sint16 EmuInstance::joystickButtonDown(int val)
 {
-    if (val == -1) return false;
+    if (val == -1) return 0;
 
     bool hasbtn = ((val & 0xFFFF) != 0xFFFF);
 
@@ -356,14 +356,14 @@ bool EmuInstance::joystickButtonDown(int val)
             else if (hatdir == 0x2) pressed = (hatval & SDL_HAT_RIGHT);
             else if (hatdir == 0x8) pressed = (hatval & SDL_HAT_LEFT);
 
-            if (pressed) return true;
+            if (pressed) return 1;
         }
         else
         {
             int btnnum = val & 0xFFFF;
             Uint8 btnval = SDL_JoystickGetButton(joystick, btnnum);
 
-            if (btnval) return true;
+            if (btnval) return 1;
         }
     }
 
@@ -371,25 +371,25 @@ bool EmuInstance::joystickButtonDown(int val)
     {
         int axisnum = (val >> 24) & 0xF;
         int axisdir = (val >> 20) & 0xF;
-        Sint16 axisval = SDL_JoystickGetAxis(joystick, axisnum);
+        Sint16 axisval = SDL_JoystickGetAxis(joystick, axisnum); // from -32768 to 32767
 
         switch (axisdir)
         {
-            case 0: // positive
-                if (axisval > 16384) return true;
-                break;
+        case 0: // positive
+            if (axisval > 16384) return (axisval >> 10);
+            break;
 
-            case 1: // negative
-                if (axisval < -16384) return true;
-                break;
+        case 1: // negative
+            if (axisval < -16384) return ((~axisval) >> 10);
+            break;
 
-            case 2: // trigger
-                if (axisval > 0) return true;
-                break;
+        case 2: // trigger
+            if (axisval > 0) return 1;
+            break;
         }
     }
 
-    return false;
+    return 0;
 }
 
 void EmuInstance::inputProcess()

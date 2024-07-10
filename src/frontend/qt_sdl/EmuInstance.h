@@ -221,7 +221,7 @@ private:
 
     void openJoystick();
     void closeJoystick();
-    bool joystickButtonDown(int val);
+    Sint16 joystickButtonDown(int val);
 
     void inputProcess();
 
