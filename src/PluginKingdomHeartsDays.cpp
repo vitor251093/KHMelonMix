@@ -353,11 +353,16 @@ bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
     {
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
         {
-            _hasVisible3DOnBottomScreen = !IsBottomScreen2DTextureBlack;
+            _hasVisible3DOnBottomScreen = !isBottomBlack;
 
             if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
                 _hasVisible3DOnBottomScreen = false;
             }
+
+            if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 14)) { // fade to white, on "Mission Complete"
+                _hasVisible3DOnBottomScreen = false;
+            }
+
             if (_hasVisible3DOnBottomScreen) {
                 return true;
             }
@@ -430,6 +435,8 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
                 return gameScene_MultiplayerMissionReview;
             }
         }
+
+        return gameScene_InGameWithCutscene;
     }
 
     if (doesntLook3D)
@@ -655,12 +662,6 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
         if (noElementsOnBottomScreen)
         {
             return gameScene_InGameWithoutMap;
-        }
-
-        // Double 3D scene
-        if (has3DOnBothScreens)
-        {
-            return gameScene_InGameWithCutscene;
         }
 
         // Regular gameplay with a map
