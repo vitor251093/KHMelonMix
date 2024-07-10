@@ -263,9 +263,9 @@ void EmuThread::run()
             }
 
             // process input and hotkeys
+            plugin->applyTouchKeyMask(emuInstance->nds, emuInstance->touchInputMask);
             emuInstance->inputMask = plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
             emuInstance->nds->SetKeyMask(emuInstance->inputMask);
-            emuInstance->nds->SetTouchKeyMask(emuInstance->touchInputMask);
 
             if (emuInstance->hotkeyPressed(HK_Lid))
             {

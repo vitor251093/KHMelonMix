@@ -1,14 +1,9 @@
 #include "PluginKingdomHeartsReCoded.h"
 
-#include "GPU3D_OpenGL.h"
-#include "GPU3D_Compute.h"
-
 #include "PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h"
 #include "PluginKingdomHeartsReCoded_GPU3D_OpenGL_shaders.h"
 
 #include <math.h>
-
-extern int videoRenderer;
 
 namespace Plugins
 {
@@ -26,9 +21,6 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
 #define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
-
-#define renderer3D_OpenGL        1
-#define renderer3D_OpenGLCompute 2
 
 enum
 {
@@ -163,6 +155,11 @@ u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(melonDS::NDS* nds, u32 In
     PriorHotkeyMask = HotkeyMask;
 
     return InputMask;
+}
+
+void PluginKingdomHeartsReCoded::applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask)
+{
+    nds->SetTouchKeyMask(TouchKeyMask);
 }
 
 void PluginKingdomHeartsReCoded::hudToggle(melonDS::NDS* nds)

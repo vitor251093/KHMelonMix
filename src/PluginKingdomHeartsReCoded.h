@@ -31,6 +31,8 @@ public:
     void gpu3DOpenGL_VS_Z_updateVariables(u32 flags);
 
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
+    void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
+
     const char* getGameSceneName();
     bool shouldSkipFrame(melonDS::NDS* nds);
     void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
