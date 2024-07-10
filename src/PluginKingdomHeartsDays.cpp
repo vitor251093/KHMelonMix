@@ -67,6 +67,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     ShowMissionGauge = false;
     ShowMissionInfo = false;
 
+    _muchOlderHad3DOnTopScreen = false;
+    _muchOlderHad3DOnBottomScreen = false;
     _olderHad3DOnTopScreen = false;
     _olderHad3DOnBottomScreen = false;
     _had3DOnTopScreen = false;
@@ -351,7 +353,7 @@ bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
     {
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
         {
-            _hasVisible3DOnBottomScreen = !isBottomBlack;
+            _hasVisible3DOnBottomScreen = !IsBottomScreen2DTextureBlack;
 
             if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
                 _hasVisible3DOnBottomScreen = false;
@@ -379,18 +381,22 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
     // 3D element mimicking 2D behavior
     bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 20;
 
+    bool muchOlderHad3DOnTopScreen = _muchOlderHad3DOnTopScreen;
+    bool muchOlderHad3DOnBottomScreen = _muchOlderHad3DOnBottomScreen;
     bool olderHad3DOnTopScreen = _olderHad3DOnTopScreen;
     bool olderHad3DOnBottomScreen = _olderHad3DOnBottomScreen;
     bool had3DOnTopScreen = _had3DOnTopScreen;
     bool had3DOnBottomScreen = _had3DOnBottomScreen;
     bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
     bool has3DOnBottomScreen = (nds->PowerControl9 >> 9) == 1;
+    _muchOlderHad3DOnTopScreen = _olderHad3DOnTopScreen;
+    _muchOlderHad3DOnBottomScreen = _olderHad3DOnBottomScreen;
     _olderHad3DOnTopScreen = _had3DOnTopScreen;
     _olderHad3DOnBottomScreen = _had3DOnBottomScreen;
     _had3DOnTopScreen = has3DOnTopScreen;
     _had3DOnBottomScreen = has3DOnBottomScreen;
-    bool has3DOnBothScreens = (olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
-                              (olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
+    bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
+                              (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
     // The second screen can still look black and not be empty (invisible elements)
     bool noElementsOnBottomScreen = nds->GPU.GPU2D_B.BlendCnt == 0;
@@ -424,7 +430,6 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
                 return gameScene_MultiplayerMissionReview;
             }
         }
-        return gameScene_InGameWithCutscene;
     }
 
     if (doesntLook3D)
@@ -650,6 +655,12 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
         if (noElementsOnBottomScreen)
         {
             return gameScene_InGameWithoutMap;
+        }
+
+        // Double 3D scene
+        if (has3DOnBothScreens)
+        {
+            return gameScene_InGameWithCutscene;
         }
 
         // Regular gameplay with a map

@@ -57,6 +57,8 @@ private:
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};
 
+    bool _muchOlderHad3DOnTopScreen;
+    bool _muchOlderHad3DOnBottomScreen;
     bool _olderHad3DOnTopScreen;
     bool _olderHad3DOnBottomScreen;
     bool _had3DOnTopScreen;
