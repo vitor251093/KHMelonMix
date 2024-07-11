@@ -1169,10 +1169,10 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         }
     }
 
-    if (GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
+    if (GameScene == 5 || GameScene == 10) // gameScene_InGameWithMap or gameScene_PauseMenu
     {
         bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
-        bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo;
+        bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && (ShowMissionInfo || GameScene == 10) && isMissionInformationVisibleOnBottomScreen();
 
         if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
             int iuScale = KHUIScale;
@@ -1201,7 +1201,13 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     int xBlur = int(64.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
                     float transparency = 63.0/64;
                     int blur = int((64.0 - xBlur) * transparency);
-                    color = ivec4(color.r, blur, 64 - blur, 0x01);
+
+                    if (GameScene == 5) { // gameScene_InGameWithMap
+                        color = ivec4(color.r, blur, 64 - blur, 0x01);
+                    }
+                    else { // gameScene_PauseMenu
+                        color = ivec4(color.r, blur, 32 - blur/2, 0x01);
+                    }
                 }
             }
         }
