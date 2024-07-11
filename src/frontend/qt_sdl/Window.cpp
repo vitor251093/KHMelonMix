@@ -822,11 +822,12 @@ void MainWindow::createVideoPlayer()
             qDebug() << "Error: " << player->errorString();
         }
     });
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
         qDebug() << "Error: " << player->errorString();
     });
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     player->setMedia(QUrl::fromLocalFile(filePath));
 #else
     player->setSource(QUrl::fromLocalFile(filePath));
