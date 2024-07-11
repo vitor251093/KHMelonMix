@@ -783,6 +783,37 @@ ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
 }
 
+ivec2 getLoadingScreenTextureCoordinates(float xpos, float ypos)
+{
+    int iuScale = KHUIScale;
+    float iuTexScale = (6.0)/iuScale;
+    vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+    float heightScale = 1.0/TopScreenAspectRatio;
+    float widthScale = TopScreenAspectRatio;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
+    float sourceScreenHeight = 192.0;
+    float sourceScreenWidth = 256.0;
+    float sourceScreenTopMargin = 0;
+    float sourceScreenLeftMargin = 0;
+    float screenHeight = sourceScreenHeight;
+    float screenWidth = sourceScreenWidth*heightScale;
+    float screenRightMargin = 8.0;
+    float screenBottomMargin = 3.0;
+    float screenTopMargin = 192.0*iuTexScale - screenHeight - screenBottomMargin;
+    float screenLeftMargin = 256.0*iuTexScale - screenWidth - screenRightMargin;
+
+    if (texPosition3d.x >= screenLeftMargin &&
+        texPosition3d.x <= (256.0*iuTexScale - screenRightMargin) &&
+        texPosition3d.y >= screenTopMargin &&
+        texPosition3d.y < (192.0*iuTexScale - screenBottomMargin)) {
+        return ivec2(fixStretch*(texPosition3d - vec2(screenLeftMargin, screenTopMargin)) + vec2(0, 192.0));
+    }
+
+    // nothing (clear screen)
+    return ivec2(0, 192.0);
+}
+
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
     if (GameScene == 0) { // gameScene_Intro
@@ -831,7 +862,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
     if (GameScene == 15) { // gameScene_LoadingScreen
-        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
+        return ivec2(getLoadingScreenTextureCoordinates(xpos, ypos));
     }
     if (GameScene == 16) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
