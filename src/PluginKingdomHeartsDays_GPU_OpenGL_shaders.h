@@ -1188,15 +1188,21 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             float missionInfoWidth = sourceMissionInfoWidth*heightScale;
             float missionInfoLeftMargin = 8.0*heightScale;
             float missionInfoTopMargin = 0.0;
-            float missionInfoY1 = missionInfoTopMargin;
+            float missionInfoY1 = showMissionInformationTopScreen ? 0.0 : (missionInfoTopMargin + 8.0);
             float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
             float blurBorder = 64.0*heightScale;
             if (texPosition3d.x >= missionInfoLeftMargin + missionInfoWidth - blurBorder &&
                 texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
-                texPosition3d.y >= missionInfoY1 + 8.0 &&
+                texPosition3d.y >= missionInfoY1 &&
                 texPosition3d.y <  missionInfoY2) {
 
-                if (index == 2)
+                bool hasTexture = showMissionInformationBottomScreen;
+                if (showMissionInformationTopScreen)
+                {
+                    hasTexture = ((ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0))).a & 0xF) == 1;
+                }
+
+                if (hasTexture && index == 2)
                 {
                     int xBlur = int(64.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
                     float transparency = 63.0/64;
