@@ -460,6 +460,7 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
     float missionInfoTopMargin = 0.0;
     float missionInfoY1 = missionInfoTopMargin;
     float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
+    float missionInfoDetailsLeftMargin = -5.4*heightScale;
     if (texPosition3d.x >= 0 &&
         texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
         texPosition3d.y >= missionInfoY1 &&
@@ -467,10 +468,16 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
         vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
             (showMissionInformationBottomScreen ? vec2(0, 192.0) : vec2(0, 0));
 
+        bool isDetailsLine = texPosition3d.y >= 8.0 + 1.0 && texPosition3d.y <= missionInfoY2 - 1.0;
+
+        if (isDetailsLine) {
+            coord.x -= missionInfoDetailsLeftMargin;
+        }
+
         if (texPosition3d.x < missionInfoLeftMargin) {
             coord.x = 0;
 
-            if (showMissionInformationBottomScreen && texPosition3d.y >= 8.0 + 1.0 && texPosition3d.y <= missionInfoY2 - 1.0) {
+            if (showMissionInformationBottomScreen && isDetailsLine) {
                 coord.y += 8.0 - texPosition3d.y;
             }
         }
