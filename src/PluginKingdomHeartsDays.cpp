@@ -1,14 +1,9 @@
 #include "PluginKingdomHeartsDays.h"
 
-#include "GPU3D_OpenGL.h"
-#include "GPU3D_Compute.h"
-
 #include "PluginKingdomHeartsDays_GPU_OpenGL_shaders.h"
 #include "PluginKingdomHeartsDays_GPU3D_OpenGL_shaders.h"
 
 #include <math.h>
-
-extern int videoRenderer;
 
 namespace Plugins
 {
@@ -27,11 +22,6 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
-#define TOUCH_SCREEN_CONTROLS_ADDRESS_US      0x0204C1A4
-#define TOUCH_SCREEN_CONTROLS_ADDRESS_EU      0x0204C1C4
-#define TOUCH_SCREEN_CONTROLS_ADDRESS_JP      0x0204C604
-#define TOUCH_SCREEN_CONTROLS_ADDRESS_JP_REV1 0x0204C5C4
-
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
@@ -40,9 +30,6 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
 #define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
-
-#define renderer3D_OpenGL        1
-#define renderer3D_OpenGLCompute 2
 
 enum
 {
@@ -61,8 +48,9 @@ enum
     gameScene_InGameWithCutscene,       // 12
     gameScene_MultiplayerMissionReview, // 13
     gameScene_Shop,                     // 14
-    gameScene_Other2D,                  // 15
-    gameScene_Other                     // 16
+    gameScene_LoadingScreen,            // 15
+    gameScene_Other2D,                  // 16
+    gameScene_Other                     // 17
 };
 
 CutsceneEntry Cutscenes[] =
@@ -131,6 +119,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     ShowMissionGauge = false;
     ShowMissionInfo = false;
 
+    _muchOlderHad3DOnTopScreen = false;
+    _muchOlderHad3DOnBottomScreen = false;
     _olderHad3DOnTopScreen = false;
     _olderHad3DOnBottomScreen = false;
     _had3DOnTopScreen = false;
@@ -322,22 +312,27 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
     return InputMask;
 }
 
+void PluginKingdomHeartsDays::applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask)
+{
+    nds->SetTouchKeyMask(TouchKeyMask);
+}
+
 void PluginKingdomHeartsDays::hudToggle(melonDS::NDS* nds)
 {
     HUDState = (HUDState + 1) % 3;
-    if (HUDState == 0) {
+    if (HUDState == 0) { // exploration mode
         ShowMap = true;
         ShowTarget = false;
         ShowMissionGauge = false;
         ShowMissionInfo = false;
     }
-    else if (HUDState == 1) {
+    else if (HUDState == 1) { // mission details mode
         ShowMap = false;
         ShowTarget = true;
         ShowMissionGauge = true;
         ShowMissionInfo = false;
     }
-    else {
+    else { // mission mode
         ShowMap = false;
         ShowTarget = false;
         ShowMissionGauge = false;
@@ -363,6 +358,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
         case gameScene_MultiplayerMissionReview: return "Game scene: Multiplayer Mission Review";
         case gameScene_Shop: return "Game scene: Shop";
+        case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         case gameScene_Other: return "Game scene: Unknown (3D)";
         default: return "Game scene: Unknown";
@@ -421,6 +417,11 @@ bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
             if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
                 _hasVisible3DOnBottomScreen = false;
             }
+
+            if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 14)) { // fade to white, on "Mission Complete"
+                _hasVisible3DOnBottomScreen = false;
+            }
+
             if (_hasVisible3DOnBottomScreen) {
                 return true;
             }
@@ -444,18 +445,22 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
     // 3D element mimicking 2D behavior
     bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 20;
 
+    bool muchOlderHad3DOnTopScreen = _muchOlderHad3DOnTopScreen;
+    bool muchOlderHad3DOnBottomScreen = _muchOlderHad3DOnBottomScreen;
     bool olderHad3DOnTopScreen = _olderHad3DOnTopScreen;
     bool olderHad3DOnBottomScreen = _olderHad3DOnBottomScreen;
     bool had3DOnTopScreen = _had3DOnTopScreen;
     bool had3DOnBottomScreen = _had3DOnBottomScreen;
     bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
     bool has3DOnBottomScreen = (nds->PowerControl9 >> 9) == 1;
+    _muchOlderHad3DOnTopScreen = _olderHad3DOnTopScreen;
+    _muchOlderHad3DOnBottomScreen = _olderHad3DOnBottomScreen;
     _olderHad3DOnTopScreen = _had3DOnTopScreen;
     _olderHad3DOnBottomScreen = _had3DOnBottomScreen;
     _had3DOnTopScreen = has3DOnTopScreen;
     _had3DOnBottomScreen = has3DOnBottomScreen;
-    bool has3DOnBothScreens = (olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
-                              (olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
+    bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
+                              (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
     // The second screen can still look black and not be empty (invisible elements)
     bool noElementsOnBottomScreen = nds->GPU.GPU2D_B.BlendCnt == 0;
@@ -489,6 +494,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
                 return gameScene_MultiplayerMissionReview;
             }
         }
+
         return gameScene_InGameWithCutscene;
     }
 
@@ -608,6 +614,11 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             if (nds->GPU.GPU3D.RenderNumPolygons > 0)
             {
                 return gameScene_InGameMenu;
+            }
+
+            if (nds->GPU.GPU2D_B.BlendCnt == 143 && nds->GPU.GPU2D_B.BlendAlpha == 16)
+            {
+                return gameScene_LoadingScreen;
             }
 
             return gameScene_Cutscene;

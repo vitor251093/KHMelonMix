@@ -45,8 +45,8 @@ void main()
         float textLayer = -0.900; // heart counter, timer, "BONUS" label and +X floating labels
 
         int iuScale = KHUIScale;
-        float iuTexScale = (4.0)/iuScale;
-        float heartTopMargin = (ShowMissionInfo ? 16.0 : -1.0)*u3DScale;
+        float iuTexScale = (5.0)/iuScale;
+        float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0)*u3DScale;
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;
         if ((fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.000)*fpos.w &&

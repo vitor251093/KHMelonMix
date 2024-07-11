@@ -1171,8 +1171,8 @@ void NDS::SetTouchKeyMask(u32 mask)
 {
     u16 right = ((~mask) & 0xF) >> 1;
     u16 left  = ((((~mask) >> 4))  & 0xF) >> 1;
-    u16 up    = ((((~mask) >> 8))  & 0xF) >> 1;
-    u16 down  = ((((~mask) >> 12)) & 0xF) >> 1;
+    u16 down  = ((((~mask) >> 8))  & 0xF) >> 1;
+    u16 up    = ((((~mask) >> 12)) & 0xF) >> 1;
 
     u16 frames = 2;
     if (right == 3) right = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
