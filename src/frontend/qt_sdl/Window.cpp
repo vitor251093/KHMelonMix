@@ -814,9 +814,6 @@ void MainWindow::createVideoPlayer()
         qDebug() << "======= MediaStatus " << status;
         if (status == QMediaPlayer::LoadedMedia) {
             qDebug() << "======= Video loaded successfully";
-            player->setVideoOutput(playerWidget);
-            centralWidget->setCurrentWidget(playerWidget);
-            player->play();
         }
         if (status == QMediaPlayer::InvalidMedia) {
             qDebug() << "======= Error: " << player->errorString();
@@ -836,6 +833,10 @@ void MainWindow::createVideoPlayer()
 
     player->setSource(QUrl::fromLocalFile(filePath));
 #endif
+
+    player->setVideoOutput(playerWidget);
+    centralWidget->setCurrentWidget(playerWidget);
+    player->play();
 }
 
 GL::Context* MainWindow::getOGLContext()
