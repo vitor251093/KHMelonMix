@@ -234,7 +234,9 @@ private:
     void updateCartInserted(bool gba);
 
     void createScreenPanel();
+
     void createVideoPlayer();
+    void startVideo(const char* videoFilePath);
 
     bool showOSD;
 

@@ -641,7 +641,9 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     show();
 
     createScreenPanel();
+
     createVideoPlayer();
+    //startVideo("/home/vitor/Downloads/KHDays - 60 FPS Mod-2-1-5-1667958998/hd006.mp4");
 
     actEjectCart->setEnabled(false);
     actEjectGBACart->setEnabled(false);
@@ -802,8 +804,6 @@ void MainWindow::createScreenPanel()
 
 void MainWindow::createVideoPlayer()
 {
-    QString filePath = "/home/vitor/Downloads/KHDays - 60 FPS Mod-2-1-5-1667958998/DOP.mp4";
-
     playerWidget = new QVideoWidget(this);
     player = new QMediaPlayer(this);
 
@@ -824,18 +824,26 @@ void MainWindow::createVideoPlayer()
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
         qDebug() << "======= Error: " << player->errorString();
     });
-
-    player->setMedia(QUrl::fromLocalFile(filePath));
 #else
     connect(player, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
         qDebug() << "======= Error: " << player->errorString();
     });
-
-    player->setSource(QUrl::fromLocalFile(filePath));
 #endif
 
     player->setVideoOutput(playerWidget);
     centralWidget->setCurrentWidget(playerWidget);
+}
+
+void MainWindow::startVideo(const char* videoFilePath)
+{
+    QString filePath = QString::fromUtf8(videoFilePath);
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    player->setMedia(QUrl::fromLocalFile(filePath));
+#else
+    player->setSource(QUrl::fromLocalFile(filePath));
+#endif
+
     player->play();
 }
 
