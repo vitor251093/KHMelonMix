@@ -492,7 +492,7 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
                 if (showMissionInformationBottomScreen) {
                     coord.y += 8.0 - texPosition3d.y;
                 }
-                else {
+                else if (missionInfoTopMargin > -1.0) { // TODO: KH This ELSE IF shouldn't be necessary, only the ELSE
                     coord.y = missionInfoY2 - 3.0;
                 }
             }
