@@ -704,7 +704,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (GameScene == 14) { // gameScene_Shop
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
-    if (GameScene == 15) { // gameScene_Other2D
+    if (GameScene == 16) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -1028,7 +1028,7 @@ ivec4 brightness()
     if (GameScene == 14) { // gameScene_Shop
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (GameScene == 15) { // gameScene_Other2D
+    if (GameScene == 16) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
 

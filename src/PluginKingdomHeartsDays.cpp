@@ -48,8 +48,9 @@ enum
     gameScene_InGameWithCutscene,       // 12
     gameScene_MultiplayerMissionReview, // 13
     gameScene_Shop,                     // 14
-    gameScene_Other2D,                  // 15
-    gameScene_Other                     // 16
+    gameScene_LoadingScreen,            // 15
+    gameScene_Other2D,                  // 16
+    gameScene_Other                     // 17
 };
 
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
@@ -300,6 +301,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
         case gameScene_MultiplayerMissionReview: return "Game scene: Multiplayer Mission Review";
         case gameScene_Shop: return "Game scene: Shop";
+        case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         case gameScene_Other: return "Game scene: Unknown (3D)";
         default: return "Game scene: Unknown";
@@ -555,6 +557,11 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             if (nds->GPU.GPU3D.RenderNumPolygons > 0)
             {
                 return gameScene_InGameMenu;
+            }
+
+            if (nds->GPU.GPU2D_B.BlendCnt == 143 && nds->GPU.GPU2D_B.BlendAlpha == 16)
+            {
+                return gameScene_LoadingScreen;
             }
 
             return gameScene_Cutscene;
