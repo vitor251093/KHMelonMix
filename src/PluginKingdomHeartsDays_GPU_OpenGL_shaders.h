@@ -770,6 +770,10 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
+    if (IsBottomScreen2DTextureBlack && IsTopScreen2DTextureBlack) {
+        // just to avoid problems if this scene is picked by mistake
+        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
+    }
     if (IsBottomScreen2DTextureBlack) {
         return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 1));
     }
