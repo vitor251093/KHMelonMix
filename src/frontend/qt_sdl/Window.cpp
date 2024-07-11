@@ -811,25 +811,29 @@ void MainWindow::createVideoPlayer()
     centralWidget->addWidget(playerWidget);
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
-        qDebug() << "MediaStatus " << status;
+        qDebug() << "======= MediaStatus " << status;
         if (status == QMediaPlayer::LoadedMedia) {
-            qDebug() << "Video loaded successfully";
+            qDebug() << "======= Video loaded successfully";
             player->setVideoOutput(playerWidget);
             centralWidget->setCurrentWidget(playerWidget);
             player->play();
         }
         if (status == QMediaPlayer::InvalidMedia) {
-            qDebug() << "Error: " << player->errorString();
+            qDebug() << "======= Error: " << player->errorString();
         }
     });
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
-        qDebug() << "Error: " << player->errorString();
+        qDebug() << "======= Error: " << player->errorString();
     });
 
     player->setMedia(QUrl::fromLocalFile(filePath));
 #else
+    connect(player, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
+        qDebug() << "======= Error: " << player->errorString();
+    });
+
     player->setSource(QUrl::fromLocalFile(filePath));
 #endif
 }
