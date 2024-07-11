@@ -119,6 +119,12 @@ bool isMissionInformationVisibleOnTopScreen()
            ((ivec4(texelFetch(ScreenTex, ivec2(255.0 - 1.0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1;
 }
 
+bool isMissionInformationVisibleOnBottomScreen()
+{
+    ivec4 infoPixel = ivec4(texelFetch(ScreenTex, ivec2(5, 192 + 4), 0));
+    return (infoPixel.r >= 15 && infoPixel.g >= 15 && infoPixel.b >= 15);
+}
+
 bool isCutsceneFromChallengeMissionVisible()
 {
     return is2DGraphicDifferentFromColor(ivec4(63,0,0,31), ivec2(256/4, 0));
@@ -501,7 +507,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
-    bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo && isMinimapVisible();
+    bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo && isMissionInformationVisibleOnBottomScreen();
 
     if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
         vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, showMissionInformationTopScreen, showMissionInformationBottomScreen);
@@ -723,9 +729,11 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
     if (!isScreenBlack(1) && PriorGameScene != 12) // gameScene_InGameWithCutscene
     {
-        vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, false, true);
-        if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
-            return missionInfoCoords;
+        if (isMissionInformationVisibleOnBottomScreen()) {
+            vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, false, true);
+            if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
+                return missionInfoCoords;
+            }
         }
 
         // mission gauge
