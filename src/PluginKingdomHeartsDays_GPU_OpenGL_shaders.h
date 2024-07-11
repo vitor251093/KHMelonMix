@@ -470,7 +470,7 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
         if (texPosition3d.x < missionInfoLeftMargin) {
             coord.x = 0;
 
-            if (texPosition3d.y >= 8.0 + 1.0 && texPosition3d.y <= missionInfoY2 - 1.0) {
+            if (showMissionInformationBottomScreen && texPosition3d.y >= 8.0 + 1.0 && texPosition3d.y <= missionInfoY2 - 1.0) {
                 coord.y += 8.0 - texPosition3d.y;
             }
         }
