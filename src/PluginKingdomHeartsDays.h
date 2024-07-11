@@ -88,6 +88,7 @@ private:
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);
 
+    u32 getAddress(CutsceneEntry* entry);
     CutsceneEntry* detectCutscene(melonDS::NDS* nds);
     void refreshCutscene(melonDS::NDS* nds);
     void onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene);

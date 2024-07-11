@@ -17,6 +17,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C9C
 
+#define CUTSCENE_ADDRESS_US      0x02093A4C
+#define CUTSCENE_ADDRESS_EU      0x02093A4C
+#define CUTSCENE_ADDRESS_JP      0x02093A4C
+#define CUTSCENE_ADDRESS_JP_REV1 0x02093A4C
+
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
@@ -790,23 +795,51 @@ bool PluginKingdomHeartsDays::setGameScene(melonDS::NDS* nds, int newGameScene)
     return updated;
 }
 
+u32 PluginKingdomHeartsDays::getAddress(CutsceneEntry* entry) {
+    if (isUsaCart()) {
+        return entry->usAddress;
+    }
+    if (isEuropeCart()) {
+        return entry->euAddress;
+    }
+    if (isJapanCart()) {
+        return entry->jpAddress;
+    }
+    if (isJapanCartRev1()) {
+        return entry->jpAddress;
+    }
+    return 0;
+}
+
 CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
 {
-    u32 cutsceneAddress = nds->ARM7Read32(0x02093A4C);
+    u32 cutsceneAddress = 0;
+    if (isUsaCart()) {
+        cutsceneAddress = CUTSCENE_ADDRESS_US;
+    }
+    if (isEuropeCart()) {
+        cutsceneAddress = CUTSCENE_ADDRESS_EU;
+    }
+    if (isJapanCart()) {
+        cutsceneAddress = CUTSCENE_ADDRESS_JP;
+    }
+    if (isJapanCartRev1()) {
+        cutsceneAddress = CUTSCENE_ADDRESS_JP_REV1;
+    }
 
-    if (cutsceneAddress == 0) {
+    u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
+
+    if (cutsceneAddressValue == 0) {
         return nullptr;
     }
 
-    if (isUsaCart()) {
-        for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-            if (entry->usAddress == cutsceneAddress) {
-                return entry;
-            }
+    for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+        if (getAddress(entry) == cutsceneAddressValue) {
+            return entry;
         }
     }
 
-    printf("Unknown cutscene: 0x%08x\n", cutsceneAddress);
+    printf("Unknown cutscene: 0x%08x\n", cutsceneAddressValue);
 
     return nullptr;
 }
