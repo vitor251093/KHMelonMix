@@ -11,9 +11,8 @@ using namespace melonDS;
 class PluginKingdomHeartsReCoded : public Plugin
 {
 public:
-    PluginKingdomHeartsReCoded(EmuInstance* instance, u32 gameCode);
+    PluginKingdomHeartsReCoded(u32 gameCode);
 
-    EmuInstance* emuInstance;
     u32 GameCode;
     static u32 usGamecode;
     static u32 euGamecode;

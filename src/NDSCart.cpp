@@ -1611,7 +1611,7 @@ std::unique_ptr<CartCommon> ParseROM(std::unique_ptr<u8[]>&& romdata, u32 romlen
     const char *gametitle = header.GameTitle;
     u32 gamecode = header.GameCodeAsU32();
 
-    Plugins::PluginManager::load(nullptr, gamecode);
+    Plugins::PluginManager::load(gamecode);
     Log(LogLevel::Info, "Game code: %u\n", gamecode);
 
     u32 arm9base = header.ARM9ROMOffset;

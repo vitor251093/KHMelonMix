@@ -176,7 +176,7 @@ void EmuThread::run()
                 lastRomLoaded = Plugins::PluginManager::getGameCode();
                 lastVideoRenderer = -1;
                 videoSettingsDirty = true;
-                plugin = Plugins::PluginManager::load(emuInstance, lastRomLoaded);
+                plugin = Plugins::PluginManager::load(lastRomLoaded);
                 printf("Loading plugin %s\n", typeid(*plugin).name());
             }
 

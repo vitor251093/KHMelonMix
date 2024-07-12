@@ -7,8 +7,6 @@
 
 #include "OpenGLSupport.h"
 
-class EmuInstance;
-
 namespace Plugins
 {
 using namespace melonDS;
@@ -27,7 +25,6 @@ class Plugin
 public:
     virtual ~Plugin() { };
 
-    EmuInstance* emuInstance = nullptr;
     u32 GameCode = 0;
     static bool isCart(u32 gameCode) {return true;};
 
