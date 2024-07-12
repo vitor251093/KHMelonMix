@@ -875,6 +875,7 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
     std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
     std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / filename;
     if (!std::filesystem::exists(fullPath)) {
+        // TODO: KH try to load the cutscene from EPIC\Mare\MOVIE\Days\en
         return "";
     }
     return fullPath.string();
