@@ -166,6 +166,7 @@ private:
 
     Plugins::Plugin* plugin;
     void refreshGameScene();
+    void refreshCutsceneState();
 
     int lastVideoRenderer = -1;
 

@@ -49,13 +49,12 @@ public:
         CurrentCutscene = cutscene;
         StartCurrentCutscene = true;
     }
-    virtual void onIngameCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene) {
+    virtual void onIngameCutsceneEnd(melonDS::NDS* nds) {
         printf("Stopping cutscene\n");
         CurrentCutscene = nullptr;
         StopCurrentCutscene = true;
     }
-
-    virtual void onReplacementCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene) {
+    virtual void onReplacementCutsceneStart(melonDS::NDS* nds) {
         printf("Cutscene started\n");
         StartCurrentCutscene = false;
     }

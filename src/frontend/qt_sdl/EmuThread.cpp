@@ -379,6 +379,8 @@ void EmuThread::run()
                 }
             }
 
+            refreshCutsceneState();
+
             if (emuInstance->audioDSiVolumeSync && emuInstance->nds->ConsoleType == 1)
             {
                 DSi* dsi = static_cast<DSi*>(emuInstance->nds);
@@ -606,7 +608,10 @@ void EmuThread::refreshGameScene()
     {
         emuInstance->osdAddMessage(0, plugin->getGameSceneName());
     }
+}
 
+void EmuThread::refreshCutsceneState()
+{
     if (plugin->StopCurrentCutscene) {
         emit windowStopVideo();
         plugin->onReplacementCutsceneEnd(emuInstance->nds);
@@ -625,10 +630,11 @@ void EmuThread::refreshGameScene()
 #endif
 
         if (std::filesystem::exists(fullPath)) {
+            emuStatus = emuStatus_Paused;
             QString filePath = QString::fromUtf8(path);
             emit windowStartVideo(filePath);
         }
-        plugin->onReplacementCutsceneStart(emuInstance->nds, cutscene);
+        plugin->onReplacementCutsceneStart(emuInstance->nds);
     }
 }
 

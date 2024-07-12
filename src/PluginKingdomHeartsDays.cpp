@@ -853,7 +853,7 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
     }
     if (cutscene == nullptr) {
         if (lastCutscene != nullptr) {
-            onIngameCutsceneEnd(nds, lastCutscene);
+            onIngameCutsceneEnd(nds);
         }
     }
     else {
@@ -861,7 +861,7 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
             onIngameCutsceneStart(nds, cutscene);
         }
         if (lastCutscene != nullptr && cutscene->usAddress != lastCutscene->usAddress) {
-            onIngameCutsceneEnd(nds, lastCutscene);
+            onIngameCutsceneEnd(nds);
             onIngameCutsceneStart(nds, cutscene);
         }
     }
