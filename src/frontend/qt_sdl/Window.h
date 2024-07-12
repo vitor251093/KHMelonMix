@@ -237,6 +237,7 @@ private:
 
     void createVideoPlayer();
     void startVideo(const char* videoFilePath);
+    void videoStopping();
 
     bool showOSD;
 

@@ -82,6 +82,8 @@
 #include "ArchiveUtil.h"
 #include "CameraManager.h"
 
+#include "PluginManager.h"
+
 using namespace melonDS;
 
 
@@ -845,6 +847,9 @@ void MainWindow::startVideo(const char* videoFilePath)
 #endif
 
     player->play();
+
+    auto plugin = Plugins::PluginManager::get();
+    // connect(this, SIGNAL(videoStopping()), plugin, SLOT(onReplacementCutsceneEnd()));
 }
 
 GL::Context* MainWindow::getOGLContext()

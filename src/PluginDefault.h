@@ -22,6 +22,8 @@ public:
     }
     void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask) {
     }
+    void onReplacementCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene) {
+    }
     const char* getGameSceneName() {
         return "";
     }

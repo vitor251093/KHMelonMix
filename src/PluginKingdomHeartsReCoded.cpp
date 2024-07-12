@@ -505,6 +505,10 @@ bool PluginKingdomHeartsReCoded::setGameScene(melonDS::NDS* nds, int newGameScen
     return updated;
 }
 
+void PluginKingdomHeartsReCoded::onReplacementCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene)
+{
+}
+
 bool PluginKingdomHeartsReCoded::refreshGameScene(melonDS::NDS* nds)
 {
     int newGameScene = detectGameScene(nds);

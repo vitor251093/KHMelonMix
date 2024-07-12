@@ -11,6 +11,15 @@ namespace Plugins
 {
 using namespace melonDS;
 
+struct CutsceneEntry
+{
+    char DsName[12];
+    char Name[40];
+    int usAddress;
+    int euAddress;
+    int jpAddress;
+};
+
 class Plugin
 {
 public:
@@ -31,6 +40,8 @@ public:
 
     virtual u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
     virtual void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask) = 0;
+
+    virtual void onReplacementCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene) = 0;
 
     virtual const char* getGameSceneName() = 0;
 

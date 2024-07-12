@@ -8,15 +8,6 @@ namespace Plugins
 {
 using namespace melonDS;
 
-struct CutsceneEntry
-{
-    char DsName[12];
-    char Name[40];
-    int usAddress;
-    int euAddress;
-    int jpAddress;
-};
-
 class PluginKingdomHeartsDays : public Plugin
 {
 public:
@@ -44,6 +35,8 @@ public:
 
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
+
+    void onReplacementCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene);
 
     const char* getGameSceneName();
 
