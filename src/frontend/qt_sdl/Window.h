@@ -220,10 +220,11 @@ private slots:
     void onScreenEmphasisToggled();
 
     void asyncStartVideo(QString videoFilePath);
-    void stopVideo();
+    void asyncStopVideo();
 
 public slots:
     void startVideo(QString videoFilePath);
+    void stopVideo();
 
 private:
     virtual void closeEvent(QCloseEvent* event) override;

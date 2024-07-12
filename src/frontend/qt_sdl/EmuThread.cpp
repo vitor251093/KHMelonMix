@@ -85,7 +85,6 @@ void EmuThread::attachWindow(MainWindow* window)
     connect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
     connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
-    connect(this, SIGNAL(windowStopVideo()), window, SLOT(stopVideo()));
 }
 
 void EmuThread::detachWindow(MainWindow* window)
@@ -103,7 +102,6 @@ void EmuThread::detachWindow(MainWindow* window)
     disconnect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
     disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
-    disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(stopVideo()));
 }
 
 void EmuThread::run()
@@ -184,6 +182,25 @@ void EmuThread::run()
                 videoSettingsDirty = true;
                 plugin = Plugins::PluginManager::load(lastRomLoaded);
                 printf("Loading plugin %s\n", typeid(*plugin).name());
+            }
+
+            if (plugin->ShouldStartReplacementCutscene || plugin->ShouldStopIngameCutscene) {
+                refreshGameScene();
+
+                u32 nlines = emuInstance->nds->RunFrame();
+
+                refreshCutsceneState();
+                
+                double curtime = SDL_GetPerformanceCounter() * perfCountsSec;
+                lastTime = curtime;
+
+                nframes++;
+                if (nframes >= 30)
+                {
+                    lastMeasureTime = curtime;
+                    nframes = 0;
+                }
+                continue;
             }
 
             if (emuStatus == emuStatus_FrameStep) emuStatus = emuStatus_Paused;
@@ -469,6 +486,10 @@ void EmuThread::run()
             {
                 emuInstance->drawScreenGL();
             }
+
+            if (plugin != nullptr && plugin->ShouldStopIngameCutscene) {
+                emuStatus = emuStatus_Running;
+            }
         }
 
         handleMessages();
@@ -612,29 +633,27 @@ void EmuThread::refreshGameScene()
 
 void EmuThread::refreshCutsceneState()
 {
-    if (plugin->StopCurrentCutscene) {
-        emit windowStopVideo();
-        plugin->onReplacementCutsceneEnd(emuInstance->nds);
-    }
-    if (plugin->StartCurrentCutscene) {
+    if (plugin->ShouldStartReplacementCutscene) {
         auto cutscene = plugin->CurrentCutscene;
-        std::string filename = std::string(cutscene->Name) + ".mp4";
-        std::string assetsFolder = plugin->assetsFolder();
-        std::filesystem::path currentPath = std::filesystem::current_path();
-        std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolder;
-        std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / filename;
+        if (cutscene != nullptr) {
+            std::string filename = std::string(cutscene->Name) + ".mp4";
+            std::string assetsFolder = plugin->assetsFolder();
+            std::filesystem::path currentPath = std::filesystem::current_path();
+            std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolder;
+            std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / filename;
 #ifdef _WIN32
-        const char* path = fullPath.string().c_str();
+            const char* path = fullPath.string().c_str();
 #else
-        const char* path = fullPath.c_str();
+            const char* path = fullPath.c_str();
 #endif
 
-        if (std::filesystem::exists(fullPath)) {
-            emuStatus = emuStatus_Paused;
-            QString filePath = QString::fromUtf8(path);
-            emit windowStartVideo(filePath);
+            if (std::filesystem::exists(fullPath)) {
+                emuStatus = emuStatus_Paused;
+                QString filePath = QString::fromUtf8(path);
+                emit windowStartVideo(filePath);
+                plugin->onReplacementCutsceneStart(emuInstance->nds);
+            }
         }
-        plugin->onReplacementCutsceneStart(emuInstance->nds);
     }
 }
 

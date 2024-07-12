@@ -815,6 +815,9 @@ void MainWindow::createVideoPlayer()
         if (status == QMediaPlayer::LoadedMedia) {
             qDebug() << "======= Video loaded successfully";
         }
+        if (status == QMediaPlayer::EndOfMedia) {
+            asyncStopVideo();
+        }
         if (status == QMediaPlayer::InvalidMedia) {
             qDebug() << "======= Error: " << player->errorString();
         }
@@ -852,12 +855,17 @@ void MainWindow::startVideo(QString videoFilePath)
     player->play();
 }
 
+void MainWindow::asyncStopVideo()
+{
+    QMetaObject::invokeMethod(this, "stopVideo", Qt::QueuedConnection);
+}
+
 void MainWindow::stopVideo()
 {
-    player->stop();
-
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(panel);
+
+    Plugins::PluginManager::get()->onReplacementCutsceneEnd(nullptr);
 }
 
 GL::Context* MainWindow::getOGLContext()

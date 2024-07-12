@@ -132,7 +132,6 @@ signals:
     void syncVolumeLevel();
 
     void windowStartVideo(QString videoFilePath);
-    void windowStopVideo();
 
 private:
     void handleMessages();
