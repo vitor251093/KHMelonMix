@@ -844,21 +844,6 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
     return nullptr;
 }
 
-void PluginKingdomHeartsDays::onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene)
-{
-    printf("Starting cutscene: %s\n", cutscene->Name);
-}
-
-void PluginKingdomHeartsDays::onIngameCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene)
-{
-    printf("Stopping cutscene\n");
-}
-
-void PluginKingdomHeartsDays::onReplacementCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene)
-{
-    printf("Should stop cutscene\n");
-}
-
 void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
 {
     CutsceneEntry* lastCutscene = CurrentCutscene;

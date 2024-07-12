@@ -83,6 +83,9 @@ void EmuThread::attachWindow(MainWindow* window)
     connect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
     connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     connect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
+
+    connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(startVideo(QString)));
+    connect(this, SIGNAL(windowStopVideo()), window, SLOT(stopVideo()));
 }
 
 void EmuThread::detachWindow(MainWindow* window)
@@ -98,6 +101,9 @@ void EmuThread::detachWindow(MainWindow* window)
     disconnect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
     disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     disconnect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
+
+    disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(startVideo(QString)));
+    disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(stopVideo()));
 }
 
 void EmuThread::run()
@@ -599,6 +605,31 @@ void EmuThread::refreshGameScene()
     if (updated && DEBUG_MODE_ENABLED)
     {
         emuInstance->osdAddMessage(0, plugin->getGameSceneName());
+    }
+
+    if (plugin->StopCurrentCutscene) {
+        emit windowStopVideo();
+        plugin->onReplacementCutsceneEnd(emuInstance->nds);
+    }
+    if (plugin->StartCurrentCutscene) {
+        auto cutscene = plugin->CurrentCutscene;
+        std::string filename = std::string(cutscene->Name) + ".mp4";
+        std::string assetsFolder = plugin->assetsFolder();
+        std::filesystem::path currentPath = std::filesystem::current_path();
+        std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolder;
+        std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / filename;
+#ifdef _WIN32
+        const char* path = fullPath.string().c_str();
+#else
+        const char* path = fullPath.c_str();
+#endif
+        printf("Starting video %s\n", path);
+
+        if (std::filesystem::exists(fullPath)) {
+            QString filePath = QString::fromUtf8(path);
+            emit windowStartVideo(filePath);
+        }
+        plugin->onReplacementCutsceneStart(emuInstance->nds, cutscene);
     }
 }
 

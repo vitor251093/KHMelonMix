@@ -41,7 +41,28 @@ public:
     virtual u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
     virtual void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask) = 0;
 
-    virtual void onReplacementCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene) = 0;
+    bool StartCurrentCutscene = false;
+    bool StopCurrentCutscene = false;
+    CutsceneEntry* CurrentCutscene = nullptr;
+    virtual void onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene) {
+        printf("Starting cutscene: %s\n", cutscene->Name);
+        CurrentCutscene = cutscene;
+        StartCurrentCutscene = true;
+    }
+    virtual void onIngameCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene) {
+        printf("Stopping cutscene\n");
+        CurrentCutscene = nullptr;
+        StopCurrentCutscene = true;
+    }
+
+    virtual void onReplacementCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene) {
+        printf("Cutscene started\n");
+        StartCurrentCutscene = false;
+    }
+    virtual void onReplacementCutsceneEnd(melonDS::NDS* nds) {
+        printf("Should stop cutscene\n");
+        StopCurrentCutscene = false;
+    }
 
     virtual const char* getGameSceneName() = 0;
 

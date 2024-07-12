@@ -645,7 +645,6 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     createScreenPanel();
 
     createVideoPlayer();
-    //startVideo("/home/vitor/Downloads/KHDays - 60 FPS Mod-2-1-5-1667958998/hd006.mp4");
 
     actEjectCart->setEnabled(false);
     actEjectGBACart->setEnabled(false);
@@ -833,23 +832,28 @@ void MainWindow::createVideoPlayer()
 #endif
 
     player->setVideoOutput(playerWidget);
-    centralWidget->setCurrentWidget(playerWidget);
 }
 
-void MainWindow::startVideo(const char* videoFilePath)
+void MainWindow::startVideo(QString videoFilePath)
 {
-    QString filePath = QString::fromUtf8(videoFilePath);
-
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    player->setMedia(QUrl::fromLocalFile(filePath));
+    player->setMedia(QUrl::fromLocalFile(videoFilePath));
 #else
-    player->setSource(QUrl::fromLocalFile(filePath));
+    player->setSource(QUrl::fromLocalFile(videoFilePath));
 #endif
 
-    player->play();
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->setCurrentWidget(playerWidget);
 
-    auto plugin = Plugins::PluginManager::get();
-    // connect(this, SIGNAL(videoStopping()), plugin, SLOT(onReplacementCutsceneEnd()));
+    player->play();
+}
+
+void MainWindow::stopVideo()
+{
+    player->stop();
+
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->setCurrentWidget(panel);
 }
 
 GL::Context* MainWindow::getOGLContext()

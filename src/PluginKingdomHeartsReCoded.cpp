@@ -58,6 +58,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
 
+    CurrentCutscene = nullptr;
+
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
 }
@@ -503,10 +505,6 @@ bool PluginKingdomHeartsReCoded::setGameScene(melonDS::NDS* nds, int newGameScen
     }
 
     return updated;
-}
-
-void PluginKingdomHeartsReCoded::onReplacementCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene)
-{
 }
 
 bool PluginKingdomHeartsReCoded::refreshGameScene(melonDS::NDS* nds)

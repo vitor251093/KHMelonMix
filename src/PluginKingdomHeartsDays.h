@@ -36,7 +36,7 @@ public:
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
 
-    void onReplacementCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene);
+    CutsceneEntry* CurrentCutscene;
 
     const char* getGameSceneName();
 
@@ -72,8 +72,6 @@ private:
 
     bool _hasVisible3DOnBottomScreen;
 
-    CutsceneEntry* CurrentCutscene;
-
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
     u32 LastLockOnPress, LastSwitchTargetPress;
     bool SwitchTargetPressOnHold;
@@ -84,8 +82,6 @@ private:
     u32 getAddress(CutsceneEntry* entry);
     CutsceneEntry* detectCutscene(melonDS::NDS* nds);
     void refreshCutscene(melonDS::NDS* nds);
-    void onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene);
-    void onIngameCutsceneEnd(melonDS::NDS* nds, CutsceneEntry* cutscene);
 
     bool isBufferBlack(unsigned int* buffer);
     bool isTopScreen2DTextureBlack(melonDS::NDS* nds);

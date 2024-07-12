@@ -219,6 +219,9 @@ private slots:
     void onFullscreenToggled();
     void onScreenEmphasisToggled();
 
+    void startVideo(QString videoFilePath);
+    void stopVideo();
+
 private:
     virtual void closeEvent(QCloseEvent* event) override;
 
@@ -236,7 +239,6 @@ private:
     void createScreenPanel();
 
     void createVideoPlayer();
-    void startVideo(const char* videoFilePath);
     void videoStopping();
 
     bool showOSD;
