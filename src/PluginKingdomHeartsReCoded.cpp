@@ -58,6 +58,9 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
 
+    StartedReplacementCutscene = false;
+    ShouldStartReplacementCutscene = false;
+    ShouldStopIngameCutscene = false;
     CurrentCutscene = nullptr;
 
     PriorHotkeyMask = 0;
@@ -505,6 +508,27 @@ bool PluginKingdomHeartsReCoded::setGameScene(melonDS::NDS* nds, int newGameScen
     }
 
     return updated;
+}
+
+void PluginKingdomHeartsReCoded::onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene) {
+    printf("Starting cutscene: %s\n", cutscene == nullptr ? "(undetermined)" : cutscene->Name);
+    CurrentCutscene = cutscene;
+    ShouldStartReplacementCutscene = true;
+}
+void PluginKingdomHeartsReCoded::onIngameCutsceneEnd(melonDS::NDS* nds) {
+    printf("Ingame cutscene reached its end\n");
+    ShouldStartReplacementCutscene = false;
+    ShouldStopIngameCutscene = false;
+}
+void PluginKingdomHeartsReCoded::onReplacementCutsceneStart(melonDS::NDS* nds) {
+    printf("Cutscene started\n");
+    ShouldStartReplacementCutscene = false;
+    StartedReplacementCutscene = true;
+}
+void PluginKingdomHeartsReCoded::onReplacementCutsceneEnd(melonDS::NDS* nds) {
+    printf("Should stop ingame cutscene\n");
+    StartedReplacementCutscene = false;
+    ShouldStopIngameCutscene = true;
 }
 
 bool PluginKingdomHeartsReCoded::refreshGameScene(melonDS::NDS* nds)

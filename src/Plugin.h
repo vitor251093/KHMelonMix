@@ -45,26 +45,10 @@ public:
     bool ShouldStartReplacementCutscene = false;
     bool ShouldStopIngameCutscene = false;
     CutsceneEntry* CurrentCutscene = nullptr;
-    virtual void onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene) {
-        printf("Starting cutscene: %s\n", cutscene == nullptr ? "(undetermined)" : cutscene->Name);
-        CurrentCutscene = cutscene;
-        ShouldStartReplacementCutscene = true;
-    }
-    virtual void onIngameCutsceneEnd(melonDS::NDS* nds) {
-        printf("Ingame cutscene reached its end\n");
-        ShouldStartReplacementCutscene = false;
-        ShouldStopIngameCutscene = false;
-    }
-    virtual void onReplacementCutsceneStart(melonDS::NDS* nds) {
-        printf("Cutscene started\n");
-        ShouldStartReplacementCutscene = false;
-        StartedReplacementCutscene = true;
-    }
-    virtual void onReplacementCutsceneEnd(melonDS::NDS* nds) {
-        printf("Should stop ingame cutscene\n");
-        StartedReplacementCutscene = false;
-        ShouldStopIngameCutscene = true;
-    }
+    virtual void onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene) = 0;
+    virtual void onIngameCutsceneEnd(melonDS::NDS* nds) = 0;
+    virtual void onReplacementCutsceneStart(melonDS::NDS* nds) = 0;
+    virtual void onReplacementCutsceneEnd(melonDS::NDS* nds) = 0;
 
     virtual const char* getGameSceneName() = 0;
 

@@ -36,7 +36,14 @@ public:
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
 
+    bool StartedReplacementCutscene;
+    bool ShouldStartReplacementCutscene;
+    bool ShouldStopIngameCutscene;
     CutsceneEntry* CurrentCutscene;
+    void onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene);
+    void onIngameCutsceneEnd(melonDS::NDS* nds);
+    void onReplacementCutsceneStart(melonDS::NDS* nds);
+    void onReplacementCutsceneEnd(melonDS::NDS* nds);
 
     const char* getGameSceneName();
 
