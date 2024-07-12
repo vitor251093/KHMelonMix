@@ -643,7 +643,6 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     show();
 
     createScreenPanel();
-
     createVideoPlayer();
 
     actEjectCart->setEnabled(false);
@@ -832,6 +831,11 @@ void MainWindow::createVideoPlayer()
 #endif
 
     player->setVideoOutput(playerWidget);
+}
+
+void MainWindow::asyncStartVideo(QString videoFilePath)
+{
+    QMetaObject::invokeMethod(this, "startVideo", Qt::QueuedConnection, Q_ARG(QString, videoFilePath));
 }
 
 void MainWindow::startVideo(QString videoFilePath)

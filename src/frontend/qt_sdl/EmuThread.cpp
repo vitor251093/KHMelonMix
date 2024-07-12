@@ -84,7 +84,7 @@ void EmuThread::attachWindow(MainWindow* window)
     connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     connect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
-    connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(startVideo(QString)));
+    connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     connect(this, SIGNAL(windowStopVideo()), window, SLOT(stopVideo()));
 }
 
@@ -102,7 +102,7 @@ void EmuThread::detachWindow(MainWindow* window)
     disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     disconnect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
-    disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(startVideo(QString)));
+    disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(stopVideo()));
 }
 
@@ -623,7 +623,6 @@ void EmuThread::refreshGameScene()
 #else
         const char* path = fullPath.c_str();
 #endif
-        printf("Starting video %s\n", path);
 
         if (std::filesystem::exists(fullPath)) {
             QString filePath = QString::fromUtf8(path);

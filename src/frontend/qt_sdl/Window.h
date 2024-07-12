@@ -219,8 +219,11 @@ private slots:
     void onFullscreenToggled();
     void onScreenEmphasisToggled();
 
-    void startVideo(QString videoFilePath);
+    void asyncStartVideo(QString videoFilePath);
     void stopVideo();
+
+public slots:
+    void startVideo(QString videoFilePath);
 
 private:
     virtual void closeEvent(QCloseEvent* event) override;
@@ -237,9 +240,7 @@ private:
     void updateCartInserted(bool gba);
 
     void createScreenPanel();
-
     void createVideoPlayer();
-    void videoStopping();
 
     bool showOSD;
 
