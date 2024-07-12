@@ -510,6 +510,18 @@ bool PluginKingdomHeartsReCoded::setGameScene(melonDS::NDS* nds, int newGameScen
     return updated;
 }
 
+std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene) {
+    std::string filename = std::string(cutscene->Name) + ".mp4";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / filename;
+    if (!std::filesystem::exists(fullPath)) {
+        return "";
+    }
+    return fullPath.string();
+}
+
 void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) {
     printf("Detected cutscene: %s\n", cutscene->Name);
     _CurrentCutscene = cutscene;

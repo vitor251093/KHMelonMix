@@ -636,20 +636,10 @@ void EmuThread::refreshCutsceneState()
     if (plugin->ShouldStartReplacementCutscene()) {
         auto cutscene = plugin->CurrentCutscene();
         if (cutscene != nullptr) {
-            std::string filename = std::string(cutscene->Name) + ".mp4";
-            std::string assetsFolder = plugin->assetsFolder();
-            std::filesystem::path currentPath = std::filesystem::current_path();
-            std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolder;
-            std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / filename;
-#ifdef _WIN32
-            const char* path = fullPath.string().c_str();
-#else
-            const char* path = fullPath.c_str();
-#endif
-
-            if (std::filesystem::exists(fullPath)) {
+            std::string path = plugin->CutsceneFilePath(cutscene);
+            if (path != "") {
                 emuStatus = emuStatus_Paused;
-                QString filePath = QString::fromUtf8(path);
+                QString filePath = QString::fromUtf8(path.c_str());
                 emit windowStartVideo(filePath);
                 plugin->onReplacementCutsceneStart(emuInstance->nds);
             }

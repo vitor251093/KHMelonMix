@@ -812,9 +812,6 @@ void MainWindow::createVideoPlayer()
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         qDebug() << "======= MediaStatus " << status;
-        if (status == QMediaPlayer::LoadedMedia) {
-            qDebug() << "======= Video loaded successfully";
-        }
         if (status == QMediaPlayer::EndOfMedia) {
             asyncStopVideo();
         }

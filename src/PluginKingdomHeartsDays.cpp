@@ -789,8 +789,6 @@ bool PluginKingdomHeartsDays::setGameScene(melonDS::NDS* nds, int newGameScene)
     bool updated = false;
     if (GameScene != newGameScene) 
     {
-        printf("Game scene: %d\n", newGameScene);
-    
         updated = true;
 
         // Game scene
@@ -870,8 +868,25 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
     }
 }
 
+std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
+    std::string filename = std::string(cutscene->Name) + ".mp4";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / filename;
+    if (!std::filesystem::exists(fullPath)) {
+        return "";
+    }
+    return fullPath.string();
+}
+
 void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) {
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
+        return;
+    }
+
+    std::string path = CutsceneFilePath(cutscene);
+    if (path == "") {
         return;
     }
 
@@ -880,7 +895,10 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
     _ShouldStartIngameCutscene = true;
 }
 void PluginKingdomHeartsDays::onIngameCutsceneStart(melonDS::NDS* nds) {
-    printf("Starting cutscene: %s\n", _CurrentCutscene == nullptr ? "(undetermined)" : _CurrentCutscene->Name);
+    if (_CurrentCutscene == nullptr) {
+        return;
+    }
+    printf("Starting cutscene: %s\n", _CurrentCutscene->Name);
     _ShouldStartIngameCutscene = false;
     _ShouldStartReplacementCutscene = true;
 }

@@ -46,6 +46,7 @@ public:
     bool StartedReplacementCutscene() {return _StartedReplacementCutscene;}
     bool ShouldStopIngameCutscene() {return _ShouldStopIngameCutscene;}
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
+    std::string CutsceneFilePath(CutsceneEntry* cutscene);
     void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene);
     void onIngameCutsceneStart(melonDS::NDS* nds);
     void onIngameCutsceneEnd(melonDS::NDS* nds);
