@@ -461,6 +461,17 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
     float missionInfoY1 = missionInfoTopMargin;
     float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
     float missionInfoDetailsLeftMargin = -5.4*heightScale;
+
+    if (showMissionInformationTopScreen) {
+        float step = 0.25;
+        // TODO: KH Not accurate enough; possibly receiving false positives
+        while (missionInfoHeight >= (step - missionInfoTopMargin) && ((ivec4(texelFetch(ScreenTex, ivec2(640, missionInfoHeight + missionInfoTopMargin), 0))).a & 0xF) != 1) {
+            missionInfoTopMargin -= step;
+        }
+        missionInfoY1 = missionInfoTopMargin;
+        missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
+    }
+
     if (texPosition3d.x >= 0 &&
         texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
         texPosition3d.y >= missionInfoY1 &&
@@ -468,7 +479,7 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
         vec2 coord = fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoY1)) +
             (showMissionInformationBottomScreen ? vec2(0, 192.0) : vec2(0, 0));
 
-        bool isDetailsLine = texPosition3d.y >= 8.0 + 1.0 && texPosition3d.y <= missionInfoY2 - 1.0;
+        bool isDetailsLine = texPosition3d.y >= (8.0 + 1.0 + missionInfoY1) && texPosition3d.y <= (missionInfoY2 - 1.0);
 
         if (isDetailsLine) {
             coord.x -= missionInfoDetailsLeftMargin;
@@ -477,8 +488,13 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
         if (texPosition3d.x < missionInfoLeftMargin) {
             coord.x = 0;
 
-            if (showMissionInformationBottomScreen && isDetailsLine) {
-                coord.y += 8.0 - texPosition3d.y;
+            if (isDetailsLine) {
+                if (showMissionInformationBottomScreen) {
+                    coord.y += 8.0 - texPosition3d.y;
+                }
+                else if (missionInfoTopMargin > -1.0) { // TODO: KH This ELSE IF shouldn't be necessary, only the ELSE
+                    coord.y = missionInfoY2 - 3.0;
+                }
             }
         }
 
