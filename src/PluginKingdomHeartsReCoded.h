@@ -38,7 +38,7 @@ public:
     CutsceneEntry* CurrentCutscene;
 
     const char* getGameSceneName();
-    bool shouldSkipFrame(melonDS::NDS* nds);
+    bool shouldRenderFrame(melonDS::NDS* nds);
     void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
     bool refreshGameScene(melonDS::NDS* nds);
     void debugLogs(melonDS::NDS* nds, int gameScene);

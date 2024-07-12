@@ -25,8 +25,8 @@ public:
     const char* getGameSceneName() {
         return "";
     }
-    bool shouldSkipFrame(melonDS::NDS* nds) {
-        return false;
+    bool shouldRenderFrame(melonDS::NDS* nds) {
+        return true;
     }
     bool refreshGameScene(melonDS::NDS* nds) {
         return false;

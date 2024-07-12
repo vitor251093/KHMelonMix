@@ -65,7 +65,7 @@ public:
 
     virtual const char* getGameSceneName() = 0;
 
-    virtual bool shouldSkipFrame(melonDS::NDS* nds) = 0;
+    virtual bool shouldRenderFrame(melonDS::NDS* nds) = 0;
 
     virtual bool refreshGameScene(melonDS::NDS* nds) = 0;
 

@@ -405,12 +405,8 @@ bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
     return isBufferBlack(bottomBuffer);
 }
 
-bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
+bool PluginKingdomHeartsDays::shouldRenderFrame(melonDS::NDS* nds)
 {
-    if (CurrentCutscene != nullptr) {
-        return true;
-    }
-
     bool isTopBlack = isTopScreen2DTextureBlack(nds);
     bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
 
@@ -432,16 +428,16 @@ bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
             }
 
             if (_hasVisible3DOnBottomScreen) {
-                return true;
+                return false;
             }
         }
         else // 3D on bottom screen
         {
-            return !_hasVisible3DOnBottomScreen;
+            return _hasVisible3DOnBottomScreen;
         }
     }
 
-    return false;
+    return true;
 }
 
 int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)

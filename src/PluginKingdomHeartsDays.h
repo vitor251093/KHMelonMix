@@ -40,7 +40,7 @@ public:
 
     const char* getGameSceneName();
 
-    bool shouldSkipFrame(melonDS::NDS* nds);
+    bool shouldRenderFrame(melonDS::NDS* nds);
 
     void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
 

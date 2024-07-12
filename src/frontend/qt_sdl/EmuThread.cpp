@@ -284,7 +284,7 @@ void EmuThread::run()
             emuInstance->micProcess();
 
             refreshGameScene();
-            bool shouldSkipFrame = plugin->shouldSkipFrame(emuInstance->nds);
+            bool shouldRenderFrame = plugin->shouldRenderFrame(emuInstance->nds);
 
             // auto screen layout
             {
@@ -347,7 +347,7 @@ void EmuThread::run()
             {
                 FrontBuffer = emuInstance->nds->GPU.FrontBuffer;
 
-                if (!shouldSkipFrame)
+                if (shouldRenderFrame)
                 {
                     emuInstance->drawScreenGL();
                 }
@@ -630,6 +630,7 @@ void EmuThread::refreshCutsceneState()
 #endif
 
         if (std::filesystem::exists(fullPath)) {
+            emuStatus = emuStatus_Paused;
             QString filePath = QString::fromUtf8(path);
             emit windowStartVideo(filePath);
         }

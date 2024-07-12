@@ -232,7 +232,7 @@ bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
     return isBufferBlack(bottomBuffer);
 }
 
-bool PluginKingdomHeartsReCoded::shouldSkipFrame(melonDS::NDS* nds)
+bool PluginKingdomHeartsReCoded::shouldRenderFrame(melonDS::NDS* nds)
 {
     bool isTopBlack = isTopScreen2DTextureBlack(nds);
     bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
@@ -240,7 +240,7 @@ bool PluginKingdomHeartsReCoded::shouldSkipFrame(melonDS::NDS* nds)
     IsBottomScreen2DTextureBlack = isBottomBlack;
     IsTopScreen2DTextureBlack = isTopBlack;
 
-    return false;
+    return true;
 }
 
 int PluginKingdomHeartsReCoded::detectGameScene(melonDS::NDS* nds)
