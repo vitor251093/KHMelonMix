@@ -10,20 +10,21 @@
 namespace Plugins
 {
 
+EmuInstance* PluginManager::emuInstance = nullptr;
 u32 PluginManager::GameCode = 0;
 std::map<u32, std::unique_ptr<Plugin>> PluginManager::PluginsCache = {};
 
 struct IFactory { 
     virtual bool isCart(int gameCode) = 0;
-    virtual Plugin* create(int gameCode) = 0;
+    virtual Plugin* create(EmuInstance* instance, int gameCode) = 0;
 };
 
 template< typename Type > struct Factory : public IFactory {
    virtual bool isCart(int gameCode) {
       return Type::isCart(gameCode);
    }
-   virtual Type* create(int gameCode) {
-      return new Type(gameCode);
+   virtual Type* create(EmuInstance* instance, int gameCode) {
+      return new Type(instance, gameCode);
    }
 };
 
@@ -31,8 +32,13 @@ template< typename Type > struct Factory : public IFactory {
 IFactory* factories[] = {LOAD_PLUGINS};
 #undef LOAD_PLUGIN
 
-Plugin* PluginManager::load(u32 gameCode) {
+Plugin* PluginManager::load(EmuInstance* instance, u32 gameCode) {
     GameCode = gameCode;
+    if (instance == nullptr) {
+        return nullptr;
+    }
+
+    emuInstance = instance;
     return get();
 }
 Plugin* PluginManager::get() {
@@ -41,11 +47,11 @@ Plugin* PluginManager::get() {
     }
     for (IFactory* factory : factories) {
         if (factory->isCart(GameCode)) {
-            PluginsCache[GameCode] = std::unique_ptr<Plugin>(factory->create(GameCode));
+            PluginsCache[GameCode] = std::unique_ptr<Plugin>(factory->create(emuInstance, GameCode));
             return PluginsCache.at(GameCode).get();
         }
     }
-    PluginsCache[GameCode] = std::unique_ptr<Plugin>(new PluginDefault(GameCode));
+    PluginsCache[GameCode] = std::unique_ptr<Plugin>(new PluginDefault(emuInstance, GameCode));
     return PluginsCache.at(GameCode).get();
 }
 u32 PluginManager::getGameCode() {

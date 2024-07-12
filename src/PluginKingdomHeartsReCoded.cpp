@@ -44,8 +44,9 @@ enum
     gameScene_Other                     // 17
 };
 
-PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
+PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(EmuInstance* instance, u32 gameCode)
 {
+    emuInstance = instance;
     GameCode = gameCode;
 
     GameScene = -1;

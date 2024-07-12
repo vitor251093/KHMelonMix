@@ -11,7 +11,7 @@ using namespace melonDS;
 class PluginDefault : public Plugin
 {
 public:
-    PluginDefault(u32 gameCode) {GameCode = gameCode;};
+    PluginDefault(EmuInstance* instance, u32 gameCode) {emuInstance = instance; GameCode = gameCode;};
 
     std::string assetsFolder() {
         return std::to_string(GameCode);

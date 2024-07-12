@@ -109,8 +109,9 @@ CutsceneEntry Cutscenes[] =
     {"848.mods",    "848_xions_end",                     0x0eb91800, 0x0eb91800, 0x0eb91800},
 };
 
-PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
+PluginKingdomHeartsDays::PluginKingdomHeartsDays(EmuInstance* instance, u32 gameCode)
 {
+    emuInstance = instance;
     GameCode = gameCode;
 
     HUDState = 0;

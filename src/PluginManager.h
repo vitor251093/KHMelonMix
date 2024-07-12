@@ -9,11 +9,12 @@ namespace Plugins
 class PluginManager
 {
 public:
-    static Plugin* load(u32 gameCode);
+    static Plugin* load(EmuInstance* instance, u32 gameCode);
     static Plugin* get();
     static u32 getGameCode();
 
 private:
+    static EmuInstance* emuInstance;
     static u32 GameCode;
     static std::map<u32, std::unique_ptr<Plugin>> PluginsCache;
 };
