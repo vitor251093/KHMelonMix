@@ -407,6 +407,10 @@ bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
 
 bool PluginKingdomHeartsDays::shouldSkipFrame(melonDS::NDS* nds)
 {
+    if (CurrentCutscene != nullptr) {
+        return true;
+    }
+
     bool isTopBlack = isTopScreen2DTextureBlack(nds);
     bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
 

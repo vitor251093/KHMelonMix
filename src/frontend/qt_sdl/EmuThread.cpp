@@ -630,7 +630,6 @@ void EmuThread::refreshCutsceneState()
 #endif
 
         if (std::filesystem::exists(fullPath)) {
-            emuStatus = emuStatus_Paused;
             QString filePath = QString::fromUtf8(path);
             emit windowStartVideo(filePath);
         }
