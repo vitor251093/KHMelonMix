@@ -75,7 +75,7 @@ CutsceneEntry Cutscenes[] =
     {"816",    "816_kairi_memories",                0x0a7a9200, 0x0a7a9200, 0x0a7a9200},
     {"817",    "817_namine_and_diz",                0x0a857600, 0x0a857600, 0x0a857600},
     {"818",    "818_why_the_sun_sets_red",          0x0ab4be00, 0x0ab4be00, 0x0ab4be00},
-    {"819",    "819_sora_wakes_up",                 0x0afeac00, 0x0afeac00, 0x0afeac00},
+    {"819",    "819_sora_wakes_up",                 0x0afeac00, 0x0afeac00, 0x0afeac00}, // double cutscene complement
     {"821",    "821_snarl_of_memories",             0x0b043e00, 0x0b043e00, 0x0b043e00},
     {"822",    "822_riku_takes_care_of_xion",       0x0b514600, 0x0b514600, 0x0b514600},
     {"823",    "823_roxas_passes_by",               0x0b5b5e00, 0x0b5b5e00, 0x0b5b5e00},
@@ -93,14 +93,14 @@ CutsceneEntry Cutscenes[] =
     {"835",    "835_skyscrapper_battle",            0x0d5e0400, 0x0d5e0400, 0x0d5e0400},
     {"836",    "836_roxas_and_riku",                0x0d6f9400, 0x0d6f9400, 0x0d6f9400},
     {"837",    "837_riku_turns_into_ansem",         0x0da1ea00, 0x0da1ea00, 0x0da1ea00},
-    {"838",    "838_clocktower",                    0x0e063600, 0x0e063600, 0x0e063600},
-    {"839_de", "839_riku_please_stop_him_de",       0x0e0db400, 0x0e0db400, 0x0e0db400},
-    {"839_en", "839_riku_please_stop_him_en",       0x0e0e1200, 0x0e0e1200, 0x0e0e1200},
-    {"839_es", "839_riku_please_stop_him_es",       0x0e0e6c00, 0x0e0e6c00, 0x0e0e6c00},
-    {"839_fr", "839_riku_please_stop_him_fr",       0x0e0ecc00, 0x0e0ecc00, 0x0e0ecc00},
-    {"839_it", "839_riku_please_stop_him_it",       0x0e0f1600, 0x0e0f1600, 0x0e0f1600},
+    {"838",    "838_clocktower",                    0x0e063600, 0x0e063600, 0x0e063600}, // double cutscene complement
+    {"839_de", "839_riku_please_stop_him_de",       0x0e0db400, 0x0e0db400, 0x0e0db400}, // double cutscene complement
+    {"839_en", "839_riku_please_stop_him_en",       0x0e0e1200, 0x0e0e1200, 0x0e0e1200}, // double cutscene complement
+    {"839_es", "839_riku_please_stop_him_es",       0x0e0e6c00, 0x0e0e6c00, 0x0e0e6c00}, // double cutscene complement
+    {"839_fr", "839_riku_please_stop_him_fr",       0x0e0ecc00, 0x0e0ecc00, 0x0e0ecc00}, // double cutscene complement
+    {"839_it", "839_riku_please_stop_him_it",       0x0e0f1600, 0x0e0f1600, 0x0e0f1600}, // double cutscene complement
     {"840",    "840_after_the_battle",              0x0e0f5e00, 0x0e0f5e00, 0x0e0f5e00},
-    {"841",    "841_xion_fading_from_clocktower",   0x0e444c00, 0x0e444c00, 0x0e444c00},
+    {"841",    "841_xion_fading_from_clocktower",   0x0e444c00, 0x0e444c00, 0x0e444c00}, // double cutscene complement
     {"842",    "842_a_new_day",                     0x0e4bd400, 0x0e4bd400, 0x0e4bd400},
     {"843",    "843_the_usual_spot",                0x0e641200, 0x0e641200, 0x0e641200},
     {"845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e6fa600, 0x0e6fa600},
