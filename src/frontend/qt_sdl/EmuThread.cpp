@@ -184,7 +184,7 @@ void EmuThread::run()
                 printf("Loading plugin %s\n", typeid(*plugin).name());
             }
 
-            if (plugin->ShouldStartReplacementCutscene || plugin->ShouldStopIngameCutscene) {
+            if (plugin->ShouldStartIngameCutscene() || plugin->ShouldStartReplacementCutscene() || plugin->ShouldStopIngameCutscene()) {
                 refreshGameScene();
 
                 u32 nlines = emuInstance->nds->RunFrame();
@@ -487,7 +487,7 @@ void EmuThread::run()
                 emuInstance->drawScreenGL();
             }
 
-            if (plugin != nullptr && plugin->ShouldStopIngameCutscene) {
+            if (plugin != nullptr && plugin->ShouldStopIngameCutscene()) {
                 emuStatus = emuStatus_Running;
             }
         }
@@ -633,8 +633,8 @@ void EmuThread::refreshGameScene()
 
 void EmuThread::refreshCutsceneState()
 {
-    if (plugin->ShouldStartReplacementCutscene) {
-        auto cutscene = plugin->CurrentCutscene;
+    if (plugin->ShouldStartReplacementCutscene()) {
+        auto cutscene = plugin->CurrentCutscene();
         if (cutscene != nullptr) {
             std::string filename = std::string(cutscene->Name) + ".mp4";
             std::string assetsFolder = plugin->assetsFolder();

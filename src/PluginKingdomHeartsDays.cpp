@@ -133,10 +133,11 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     _hasVisible3DOnBottomScreen = false;
 
-    StartedReplacementCutscene = false;
-    ShouldStartReplacementCutscene = false;
-    ShouldStopIngameCutscene = false;
-    CurrentCutscene = nullptr;
+    _StartedReplacementCutscene = false;
+    _ShouldStartIngameCutscene = false;
+    _ShouldStartReplacementCutscene = false;
+    _ShouldStopIngameCutscene = false;
+    _CurrentCutscene = nullptr;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -837,6 +838,9 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
     if (cutsceneAddressValue == 0) {
         return nullptr;
     }
+    if (cutsceneAddressValue == 0xea000000) {
+        return nullptr;
+    }
 
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
         if (getAddress(entry) == cutsceneAddressValue) {
@@ -851,59 +855,48 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
 
 void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
 {
-    if (CurrentCutscene != nullptr) {
-        // printf("Playing cutscene: %s\n", CurrentCutscene->Name);
+    if (_CurrentCutscene != nullptr) {
+        // printf("Playing cutscene: %s\n", _CurrentCutscene->Name);
     }
-    bool isCutsceneScene = GameScene == gameScene_Cutscene;
-    bool isThereACutscenePlaying = ShouldStartReplacementCutscene || StartedReplacementCutscene || ShouldStopIngameCutscene;
-    CutsceneEntry* lastCutscene = CurrentCutscene;
-    CutsceneEntry* cutscene = nullptr;
-    if (isCutsceneScene) {
-        cutscene = detectCutscene(nds); // sometimes one returns close to the end of the cutscene
-    }
-    if (isCutsceneScene) {
-        if (!isThereACutscenePlaying) {
-            if (lastCutscene == nullptr || cutscene->usAddress != lastCutscene->usAddress) {
-                printf("1 ");
-                onIngameCutsceneStart(nds, cutscene);
-            }
-        }
-        else if (cutscene != nullptr) {
-            if (lastCutscene != nullptr && cutscene->usAddress != lastCutscene->usAddress) {
-                onIngameCutsceneEnd(nds);
-                printf("2 ");
-                onIngameCutsceneStart(nds, cutscene);
-            }
+    bool isCutsceneScene = GameScene == gameScene_Cutscene || GameScene == gameScene_Other2D;
+    bool isThereACutscenePlaying = _ShouldStartIngameCutscene || _ShouldStartReplacementCutscene || _StartedReplacementCutscene || _ShouldStopIngameCutscene;
+    CutsceneEntry* cutscene = detectCutscene(nds); // sometimes one returns close to the end of the cutscene
 
-            if (lastCutscene == nullptr) {
-                printf("3 ");
-                onIngameCutsceneStart(nds, cutscene); // in case the address is provided at the end of the cutscene
-            }
-        }
+    if (!isThereACutscenePlaying && cutscene != nullptr) {
+        onIngameCutsceneIdentified(nds, cutscene);
     }
-    if (!isCutsceneScene && lastCutscene != nullptr && ShouldStopIngameCutscene) {
+    if (isCutsceneScene && _ShouldStartIngameCutscene) {
+        onIngameCutsceneStart(nds);
+    }
+    if (!isCutsceneScene && _ShouldStopIngameCutscene) {
         onIngameCutsceneEnd(nds);
     }
 }
-void PluginKingdomHeartsDays::onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene) {
-    printf("Starting cutscene: %s\n", cutscene == nullptr ? "(undetermined)" : cutscene->Name);
-    CurrentCutscene = cutscene;
-    ShouldStartReplacementCutscene = true;
+
+void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) {
+    printf("Detected cutscene: %s\n", cutscene->Name);
+    _CurrentCutscene = cutscene;
+    _ShouldStartIngameCutscene = true;
 }
-void PluginKingdomHeartsDays::onIngameCutsceneEnd(melonDS::NDS* nds) {
-    printf("Ingame cutscene reached its end\n");
-    ShouldStartReplacementCutscene = false;
-    ShouldStopIngameCutscene = false;
+void PluginKingdomHeartsDays::onIngameCutsceneStart(melonDS::NDS* nds) {
+    printf("Starting cutscene: %s\n", _CurrentCutscene == nullptr ? "(undetermined)" : _CurrentCutscene->Name);
+    _ShouldStartIngameCutscene = false;
+    _ShouldStartReplacementCutscene = true;
 }
 void PluginKingdomHeartsDays::onReplacementCutsceneStart(melonDS::NDS* nds) {
     printf("Cutscene started\n");
-    ShouldStartReplacementCutscene = false;
-    StartedReplacementCutscene = true;
+    _ShouldStartReplacementCutscene = false;
+    _StartedReplacementCutscene = true;
 }
 void PluginKingdomHeartsDays::onReplacementCutsceneEnd(melonDS::NDS* nds) {
     printf("Should stop ingame cutscene\n");
-    StartedReplacementCutscene = false;
-    ShouldStopIngameCutscene = true;
+    _StartedReplacementCutscene = false;
+    _ShouldStopIngameCutscene = true;
+}
+void PluginKingdomHeartsDays::onIngameCutsceneEnd(melonDS::NDS* nds) {
+    printf("Ingame cutscene reached its end\n");
+    _ShouldStartReplacementCutscene = false;
+    _ShouldStopIngameCutscene = false;
 }
 
 bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)

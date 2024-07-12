@@ -27,7 +27,13 @@ public:
     bool shouldRenderFrame(melonDS::NDS* nds) {
         return true;
     }
-    void onIngameCutsceneStart(melonDS::NDS* nds, CutsceneEntry* cutscene) {}
+    bool ShouldStartIngameCutscene() {return false;}
+    bool ShouldStartReplacementCutscene() {return false;}
+    bool StartedReplacementCutscene() {return false;}
+    bool ShouldStopIngameCutscene() {return false;}
+    CutsceneEntry* CurrentCutscene() {return nullptr;};
+    void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) {}
+    void onIngameCutsceneStart(melonDS::NDS* nds) {}
     void onIngameCutsceneEnd(melonDS::NDS* nds) {}
     void onReplacementCutsceneStart(melonDS::NDS* nds) {}
     void onReplacementCutsceneEnd(melonDS::NDS* nds) {}
