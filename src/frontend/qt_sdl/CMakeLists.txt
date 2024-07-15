@@ -98,13 +98,13 @@ add_compile_definitions(ARCHIVE_SUPPORT_ENABLED)
 add_executable(melonDS ${SOURCES_QT_SDL})
 
 if (WIN32)
-    link_directories("D:/a/_temp/msys64/mingw64/lib")
-
     # Workaround for bug below
     # https://github.com/msys2/MINGW-packages/issues/18966
 
-    # set_property(TARGET harfbuzz::harfbuzz PROPERTY
-	# 		 IMPORTED_IMPLIB "D:/a/_temp/msys64/mingw64/lib/libharfbuzz.dll.a" )
+    set_property(TARGET harfbuzz::harfbuzz PROPERTY
+			 IMPORTED_IMPLIB "D:/a/_temp/msys64/mingw64/lib/libharfbuzz.dll.a" )
+
+    link_directories("D:/a/_temp/msys64/mingw64/lib")
 
     # Fixing bug that happens at the end of the final "cmake" command
     target_link_libraries(melonDS PRIVATE lcms jbig lerc deflate)
