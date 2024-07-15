@@ -28,7 +28,7 @@ jobs:
           update: true
 
     - name: Install dependencies
-      run: pacman -Sq --noconfirm git pkgconf mingw-w64-x86_64-{cmake,SDL2,qt6-static,libarchive,toolchain,pcre2-dev}
+      run: pacman -Sq --noconfirm git pkgconf pcre2-dev mingw-w64-x86_64-{cmake,SDL2,qt6-static,libarchive,toolchain}
 
     - name: Configure
       working-directory: ${{runner.workspace}}
