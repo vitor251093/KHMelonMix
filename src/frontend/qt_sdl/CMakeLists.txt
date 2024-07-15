@@ -98,6 +98,8 @@ add_compile_definitions(ARCHIVE_SUPPORT_ENABLED)
 add_executable(melonDS ${SOURCES_QT_SDL})
 
 if (WIN32)
+    find_package(harfbuzz REQUIRED)
+
     # Assuming harfbuzz::harfbuzz is imported by find_package
     target_link_libraries(melonDS PRIVATE harfbuzz::harfbuzz)
 
