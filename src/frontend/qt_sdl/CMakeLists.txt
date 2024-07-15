@@ -101,10 +101,8 @@ if (WIN32)
     # Workaround for bug below
     # https://github.com/msys2/MINGW-packages/issues/18966
 
-    # set_property(TARGET harfbuzz::harfbuzz PROPERTY
-	# 		 IMPORTED_IMPLIB "c:/msys64/mingw64/lib/libharfbuzz.dll.a" )
-
-    set(QT_FEATURE_harfbuzz ON)
+    set_property(TARGET harfbuzz::harfbuzz PROPERTY
+			 IMPORTED_IMPLIB "c:/msys64/mingw64/lib/libharfbuzz.dll.a" )
 endif()
 
 option(USE_SYSTEM_LIBSLIRP "Use system libslirp instead of the bundled version" OFF)
