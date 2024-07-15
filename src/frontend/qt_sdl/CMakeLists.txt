@@ -76,17 +76,6 @@ else()
     set(QT_LINK_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Multimedia Qt5::MultimediaWidgets)
 endif()
 
-if (WIN32)
-    # Assuming harfbuzz::harfbuzz is imported by find_package
-    target_link_libraries(melonDS PRIVATE harfbuzz::harfbuzz)
-
-    # Check if IMPORTED_IMPLIB is properly set
-    get_target_property(harfbuzz_IMPORTED_IMPLIB harfbuzz::harfbuzz IMPORTED_IMPLIB_RELEASE)
-    if(NOT harfbuzz_IMPORTED_IMPLIB)
-        message(FATAL_ERROR "IMPORTED_IMPLIB not set for harfbuzz::harfbuzz in RELEASE configuration.")
-    endif()
-endif()
-
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -107,6 +96,17 @@ fix_interface_includes(PkgConfig::SDL2 PkgConfig::LibArchive)
 add_compile_definitions(ARCHIVE_SUPPORT_ENABLED)
 
 add_executable(melonDS ${SOURCES_QT_SDL})
+
+if (WIN32)
+    # Assuming harfbuzz::harfbuzz is imported by find_package
+    target_link_libraries(melonDS PRIVATE harfbuzz::harfbuzz)
+
+    # Check if IMPORTED_IMPLIB is properly set
+    get_target_property(harfbuzz_IMPORTED_IMPLIB harfbuzz::harfbuzz IMPORTED_IMPLIB_RELEASE)
+    if(NOT harfbuzz_IMPORTED_IMPLIB)
+        message(FATAL_ERROR "IMPORTED_IMPLIB not set for harfbuzz::harfbuzz in RELEASE configuration.")
+    endif()
+endif()
 
 option(USE_SYSTEM_LIBSLIRP "Use system libslirp instead of the bundled version" OFF)
 if (USE_SYSTEM_LIBSLIRP)
