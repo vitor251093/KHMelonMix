@@ -98,16 +98,12 @@ add_compile_definitions(ARCHIVE_SUPPORT_ENABLED)
 add_executable(melonDS ${SOURCES_QT_SDL})
 
 if (WIN32)
-    find_package(harfbuzz REQUIRED)
+    # Workaround for bug below
+    # https://github.com/msys2/MINGW-packages/issues/18966
 
-    # Assuming harfbuzz::harfbuzz is imported by find_package
-    target_link_libraries(melonDS PRIVATE harfbuzz::harfbuzz)
-
-    # Check if IMPORTED_IMPLIB is properly set
-    get_target_property(harfbuzz_IMPORTED_IMPLIB harfbuzz::harfbuzz IMPORTED_IMPLIB_RELEASE)
-    if(NOT harfbuzz_IMPORTED_IMPLIB)
-        message(FATAL_ERROR "IMPORTED_IMPLIB not set for harfbuzz::harfbuzz in RELEASE configuration.")
-    endif()
+    target_link_libraries(melonDS PRIVATE Qt${QT_VERSION_MAJOR}::Widgets pthread)
+    set_property(TARGET harfbuzz::harfbuzz PROPERTY
+			 IMPORTED_IMPLIB "c:/msys64/mingw64/lib/libharfbuzz.dll.a" )
 endif()
 
 option(USE_SYSTEM_LIBSLIRP "Use system libslirp instead of the bundled version" OFF)
