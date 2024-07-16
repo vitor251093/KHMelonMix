@@ -43,6 +43,10 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         mkdir dist
+        ls D:/a/_temp/msys64/mingw64/share/
+        echo "------"
+        ls D:/a/_temp/msys64/mingw64/share/qt6/plugins/
+        echo "------"
         mv melonDS.exe ./dist/MelonMix.exe
         cp D:/a/_temp/msys64/mingw64/bin/*.dll ./dist/
         cp -r D:/a/_temp/msys64/mingw64/share/qt6/plugins/platforms ./dist/platforms/
