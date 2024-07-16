@@ -935,9 +935,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         else {
             bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
             if (isCutscenePlaying) {
-                player->pause();
+                player->stop();
+                asyncStopVideo();
+                showingSettings = !showingSettings;
             }
-            centralWidget->setCurrentWidget(settingsWidget);
+            else {
+                centralWidget->setCurrentWidget(settingsWidget);
+            }
         }
         showingSettings = !showingSettings;
     }
