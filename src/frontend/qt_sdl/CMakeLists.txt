@@ -101,8 +101,8 @@ if (WIN32)
     # Workaround for bug below
     # https://github.com/msys2/MINGW-packages/issues/18966
 
-    set_property(TARGET harfbuzz::harfbuzz PROPERTY
-			 IMPORTED_IMPLIB "D:/a/_temp/msys64/mingw64/lib/libharfbuzz.dll.a" )
+    #set_property(TARGET harfbuzz::harfbuzz PROPERTY
+	#		 IMPORTED_IMPLIB "D:/a/_temp/msys64/mingw64/lib/libharfbuzz.dll.a" )
 
     #link_directories("D:/a/_temp/msys64/mingw64/lib")
 
