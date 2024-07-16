@@ -169,10 +169,6 @@ endif()
 if (BUILD_STATIC)
     qt_import_plugins(melonDS INCLUDE Qt::QSvgPlugin)
     target_link_options(melonDS PRIVATE -static)
-
-    if (USE_QT6)
-        target_compile_definitions(melonDS PRIVATE QT_STATIC_BUILD)
-    endif()
 endif()
 
 target_include_directories(melonDS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
