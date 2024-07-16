@@ -28,11 +28,11 @@ jobs:
           update: true
 
     - name: Install dependencies
-      run: pacman -Sq --noconfirm git pkgconf mingw-w64-x86_64-{cmake,SDL2,qt6-static,qt6-multimedia,libarchive,toolchain} mingw-w64-qt6-base-static
+      run: pacman -Sq --noconfirm git pkgconf mingw-w64-x86_64-{cmake,SDL2,qt6-static,qt6-base,qt6-multimedia,libarchive,toolchain}
 
     - name: Configure
       working-directory: ${{runner.workspace}}
-      run: cmake -B build $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_STATIC=ON -DUSE_QT6=ON -DCMAKE_PREFIX_PATH=D:/a/_temp/msys64/mingw64/qt6-static
+      run: cmake -B build $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_STATIC=ON -DUSE_QT6=ON -DCMAKE_PREFIX_PATH=D:/a/_temp/msys64/mingw64/qt6-static;D:/a/_temp/msys64/mingw64/qt6-base;D:/a/_temp/msys64/mingw64/qt6-multimedia
 
     - name: Make
       working-directory: ${{runner.workspace}}/build
