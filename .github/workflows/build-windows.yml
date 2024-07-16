@@ -44,10 +44,10 @@ jobs:
       run: |
         mkdir dist
         mv melonDS.exe ./dist/MelonMix.exe
-        ls D:/a/_temp/msys64/mingw64/qt6-static/
-        echo ""
-        ls D:/a/_temp/msys64/mingw64/share/
-        echo ""
+        ls D:/a/_temp/msys64/mingw64/qt6-static/share/
+        echo "-----"
+        ls D:/a/_temp/msys64/mingw64/share/qt6/
+        echo "-----"
         cp D:/a/_temp/msys64/mingw64/bin/*.dll ./dist/
         cp D:/a/_temp/msys64/mingw64/share/qt6/plugins/*.dll ./dist/
         echo "MelonMix.exe -f roms/days.nds"    > ./dist/MelonMix_KHDays.bat
