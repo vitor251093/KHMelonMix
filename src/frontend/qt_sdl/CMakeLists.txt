@@ -84,6 +84,9 @@ find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 if (BUILD_STATIC)
+    find_package(harfbuzz REQUIRED)
+    find_package(Libmng REQUIRED)
+
     list(APPEND PKG_CONFIG_EXECUTABLE "--static")
 endif()
 
