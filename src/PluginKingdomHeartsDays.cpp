@@ -897,6 +897,7 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
     }
 
     printf("Detected cutscene: %s\n", cutscene->Name);
+    log("Cutscene detected");
     _CurrentCutscene = cutscene;
     _ShouldStartIngameCutscene = true;
 }
@@ -905,22 +906,23 @@ void PluginKingdomHeartsDays::onIngameCutsceneStart(melonDS::NDS* nds) {
         return;
     }
     printf("Starting cutscene: %s\n", _CurrentCutscene->Name);
+    log("Starting cutscene");
     _ShouldStartIngameCutscene = false;
     _ShouldStartReplacementCutscene = true;
 }
 void PluginKingdomHeartsDays::onReplacementCutsceneStart(melonDS::NDS* nds) {
-    printf("Cutscene started\n");
+    log("Cutscene started");
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = true;
 }
 void PluginKingdomHeartsDays::onReplacementCutsceneEnd(melonDS::NDS* nds) {
-    printf("Should stop ingame cutscene\n");
+    log("Should stop ingame cutscene");
     _StartedReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldStopIngameCutscene = true;
 }
 void PluginKingdomHeartsDays::onIngameCutsceneEnd(melonDS::NDS* nds) {
-    printf("Ingame cutscene reached its end\n");
+    log("Ingame cutscene reached its end");
     _ShouldStartReplacementCutscene = false;
     _ShouldStopIngameCutscene = false;
 }

@@ -2,6 +2,7 @@
 #define PLUGIN_H
 
 #define DEBUG_MODE_ENABLED false
+#define DEBUG_LOG_ENABLED true
 
 #include "NDS.h"
 
@@ -65,11 +66,13 @@ public:
     void log(const char* log) {
         printf("%s\n", log);
 
-        std::string fileName = std::string("debug.log");
-        Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::Append);
-        Platform::FileWrite(log, strlen(log), 1, logf);
-        Platform::FileWrite("\n", 1, 1, logf);
-        Platform::CloseFile(logf);
+        if (DEBUG_LOG_ENABLED) {
+            std::string fileName = std::string("debug.log");
+            Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::Append);
+            Platform::FileWrite(log, strlen(log), 1, logf);
+            Platform::FileWrite("\n", 1, 1, logf);
+            Platform::CloseFile(logf);
+        }
     }
 };
 }
