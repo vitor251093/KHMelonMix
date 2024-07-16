@@ -171,6 +171,7 @@ if (BUILD_STATIC)
     target_link_options(melonDS PRIVATE -static)
 
     if (USE_QT6)
+        target_link_libraries(melonDS PRIVATE harfbuzz::harfbuzz Libmng::Libmng)
         target_compile_definitions(melonDS PRIVATE QT_STATIC_BUILD)
     endif()
 endif()
