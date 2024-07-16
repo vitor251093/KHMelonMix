@@ -924,8 +924,19 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
 
         if (showingSettings) {
-            centralWidget->setCurrentWidget(panel);
-        } else {
+            if (player->playbackState() == QMediaPlayer::PlaybackState::PausedState) {
+                player->play();
+                centralWidget->setCurrentWidget(playerWidget);
+            }
+            else {
+                centralWidget->setCurrentWidget(panel);
+            }
+        }
+        else {
+            bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
+            if (isCutscenePlaying) {
+                player->pause();
+            }
             centralWidget->setCurrentWidget(settingsWidget);
         }
         showingSettings = !showingSettings;
