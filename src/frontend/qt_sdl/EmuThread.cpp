@@ -647,6 +647,9 @@ void EmuThread::refreshCutsceneState()
         if (cutscene != nullptr) {
             std::string path = plugin->CutsceneFilePath(cutscene);
             if (path != "") {
+                // disabling fast-foward, otherwise it will affect the cutscenes
+                emuInstance->setVSyncGL(true);
+
                 emuStatus = emuStatus_Paused;
                 QString filePath = QString::fromUtf8(path.c_str());
                 emit windowStartVideo(filePath);
