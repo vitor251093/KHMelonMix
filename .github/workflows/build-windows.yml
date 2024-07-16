@@ -44,13 +44,10 @@ jobs:
       run: |
         mkdir dist
         mv melonDS.exe ./dist/MelonMix.exe
-        cp D:/a/_temp/msys64/mingw64/bin/*.dll ./dist/
-        cp D:/a/_temp/msys64/mingw64/share/qt6/plugins/platforms/*.dll ./dist/
         echo "MelonMix.exe -f roms/days.nds"    > ./dist/MelonMix_KHDays.bat
         echo "MelonMix.exe -f roms/recoded.nds" > ./dist/MelonMix_KHReCoded.bat
 
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-windows-x86_64
-        path: |
-          ${{runner.workspace}}\build\dist
+        path: ${{runner.workspace}}\build\dist
