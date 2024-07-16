@@ -171,7 +171,6 @@ if (BUILD_STATIC)
     target_link_options(melonDS PRIVATE -static)
 
     if (USE_QT6)
-        qt6_use_modules(melonDS Core Gui Widgets Network Multimedia MultimediaWidgets OpenGL OpenGLWidgets)
         target_compile_definitions(melonDS PRIVATE QT_STATIC_BUILD)
     endif()
 endif()
