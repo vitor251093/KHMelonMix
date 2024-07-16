@@ -44,6 +44,7 @@ public:
     virtual bool ShouldStartIngameCutscene() = 0;
     virtual bool ShouldStartReplacementCutscene() = 0;
     virtual bool StartedReplacementCutscene() = 0;
+    virtual bool ShouldStopReplacementCutscene() = 0;
     virtual bool ShouldStopIngameCutscene() = 0;
     virtual CutsceneEntry* CurrentCutscene() = 0;
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;

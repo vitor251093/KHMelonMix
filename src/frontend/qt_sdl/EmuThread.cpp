@@ -85,6 +85,7 @@ void EmuThread::attachWindow(MainWindow* window)
     connect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
     connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+    connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
 }
 
 void EmuThread::detachWindow(MainWindow* window)
@@ -102,6 +103,7 @@ void EmuThread::detachWindow(MainWindow* window)
     disconnect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
     disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+    disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
 }
 
 void EmuThread::run()
@@ -487,8 +489,15 @@ void EmuThread::run()
                 emuInstance->drawScreenGL();
             }
 
-            if (plugin != nullptr && plugin->ShouldStopIngameCutscene()) {
-                emuStatus = emuStatus_Running;
+            if (plugin != nullptr) {
+                plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
+
+                if (plugin->ShouldStopIngameCutscene()) {
+                    emuStatus = emuStatus_Running;
+                }
+                if (plugin->ShouldStopReplacementCutscene()) {
+                    emit windowStopVideo();
+                }
             }
         }
 

@@ -136,6 +136,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _StartedReplacementCutscene = false;
     _ShouldStartIngameCutscene = false;
     _ShouldStartReplacementCutscene = false;
+    _ShouldStopReplacementCutscene = false;
     _ShouldStopIngameCutscene = false;
     _CurrentCutscene = nullptr;
 
@@ -205,6 +206,10 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
 
 u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
+    if (GameScene == gameScene_Cutscene && (~InputMask) & (1 << 3)) { // Start
+        _ShouldStopReplacementCutscene = true;
+    }
+
     if (HotkeyPress & (1 << 15)) { // HUD Toggle
         hudToggle(nds);
     }
@@ -911,6 +916,7 @@ void PluginKingdomHeartsDays::onReplacementCutsceneStart(melonDS::NDS* nds) {
 void PluginKingdomHeartsDays::onReplacementCutsceneEnd(melonDS::NDS* nds) {
     printf("Should stop ingame cutscene\n");
     _StartedReplacementCutscene = false;
+    _ShouldStopReplacementCutscene = false;
     _ShouldStopIngameCutscene = true;
 }
 void PluginKingdomHeartsDays::onIngameCutsceneEnd(melonDS::NDS* nds) {

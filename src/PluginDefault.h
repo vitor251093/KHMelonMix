@@ -30,6 +30,7 @@ public:
     bool ShouldStartIngameCutscene() {return false;}
     bool ShouldStartReplacementCutscene() {return false;}
     bool StartedReplacementCutscene() {return false;}
+    bool ShouldStopReplacementCutscene() {return false;}
     bool ShouldStopIngameCutscene() {return false;}
     CutsceneEntry* CurrentCutscene() {return nullptr;}
     std::string CutsceneFilePath(CutsceneEntry* cutscene) {return "";}

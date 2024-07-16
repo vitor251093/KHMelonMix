@@ -859,6 +859,12 @@ void MainWindow::asyncStopVideo()
 
 void MainWindow::stopVideo()
 {
+    bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
+    if (!isCutscenePlaying) {
+        return;
+    }
+
+    player->stop();
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(panel);
 
@@ -935,8 +941,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         else {
             bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
             if (isCutscenePlaying) {
-                player->stop();
-                asyncStopVideo();
+                // player->stop();
+                // asyncStopVideo();
                 showingSettings = !showingSettings;
             }
             else {

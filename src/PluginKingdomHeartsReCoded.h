@@ -38,11 +38,13 @@ public:
     bool _ShouldStartIngameCutscene;
     bool _ShouldStartReplacementCutscene;
     bool _StartedReplacementCutscene;
+    bool _ShouldStopReplacementCutscene;
     bool _ShouldStopIngameCutscene;
     CutsceneEntry* _CurrentCutscene;
     bool ShouldStartIngameCutscene() {return _ShouldStartIngameCutscene;}
     bool ShouldStartReplacementCutscene() {return _ShouldStartReplacementCutscene;}
     bool StartedReplacementCutscene() {return _StartedReplacementCutscene;}
+    bool ShouldStopReplacementCutscene() {return _ShouldStopReplacementCutscene;}
     bool ShouldStopIngameCutscene() {return _ShouldStopIngameCutscene;}
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
