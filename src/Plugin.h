@@ -61,6 +61,16 @@ public:
     virtual bool refreshGameScene(melonDS::NDS* nds) = 0;
 
     virtual void setAspectRatio(melonDS::NDS* nds, float aspectRatio) = 0;
+
+    void log(const char* log) {
+        printf("%s\n", log);
+
+        std::string fileName = std::string("debug.log");
+        Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::Append);
+        Platform::FileWrite(log, strlen(log), 1, logf);
+        Platform::FileWrite("\n", 1, 1, logf);
+        Platform::CloseFile(logf);
+    }
 };
 }
 

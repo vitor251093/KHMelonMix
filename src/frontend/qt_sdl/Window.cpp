@@ -811,22 +811,23 @@ void MainWindow::createVideoPlayer()
     centralWidget->addWidget(playerWidget);
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
-        qDebug() << "======= MediaStatus " << status;
+        Plugins::PluginManager::get()->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
+
         if (status == QMediaPlayer::EndOfMedia) {
             asyncStopVideo();
         }
         if (status == QMediaPlayer::InvalidMedia) {
-            qDebug() << "======= Error: " << player->errorString();
+            Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
         }
     });
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
-        qDebug() << "======= Error: " << player->errorString();
+        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
     });
 #else
     connect(player, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
-        qDebug() << "======= Error: " << player->errorString();
+        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
     });
 #endif
 
