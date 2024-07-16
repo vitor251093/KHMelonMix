@@ -184,6 +184,8 @@ target_link_libraries(melonDS PRIVATE PkgConfig::SDL2 PkgConfig::LibArchive PkgC
 target_link_libraries(melonDS PRIVATE ${QT_LINK_LIBS} ${CMAKE_DL_LIBS})
 
 if (WIN32)
+    option(QT_DEPLOY_FFMPEG "Bundle ffmpeg with the app on Windows" ON)
+
     option(PORTABLE "Make a portable build that looks for its configuration in the current directory" ON)
 
     if (PORTABLE)
