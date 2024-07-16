@@ -926,7 +926,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     // TODO!! REMOVE ME IN RELEASE BUILDS!!
     //if (event->key() == Qt::Key_F11) emuThread->NDS->debug(0);
 
-    if (event->key() == Qt::Key_Escape) {
+    /*if (event->key() == Qt::Key_Escape) {
         QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
 
         if (showingSettings) {
@@ -950,7 +950,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
             }
         }
         showingSettings = !showingSettings;
-    }
+    }*/
 
     emuInstance->onKeyPress(event);
 }
