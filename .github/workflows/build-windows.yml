@@ -45,6 +45,7 @@ jobs:
         mkdir dist
         mv melonDS.exe ./dist/MelonMix.exe
         cp D:/a/_temp/msys64/mingw64/bin/*.dll ./dist/
+        cp D:/a/_temp/msys64/mingw64/share/qt6/plugins/*.dll ./dist/
         echo "MelonMix.exe -f roms/days.nds"    > ./dist/MelonMix_KHDays.bat
         echo "MelonMix.exe -f roms/recoded.nds" > ./dist/MelonMix_KHReCoded.bat
 
