@@ -42,18 +42,14 @@ jobs:
     - name: Preparing artifacts
       working-directory: ${{runner.workspace}}/build
       run: |
-        mv melonDS.exe ./MelonMix.exe
-        cp D:/a/_temp/msys64/mingw64/bin/Qt6Gui.dll        ./Qt6Gui.dll
-        cp D:/a/_temp/msys64/mingw64/bin/Qt6Multimedia.dll ./Qt6Multimedia.dll
-        echo "MelonMix.exe -f roms/days.nds"    > ./MelonMix_KHDays.bat
-        echo "MelonMix.exe -f roms/recoded.nds" > ./MelonMix_KHReCoded.bat
+        mkdir dist
+        mv melonDS.exe ./dist/MelonMix.exe
+        cp D:/a/_temp/msys64/mingw64/bin/*.dll ./dist/
+        echo "MelonMix.exe -f roms/days.nds"    > ./dist/MelonMix_KHDays.bat
+        echo "MelonMix.exe -f roms/recoded.nds" > ./dist/MelonMix_KHReCoded.bat
 
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-windows-x86_64
         path: |
-          ${{runner.workspace}}\build\MelonMix.exe
-          ${{runner.workspace}}\build\MelonMix_KHDays.bat
-          ${{runner.workspace}}\build\MelonMix_KHReCoded.bat
-          ${{runner.workspace}}\build\Qt6Gui.dll
-          ${{runner.workspace}}\build\Qt6Multimedia.dll
+          ${{runner.workspace}}\build\dist
