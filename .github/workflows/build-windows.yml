@@ -43,6 +43,8 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         mv melonDS.exe ./MelonMix.exe
+        cp D:/a/_temp/msys64/mingw64/bin/Qt6Gui.dll        ./Qt6Gui.dll
+        cp D:/a/_temp/msys64/mingw64/bin/Qt6Multimedia.dll ./Qt6Multimedia.dll
         echo "MelonMix.exe -f roms/days.nds"    > ./MelonMix_KHDays.bat
         echo "MelonMix.exe -f roms/recoded.nds" > ./MelonMix_KHReCoded.bat
 
@@ -53,3 +55,5 @@ jobs:
           ${{runner.workspace}}\build\MelonMix.exe
           ${{runner.workspace}}\build\MelonMix_KHDays.bat
           ${{runner.workspace}}\build\MelonMix_KHReCoded.bat
+          ${{runner.workspace}}\build\Qt6Gui.dll
+          ${{runner.workspace}}\build\Qt6Multimedia.dll

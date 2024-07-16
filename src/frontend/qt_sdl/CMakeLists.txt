@@ -167,8 +167,6 @@ endif()
 
 
 if (BUILD_STATIC)
-    set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
-
     qt_import_plugins(melonDS INCLUDE Qt::QSvgPlugin)
     target_link_options(melonDS PRIVATE -static)
 endif()
