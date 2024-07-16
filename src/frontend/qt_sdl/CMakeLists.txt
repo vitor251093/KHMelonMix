@@ -97,19 +97,6 @@ add_compile_definitions(ARCHIVE_SUPPORT_ENABLED)
 
 add_executable(melonDS ${SOURCES_QT_SDL})
 
-if (WIN32)
-    # Workaround for bug below
-    # https://github.com/msys2/MINGW-packages/issues/18966
-
-    #set_property(TARGET harfbuzz::harfbuzz PROPERTY
-	#		 IMPORTED_IMPLIB "D:/a/_temp/msys64/mingw64/lib/libharfbuzz.dll.a" )
-
-    #link_directories("D:/a/_temp/msys64/mingw64/lib")
-
-    # Fixing bug that happens at the end of the final "cmake" command
-    #target_link_libraries(melonDS PRIVATE jbig lerc deflate)
-endif()
-
 option(USE_SYSTEM_LIBSLIRP "Use system libslirp instead of the bundled version" OFF)
 if (USE_SYSTEM_LIBSLIRP)
     pkg_check_modules(Slirp REQUIRED IMPORTED_TARGET slirp)
