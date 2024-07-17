@@ -2,7 +2,7 @@
 #define PLUGIN_H
 
 #define DEBUG_MODE_ENABLED false
-#define DEBUG_LOG_ENABLED true
+#define DEBUG_LOG_ENABLED  false
 
 #include "NDS.h"
 
