@@ -924,6 +924,7 @@ void PluginKingdomHeartsDays::onReplacementCutsceneEnd(melonDS::NDS* nds) {
 void PluginKingdomHeartsDays::onIngameCutsceneEnd(melonDS::NDS* nds) {
     log("Ingame cutscene reached its end");
     _ShouldStartReplacementCutscene = false;
+    _StartedReplacementCutscene = false;
     _ShouldStopIngameCutscene = false;
 }
 
