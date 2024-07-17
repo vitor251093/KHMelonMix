@@ -34,6 +34,7 @@
 #include <QCloseEvent>
 #include <QMediaPlayer>
 #include <QVideoWidget>
+#include <QAudioOutput>
 
 #include "Screen.h"
 #include "Config.h"
@@ -263,6 +264,7 @@ public:
     ScreenPanel* panel;
 
     QVideoWidget* playerWidget;
+    QAudioOutput* playerAudioOutput;
     QMediaPlayer* player;
 
     QAction* actOpenROM;

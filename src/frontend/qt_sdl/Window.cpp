@@ -805,6 +805,7 @@ void MainWindow::createScreenPanel()
 void MainWindow::createVideoPlayer()
 {
     playerWidget = new QVideoWidget(this);
+    playerAudioOutput = new QAudioOutput(this);
     player = new QMediaPlayer(this);
 
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
@@ -832,6 +833,7 @@ void MainWindow::createVideoPlayer()
 #endif
 
     player->setVideoOutput(playerWidget);
+    player->setAudioOutput(playerAudioOutput);
 }
 
 void MainWindow::asyncStartVideo(QString videoFilePath)
