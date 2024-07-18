@@ -32,6 +32,8 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
+#define CUTSCENE_SKIP_START_FRAMES_COUNT 60
+
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
@@ -138,6 +140,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     _hasVisible3DOnBottomScreen = false;
 
+    _StartPressCount = 0;
     _StartedReplacementCutscene = false;
     _ShouldTerminateIngameCutscene = false;
     _ShouldStartReplacementCutscene = false;
@@ -215,7 +218,7 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
         _ShouldStopReplacementCutscene = true;
     }
 
-    if (_ShouldTerminateIngameCutscene || _ShouldReturnToGameAfterCutscene) {
+    if ((_ShouldTerminateIngameCutscene || _ShouldReturnToGameAfterCutscene) && (++_StartPressCount) <= CUTSCENE_SKIP_START_FRAMES_COUNT) {
         InputMask &= ~(1<<3); // Start
     }
 
@@ -852,11 +855,11 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
     u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
     u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
 
-    if (cutsceneAddressValue == 0 || cutsceneAddressValue == 0xea000000 || cutsceneAddressValue == 0xea000008) {
+    if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
         cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
         cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
 
-        if (cutsceneAddressValue == 0 || cutsceneAddressValue == 0xea000000 || cutsceneAddressValue == 0xea000008) {
+        if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
             return nullptr;
         }
     }
@@ -914,6 +917,7 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
 
     printf("Detected cutscene: %s\n", cutscene->Name);
     log("Cutscene detected");
+    _StartPressCount = 0;
     _CurrentCutscene = cutscene;
     _ShouldTerminateIngameCutscene = true;
 }
