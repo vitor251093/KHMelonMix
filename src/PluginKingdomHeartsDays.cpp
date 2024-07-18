@@ -18,14 +18,14 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C9C
 
 #define CUTSCENE_ADDRESS_US      0x02093A4C
-#define CUTSCENE_ADDRESS_EU      0x02093A4C
-#define CUTSCENE_ADDRESS_JP      0x02093A4C
-#define CUTSCENE_ADDRESS_JP_REV1 0x02093A4C
+#define CUTSCENE_ADDRESS_EU      0x02093A6C
+#define CUTSCENE_ADDRESS_JP      0x02093A4C // TODO: KH
+#define CUTSCENE_ADDRESS_JP_REV1 0x02093A4C // TODO: KH
 
 #define CUTSCENE_ADDRESS_2_US      0x02093A94
-#define CUTSCENE_ADDRESS_2_EU      0x02093A94
-#define CUTSCENE_ADDRESS_2_JP      0x02093A94
-#define CUTSCENE_ADDRESS_2_JP_REV1 0x02093A94
+#define CUTSCENE_ADDRESS_2_EU      0x02093A94 // TODO: KH
+#define CUTSCENE_ADDRESS_2_JP      0x02093A94 // TODO: KH
+#define CUTSCENE_ADDRESS_2_JP_REV1 0x02093A94 // TODO: KH
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
@@ -66,52 +66,52 @@ enum
 CutsceneEntry Cutscenes[] =
 {
      // still couldn't find a proper way to detect the opening from the Theater
-    {"802",    "802_opening",                       0x088b2e00, 0x088b2e00, 0x088b2e00},
-    {"803",    "803_meet_xion",                     0x0987ec00, 0x0987ec00, 0x0987ec00},
-    {"804",    "804_roxas_recusant_sigil",          0x09ae9400, 0x09ae9400, 0x09ae9400},
-    {"805",    "805_the_dark_margin",               0x09b80600, 0x09b80600, 0x09b80600},
-    {"806",    "806_sora_entering_pod",             0x09e83800, 0x09e83800, 0x09e83800},
-    {"808",    "808_sunset_memory",                 0x09f24c00, 0x09f24c00, 0x09f24c00},
-    {"809",    "809_xions_defeat",                  0x09f79400, 0x09f79400, 0x09f79400},
-    {"810",    "810_the_main_in_black_reflects",    0x09ff8000, 0x09ff8000, 0x09ff8000},
-    {"813",    "813_xions_defeat",                  0x0a13f600, 0x0a13f600, 0x0a13f600},
-    {"814",    "814_sora_walk",                     0x0a677c00, 0x0a677c00, 0x0a677c00},
-    {"815",    "815_sora_release_kairi",            0x0a6e4200, 0x0a6e4200, 0x0a6e4200},
-    {"816",    "816_kairi_memories",                0x0a7a9200, 0x0a7a9200, 0x0a7a9200},
-    {"817",    "817_namine_and_diz",                0x0a857600, 0x0a857600, 0x0a857600},
-    {"818",    "818_why_the_sun_sets_red",          0x0ab4be00, 0x0ab4be00, 0x0ab4be00},
+    {"802",    "802_opening",                       0x088b2e00, 0x088b2e00, 0x088b2e00}, // lacks EU, JP
+    {"803",    "803_meet_xion",                     0x0987ec00, 0x09b09200, 0x0987ec00}, // lacks JP
+    {"804",    "804_roxas_recusant_sigil",          0x09ae9400, 0x09ae9400, 0x09ae9400}, // lacks EU, JP
+    {"805",    "805_the_dark_margin",               0x09b80600, 0x09b80600, 0x09b80600}, // lacks EU, JP
+    {"806",    "806_sora_entering_pod",             0x09e83800, 0x09e83800, 0x09e83800}, // lacks EU, JP
+    {"808",    "808_sunset_memory",                 0x09f24c00, 0x09f24c00, 0x09f24c00}, // lacks EU, JP
+    {"809",    "809_xions_defeat",                  0x09f79400, 0x09f79400, 0x09f79400}, // lacks EU, JP
+    {"810",    "810_the_main_in_black_reflects",    0x09ff8000, 0x09ff8000, 0x09ff8000}, // lacks EU, JP
+    {"813",    "813_xions_defeat",                  0x0a13f600, 0x0a13f600, 0x0a13f600}, // lacks EU, JP
+    {"814",    "814_sora_walk",                     0x0a677c00, 0x0a677c00, 0x0a677c00}, // lacks EU, JP
+    {"815",    "815_sora_release_kairi",            0x0a6e4200, 0x0a6e4200, 0x0a6e4200}, // lacks EU, JP
+    {"816",    "816_kairi_memories",                0x0a7a9200, 0x0a7a9200, 0x0a7a9200}, // lacks EU, JP
+    {"817",    "817_namine_and_diz",                0x0a857600, 0x0a857600, 0x0a857600}, // lacks EU, JP
+    {"818",    "818_why_the_sun_sets_red",          0x0ab4be00, 0x0add6400, 0x0ab4be00}, // lacks JP
     {"819",    "819_sora_wakes_up",                 0x0afeac00, 0x0afeac00, 0x0afeac00}, // double cutscene complement
-    {"821",    "821_snarl_of_memories",             0x0b043e00, 0x0b043e00, 0x0b043e00},
-    {"822",    "822_riku_takes_care_of_xion",       0x0b514600, 0x0b514600, 0x0b514600},
-    {"823",    "823_roxas_passes_by",               0x0b5b5e00, 0x0b5b5e00, 0x0b5b5e00},
-    {"824",    "824_xions_dream",                   0x0b65a200, 0x0b65a200, 0x0b65a200},
-    {"825",    "825_xions_capture",                 0x0b8a7a00, 0x0b8a7a00, 0x0b8a7a00},
-    {"826",    "826_hollow_bastion_memories",       0x0bd74600, 0x0bd74600, 0x0bd74600},
-    {"827",    "827_agrabah_keyhole_memory",        0x0be7e000, 0x0be7e000, 0x0be7e000},
-    {"828",    "828_xion_and_riku",                 0x0bedf200, 0x0bedf200, 0x0bedf200},
-    {"829",    "829_rikus_resolve",                 0x0c76a800, 0x0c76a800, 0x0c76a800},
-    {"830",    "830_mickey_and_riku_ansem",         0x0c863a00, 0x0c863a00, 0x0c863a00},
-    {"831",    "831_xion_and_namine",               0x0ca47c00, 0x0ca47c00, 0x0ca47c00},
-    {"832",    "832_xion_and_axel_face_off",        0x0cb01c00, 0x0cb01c00, 0x0cb01c00},
-    {"833",    "833_xion_attacks",                  0x0cee2000, 0x0cee2000, 0x0cee2000},
-    {"834",    "834_winner",                        0x0d45bc00, 0x0d45bc00, 0x0d45bc00},
-    {"835",    "835_skyscrapper_battle",            0x0d5e0400, 0x0d5e0400, 0x0d5e0400},
-    {"836",    "836_roxas_and_riku",                0x0d6f9400, 0x0d6f9400, 0x0d6f9400},
-    {"837",    "837_riku_turns_into_ansem",         0x0da1ea00, 0x0da1ea00, 0x0da1ea00},
+    {"821",    "821_snarl_of_memories",             0x0b043e00, 0x0b043e00, 0x0b043e00}, // lacks EU, JP
+    {"822",    "822_riku_takes_care_of_xion",       0x0b514600, 0x0b514600, 0x0b514600}, // lacks EU, JP
+    {"823",    "823_roxas_passes_by",               0x0b5b5e00, 0x0b5b5e00, 0x0b5b5e00}, // lacks EU, JP
+    {"824",    "824_xions_dream",                   0x0b65a200, 0x0b65a200, 0x0b65a200}, // lacks EU, JP
+    {"825",    "825_xions_capture",                 0x0b8a7a00, 0x0b8a7a00, 0x0b8a7a00}, // lacks EU, JP
+    {"826",    "826_hollow_bastion_memories",       0x0bd74600, 0x0bd74600, 0x0bd74600}, // lacks EU, JP
+    {"827",    "827_agrabah_keyhole_memory",        0x0be7e000, 0x0be7e000, 0x0be7e000}, // lacks EU, JP
+    {"828",    "828_xion_and_riku",                 0x0bedf200, 0x0bedf200, 0x0bedf200}, // lacks EU, JP
+    {"829",    "829_rikus_resolve",                 0x0c76a800, 0x0c76a800, 0x0c76a800}, // lacks EU, JP
+    {"830",    "830_mickey_and_riku_ansem",         0x0c863a00, 0x0c863a00, 0x0c863a00}, // lacks EU, JP
+    {"831",    "831_xion_and_namine",               0x0ca47c00, 0x0ca47c00, 0x0ca47c00}, // lacks EU, JP
+    {"832",    "832_xion_and_axel_face_off",        0x0cb01c00, 0x0cb01c00, 0x0cb01c00}, // lacks EU, JP
+    {"833",    "833_xion_attacks",                  0x0cee2000, 0x0cee2000, 0x0cee2000}, // lacks EU, JP
+    {"834",    "834_winner",                        0x0d45bc00, 0x0d45bc00, 0x0d45bc00}, // lacks EU, JP
+    {"835",    "835_skyscrapper_battle",            0x0d5e0400, 0x0d5e0400, 0x0d5e0400}, // lacks EU, JP
+    {"836",    "836_roxas_and_riku",                0x0d6f9400, 0x0d6f9400, 0x0d6f9400}, // lacks EU, JP
+    {"837",    "837_riku_turns_into_ansem",         0x0da1ea00, 0x0da1ea00, 0x0da1ea00}, // lacks EU, JP
     {"838",    "838_clocktower",                    0x0e063600, 0x0e063600, 0x0e063600}, // double cutscene complement
     {"839_de", "839_riku_please_stop_him_de",       0x0e0db400, 0x0e0db400, 0x0e0db400}, // double cutscene complement
     {"839_en", "839_riku_please_stop_him_en",       0x0e0e1200, 0x0e0e1200, 0x0e0e1200}, // double cutscene complement
     {"839_es", "839_riku_please_stop_him_es",       0x0e0e6c00, 0x0e0e6c00, 0x0e0e6c00}, // double cutscene complement
     {"839_fr", "839_riku_please_stop_him_fr",       0x0e0ecc00, 0x0e0ecc00, 0x0e0ecc00}, // double cutscene complement
     {"839_it", "839_riku_please_stop_him_it",       0x0e0f1600, 0x0e0f1600, 0x0e0f1600}, // double cutscene complement
-    {"840",    "840_after_the_battle",              0x0e0f5e00, 0x0e0f5e00, 0x0e0f5e00},
+    {"840",    "840_after_the_battle",              0x0e0f5e00, 0x0e0f5e00, 0x0e0f5e00}, // lacks EU, JP
     {"841",    "841_xion_fading_from_clocktower",   0x0e444c00, 0x0e444c00, 0x0e444c00}, // double cutscene complement
-    {"842",    "842_a_new_day",                     0x0e4bd400, 0x0e4bd400, 0x0e4bd400},
-    {"843",    "843_the_usual_spot",                0x0e641200, 0x0e641200, 0x0e641200},
-    {"845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e6fa600, 0x0e6fa600},
-    {"846",    "846_axel_and_saix",                 0x0e75bc00, 0x0e75bc00, 0x0e75bc00},
-    {"847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0e9c2000, 0x0e9c2000},
-    {"848",    "848_xions_end",                     0x0eb91800, 0x0eb91800, 0x0eb91800},
+    {"842",    "842_a_new_day",                     0x0e4bd400, 0x0e4bd400, 0x0e4bd400}, // lacks EU, JP
+    {"843",    "843_the_usual_spot",                0x0e641200, 0x0e641200, 0x0e641200}, // lacks EU, JP
+    {"845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e6fa600, 0x0e6fa600}, // lacks EU, JP
+    {"846",    "846_axel_and_saix",                 0x0e75bc00, 0x0e75bc00, 0x0e75bc00}, // lacks EU, JP
+    {"847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0e9c2000, 0x0e9c2000}, // lacks EU, JP
+    {"848",    "848_xions_end",                     0x0eb91800, 0x0eb91800, 0x0eb91800}, // lacks EU, JP
 };
 
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
@@ -852,11 +852,11 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
     u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
     u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
 
-    if (cutsceneAddressValue == 0 || cutsceneAddressValue == 0xea000000) {
+    if (cutsceneAddressValue == 0 || cutsceneAddressValue == 0xea000000 || cutsceneAddressValue == 0xea000008) {
         cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
         cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
 
-        if (cutsceneAddressValue == 0 || cutsceneAddressValue == 0xea000000) {
+        if (cutsceneAddressValue == 0 || cutsceneAddressValue == 0xea000000 || cutsceneAddressValue == 0xea000008) {
             return nullptr;
         }
     }
