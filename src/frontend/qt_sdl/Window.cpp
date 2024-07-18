@@ -805,6 +805,8 @@ void MainWindow::createScreenPanel()
 void MainWindow::createVideoPlayer()
 {
     playerWidget = new QVideoWidget(this);
+    playerWidget->setCursor(Qt::BlankCursor);
+
     playerAudioOutput = new QAudioOutput(this);
     player = new QMediaPlayer(this);
 
