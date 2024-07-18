@@ -210,6 +210,10 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
         _ShouldStopReplacementCutscene = true;
     }
 
+    if (_ShouldStartIngameCutscene) {
+        InputMask &= ~(1<<3); // Start
+    }
+
     if (HotkeyPress & (1 << 15)) { // HUD Toggle
         hudToggle(nds);
     }

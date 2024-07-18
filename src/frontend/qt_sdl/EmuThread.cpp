@@ -187,6 +187,9 @@ void EmuThread::run()
             }
 
             if (plugin->ShouldStartIngameCutscene() || plugin->ShouldStartReplacementCutscene() || plugin->ShouldStopIngameCutscene()) {
+                emuInstance->inputMask = plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
+                emuInstance->nds->SetKeyMask(emuInstance->inputMask);
+
                 refreshGameScene();
 
                 u32 nlines = emuInstance->nds->RunFrame();
