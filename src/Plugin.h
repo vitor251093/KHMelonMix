@@ -42,11 +42,11 @@ public:
     virtual u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
     virtual void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask) = 0;
 
-    virtual bool ShouldStartIngameCutscene() = 0;
+    virtual bool ShouldTerminateIngameCutscene() = 0;
     virtual bool ShouldStartReplacementCutscene() = 0;
     virtual bool StartedReplacementCutscene() = 0;
     virtual bool ShouldStopReplacementCutscene() = 0;
-    virtual bool ShouldStopIngameCutscene() = 0;
+    virtual bool ShouldReturnToGameAfterCutscene() = 0;
     virtual CutsceneEntry* CurrentCutscene() = 0;
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) = 0;

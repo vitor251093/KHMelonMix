@@ -36,17 +36,17 @@ public:
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
 
-    bool _ShouldStartIngameCutscene;
+    bool _ShouldTerminateIngameCutscene;
     bool _ShouldStartReplacementCutscene;
     bool _StartedReplacementCutscene;
     bool _ShouldStopReplacementCutscene;
-    bool _ShouldStopIngameCutscene;
+    bool _ShouldReturnToGameAfterCutscene;
     CutsceneEntry* _CurrentCutscene;
-    bool ShouldStartIngameCutscene() {return _ShouldStartIngameCutscene;}
+    bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
     bool ShouldStartReplacementCutscene() {return _ShouldStartReplacementCutscene;}
     bool StartedReplacementCutscene() {return _StartedReplacementCutscene;}
     bool ShouldStopReplacementCutscene() {return _ShouldStopReplacementCutscene;}
-    bool ShouldStopIngameCutscene() {return _ShouldStopIngameCutscene;}
+    bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
     void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene);

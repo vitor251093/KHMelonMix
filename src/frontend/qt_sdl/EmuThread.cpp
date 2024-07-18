@@ -186,7 +186,7 @@ void EmuThread::run()
                 printf("Loading plugin %s\n", typeid(*plugin).name());
             }
 
-            if (plugin->ShouldStartIngameCutscene() || plugin->ShouldStartReplacementCutscene() || plugin->ShouldStopIngameCutscene()) {
+            if (plugin->ShouldTerminateIngameCutscene() || plugin->ShouldStartReplacementCutscene() || plugin->ShouldReturnToGameAfterCutscene()) {
                 emuInstance->inputMask = plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
                 emuInstance->nds->SetKeyMask(emuInstance->inputMask);
 
@@ -495,7 +495,7 @@ void EmuThread::run()
             if (plugin != nullptr) {
                 plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
 
-                if (plugin->ShouldStopIngameCutscene()) {
+                if (plugin->ShouldReturnToGameAfterCutscene()) {
                     emuStatus = emuStatus_Running;
                 }
                 if (plugin->ShouldStopReplacementCutscene()) {

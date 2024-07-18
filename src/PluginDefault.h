@@ -27,11 +27,11 @@ public:
     bool shouldRenderFrame(melonDS::NDS* nds) {
         return true;
     }
-    bool ShouldStartIngameCutscene() {return false;}
+    bool ShouldTerminateIngameCutscene() {return false;}
     bool ShouldStartReplacementCutscene() {return false;}
     bool StartedReplacementCutscene() {return false;}
     bool ShouldStopReplacementCutscene() {return false;}
-    bool ShouldStopIngameCutscene() {return false;}
+    bool ShouldReturnToGameAfterCutscene() {return false;}
     CutsceneEntry* CurrentCutscene() {return nullptr;}
     std::string CutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) {}
