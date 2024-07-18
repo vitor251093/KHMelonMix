@@ -22,6 +22,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CUTSCENE_ADDRESS_JP      0x02093A4C
 #define CUTSCENE_ADDRESS_JP_REV1 0x02093A4C
 
+#define CUTSCENE_ADDRESS_2_US      0x02093A94
+#define CUTSCENE_ADDRESS_2_EU      0x02093A94
+#define CUTSCENE_ADDRESS_2_JP      0x02093A94
+#define CUTSCENE_ADDRESS_2_JP_REV1 0x02093A94
+
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
@@ -210,7 +215,7 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
         _ShouldStopReplacementCutscene = true;
     }
 
-    if (_ShouldTerminateIngameCutscene) {
+    if (_ShouldTerminateIngameCutscene || _ShouldReturnToGameAfterCutscene) {
         InputMask &= ~(1<<3); // Start
     }
 
@@ -824,29 +829,36 @@ u32 PluginKingdomHeartsDays::getAddress(CutsceneEntry* entry) {
     return 0;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
+u32 PluginKingdomHeartsDays::getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address)
 {
     u32 cutsceneAddress = 0;
     if (isUsaCart()) {
-        cutsceneAddress = CUTSCENE_ADDRESS_US;
+        cutsceneAddress = usAddress;
     }
     if (isEuropeCart()) {
-        cutsceneAddress = CUTSCENE_ADDRESS_EU;
+        cutsceneAddress = euAddress;
     }
     if (isJapanCart()) {
-        cutsceneAddress = CUTSCENE_ADDRESS_JP;
+        cutsceneAddress = jpAddress;
     }
     if (isJapanCartRev1()) {
-        cutsceneAddress = CUTSCENE_ADDRESS_JP_REV1;
+        cutsceneAddress = jpRev1Address;
     }
+    return cutsceneAddress;
+}
 
+CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
+{
+    u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
     u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
 
-    if (cutsceneAddressValue == 0) {
-        return nullptr;
-    }
-    if (cutsceneAddressValue == 0xea000000) {
-        return nullptr;
+    if (cutsceneAddressValue == 0 || cutsceneAddressValue == 0xea000000) {
+        cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
+        cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
+
+        if (cutsceneAddressValue == 0 || cutsceneAddressValue == 0xea000000) {
+            return nullptr;
+        }
     }
 
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {

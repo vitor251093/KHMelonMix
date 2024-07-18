@@ -96,6 +96,8 @@ private:
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);
 
+    u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address);
+
     u32 getAddress(CutsceneEntry* entry);
     CutsceneEntry* detectCutscene(melonDS::NDS* nds);
     void refreshCutscene(melonDS::NDS* nds);
