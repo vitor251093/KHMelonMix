@@ -529,12 +529,12 @@ void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(melonDS::NDS* nds, C
     _CurrentCutscene = cutscene;
     _ShouldTerminateIngameCutscene = true;
 }
-void PluginKingdomHeartsReCoded::onIngameCutsceneStart(melonDS::NDS* nds) {
+void PluginKingdomHeartsReCoded::onTerminateIngameCutscene(melonDS::NDS* nds) {
     printf("Starting cutscene: %s\n", _CurrentCutscene == nullptr ? "(undetermined)" : _CurrentCutscene->Name);
     _ShouldTerminateIngameCutscene = false;
     _ShouldStartReplacementCutscene = true;
 }
-void PluginKingdomHeartsReCoded::onIngameCutsceneEnd(melonDS::NDS* nds) {
+void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
     printf("Ingame cutscene reached its end\n");
     _ShouldStartReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;

@@ -495,12 +495,7 @@ void EmuThread::run()
             if (plugin != nullptr) {
                 plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
 
-                if (plugin->ShouldReturnToGameAfterCutscene()) {
-                    emuStatus = emuStatus_Running;
-                }
-                if (plugin->ShouldStopReplacementCutscene()) {
-                    emit windowStopVideo();
-                }
+                refreshCutsceneState();
             }
         }
 
@@ -659,6 +654,14 @@ void EmuThread::refreshCutsceneState()
                 plugin->onReplacementCutsceneStart(emuInstance->nds);
             }
         }
+    }
+
+    if (plugin->ShouldReturnToGameAfterCutscene()) {
+        emuStatus = emuStatus_Running;
+    }
+
+    if (plugin->ShouldStopReplacementCutscene()) {
+        emit windowStopVideo();
     }
 }
 

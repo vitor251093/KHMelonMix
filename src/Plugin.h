@@ -50,8 +50,8 @@ public:
     virtual CutsceneEntry* CurrentCutscene() = 0;
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) = 0;
-    virtual void onIngameCutsceneStart(melonDS::NDS* nds) = 0;
-    virtual void onIngameCutsceneEnd(melonDS::NDS* nds) = 0;
+    virtual void onTerminateIngameCutscene(melonDS::NDS* nds) = 0;
+    virtual void onReturnToGameAfterCutscene(melonDS::NDS* nds) = 0;
     virtual void onReplacementCutsceneStart(melonDS::NDS* nds) = 0;
     virtual void onReplacementCutsceneEnd(melonDS::NDS* nds) = 0;
 

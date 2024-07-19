@@ -37,6 +37,7 @@ public:
     void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
 
     int _StartPressCount;
+    int _SkipPressCount;
     bool _ShouldTerminateIngameCutscene;
     bool _ShouldStartReplacementCutscene;
     bool _StartedReplacementCutscene;
@@ -46,13 +47,19 @@ public:
     bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
     bool ShouldStartReplacementCutscene() {return _ShouldStartReplacementCutscene;}
     bool StartedReplacementCutscene() {return _StartedReplacementCutscene;}
-    bool ShouldStopReplacementCutscene() {return _ShouldStopReplacementCutscene;}
+    bool ShouldStopReplacementCutscene() {
+        if (_ShouldStopReplacementCutscene) {
+            _ShouldStopReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
     bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
     void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene);
-    void onIngameCutsceneStart(melonDS::NDS* nds);
-    void onIngameCutsceneEnd(melonDS::NDS* nds);
+    void onTerminateIngameCutscene(melonDS::NDS* nds);
+    void onReturnToGameAfterCutscene(melonDS::NDS* nds);
     void onReplacementCutsceneStart(melonDS::NDS* nds);
     void onReplacementCutsceneEnd(melonDS::NDS* nds);
 
