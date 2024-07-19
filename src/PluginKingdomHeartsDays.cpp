@@ -116,6 +116,9 @@ CutsceneEntry Cutscenes[] =
     {"848",    "848_xions_end",                     0x0eb91800, 0x0eb91800, 0x0eb91800}, // lacks EU, JP
 };
 
+#define SequentialCutscenesSize 2
+char SequentialCutscenes[SequentialCutscenesSize][2][12] = {{"837", "840"}, {"848", "834"}};
+
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
@@ -921,13 +924,12 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
         return;
     }
 
-    if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, "834") == 0 && strcmp(cutscene->DsName, "848") == 0) {
-        // Workaround so those two cutscenes are played in sequence ingame
-        return;
-    }
-    if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, "840") == 0 && strcmp(cutscene->DsName, "837") == 0) {
-        // Workaround so those two cutscenes are played in sequence ingame
-        return;
+    // Workaround so those two cutscenes are played in sequence ingame
+    for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
+        if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][1]) == 0 &&
+                                           strcmp(cutscene->DsName,         SequentialCutscenes[seqIndex][0]) == 0) {
+            return;
+        }
     }
 
     std::string path = CutsceneFilePath(cutscene);
@@ -969,23 +971,15 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
     _StartedReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
 
-    if (strcmp(_CurrentCutscene->DsName, "848") == 0) {
-        // Ugly workaround to play cutscene 834 after 848, because both are skipped with a single "Start" click
-        for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-            if (strcmp(entry->DsName, "834") == 0) {
-                onIngameCutsceneIdentified(nds, entry);
-                onTerminateIngameCutscene(nds);
-                break;
-            }
-        }
-    }
-    if (strcmp(_CurrentCutscene->DsName, "837") == 0) {
-        // Ugly workaround to play cutscene 840 after 837, because both are skipped with a single "Start" click
-        for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-            if (strcmp(entry->DsName, "840") == 0) {
-                onIngameCutsceneIdentified(nds, entry);
-                onTerminateIngameCutscene(nds);
-                break;
+    // Ugly workaround to play one cutscene after another one, because both are skipped with a single "Start" click
+    for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
+        if (strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][0]) == 0) {
+            for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+                if (strcmp(entry->DsName, SequentialCutscenes[seqIndex][1]) == 0) {
+                    onIngameCutsceneIdentified(nds, entry);
+                    onTerminateIngameCutscene(nds);
+                    break;
+                }
             }
         }
     }
