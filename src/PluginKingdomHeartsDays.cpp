@@ -925,6 +925,10 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
         // Workaround so those two cutscenes are played in sequence ingame
         return;
     }
+    if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, "840") == 0 && strcmp(cutscene->DsName, "837") == 0) {
+        // Workaround so those two cutscenes are played in sequence ingame
+        return;
+    }
 
     std::string path = CutsceneFilePath(cutscene);
     if (path == "") {
@@ -969,6 +973,16 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
         // Ugly workaround to play cutscene 834 after 848, because both are skipped with a single "Start" click
         for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
             if (strcmp(entry->DsName, "834") == 0) {
+                onIngameCutsceneIdentified(nds, entry);
+                onTerminateIngameCutscene(nds);
+                break;
+            }
+        }
+    }
+    if (strcmp(_CurrentCutscene->DsName, "837") == 0) {
+        // Ugly workaround to play cutscene 840 after 837, because both are skipped with a single "Start" click
+        for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+            if (strcmp(entry->DsName, "840") == 0) {
                 onIngameCutsceneIdentified(nds, entry);
                 onTerminateIngameCutscene(nds);
                 break;
