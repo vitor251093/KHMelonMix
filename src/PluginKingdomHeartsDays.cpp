@@ -898,7 +898,7 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
     if (isCutsceneScene && _ShouldTerminateIngameCutscene) {
         onTerminateIngameCutscene(nds);
     }
-    if (!isCutsceneScene && _ShouldReturnToGameAfterCutscene) {
+    if (_ShouldReturnToGameAfterCutscene) {
         onReturnToGameAfterCutscene(nds);
     }
 }
@@ -917,15 +917,12 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
 }
 
 void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) {
-    printf("Detected cutscene: %s\n", cutscene->Name);
-    log("Cutscene detected");
-
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
         return;
     }
 
-    if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress != cutscene->usAddress) {
-        onTerminateIngameCutscene(nds);
+    if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, "834") == 0 && strcmp(cutscene->DsName, "848") == 0) {
+        // Workaround so those two cutscenes are played in sequence ingame
         return;
     }
 
@@ -933,6 +930,9 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
     if (path == "") {
         return;
     }
+
+    printf("Detected cutscene: %s\n", cutscene->Name);
+    log("Cutscene detected");
 
     _StartPressCount = 0;
     _SkipPressCount = 0;
@@ -964,6 +964,17 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
+
+    if (strcmp(_CurrentCutscene->DsName, "848") == 0) {
+        // Ugly workaround to play cutscene 834 after 848, because both are skipped with a single "Start" click
+        for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+            if (strcmp(entry->DsName, "834") == 0) {
+                onIngameCutsceneIdentified(nds, entry);
+                onTerminateIngameCutscene(nds);
+                break;
+            }
+        }
+    }
 }
 
 bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)
