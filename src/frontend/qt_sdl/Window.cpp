@@ -39,6 +39,7 @@
 #include <QMimeData>
 #include <QVector>
 #include <QCommandLineParser>
+#include <QStackedWidget>
 #ifndef _WIN32
 #include <QGuiApplication>
 #include <QSocketNotifier>
@@ -55,6 +56,7 @@
 #include "DateTimeDialog.h"
 #include "EmuSettingsDialog.h"
 #include "InputConfig/InputConfigDialog.h"
+#include "MainWindow/MainWindowSettings.h"
 #include "VideoSettingsDialog.h"
 #include "CameraSettingsDialog.h"
 #include "AudioSettingsDialog.h"
@@ -79,6 +81,8 @@
 #include "EmuInstance.h"
 #include "ArchiveUtil.h"
 #include "CameraManager.h"
+
+#include "PluginManager.h"
 
 using namespace melonDS;
 
@@ -224,7 +228,7 @@ static void signalHandler(int)
 
 
 MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
-    QMainWindow(parent),
+    MainWindowSettings(parent),
     windowID(id),
     emuInstance(inst),
     globalCfg(inst->globalCfg),
@@ -639,6 +643,7 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     show();
 
     createScreenPanel();
+    createVideoPlayer();
 
     actEjectCart->setEnabled(false);
     actEjectGBACart->setEnabled(false);
@@ -786,13 +791,88 @@ void MainWindow::createScreenPanel()
         panel = panelNative;
         panel->show();
     }
-    setCentralWidget(panel);
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->addWidget(panel);
+    centralWidget->setCurrentWidget(panel);
 
     actScreenFiltering->setEnabled(hasOGL);
     panel->osdSetEnabled(showOSD);
 
     connect(this, SIGNAL(screenLayoutChange()), panel, SLOT(onScreenLayoutChanged()));
     emit screenLayoutChange();
+}
+
+void MainWindow::createVideoPlayer()
+{
+    playerWidget = new QVideoWidget(this);
+    playerWidget->setCursor(Qt::BlankCursor);
+
+    playerAudioOutput = new QAudioOutput(this);
+    player = new QMediaPlayer(this);
+
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->addWidget(playerWidget);
+
+    connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
+        Plugins::PluginManager::get()->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
+
+        if (status == QMediaPlayer::EndOfMedia) {
+            asyncStopVideo();
+        }
+        if (status == QMediaPlayer::InvalidMedia) {
+            Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
+        }
+    });
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
+        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
+    });
+#else
+    connect(player, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
+        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
+    });
+#endif
+
+    player->setVideoOutput(playerWidget);
+    player->setAudioOutput(playerAudioOutput);
+}
+
+void MainWindow::asyncStartVideo(QString videoFilePath)
+{
+    QMetaObject::invokeMethod(this, "startVideo", Qt::QueuedConnection, Q_ARG(QString, videoFilePath));
+}
+
+void MainWindow::startVideo(QString videoFilePath)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    player->setMedia(QUrl::fromLocalFile(videoFilePath));
+#else
+    player->setSource(QUrl::fromLocalFile(videoFilePath));
+#endif
+
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->setCurrentWidget(playerWidget);
+
+    player->play();
+}
+
+void MainWindow::asyncStopVideo()
+{
+    QMetaObject::invokeMethod(this, "stopVideo", Qt::QueuedConnection);
+}
+
+void MainWindow::stopVideo()
+{
+    bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
+    if (isCutscenePlaying) {
+        player->stop();
+    }
+
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->setCurrentWidget(panel);
+
+    Plugins::PluginManager::get()->onReplacementCutsceneEnd(nullptr);
 }
 
 GL::Context* MainWindow::getOGLContext()
@@ -849,6 +929,32 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     // TODO!! REMOVE ME IN RELEASE BUILDS!!
     //if (event->key() == Qt::Key_F11) emuThread->NDS->debug(0);
+
+    /*if (event->key() == Qt::Key_Escape) {
+        QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+
+        if (showingSettings) {
+            if (player->playbackState() == QMediaPlayer::PlaybackState::PausedState) {
+                player->play();
+                centralWidget->setCurrentWidget(playerWidget);
+            }
+            else {
+                centralWidget->setCurrentWidget(panel);
+            }
+        }
+        else {
+            bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
+            if (isCutscenePlaying) {
+                // player->stop();
+                // asyncStopVideo();
+                showingSettings = !showingSettings;
+            }
+            else {
+                centralWidget->setCurrentWidget(settingsWidget);
+            }
+        }
+        showingSettings = !showingSettings;
+    }*/
 
     emuInstance->onKeyPress(event);
 }

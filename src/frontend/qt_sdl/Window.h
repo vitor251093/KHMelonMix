@@ -32,10 +32,14 @@
 #include <QMutex>
 #include <QScreen>
 #include <QCloseEvent>
+#include <QMediaPlayer>
+#include <QVideoWidget>
+#include <QAudioOutput>
 
 #include "Screen.h"
 #include "Config.h"
 
+#include "MainWindow/MainWindowSettings.h"
 
 class EmuInstance;
 class EmuThread;
@@ -99,7 +103,7 @@ public:
     ScreenPanel* panel;
 };*/
 
-class MainWindow : public QMainWindow
+class MainWindow : public MainWindowSettings
 {
     Q_OBJECT
 
@@ -216,6 +220,13 @@ private slots:
     void onFullscreenToggled();
     void onScreenEmphasisToggled();
 
+    void asyncStartVideo(QString videoFilePath);
+    void asyncStopVideo();
+
+public slots:
+    void startVideo(QString videoFilePath);
+    void stopVideo();
+
 private:
     virtual void closeEvent(QCloseEvent* event) override;
 
@@ -231,6 +242,7 @@ private:
     void updateCartInserted(bool gba);
 
     void createScreenPanel();
+    void createVideoPlayer();
 
     bool showOSD;
 
@@ -250,6 +262,10 @@ private:
 
 public:
     ScreenPanel* panel;
+
+    QVideoWidget* playerWidget;
+    QAudioOutput* playerAudioOutput;
+    QMediaPlayer* player;
 
     QAction* actOpenROM;
     QAction* actBootFirmware;

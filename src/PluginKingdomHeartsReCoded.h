@@ -22,6 +22,8 @@ public:
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
+    std::string assetsFolder();
+
     const char* gpuOpenGL_FS();
     const char* gpu3DOpenGL_VS_Z();
 
@@ -33,8 +35,27 @@ public:
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
 
+    bool _ShouldTerminateIngameCutscene;
+    bool _ShouldStartReplacementCutscene;
+    bool _StartedReplacementCutscene;
+    bool _ShouldStopReplacementCutscene;
+    bool _ShouldReturnToGameAfterCutscene;
+    CutsceneEntry* _CurrentCutscene;
+    bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
+    bool ShouldStartReplacementCutscene() {return _ShouldStartReplacementCutscene;}
+    bool StartedReplacementCutscene() {return _StartedReplacementCutscene;}
+    bool ShouldStopReplacementCutscene() {return _ShouldStopReplacementCutscene;}
+    bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
+    CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
+    std::string CutsceneFilePath(CutsceneEntry* cutscene);
+    void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene);
+    void onTerminateIngameCutscene(melonDS::NDS* nds);
+    void onReturnToGameAfterCutscene(melonDS::NDS* nds);
+    void onReplacementCutsceneStart(melonDS::NDS* nds);
+    void onReplacementCutsceneEnd(melonDS::NDS* nds);
+
     const char* getGameSceneName();
-    bool shouldSkipFrame(melonDS::NDS* nds);
+    bool shouldRenderFrame(melonDS::NDS* nds);
     void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
     bool refreshGameScene(melonDS::NDS* nds);
     void debugLogs(melonDS::NDS* nds, int gameScene);

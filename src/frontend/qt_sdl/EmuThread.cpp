@@ -83,6 +83,9 @@ void EmuThread::attachWindow(MainWindow* window)
     connect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
     connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     connect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
+
+    connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+    connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
 }
 
 void EmuThread::detachWindow(MainWindow* window)
@@ -98,6 +101,9 @@ void EmuThread::detachWindow(MainWindow* window)
     disconnect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
     disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     disconnect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
+
+    disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+    disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
 }
 
 void EmuThread::run()
@@ -178,6 +184,28 @@ void EmuThread::run()
                 videoSettingsDirty = true;
                 plugin = Plugins::PluginManager::load(lastRomLoaded);
                 printf("Loading plugin %s\n", typeid(*plugin).name());
+            }
+
+            if (plugin->ShouldTerminateIngameCutscene() || plugin->ShouldStartReplacementCutscene() || plugin->ShouldReturnToGameAfterCutscene()) {
+                emuInstance->inputMask = plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
+                emuInstance->nds->SetKeyMask(emuInstance->inputMask);
+
+                refreshGameScene();
+
+                u32 nlines = emuInstance->nds->RunFrame();
+
+                refreshCutsceneState();
+                
+                double curtime = SDL_GetPerformanceCounter() * perfCountsSec;
+                lastTime = curtime;
+
+                nframes++;
+                if (nframes >= 30)
+                {
+                    lastMeasureTime = curtime;
+                    nframes = 0;
+                }
+                continue;
             }
 
             if (emuStatus == emuStatus_FrameStep) emuStatus = emuStatus_Paused;
@@ -278,7 +306,7 @@ void EmuThread::run()
             emuInstance->micProcess();
 
             refreshGameScene();
-            bool shouldSkipFrame = plugin->shouldSkipFrame(emuInstance->nds);
+            bool shouldRenderFrame = plugin->shouldRenderFrame(emuInstance->nds);
 
             // auto screen layout
             {
@@ -341,7 +369,7 @@ void EmuThread::run()
             {
                 FrontBuffer = emuInstance->nds->GPU.FrontBuffer;
 
-                if (!shouldSkipFrame)
+                if (shouldRenderFrame)
                 {
                     emuInstance->drawScreenGL();
                 }
@@ -372,6 +400,8 @@ void EmuThread::run()
                     emuInstance->setVSyncGL(true);
                 }
             }
+
+            refreshCutsceneState();
 
             if (emuInstance->audioDSiVolumeSync && emuInstance->nds->ConsoleType == 1)
             {
@@ -460,6 +490,12 @@ void EmuThread::run()
             if (useOpenGL)
             {
                 emuInstance->drawScreenGL();
+            }
+
+            if (plugin != nullptr) {
+                plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
+
+                refreshCutsceneState();
             }
         }
 
@@ -599,6 +635,33 @@ void EmuThread::refreshGameScene()
     if (updated && DEBUG_MODE_ENABLED)
     {
         emuInstance->osdAddMessage(0, plugin->getGameSceneName());
+    }
+}
+
+void EmuThread::refreshCutsceneState()
+{
+    if (plugin->ShouldStartReplacementCutscene()) {
+        auto cutscene = plugin->CurrentCutscene();
+        if (cutscene != nullptr) {
+            std::string path = plugin->CutsceneFilePath(cutscene);
+            if (path != "") {
+                // disabling fast-foward, otherwise it will affect the cutscenes
+                emuInstance->setVSyncGL(true);
+
+                emuStatus = emuStatus_Paused;
+                QString filePath = QString::fromUtf8(path.c_str());
+                emit windowStartVideo(filePath);
+                plugin->onReplacementCutsceneStart(emuInstance->nds);
+            }
+        }
+    }
+
+    if (plugin->ShouldReturnToGameAfterCutscene()) {
+        emuStatus = emuStatus_Running;
+    }
+
+    if (plugin->ShouldStopReplacementCutscene()) {
+        emit windowStopVideo();
     }
 }
 

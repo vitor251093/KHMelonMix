@@ -131,6 +131,9 @@ signals:
 
     void syncVolumeLevel();
 
+    void windowStartVideo(QString videoFilePath);
+    void windowStopVideo();
+
 private:
     void handleMessages();
 
@@ -163,6 +166,7 @@ private:
 
     Plugins::Plugin* plugin;
     void refreshGameScene();
+    void refreshCutsceneState();
 
     int lastVideoRenderer = -1;
 

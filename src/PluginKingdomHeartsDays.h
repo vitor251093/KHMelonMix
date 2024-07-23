@@ -23,6 +23,8 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
     bool isJapanCartRev1() { return false; }; // TODO: KH Add support to Rev1
 
+    std::string assetsFolder();
+
     const char* gpuOpenGL_FS();
     const char* gpu3DOpenGL_VS_Z();
 
@@ -34,11 +36,40 @@ public:
     u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
 
+    int _StartPressCount;
+    int _SkipPressCount;
+    bool _ShouldTerminateIngameCutscene;
+    bool _ShouldStartReplacementCutscene;
+    bool _StartedReplacementCutscene;
+    bool _ShouldStopReplacementCutscene;
+    bool _ShouldReturnToGameAfterCutscene;
+    CutsceneEntry* _CurrentCutscene;
+    bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
+    bool ShouldStartReplacementCutscene() {return _ShouldStartReplacementCutscene;}
+    bool StartedReplacementCutscene() {return _StartedReplacementCutscene;}
+    bool ShouldStopReplacementCutscene() {
+        if (_ShouldStopReplacementCutscene) {
+            _ShouldStopReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
+    CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
+    std::string CutsceneFilePath(CutsceneEntry* cutscene);
+    void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene);
+    void onTerminateIngameCutscene(melonDS::NDS* nds);
+    void onReturnToGameAfterCutscene(melonDS::NDS* nds);
+    void onReplacementCutsceneStart(melonDS::NDS* nds);
+    void onReplacementCutsceneEnd(melonDS::NDS* nds);
+
     const char* getGameSceneName();
-    bool shouldSkipFrame(melonDS::NDS* nds);
+
+    bool shouldRenderFrame(melonDS::NDS* nds);
+
     void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
+
     bool refreshGameScene(melonDS::NDS* nds);
-    void debugLogs(melonDS::NDS* nds, int gameScene);
 private:
     bool PausedInGame;
     int HUDState;
@@ -73,10 +104,17 @@ private:
     int detectGameScene(melonDS::NDS* nds);
     bool setGameScene(melonDS::NDS* nds, int newGameScene);
 
+    u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address);
+
+    u32 getAddress(CutsceneEntry* entry);
+    CutsceneEntry* detectCutscene(melonDS::NDS* nds);
+    void refreshCutscene(melonDS::NDS* nds);
+
     bool isBufferBlack(unsigned int* buffer);
     bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
     bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
     void hudToggle(melonDS::NDS* nds);
+    void debugLogs(melonDS::NDS* nds, int gameScene);
 };
 }
 
