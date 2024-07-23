@@ -142,6 +142,9 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _had3DOnBottomScreen = false;
 
     _hasVisible3DOnBottomScreen = false;
+    _ignore3DOnBottomScreen = false;
+    _priorIgnore3DOnBottomScreen = false;
+    _priorPriorIgnore3DOnBottomScreen = false;
 
     _StartPressCount = 0;
     _SkipPressCount = 0;
@@ -451,15 +454,27 @@ bool PluginKingdomHeartsDays::shouldRenderFrame(melonDS::NDS* nds)
             if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 14)) { // fade to white, on "Mission Complete"
                 _hasVisible3DOnBottomScreen = false;
             }
-
-            if (_hasVisible3DOnBottomScreen) {
-                return false;
-            }
         }
         else // 3D on bottom screen
         {
-            return _hasVisible3DOnBottomScreen;
+            _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
+            _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
+            _ignore3DOnBottomScreen = false;
+
+            if (_hasVisible3DOnBottomScreen) {
+                int FrontBuffer = nds->GPU.FrontBuffer;
+                u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
+                if (bottomBuffer) {
+                    unsigned int color = bottomBuffer[(192*256)/2 + 96] & 0xFFFFFF;
+                    if (color == 0) {
+                        _ignore3DOnBottomScreen = true;
+                    }
+                }
+            }
         }
+
+        bool showBottomScreen = _hasVisible3DOnBottomScreen && !(_ignore3DOnBottomScreen && _priorIgnore3DOnBottomScreen && _priorPriorIgnore3DOnBottomScreen);
+        return (nds->PowerControl9 >> 15 != 0) ? !showBottomScreen : showBottomScreen;
     }
 
     return true;
@@ -884,7 +899,7 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
     }
 
     if (cutscene1 == nullptr && cutsceneAddressValue != 0 && cutsceneAddressValue2 != 0) {
-        printf("Unknown cutscene: 0x%08x - 0x%08x\n", cutsceneAddressValue, cutsceneAddressValue2);
+        // printf("Unknown cutscene: 0x%08x - 0x%08x\n", cutsceneAddressValue, cutsceneAddressValue2);
     }
 
     return cutscene1;

@@ -96,6 +96,9 @@ private:
     bool _had3DOnBottomScreen;
 
     bool _hasVisible3DOnBottomScreen;
+    bool _ignore3DOnBottomScreen;
+    bool _priorIgnore3DOnBottomScreen;
+    bool _priorPriorIgnore3DOnBottomScreen;
 
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
     u32 LastLockOnPress, LastSwitchTargetPress;
