@@ -176,30 +176,26 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z() {
 };
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "IsBottomScreen2DTextureBlack");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "IsTopScreen2DTextureBlack");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "PriorGameScene");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "GameScene");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "KHUIScale");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMap");
-    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowTarget");
-    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "ShowMissionGauge");
-    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "ShowMissionInfo");
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "GameScene");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "KHUIScale");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
+    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
 }
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    glUniform1i(CompGpuLoc[CompShader][0], IsBottomScreen2DTextureBlack ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][1], IsTopScreen2DTextureBlack ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][2], priorGameScene);
-    glUniform1i(CompGpuLoc[CompShader][3], GameScene);
-    glUniform1i(CompGpuLoc[CompShader][4], UIScale);
-    glUniform1f(CompGpuLoc[CompShader][5], aspectRatio);
-    glUniform1i(CompGpuLoc[CompShader][6], ShowMap ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][7], ShowTarget ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][8], ShowMissionGauge ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][9], ShowMissionInfo ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][0], priorGameScene);
+    glUniform1i(CompGpuLoc[CompShader][1], GameScene);
+    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
+    glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
+    glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][5], ShowTarget ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
 }
 
 void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
@@ -435,17 +431,11 @@ bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
 
 bool PluginKingdomHeartsDays::shouldRenderFrame(melonDS::NDS* nds)
 {
-    bool isTopBlack = isTopScreen2DTextureBlack(nds);
-    bool isBottomBlack = isBottomScreen2DTextureBlack(nds);
-
-    IsBottomScreen2DTextureBlack = isBottomBlack;
-    IsTopScreen2DTextureBlack = isTopBlack;
-
     if (GameScene == gameScene_InGameWithCutscene)
     {
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
         {
-            _hasVisible3DOnBottomScreen = !isBottomBlack;
+            _hasVisible3DOnBottomScreen = !IsBottomScreen2DTextureBlack;
 
             if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
                 _hasVisible3DOnBottomScreen = false;
@@ -457,6 +447,8 @@ bool PluginKingdomHeartsDays::shouldRenderFrame(melonDS::NDS* nds)
         }
         else // 3D on bottom screen
         {
+            IsBottomScreen2DTextureBlack = isBottomScreen2DTextureBlack(nds);
+
             _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
             _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
             _ignore3DOnBottomScreen = false;

@@ -36,9 +36,6 @@ uniform bool ShowMissionInfo;
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
 
-uniform bool IsBottomScreen2DTextureBlack;
-uniform bool IsTopScreen2DTextureBlack;
-
 smooth in vec2 fTexcoord;
 
 out vec4 oColor;
@@ -244,13 +241,6 @@ vec2 getSingleSquaredScreenTextureCoordinates(float xpos, float ypos, int screen
 
     // nothing (clear screen)
     return initialScreenMargin + clearVect;
-}
-
-vec2 getSingleScreenTextureCoordinates(float xpos, float ypos, int screenIndex)
-{
-    vec2 texPosition3d = vec2(xpos, ypos);
-    vec2 initialScreenMargin = (screenIndex == 2 ? vec2(0, 192.0) : vec2(0, 0));
-    return texPosition3d + initialScreenMargin;
 }
 
 vec2 getHorizontalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearVect)
@@ -801,16 +791,6 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    if (IsBottomScreen2DTextureBlack && IsTopScreen2DTextureBlack) {
-        // just to avoid problems if this scene is picked by mistake
-        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
-    }
-    if (IsBottomScreen2DTextureBlack) {
-        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 1));
-    }
-    if (IsTopScreen2DTextureBlack) {
-        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 2));
-    }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
 }
 
