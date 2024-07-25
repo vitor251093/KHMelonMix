@@ -217,11 +217,12 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
 
 u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
-    if (GameScene == gameScene_Cutscene && (~InputMask) & (1 << 3) && (_SkipPressCount++) < 1) { // Start
+    if (_StartedReplacementCutscene && (~InputMask) & (1 << 3) && (_SkipPressCount++) < 1) { // Start
         _ShouldStopReplacementCutscene = true;
     }
 
-    if ((_ShouldTerminateIngameCutscene || _ShouldReturnToGameAfterCutscene) && (++_StartPressCount) <= CUTSCENE_SKIP_START_FRAMES_COUNT) {
+    if (!_StartedReplacementCutscene && (_ShouldTerminateIngameCutscene || _ShouldReturnToGameAfterCutscene) &&
+        (++_StartPressCount) <= CUTSCENE_SKIP_START_FRAMES_COUNT) {
         InputMask &= ~(1<<3); // Start
     }
 
@@ -908,7 +909,7 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
     if (isCutsceneScene && _ShouldTerminateIngameCutscene) {
         onTerminateIngameCutscene(nds);
     }
-    if (_ShouldReturnToGameAfterCutscene) {
+    if (_ShouldReturnToGameAfterCutscene && !isCutsceneScene) {
         onReturnToGameAfterCutscene(nds);
     }
 }
@@ -966,6 +967,7 @@ void PluginKingdomHeartsDays::onReplacementCutsceneStart(melonDS::NDS* nds) {
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = true;
 }
+
 void PluginKingdomHeartsDays::onReplacementCutsceneEnd(melonDS::NDS* nds) {
     log("Should stop ingame cutscene");
     _StartedReplacementCutscene = false;
