@@ -84,21 +84,21 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
    cd KHMelonMix
    ```
 #### Dynamic builds (with DLLs)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt5-base,qt5-svg,qt5-multimedia,qt5-tools,libarchive,zstd}`
+5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-multimedia,libarchive,zstd}`
 6. Compile:
    ```bash
-   cmake -B build
+   cmake -B build -DUSE_QT6=ON
    cmake --build build
    cd build
    ../tools/msys-dist.sh
    ```
 If everything went well, KH Melon Mix and the libraries it needs should now be in the `dist` folder.
 
-#### Static builds (without DLLs, standalone executable)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt5-static,libarchive,zstd}`
+#### Static builds (without DLLs, standalone executable) (currently failing)
+5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-multimedia,libarchive,zstd}`
 6. Compile:
    ```bash
-   cmake -B build -DBUILD_STATIC=ON -DCMAKE_PREFIX_PATH=/mingw64/qt5-static
+   cmake -B build -DBUILD_STATIC=ON -DUSE_QT6=ON
    cmake --build build
    ```
 If everything went well, KH Melon Mix should now be in the `build` folder.
