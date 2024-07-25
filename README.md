@@ -55,9 +55,9 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
 
 ### Linux
 1. Install dependencies:
-   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev`
-   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev`
-   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia libarchive zstd`
+   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev`
+   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev`
+   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia libarchive zstd qt6-base-dev qt6-base-private-dev qt6-multimedia-dev`
 3. Download the KH Melon Mix repository and prepare:
    ```bash
    git clone https://github.com/vitor251093/KHMelonMix
@@ -66,7 +66,7 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
 
 3. Compile:
    ```bash
-   cmake -B build
+   cmake -B build -DUSE_QT6=ON
    cmake --build build -j$(nproc --all)
    ```
 
