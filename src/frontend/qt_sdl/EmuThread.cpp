@@ -186,28 +186,6 @@ void EmuThread::run()
                 printf("Loading plugin %s\n", typeid(*plugin).name());
             }
 
-            if (plugin->ShouldTerminateIngameCutscene() || plugin->ShouldStartReplacementCutscene() || plugin->ShouldReturnToGameAfterCutscene()) {
-                emuInstance->inputMask = plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
-                emuInstance->nds->SetKeyMask(emuInstance->inputMask);
-
-                refreshGameScene();
-
-                u32 nlines = emuInstance->nds->RunFrame();
-
-                refreshCutsceneState();
-                
-                double curtime = SDL_GetPerformanceCounter() * perfCountsSec;
-                lastTime = curtime;
-
-                nframes++;
-                if (nframes >= 30)
-                {
-                    lastMeasureTime = curtime;
-                    nframes = 0;
-                }
-                continue;
-            }
-
             if (emuStatus == emuStatus_FrameStep) emuStatus = emuStatus_Paused;
 
             if (emuInstance->hotkeyPressed(HK_SolarSensorDecrease))
