@@ -55,6 +55,7 @@ jobs:
         wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
         wget https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gstreamer/master/linuxdeploy-plugin-gstreamer.sh
         chmod a+x linuxdeploy-*.AppImage
+        chmod a+x linuxdeploy-*.sh
     - name: Build the AppImage
       env:
         QMAKE: /usr/lib/qt6/bin/qmake
