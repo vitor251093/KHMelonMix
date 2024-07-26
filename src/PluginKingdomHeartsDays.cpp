@@ -569,17 +569,13 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             return gameScene_InGameMenu;
         }
 
-        #if DEBUG_MODE_ENABLED
-            printf("Unknown 3D scene. Let's preserve the state, for consistency\n");
-        #endif
-        return GameScene;
+        // Unknown
+        return gameScene_Other;
     }
     else if (!has3DOnTopScreen)
     {
-        #if DEBUG_MODE_ENABLED
-            printf("Unknown 2D scene. Let's preserve the state, for consistency\n");
-        #endif
-        return GameScene;
+        // Unknown 2D
+        return gameScene_Other2D;
     }
 
     bool isShop = (nds->GPU.GPU3D.RenderNumPolygons == 264 && nds->GPU.GPU2D_A.BlendCnt == 0 && 
@@ -590,22 +586,20 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
         return gameScene_Shop;
     }
 
-    // Intro load menu
-    bool isIntroLoadMenu = nds->GPU.GPU3D.RenderNumPolygons == 1 &&
-        (nds->GPU.GPU2D_B.BlendCnt == 4164 || nds->GPU.GPU2D_B.BlendCnt == 4161) &&
-        (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) &&
-         nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
-        (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
-        (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
-    if (isIntroLoadMenu)
-    {
-        return gameScene_IntroLoadMenu;
-    }
-
     if (doesntLook3D)
     {
+        // Intro save menu
+        bool isIntroLoadMenu = (nds->GPU.GPU2D_B.BlendCnt == 4164 || nds->GPU.GPU2D_B.BlendCnt == 4161) &&
+            (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) &&
+             nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
+            (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
+            (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
         bool mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
 
+        if (isIntroLoadMenu)
+        {
+            return gameScene_IntroLoadMenu;
+        }
         if (GameScene == gameScene_IntroLoadMenu)
         {
             if (mayBeMainMenu)
@@ -713,10 +707,8 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             return gameScene_MainMenu;
         }
 
-        #if DEBUG_MODE_ENABLED
-            printf("Unknown 2D scene. Let's preserve the state, for consistency\n");
-        #endif
-        return GameScene;
+        // Unknown 2D
+        return gameScene_Other2D;
     }
 
     // Tutorial
