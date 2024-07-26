@@ -262,9 +262,6 @@ void EmuThread::run()
 
                 updateRenderer();
 
-                // TODO: KH may break something
-                // emit screenLayoutChange();
-
                 videoSettingsDirty = false;
             }
 
