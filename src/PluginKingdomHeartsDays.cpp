@@ -45,24 +45,24 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 enum
 {
-    gameScene_Intro,                    // 0
-    gameScene_MainMenu,                 // 1
-    gameScene_IntroLoadMenu,            // 2
-    gameScene_DayCounter,               // 3
-    gameScene_Cutscene,                 // 4
-    gameScene_InGameWithMap,            // 5
-    gameScene_InGameWithoutMap,         // 6
-    gameScene_InGameMenu,               // 7
-    gameScene_InGameSaveMenu,           // 8
-    gameScene_InHoloMissionMenu,        // 9
-    gameScene_PauseMenu,                // 10
-    gameScene_Tutorial,                 // 11
-    gameScene_InGameWithCutscene,       // 12
-    gameScene_MultiplayerMissionReview, // 13
-    gameScene_Shop,                     // 14
-    gameScene_LoadingScreen,            // 15
-    gameScene_Other2D,                  // 16
-    gameScene_Other                     // 17
+    gameScene_Intro,                    // 0   (Top 3D: Yes, Bottom 3D: No)
+    gameScene_MainMenu,                 // 1   (Top 3D: Yes, Bottom 3D: No)
+    gameScene_IntroLoadMenu,            // 2   (Top 3D: Yes, Bottom 3D: No)
+    gameScene_DayCounter,               // 3   (Top 3D: Yes, Bottom 3D: No)
+    gameScene_Cutscene,                 // 4   (Top 3D: Yes, Bottom 3D: No) or (Top 3D: No, Bottom 3D: Yes)
+    gameScene_InGameWithMap,            // 5   (Top 3D: Yes, Bottom 3D: No)
+    gameScene_InGameWithoutMap,         // 6   (Top 3D: Yes, Bottom 3D: No)
+    gameScene_InGameMenu,               // 7   Home/Config: (Top 3D: Yes, Bottom 3D: No), Panels/Files/Tutorials: (Top 3D: No, Bottom 3D: Yes)
+    gameScene_InGameSaveMenu,           // 8   (Top 3D: Yes, Bottom 3D: No)
+    gameScene_InHoloMissionMenu,        // 9   (Top 3D: Yes, Bottom 3D: No)
+    gameScene_PauseMenu,                // 10  (Top 3D: Yes, Bottom 3D: No)
+    gameScene_Tutorial,                 // 11  (Top 3D: Yes, Bottom 3D: No)
+    gameScene_InGameWithCutscene,       // 12  (Top 3D: Yes, Bottom 3D: Yes)
+    gameScene_MultiplayerMissionReview, // 13  (Top 3D: Yes, Bottom 3D: Yes)
+    gameScene_Shop,                     // 14  (Top 3D: Yes, Bottom 3D: No)
+    gameScene_LoadingScreen,            // 15  (Top 3D: No, Bottom 3D: Yes)
+    gameScene_Other2D,                  // 16  (Top 3D: ?, Bottom 3D: ?)
+    gameScene_Other                     // 17  (Top 3D: ?, Bottom 3D: ?)
 };
 
 CutsceneEntry Cutscenes[] =
@@ -535,6 +535,52 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
 
         return gameScene_InGameWithCutscene;
     }
+    else if (has3DOnBottomScreen)
+    {
+        if (nds->GPU.GPU3D.RenderNumPolygons < 20)
+        {
+            if (GameScene == gameScene_InGameMenu)
+            {
+                return gameScene_InGameMenu;
+            }
+
+            // Opening cutscene
+            if (GameScene == gameScene_MainMenu)
+            {
+                if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 1)
+                {
+                    return gameScene_Cutscene;
+                }
+            }
+            if (GameScene == gameScene_Cutscene)
+            {
+                if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons >= 0 && nds->GPU.GPU3D.RenderNumPolygons <= 3)
+                {
+                    return gameScene_Cutscene;
+                }
+            }
+
+            if (nds->GPU.GPU3D.RenderNumPolygons > 0)
+            {
+                return gameScene_InGameMenu;
+            }
+
+            if (nds->GPU.GPU2D_B.BlendCnt == 143 && nds->GPU.GPU2D_B.BlendAlpha == 16)
+            {
+                return gameScene_LoadingScreen;
+            }
+
+            return gameScene_Cutscene;
+        }
+
+        if (nds->GPU.GPU3D.RenderNumPolygons < 100)
+        {
+            return gameScene_InGameMenu;
+        }
+
+        // Unknown
+        return gameScene_Other;
+    }
 
     if (doesntLook3D)
     {
@@ -560,11 +606,6 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             {
                 return gameScene_IntroLoadMenu;
             }
-        }
-
-        if (has3DOnBottomScreen && GameScene == gameScene_InGameMenu)
-        {
-            return gameScene_InGameMenu;
         }
 
         // Mission Mode / Story Mode - Challenges
@@ -645,21 +686,6 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
         if (isGameSaveMenu) 
         {
             return gameScene_InGameSaveMenu;
-        }
-
-        if (has3DOnBottomScreen)
-        {
-            if (nds->GPU.GPU3D.RenderNumPolygons > 0)
-            {
-                return gameScene_InGameMenu;
-            }
-
-            if (nds->GPU.GPU2D_B.BlendCnt == 143 && nds->GPU.GPU2D_B.BlendAlpha == 16)
-            {
-                return gameScene_LoadingScreen;
-            }
-
-            return gameScene_Cutscene;
         }
 
         // Bottom cutscene
@@ -774,16 +800,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
     {
         return gameScene_InGameWithCutscene;
     }
-    if (has3DOnBottomScreen)
-    {
-        if (nds->GPU.GPU3D.RenderNumPolygons < 100)
-        {
-            return gameScene_InGameMenu;
-        }
 
-        return gameScene_InGameWithCutscene;
-    }
-    
     // Unknown
     return gameScene_Other;
 }
