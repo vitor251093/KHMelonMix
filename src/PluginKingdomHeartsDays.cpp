@@ -61,8 +61,9 @@ enum
     gameScene_MultiplayerMissionReview, // 13  (Top 3D: Yes, Bottom 3D: Yes)
     gameScene_Shop,                     // 14
     gameScene_LoadingScreen,            // 15
-    gameScene_Other2D,                  // 16  (Top 3D: ?, Bottom 3D: ?)
-    gameScene_Other                     // 17  (Top 3D: ?, Bottom 3D: ?)
+    gameScene_RoxasThoughts,            // 16
+    gameScene_Other2D,                  // 17  (Top 3D: ?, Bottom 3D: ?)
+    gameScene_Other                     // 18  (Top 3D: ?, Bottom 3D: ?)
 };
 
 CutsceneEntry Cutscenes[] =
@@ -389,6 +390,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_MultiplayerMissionReview: return "Game scene: Multiplayer Mission Review";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
+        case gameScene_RoxasThoughts: return "Game scene: Roxas Thoughts";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         case gameScene_Other: return "Game scene: Unknown (3D)";
         default: return "Game scene: Unknown";
@@ -705,6 +707,11 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
         if (mayBeMainMenu)
         {
             return gameScene_MainMenu;
+        }
+
+        if (nds->GPU.GPU2D_B.MasterBrightness == 32784)
+        {
+            return gameScene_RoxasThoughts;
         }
 
         // Unknown 2D

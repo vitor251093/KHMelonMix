@@ -875,7 +875,10 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (GameScene == 15) { // gameScene_LoadingScreen
         return ivec2(getLoadingScreenTextureCoordinates(xpos, ypos));
     }
-    if (GameScene == 16) { // gameScene_Other2D
+    if (GameScene == 16) { // gameScene_RoxasThoughts
+        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
+    }
+    if (GameScene == 17) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -1253,7 +1256,10 @@ ivec4 brightness()
     if (GameScene == 15) { // gameScene_LoadingScreen
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     }
-    if (GameScene == 16) { // gameScene_Other2D
+    if (GameScene == 16) { // gameScene_RoxasThoughts
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+    }
+    if (GameScene == 17) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
 
