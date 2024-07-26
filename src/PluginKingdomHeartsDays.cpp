@@ -511,6 +511,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
 
     if (has3DOnBothScreens)
     {
+        // Needed by opening cutscene triggered by being idle
         bool isMainMenu = GameScene == gameScene_MainMenu && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
         if (isMainMenu)
         {
@@ -551,6 +552,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
                     return gameScene_Cutscene;
                 }
 
+                // Needed by opening cutscene triggered by being idle
                 bool isMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
                 if (isMainMenu)
                 {
