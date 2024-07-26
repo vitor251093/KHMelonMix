@@ -1,8 +1,10 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#define REPLACEMENT_CUTSCENES_ENABLED true
+
 #define DEBUG_MODE_ENABLED false
-#define DEBUG_LOG_ENABLED  false
+#define DEBUG_LOG_FILE_ENABLED  false
 
 #include "NDS.h"
 
@@ -66,7 +68,7 @@ public:
     void log(const char* log) {
         printf("%s\n", log);
 
-        if (DEBUG_LOG_ENABLED) {
+        if (DEBUG_LOG_FILE_ENABLED) {
             std::string fileName = std::string("debug.log");
             Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::Append);
             Platform::FileWrite(log, strlen(log), 1, logf);

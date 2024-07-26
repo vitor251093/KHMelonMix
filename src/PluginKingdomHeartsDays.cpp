@@ -569,12 +569,16 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             return gameScene_InGameMenu;
         }
 
-        printf("Unknown 3D scene. Let's preserve the state, for consistency\n");
+        #if DEBUG_MODE_ENABLED
+            printf("Unknown 3D scene. Let's preserve the state, for consistency\n");
+        #endif
         return GameScene;
     }
     else if (!has3DOnTopScreen)
     {
-        printf("Unknown 2D scene. Let's preserve the state, for consistency\n");
+        #if DEBUG_MODE_ENABLED
+            printf("Unknown 2D scene. Let's preserve the state, for consistency\n");
+        #endif
         return GameScene;
     }
 
@@ -709,7 +713,9 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             return gameScene_MainMenu;
         }
 
-        printf("Unknown 2D scene. Let's preserve the state, for consistency\n");
+        #if DEBUG_MODE_ENABLED
+            printf("Unknown 2D scene. Let's preserve the state, for consistency\n");
+        #endif
         return GameScene;
     }
 
@@ -912,8 +918,12 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
 
 void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
 {
+#if !REPLACEMENT_CUTSCENES_ENABLED
+    return;
+#endif
+
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
-    CutsceneEntry* cutscene = detectCutscene(nds); // sometimes one returns close to the end of the cutscene
+    CutsceneEntry* cutscene = detectCutscene(nds);
 
     if (cutscene != nullptr) {
         onIngameCutsceneIdentified(nds, cutscene);
