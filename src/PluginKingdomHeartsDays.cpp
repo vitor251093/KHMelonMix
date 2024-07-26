@@ -511,6 +511,12 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
 
     if (has3DOnBothScreens)
     {
+        bool isMainMenu = GameScene == gameScene_MainMenu && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
+        if (isMainMenu)
+        {
+            return gameScene_MainMenu;
+        }
+
         bool isMissionVictory = (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 0) ||
                                 (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 130) ||
                                 (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 2625) ||
@@ -543,6 +549,12 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
                 if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 1)
                 {
                     return gameScene_Cutscene;
+                }
+
+                bool isMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
+                if (isMainMenu)
+                {
+                    return gameScene_MainMenu;
                 }
             }
             if (GameScene == gameScene_Cutscene)
