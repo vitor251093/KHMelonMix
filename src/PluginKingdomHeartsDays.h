@@ -113,6 +113,9 @@ private:
     CutsceneEntry* detectCutscene(melonDS::NDS* nds);
     void refreshCutscene(melonDS::NDS* nds);
 
+    u32 getCurrentMission(melonDS::NDS* nds);
+    u32 getCurrentMap(melonDS::NDS* nds);
+
     bool isBufferBlack(unsigned int* buffer);
     bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
     bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);

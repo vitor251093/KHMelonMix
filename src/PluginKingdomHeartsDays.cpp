@@ -17,6 +17,21 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C9C
 
+#define CURRENT_MISSION_US      0x0204C21C
+#define CURRENT_MISSION_EU      0x0204C21C // TODO: KH
+#define CURRENT_MISSION_JP      0x0204C21C // TODO: KH
+#define CURRENT_MISSION_JP_REV1 0x0204C21C // TODO: KH
+
+#define CURRENT_WORLD_US      0x0204C2CF
+#define CURRENT_WORLD_EU      0x0204C2CF // TODO: KH
+#define CURRENT_WORLD_JP      0x0204C2CF // TODO: KH
+#define CURRENT_WORLD_JP_REV1 0x0204C2CF // TODO: KH
+
+#define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
+#define CURRENT_MAP_FROM_WORLD_EU      0x02188EE6 // TODO: KH
+#define CURRENT_MAP_FROM_WORLD_JP      0x02188EE6 // TODO: KH
+#define CURRENT_MAP_FROM_WORLD_JP_REV1 0x02188EE6 // TODO: KH
+
 #define CUTSCENE_ADDRESS_US      0x02093A4C
 #define CUTSCENE_ADDRESS_EU      0x02093A6C
 #define CUTSCENE_ADDRESS_JP      0x02093A4C // TODO: KH
@@ -968,10 +983,12 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
     }
 
     // Workaround so those two cutscenes are played in sequence ingame
-    for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
-        if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][1]) == 0 &&
-                                           strcmp(cutscene->DsName,         SequentialCutscenes[seqIndex][0]) == 0) {
-            return;
+    if (getCurrentMap(nds) != 0) {
+        for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
+            if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][1]) == 0 &&
+                                            strcmp(cutscene->DsName,         SequentialCutscenes[seqIndex][0]) == 0) {
+                return;
+            }
         }
     }
 
@@ -1016,13 +1033,15 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
     _ShouldReturnToGameAfterCutscene = false;
 
     // Ugly workaround to play one cutscene after another one, because both are skipped with a single "Start" click
-    for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
-        if (strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][0]) == 0) {
-            for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-                if (strcmp(entry->DsName, SequentialCutscenes[seqIndex][1]) == 0) {
-                    onIngameCutsceneIdentified(nds, entry);
-                    onTerminateIngameCutscene(nds);
-                    break;
+    if (getCurrentMap(nds) != 0) {
+        for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
+            if (strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][0]) == 0) {
+                for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+                    if (strcmp(entry->DsName, SequentialCutscenes[seqIndex][1]) == 0) {
+                        onIngameCutsceneIdentified(nds, entry);
+                        onTerminateIngameCutscene(nds);
+                        break;
+                    }
                 }
             }
         }
@@ -1040,6 +1059,31 @@ bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)
     refreshCutscene(nds);
 
     return updated;
+}
+
+u32 PluginKingdomHeartsDays::getCurrentMission(melonDS::NDS* nds)
+{
+    return nds->ARM7Read8(getAddressByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
+}
+
+// map == 0 => No map
+// map >> 8 == 0 => Twilight Town and Day 357
+// map >> 8 == 1 => Wonderland
+// map >> 8 == 2 => Olympus
+// map >> 8 == 3 => Agrabah
+// map >> 8 == 4 => The World That Never Was
+// map >> 8 == 5 => Halloween Town
+// map >> 8 == 6 => ?
+// map >> 8 == 7 => ?
+// map >> 8 == 8 => Neverland
+// map >> 8 == 9 => Beast's Castle
+u32 PluginKingdomHeartsDays::getCurrentMap(melonDS::NDS* nds)
+{
+    u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
+    u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
+    u32 fullMap = world;
+    fullMap = (fullMap << 4*2) | map;
+    return fullMap;
 }
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
