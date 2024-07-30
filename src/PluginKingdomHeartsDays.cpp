@@ -500,6 +500,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
     // 3D element mimicking 2D behavior
     bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 20;
 
+    bool wasSaveLoaded = getCurrentMap(nds) != 0;
     bool muchOlderHad3DOnTopScreen = _muchOlderHad3DOnTopScreen;
     bool muchOlderHad3DOnBottomScreen = _muchOlderHad3DOnBottomScreen;
     bool olderHad3DOnTopScreen = _olderHad3DOnTopScreen;
@@ -527,7 +528,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
     if (has3DOnBothScreens)
     {
         // Needed by opening cutscene triggered by being idle
-        bool isMainMenu = GameScene == gameScene_MainMenu && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
+        bool isMainMenu = GameScene == gameScene_MainMenu && !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
         if (isMainMenu)
         {
             return gameScene_MainMenu;
@@ -568,7 +569,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
                 }
 
                 // Needed by opening cutscene triggered by being idle
-                bool isMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
+                bool isMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
                 if (isMainMenu)
                 {
                     return gameScene_MainMenu;
@@ -625,7 +626,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
              nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
             (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
             (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
-        bool mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
+        bool mayBeMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
 
         if (isIntroLoadMenu)
         {
@@ -732,7 +733,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             return gameScene_Cutscene;
         }
 
-        mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
+        mayBeMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
         if (mayBeMainMenu)
         {
             return gameScene_MainMenu;
@@ -1125,7 +1126,8 @@ void PluginKingdomHeartsDays::debugLogs(melonDS::NDS* nds, int gameScene)
         return;
     }
 
-    printf("Game scene: %d\n", gameScene);
+    printf("Game scene: %d\n",  gameScene);
+    printf("Current map: %d\n", getCurrentMap(nds));
     printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);
     printf("NDS->GPU.GPU3D.NumPolygons: %d\n",        nds->GPU.GPU3D.NumPolygons);
     printf("NDS->GPU.GPU3D.RenderNumPolygons: %d\n",  nds->GPU.GPU3D.RenderNumPolygons);
