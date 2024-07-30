@@ -838,19 +838,7 @@ void PluginKingdomHeartsDays::setAspectRatio(melonDS::NDS* nds, float aspectRati
 {
     int aspectRatioKey = (int)round(0x1000 * aspectRatio);
 
-    u32 aspectRatioMenuAddress = 0;
-    if (isUsaCart()) {
-        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_US;
-    }
-    if (isEuropeCart()) {
-        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_EU;
-    }
-    if (isJapanCart()) {
-        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP;
-    }
-    if (isJapanCartRev1()) {
-        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP_REV1;
-    }
+    u32 aspectRatioMenuAddress = getAddressByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
 
     if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
         nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
