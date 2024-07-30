@@ -609,21 +609,12 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
         // Unknown 2D
         return gameScene_Other2D;
     }
-
-    bool isShop = (nds->GPU.GPU3D.RenderNumPolygons == 264 && nds->GPU.GPU2D_A.BlendCnt == 0 && 
-                   nds->GPU.GPU2D_B.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendAlpha == 16) ||
-            (GameScene == gameScene_Shop && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0);
-    if (isShop)
+    else if (!wasSaveLoaded)
     {
-        return gameScene_Shop;
-    }
-
-    if (doesntLook3D)
-    {
-        // Intro save menu
+        // Intro load menu
         bool isIntroLoadMenu = (nds->GPU.GPU2D_B.BlendCnt == 4164 || nds->GPU.GPU2D_B.BlendCnt == 4161) &&
             (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) &&
-             nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
+            nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
             (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
             (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
         bool mayBeMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
@@ -644,13 +635,6 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             }
         }
 
-        // Mission Mode / Story Mode - Challenges
-        bool inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && (nds->GPU.GPU2D_B.BlendCnt >= 143 && nds->GPU.GPU2D_B.BlendCnt <= 207);
-        if (inHoloMissionMenu)
-        {
-            return gameScene_InHoloMissionMenu;
-        }
-
         if (GameScene == gameScene_MainMenu)
         {
             if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 1)
@@ -662,6 +646,61 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             if (mayBeMainMenu) {
                 return gameScene_MainMenu;
             }
+        }
+
+        // Main menu
+        if (mayBeMainMenu)
+        {
+            return gameScene_MainMenu;
+        }
+
+        // Intro
+        if (GameScene == -1 || GameScene == gameScene_Intro)
+        {
+            mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
+            return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
+        }
+
+        // Intro cutscene
+        if (GameScene == gameScene_Cutscene)
+        {
+            if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons >= 0 && nds->GPU.GPU3D.RenderNumPolygons <= 3)
+            {
+                return gameScene_Cutscene;
+            }
+        }
+
+        // Bottom cutscene
+        bool isBottomCutscene = nds->GPU.GPU2D_A.BlendCnt == 0 && 
+            nds->GPU.GPU2D_A.EVA == 16 && nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 9 &&
+            nds->GPU.GPU2D_B.EVA == 16 && nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0;
+        if (isBottomCutscene)
+        {
+            return gameScene_Cutscene;
+        }
+
+        mayBeMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
+        if (mayBeMainMenu)
+        {
+            return gameScene_MainMenu;
+        }
+    }
+
+    bool isShop = (nds->GPU.GPU3D.RenderNumPolygons == 264 && nds->GPU.GPU2D_A.BlendCnt == 0 && 
+                   nds->GPU.GPU2D_B.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendAlpha == 16) ||
+            (GameScene == gameScene_Shop && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0);
+    if (isShop)
+    {
+        return gameScene_Shop;
+    }
+
+    if (doesntLook3D)
+    {
+        // Mission Mode / Story Mode - Challenges
+        bool inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && (nds->GPU.GPU2D_B.BlendCnt >= 143 && nds->GPU.GPU2D_B.BlendCnt <= 207);
+        if (inHoloMissionMenu)
+        {
+            return gameScene_InHoloMissionMenu;
         }
 
         // Day 50 specific condition
@@ -692,19 +731,6 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             }
         }
 
-        // Main menu
-        if (mayBeMainMenu)
-        {
-            return gameScene_MainMenu;
-        }
-
-        // Intro
-        if (GameScene == -1 || GameScene == gameScene_Intro)
-        {
-            mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
-            return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
-        }
-
         // Intro cutscene
         if (GameScene == gameScene_Cutscene)
         {
@@ -731,12 +757,6 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
         if (isBottomCutscene)
         {
             return gameScene_Cutscene;
-        }
-
-        mayBeMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
-        if (mayBeMainMenu)
-        {
-            return gameScene_MainMenu;
         }
 
         if (nds->GPU.GPU2D_B.MasterBrightness == 32784)
