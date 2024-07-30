@@ -132,8 +132,8 @@ CutsceneEntry Cutscenes[] =
     {"848",    "848_xions_end",                     0x0eb91800, 0x0eb91800, 0x0eb91800}, // lacks EU, JP
 };
 
-#define SequentialCutscenesSize 2
-char SequentialCutscenes[SequentialCutscenesSize][2][12] = {{"837", "840"}, {"848", "834"}};
+#define SequentialCutscenesSize 3
+char SequentialCutscenes[SequentialCutscenesSize][2][12] = {{"837", "840"}, {"848", "834"}, {"842", "843"}};
 
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
@@ -953,6 +953,13 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
     CutsceneEntry* cutscene = detectCutscene(nds);
 
+    if (cutscene != nullptr && strcmp(cutscene->DsName, "843") == 0 && getCurrentMap(nds) != 0) {
+        // cutscene = nullptr;
+        // u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
+        // u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
+        // nds->ARM7Write32(cutsceneAddress,  0x0b514600);
+        // nds->ARM7Write32(cutsceneAddress2, 0x0b514600);
+    }
     if (cutscene != nullptr) {
         onIngameCutsceneIdentified(nds, cutscene);
     }
@@ -1121,8 +1128,8 @@ u32 PluginKingdomHeartsDays::getCurrentMap(melonDS::NDS* nds)
   ((byte) & 0x00000002 ? '1' : '0'), \
   ((byte) & 0x00000001 ? '1' : '0') 
 
-#define PRINT_AS_32_BIT_HEX(ADDRESS) printf(#ADDRESS": 0x%08x\n", nds->ARM7Read32(ADDRESS))
-#define PRINT_AS_32_BIT_BIN(ADDRESS) printf(#ADDRESS": "BYTE_TO_BINARY_PATTERN"\n", BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))
+#define PRINT_AS_32_BIT_HEX(ADDRESS) printf("0x%08x: 0x%08x\n", ADDRESS, nds->ARM7Read32(ADDRESS))
+#define PRINT_AS_32_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))
 
 void PluginKingdomHeartsDays::debugLogs(melonDS::NDS* nds, int gameScene)
 {
