@@ -794,6 +794,17 @@ ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
 }
 
+ivec2 getOther2DTextureCoordinates(float xpos, float ypos)
+{
+    ivec4 center = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, ivec2(512 + 256/2, 192/2), 0)));
+    bool nothingInTheCenter = center.b < 12;
+    if (nothingInTheCenter && isDialogVisible()) {
+        return ivec2(getIngameDialogTextureCoordinates(xpos, ypos));
+    }
+
+    return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
+}
+
 ivec2 getLoadingScreenTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
@@ -879,7 +890,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
     }
     if (GameScene == 17) { // gameScene_Other2D
-        return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
+        return ivec2(getOther2DTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
 }
