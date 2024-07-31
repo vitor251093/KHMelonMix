@@ -854,6 +854,9 @@ void MainWindow::startVideo(QString videoFilePath)
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(playerWidget);
 
+    int volume = localCfg.GetInt("Audio.Volume");
+    playerAudioOutput->setVolume(volume / 256.0);
+
     player->play();
 }
 
