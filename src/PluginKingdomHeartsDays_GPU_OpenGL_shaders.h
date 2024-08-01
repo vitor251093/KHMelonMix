@@ -1188,48 +1188,51 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (GameScene == 5 || GameScene == 10) // gameScene_InGameWithMap or gameScene_PauseMenu
     {
-        bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
-        bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && (ShowMissionInfo || GameScene == 10) && isMissionInformationVisibleOnBottomScreen();
+        if (!isDialogVisible())
+        {
+            bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
+            bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && (ShowMissionInfo || GameScene == 10) && isMissionInformationVisibleOnBottomScreen();
 
-        if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
-            int iuScale = KHUIScale;
-            float iuTexScale = (6.0)/iuScale;
-            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-            float heightScale = 1.0/TopScreenAspectRatio;
-            float widthScale = TopScreenAspectRatio;
+            if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
+                int iuScale = KHUIScale;
+                float iuTexScale = (6.0)/iuScale;
+                vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+                float heightScale = 1.0/TopScreenAspectRatio;
+                float widthScale = TopScreenAspectRatio;
 
-            // mission information
-            float sourceMissionInfoHeight = 24.0;
-            float sourceMissionInfoWidth = 256.0;
-            float missionInfoHeight = sourceMissionInfoHeight;
-            float missionInfoWidth = sourceMissionInfoWidth*heightScale;
-            float missionInfoLeftMargin = 8.0*heightScale;
-            float missionInfoTopMargin = 0.0;
-            float missionInfoY1 = showMissionInformationTopScreen ? 0.0 : (missionInfoTopMargin + 8.0);
-            float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
-            float blurBorder = 64.0*heightScale;
-            if (texPosition3d.x >= missionInfoLeftMargin + missionInfoWidth - blurBorder &&
-                texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
-                texPosition3d.y >= missionInfoY1 &&
-                texPosition3d.y <  missionInfoY2) {
+                // mission information
+                float sourceMissionInfoHeight = 24.0;
+                float sourceMissionInfoWidth = 256.0;
+                float missionInfoHeight = sourceMissionInfoHeight;
+                float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+                float missionInfoLeftMargin = 8.0*heightScale;
+                float missionInfoTopMargin = 0.0;
+                float missionInfoY1 = showMissionInformationTopScreen ? 0.0 : (missionInfoTopMargin + 8.0);
+                float missionInfoY2 = missionInfoHeight + missionInfoTopMargin;
+                float blurBorder = 64.0*heightScale;
+                if (texPosition3d.x >= missionInfoLeftMargin + missionInfoWidth - blurBorder &&
+                    texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
+                    texPosition3d.y >= missionInfoY1 &&
+                    texPosition3d.y <  missionInfoY2) {
 
-                bool hasTexture = showMissionInformationBottomScreen;
-                if (showMissionInformationTopScreen)
-                {
-                    hasTexture = ((ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0))).a & 0xF) == 1;
-                }
-
-                if (hasTexture && index == 2)
-                {
-                    int xBlur = int(64.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
-                    float transparency = 63.0/64;
-                    int blur = int((64.0 - xBlur) * transparency);
-
-                    if (GameScene == 5) { // gameScene_InGameWithMap
-                        color = ivec4(color.r, blur, 64 - blur, 0x01);
+                    bool hasTexture = showMissionInformationBottomScreen;
+                    if (showMissionInformationTopScreen)
+                    {
+                        hasTexture = ((ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0))).a & 0xF) == 1;
                     }
-                    else { // gameScene_PauseMenu
-                        color = ivec4(color.r, blur, 32 - blur/2, 0x01);
+
+                    if (hasTexture && index == 2)
+                    {
+                        int xBlur = int(64.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
+                        float transparency = 63.0/64;
+                        int blur = int((64.0 - xBlur) * transparency);
+
+                        if (GameScene == 5) { // gameScene_InGameWithMap
+                            color = ivec4(color.r, blur, 64 - blur, 0x01);
+                        }
+                        else { // gameScene_PauseMenu
+                            color = ivec4(color.r, blur, 32 - blur/2, 0x01);
+                        }
                     }
                 }
             }
