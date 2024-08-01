@@ -975,7 +975,7 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
     if (isCutsceneScene && _ShouldTerminateIngameCutscene) {
         onTerminateIngameCutscene(nds);
     }
-    if (_ShouldReturnToGameAfterCutscene && !isCutsceneScene) {
+    if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || (getCurrentMap(nds) == 0 && _StartPressCount == CUTSCENE_SKIP_START_FRAMES_COUNT))) {
         onReturnToGameAfterCutscene(nds);
     }
 }
@@ -1049,6 +1049,7 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
     _ShouldReturnToGameAfterCutscene = false;
 
     // Ugly workaround to play one cutscene after another one, because both are skipped with a single "Start" click
+    bool newCutsceneWillPlay = false;
     if (getCurrentMap(nds) != 0) {
         for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
             if (strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][0]) == 0) {
@@ -1056,11 +1057,21 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
                     if (strcmp(entry->DsName, SequentialCutscenes[seqIndex][1]) == 0) {
                         onIngameCutsceneIdentified(nds, entry);
                         onTerminateIngameCutscene(nds);
+                        newCutsceneWillPlay = true;
                         break;
                     }
                 }
             }
         }
+    }
+
+    if (!newCutsceneWillPlay) {
+        _CurrentCutscene = nullptr;
+
+        u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
+        u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
+        nds->ARM7Write32(cutsceneAddress, 0x0);
+        nds->ARM7Write32(cutsceneAddress2, 0x0);
     }
 }
 
