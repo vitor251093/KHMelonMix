@@ -961,8 +961,9 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
 
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
     CutsceneEntry* cutscene = detectCutscene(nds);
+    bool wasSaveLoaded = getCurrentMap(nds) != 0;
 
-    if (cutscene != nullptr && strcmp(cutscene->DsName, "843") == 0 && getCurrentMap(nds) != 0) {
+    if (cutscene != nullptr && strcmp(cutscene->DsName, "843") == 0 && wasSaveLoaded) {
         // cutscene = nullptr;
         // u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
         // u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
@@ -975,7 +976,7 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
     if (isCutsceneScene && _ShouldTerminateIngameCutscene) {
         onTerminateIngameCutscene(nds);
     }
-    if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || (getCurrentMap(nds) == 0 && _StartPressCount == CUTSCENE_SKIP_START_FRAMES_COUNT))) {
+    if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || (!wasSaveLoaded && _StartPressCount == CUTSCENE_SKIP_START_FRAMES_COUNT))) {
         onReturnToGameAfterCutscene(nds);
     }
 }
@@ -999,7 +1000,8 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
     }
 
     // Workaround so those two cutscenes are played in sequence ingame
-    if (getCurrentMap(nds) != 0) {
+    bool wasSaveLoaded = getCurrentMap(nds) != 0;
+    if (wasSaveLoaded) {
         for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
             if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][1]) == 0 &&
                                             strcmp(cutscene->DsName,         SequentialCutscenes[seqIndex][0]) == 0) {
@@ -1050,7 +1052,8 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
 
     // Ugly workaround to play one cutscene after another one, because both are skipped with a single "Start" click
     bool newCutsceneWillPlay = false;
-    if (getCurrentMap(nds) != 0) {
+    bool wasSaveLoaded = getCurrentMap(nds) != 0;
+    if (wasSaveLoaded) {
         for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
             if (strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][0]) == 0) {
                 for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
