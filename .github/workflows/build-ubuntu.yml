@@ -37,18 +37,18 @@ jobs:
         mv AppDir/usr/bin/melonDS AppDir/usr/bin/MelonMix
     - name: Preparing artifacts (ubuntu-x86_64)
       run: |
-        cp AppDir/usr/bin/MelonMix ./MelonMix
-        echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > ./MelonMix_KHDays.sh
-        echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > ./MelonMix_KHReCoded.sh
-        chmod +x ./MelonMix_KHDays.sh
-        chmod +x ./MelonMix_KHReCoded.sh
+        mkdir dist
+        mkdir -p ./dist/roms
+        mkdir -p ./dist/assets/days/cutscenes
+        cp AppDir/usr/bin/MelonMix ./dist/MelonMix
+        echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > ./dist/MelonMix_KHDays.sh
+        echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > ./dist/MelonMix_KHReCoded.sh
+        chmod +x ./dist/MelonMix_KHDays.sh
+        chmod +x ./dist/MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-ubuntu-x86_64
-        path: |
-          MelonMix
-          MelonMix_KHDays.sh
-          MelonMix_KHReCoded.sh
+        path: dist
     - name: Fetch AppImage tools
       run: |
         wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
@@ -65,18 +65,18 @@ jobs:
         ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin gstreamer --output appimage
     - name: Preparing artifacts (appimage-x86_64)
       run: |
-        mv MelonMix*.AppImage MelonMix.AppImage
-        echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/days.nds"    > ./MelonMix_KHDays.sh
-        echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/recoded.nds" > ./MelonMix_KHReCoded.sh
-        chmod +x ./MelonMix_KHDays.sh
-        chmod +x ./MelonMix_KHReCoded.sh
+        mkdir dist_appimage
+        mkdir -p ./dist_appimage/roms
+        mkdir -p ./dist_appimage/assets/days/cutscenes
+        mv MelonMix*.AppImage ./dist_appimage/MelonMix.AppImage
+        echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/days.nds"    > ./dist_appimage/MelonMix_KHDays.sh
+        echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/recoded.nds" > ./dist_appimage/MelonMix_KHReCoded.sh
+        chmod +x ./dist_appimage/MelonMix_KHDays.sh
+        chmod +x ./dist_appimage/MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-appimage-x86_64
-        path: |
-          MelonMix.AppImage
-          MelonMix_KHDays.sh
-          MelonMix_KHReCoded.sh
+        path: dist_appimage
 
   build-aarch64:
     name: aarch64
@@ -110,15 +110,15 @@ jobs:
         shell: bash
         run: |
           cmake --build build
-          mv build/melonDS build/MelonMix
-          echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > build/MelonMix_KHDays.sh
-          echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > build/MelonMix_KHReCoded.sh
-          chmod +x build/MelonMix_KHDays.sh
-          chmod +x build/MelonMix_KHReCoded.sh
+          mkdir dist
+          mkdir -p ./dist/roms
+          mkdir -p ./dist/assets/days/cutscenes
+          mv build/melonDS dist/MelonMix
+          echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > dist/MelonMix_KHDays.sh
+          echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > dist/MelonMix_KHReCoded.sh
+          chmod +x dist/MelonMix_KHDays.sh
+          chmod +x dist/MelonMix_KHReCoded.sh
       - uses: actions/upload-artifact@v4
         with:
           name: MelonMix-ubuntu-aarch64
-          path: |
-            build/MelonMix
-            build/MelonMix_KHDays.sh
-            build/MelonMix_KHReCoded.sh
+          path: dist
