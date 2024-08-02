@@ -44,7 +44,9 @@ jobs:
       run: |
         mkdir dist
         mkdir -p ./dist/roms
+        touch ./dist/roms/DELETE_ME
         mkdir -p ./dist/assets/days/cutscenes
+        touch ./dist/assets/days/cutscenes/DELETE_ME
         mv melonDS.exe ./dist/MelonMix.exe
         cp D:/a/_temp/msys64/mingw64/bin/*.dll ./dist/
         cp -r D:/a/_temp/msys64/mingw64/share/qt6/plugins/platforms ./dist/platforms/
