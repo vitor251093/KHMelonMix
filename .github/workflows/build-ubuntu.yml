@@ -39,7 +39,9 @@ jobs:
       run: |
         mkdir dist
         mkdir -p ./dist/roms
+        touch ./dist/roms/DELETE_ME
         mkdir -p ./dist/assets/days/cutscenes
+        touch ./dist/assets/days/cutscenes/DELETE_ME
         cp AppDir/usr/bin/MelonMix ./dist/MelonMix
         echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > ./dist/MelonMix_KHDays.sh
         echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > ./dist/MelonMix_KHReCoded.sh
@@ -67,7 +69,9 @@ jobs:
       run: |
         mkdir dist_appimage
         mkdir -p ./dist_appimage/roms
+        touch ./dist_appimage/roms/DELETE_ME
         mkdir -p ./dist_appimage/assets/days/cutscenes
+        touch ./dist_appimage/assets/days/cutscenes/DELETE_ME
         mv MelonMix*.AppImage ./dist_appimage/MelonMix.AppImage
         echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/days.nds"    > ./dist_appimage/MelonMix_KHDays.sh
         echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/recoded.nds" > ./dist_appimage/MelonMix_KHReCoded.sh
@@ -112,7 +116,9 @@ jobs:
           cmake --build build
           mkdir dist
           mkdir -p ./dist/roms
+          touch ./dist/roms/DELETE_ME
           mkdir -p ./dist/assets/days/cutscenes
+          touch ./dist/assets/days/cutscenes/DELETE_ME
           mv build/melonDS dist/MelonMix
           echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > dist/MelonMix_KHDays.sh
           echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > dist/MelonMix_KHReCoded.sh
