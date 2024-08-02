@@ -231,6 +231,14 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
     glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
 }
 
+void PluginKingdomHeartsDays::onLoadState(melonDS::NDS* nds)
+{
+    u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
+    u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
+    nds->ARM7Write32(cutsceneAddress, 0x0);
+    nds->ARM7Write32(cutsceneAddress2, 0x0);
+}
+
 u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
     if (_StartedReplacementCutscene && (~InputMask) & (1 << 3) && (_SkipPressCount++) < 1) { // Start
@@ -755,6 +763,15 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
              nds->GPU.GPU2D_A.EVA == 16 && nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 9 &&
              nds->GPU.GPU2D_B.EVA == 16 && nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0;
         if (isBottomCutscene)
+        {
+            return gameScene_Cutscene;
+        }
+
+        // Cutscene (Day 359)
+        bool isCutscene = nds->GPU.GPU2D_A.BlendCnt == 0 && 
+             nds->GPU.GPU2D_A.EVA == 0 && nds->GPU.GPU2D_A.EVB == 16 && nds->GPU.GPU2D_A.EVY == 9 &&
+             nds->GPU.GPU2D_B.EVA == 8 && nds->GPU.GPU2D_B.EVB == 8  && nds->GPU.GPU2D_B.EVY == 0;
+        if (isCutscene)
         {
             return gameScene_Cutscene;
         }

@@ -123,6 +123,11 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
     glUniform1i(CompGpu3DLoc[flags][2], UIScale);
 }
 
+void PluginKingdomHeartsReCoded::onLoadState(melonDS::NDS* nds)
+{
+
+}
+
 u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
     if (HotkeyPress & (1 << 15)) { // HUD Toggle

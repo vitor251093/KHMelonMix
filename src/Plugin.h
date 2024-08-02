@@ -41,6 +41,8 @@ public:
     virtual void gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags) { };
     virtual void gpu3DOpenGL_VS_Z_updateVariables(u32 flags) { };
 
+    virtual void onLoadState(melonDS::NDS* nds) { };
+
     virtual u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
     virtual void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask) = 0;
 

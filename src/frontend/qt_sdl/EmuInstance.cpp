@@ -49,6 +49,8 @@
 #include "FreeBIOS.h"
 #include "main.h"
 
+#include "PluginManager.h"
+
 using std::make_unique;
 using std::pair;
 using std::string;
@@ -620,6 +622,8 @@ bool EmuInstance::loadState(const std::string& filename)
     }
 
     savestateLoaded = true;
+
+    Plugins::PluginManager::get()->onLoadState(nds);
 
     return true;
 }
