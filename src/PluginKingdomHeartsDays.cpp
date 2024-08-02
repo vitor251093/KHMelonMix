@@ -554,6 +554,10 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
                                 (nds->GPU.GPU2D_A.BlendCnt == 840 && nds->GPU.GPU2D_B.BlendCnt == 0);
         if (isMissionVictory)
         {
+            if (GameScene == gameScene_Cutscene)
+            {
+                return gameScene_Cutscene;
+            }
             if (GameScene != gameScene_InGameWithCutscene)
             {
                 return gameScene_MultiplayerMissionReview;
@@ -739,15 +743,6 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
             if (nds->GPU.GPU3D.NumVertices == 12 && nds->GPU.GPU3D.NumPolygons == 3 && nds->GPU.GPU3D.RenderNumPolygons == 3)
             {
                 return gameScene_DayCounter; // 3 digits
-            }
-        }
-
-        // Intro cutscene
-        if (GameScene == gameScene_Cutscene)
-        {
-            if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons >= 0 && nds->GPU.GPU3D.RenderNumPolygons <= 3)
-            {
-                return gameScene_Cutscene;
             }
         }
 
