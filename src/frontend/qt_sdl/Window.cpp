@@ -816,6 +816,9 @@ void MainWindow::createVideoPlayer()
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         Plugins::PluginManager::get()->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
 
+        if (status == QMediaPlayer::LoadedMedia) {
+            player->play();
+        }
         if (status == QMediaPlayer::EndOfMedia) {
             asyncStopVideo();
         }
@@ -856,8 +859,6 @@ void MainWindow::startVideo(QString videoFilePath)
 
     int volume = localCfg.GetInt("Audio.Volume");
     playerAudioOutput->setVolume(volume / 256.0);
-
-    player->play();
 }
 
 void MainWindow::asyncStopVideo()
