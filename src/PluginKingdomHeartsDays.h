@@ -45,6 +45,7 @@ public:
     bool _StartedReplacementCutscene;
     bool _ShouldStopReplacementCutscene;
     bool _ShouldReturnToGameAfterCutscene;
+    bool _ShouldHideScreenForTransitions;
     CutsceneEntry* _CurrentCutscene;
     bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
     bool ShouldStartReplacementCutscene() {return _ShouldStartReplacementCutscene;}
@@ -113,6 +114,7 @@ private:
 
     u32 getAddress(CutsceneEntry* entry);
     CutsceneEntry* detectCutscene(melonDS::NDS* nds);
+    CutsceneEntry* detectSequenceCutscene(melonDS::NDS* nds);
     void refreshCutscene(melonDS::NDS* nds);
 
     u32 getCurrentMission(melonDS::NDS* nds);

@@ -169,6 +169,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _ShouldStartReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
+    _ShouldHideScreenForTransitions = false;
     _CurrentCutscene = nullptr;
 
     PriorHotkeyMask = 0;
@@ -200,6 +201,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
     CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
+    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideScene");
 }
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
@@ -212,6 +214,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     glUniform1i(CompGpuLoc[CompShader][5], ShowTarget ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][8], _ShouldHideScreenForTransitions ? 1 : 0);
 }
 
 void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
@@ -970,6 +973,20 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
     return cutscene1;
 }
 
+CutsceneEntry* PluginKingdomHeartsDays::detectSequenceCutscene(melonDS::NDS* nds)
+{
+    for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
+        if (strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][0]) == 0) {
+            for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+                if (strcmp(entry->DsName, SequentialCutscenes[seqIndex][1]) == 0) {
+                    return entry;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
 void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
 {
 #if !REPLACEMENT_CUTSCENES_ENABLED
@@ -1021,7 +1038,7 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
     if (wasSaveLoaded) {
         for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
             if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][1]) == 0 &&
-                                            strcmp(cutscene->DsName,         SequentialCutscenes[seqIndex][0]) == 0) {
+                                               strcmp(cutscene->DsName,         SequentialCutscenes[seqIndex][0]) == 0) {
                 return;
             }
         }
@@ -1060,6 +1077,9 @@ void PluginKingdomHeartsDays::onReplacementCutsceneEnd(melonDS::NDS* nds) {
     _StartedReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = true;
+
+    CutsceneEntry* sequence = detectSequenceCutscene(nds);
+    _ShouldHideScreenForTransitions = sequence != nullptr;
 }
 void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
     log("Ingame cutscene reached its end");
@@ -1071,17 +1091,11 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
     bool newCutsceneWillPlay = false;
     bool wasSaveLoaded = getCurrentMap(nds) != 0;
     if (wasSaveLoaded) {
-        for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
-            if (strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][0]) == 0) {
-                for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-                    if (strcmp(entry->DsName, SequentialCutscenes[seqIndex][1]) == 0) {
-                        onIngameCutsceneIdentified(nds, entry);
-                        onTerminateIngameCutscene(nds);
-                        newCutsceneWillPlay = true;
-                        break;
-                    }
-                }
-            }
+        CutsceneEntry* sequence = detectSequenceCutscene(nds);
+        if (sequence != nullptr) {
+            onIngameCutsceneIdentified(nds, sequence);
+            onTerminateIngameCutscene(nds);
+            newCutsceneWillPlay = true;
         }
     }
 

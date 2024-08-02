@@ -32,6 +32,7 @@ uniform bool ShowMap;
 uniform bool ShowTarget;
 uniform bool ShowMissionGauge;
 uniform bool ShowMissionInfo;
+uniform bool HideScene;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -1244,6 +1245,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
 ivec4 brightness()
 {
+    if (HideScene) {
+        return ivec4(0x1F, 2 << 6, 0x2, 0);
+    }
     if (GameScene == 1) { // gameScene_MainMenu
         ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
         int brightmode = mbright.g >> 6;
