@@ -132,6 +132,31 @@ CutsceneEntry Cutscenes[] =
     {"848",    "848_xions_end",                     0x0eb91800, 0x0eb91800, 0x0eb91800}, // lacks EU, JP
 };
 
+DialogueEntry Dialogues[] =
+{
+    //{"hd004"},
+    {"hd006" ,  1 , 1 , 0 , 0 , false, 0x0225ABD9 , 0x4C00610074006500},
+    //{"hd008" ,  7 , 1 , 0 , 0 , false, 0x, 0x , "hd009"},
+    //{"hd010" , 11 , 1 , 0 , 0 , false, 0x, 0x },
+    //{"hd018" , 13 , 1 , 0 , 0 , true , 0x, 0x },
+    //{"hd019" , 13 , 1 , 0 , 0 , true , 0x, 0x },
+    //{"hd020" , 14 , 1 , 0 , 0 , true , 0x, 0x },
+    //{"hd021" , 14 , 1 , 0 , 0 , true , 0x, 0x , "hd022"},
+    //{"hd025" , 15 , 1 , 0 , 0 , true , 0x, 0x },
+    //{"hd034" , 20 , 1 , 0 , 0 , true , 0x, 0x },
+    //{"hd039" , 21 , 1 , 0 , 0 , false, 0x, 0x },
+    {"hd043a", 23 , 1 , 0 , 0 , true , 0x021D05DC , 0x526F786173203F00},
+    {"hd043b", 23 , 1 , 0 , 0 , true , 0X021CF40C , 0X5427617572617320 , "hd044"},
+    {"hd048b", 29 , 1 , 0 , 0 , false, 0x022004D0 , 0x570065006C006C00},
+    //{"hd050" , 30 , 1 , 0 , 0 , false, , },
+    //{"hd051" , 30 , 1 , 0 , 0 , true, , },
+    //{"hd054" , 31 , "hd055"},
+    {"hd059" , 36 , 1 , 0 , 0 , true , 0x021CD264 , 0x4865792C20646F6E},
+    //{"hd063" , 37 , 1 , 0 , 0 , true , 0x , 0x , "hd064"},
+    {"hd065" , 42 , 1 , 0 , 0 , false, 0x022AB56C , 0x4800750068003F00 , "hd066a"},
+    //{"hd066b", 42 , 1 , 0 , 0 , false, 0x , 0x}
+};
+
 #define SequentialCutscenesSize 3
 char SequentialCutscenes[SequentialCutscenesSize][2][12] = {{"837", "840"}, {"848", "834"}, {"842", "843"}};
 
@@ -503,6 +528,8 @@ bool PluginKingdomHeartsDays::shouldRenderFrame(melonDS::NDS* nds)
 
 int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
 {
+    //printf("Game scene: %d\n",  GameScene);
+
     // printf("0x02194CBF: %08x %08x\n", nds->ARM7Read32(0x02194CBF), nds->ARM7Read32(0x02194CC3));
 
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements

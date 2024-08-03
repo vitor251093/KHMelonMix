@@ -23,6 +23,30 @@ struct CutsceneEntry
     int jpAddress;
 };
 
+struct DialogueEntry
+{
+    char Name[40];
+    int Mission;
+    int skipNum;
+    int sceneStart;
+    int sceneEnd;
+    bool startImmediate;
+    int usStart;
+    long long int usValues;
+    char nextScene[40];
+    int nextSceneStart;
+    int nextSceneEnd;
+    //char nextScene2[40];
+    //int nextSceneStart2;
+    //int nextSceneEnd2;
+    //char nextScene3[40];
+    //int nextSceneStart3;
+    //int nextSceneEnd3;
+    //char nextScene4[40];
+    //int nextSceneStart4;
+    //int nextSceneEnd4;
+};
+
 class Plugin
 {
 public:
