@@ -36,9 +36,9 @@ struct DialogueEntry
     char nextScene[40];
     int nextSceneStart;
     int nextSceneEnd;
-    //char nextScene2[40];
-    //int nextSceneStart2;
-    //int nextSceneEnd2;
+    char nextScene2[40];
+    int nextSceneStart2;
+    int nextSceneEnd2;
     //char nextScene3[40];
     //int nextSceneStart3;
     //int nextSceneEnd3;
