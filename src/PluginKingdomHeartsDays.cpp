@@ -970,6 +970,11 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
 
 CutsceneEntry* PluginKingdomHeartsDays::detectSequenceCutscene(melonDS::NDS* nds)
 {
+    bool wasSaveLoaded = getCurrentMap(nds) != 0;
+    if (!wasSaveLoaded) {
+        return nullptr;
+    }
+
     for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
         if (strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][0]) == 0) {
             for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
@@ -979,6 +984,7 @@ CutsceneEntry* PluginKingdomHeartsDays::detectSequenceCutscene(melonDS::NDS* nds
             }
         }
     }
+
     return nullptr;
 }
 
@@ -1084,14 +1090,11 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
 
     // Ugly workaround to play one cutscene after another one, because both are skipped with a single "Start" click
     bool newCutsceneWillPlay = false;
-    bool wasSaveLoaded = getCurrentMap(nds) != 0;
-    if (wasSaveLoaded) {
-        CutsceneEntry* sequence = detectSequenceCutscene(nds);
-        if (sequence != nullptr) {
-            onIngameCutsceneIdentified(nds, sequence);
-            onTerminateIngameCutscene(nds);
-            newCutsceneWillPlay = true;
-        }
+    CutsceneEntry* sequence = detectSequenceCutscene(nds);
+    if (sequence != nullptr) {
+        onIngameCutsceneIdentified(nds, sequence);
+        onTerminateIngameCutscene(nds);
+        newCutsceneWillPlay = true;
     }
 
     if (!newCutsceneWillPlay) {
