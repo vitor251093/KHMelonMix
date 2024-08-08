@@ -186,6 +186,8 @@ void EmuThread::run()
                 printf("Loading plugin %s\n", typeid(*plugin).name());
             }
 
+            plugin->setNds(emuInstance->getNDS());
+
             if (emuStatus == emuStatus_FrameStep) emuStatus = emuStatus_Paused;
 
             if (emuInstance->hotkeyPressed(HK_SolarSensorDecrease))
@@ -266,8 +268,8 @@ void EmuThread::run()
             }
 
             // process input and hotkeys
-            plugin->applyTouchKeyMask(emuInstance->nds, emuInstance->touchInputMask);
-            emuInstance->inputMask = plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
+            plugin->applyTouchKeyMask(emuInstance->touchInputMask);
+            emuInstance->inputMask = plugin->applyHotkeyToInputMask(emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
             emuInstance->nds->SetKeyMask(emuInstance->inputMask);
 
             if (emuInstance->hotkeyPressed(HK_Lid))
@@ -281,7 +283,7 @@ void EmuThread::run()
             emuInstance->micProcess();
 
             refreshGameScene();
-            bool shouldRenderFrame = plugin->shouldRenderFrame(emuInstance->nds);
+            bool shouldRenderFrame = plugin->shouldRenderFrame();
 
             // auto screen layout
             {
@@ -468,7 +470,7 @@ void EmuThread::run()
             }
 
             if (plugin != nullptr) {
-                plugin->applyHotkeyToInputMask(emuInstance->nds, emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
+                plugin->applyHotkeyToInputMask(emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
 
                 refreshCutsceneState();
             }
@@ -606,7 +608,7 @@ void EmuThread::handleMessages()
 
 void EmuThread::refreshGameScene()
 {
-    bool updated = plugin->refreshGameScene(emuInstance->nds);
+    bool updated = plugin->refreshGameScene();
     if (updated && DEBUG_MODE_ENABLED)
     {
         emuInstance->osdAddMessage(0, plugin->getGameSceneName());
@@ -626,7 +628,7 @@ void EmuThread::refreshCutsceneState()
                 emuStatus = emuStatus_Paused;
                 QString filePath = QString::fromUtf8(path.c_str());
                 emit windowStartVideo(filePath);
-                plugin->onReplacementCutsceneStart(emuInstance->nds);
+                plugin->onReplacementCutsceneStart();
             }
         }
     }

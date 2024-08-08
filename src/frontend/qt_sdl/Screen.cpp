@@ -238,7 +238,7 @@ void ScreenPanel::refreshAspectRatio()
         aspectTop = 16.0 / 9;
     }
     auto plugin = Plugins::PluginManager::get();
-    plugin->setAspectRatio(emuInstance->getNDS(), aspectTop);
+    plugin->setAspectRatio(aspectTop);
 }
 
 void ScreenPanel::mousePressEvent(QMouseEvent* event)

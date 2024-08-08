@@ -623,7 +623,7 @@ bool EmuInstance::loadState(const std::string& filename)
 
     savestateLoaded = true;
 
-    Plugins::PluginManager::get()->onLoadState(nds);
+    Plugins::PluginManager::get()->onLoadState();
 
     return true;
 }

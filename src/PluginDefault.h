@@ -13,20 +13,22 @@ class PluginDefault : public Plugin
 public:
     PluginDefault(u32 gameCode) {GameCode = gameCode;};
 
+    void setNds(melonDS::NDS* Nds) {}
+
     std::string assetsFolder() {
         return std::to_string(GameCode);
     }
 
-    void onLoadState(melonDS::NDS* nds) {}
+    void onLoadState() {}
 
-    u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) {
+    u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) {
         return InputMask;
     }
-    void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask) {}
+    void applyTouchKeyMask(u32 TouchKeyMask) {}
     const char* getGameSceneName() {
         return "";
     }
-    bool shouldRenderFrame(melonDS::NDS* nds) {
+    bool shouldRenderFrame() {
         return true;
     }
     bool ShouldTerminateIngameCutscene() {return false;}
@@ -36,15 +38,15 @@ public:
     bool ShouldReturnToGameAfterCutscene() {return false;}
     CutsceneEntry* CurrentCutscene() {return nullptr;}
     std::string CutsceneFilePath(CutsceneEntry* cutscene) {return "";}
-    void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) {}
-    void onTerminateIngameCutscene(melonDS::NDS* nds) {}
-    void onReturnToGameAfterCutscene(melonDS::NDS* nds) {}
-    void onReplacementCutsceneStart(melonDS::NDS* nds) {}
-    void onReplacementCutsceneEnd(melonDS::NDS* nds) {}
-    bool refreshGameScene(melonDS::NDS* nds) {
+    void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {}
+    void onTerminateIngameCutscene() {}
+    void onReturnToGameAfterCutscene() {}
+    void onReplacementCutsceneStart() {}
+    void onReplacementCutsceneEnd() {}
+    bool refreshGameScene() {
         return false;
     }
-    void setAspectRatio(melonDS::NDS* nds, float aspectRatio) {}
+    void setAspectRatio(float aspectRatio) {}
 };
 }
 

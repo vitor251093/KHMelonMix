@@ -23,6 +23,8 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
     bool isJapanCartRev1() { return false; }; // TODO: KH Add support to Rev1
 
+    void setNds(melonDS::NDS* Nds) {nds = Nds;};
+
     std::string assetsFolder();
 
     const char* gpuOpenGL_FS();
@@ -33,10 +35,10 @@ public:
     void gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags);
     void gpu3DOpenGL_VS_Z_updateVariables(u32 flags);
 
-    void onLoadState(melonDS::NDS* nds);
+    void onLoadState();
 
-    u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
-    void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
+    u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
+    void applyTouchKeyMask(u32 TouchKeyMask);
 
     int _StartPressCount;
     int _SkipPressCount;
@@ -60,20 +62,22 @@ public:
     bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
-    void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene);
-    void onTerminateIngameCutscene(melonDS::NDS* nds);
-    void onReturnToGameAfterCutscene(melonDS::NDS* nds);
-    void onReplacementCutsceneStart(melonDS::NDS* nds);
-    void onReplacementCutsceneEnd(melonDS::NDS* nds);
+    void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
+    void onTerminateIngameCutscene();
+    void onReturnToGameAfterCutscene();
+    void onReplacementCutsceneStart();
+    void onReplacementCutsceneEnd();
 
     const char* getGameSceneName();
 
-    bool shouldRenderFrame(melonDS::NDS* nds);
+    bool shouldRenderFrame();
 
-    void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
+    void setAspectRatio(float aspectRatio);
 
-    bool refreshGameScene(melonDS::NDS* nds);
+    bool refreshGameScene();
 private:
+    melonDS::NDS* nds;
+
     bool PausedInGame;
     int HUDState;
 
@@ -107,24 +111,24 @@ private:
     u32 LastLockOnPress, LastSwitchTargetPress;
     bool SwitchTargetPressOnHold;
 
-    int detectGameScene(melonDS::NDS* nds);
-    bool setGameScene(melonDS::NDS* nds, int newGameScene);
+    int detectGameScene();
+    bool setGameScene(int newGameScene);
 
     u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address);
 
     u32 getAddress(CutsceneEntry* entry);
-    CutsceneEntry* detectCutscene(melonDS::NDS* nds);
-    CutsceneEntry* detectSequenceCutscene(melonDS::NDS* nds);
-    void refreshCutscene(melonDS::NDS* nds);
+    CutsceneEntry* detectCutscene();
+    CutsceneEntry* detectSequenceCutscene();
+    void refreshCutscene();
 
-    u32 getCurrentMission(melonDS::NDS* nds);
-    u32 getCurrentMap(melonDS::NDS* nds);
+    u32 getCurrentMission();
+    u32 getCurrentMap();
 
     bool isBufferBlack(unsigned int* buffer);
-    bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
-    bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
-    void hudToggle(melonDS::NDS* nds);
-    void debugLogs(melonDS::NDS* nds, int gameScene);
+    bool isTopScreen2DTextureBlack();
+    bool isBottomScreen2DTextureBlack();
+    void hudToggle();
+    void debugLogs(int gameScene);
 };
 }
 

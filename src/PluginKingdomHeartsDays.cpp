@@ -234,7 +234,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
     glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
 }
 
-void PluginKingdomHeartsDays::onLoadState(melonDS::NDS* nds)
+void PluginKingdomHeartsDays::onLoadState()
 {
     u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
     u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
@@ -242,8 +242,13 @@ void PluginKingdomHeartsDays::onLoadState(melonDS::NDS* nds)
     nds->ARM7Write32(cutsceneAddress2, 0x0);
 }
 
-u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
+u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
+    if (nds == nullptr)
+    {
+        return InputMask;
+    }
+
     if (_StartedReplacementCutscene && (~InputMask) & (1 << 3) && (_SkipPressCount++) < 1) { // Start
         _ShouldStopReplacementCutscene = true;
     }
@@ -254,7 +259,7 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
     }
 
     if (HotkeyPress & (1 << 15)) { // HUD Toggle
-        hudToggle(nds);
+        hudToggle();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
@@ -369,12 +374,17 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(melonDS::NDS* nds, u32 Input
     return InputMask;
 }
 
-void PluginKingdomHeartsDays::applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask)
+void PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
 {
+    if (nds == nullptr)
+    {
+        return;
+    }
+
     nds->SetTouchKeyMask(TouchKeyMask);
 }
 
-void PluginKingdomHeartsDays::hudToggle(melonDS::NDS* nds)
+void PluginKingdomHeartsDays::hudToggle()
 {
     HUDState = (HUDState + 1) % 3;
     if (HUDState == 0) { // exploration mode
@@ -444,21 +454,21 @@ bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
-bool PluginKingdomHeartsDays::isTopScreen2DTextureBlack(melonDS::NDS* nds)
+bool PluginKingdomHeartsDays::isTopScreen2DTextureBlack()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
     u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
     return isBufferBlack(topBuffer);
 }
 
-bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack(melonDS::NDS* nds)
+bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
     u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
     return isBufferBlack(bottomBuffer);
 }
 
-bool PluginKingdomHeartsDays::shouldRenderFrame(melonDS::NDS* nds)
+bool PluginKingdomHeartsDays::shouldRenderFrame()
 {
     if (GameScene == gameScene_InGameWithCutscene)
     {
@@ -476,7 +486,7 @@ bool PluginKingdomHeartsDays::shouldRenderFrame(melonDS::NDS* nds)
         }
         else // 3D on bottom screen
         {
-            IsBottomScreen2DTextureBlack = isBottomScreen2DTextureBlack(nds);
+            IsBottomScreen2DTextureBlack = isBottomScreen2DTextureBlack();
 
             _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
             _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
@@ -501,8 +511,13 @@ bool PluginKingdomHeartsDays::shouldRenderFrame(melonDS::NDS* nds)
     return true;
 }
 
-int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
+int PluginKingdomHeartsDays::detectGameScene()
 {
+    if (nds == nullptr)
+    {
+        return GameScene;
+    }
+
     // printf("0x02194CBF: %08x %08x\n", nds->ARM7Read32(0x02194CBF), nds->ARM7Read32(0x02194CC3));
 
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
@@ -511,7 +526,7 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
     // 3D element mimicking 2D behavior
     bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 20;
 
-    bool wasSaveLoaded = getCurrentMap(nds) != 0;
+    bool wasSaveLoaded = getCurrentMap() != 0;
     bool muchOlderHad3DOnTopScreen = _muchOlderHad3DOnTopScreen;
     bool muchOlderHad3DOnBottomScreen = _muchOlderHad3DOnBottomScreen;
     bool olderHad3DOnTopScreen = _olderHad3DOnTopScreen;
@@ -870,20 +885,23 @@ int PluginKingdomHeartsDays::detectGameScene(melonDS::NDS* nds)
     return gameScene_InGameWithMap;
 }
 
-void PluginKingdomHeartsDays::setAspectRatio(melonDS::NDS* nds, float aspectRatio)
+void PluginKingdomHeartsDays::setAspectRatio(float aspectRatio)
 {
-    int aspectRatioKey = (int)round(0x1000 * aspectRatio);
+    if (GameScene != -1)
+    {
+        int aspectRatioKey = (int)round(0x1000 * aspectRatio);
 
-    u32 aspectRatioMenuAddress = getAddressByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
+        u32 aspectRatioMenuAddress = getAddressByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
 
-    if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
-        nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
+        if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
+            nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
+        }
     }
 
     AspectRatio = aspectRatio;
 }
 
-bool PluginKingdomHeartsDays::setGameScene(melonDS::NDS* nds, int newGameScene)
+bool PluginKingdomHeartsDays::setGameScene(int newGameScene)
 {
     bool updated = false;
     if (GameScene != newGameScene) 
@@ -932,8 +950,13 @@ u32 PluginKingdomHeartsDays::getAddressByCart(u32 usAddress, u32 euAddress, u32 
     return cutsceneAddress;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
+CutsceneEntry* PluginKingdomHeartsDays::detectCutscene()
 {
+    if (nds == nullptr)
+    {
+        return nullptr;
+    }
+
     u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
     u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
     if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
@@ -968,9 +991,9 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene(melonDS::NDS* nds)
     return cutscene1;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectSequenceCutscene(melonDS::NDS* nds)
+CutsceneEntry* PluginKingdomHeartsDays::detectSequenceCutscene()
 {
-    bool wasSaveLoaded = getCurrentMap(nds) != 0;
+    bool wasSaveLoaded = getCurrentMap() != 0;
     if (!wasSaveLoaded) {
         return nullptr;
     }
@@ -988,15 +1011,15 @@ CutsceneEntry* PluginKingdomHeartsDays::detectSequenceCutscene(melonDS::NDS* nds
     return nullptr;
 }
 
-void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
+void PluginKingdomHeartsDays::refreshCutscene()
 {
 #if !REPLACEMENT_CUTSCENES_ENABLED
     return;
 #endif
 
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
-    CutsceneEntry* cutscene = detectCutscene(nds);
-    bool wasSaveLoaded = getCurrentMap(nds) != 0;
+    CutsceneEntry* cutscene = detectCutscene();
+    bool wasSaveLoaded = getCurrentMap() != 0;
 
     if (cutscene != nullptr && strcmp(cutscene->DsName, "843") == 0 && wasSaveLoaded) {
         // cutscene = nullptr;
@@ -1006,13 +1029,13 @@ void PluginKingdomHeartsDays::refreshCutscene(melonDS::NDS* nds)
         // nds->ARM7Write32(cutsceneAddress2, 0x0b514600);
     }
     if (cutscene != nullptr) {
-        onIngameCutsceneIdentified(nds, cutscene);
+        onIngameCutsceneIdentified(cutscene);
     }
     if (isCutsceneScene && _ShouldTerminateIngameCutscene) {
-        onTerminateIngameCutscene(nds);
+        onTerminateIngameCutscene();
     }
     if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || (!wasSaveLoaded && _StartPressCount == CUTSCENE_SKIP_START_FRAMES_COUNT))) {
-        onReturnToGameAfterCutscene(nds);
+        onReturnToGameAfterCutscene();
     }
 }
 
@@ -1029,13 +1052,13 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
     return fullPath.string();
 }
 
-void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) {
+void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
         return;
     }
 
     // Workaround so those two cutscenes are played in sequence ingame
-    bool wasSaveLoaded = getCurrentMap(nds) != 0;
+    bool wasSaveLoaded = getCurrentMap() != 0;
     if (wasSaveLoaded) {
         for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
             if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][1]) == 0 &&
@@ -1058,7 +1081,7 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(melonDS::NDS* nds, Cuts
     _CurrentCutscene = cutscene;
     _ShouldTerminateIngameCutscene = true;
 }
-void PluginKingdomHeartsDays::onTerminateIngameCutscene(melonDS::NDS* nds) {
+void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
     if (_CurrentCutscene == nullptr) {
         return;
     }
@@ -1067,22 +1090,22 @@ void PluginKingdomHeartsDays::onTerminateIngameCutscene(melonDS::NDS* nds) {
     _ShouldTerminateIngameCutscene = false;
     _ShouldStartReplacementCutscene = true;
 }
-void PluginKingdomHeartsDays::onReplacementCutsceneStart(melonDS::NDS* nds) {
+void PluginKingdomHeartsDays::onReplacementCutsceneStart() {
     log("Cutscene started");
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = true;
 }
 
-void PluginKingdomHeartsDays::onReplacementCutsceneEnd(melonDS::NDS* nds) {
+void PluginKingdomHeartsDays::onReplacementCutsceneEnd() {
     log("Should stop ingame cutscene");
     _StartedReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = true;
 
-    CutsceneEntry* sequence = detectSequenceCutscene(nds);
+    CutsceneEntry* sequence = detectSequenceCutscene();
     _ShouldHideScreenForTransitions = sequence != nullptr;
 }
-void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
+void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     log("Ingame cutscene reached its end");
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = false;
@@ -1090,10 +1113,10 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
 
     // Ugly workaround to play one cutscene after another one, because both are skipped with a single "Start" click
     bool newCutsceneWillPlay = false;
-    CutsceneEntry* sequence = detectSequenceCutscene(nds);
+    CutsceneEntry* sequence = detectSequenceCutscene();
     if (sequence != nullptr) {
-        onIngameCutsceneIdentified(nds, sequence);
-        onTerminateIngameCutscene(nds);
+        onIngameCutsceneIdentified(sequence);
+        onTerminateIngameCutscene();
         newCutsceneWillPlay = true;
     }
 
@@ -1107,20 +1130,20 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene(melonDS::NDS* nds) {
     }
 }
 
-bool PluginKingdomHeartsDays::refreshGameScene(melonDS::NDS* nds)
+bool PluginKingdomHeartsDays::refreshGameScene()
 {
-    int newGameScene = detectGameScene(nds);
+    int newGameScene = detectGameScene();
     
-    debugLogs(nds, newGameScene);
+    debugLogs(newGameScene);
 
-    bool updated = setGameScene(nds, newGameScene);
+    bool updated = setGameScene(newGameScene);
 
-    refreshCutscene(nds);
+    refreshCutscene();
 
     return updated;
 }
 
-u32 PluginKingdomHeartsDays::getCurrentMission(melonDS::NDS* nds)
+u32 PluginKingdomHeartsDays::getCurrentMission()
 {
     return nds->ARM7Read8(getAddressByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
 }
@@ -1136,8 +1159,13 @@ u32 PluginKingdomHeartsDays::getCurrentMission(melonDS::NDS* nds)
 // map >> 8 == 7 => ?
 // map >> 8 == 8 => Neverland
 // map >> 8 == 9 => Beast's Castle
-u32 PluginKingdomHeartsDays::getCurrentMap(melonDS::NDS* nds)
+u32 PluginKingdomHeartsDays::getCurrentMap()
 {
+    if (nds == nullptr)
+    {
+        return 0;
+    }
+
     u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
     u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
     u32 fullMap = world;
@@ -1183,14 +1211,14 @@ u32 PluginKingdomHeartsDays::getCurrentMap(melonDS::NDS* nds)
 #define PRINT_AS_32_BIT_HEX(ADDRESS) printf("0x%08x: 0x%08x\n", ADDRESS, nds->ARM7Read32(ADDRESS))
 #define PRINT_AS_32_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))
 
-void PluginKingdomHeartsDays::debugLogs(melonDS::NDS* nds, int gameScene)
+void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
     if (!DEBUG_MODE_ENABLED) {
         return;
     }
 
     printf("Game scene: %d\n",  gameScene);
-    printf("Current map: %d\n", getCurrentMap(nds));
+    printf("Current map: %d\n", getCurrentMap());
     printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);
     printf("NDS->GPU.GPU3D.NumPolygons: %d\n",        nds->GPU.GPU3D.NumPolygons);
     printf("NDS->GPU.GPU3D.RenderNumPolygons: %d\n",  nds->GPU.GPU3D.RenderNumPolygons);

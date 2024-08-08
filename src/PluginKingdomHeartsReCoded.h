@@ -22,6 +22,8 @@ public:
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
+    void setNds(melonDS::NDS* Nds) {nds = Nds;};
+
     std::string assetsFolder();
 
     const char* gpuOpenGL_FS();
@@ -32,10 +34,10 @@ public:
     void gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags);
     void gpu3DOpenGL_VS_Z_updateVariables(u32 flags);
 
-    void onLoadState(melonDS::NDS* nds);
+    void onLoadState();
 
-    u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
-    void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask);
+    u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
+    void applyTouchKeyMask(u32 TouchKeyMask);
 
     bool _ShouldTerminateIngameCutscene;
     bool _ShouldStartReplacementCutscene;
@@ -50,18 +52,20 @@ public:
     bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
-    void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene);
-    void onTerminateIngameCutscene(melonDS::NDS* nds);
-    void onReturnToGameAfterCutscene(melonDS::NDS* nds);
-    void onReplacementCutsceneStart(melonDS::NDS* nds);
-    void onReplacementCutsceneEnd(melonDS::NDS* nds);
+    void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
+    void onTerminateIngameCutscene();
+    void onReturnToGameAfterCutscene();
+    void onReplacementCutsceneStart();
+    void onReplacementCutsceneEnd();
 
     const char* getGameSceneName();
-    bool shouldRenderFrame(melonDS::NDS* nds);
-    void setAspectRatio(melonDS::NDS* nds, float aspectRatio);
-    bool refreshGameScene(melonDS::NDS* nds);
-    void debugLogs(melonDS::NDS* nds, int gameScene);
+    bool shouldRenderFrame();
+    void setAspectRatio(float aspectRatio);
+    bool refreshGameScene();
+    void debugLogs(int gameScene);
 private:
+    melonDS::NDS* nds;
+
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
     int priorGameScene;
@@ -80,13 +84,13 @@ private:
 
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
 
-    int detectGameScene(melonDS::NDS* nds);
-    bool setGameScene(melonDS::NDS* nds, int newGameScene);
+    int detectGameScene();
+    bool setGameScene(int newGameScene);
 
     bool isBufferBlack(unsigned int* buffer);
-    bool isTopScreen2DTextureBlack(melonDS::NDS* nds);
-    bool isBottomScreen2DTextureBlack(melonDS::NDS* nds);
-    void hudToggle(melonDS::NDS* nds);
+    bool isTopScreen2DTextureBlack();
+    bool isBottomScreen2DTextureBlack();
+    void hudToggle();
 };
 }
 

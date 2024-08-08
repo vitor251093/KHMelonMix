@@ -31,6 +31,8 @@ public:
     u32 GameCode = 0;
     static bool isCart(u32 gameCode) {return true;};
 
+    virtual void setNds(melonDS::NDS* Nds) = 0;
+
     virtual std::string assetsFolder() = 0;
 
     virtual const char* gpuOpenGL_FS() { return nullptr; };
@@ -41,10 +43,10 @@ public:
     virtual void gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags) { };
     virtual void gpu3DOpenGL_VS_Z_updateVariables(u32 flags) { };
 
-    virtual void onLoadState(melonDS::NDS* nds) { };
+    virtual void onLoadState() { };
 
-    virtual u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
-    virtual void applyTouchKeyMask(melonDS::NDS* nds, u32 TouchKeyMask) = 0;
+    virtual u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
+    virtual void applyTouchKeyMask(u32 TouchKeyMask) = 0;
 
     virtual bool ShouldTerminateIngameCutscene() = 0;
     virtual bool ShouldStartReplacementCutscene() = 0;
@@ -53,19 +55,19 @@ public:
     virtual bool ShouldReturnToGameAfterCutscene() = 0;
     virtual CutsceneEntry* CurrentCutscene() = 0;
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
-    virtual void onIngameCutsceneIdentified(melonDS::NDS* nds, CutsceneEntry* cutscene) = 0;
-    virtual void onTerminateIngameCutscene(melonDS::NDS* nds) = 0;
-    virtual void onReturnToGameAfterCutscene(melonDS::NDS* nds) = 0;
-    virtual void onReplacementCutsceneStart(melonDS::NDS* nds) = 0;
-    virtual void onReplacementCutsceneEnd(melonDS::NDS* nds) = 0;
+    virtual void onIngameCutsceneIdentified(CutsceneEntry* cutscene) = 0;
+    virtual void onTerminateIngameCutscene() = 0;
+    virtual void onReturnToGameAfterCutscene() = 0;
+    virtual void onReplacementCutsceneStart() = 0;
+    virtual void onReplacementCutsceneEnd() = 0;
 
     virtual const char* getGameSceneName() = 0;
 
-    virtual bool shouldRenderFrame(melonDS::NDS* nds) = 0;
+    virtual bool shouldRenderFrame() = 0;
 
-    virtual bool refreshGameScene(melonDS::NDS* nds) = 0;
+    virtual bool refreshGameScene() = 0;
 
-    virtual void setAspectRatio(melonDS::NDS* nds, float aspectRatio) = 0;
+    virtual void setAspectRatio(float aspectRatio) = 0;
 
     void log(const char* log) {
         printf("%s\n", log);

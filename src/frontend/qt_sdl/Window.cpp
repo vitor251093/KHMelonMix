@@ -875,7 +875,7 @@ void MainWindow::stopVideo()
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(panel);
 
-    Plugins::PluginManager::get()->onReplacementCutsceneEnd(nullptr);
+    Plugins::PluginManager::get()->onReplacementCutsceneEnd();
 }
 
 GL::Context* MainWindow::getOGLContext()
