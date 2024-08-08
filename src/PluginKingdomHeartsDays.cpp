@@ -86,16 +86,16 @@ CutsceneEntry Cutscenes[] =
      // still couldn't find a proper way to detect the opening from the Theater
     {"802",    "802_opening",                       0x088b2e00, 0x08B3D400, 0x088b2e00}, // lacks JP
     {"803",    "803_meet_xion",                     0x0987ec00, 0x09b09200, 0x0987ec00}, // lacks JP
-    {"804",    "804_roxas_recusant_sigil",          0x09ae9400, 0x09ae9400, 0x09ae9400}, // lacks EU, JP
+    {"804",    "804_roxas_recusant_sigil",          0x09ae9400, 0x09d73a00, 0x09ae9400}, // lacks JP
     {"805",    "805_the_dark_margin",               0x09b80600, 0x09E0AC00, 0x09b80600}, // lacks JP
-    {"806",    "806_sora_entering_pod",             0x09e83800, 0x09e83800, 0x09e83800}, // lacks EU, JP
-    {"808",    "808_sunset_memory",                 0x09f24c00, 0x09f24c00, 0x09f24c00}, // lacks EU, JP
-    {"809",    "809_xions_defeat",                  0x09f79400, 0x09f79400, 0x09f79400}, // lacks EU, JP
+    {"806",    "806_sora_entering_pod",             0x09e83800, 0x0a10de00, 0x09e83800}, // lacks JP
+    {"808",    "808_sunset_memory",                 0x09f24c00, 0x0a1af200, 0x09f24c00}, // lacks JP
+    {"809",    "809_xions_defeat",                  0x09f79400, 0x0a203a00, 0x09f79400}, // lacks JP
     {"810",    "810_the_main_in_black_reflects",    0x09ff8000, 0x0A282600, 0x09ff8000}, // lacks JP
     {"813",    "813_xions_defeat",                  0x0a13f600, 0x0A3C9C00, 0x0a13f600}, // lacks JP
-    {"814",    "814_sora_walk",                     0x0a677c00, 0x0a677c00, 0x0a677c00}, // lacks EU, JP
-    {"815",    "815_sora_release_kairi",            0x0a6e4200, 0x0a6e4200, 0x0a6e4200}, // lacks EU, JP
-    {"816",    "816_kairi_memories",                0x0a7a9200, 0x0a7a9200, 0x0a7a9200}, // lacks EU, JP
+    {"814",    "814_sora_walk",                     0x0a677c00, 0x0a902200, 0x0a677c00}, // lacks JP
+    {"815",    "815_sora_release_kairi",            0x0a6e4200, 0x0a96e800, 0x0a6e4200}, // lacks JP
+    {"816",    "816_kairi_memories",                0x0a7a9200, 0x0aa33800, 0x0a7a9200}, // lacks JP
     {"817",    "817_namine_and_diz",                0x0a857600, 0x0AAE1C00, 0x0a857600}, // lacks JP
     {"818",    "818_why_the_sun_sets_red",          0x0ab4be00, 0x0add6400, 0x0ab4be00}, // lacks JP
     {"819",    "819_sora_wakes_up",                 0x0afeac00, 0x0afeac00, 0x0afeac00}, // double cutscene complement
@@ -104,8 +104,8 @@ CutsceneEntry Cutscenes[] =
     {"823",    "823_roxas_passes_by",               0x0b5b5e00, 0x0B840400, 0x0b5b5e00}, // lacks JP
     {"824",    "824_xions_dream",                   0x0b65a200, 0x0B8E4800, 0x0b65a200}, // lacks JP
     {"825",    "825_xions_capture",                 0x0b8a7a00, 0x0BB32000, 0x0b8a7a00}, // lacks JP
-    {"826",    "826_hollow_bastion_memories",       0x0bd74600, 0x0bd74600, 0x0bd74600}, // lacks EU, JP
-    {"827",    "827_agrabah_keyhole_memory",        0x0be7e000, 0x0be7e000, 0x0be7e000}, // lacks EU, JP
+    {"826",    "826_hollow_bastion_memories",       0x0bd74600, 0x0bffec00, 0x0bd74600}, // lacks JP
+    {"827",    "827_agrabah_keyhole_memory",        0x0be7e000, 0x0c108600, 0x0be7e000}, // lacks JP
     {"828",    "828_xion_and_riku",                 0x0bedf200, 0x0C169800, 0x0bedf200}, // lacks JP
     {"829",    "829_rikus_resolve",                 0x0c76a800, 0x0C9F4E00, 0x0c76a800}, // lacks JP
     {"830",    "830_mickey_and_riku_ansem",         0x0c863a00, 0x0CAEE000, 0x0c863a00}, // lacks JP
@@ -126,7 +126,7 @@ CutsceneEntry Cutscenes[] =
     {"841",    "841_xion_fading_from_clocktower",   0x0e444c00, 0x0e444c00, 0x0e444c00}, // double cutscene complement
     {"842",    "842_a_new_day",                     0x0e4bd400, 0x0E747A00, 0x0e4bd400}, // lacks JP
     {"843",    "843_the_usual_spot",                0x0e641200, 0x0E8CB800, 0x0e641200}, // lacks JP
-    {"845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e6fa600, 0x0e6fa600}, // lacks EU, JP
+    {"845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e984c00, 0x0e6fa600}, // lacks JP
     {"846",    "846_axel_and_saix",                 0x0e75bc00, 0x0E9E6200, 0x0e75bc00}, // lacks JP
     {"847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0EC4C600, 0x0e9c2000}, // lacks JP
     {"848",    "848_xions_end",                     0x0eb91800, 0x0EE1BE00, 0x0eb91800}, // lacks JP
