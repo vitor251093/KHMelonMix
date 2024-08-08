@@ -253,7 +253,12 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
         return InputMask;
     }
 
-    if (_StartedReplacementCutscene && !_PlayingCredits && (~InputMask) & (1 << 3) && (_SkipPressCount++) < 1) { // Start
+    if (_PlayingCredits)
+    {
+        return 0xFFF;
+    }
+
+    if (_StartedReplacementCutscene && (~InputMask) & (1 << 3) && (_SkipPressCount++) < 1) { // Start
         _ShouldStopReplacementCutscene = true;
     }
 
