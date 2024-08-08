@@ -42,6 +42,7 @@ public:
 
     int _StartPressCount;
     int _SkipPressCount;
+    bool _PlayingCredits;
     bool _ShouldTerminateIngameCutscene;
     bool _StoppedIngameCutscene;
     bool _ShouldStartReplacementCutscene;

@@ -164,6 +164,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     _StartPressCount = 0;
     _SkipPressCount = 0;
+    _PlayingCredits = false;
     _StartedReplacementCutscene = false;
     _ShouldTerminateIngameCutscene = false;
     _StoppedIngameCutscene = false;
@@ -251,7 +252,7 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
         return InputMask;
     }
 
-    if (_StartedReplacementCutscene && (~InputMask) & (1 << 3) && (_SkipPressCount++) < 1) { // Start
+    if (_StartedReplacementCutscene && !_PlayingCredits && (~InputMask) & (1 << 3) && (_SkipPressCount++) < 1) { // Start
         _ShouldStopReplacementCutscene = true;
     }
 
@@ -1023,20 +1024,13 @@ void PluginKingdomHeartsDays::refreshCutscene()
     CutsceneEntry* cutscene = detectCutscene();
     bool wasSaveLoaded = getCurrentMap() != 0;
 
-    if (cutscene != nullptr && strcmp(cutscene->DsName, "843") == 0 && wasSaveLoaded) {
-        // cutscene = nullptr;
-        // u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
-        // u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
-        // nds->ARM7Write32(cutsceneAddress,  0x0b514600);
-        // nds->ARM7Write32(cutsceneAddress2, 0x0b514600);
-    }
     if (cutscene != nullptr) {
         onIngameCutsceneIdentified(cutscene);
     }
-    if (_ShouldTerminateIngameCutscene && !isCutsceneScene) {
+    if (_ShouldTerminateIngameCutscene && !isCutsceneScene && !_PlayingCredits) {
         onTerminateIngameCutscene();
     }
-    if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || (!wasSaveLoaded && _StartPressCount == CUTSCENE_SKIP_START_FRAMES_COUNT))) {
+    if (_ShouldReturnToGameAfterCutscene && !_PlayingCredits && (!isCutsceneScene || (!wasSaveLoaded && _StartPressCount == CUTSCENE_SKIP_START_FRAMES_COUNT))) {
         onReturnToGameAfterCutscene();
     }
 }
@@ -1084,6 +1078,7 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene
     _CurrentCutscene = cutscene;
     _ShouldTerminateIngameCutscene = true;
     _ShouldStartReplacementCutscene = true;
+    _PlayingCredits = strcmp(cutscene->DsName, "843") == 0;
 }
 void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
     if (_CurrentCutscene == nullptr) {
@@ -1103,6 +1098,7 @@ void PluginKingdomHeartsDays::onReplacementCutsceneEnd() {
     log("Replacement cutscene ended");
     _StartedReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
+    _PlayingCredits = false;
     _ShouldReturnToGameAfterCutscene = true;
     _ShouldUnmuteAfterCutscene = true;
 

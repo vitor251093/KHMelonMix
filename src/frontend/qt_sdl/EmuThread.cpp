@@ -646,6 +646,7 @@ void EmuThread::refreshCutsceneState()
         emit windowStopVideo();
     }
     if (plugin->ShouldUnmuteAfterCutscene()) {
+        emuStatus = emuStatus_Running;
         auto& instcfg = emuInstance->getLocalConfig();
         emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
     }
