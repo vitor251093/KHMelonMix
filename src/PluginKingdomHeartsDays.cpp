@@ -244,7 +244,7 @@ void PluginKingdomHeartsDays::onLoadState()
 
 u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
-    if (nds == nullptr)
+    if (GameScene == -1)
     {
         return InputMask;
     }
@@ -376,7 +376,7 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
 
 void PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
 {
-    if (nds == nullptr)
+    if (GameScene == -1)
     {
         return;
     }
@@ -952,7 +952,7 @@ u32 PluginKingdomHeartsDays::getAddressByCart(u32 usAddress, u32 euAddress, u32 
 
 CutsceneEntry* PluginKingdomHeartsDays::detectCutscene()
 {
-    if (nds == nullptr)
+    if (GameScene == -1)
     {
         return nullptr;
     }
@@ -1161,7 +1161,7 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
 // map >> 8 == 9 => Beast's Castle
 u32 PluginKingdomHeartsDays::getCurrentMap()
 {
-    if (nds == nullptr)
+    if (GameScene == -1)
     {
         return 0;
     }
