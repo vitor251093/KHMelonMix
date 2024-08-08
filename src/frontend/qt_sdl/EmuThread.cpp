@@ -628,16 +628,22 @@ void EmuThread::refreshCutsceneState()
                 emuStatus = emuStatus_Paused;
                 QString filePath = QString::fromUtf8(path.c_str());
                 emit windowStartVideo(filePath);
-                plugin->onReplacementCutsceneStart();
             }
         }
     }
 
-    if (plugin->ShouldReturnToGameAfterCutscene()) {
+    if (plugin->StartedReplacementCutscene()) {
         emuStatus = emuStatus_Running;
+        // TODO: KH Game needs to be muted
+    }
+
+    if (plugin->StoppedIngameCutscene()) {
+        emuStatus = emuStatus_Paused;
+        // TODO: KH Game needs to be unmuted
     }
 
     if (plugin->ShouldStopReplacementCutscene()) {
+        emuStatus = emuStatus_Running;
         emit windowStopVideo();
     }
 }

@@ -60,6 +60,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 
     _StartedReplacementCutscene = false;
     _ShouldTerminateIngameCutscene = false;
+    _StoppedIngameCutscene = false;
     _ShouldStartReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
@@ -544,7 +545,7 @@ void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene() {
     _ShouldStartReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
 }
-void PluginKingdomHeartsReCoded::onReplacementCutsceneStart() {
+void PluginKingdomHeartsReCoded::onReplacementCutsceneStarted() {
     printf("Cutscene started\n");
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = true;

@@ -49,6 +49,7 @@ public:
     virtual void applyTouchKeyMask(u32 TouchKeyMask) = 0;
 
     virtual bool ShouldTerminateIngameCutscene() = 0;
+    virtual bool StoppedIngameCutscene() = 0;
     virtual bool ShouldStartReplacementCutscene() = 0;
     virtual bool StartedReplacementCutscene() = 0;
     virtual bool ShouldStopReplacementCutscene() = 0;
@@ -58,7 +59,7 @@ public:
     virtual void onIngameCutsceneIdentified(CutsceneEntry* cutscene) = 0;
     virtual void onTerminateIngameCutscene() = 0;
     virtual void onReturnToGameAfterCutscene() = 0;
-    virtual void onReplacementCutsceneStart() = 0;
+    virtual void onReplacementCutsceneStarted() = 0;
     virtual void onReplacementCutsceneEnd() = 0;
 
     virtual const char* getGameSceneName() = 0;

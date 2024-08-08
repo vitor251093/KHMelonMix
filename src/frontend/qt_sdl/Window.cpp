@@ -814,13 +814,17 @@ void MainWindow::createVideoPlayer()
     centralWidget->addWidget(playerWidget);
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
-        Plugins::PluginManager::get()->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
+        Plugins::Plugin* plugin = Plugins::PluginManager::get();
+        plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
 
+        if (status == QMediaPlayer::BufferingMedia || status == QMediaPlayer::BufferedMedia) {
+            plugin->onReplacementCutsceneStarted();
+        }
         if (status == QMediaPlayer::EndOfMedia) {
             asyncStopVideo();
         }
         if (status == QMediaPlayer::InvalidMedia) {
-            Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
+            plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
         }
     });
 

@@ -32,6 +32,7 @@ public:
         return true;
     }
     bool ShouldTerminateIngameCutscene() {return false;}
+    bool StoppedIngameCutscene() {return false;}
     bool ShouldStartReplacementCutscene() {return false;}
     bool StartedReplacementCutscene() {return false;}
     bool ShouldStopReplacementCutscene() {return false;}
@@ -41,7 +42,7 @@ public:
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {}
     void onTerminateIngameCutscene() {}
     void onReturnToGameAfterCutscene() {}
-    void onReplacementCutsceneStart() {}
+    void onReplacementCutsceneStarted() {}
     void onReplacementCutsceneEnd() {}
     bool refreshGameScene() {
         return false;

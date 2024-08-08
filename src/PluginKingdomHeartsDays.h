@@ -43,6 +43,7 @@ public:
     int _StartPressCount;
     int _SkipPressCount;
     bool _ShouldTerminateIngameCutscene;
+    bool _StoppedIngameCutscene;
     bool _ShouldStartReplacementCutscene;
     bool _StartedReplacementCutscene;
     bool _ShouldStopReplacementCutscene;
@@ -50,6 +51,13 @@ public:
     bool _ShouldHideScreenForTransitions;
     CutsceneEntry* _CurrentCutscene;
     bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
+    bool StoppedIngameCutscene() {
+        if (_StoppedIngameCutscene) {
+            _StoppedIngameCutscene = false;
+            return true;
+        }
+        return false;
+    }
     bool ShouldStartReplacementCutscene() {return _ShouldStartReplacementCutscene;}
     bool StartedReplacementCutscene() {return _StartedReplacementCutscene;}
     bool ShouldStopReplacementCutscene() {
@@ -65,7 +73,7 @@ public:
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
     void onTerminateIngameCutscene();
     void onReturnToGameAfterCutscene();
-    void onReplacementCutsceneStart();
+    void onReplacementCutsceneStarted();
     void onReplacementCutsceneEnd();
 
     const char* getGameSceneName();
