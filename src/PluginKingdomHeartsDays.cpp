@@ -929,7 +929,7 @@ u32 PluginKingdomHeartsDays::getAddress(CutsceneEntry* entry) {
         return entry->jpAddress;
     }
     if (isJapanCartRev1()) {
-        return entry->jpAddress;
+        return entry->jpAddress - 0x200;
     }
     return 0;
 }
