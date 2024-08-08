@@ -45,6 +45,7 @@ public:
     bool _StartedReplacementCutscene;
     bool _ShouldStopReplacementCutscene;
     bool _ShouldReturnToGameAfterCutscene;
+    bool _ShouldUnmuteAfterCutscene;
     CutsceneEntry* _CurrentCutscene;
     bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
     bool StoppedIngameCutscene() {
@@ -58,6 +59,13 @@ public:
     bool StartedReplacementCutscene() {return _StartedReplacementCutscene;}
     bool ShouldStopReplacementCutscene() {return _ShouldStopReplacementCutscene;}
     bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
+    bool ShouldUnmuteAfterCutscene() {
+        if (_ShouldUnmuteAfterCutscene) {
+            _ShouldUnmuteAfterCutscene = false;
+            return true;
+        }
+        return false;
+    }
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);

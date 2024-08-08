@@ -170,6 +170,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _ShouldStartReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
+    _ShouldUnmuteAfterCutscene = false;
     _ShouldHideScreenForTransitions = false;
     _CurrentCutscene = nullptr;
 
@@ -1099,16 +1100,17 @@ void PluginKingdomHeartsDays::onReplacementCutsceneStarted() {
 }
 
 void PluginKingdomHeartsDays::onReplacementCutsceneEnd() {
-    log("Should stop ingame cutscene");
+    log("Replacement cutscene ended");
     _StartedReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = true;
+    _ShouldUnmuteAfterCutscene = true;
 
     CutsceneEntry* sequence = detectSequenceCutscene();
     _ShouldHideScreenForTransitions = sequence != nullptr;
 }
 void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
-    log("Ingame cutscene reached its end");
+    log("Returning to the game");
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;

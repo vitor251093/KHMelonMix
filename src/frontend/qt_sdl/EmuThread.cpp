@@ -634,17 +634,20 @@ void EmuThread::refreshCutsceneState()
 
     if (plugin->StartedReplacementCutscene()) {
         emuStatus = emuStatus_Running;
-        // TODO: KH Game needs to be muted
+        emuInstance->audioVolume = 0;
     }
 
     if (plugin->StoppedIngameCutscene()) {
         emuStatus = emuStatus_Paused;
-        // TODO: KH Game needs to be unmuted
     }
 
     if (plugin->ShouldStopReplacementCutscene()) {
         emuStatus = emuStatus_Running;
         emit windowStopVideo();
+    }
+    if (plugin->ShouldUnmuteAfterCutscene()) {
+        auto& instcfg = emuInstance->getLocalConfig();
+        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
     }
 }
 

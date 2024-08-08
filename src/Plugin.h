@@ -54,6 +54,7 @@ public:
     virtual bool StartedReplacementCutscene() = 0;
     virtual bool ShouldStopReplacementCutscene() = 0;
     virtual bool ShouldReturnToGameAfterCutscene() = 0;
+    virtual bool ShouldUnmuteAfterCutscene() = 0;
     virtual CutsceneEntry* CurrentCutscene() = 0;
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual void onIngameCutsceneIdentified(CutsceneEntry* cutscene) = 0;

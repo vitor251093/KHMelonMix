@@ -64,6 +64,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _ShouldStartReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
+    _ShouldUnmuteAfterCutscene = false;
     _CurrentCutscene = nullptr;
 
     PriorHotkeyMask = 0;

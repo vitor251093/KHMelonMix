@@ -37,6 +37,7 @@ public:
     bool StartedReplacementCutscene() {return false;}
     bool ShouldStopReplacementCutscene() {return false;}
     bool ShouldReturnToGameAfterCutscene() {return false;}
+    bool ShouldUnmuteAfterCutscene() {return false;}
     CutsceneEntry* CurrentCutscene() {return nullptr;}
     std::string CutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {}
