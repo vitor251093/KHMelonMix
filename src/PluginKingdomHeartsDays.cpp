@@ -1057,7 +1057,8 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene
         return;
     }
 
-    // Workaround so those two cutscenes are played in sequence ingame
+    // Workaround so those two cutscenes are played in sequence ingame,
+    // without playing the first cutscene again
     bool wasSaveLoaded = getCurrentMap() != 0;
     if (wasSaveLoaded) {
         for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
