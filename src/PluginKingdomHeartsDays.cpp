@@ -142,6 +142,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     priorGameScene = -1;
     GameScene = -1;
+    priorMap = -1;
+    Map = 0;
     UIScale = 4;
     AspectRatio = 0;
     ShowMap = true;
@@ -1169,7 +1171,17 @@ u32 PluginKingdomHeartsDays::getCurrentMap()
     u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
     u32 fullMap = world;
     fullMap = (fullMap << 4*2) | map;
-    return fullMap;
+
+    if (Map != fullMap) {
+        priorMap = Map;
+        Map = fullMap;
+    }
+
+    if (Map == 128) { // cutscene
+        return priorMap;
+    }
+
+    return Map;
 }
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"

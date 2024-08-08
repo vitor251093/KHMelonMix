@@ -108,6 +108,8 @@ private:
     bool IsTopScreen2DTextureBlack;
     int priorGameScene;
     int GameScene;
+    u32 priorMap;
+    u32 Map;
     int UIScale = 4;
     float AspectRatio;
     bool ShowMap;
