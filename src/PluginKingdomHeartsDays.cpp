@@ -1034,7 +1034,13 @@ void PluginKingdomHeartsDays::refreshCutscene()
         onIngameCutsceneIdentified(cutscene);
     }
     if (_ShouldTerminateIngameCutscene && !isCutsceneScene && !_PlayingCredits) {
-        onTerminateIngameCutscene();
+        u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
+        u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
+        u32 fullMap = world;
+        fullMap = (fullMap << 4*2) | map;
+        if (fullMap != 128) {
+            onTerminateIngameCutscene();
+        }
     }
     if (_ShouldReturnToGameAfterCutscene && !_PlayingCredits && (!isCutsceneScene || (!wasSaveLoaded && _StartPressCount == CUTSCENE_SKIP_START_FRAMES_COUNT))) {
         onReturnToGameAfterCutscene();
