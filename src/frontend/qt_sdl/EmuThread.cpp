@@ -617,6 +617,22 @@ void EmuThread::refreshGameScene()
 
 void EmuThread::refreshCutsceneState()
 {
+    if (plugin->ShouldStopReplacementCutscene()) {
+        emit windowStopVideo();
+    }
+
+    if (plugin->ShouldReturnToGameAfterCutscene()) {
+        emuStatus = emuStatus_Running;
+        auto& instcfg = emuInstance->getLocalConfig();
+        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
+    }
+
+    if (plugin->ShouldUnmuteAfterCutscene()) {
+        emuStatus = emuStatus_Running;
+        auto& instcfg = emuInstance->getLocalConfig();
+        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
+    }
+
     if (plugin->ShouldStartReplacementCutscene()) {
         auto cutscene = plugin->CurrentCutscene();
         if (cutscene != nullptr) {
@@ -639,22 +655,6 @@ void EmuThread::refreshCutsceneState()
 
     if (plugin->StoppedIngameCutscene()) {
         emuStatus = emuStatus_Paused;
-    }
-
-    if (plugin->ShouldStopReplacementCutscene()) {
-        emit windowStopVideo();
-    }
-
-    if (plugin->ShouldReturnToGameAfterCutscene()) {
-        emuStatus = emuStatus_Running;
-        auto& instcfg = emuInstance->getLocalConfig();
-        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
-    }
-
-    if (plugin->ShouldUnmuteAfterCutscene()) {
-        emuStatus = emuStatus_Running;
-        auto& instcfg = emuInstance->getLocalConfig();
-        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
     }
 }
 

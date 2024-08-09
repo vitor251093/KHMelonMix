@@ -42,6 +42,7 @@ public:
 
     int _StartPressCount;
     int _SkipPressCount;
+    bool _PlayingCutsceneBeforeCredits;
     bool _PlayingCredits;
     bool _ShouldTerminateIngameCutscene;
     bool _StoppedIngameCutscene;
@@ -156,6 +157,7 @@ private:
 
     u32 getCurrentMission();
     u32 getCurrentMap();
+    bool isSaveLoaded();
 
     bool isBufferBlack(unsigned int* buffer);
     bool isTopScreen2DTextureBlack();
