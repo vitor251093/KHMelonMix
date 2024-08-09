@@ -167,6 +167,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _SkipPressCount = 0;
     _PlayingCredits = false;
     _StartedReplacementCutscene = false;
+    _RunningReplacementCutscene = false;
     _ShouldTerminateIngameCutscene = false;
     _StoppedIngameCutscene = false;
     _ShouldStartReplacementCutscene = false;
@@ -258,13 +259,15 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
         return 0xFFF;
     }
 
-    if (_StartedReplacementCutscene && (~InputMask) & (1 << 3) && (_SkipPressCount++) < 1) { // Start
+    if (_RunningReplacementCutscene && (~InputMask) & (1 << 3) && _SkipPressCount > 0) { // Start (skip HD cutscene)
+        _SkipPressCount--;
         _ShouldStopReplacementCutscene = true;
+        InputMask |= (1<<3);
     }
 
-    if (!_StartedReplacementCutscene && (_ShouldTerminateIngameCutscene || _ShouldReturnToGameAfterCutscene) &&
-        (++_StartPressCount) <= CUTSCENE_SKIP_START_FRAMES_COUNT) {
-        InputMask &= ~(1<<3); // Start
+    if (_ShouldTerminateIngameCutscene && _StartPressCount > 0) {
+        _StartPressCount--;
+        InputMask &= ~(1<<3); // Start (skip DS cutscene)
     }
 
     if (HotkeyPress & (1 << 15)) { // HUD Toggle
@@ -1029,11 +1032,18 @@ void PluginKingdomHeartsDays::refreshCutscene()
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
     CutsceneEntry* cutscene = detectCutscene();
     bool wasSaveLoaded = getCurrentMap() != 0;
+    bool _PlayingCutsceneBeforeCredits = wasSaveLoaded && cutscene != nullptr && strcmp(cutscene->DsName, "842") == 0;
 
     if (cutscene != nullptr) {
         onIngameCutsceneIdentified(cutscene);
     }
-    if (_ShouldTerminateIngameCutscene && !isCutsceneScene && !_PlayingCredits) {
+    if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
+        _ShouldStartReplacementCutscene = true;
+    }
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && (!isCutsceneScene || _PlayingCutsceneBeforeCredits) && wasSaveLoaded && !_PlayingCredits) {
+        onTerminateIngameCutscene();
+    }
+    if (_ShouldTerminateIngameCutscene && !wasSaveLoaded) {
         u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
         u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
         u32 fullMap = world;
@@ -1042,7 +1052,7 @@ void PluginKingdomHeartsDays::refreshCutscene()
             onTerminateIngameCutscene();
         }
     }
-    if (_ShouldReturnToGameAfterCutscene && !_PlayingCredits && (!isCutsceneScene || (!wasSaveLoaded && _StartPressCount == CUTSCENE_SKIP_START_FRAMES_COUNT))) {
+    if (_ShouldReturnToGameAfterCutscene && !_PlayingCredits && (!isCutsceneScene || _PlayingCutsceneBeforeCredits || (!wasSaveLoaded && _StartPressCount == 0))) {
         onReturnToGameAfterCutscene();
     }
 }
@@ -1082,14 +1092,13 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene
         return;
     }
 
-    printf("Detected cutscene: %s\n", cutscene->Name);
+    printf("Preparing to load cutscene: %s\n", cutscene->Name);
     log("Cutscene detected");
 
-    _StartPressCount = 0;
-    _SkipPressCount = 0;
+    _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
+    _SkipPressCount = 1;
     _CurrentCutscene = cutscene;
     _ShouldTerminateIngameCutscene = true;
-    _ShouldStartReplacementCutscene = true;
     _PlayingCredits = getCurrentMap() != 0 && strcmp(cutscene->DsName, "843") == 0;
 }
 void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
@@ -1104,15 +1113,16 @@ void PluginKingdomHeartsDays::onReplacementCutsceneStarted() {
     log("Cutscene started");
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = true;
+    _RunningReplacementCutscene = true;
 }
 
 void PluginKingdomHeartsDays::onReplacementCutsceneEnd() {
     log("Replacement cutscene ended");
     _StartedReplacementCutscene = false;
+    _RunningReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _PlayingCredits = false;
     _ShouldReturnToGameAfterCutscene = true;
-    _ShouldUnmuteAfterCutscene = true;
 
     CutsceneEntry* sequence = detectSequenceCutscene();
     _ShouldHideScreenForTransitions = sequence != nullptr;
@@ -1121,14 +1131,17 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     log("Returning to the game");
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = false;
+    _RunningReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
+    _ShouldUnmuteAfterCutscene = true;
 
     // Ugly workaround to play one cutscene after another one, because both are skipped with a single "Start" click
     bool newCutsceneWillPlay = false;
     CutsceneEntry* sequence = detectSequenceCutscene();
     if (sequence != nullptr) {
         onIngameCutsceneIdentified(sequence);
-        onTerminateIngameCutscene();
+        _ShouldStartReplacementCutscene = true;
+        _ShouldUnmuteAfterCutscene = false;
         newCutsceneWillPlay = true;
     }
 

@@ -642,9 +642,15 @@ void EmuThread::refreshCutsceneState()
     }
 
     if (plugin->ShouldStopReplacementCutscene()) {
-        emuStatus = emuStatus_Running;
         emit windowStopVideo();
     }
+
+    if (plugin->ShouldReturnToGameAfterCutscene()) {
+        emuStatus = emuStatus_Running;
+        auto& instcfg = emuInstance->getLocalConfig();
+        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
+    }
+
     if (plugin->ShouldUnmuteAfterCutscene()) {
         emuStatus = emuStatus_Running;
         auto& instcfg = emuInstance->getLocalConfig();

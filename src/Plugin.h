@@ -52,6 +52,7 @@ public:
     virtual bool StoppedIngameCutscene() = 0;
     virtual bool ShouldStartReplacementCutscene() = 0;
     virtual bool StartedReplacementCutscene() = 0;
+    virtual bool RunningReplacementCutscene() = 0;
     virtual bool ShouldStopReplacementCutscene() = 0;
     virtual bool ShouldReturnToGameAfterCutscene() = 0;
     virtual bool ShouldUnmuteAfterCutscene() = 0;

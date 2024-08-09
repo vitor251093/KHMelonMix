@@ -47,6 +47,7 @@ public:
     bool _StoppedIngameCutscene;
     bool _ShouldStartReplacementCutscene;
     bool _StartedReplacementCutscene;
+    bool _RunningReplacementCutscene;
     bool _ShouldStopReplacementCutscene;
     bool _ShouldReturnToGameAfterCutscene;
     bool _ShouldUnmuteAfterCutscene;
@@ -67,7 +68,14 @@ public:
         }
         return false;
     }
-    bool StartedReplacementCutscene() {return _StartedReplacementCutscene;}
+    bool StartedReplacementCutscene() {
+        if (_StartedReplacementCutscene) {
+            _StartedReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
+    bool RunningReplacementCutscene() {return _RunningReplacementCutscene;}
     bool ShouldStopReplacementCutscene() {
         if (_ShouldStopReplacementCutscene) {
             _ShouldStopReplacementCutscene = false;

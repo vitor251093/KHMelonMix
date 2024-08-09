@@ -35,6 +35,7 @@ public:
     bool StoppedIngameCutscene() {return false;}
     bool ShouldStartReplacementCutscene() {return false;}
     bool StartedReplacementCutscene() {return false;}
+    bool RunningReplacementCutscene() {return false;}
     bool ShouldStopReplacementCutscene() {return false;}
     bool ShouldReturnToGameAfterCutscene() {return false;}
     bool ShouldUnmuteAfterCutscene() {return false;}
