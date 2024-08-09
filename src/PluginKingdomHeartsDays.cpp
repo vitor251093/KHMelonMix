@@ -1090,7 +1090,7 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene
     _CurrentCutscene = cutscene;
     _ShouldTerminateIngameCutscene = true;
     _ShouldStartReplacementCutscene = true;
-    _PlayingCredits = strcmp(cutscene->DsName, "843") == 0;
+    _PlayingCredits = getCurrentMap() != 0 && strcmp(cutscene->DsName, "843") == 0;
 }
 void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
     if (_CurrentCutscene == nullptr) {
