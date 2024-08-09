@@ -1052,7 +1052,7 @@ void PluginKingdomHeartsDays::refreshCutscene()
             onTerminateIngameCutscene();
         }
     }
-    if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || _PlayingCredits || _PlayingCutsceneBeforeCredits || (!wasSaveLoaded && _StartPressCount == 0))) {
+    if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || _PlayingCredits || _PlayingCutsceneBeforeCredits || !wasSaveLoaded)) {
         onReturnToGameAfterCutscene();
     }
 }
@@ -1133,6 +1133,7 @@ void PluginKingdomHeartsDays::onReplacementCutsceneEnd() {
 }
 void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     log("Returning to the game");
+    _StartPressCount = 0;
     _PlayingCredits = false;
     _PlayingCutsceneBeforeCredits = false;
     _ShouldStartReplacementCutscene = false;
