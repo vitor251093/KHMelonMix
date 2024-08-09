@@ -633,6 +633,11 @@ void EmuThread::refreshCutsceneState()
         emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
     }
 
+
+    if (plugin->ShouldTerminateIngameCutscene()) {
+        emuInstance->audioVolume = 0;
+    }
+
     if (plugin->ShouldStartReplacementCutscene()) {
         auto cutscene = plugin->CurrentCutscene();
         if (cutscene != nullptr) {
