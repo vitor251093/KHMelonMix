@@ -2,18 +2,18 @@ assets/days/cutscenes/cinematics/*.mp4
 assets/days/textures_tmp
 assets/days/2d_textures_tmp
 
-rom/*.nds
-rom/*.sav
-rom/*.mch
-rom/*.ml1
-rom/*.ml2
-rom/*.ml3
-rom/*.ml4
-rom/*.ml5
-rom/*.ml6
-rom/*.ml7
-rom/*.ml8
-rom/*.ml9
+roms/*.nds
+roms/*.sav
+roms/*.mch
+roms/*.ml1
+roms/*.ml2
+roms/*.ml3
+roms/*.ml4
+roms/*.ml5
+roms/*.ml6
+roms/*.ml7
+roms/*.ml8
+roms/*.ml9
 
 build
 build*/
