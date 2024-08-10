@@ -4,7 +4,7 @@
 #define REPLACEMENT_CUTSCENES_ENABLED true
 
 #define DEBUG_MODE_ENABLED false
-#define DEBUG_LOG_FILE_ENABLED  true
+#define DEBUG_LOG_FILE_ENABLED false
 
 #include "NDS.h"
 

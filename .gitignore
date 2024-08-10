@@ -19,6 +19,8 @@ roms/*.ml7
 roms/*.ml8
 roms/*.ml9
 
+debug.log
+
 build
 build*/
 bin
