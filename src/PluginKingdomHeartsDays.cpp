@@ -47,7 +47,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
-#define CUTSCENE_SKIP_START_FRAMES_COUNT 60
+#define CUTSCENE_SKIP_START_FRAMES_COUNT 20
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
@@ -261,9 +261,11 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
     }
 
     if (_RunningReplacementCutscene && (~InputMask) & (1 << 3) && _SkipPressCount > 0) { // Start (skip HD cutscene)
-        _SkipPressCount--;
-        _ShouldStopReplacementCutscene = true;
-        InputMask |= (1<<3);
+        if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
+            _SkipPressCount--;
+            _ShouldStopReplacementCutscene = true;
+            InputMask |= (1<<3);
+        }
     }
 
     if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount > 0) {
@@ -1034,36 +1036,54 @@ void PluginKingdomHeartsDays::refreshCutscene()
     CutsceneEntry* cutscene = detectCutscene();
     bool wasSaveLoaded = isSaveLoaded();
 
+    // Avoiding bug with the credits
+    if (cutscene != nullptr && wasSaveLoaded && strcmp(cutscene->DsName, "843") == 0) {
+        cutscene = nullptr;
+    }
+    
     if (cutscene != nullptr) {
         onIngameCutsceneIdentified(cutscene);
     }
 
-    // Regular cutscenes
+    // Natural progression for all cutscenes
     if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
         _ShouldStartReplacementCutscene = true;
     }
 
-    // Intro when waiting on the title screen
-    if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && !isCutsceneScene && !wasSaveLoaded) {
-        _ShouldStartReplacementCutscene = true;
-    }
-
-    // Regular cutscenes
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && (!isCutsceneScene || _PlayingCutsceneBeforeCredits) && wasSaveLoaded) {
-        onTerminateIngameCutscene();
-    }
-
-    if (_ShouldTerminateIngameCutscene && !wasSaveLoaded) {
-        u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
-        u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
-        u32 fullMap = world;
-        fullMap = (fullMap << 4*2) | map;
-        if (fullMap != 128) {
+    if (wasSaveLoaded) { // In game cutscenes (starting from Day 7)
+        
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount == 0 && (!isCutsceneScene || _PlayingCutsceneBeforeCredits)) {
             onTerminateIngameCutscene();
         }
+
+        if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || _PlayingCredits || _PlayingCutsceneBeforeCredits)) {
+            onReturnToGameAfterCutscene();
+        }
     }
-    if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || _PlayingCredits || _PlayingCutsceneBeforeCredits || !wasSaveLoaded)) {
-        onReturnToGameAfterCutscene();
+    else { // Intro when waiting on the title screen, theater, and cutscenes before Day 7
+
+        // Intro when waiting on the title screen and cutscenes before Day 7
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount == 0 && !isCutsceneScene) {
+            onTerminateIngameCutscene();
+        }
+
+        // if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && !isCutsceneScene) {
+        //     _ShouldStartReplacementCutscene = true;
+        // }
+
+        // if (_ShouldTerminateIngameCutscene && isCutsceneScene) {
+        //     u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
+        //     u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
+        //     u32 fullMap = world;
+        //     fullMap = (fullMap << 4*2) | map;
+        //     if (fullMap != 128) {
+        //         onTerminateIngameCutscene();
+        //     }
+        // }
+
+        if (_ShouldReturnToGameAfterCutscene) {
+            onReturnToGameAfterCutscene();
+        }
     }
 }
 
@@ -1276,6 +1296,7 @@ void PluginKingdomHeartsDays::debugLogs(int gameScene)
 
     printf("Game scene: %d\n",  gameScene);
     printf("Current map: %d\n", getCurrentMap());
+    printf("Is save loaded: %d\n", isSaveLoaded() ? 1 : 0);
     printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);
     printf("NDS->GPU.GPU3D.NumPolygons: %d\n",        nds->GPU.GPU3D.NumPolygons);
     printf("NDS->GPU.GPU3D.RenderNumPolygons: %d\n",  nds->GPU.GPU3D.RenderNumPolygons);
