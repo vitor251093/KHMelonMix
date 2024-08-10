@@ -24,7 +24,8 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Dump an original copy of "Kingdom Hearts 358/2 Days" and copy the NDS file to your computer;
 4. Rename that NDS file to "days.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
-5. Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat" (or MelonMix_KHDays.sh if you are not on Windows).
+5. Replace the assets folder with [this assets folder](https://mega.nz/folder/lpgykK5Y#HPJuOSceHSzncDjQh0DUtw) (this step is only required if you want to replace the DS cutscenes with HD cutscenes);
+6. Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat" (or MelonMix_KHDays.sh if you are not on Windows).
 
 ## How to play "Kingdom Hearts Re:Coded" (still a WIP; only for testing purposes)
 
