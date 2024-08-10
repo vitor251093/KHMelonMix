@@ -50,6 +50,8 @@ public slots:
     void stopVideo();
 
 protected:
+    void keyPressEvent(QKeyEvent* event) override;
+
     QWidget* settingsWidget;
     QStackedWidget* settingWidgetOptions;
     bool showingSettings;
