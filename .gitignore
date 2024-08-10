@@ -2,6 +2,10 @@ assets/days/cutscenes/cinematics/*.mp4
 assets/days/textures_tmp
 assets/days/2d_textures_tmp
 
+assets/recoded/cutscenes/cinematics/*.mp4
+assets/recoded/textures_tmp
+assets/recoded/2d_textures_tmp
+
 roms/*.nds
 roms/*.sav
 roms/*.mch
