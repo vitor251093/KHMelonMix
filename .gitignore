@@ -1,5 +1,10 @@
+assets/days/cutscenes/cinematics/*.mp4
+assets/days/textures_tmp
+assets/days/2d_textures_tmp
+
 rom/*.nds
 rom/*.sav
+rom/*.mch
 rom/*.ml1
 rom/*.ml2
 rom/*.ml3
