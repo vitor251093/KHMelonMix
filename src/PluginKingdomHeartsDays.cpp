@@ -47,7 +47,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
-#define CUTSCENE_SKIP_START_FRAMES_COUNT 20
+#define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
@@ -1067,19 +1067,16 @@ void PluginKingdomHeartsDays::refreshCutscene()
             onTerminateIngameCutscene();
         }
 
-        // if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && !isCutsceneScene) {
-        //     _ShouldStartReplacementCutscene = true;
-        // }
-
-        // if (_ShouldTerminateIngameCutscene && isCutsceneScene) {
-        //     u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
-        //     u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
-        //     u32 fullMap = world;
-        //     fullMap = (fullMap << 4*2) | map;
-        //     if (fullMap != 128) {
-        //         onTerminateIngameCutscene();
-        //     }
-        // }
+        // Theater only
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount == 0 && isCutsceneScene) {
+            u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
+            u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
+            u32 fullMap = world;
+            fullMap = (fullMap << 4*2) | map;
+            if (fullMap != 128) {
+                onTerminateIngameCutscene();
+            }
+        }
 
         if (_ShouldReturnToGameAfterCutscene) {
             onReturnToGameAfterCutscene();
@@ -1129,8 +1126,8 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene
     _SkipPressCount = 1;
     _CurrentCutscene = cutscene;
     _ShouldTerminateIngameCutscene = true;
-    _PlayingCredits = isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
-    _PlayingCutsceneBeforeCredits = isSaveLoaded() && strcmp(cutscene->DsName, "842") == 0;
+    _PlayingCredits = wasSaveLoaded && strcmp(cutscene->DsName, "843") == 0;
+    _PlayingCutsceneBeforeCredits = wasSaveLoaded && strcmp(cutscene->DsName, "842") == 0;
 }
 void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
     if (_CurrentCutscene == nullptr) {
