@@ -139,6 +139,8 @@ protected:
     void focusInEvent(QFocusEvent* event) override;
     void focusOutEvent(QFocusEvent* event) override;
 
+    void showGame();
+
 signals:
     void screenLayoutChange();
 
@@ -220,13 +222,6 @@ private slots:
     void onFullscreenToggled();
     void onScreenEmphasisToggled();
 
-    void asyncStartVideo(QString videoFilePath);
-    void asyncStopVideo();
-
-public slots:
-    void startVideo(QString videoFilePath);
-    void stopVideo();
-
 private:
     virtual void closeEvent(QCloseEvent* event) override;
 
@@ -242,7 +237,6 @@ private:
     void updateCartInserted(bool gba);
 
     void createScreenPanel();
-    void createVideoPlayer();
 
     bool showOSD;
 

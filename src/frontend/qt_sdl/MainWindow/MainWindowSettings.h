@@ -21,10 +21,15 @@
 
 #include <QMainWindow>
 #include <QStackedWidget>
+#include <QMediaPlayer>
+#include <QVideoWidget>
+#include <QAudioOutput>
 #include <QPushButton>
 #include <initializer_list>
 
 #include "Config.h"
+
+class EmuInstance;
 
 namespace Ui { class MainWindowSettings; }
 class MainWindowSettings;
@@ -34,18 +39,34 @@ class MainWindowSettings : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindowSettings(QWidget* parent);
+    explicit MainWindowSettings(EmuInstance* inst, QWidget* parent);
     ~MainWindowSettings();
 
-private slots:
+public slots:
+    void asyncStartVideo(QString videoFilePath);
+    void asyncStopVideo();
+
+    void startVideo(QString videoFilePath);
+    void stopVideo();
 
 protected:
     QWidget* settingsWidget;
     QStackedWidget* settingWidgetOptions;
     bool showingSettings;
 
+    void initWidgets();
+
+    virtual void showGame() = 0;
+
 private:
     Ui::MainWindowSettings* ui;
+    Config::Table& localCfg;
+
+    QVideoWidget* playerWidget;
+    QAudioOutput* playerAudioOutput;
+    QMediaPlayer* player;
+
+    void createVideoPlayer();
 
 };
 

@@ -82,8 +82,6 @@
 #include "ArchiveUtil.h"
 #include "CameraManager.h"
 
-#include "PluginManager.h"
-
 using namespace melonDS;
 
 
@@ -228,7 +226,7 @@ static void signalHandler(int)
 
 
 MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
-    MainWindowSettings(parent),
+    MainWindowSettings(inst, parent),
     windowID(id),
     emuInstance(inst),
     globalCfg(inst->globalCfg),
@@ -730,7 +728,7 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     QObject::connect(qApp, &QApplication::applicationStateChanged, this, &MainWindow::onAppStateChanged);
     onUpdateInterfaceSettings();
 
-    createVideoPlayer();
+    initWidgets();
 }
 
 MainWindow::~MainWindow()
@@ -794,7 +792,7 @@ void MainWindow::createScreenPanel()
     }
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->addWidget(panel);
-    centralWidget->setCurrentWidget(panel);
+    showGame();
 
     actScreenFiltering->setEnabled(hasOGL);
     panel->osdSetEnabled(showOSD);
@@ -803,84 +801,10 @@ void MainWindow::createScreenPanel()
     emit screenLayoutChange();
 }
 
-void MainWindow::createVideoPlayer()
+void MainWindow::showGame()
 {
-    playerWidget = new QVideoWidget(this);
-    playerWidget->setCursor(Qt::BlankCursor);
-
-    playerAudioOutput = new QAudioOutput(this);
-    player = new QMediaPlayer(this);
-
-    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    centralWidget->addWidget(playerWidget);
-
-    connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
-        Plugins::Plugin* plugin = Plugins::PluginManager::get();
-        plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
-
-        if (status == QMediaPlayer::BufferingMedia || status == QMediaPlayer::BufferedMedia) {
-            plugin->onReplacementCutsceneStarted();
-        }
-        if (status == QMediaPlayer::EndOfMedia) {
-            asyncStopVideo();
-        }
-        if (status == QMediaPlayer::InvalidMedia) {
-            plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
-        }
-    });
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
-        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
-    });
-#else
-    connect(player, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
-        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
-    });
-#endif
-
-    player->setVideoOutput(playerWidget);
-    player->setAudioOutput(playerAudioOutput);
-}
-
-void MainWindow::asyncStartVideo(QString videoFilePath)
-{
-    QMetaObject::invokeMethod(this, "startVideo", Qt::QueuedConnection, Q_ARG(QString, videoFilePath));
-}
-
-void MainWindow::startVideo(QString videoFilePath)
-{
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    player->setMedia(QUrl::fromLocalFile(videoFilePath));
-#else
-    player->setSource(QUrl::fromLocalFile(videoFilePath));
-#endif
-
-    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    centralWidget->setCurrentWidget(playerWidget);
-
-    int volume = localCfg.GetInt("Audio.Volume");
-    playerAudioOutput->setVolume(volume / 256.0);
-
-    player->play();
-}
-
-void MainWindow::asyncStopVideo()
-{
-    QMetaObject::invokeMethod(this, "stopVideo", Qt::QueuedConnection);
-}
-
-void MainWindow::stopVideo()
-{
-    bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
-    if (isCutscenePlaying) {
-        player->stop();
-    }
-
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(panel);
-
-    Plugins::PluginManager::get()->onReplacementCutsceneEnd();
 }
 
 GL::Context* MainWindow::getOGLContext()
@@ -947,7 +871,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
                 centralWidget->setCurrentWidget(playerWidget);
             }
             else {
-                centralWidget->setCurrentWidget(panel);
+                showGame();
             }
         }
         else {

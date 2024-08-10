@@ -31,10 +31,16 @@
 #include "MainWindowSettings.h"
 #include "ui_MainWindowSettings.h"
 
+#include "EmuInstance.h"
+#include "PluginManager.h"
+
 
 using namespace melonDS;
 
-MainWindowSettings::MainWindowSettings(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindowSettings)
+MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
+    QMainWindow(parent),
+    localCfg(inst->getLocalConfig()),
+    ui(new Ui::MainWindowSettings)
 {
     ui->setupUi(this);
 
@@ -48,4 +54,87 @@ MainWindowSettings::~MainWindowSettings()
     delete ui;
 }
 
+void MainWindowSettings::initWidgets()
+{
+    createVideoPlayer();
+}
+
+void MainWindowSettings::createVideoPlayer()
+{
+    playerWidget = new QVideoWidget(this);
+    playerWidget->setCursor(Qt::BlankCursor);
+
+    playerAudioOutput = new QAudioOutput(this);
+    player = new QMediaPlayer(this);
+
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->addWidget(playerWidget);
+
+    connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
+        Plugins::Plugin* plugin = Plugins::PluginManager::get();
+        plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
+
+        if (status == QMediaPlayer::BufferingMedia || status == QMediaPlayer::BufferedMedia) {
+            plugin->onReplacementCutsceneStarted();
+        }
+        if (status == QMediaPlayer::EndOfMedia) {
+            asyncStopVideo();
+        }
+        if (status == QMediaPlayer::InvalidMedia) {
+            plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
+        }
+    });
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
+        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
+    });
+#else
+    connect(player, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
+        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
+    });
+#endif
+
+    player->setVideoOutput(playerWidget);
+    player->setAudioOutput(playerAudioOutput);
+}
+
+void MainWindowSettings::asyncStartVideo(QString videoFilePath)
+{
+    QMetaObject::invokeMethod(this, "startVideo", Qt::QueuedConnection, Q_ARG(QString, videoFilePath));
+}
+
+void MainWindowSettings::startVideo(QString videoFilePath)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    player->setMedia(QUrl::fromLocalFile(videoFilePath));
+#else
+    player->setSource(QUrl::fromLocalFile(videoFilePath));
+#endif
+
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->setCurrentWidget(playerWidget);
+
+    int volume = localCfg.GetInt("Audio.Volume");
+    playerAudioOutput->setVolume(volume / 256.0);
+
+    player->play();
+}
+
+void MainWindowSettings::asyncStopVideo()
+{
+    QMetaObject::invokeMethod(this, "stopVideo", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::stopVideo()
+{
+    bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
+    if (isCutscenePlaying) {
+        player->stop();
+    }
+
+    showGame();
+
+    Plugins::PluginManager::get()->onReplacementCutsceneEnd();
+}
 
