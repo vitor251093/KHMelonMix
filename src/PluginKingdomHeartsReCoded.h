@@ -111,6 +111,8 @@ private:
     int detectGameScene();
     bool setGameScene(int newGameScene);
 
+    u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
+
     bool isBufferBlack(unsigned int* buffer);
     bool isTopScreen2DTextureBlack();
     bool isBottomScreen2DTextureBlack();

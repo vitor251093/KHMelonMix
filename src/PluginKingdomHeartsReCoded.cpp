@@ -15,7 +15,6 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define ASPECT_RATIO_ADDRESS_US      0x0202A810
 #define ASPECT_RATIO_ADDRESS_EU      0x0202A824
 #define ASPECT_RATIO_ADDRESS_JP      0x0202A728
-#define ASPECT_RATIO_ADDRESS_JP_DEV1 0x0202A728
 
 // If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
@@ -132,6 +131,11 @@ void PluginKingdomHeartsReCoded::onLoadState()
 
 u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
+    if (GameScene == -1)
+    {
+        return InputMask;
+    }
+
     if (HotkeyPress & (1 << 15)) { // HUD Toggle
         hudToggle();
     }
@@ -178,6 +182,11 @@ u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32 InputMask, u32 Hotkey
 
 void PluginKingdomHeartsReCoded::applyTouchKeyMask(u32 TouchKeyMask)
 {
+    if (GameScene == -1)
+    {
+        return;
+    }
+
     nds->SetTouchKeyMask(TouchKeyMask);
 }
 
@@ -257,6 +266,11 @@ bool PluginKingdomHeartsReCoded::shouldRenderFrame()
 
 int PluginKingdomHeartsReCoded::detectGameScene()
 {
+    if (nds == nullptr)
+    {
+        return GameScene;
+    }
+
     // return gameScene_Other2D;
 
     // printf("0x021D08B8: %d\n",   nds->ARM7Read8(0x021D08B8));
@@ -483,22 +497,15 @@ int PluginKingdomHeartsReCoded::detectGameScene()
 
 void PluginKingdomHeartsReCoded::setAspectRatio(float aspectRatio)
 {
-    int aspectRatioKey = (int)round(0x1000 * aspectRatio);
+    if (GameScene != -1)
+    {
+        int aspectRatioKey = (int)round(0x1000 * aspectRatio);
 
-    u32 aspectRatioMenuAddress = 0;
-    if (isUsaCart()) {
-        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_US;
-    }
-    if (isEuropeCart()) {
-        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_EU;
-    }
-    if (isJapanCart()) {
-        aspectRatioMenuAddress = ASPECT_RATIO_ADDRESS_JP;
-        // TODO: Add support to Rev1 (ASPECT_RATIO_ADDRESS_JP_REV1)
-    }
+        u32 aspectRatioMenuAddress = getAddressByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
 
-    if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
-        nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
+        if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
+            nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
+        }
     }
 
     AspectRatio = aspectRatio;
@@ -517,6 +524,21 @@ bool PluginKingdomHeartsReCoded::setGameScene(int newGameScene)
     }
 
     return updated;
+}
+
+u32 PluginKingdomHeartsReCoded::getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress)
+{
+    u32 cutsceneAddress = 0;
+    if (isUsaCart()) {
+        cutsceneAddress = usAddress;
+    }
+    if (isEuropeCart()) {
+        cutsceneAddress = euAddress;
+    }
+    if (isJapanCart()) {
+        cutsceneAddress = jpAddress;
+    }
+    return cutsceneAddress;
 }
 
 std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene) {
