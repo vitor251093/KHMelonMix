@@ -266,7 +266,7 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
         InputMask |= (1<<3);
     }
 
-    if (_ShouldTerminateIngameCutscene && _StartPressCount > 0) {
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount > 0) {
         _StartPressCount--;
         InputMask &= ~(1<<3); // Start (skip DS cutscene)
     }
@@ -808,7 +808,7 @@ int PluginKingdomHeartsDays::detectGameScene()
         }
 
         // Unknown 2D
-        return gameScene_Other2D;
+        return gameScene_Cutscene;
     }
 
     // Tutorial
