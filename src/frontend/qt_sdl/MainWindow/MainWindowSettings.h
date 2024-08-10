@@ -26,78 +26,6 @@
 
 #include "Config.h"
 
-// static constexpr int keypad_num = 12;
-// static constexpr int touchscreen_num = 4;
-// static constexpr int cmdmenu_num = 4;
-
-// static constexpr std::initializer_list<int> hk_addons =
-// {
-//     HK_SolarSensorIncrease,
-//     HK_SolarSensorDecrease,
-// };
-
-// static constexpr std::initializer_list<const char*> hk_addons_labels =
-// {
-//     "[Boktai] Sunlight + ",
-//     "[Boktai] Sunlight - ",
-// };
-
-// static_assert(hk_addons.size() == hk_addons_labels.size());
-
-// static constexpr std::initializer_list<int> hk_general =
-// {
-//     HK_Pause,
-//     HK_Reset,
-//     HK_FrameStep,
-//     HK_FastForward,
-//     HK_FastForwardToggle,
-//     HK_FullscreenToggle,
-//     HK_Lid,
-//     HK_Mic,
-//     HK_SwapScreens,
-//     HK_SwapScreenEmphasis,
-//     HK_PowerButton,
-//     HK_VolumeUp,
-//     HK_VolumeDown,
-//     HK_HUDToggle
-// };
-
-// static constexpr std::initializer_list<const char*> hk_general_labels =
-// {
-//     "Pause/resume",
-//     "Reset",
-//     "Frame step",
-//     "Fast forward",
-//     "Toggle FPS limit",
-//     "Toggle fullscreen",
-//     "Close/open lid",
-//     "Microphone",
-//     "Swap screens",
-//     "Swap screen emphasis",
-//     "DSi Power button",
-//     "DSi Volume up",
-//     "DSi Volume down",
-//     "HUD Toggle"
-// };
-
-// static_assert(hk_general.size() == hk_general_labels.size());
-
-// static constexpr std::initializer_list<const char*> cmd_menu_labels =
-// {
-//     "Command Menu Left",
-//     "Command Menu Right",
-//     "Command Menu Up",
-//     "Command Menu Down",
-// };
-
-// static constexpr std::initializer_list<const char*> ds_touch_key_labels =
-// {
-//     "Left",
-//     "Right",
-//     "Up",
-//     "Down"
-// };
-
 namespace Ui { class MainWindowSettings; }
 class MainWindowSettings;
 
@@ -109,25 +37,7 @@ public:
     explicit MainWindowSettings(QWidget* parent);
     ~MainWindowSettings();
 
-    static void closeDlg()
-    {
-    }
-
 private slots:
-    void on_generalButton_clicked();
-    void on_displayButton_clicked();
-    void on_soundButton_clicked();
-    void on_keyboardButton_clicked();
-    void on_multiplayerButton_clicked();
-    void on_gamepadButton_clicked();
-    void on_quitGameButton_clicked();
-
-    void on_MainWindowSettings_accepted();
-    void on_MainWindowSettings_rejected();
-
-    void on_btnKeyMapSwitch_clicked();
-    void on_btnJoyMapSwitch_clicked();
-    void on_cbxJoystick_currentIndexChanged(int id);
 
 protected:
     QWidget* settingsWidget;
@@ -135,21 +45,8 @@ protected:
     bool showingSettings;
 
 private:
-    void populatePage(QWidget* page,
-        const std::initializer_list<const char*>& labels,
-        int* keymap, int* joymap);
-    void setupKeypadPage();
-    void setupTouchScreenPage();
-    void setupCommandMenuPage();
-
     Ui::MainWindowSettings* ui;
 
-    // int keypadKeyMap[12], keypadJoyMap[12];
-    // int addonsKeyMap[hk_addons.size()], addonsJoyMap[hk_addons.size()];
-    // int hkGeneralKeyMap[hk_general.size()], hkGeneralJoyMap[hk_general.size()];
-    // int touchScreenKeyMap[4], touchScreenJoyMap[4];
-    // int cmdMenuKeyMap[4], cmdMenuJoyMap[4];
 };
-
 
 #endif // MAINWINDOWSETTINGS_H

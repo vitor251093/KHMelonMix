@@ -643,7 +643,6 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     show();
 
     createScreenPanel();
-    createVideoPlayer();
 
     actEjectCart->setEnabled(false);
     actEjectGBACart->setEnabled(false);
@@ -730,6 +729,8 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
 
     QObject::connect(qApp, &QApplication::applicationStateChanged, this, &MainWindow::onAppStateChanged);
     onUpdateInterfaceSettings();
+
+    createVideoPlayer();
 }
 
 MainWindow::~MainWindow()
