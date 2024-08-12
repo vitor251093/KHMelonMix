@@ -282,19 +282,10 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
         if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) { // D-pad
-            u32 dpadMenuAddress = 0;
-            if (isUsaCart()) {
-                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US;
-            }
-            if (isEuropeCart()) {
-                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU;
-            }
-            if (isJapanCart()) {
-                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP;
-            }
-            if (isJapanCartRev1()) {
-                dpadMenuAddress = INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1;
-            }
+            u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
+                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
+                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP,
+                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1);
 
             if (nds->ARM7Read8(dpadMenuAddress) & 0x02) {
                 nds->ARM7Write8(dpadMenuAddress, nds->ARM7Read8(dpadMenuAddress) - 0x02);

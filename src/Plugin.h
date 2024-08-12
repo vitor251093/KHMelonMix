@@ -84,56 +84,50 @@ public:
         }
     }
 
-    u8 LastMainRAM[0x3FFFFF >> 2];
-    bool MainRAMState[0x3FFFFF >> 2];
+    u32 LastMainRAM[0xFFFFFF];
+    bool MainRAMState[0xFFFFFF];
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
         if (HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
             printf("Resetting RAM search\n");
-            for (u32 index = 0; index < 0x3FFFFF >> 2; index++) {
-                u32 addr = index << 2;
-                LastMainRAM[index] = *(u32*)&(nds->MainRAM)[addr & (nds->MainRAMMask)];
+            for (u32 index = 0; index < 0x3FFFFF; index+=4) {
+                u32 addr = (0x02000000 | index);
+                u32 newVal = nds->ARM7Read32(addr);
                 MainRAMState[index] = true;
-            }
-        }
-        if (HotkeyPress & (1 << 13)) { // HK_VolumeUp (filter RAM by different values)
-            printf("Filtering RAM by different values\n");
-            for (u32 index = 0; index < 0x3FFFFF >> 2; index++) {
-                u32 addr = index << 2;
-                u32 newVal = *(u32*)&(nds->MainRAM)[addr & (nds->MainRAMMask)];
-                if (MainRAMState[index]) {
-                    if (LastMainRAM[index] == newVal) {
-                        MainRAMState[index] = false;
-                    }
-                }
                 LastMainRAM[index] = newVal;
             }
         }
-        if (HotkeyPress & (1 << 14)) { // HK_VolumeDown (filter RAM by equal values)
+        if (HotkeyPress & (1 << 13)) { // HK_VolumeUp (filter RAM by equal values)
             printf("Filtering RAM by equal values\n");
-            for (u32 index = 0; index < 0x3FFFFF >> 2; index++) {
-                u32 addr = index << 2;
-                u32 newVal = *(u32*)&(nds->MainRAM)[addr & (nds->MainRAMMask)];
-                if (MainRAMState[index]) {
-                    if (LastMainRAM[index] != newVal) {
-                        MainRAMState[index] = false;
-                    }
-                }
+            for (u32 index = 0; index < 0x3FFFFF; index+=4) {
+                u32 addr = (0x02000000 | index);
+                u32 newVal = nds->ARM7Read32(addr);
+                MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] == newVal);
+                LastMainRAM[index] = newVal;
+            }
+        }
+        if (HotkeyPress & (1 << 14)) { // HK_VolumeDown (filter RAM by different values)
+            printf("Filtering RAM by different values\n");
+            for (u32 index = 0; index < 0x3FFFFF; index+=4) {
+                u32 addr = (0x02000000 | index);
+                u32 newVal = nds->ARM7Read32(addr);
+                MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] != newVal);
                 LastMainRAM[index] = newVal;
             }
         }
         if (HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
             int total = 0;
-            for (u32 index = 0; index < 0x3FFFFF >> 2; index++) {
+            for (u32 index = 0; index < 0x3FFFFF; index+=4) {
                 if (MainRAMState[index]) {
                     total += 1;
                 }
             }
             printf("Addresses matching the search: %d\n", total);
             if (total < 50 && total > 0) {
-                for (u32 index = 0; index < 0x3FFFFF >> 2; index++) {
+                for (u32 index = 0; index < 0x3FFFFF; index+=4) {
+                    u32 addr = (0x02000000 | index);
                     if (MainRAMState[index]) {
-                        printf("0x%08x: %d\n", 0x02000000 | (index << 2), MainRAMState[index]);
+                        printf("0x%08x: %d\n", addr, LastMainRAM[index]);
                     }
                 }
                 printf("\n");
