@@ -5,6 +5,7 @@
 
 #define DEBUG_MODE_ENABLED false
 #define DEBUG_LOG_FILE_ENABLED false
+#define RAM_SEARCH_ENABLED false
 
 #include "NDS.h"
 
@@ -88,6 +89,10 @@ public:
     bool MainRAMState[0xFFFFFF];
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
+        if (!RAM_SEARCH_ENABLED) {
+            return;
+        }
+
         if (HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
             printf("Resetting RAM search\n");
             for (u32 index = 0; index < 0x3FFFFF; index+=4) {
