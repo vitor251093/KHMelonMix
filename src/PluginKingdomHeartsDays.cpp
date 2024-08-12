@@ -721,7 +721,7 @@ int PluginKingdomHeartsDays::detectGameScene()
         bool isBottomCutscene = nds->GPU.GPU2D_A.BlendCnt == 0 && 
             nds->GPU.GPU2D_A.EVA == 16 && nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 9 &&
             nds->GPU.GPU2D_B.EVA == 16 && nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0;
-        if (isBottomCutscene)
+        if (isBottomCutscene && doesntLook3D)
         {
             return gameScene_Cutscene;
         }
