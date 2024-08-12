@@ -45,8 +45,9 @@ enum
     gameScene_MultiplayerMissionReview, // 13
     gameScene_Shop,                     // 14
     gameScene_LoadingScreen,            // 15
-    gameScene_Other2D,                  // 16
-    gameScene_Other                     // 17
+    gameScene_CutsceneWithStaticImages, // 16
+    gameScene_Other2D,                  // 17
+    gameScene_Other                     // 18
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -253,6 +254,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_MultiplayerMissionReview: return "Game scene: Multiplayer Mission Review";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
+        case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         case gameScene_Other: return "Game scene: Unknown (3D)";
         default: return "Game scene: Unknown";
@@ -315,7 +317,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
 
     // 3D element mimicking 2D behavior
-    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 20;
+    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 30;
 
     bool wasSaveLoaded = isSaveLoaded();
     bool muchOlderHad3DOnTopScreen = _muchOlderHad3DOnTopScreen;
@@ -341,6 +343,20 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);
+
+    if (has3DOnBothScreens)
+    {
+        return gameScene_InGameWithCutscene;
+    }
+    else if (has3DOnBottomScreen)
+    {
+        return gameScene_InGameWithCutscene;
+    }
+    else if (!has3DOnTopScreen)
+    {
+        // Unknown 2D
+        return gameScene_Other2D;
+    }
 
     // Shop has 2D and 3D segments, which is why it's on the top
     bool isShop = (nds->GPU.GPU3D.RenderNumPolygons == 264 && nds->GPU.GPU2D_A.BlendCnt == 0 && 
@@ -444,8 +460,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
             return gameScene_Cutscene;
         }
 
-        // Unknown 2D
-        return gameScene_Other2D;
+        return gameScene_CutsceneWithStaticImages;
     }
 
     if (has3DOnTopScreen)
@@ -526,11 +541,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     {
         return gameScene_InGameWithCutscene;
     }
-    if (has3DOnBottomScreen)
-    {
-        return gameScene_InGameWithCutscene;
-    }
-    
+
     // Unknown
     return gameScene_Other;
 }
