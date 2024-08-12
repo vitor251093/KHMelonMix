@@ -868,6 +868,12 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         if (MainMenuView == 4) { // challenges
             return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
         }
+        if (MainMenuView == 5) { // roxas's diary
+            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
+        }
+        if (MainMenuView == 6) { // enemy profile
+            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
+        }
         if (MainMenuView == 8) { // config
             return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(255, 191)));
         }
@@ -1055,6 +1061,12 @@ ivec4 getTopScreen3DColor()
             return getHorizontalDualScreen3DColor(xpos, ypos);
         }
         if (MainMenuView == 4) { // challenges
+            return getHorizontalDualScreen3DColor(xpos, ypos);
+        }
+        if (MainMenuView == 5) { // roxas's diary
+            return getHorizontalDualScreen3DColor(xpos, ypos);
+        }
+        if (MainMenuView == 6) { // enemy profile
             return getHorizontalDualScreen3DColor(xpos, ypos);
         }
         if (MainMenuView == 9) { // save

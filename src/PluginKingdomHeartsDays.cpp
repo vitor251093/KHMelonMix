@@ -1331,6 +1331,7 @@ void PluginKingdomHeartsDays::debugLogs(int gameScene)
 
     printf("Game scene: %d\n",  gameScene);
     printf("Current map: %d\n", getCurrentMap());
+    printf("Current main menu view: %d\n", getCurrentMainMenuView());
     printf("Is save loaded: %d\n", isSaveLoaded() ? 1 : 0);
     printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);
     printf("NDS->GPU.GPU3D.NumPolygons: %d\n",        nds->GPU.GPU3D.NumPolygons);
