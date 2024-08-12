@@ -56,7 +56,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 
     HUDState = 0;
 
-    priorGameScene = -1;
+    PriorGameScene = -1;
     GameScene = -1;
     priorMap = -1;
     Map = 0;
@@ -119,7 +119,7 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    glUniform1i(CompGpuLoc[CompShader][0], priorGameScene);
+    glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
     glUniform1i(CompGpuLoc[CompShader][1], GameScene);
     glUniform1i(CompGpuLoc[CompShader][2], UIScale);
     glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
@@ -532,7 +532,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         // }
         // else if (GameScene == gameScene_PauseMenu)
         // {
-        //     return priorGameScene;
+        //     return PriorGameScene;
         // }
 
         // Regular gameplay
@@ -572,7 +572,7 @@ bool PluginKingdomHeartsReCoded::setGameScene(int newGameScene)
         updated = true;
 
         // Game scene
-        priorGameScene = GameScene;
+        PriorGameScene = GameScene;
         GameScene = newGameScene;
     }
 

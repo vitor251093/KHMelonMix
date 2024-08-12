@@ -33,6 +33,7 @@ uniform bool ShowTarget;
 uniform bool ShowMissionGauge;
 uniform bool ShowMissionInfo;
 uniform bool HideScene;
+uniform int MainMenuView;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -861,10 +862,19 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
     if (GameScene == 7) { // gameScene_InGameMenu
+        if (MainMenuView == 3) { // holo-mission
+            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
+        }
+        if (MainMenuView == 4) { // challenges
+            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
+        }
+        if (MainMenuView == 8) { // config
+            return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(255, 191)));
+        }
+        if (MainMenuView == 9) { // save
+            return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(255, 191)));
+        }
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 191)));
-    }
-    if (GameScene == 9) { // gameScene_InHoloMissionMenu
-        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
     }
     if (GameScene == 10) { // gameScene_PauseMenu
         return ivec2(getPauseHudTextureCoordinates(xpos, ypos));
@@ -1041,9 +1051,15 @@ ivec4 getTopScreen3DColor()
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
     if (GameScene == 7) { // gameScene_InGameMenu
-        return getHorizontalDualScreen3DColor(xpos, ypos);
-    }
-    if (GameScene == 9) { // gameScene_InHoloMissionMenu
+        if (MainMenuView == 3) { // holo-mission
+            return getHorizontalDualScreen3DColor(xpos, ypos);
+        }
+        if (MainMenuView == 4) { // challenges
+            return getHorizontalDualScreen3DColor(xpos, ypos);
+        }
+        if (MainMenuView == 9) { // save
+            return getSingleSquaredScreen3DColor(xpos, ypos);
+        }
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
     if (GameScene == 13) { // gameScene_MultiplayerMissionReview

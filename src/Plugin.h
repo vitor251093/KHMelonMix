@@ -6,7 +6,7 @@
 #define DEBUG_MODE_ENABLED false
 #define DEBUG_LOG_FILE_ENABLED false
 
-#define RAM_SEARCH_ENABLED true
+#define RAM_SEARCH_ENABLED false
 #define RAM_SEARCH_SIZE 8
 
 #if RAM_SEARCH_SIZE == 32
@@ -138,16 +138,40 @@ public:
                     total += 1;
                 }
             }
-            printf("Addresses matching the search: %d\n", total);
-            if (total < 50*(4/byteSize) && total > 0) {
-                for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
-                    u32 addr = (0x02000000 | index);
-                    if (MainRAMState[index]) {
-                        printf("0x%08x: %d\n", addr, LastMainRAM[index]);
+            if (total > 0) {
+                if (total < 50*(4/byteSize)) {
+                    for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
+                        u32 addr = (0x02000000 | index);
+                        if (MainRAMState[index]) {
+                            printf("0x%08x: %d\n", addr, LastMainRAM[index]);
+                        }
                     }
+                    printf("\n");
                 }
-                printf("\n");
+                else if (total < 100000) {
+                    u32 firstAddr = 0;
+                    for (u32 index = byteSize; index < 0x3FFFFF; index+=byteSize) {
+                        u32 addr = (0x02000000 | index);
+                        if (MainRAMState[index]) {
+                            if (firstAddr == 0) {
+                                firstAddr = addr;
+                            }
+                        }
+                        else {
+                            int validDistance = 0x200;
+                            if (firstAddr != 0 && firstAddr < (addr - byteSize*(validDistance - 1))) {
+                                printf("0x%08x - 0x%08x\n", firstAddr, addr - byteSize*validDistance);
+                                firstAddr = 0;
+                            }
+                        }
+                    }
+                    if (firstAddr != 0) {
+                        printf("0x%08x - 0x%08x\n", firstAddr, firstAddr);
+                    }
+                    printf("\n");
+                }
             }
+            printf("Addresses matching the search: %d\n", total);
         }
     }
 };

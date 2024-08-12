@@ -22,6 +22,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MISSION_JP      0x0204C67C
 #define CURRENT_MISSION_JP_REV1 0x0204C63C
 
+#define CURRENT_MAIN_MENU_VIEW_US      0x0219f3e8
+#define CURRENT_MAIN_MENU_VIEW_EU      0x0219f3e8 // TODO: KH
+#define CURRENT_MAIN_MENU_VIEW_JP      0x0219f3e8 // TODO: KH
+#define CURRENT_MAIN_MENU_VIEW_JP_REV1 0x0219f3e8 // TODO: KH
+
 #define CURRENT_WORLD_US      0x0204C2CF
 #define CURRENT_WORLD_EU      0x0204C2EF
 #define CURRENT_WORLD_JP      0x0204C72F
@@ -140,7 +145,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     HUDState = 0;
 
-    priorGameScene = -1;
+    PriorGameScene = -1;
     GameScene = -1;
     priorMap = -1;
     Map = 0;
@@ -208,12 +213,25 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
     CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
     CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideScene");
+    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "MainMenuView");
 }
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
+    int gameScene = GameScene;
+    int priorGameScene = PriorGameScene;
+    if (GameScene == gameScene_InGameSaveMenu || GameScene == gameScene_InHoloMissionMenu) {
+        gameScene = gameScene_InGameMenu;
+    }
+    if (PriorGameScene == gameScene_InGameSaveMenu || PriorGameScene == gameScene_InHoloMissionMenu) {
+        priorGameScene = gameScene_InGameMenu;
+    }
+    if (priorGameScene == gameScene_InGameMenu && gameScene == gameScene_Cutscene) {
+        gameScene = gameScene_InGameMenu;
+    }
+
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    glUniform1i(CompGpuLoc[CompShader][0], priorGameScene);
-    glUniform1i(CompGpuLoc[CompShader][1], GameScene);
+    glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
+    glUniform1i(CompGpuLoc[CompShader][1], gameScene);
     glUniform1i(CompGpuLoc[CompShader][2], UIScale);
     glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
     glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
@@ -221,6 +239,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][8], _ShouldHideScreenForTransitions ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][9], getCurrentMainMenuView());
 }
 
 void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
@@ -880,7 +899,7 @@ int PluginKingdomHeartsDays::detectGameScene()
     }
     else if (GameScene == gameScene_PauseMenu)
     {
-        return priorGameScene;
+        return PriorGameScene;
     }
 
     // Regular gameplay without a map
@@ -917,7 +936,7 @@ bool PluginKingdomHeartsDays::setGameScene(int newGameScene)
         updated = true;
 
         // Game scene
-        priorGameScene = GameScene;
+        PriorGameScene = GameScene;
         GameScene = newGameScene;
     }
 
@@ -1189,6 +1208,37 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
     return nds->ARM7Read8(getAddressByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
 }
 
+// The states below also happen in multiple other places outside the main menu menus
+// 0 -> none
+// 1 -> main menu root
+// 2 -> panel
+// 3 -> holo-mission
+// 4 -> challenges
+// 5 -> roxas's diary
+// 6 -> enemy profile
+// 7 -> tutorials
+// 8 -> config
+// 9 -> save
+u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
+{
+    if (GameScene == -1)
+    {
+        return 0;
+    }
+
+    u8 val = nds->ARM7Read8(getAddressByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1));
+    if (val == 0x5c) return 1;
+    if (val == 0x00) return 2;
+    if (val == 0xc0) return 3;
+    if (val == 0x40) return 4;
+    if (val == 0x20) return 5;
+    if (val == 0x28) return 6;
+    if (val == 0x14) return 7;
+    if (val == 0xcc) return 8;
+    if (val == 0xa0) return 9;
+    return 0;
+}
+
 // map == 0 => No map
 // map >> 8 == 0 => Twilight Town and Day 357
 // map >> 8 == 1 => Wonderland
@@ -1263,6 +1313,12 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
   ((byte) & 0x00000004 ? '1' : '0'), \
   ((byte) & 0x00000002 ? '1' : '0'), \
   ((byte) & 0x00000001 ? '1' : '0') 
+
+#define PRINT_AS_8_BIT_HEX(ADDRESS) printf("0x%08x: 0x%08x\n", ADDRESS, nds->ARM7Read8(ADDRESS))
+#define PRINT_AS_8_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read8(ADDRESS)))
+
+#define PRINT_AS_16_BIT_HEX(ADDRESS) printf("0x%08x: 0x%08x\n", ADDRESS, nds->ARM7Read16(ADDRESS))
+#define PRINT_AS_16_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read16(ADDRESS)))
 
 #define PRINT_AS_32_BIT_HEX(ADDRESS) printf("0x%08x: 0x%08x\n", ADDRESS, nds->ARM7Read32(ADDRESS))
 #define PRINT_AS_32_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))

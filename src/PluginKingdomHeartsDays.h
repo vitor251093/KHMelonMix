@@ -115,7 +115,7 @@ private:
 
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
-    int priorGameScene;
+    int PriorGameScene;
     int GameScene;
     u32 priorMap;
     u32 Map;
@@ -156,6 +156,7 @@ private:
     void refreshCutscene();
 
     u32 getCurrentMission();
+    u32 getCurrentMainMenuView();
     u32 getCurrentMap();
     bool isSaveLoaded();
 
