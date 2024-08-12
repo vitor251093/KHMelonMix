@@ -35,9 +35,6 @@ uniform bool ShowMissionInfo;
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
 
-uniform bool IsBottomScreen2DTextureBlack;
-uniform bool IsTopScreen2DTextureBlack;
-
 smooth in vec2 fTexcoord;
 
 out vec4 oColor;
@@ -648,12 +645,6 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    if (IsBottomScreen2DTextureBlack) {
-        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 1));
-    }
-    if (IsTopScreen2DTextureBlack) {
-        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 2));
-    }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
 }
 
@@ -854,6 +845,9 @@ ivec4 getTopScreen3DColor()
     if (GameScene == 3) { // gameScene_DayCounter
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
+    if (GameScene == 4) { // gameScene_Cutscene
+        return getHorizontalDualScreen3DColor(xpos, ypos);
+    }
     if (GameScene == 7) { // gameScene_InGameMenu
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
@@ -864,6 +858,9 @@ ivec4 getTopScreen3DColor()
         return getVerticalDualScreen3DColor(xpos, ypos);
     }
     if (GameScene == 14) { // gameScene_Shop
+        return getHorizontalDualScreen3DColor(xpos, ypos);
+    }
+    if (GameScene == 16) { // gameScene_Other2D
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
 

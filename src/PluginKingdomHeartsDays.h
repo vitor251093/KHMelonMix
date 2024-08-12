@@ -150,7 +150,7 @@ private:
 
     u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address);
 
-    u32 getAddress(CutsceneEntry* entry);
+    u32 getCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* detectCutscene();
     CutsceneEntry* detectSequenceCutscene();
     void refreshCutscene();

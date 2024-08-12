@@ -39,6 +39,10 @@ public:
     u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
     void applyTouchKeyMask(u32 TouchKeyMask);
 
+    int _StartPressCount;
+    int _SkipPressCount;
+    bool _PlayingCutsceneBeforeCredits;
+    bool _PlayingCredits;
     bool _ShouldTerminateIngameCutscene;
     bool _StoppedIngameCutscene;
     bool _ShouldStartReplacementCutscene;
@@ -47,6 +51,7 @@ public:
     bool _ShouldStopReplacementCutscene;
     bool _ShouldReturnToGameAfterCutscene;
     bool _ShouldUnmuteAfterCutscene;
+    bool _ShouldHideScreenForTransitions;
     CutsceneEntry* _CurrentCutscene;
     bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
     bool StoppedIngameCutscene() {
@@ -56,7 +61,13 @@ public:
         }
         return false;
     }
-    bool ShouldStartReplacementCutscene() {return _ShouldStartReplacementCutscene;}
+    bool ShouldStartReplacementCutscene() {
+        if (_ShouldStartReplacementCutscene) {
+            _ShouldStartReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
     bool StartedReplacementCutscene() {
         if (_StartedReplacementCutscene) {
             _StartedReplacementCutscene = false;
@@ -65,7 +76,13 @@ public:
         return false;
     }
     bool RunningReplacementCutscene() {return _RunningReplacementCutscene;}
-    bool ShouldStopReplacementCutscene() {return _ShouldStopReplacementCutscene;}
+    bool ShouldStopReplacementCutscene() {
+        if (_ShouldStopReplacementCutscene) {
+            _ShouldStopReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
     bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
     bool ShouldUnmuteAfterCutscene() {
         if (_ShouldUnmuteAfterCutscene) {
@@ -83,17 +100,23 @@ public:
     void onReplacementCutsceneEnd();
 
     const char* getGameSceneName();
+
     bool shouldRenderFrame();
+
     void setAspectRatio(float aspectRatio);
+
     bool refreshGameScene();
-    void debugLogs(int gameScene);
 private:
     melonDS::NDS* nds;
+
+    int HUDState;
 
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
     int priorGameScene;
     int GameScene;
+    u32 priorMap;
+    u32 Map;
     int UIScale = 4;
     float AspectRatio;
     bool ShowMap;
@@ -101,22 +124,36 @@ private:
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};
 
+    bool _muchOlderHad3DOnTopScreen;
+    bool _muchOlderHad3DOnBottomScreen;
     bool _olderHad3DOnTopScreen;
     bool _olderHad3DOnBottomScreen;
     bool _had3DOnTopScreen;
     bool _had3DOnBottomScreen;
 
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
+    u32 LastLockOnPress, LastSwitchTargetPress;
+    bool SwitchTargetPressOnHold;
 
     int detectGameScene();
     bool setGameScene(int newGameScene);
 
     u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
 
+    u32 getCutsceneAddress(CutsceneEntry* entry);
+    CutsceneEntry* detectCutscene();
+    CutsceneEntry* detectSequenceCutscene();
+    void refreshCutscene();
+
+    u32 getCurrentMission();
+    u32 getCurrentMap();
+    bool isSaveLoaded();
+
     bool isBufferBlack(unsigned int* buffer);
     bool isTopScreen2DTextureBlack();
     bool isBottomScreen2DTextureBlack();
     void hudToggle();
+    void debugLogs(int gameScene);
 };
 }
 

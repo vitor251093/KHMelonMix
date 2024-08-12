@@ -931,20 +931,9 @@ bool PluginKingdomHeartsDays::setGameScene(int newGameScene)
     return updated;
 }
 
-u32 PluginKingdomHeartsDays::getAddress(CutsceneEntry* entry) {
-    if (isUsaCart()) {
-        return entry->usAddress;
-    }
-    if (isEuropeCart()) {
-        return entry->euAddress;
-    }
-    if (isJapanCart()) {
-        return entry->jpAddress;
-    }
-    if (isJapanCartRev1()) {
-        return entry->jpAddress - 0x200;
-    }
-    return 0;
+u32 PluginKingdomHeartsDays::getCutsceneAddress(CutsceneEntry* entry)
+{
+    return getAddressByCart(entry->usAddress, entry->euAddress, entry->jpAddress, entry->jpAddress - 0x200);
 }
 
 u32 PluginKingdomHeartsDays::getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address)
@@ -987,10 +976,10 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene()
     CutsceneEntry* cutscene1 = nullptr;
     CutsceneEntry* cutscene2 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getAddress(entry) == cutsceneAddressValue) {
+        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
             cutscene1 = entry;
         }
-        if (getAddress(entry) == cutsceneAddressValue2) {
+        if (getCutsceneAddress(entry) == cutsceneAddressValue2) {
             cutscene2 = entry;
         }
     }
