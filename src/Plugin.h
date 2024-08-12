@@ -99,29 +99,27 @@ public:
         if (HotkeyPress & (1 << 13)) { // HK_VolumeUp (filter RAM by different values)
             printf("Filtering RAM by different values\n");
             for (u32 index = 0; index < 0x3FFFFF >> 2; index++) {
+                u32 addr = index << 2;
+                u32 newVal = *(u32*)&(nds->MainRAM)[addr & (nds->MainRAMMask)];
                 if (MainRAMState[index]) {
-                    u32 addr = index << 2;
-                    u32 newVal = *(u32*)&(nds->MainRAM)[addr & (nds->MainRAMMask)];
                     if (LastMainRAM[index] == newVal) {
                         MainRAMState[index] = false;
                     }
-                    else {
-                        LastMainRAM[index] = newVal;
-                    }
                 }
+                LastMainRAM[index] = newVal;
             }
         }
         if (HotkeyPress & (1 << 14)) { // HK_VolumeDown (filter RAM by equal values)
             printf("Filtering RAM by equal values\n");
             for (u32 index = 0; index < 0x3FFFFF >> 2; index++) {
+                u32 addr = index << 2;
+                u32 newVal = *(u32*)&(nds->MainRAM)[addr & (nds->MainRAMMask)];
                 if (MainRAMState[index]) {
-                    u32 addr = index << 2;
-                    u32 newVal = *(u32*)&(nds->MainRAM)[addr & (nds->MainRAMMask)];
                     if (LastMainRAM[index] != newVal) {
                         MainRAMState[index] = false;
-                        LastMainRAM[index] = newVal;
                     }
                 }
+                LastMainRAM[index] = newVal;
             }
         }
         if (HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
@@ -135,7 +133,7 @@ public:
             if (total < 50 && total > 0) {
                 for (u32 index = 0; index < 0x3FFFFF >> 2; index++) {
                     if (MainRAMState[index]) {
-                        printf("0x%08x: %d\n", index << 2, MainRAMState[index]);
+                        printf("0x%08x: %d\n", 0x02000000 | (index << 2), MainRAMState[index]);
                     }
                 }
                 printf("\n");

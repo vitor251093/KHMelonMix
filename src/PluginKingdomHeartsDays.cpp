@@ -250,6 +250,8 @@ void PluginKingdomHeartsDays::onLoadState()
 
 u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
 {
+    ramSearch(nds, HotkeyPress);
+
     if (GameScene == -1)
     {
         return InputMask;
