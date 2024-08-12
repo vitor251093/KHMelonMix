@@ -30,11 +30,11 @@ jobs:
           update: true
 
     - name: Install dependencies
-      run: pacman -Sq --noconfirm git pkgconf mingw-w64-x86_64-{cmake,SDL2,qt5-static,libarchive,toolchain}
+      run: pacman -Sq --noconfirm git pkgconf mingw-w64-x86_64-{cmake,SDL2,qt6-static,qt6-base,qt6-multimedia,libarchive,toolchain}
 
     - name: Configure
       working-directory: ${{runner.workspace}}
-      run: cmake -B build $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_STATIC=ON -DCMAKE_PREFIX_PATH=C:/tools/msys64/mingw64/qt5-static
+      run: cmake -B build $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_STATIC=OFF -DUSE_QT6=ON
 
     - name: Make
       working-directory: ${{runner.workspace}}/build
@@ -44,14 +44,19 @@ jobs:
     - name: Preparing artifacts
       working-directory: ${{runner.workspace}}/build
       run: |
-        mv melonDS.exe ./MelonMix.exe
-        echo "MelonMix.exe roms/days.nds"    > ./MelonMix_KHDays.bat
-        echo "MelonMix.exe roms/recoded.nds" > ./MelonMix_KHReCoded.bat
+        mkdir dist
+        mkdir -p ./dist/roms
+        touch ./dist/roms/DELETE_ME
+        mkdir -p ./dist/assets/days/cutscenes/cinematics
+        touch ./dist/assets/days/cutscenes/cinematics/DELETE_ME
+        mv melonDS.exe ./dist/MelonMix.exe
+        cp D:/a/_temp/msys64/mingw64/bin/*.dll ./dist/
+        cp -r D:/a/_temp/msys64/mingw64/share/qt6/plugins/platforms ./dist/platforms/
+        cp -r D:/a/_temp/msys64/mingw64/share/qt6/plugins/multimedia ./dist/multimedia/
+        echo "MelonMix.exe -f roms/days.nds"    > ./dist/MelonMix_KHDays.bat
+        echo "MelonMix.exe -f roms/recoded.nds" > ./dist/MelonMix_KHReCoded.bat
 
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-windows-x86_64
-        path: |
-          ${{runner.workspace}}\build\MelonMix.exe
-          ${{runner.workspace}}\build\MelonMix_KHDays.bat
-          ${{runner.workspace}}\build\MelonMix_KHReCoded.bat
+        path: ${{runner.workspace}}\build\dist

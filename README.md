@@ -24,7 +24,8 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Dump an original copy of "Kingdom Hearts 358/2 Days" and copy the NDS file to your computer;
 4. Rename that NDS file to "days.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
-5. Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat" (or MelonMix_KHDays.sh if you are not on Windows).
+5. Replace the assets folder with [this assets folder](https://mega.nz/folder/lpgykK5Y#HPJuOSceHSzncDjQh0DUtw) (this step is only required if you want to replace the DS cutscenes with HD cutscenes);
+6. Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat" (or MelonMix_KHDays.sh if you are not on Windows).
 
 ## How to play "Kingdom Hearts Re:Coded" (still a WIP; only for testing purposes)
 
@@ -35,9 +36,15 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 5. Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.bat" (or MelonMix_KHReCoded.sh if you are not on Windows).
 
 ### Recommended Controller Binds
-* Map the DS D-Pad to your controller's left analog stick
-* Map the DS Touch Screen to your controller's right analog stick
-* Map the command menu to your controller's D-Pad
+* (DS Keypad tab) Map the DS D-Pad to your controller's left analog stick
+* (DS Keypad tab) Map the Select/Start buttons to the equivalent keys in your controller
+* (DS Keypad tab) Map the A/B/X/Y buttons to the equivalent keys in your controller
+* (DS Keypad tab) Map the L button to the L/L1/LB button in your controller
+* (Touch Screen tab) Map the DS Touch Screen to your controller's right analog stick
+* (Add-ons tab) Map the command menu to your controller's D-Pad
+* (Add-ons tab) Map R1 and R2 rather than the R button from the DS keypad tab
+* (Add-ons tab) Map the HUD Toggle to an available button of your preference
+* (General hotkeys) Map Toggle fullscreen to an available button of your preference
 
 ### Steam Deck
 The AppImage build is compatible with the Steam Deck. In order to use it, download the AppImage build, extract the zip, right click the AppImage and go to "Properties". Then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Don't forget the NDS file, like mentioned above.
@@ -49,9 +56,9 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
 
 ### Linux
 1. Install dependencies:
-   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev`
-   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev`
-   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia libarchive zstd`
+   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev`
+   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev`
+   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia libarchive zstd qt6-base-dev qt6-base-private-dev qt6-multimedia-dev`
 3. Download the KH Melon Mix repository and prepare:
    ```bash
    git clone https://github.com/vitor251093/KHMelonMix
@@ -60,7 +67,7 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
 
 3. Compile:
    ```bash
-   cmake -B build
+   cmake -B build -DUSE_QT6=ON
    cmake --build build -j$(nproc --all)
    ```
 
@@ -78,21 +85,21 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
    cd KHMelonMix
    ```
 #### Dynamic builds (with DLLs)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt5-base,qt5-svg,qt5-multimedia,qt5-tools,libarchive,zstd}`
+5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-multimedia,libarchive,zstd}`
 6. Compile:
    ```bash
-   cmake -B build
+   cmake -B build -DUSE_QT6=ON
    cmake --build build
    cd build
    ../tools/msys-dist.sh
    ```
 If everything went well, KH Melon Mix and the libraries it needs should now be in the `dist` folder.
 
-#### Static builds (without DLLs, standalone executable)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt5-static,libarchive,zstd}`
+#### Static builds (without DLLs, standalone executable) (currently failing)
+5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-multimedia,libarchive,zstd}`
 6. Compile:
    ```bash
-   cmake -B build -DBUILD_STATIC=ON -DCMAKE_PREFIX_PATH=/mingw64/qt5-static
+   cmake -B build -DBUILD_STATIC=ON -DUSE_QT6=ON
    cmake --build build
    ```
 If everything went well, KH Melon Mix should now be in the `build` folder.

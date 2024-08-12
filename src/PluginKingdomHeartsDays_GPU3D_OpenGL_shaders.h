@@ -25,7 +25,7 @@ const char* kRenderVS_Z_KhDays = R"(
 
 uniform int GameScene;
 uniform int KHUIScale;
-uniform float TopScreenAspectRatio;
+uniform bool ShowMissionInfo;
 
 void main()
 {
@@ -41,16 +41,22 @@ void main()
 
     if (GameScene == 5 || GameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
     {
-        float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
+        float effectLayer = -0.300; // blue shine behind the heart counter and "CHAIN" label
+        float textLayer = -0.900; // heart counter, timer, "BONUS" label and +X floating labels
+
         int iuScale = KHUIScale;
-        float iuTexScale = (4.0)/iuScale;
-        float heartTopMargin = 16.0*u3DScale;
+        float iuTexScale = (5.0)/iuScale;
+        float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0)*u3DScale;
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;
-        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
-            fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
-            fpos.z <  -(0.30)*fpos.w && fpos.z >= -(0.900)*fpos.w) {
-            fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/(iuTexScale*aspectRatio)))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
+        if ((fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
+             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.200)*fpos.w &&
+             (abs(fpos.z - effectLayer * fpos.w) < 0.01))
+            ||
+            (fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.200)*fpos.w &&
+             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
+             (abs(fpos.z - textLayer * fpos.w) < 0.01))) {
+            fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/iuTexScale))/uScreenSize.x)*2.0 - 1.0)*fpos.w;
             fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/uScreenSize.y)*2.0 - 1.0)*fpos.w;
         }
     }

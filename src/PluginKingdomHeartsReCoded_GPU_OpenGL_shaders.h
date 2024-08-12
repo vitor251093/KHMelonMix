@@ -24,7 +24,6 @@ namespace Plugins
 const char* kCompositorFS_KhReCoded = R"(#version 140
 
 uniform uint u3DScale;
-uniform int u3DXPos;
 uniform int GameScene;
 uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
@@ -35,9 +34,6 @@ uniform bool ShowMissionInfo;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
-
-uniform bool IsBottomScreen2DTextureBlack;
-uniform bool IsTopScreen2DTextureBlack;
 
 smooth in vec2 fTexcoord;
 
@@ -649,12 +645,6 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    if (IsBottomScreen2DTextureBlack) {
-        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 1));
-    }
-    if (IsTopScreen2DTextureBlack) {
-        return ivec2(getSingleScreenTextureCoordinates(xpos, ypos, 2));
-    }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
 }
 
@@ -705,7 +695,10 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (GameScene == 14) { // gameScene_Shop
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
-    if (GameScene == 15) { // gameScene_Other2D
+    if (GameScene == 16) { // gameScene_CutsceneWithStaticImages
+        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
+    }
+    if (GameScene == 17) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -740,7 +733,9 @@ ivec4 getSingleSquaredScreen3DColor(float xpos, float ypos)
 
 ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
 {
-    float _3dxpos = float(u3DXPos);
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
+
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
     float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = TopScreenAspectRatio;
@@ -787,7 +782,9 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
 
 ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 {
-    float _3dxpos = float(u3DXPos);
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
+
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
     float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = TopScreenAspectRatio;
@@ -835,7 +832,9 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 
 ivec4 getTopScreen3DColor()
 {
-    float _3dxpos = float(u3DXPos);
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
+
     float xpos = fTexcoord.x + _3dxpos;
     float ypos = mod(fTexcoord.y, 192);
 
@@ -849,6 +848,9 @@ ivec4 getTopScreen3DColor()
     if (GameScene == 3) { // gameScene_DayCounter
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
+    if (GameScene == 4) { // gameScene_Cutscene
+        return getHorizontalDualScreen3DColor(xpos, ypos);
+    }
     if (GameScene == 7) { // gameScene_InGameMenu
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
@@ -859,6 +861,12 @@ ivec4 getTopScreen3DColor()
         return getVerticalDualScreen3DColor(xpos, ypos);
     }
     if (GameScene == 14) { // gameScene_Shop
+        return getHorizontalDualScreen3DColor(xpos, ypos);
+    }
+    if (GameScene == 16) { // gameScene_CutsceneWithStaticImages
+        return getSingleSquaredScreen3DColor(xpos, ypos);
+    }
+    if (GameScene == 17) { // gameScene_Other2D
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
 
@@ -1023,7 +1031,10 @@ ivec4 brightness()
     if (GameScene == 14) { // gameScene_Shop
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (GameScene == 15) { // gameScene_Other2D
+    if (GameScene == 16) { // gameScene_CutsceneWithStaticImages
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+    }
+    if (GameScene == 17) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
 

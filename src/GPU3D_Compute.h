@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -42,16 +42,6 @@ public:
     ~ComputeRenderer() override;
 
     void Reset(GPU& gpu) override;
-
-    void SetIsBottomScreen2DTextureBlack(bool isBlack);
-    void SetIsTopScreen2DTextureBlack(bool isBlack);
-    void SetGameScene(int gameScene);
-    void SetUIScale(int uiScale);
-    void SetAspectRatio(float aspectRatio);
-    void SetShowMap(bool showMap);
-    void SetShowTarget(bool showTarget);
-    void SetShowMissionGauge(bool showMissionGauge);
-    void SetShowMissionInfo(bool showMissionInfo);
 
     void SetRenderSettings(int scale, bool highResolutionCoordinates);
 

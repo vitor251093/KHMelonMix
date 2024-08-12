@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -303,43 +303,6 @@ void ComputeRenderer::Reset(GPU& gpu)
     Texcache.Reset();
 }
 
-void ComputeRenderer::SetIsBottomScreen2DTextureBlack(bool isBlack)
-{
-    CurGLCompositor.SetIsBottomScreen2DTextureBlack(isBlack);
-}
-void ComputeRenderer::SetIsTopScreen2DTextureBlack(bool isBlack)
-{
-    CurGLCompositor.SetIsTopScreen2DTextureBlack(isBlack);
-}
-void ComputeRenderer::SetGameScene(int gameScene)
-{
-    CurGLCompositor.SetGameScene(gameScene);
-}
-void ComputeRenderer::SetUIScale(int uiScale)
-{
-    CurGLCompositor.SetUIScale(uiScale);
-}
-void ComputeRenderer::SetAspectRatio(float aspectRatio)
-{
-    CurGLCompositor.SetAspectRatio(aspectRatio);
-}
-void ComputeRenderer::SetShowMap(bool showMap)
-{
-    CurGLCompositor.SetShowMap(showMap);
-}
-void ComputeRenderer::SetShowTarget(bool showTarget)
-{
-    CurGLCompositor.SetShowTarget(showTarget);
-}
-void ComputeRenderer::SetShowMissionGauge(bool showMissionGauge)
-{
-    CurGLCompositor.SetShowMissionGauge(showMissionGauge);
-}
-void ComputeRenderer::SetShowMissionInfo(bool showMissionInfo)
-{
-    CurGLCompositor.SetShowMissionInfo(showMissionInfo);
-}
-
 void ComputeRenderer::SetRenderSettings(int scale, bool highResolutionCoordinates)
 {
     CurGLCompositor.SetScaleFactor(scale);
@@ -637,7 +600,6 @@ struct Variant
 void ComputeRenderer::RenderFrame(GPU& gpu)
 {
     // TODO: Update compute renderer aspect ratio
-    // float aspectRatio = CurGLCompositor.GetAspectRatio();
     // glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
 
     assert(!NeedsShaderCompile());

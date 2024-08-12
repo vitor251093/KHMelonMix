@@ -7,6 +7,9 @@ set(SOURCES_QT_SDL
     main_shaders.h
     Screen.cpp
     Window.cpp
+    EmuInstance.cpp
+    EmuInstanceAudio.cpp
+    EmuInstanceInput.cpp
     EmuThread.cpp
     CheatsDialog.cpp
     Config.cpp
@@ -17,6 +20,9 @@ set(SOURCES_QT_SDL
     InputConfig/InputConfigDialog.cpp
     InputConfig/MapButton.h
     InputConfig/resources/ds.qrc
+    MainWindow/MainWindowSettings.cpp
+    MainWindow/MapButton.h
+    MainWindow/resources/ds.qrc
     VideoSettingsDialog.cpp
     CameraSettingsDialog.cpp
     AudioSettingsDialog.cpp
@@ -28,25 +34,22 @@ set(SOURCES_QT_SDL
     ROMInfoDialog.cpp
     RAMInfoDialog.cpp
     TitleManagerDialog.cpp
-    Input.cpp
-    LAN_PCap.cpp
-    LAN_Socket.cpp
+    PacketDispatcher.cpp
+    Net.cpp
+    Net_PCap.cpp
+    Net_Slirp.cpp
     LocalMP.cpp
     OSD_shaders.h
     font.h
     Platform.cpp
     QPathInput.h
-    ROMManager.cpp
     SaveManager.cpp
     CameraManager.cpp
-    AudioInOut.cpp
 
     ArchiveUtil.h
     ArchiveUtil.cpp
 
-    ../Util_Video.cpp
-    ../Util_Audio.cpp
-    ../FrontendUtil.h
+    ../ScreenLayout.cpp
     ../mic_blow.h
 
     ../glad/glad.c
@@ -66,11 +69,11 @@ else()
 endif()
 
 if (USE_QT6)
-    find_package(Qt6 COMPONENTS Core Gui Widgets Network Multimedia OpenGL OpenGLWidgets REQUIRED)
-    set(QT_LINK_LIBS Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Multimedia Qt6::OpenGL Qt6::OpenGLWidgets)
+    find_package(Qt6 COMPONENTS Core Gui Widgets Network Multimedia MultimediaWidgets OpenGL OpenGLWidgets REQUIRED)
+    set(QT_LINK_LIBS Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Multimedia Qt6::MultimediaWidgets Qt6::OpenGL Qt6::OpenGLWidgets)
 else()
-    find_package(Qt5 COMPONENTS Core Gui Widgets Network Multimedia REQUIRED)
-    set(QT_LINK_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Multimedia)
+    find_package(Qt5 COMPONENTS Core Gui Widgets Network Multimedia MultimediaWidgets REQUIRED)
+    set(QT_LINK_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Multimedia Qt5::MultimediaWidgets)
 endif()
 
 set(CMAKE_AUTOMOC ON)
@@ -122,6 +125,8 @@ elseif (APPLE)
         find_library(COCOA_LIB Cocoa)
         target_link_libraries(melonDS PRIVATE ${COCOA_LIB})
     endif()
+    find_library(OPENGL_LIB OpenGL)
+    target_link_libraries(melonDS PRIVATE ${OPENGL_LIB})
     target_sources(melonDS PRIVATE
         ../duckstation/gl/context_agl.mm
     )
@@ -179,6 +184,8 @@ target_link_libraries(melonDS PRIVATE PkgConfig::SDL2 PkgConfig::LibArchive PkgC
 target_link_libraries(melonDS PRIVATE ${QT_LINK_LIBS} ${CMAKE_DL_LIBS})
 
 if (WIN32)
+    option(QT_DEPLOY_FFMPEG "Bundle ffmpeg with the app on Windows" ON)
+
     option(PORTABLE "Make a portable build that looks for its configuration in the current directory" ON)
 
     if (PORTABLE)

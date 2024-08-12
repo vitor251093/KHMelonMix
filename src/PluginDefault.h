@@ -13,26 +13,43 @@ class PluginDefault : public Plugin
 public:
     PluginDefault(u32 gameCode) {GameCode = gameCode;};
 
-    bool isDebugEnabled = false;
+    void setNds(melonDS::NDS* Nds) {}
 
     std::string assetsFolder() {
         return std::to_string(GameCode);
     }
-    
-    u32 applyHotkeyToInputMask(melonDS::NDS* nds, u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) {
+
+    void onLoadState() {}
+
+    u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) {
         return InputMask;
     }
+    void applyTouchKeyMask(u32 TouchKeyMask) {}
     const char* getGameSceneName() {
         return "";
     }
-    bool shouldSkipFrame(melonDS::NDS* nds) {
+    bool shouldRenderFrame() {
+        return true;
+    }
+    bool ShouldTerminateIngameCutscene() {return false;}
+    bool StoppedIngameCutscene() {return false;}
+    bool ShouldStartReplacementCutscene() {return false;}
+    bool StartedReplacementCutscene() {return false;}
+    bool RunningReplacementCutscene() {return false;}
+    bool ShouldStopReplacementCutscene() {return false;}
+    bool ShouldReturnToGameAfterCutscene() {return false;}
+    bool ShouldUnmuteAfterCutscene() {return false;}
+    CutsceneEntry* CurrentCutscene() {return nullptr;}
+    std::string CutsceneFilePath(CutsceneEntry* cutscene) {return "";}
+    void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {}
+    void onTerminateIngameCutscene() {}
+    void onReturnToGameAfterCutscene() {}
+    void onReplacementCutsceneStarted() {}
+    void onReplacementCutsceneEnd() {}
+    bool refreshGameScene() {
         return false;
     }
-    bool refreshGameScene(melonDS::NDS* nds) {
-        return false;
-    }
-    void setAspectRatio(melonDS::NDS* nds, float aspectRatio) {
-    }
+    void setAspectRatio(float aspectRatio) {}
 };
 }
 

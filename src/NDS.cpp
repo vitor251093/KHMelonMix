@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -89,8 +89,9 @@ NDS::NDS() noexcept :
 {
 }
 
-NDS::NDS(NDSArgs&& args, int type) noexcept :
+NDS::NDS(NDSArgs&& args, int type, void* userdata) noexcept :
     ConsoleType(type),
+    UserData(userdata),
     ARM7BIOS(*args.ARM7BIOS),
     ARM9BIOS(*args.ARM9BIOS),
     ARM7BIOSNative(CRC32(ARM7BIOS.data(), ARM7BIOS.size()) == ARM7BIOSCRC32),
@@ -102,7 +103,7 @@ NDS::NDS(NDSArgs&& args, int type) noexcept :
     RTC(*this),
     Wifi(*this),
     NDSCartSlot(*this, std::move(args.NDSROM)),
-    GBACartSlot(type == 1 ? nullptr : std::move(args.GBAROM)),
+    GBACartSlot(*this, type == 1 ? nullptr : std::move(args.GBAROM)),
     AREngine(*this),
     ARM9(*this, args.GDB, args.JIT.has_value()),
     ARM7(*this, args.GDB, args.JIT.has_value()),
@@ -574,7 +575,7 @@ void NDS::Stop(Platform::StopReason reason)
 
     Log(level, "Stopping emulated console (Reason: %s)\n", StopReasonName(reason));
     Running = false;
-    Platform::SignalStop(reason);
+    Platform::SignalStop(reason, UserData);
     GPU.Stop();
     SPU.Stop();
 }
@@ -1170,8 +1171,8 @@ void NDS::SetTouchKeyMask(u32 mask)
 {
     u16 right = ((~mask) & 0xF) >> 1;
     u16 left  = ((((~mask) >> 4))  & 0xF) >> 1;
-    u16 up    = ((((~mask) >> 8))  & 0xF) >> 1;
-    u16 down  = ((((~mask) >> 12)) & 0xF) >> 1;
+    u16 down  = ((((~mask) >> 8))  & 0xF) >> 1;
+    u16 up    = ((((~mask) >> 12)) & 0xF) >> 1;
 
     u16 frames = 2;
     if (right == 3) right = (NumFrames % (8*frames) >= (6*frames)) ? 0 : 4;
@@ -1199,56 +1200,34 @@ void NDS::SetTouchKeyMask(u32 mask)
 
     if (left)
     {
-        if (TouchX <= left)
-        {
-            invalidNextPosition = true;
-        }
-        else
+        if (TouchX > left)
         {
             TouchX -= left;
         }
     }
     if (right)
     {
-        if (TouchX + right >= 255)
-        {
-            invalidNextPosition = true;
-        }
-        else
+        if (TouchX + right < 255)
         {
             TouchX += right;
         }
     }
     if (down)
     {
-        if (TouchY <= down)
-        {
-            invalidNextPosition = true;
-        }
-        else
+        if (TouchY > down)
         {
             TouchY -= down;
         }
     }
     if (up)
     {
-        if (TouchY + up >= 191)
-        {
-            invalidNextPosition = true;
-        }
-        else
+        if (TouchY + up < 191)
         {
             TouchY += up;
         }
     }
 
-    if (invalidNextPosition)
-    {
-        ReleaseScreen();
-    }
-    else {
-        TouchScreen(TouchX, TouchY);
-    }
+    TouchScreen(TouchX, TouchY);
 }
 
 bool NDS::IsLidClosed() const
@@ -1625,7 +1604,7 @@ void NDS::NocashPrint(u32 ncpu, u32 addr)
     }
 
     output[ptr] = '\0';
-    Log(LogLevel::Debug, "%s", output);
+    Log(LogLevel::Debug, "%s\n", output);
 }
 
 void NDS::MonitorARM9Jump(u32 addr)

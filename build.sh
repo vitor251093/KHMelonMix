@@ -1,3 +1,3 @@
-cmake -DUSE_SYSTEM_LIBSLIRP=ON -DCMAKE_BUILD_TYPE=Debug -B build || exit 1
+cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_QT6=ON -B build || exit 1
 cmake --build build -j$(nproc --all) || exit 1
-./build/melonDS
+./build/melonDS "roms/days.nds"
