@@ -5,7 +5,17 @@
 
 #define DEBUG_MODE_ENABLED false
 #define DEBUG_LOG_FILE_ENABLED false
-#define RAM_SEARCH_ENABLED false
+
+#define RAM_SEARCH_ENABLED true
+#define RAM_SEARCH_SIZE 8
+
+#if RAM_SEARCH_SIZE == 32
+#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read32(addr)
+#elif RAM_SEARCH_SIZE == 16
+#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read16(addr)
+#else
+#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read8(addr)
+#endif
 
 #include "NDS.h"
 
@@ -89,47 +99,48 @@ public:
     bool MainRAMState[0xFFFFFF];
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
-        if (!RAM_SEARCH_ENABLED) {
-            return;
-        }
+#if !RAM_SEARCH_ENABLED
+        return;
+#endif
 
+        int byteSize = RAM_SEARCH_SIZE/8;
         if (HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
             printf("Resetting RAM search\n");
-            for (u32 index = 0; index < 0x3FFFFF; index+=4) {
+            for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
                 u32 addr = (0x02000000 | index);
-                u32 newVal = nds->ARM7Read32(addr);
+                u32 newVal = RAM_SEARCH_READ(nds, addr);
                 MainRAMState[index] = true;
                 LastMainRAM[index] = newVal;
             }
         }
         if (HotkeyPress & (1 << 13)) { // HK_VolumeUp (filter RAM by equal values)
             printf("Filtering RAM by equal values\n");
-            for (u32 index = 0; index < 0x3FFFFF; index+=4) {
+            for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
                 u32 addr = (0x02000000 | index);
-                u32 newVal = nds->ARM7Read32(addr);
+                u32 newVal = RAM_SEARCH_READ(nds, addr);
                 MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] == newVal);
                 LastMainRAM[index] = newVal;
             }
         }
         if (HotkeyPress & (1 << 14)) { // HK_VolumeDown (filter RAM by different values)
             printf("Filtering RAM by different values\n");
-            for (u32 index = 0; index < 0x3FFFFF; index+=4) {
+            for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
                 u32 addr = (0x02000000 | index);
-                u32 newVal = nds->ARM7Read32(addr);
+                u32 newVal = RAM_SEARCH_READ(nds, addr);
                 MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] != newVal);
                 LastMainRAM[index] = newVal;
             }
         }
         if (HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
             int total = 0;
-            for (u32 index = 0; index < 0x3FFFFF; index+=4) {
+            for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
                 if (MainRAMState[index]) {
                     total += 1;
                 }
             }
             printf("Addresses matching the search: %d\n", total);
-            if (total < 50 && total > 0) {
-                for (u32 index = 0; index < 0x3FFFFF; index+=4) {
+            if (total < 50*(4/byteSize) && total > 0) {
+                for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
                     u32 addr = (0x02000000 | index);
                     if (MainRAMState[index]) {
                         printf("0x%08x: %d\n", addr, LastMainRAM[index]);
