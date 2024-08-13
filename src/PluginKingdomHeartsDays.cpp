@@ -573,9 +573,6 @@ int PluginKingdomHeartsDays::detectGameScene()
     // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
     bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
 
-    // 3D element mimicking 2D behavior
-    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 20;
-
     bool wasSaveLoaded = isSaveLoaded();
     bool muchOlderHad3DOnTopScreen = _muchOlderHad3DOnTopScreen;
     bool muchOlderHad3DOnBottomScreen = _muchOlderHad3DOnBottomScreen;
@@ -716,15 +713,8 @@ int PluginKingdomHeartsDays::detectGameScene()
         return gameScene_InGameMenu;
     }
 
-    if (doesntLook3D)
+    if (nds->GPU.GPU3D.RenderNumPolygons < 20)
     {
-        // Day 50 specific condition
-        if (GameScene == gameScene_InGameWithMap && nds->GPU.GPU2D_B.BlendCnt == 172 && nds->GPU.GPU2D_B.BlendAlpha == 16 &&
-                                                    nds->GPU.GPU2D_B.EVA == 16 && nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0)
-        {
-            return gameScene_InGameWithMap;
-        }
-
         if (isDaysCounter)
         {
             return gameScene_DayCounter;
@@ -734,9 +724,6 @@ int PluginKingdomHeartsDays::detectGameScene()
         {
             return gameScene_RoxasThoughts;
         }
-
-        // Unknown 2D
-        return gameScene_Other2D;
     }
 
     // Tutorial
