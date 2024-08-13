@@ -17,6 +17,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C9C
 
+// 0x2C => intro and main menu
+#define IS_MAIN_MENU_US      0x0204242d
+#define IS_MAIN_MENU_EU      0x0204242d // TODO: KH
+#define IS_MAIN_MENU_JP      0x0204242d // TODO: KH
+#define IS_MAIN_MENU_JP_REV1 0x0204242d // TODO: KH
+
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US      0x02044640
 #define IS_CUTSCENE_EU      0x02044660
@@ -582,8 +588,9 @@ int PluginKingdomHeartsDays::detectGameScene()
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);
 
-    bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04;
+    bool isMainMenuOrIntro = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP, IS_MAIN_MENU_JP_REV1)) == 0x2C;
     bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP, IS_CUTSCENE_JP_REV1)) == 0x03;
+    bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04;
     bool isLoadMenu = nds->ARM7Read8(getAddressByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1)) ==
         getAddressByCart(LOAD_MENU_MAIN_MENU_VIEW_US, LOAD_MENU_MAIN_MENU_VIEW_EU, LOAD_MENU_MAIN_MENU_VIEW_JP, LOAD_MENU_MAIN_MENU_VIEW_JP_REV1);
 
@@ -592,15 +599,52 @@ int PluginKingdomHeartsDays::detectGameScene()
         return gameScene_Cutscene;
     }
 
-    if (has3DOnBothScreens)
+    if (isMainMenuOrIntro)
     {
-        // Needed by opening cutscene triggered by being idle
-        bool isMainMenu = GameScene == gameScene_MainMenu && !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
-        if (isMainMenu)
+        if (!wasSaveLoaded && has3DOnTopScreen && !has3DOnBottomScreen)
         {
-            return gameScene_MainMenu;
+            if (isLoadMenu)
+            {
+                return gameScene_IntroLoadMenu;
+            }
+            
+            bool mayBeMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
+
+            if (GameScene == gameScene_IntroLoadMenu)
+            {
+                if (mayBeMainMenu)
+                {
+                    return gameScene_MainMenu;
+                }
+            }
+
+            if (GameScene == gameScene_MainMenu)
+            {
+                mayBeMainMenu = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
+                if (mayBeMainMenu) {
+                    return gameScene_MainMenu;
+                }
+            }
+
+            // Main menu
+            if (mayBeMainMenu)
+            {
+                return gameScene_MainMenu;
+            }
+
+            // Intro
+            if (GameScene == -1 || GameScene == gameScene_Intro)
+            {
+                mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
+                return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
+            }
         }
 
+        return gameScene_MainMenu;
+    }
+
+    if (has3DOnBothScreens)
+    {
         bool isMissionVictory = (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 0) ||
                                 (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 130) ||
                                 (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 2625) ||
@@ -627,17 +671,6 @@ int PluginKingdomHeartsDays::detectGameScene()
 
         if (nds->GPU.GPU3D.RenderNumPolygons < 20)
         {
-            // Opening cutscene
-            if (GameScene == gameScene_MainMenu)
-            {
-                // Needed by opening cutscene triggered by being idle
-                bool isMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
-                if (isMainMenu)
-                {
-                    return gameScene_MainMenu;
-                }
-            }
-
             if (nds->GPU.GPU2D_B.BlendCnt == 143 && nds->GPU.GPU2D_B.BlendAlpha == 16)
             {
                 return gameScene_LoadingScreen;
@@ -654,45 +687,10 @@ int PluginKingdomHeartsDays::detectGameScene()
     }
     else if (!wasSaveLoaded)
     {
-        bool mayBeMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
-
-        if (isLoadMenu)
-        {
-            return gameScene_IntroLoadMenu;
-        }
-        if (GameScene == gameScene_IntroLoadMenu)
-        {
-            if (mayBeMainMenu)
-            {
-                return gameScene_MainMenu;
-            }
-        }
-
-        if (GameScene == gameScene_MainMenu)
-        {
-            mayBeMainMenu = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
-            if (mayBeMainMenu) {
-                return gameScene_MainMenu;
-            }
-        }
-
-        // Main menu
-        if (mayBeMainMenu)
-        {
-            return gameScene_MainMenu;
-        }
-
         // Intro
         if (GameScene == -1 || GameScene == gameScene_Intro)
         {
-            mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
-            return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
-        }
-
-        mayBeMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0;
-        if (mayBeMainMenu)
-        {
-            return gameScene_MainMenu;
+            return gameScene_Intro;
         }
     }
 

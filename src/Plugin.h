@@ -165,7 +165,12 @@ public:
                         else {
                             int validDistance = RAM_SEARCH_INTERVAL_MARGIN;
                             if (firstAddr != 0 && firstAddr < (addr - byteSize*(validDistance - 1))) {
-                                printf("0x%08x - 0x%08x\n", firstAddr, addr - byteSize*validDistance);
+                                if (firstAddr == addr - byteSize*validDistance) {
+                                    printf("0x%08x\n", firstAddr);
+                                }
+                                else {
+                                    printf("0x%08x - 0x%08x\n", firstAddr, addr - byteSize*validDistance);
+                                }
                                 firstAddr = 0;
                             }
                         }
