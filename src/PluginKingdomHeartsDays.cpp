@@ -39,6 +39,16 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MISSION_JP      0x0204C67C
 #define CURRENT_MISSION_JP_REV1 0x0204C63C
 
+#define CURRENT_MAIN_MENU_VIEW_US      0x0205ac04
+#define CURRENT_MAIN_MENU_VIEW_EU      0x0205ac24
+#define CURRENT_MAIN_MENU_VIEW_JP      0x0205a5e4
+#define CURRENT_MAIN_MENU_VIEW_JP_REV1 0x0205a5a5
+
+#define LOAD_MENU_MAIN_MENU_VIEW_US      0xB0
+#define LOAD_MENU_MAIN_MENU_VIEW_EU      0xD0
+#define LOAD_MENU_MAIN_MENU_VIEW_JP      0xD0
+#define LOAD_MENU_MAIN_MENU_VIEW_JP_REV1 0x36
+
 #define CUTSCENE_ADDRESS_US      0x02093A4C
 #define CUTSCENE_ADDRESS_EU      0x02093A6C
 #define CUTSCENE_ADDRESS_JP      0x0209394C
@@ -49,10 +59,10 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CUTSCENE_ADDRESS_2_JP      0x02093994
 #define CUTSCENE_ADDRESS_2_JP_REV1 0x02093954
 
-#define CURRENT_MAIN_MENU_VIEW_US      0x020b572c
-#define CURRENT_MAIN_MENU_VIEW_EU      0x020b574c
-#define CURRENT_MAIN_MENU_VIEW_JP      0x020b19ac
-#define CURRENT_MAIN_MENU_VIEW_JP_REV1 0x020b196c
+#define CURRENT_INGAME_MENU_VIEW_US      0x020b572c
+#define CURRENT_INGAME_MENU_VIEW_EU      0x020b574c
+#define CURRENT_INGAME_MENU_VIEW_JP      0x020b19ac
+#define CURRENT_INGAME_MENU_VIEW_JP_REV1 0x020b196c
 
 #define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
 #define CURRENT_MAP_FROM_WORLD_EU      0x02189CC6
@@ -574,6 +584,8 @@ int PluginKingdomHeartsDays::detectGameScene()
 
     bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04;
     bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP, IS_CUTSCENE_JP_REV1)) == 0x03;
+    bool isLoadMenu = nds->ARM7Read8(getAddressByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1)) ==
+        getAddressByCart(LOAD_MENU_MAIN_MENU_VIEW_US, LOAD_MENU_MAIN_MENU_VIEW_EU, LOAD_MENU_MAIN_MENU_VIEW_JP, LOAD_MENU_MAIN_MENU_VIEW_JP_REV1);
 
     if (isCutscene)
     {
@@ -642,15 +654,9 @@ int PluginKingdomHeartsDays::detectGameScene()
     }
     else if (!wasSaveLoaded)
     {
-        // Intro load menu
-        bool isIntroLoadMenu = (nds->GPU.GPU2D_B.BlendCnt == 4164 || nds->GPU.GPU2D_B.BlendCnt == 4161) &&
-            (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) &&
-            nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
-            (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
-            (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
         bool mayBeMainMenu = !wasSaveLoaded && nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
 
-        if (isIntroLoadMenu)
+        if (isLoadMenu)
         {
             return gameScene_IntroLoadMenu;
         }
@@ -659,10 +665,6 @@ int PluginKingdomHeartsDays::detectGameScene()
             if (mayBeMainMenu)
             {
                 return gameScene_MainMenu;
-            }
-            if (nds->GPU.GPU3D.NumVertices != 8)
-            {
-                return gameScene_IntroLoadMenu;
             }
         }
 
@@ -1090,7 +1092,7 @@ u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
         return 0;
     }
 
-    u8 val = nds->ARM7Read8(getAddressByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1));
+    u8 val = nds->ARM7Read8(getAddressByCart(CURRENT_INGAME_MENU_VIEW_US, CURRENT_INGAME_MENU_VIEW_EU, CURRENT_INGAME_MENU_VIEW_JP, CURRENT_INGAME_MENU_VIEW_JP_REV1));
     if (val == 0x00) return 1;
     if (val == 0x02) return 2;
     if (val == 0x01) return 3;
@@ -1187,6 +1189,10 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
 
 void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
+    // PRINT_AS_8_BIT_HEX(0x0205ac04);
+    // PRINT_AS_8_BIT_HEX(0x020d73e4);
+    // printf("\n");
+
     if (!DEBUG_MODE_ENABLED) {
         return;
     }
