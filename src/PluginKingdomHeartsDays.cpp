@@ -45,6 +45,16 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MISSION_JP      0x0204C67C
 #define CURRENT_MISSION_JP_REV1 0x0204C63C
 
+#define IS_DAYS_COUNTER_US      0x0204f6c5
+#define IS_DAYS_COUNTER_EU      0x0204f6e5
+#define IS_DAYS_COUNTER_JP      0x020508a9
+#define IS_DAYS_COUNTER_JP_REV1 0x02050869
+
+#define IS_DAYS_COUNTER_VALUE_US      0x00
+#define IS_DAYS_COUNTER_VALUE_EU      0x00
+#define IS_DAYS_COUNTER_VALUE_JP      0x10
+#define IS_DAYS_COUNTER_VALUE_JP_REV1 0x10
+
 #define CURRENT_MAIN_MENU_VIEW_US      0x0205ac04
 #define CURRENT_MAIN_MENU_VIEW_EU      0x0205ac24
 #define CURRENT_MAIN_MENU_VIEW_JP      0x0205a5e4
@@ -594,6 +604,8 @@ int PluginKingdomHeartsDays::detectGameScene()
     bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04;
     bool isLoadMenu = nds->ARM7Read8(getAddressByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1)) ==
         getAddressByCart(LOAD_MENU_MAIN_MENU_VIEW_US, LOAD_MENU_MAIN_MENU_VIEW_EU, LOAD_MENU_MAIN_MENU_VIEW_JP, LOAD_MENU_MAIN_MENU_VIEW_JP_REV1);
+    bool isDaysCounter = nds->ARM7Read8(getAddressByCart(IS_DAYS_COUNTER_US, IS_DAYS_COUNTER_EU, IS_DAYS_COUNTER_JP, IS_DAYS_COUNTER_JP_REV1)) ==
+        getAddressByCart(IS_DAYS_COUNTER_VALUE_US, IS_DAYS_COUNTER_VALUE_EU, IS_DAYS_COUNTER_VALUE_JP, IS_DAYS_COUNTER_VALUE_JP_REV1);
 
     if (isCutscene)
     {
@@ -643,6 +655,10 @@ int PluginKingdomHeartsDays::detectGameScene()
 
         return gameScene_MainMenu;
     }
+    if (!wasSaveLoaded && (GameScene == -1 || GameScene == gameScene_Intro))
+    {
+        return gameScene_Intro;
+    }
 
     if (has3DOnBothScreens)
     {
@@ -686,14 +702,6 @@ int PluginKingdomHeartsDays::detectGameScene()
         // Unknown 2D
         return gameScene_Other2D;
     }
-    else if (!wasSaveLoaded)
-    {
-        // Intro
-        if (GameScene == -1 || GameScene == gameScene_Intro)
-        {
-            return gameScene_Intro;
-        }
-    }
 
     bool isShop = (nds->GPU.GPU3D.RenderNumPolygons == 264 && nds->GPU.GPU2D_A.BlendCnt == 0 && 
                    nds->GPU.GPU2D_B.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendAlpha == 16) ||
@@ -717,25 +725,9 @@ int PluginKingdomHeartsDays::detectGameScene()
             return gameScene_InGameWithMap;
         }
 
-        // Day counter
-        if (GameScene == gameScene_DayCounter && !no3D)
+        if (isDaysCounter)
         {
             return gameScene_DayCounter;
-        }
-        if (GameScene != gameScene_Intro)
-        {
-            if (nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1)
-            {
-                return gameScene_DayCounter; // 1 digit
-            }
-            if (nds->GPU.GPU3D.NumVertices == 8 && nds->GPU.GPU3D.NumPolygons == 2 && nds->GPU.GPU3D.RenderNumPolygons == 2)
-            {
-                return gameScene_DayCounter; // 2 digits
-            }
-            if (nds->GPU.GPU3D.NumVertices == 12 && nds->GPU.GPU3D.NumPolygons == 3 && nds->GPU.GPU3D.RenderNumPolygons == 3)
-            {
-                return gameScene_DayCounter; // 3 digits
-            }
         }
 
         if (nds->GPU.GPU2D_B.MasterBrightness == 32784)
