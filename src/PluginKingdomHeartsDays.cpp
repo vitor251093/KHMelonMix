@@ -17,25 +17,21 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C9C
 
-#define CURRENT_MISSION_US      0x0204C21C
-#define CURRENT_MISSION_EU      0x0204C23C
-#define CURRENT_MISSION_JP      0x0204C67C
-#define CURRENT_MISSION_JP_REV1 0x0204C63C
-
-#define CURRENT_MAIN_MENU_VIEW_US      0x020b572c
-#define CURRENT_MAIN_MENU_VIEW_EU      0x020b574c
-#define CURRENT_MAIN_MENU_VIEW_JP      0x020b19ac
-#define CURRENT_MAIN_MENU_VIEW_JP_REV1 0x020b196c
+// 0x80 => playable (example: ingame); 0x04 => not playable (menus)
+#define IS_PLAYABLE_AREA_US      0x020446c6
+#define IS_PLAYABLE_AREA_EU      0x020446e6
+#define IS_PLAYABLE_AREA_JP      0x02044b26
+#define IS_PLAYABLE_AREA_JP_REV1 0x02044ae6
 
 #define CURRENT_WORLD_US      0x0204C2CF
 #define CURRENT_WORLD_EU      0x0204C2EF
 #define CURRENT_WORLD_JP      0x0204C72F
 #define CURRENT_WORLD_JP_REV1 0x0204C6EF
 
-#define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
-#define CURRENT_MAP_FROM_WORLD_EU      0x02189CC6
-#define CURRENT_MAP_FROM_WORLD_JP      0x02187FC6
-#define CURRENT_MAP_FROM_WORLD_JP_REV1 0x02188046
+#define CURRENT_MISSION_US      0x0204C21C
+#define CURRENT_MISSION_EU      0x0204C23C
+#define CURRENT_MISSION_JP      0x0204C67C
+#define CURRENT_MISSION_JP_REV1 0x0204C63C
 
 #define CUTSCENE_ADDRESS_US      0x02093A4C
 #define CUTSCENE_ADDRESS_EU      0x02093A6C
@@ -46,6 +42,16 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CUTSCENE_ADDRESS_2_EU      0x02093AB4
 #define CUTSCENE_ADDRESS_2_JP      0x02093994
 #define CUTSCENE_ADDRESS_2_JP_REV1 0x02093954
+
+#define CURRENT_MAIN_MENU_VIEW_US      0x020b572c
+#define CURRENT_MAIN_MENU_VIEW_EU      0x020b574c
+#define CURRENT_MAIN_MENU_VIEW_JP      0x020b19ac
+#define CURRENT_MAIN_MENU_VIEW_JP_REV1 0x020b196c
+
+#define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
+#define CURRENT_MAP_FROM_WORLD_EU      0x02189CC6
+#define CURRENT_MAP_FROM_WORLD_JP      0x02187FC6
+#define CURRENT_MAP_FROM_WORLD_JP_REV1 0x02188046
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
@@ -571,9 +577,6 @@ int PluginKingdomHeartsDays::detectGameScene()
     bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
-    // The second screen can still look black and not be empty (invisible elements)
-    bool noElementsOnBottomScreen = nds->GPU.GPU2D_B.BlendCnt == 0;
-
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);
@@ -842,53 +845,9 @@ int PluginKingdomHeartsDays::detectGameScene()
         return gameScene_Tutorial;
     }
 
-    bool inGameMenu = (nds->GPU.GPU3D.NumVertices > 940 || nds->GPU.GPU3D.NumVertices == 0) &&
-                        nds->GPU.GPU3D.RenderNumPolygons > 340 && nds->GPU.GPU3D.RenderNumPolygons < 370 &&
-                        (nds->GPU.GPU2D_A.BlendCnt == 0 || nds->GPU.GPU2D_A.BlendCnt == 2625) && nds->GPU.GPU2D_B.BlendCnt == 0;
-    if (inGameMenu)
+    if (nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04)
     {
         return gameScene_InGameMenu;
-    }
-
-    // After exiting a mission from Mission Mode
-    inGameMenu = (nds->GPU.GPU3D.NumVertices > 940 || nds->GPU.GPU3D.NumVertices == 0) &&
-                    nds->GPU.GPU3D.RenderNumPolygons > 370 && nds->GPU.GPU3D.RenderNumPolygons < 400 &&
-                    (nds->GPU.GPU2D_A.BlendCnt == 0 || nds->GPU.GPU2D_A.BlendCnt == 2625) && nds->GPU.GPU2D_B.BlendCnt == 0;
-    if (inGameMenu)
-    {
-        return gameScene_InGameMenu;
-    }
-
-    // Story Mode - Normal missions
-    bool inHoloMissionMenu = ((nds->GPU.GPU3D.NumVertices == 344 && nds->GPU.GPU3D.NumPolygons == 89 && nds->GPU.GPU3D.RenderNumPolygons == 89) ||
-                                (nds->GPU.GPU3D.NumVertices == 348 && nds->GPU.GPU3D.NumPolygons == 90 && nds->GPU.GPU3D.RenderNumPolygons == 90)) &&
-                                nds->GPU.GPU2D_A.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendCnt == 0;
-    if (inHoloMissionMenu || GameScene == gameScene_InHoloMissionMenu)
-    {
-        return gameScene_InHoloMissionMenu;
-    }
-
-    // Story Mode - Normal missions - Day 357
-    inHoloMissionMenu = ((nds->GPU.GPU3D.NumVertices == 332 && nds->GPU.GPU3D.NumPolygons == 102 && nds->GPU.GPU3D.RenderNumPolygons == 102) ||
-                            (nds->GPU.GPU3D.NumVertices == 340 && nds->GPU.GPU3D.NumPolygons == 104 && nds->GPU.GPU3D.RenderNumPolygons == 104)) &&
-                        nds->GPU.GPU2D_A.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendCnt == 0;
-    if (inHoloMissionMenu || GameScene == gameScene_InHoloMissionMenu)
-    {
-        return gameScene_InHoloMissionMenu;
-    }
-
-    // Mission Mode / Story Mode - Challenges
-    inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && (nds->GPU.GPU2D_B.BlendCnt >= 143 && nds->GPU.GPU2D_B.BlendCnt <= 207);
-    if (inHoloMissionMenu)
-    {
-        return gameScene_InHoloMissionMenu;
-    }
-
-    // I can't remember
-    inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 2625 && nds->GPU.GPU2D_B.BlendCnt == 0;
-    if (inHoloMissionMenu)
-    {
-        return gameScene_InHoloMissionMenu;
     }
 
     // Pause Menu
@@ -900,12 +859,6 @@ int PluginKingdomHeartsDays::detectGameScene()
     else if (GameScene == gameScene_PauseMenu)
     {
         return PriorGameScene;
-    }
-
-    // Regular gameplay without a map
-    if (noElementsOnBottomScreen)
-    {
-        return gameScene_InGameWithoutMap;
     }
 
     // Regular gameplay with a map

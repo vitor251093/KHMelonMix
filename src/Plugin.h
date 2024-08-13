@@ -10,6 +10,7 @@
 #define RAM_SEARCH_SIZE 8
 #define RAM_SEARCH_LIMIT_MIN 0
 #define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
+#define RAM_SEARCH_INTERVAL_MARGIN 0x200
 
 #if RAM_SEARCH_SIZE == 32
 #define RAM_SEARCH_READ(nds,addr) nds->ARM7Read32(addr)
@@ -152,7 +153,7 @@ public:
                     }
                     printf("\n");
                 }
-                else if (total < 100000) {
+                else {
                     u32 firstAddr = 0;
                     for (u32 index = (limitMin == 0 ? byteSize : limitMin); index < limitMax; index += byteSize) {
                         u32 addr = (0x02000000 | index);
@@ -162,7 +163,7 @@ public:
                             }
                         }
                         else {
-                            int validDistance = 0x200;
+                            int validDistance = RAM_SEARCH_INTERVAL_MARGIN;
                             if (firstAddr != 0 && firstAddr < (addr - byteSize*(validDistance - 1))) {
                                 printf("0x%08x - 0x%08x\n", firstAddr, addr - byteSize*validDistance);
                                 firstAddr = 0;
