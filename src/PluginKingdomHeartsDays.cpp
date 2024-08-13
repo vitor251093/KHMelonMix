@@ -77,10 +77,10 @@ enum
     gameScene_DayCounter,               // 3
     gameScene_Cutscene,                 // 4
     gameScene_InGameWithMap,            // 5
-    gameScene_InGameWithoutMap,         // 6
+    gameScene_InGameWithoutMap,         // 6 (deprecated)
     gameScene_InGameMenu,               // 7
-    gameScene_InGameSaveMenu,           // 8
-    gameScene_InHoloMissionMenu,        // 9
+    gameScene_InGameSaveMenu,           // 8 (deprecated)
+    gameScene_InHoloMissionMenu,        // 9 (deprecated)
     gameScene_PauseMenu,                // 10
     gameScene_Tutorial,                 // 11
     gameScene_InGameWithCutscene,       // 12
@@ -224,14 +224,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     int gameScene = GameScene;
-    int priorGameScene = PriorGameScene;
-    if (GameScene == gameScene_InGameSaveMenu || GameScene == gameScene_InHoloMissionMenu) {
-        gameScene = gameScene_InGameMenu;
-    }
-    if (PriorGameScene == gameScene_InGameSaveMenu || PriorGameScene == gameScene_InHoloMissionMenu) {
-        priorGameScene = gameScene_InGameMenu;
-    }
-    if (priorGameScene == gameScene_InGameMenu && gameScene == gameScene_Cutscene) {
+    if (PriorGameScene == gameScene_InGameMenu && GameScene == gameScene_Cutscene) {
         gameScene = gameScene_InGameMenu;
     }
 
@@ -304,7 +297,7 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
         hudToggle();
     }
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
         if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) { // D-pad
             u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
@@ -449,10 +442,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_DayCounter: return "Game scene: Day counter";
         case gameScene_Cutscene: return "Game scene: Cutscene";
         case gameScene_InGameWithMap: return "Game scene: Ingame (with minimap)";
-        case gameScene_InGameWithoutMap: return "Game scene: Ingame (without minimap)";
         case gameScene_InGameMenu: return "Game scene: Ingame menu";
-        case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
-        case gameScene_InHoloMissionMenu: return "Game scene: Holo mission menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_Tutorial: return "Game scene: Tutorial";
         case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
@@ -613,13 +603,13 @@ int PluginKingdomHeartsDays::detectGameScene()
     }
     else if (has3DOnBottomScreen)
     {
+        if (nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04)
+        {
+            return gameScene_InGameMenu;
+        }
+
         if (nds->GPU.GPU3D.RenderNumPolygons < 20)
         {
-            if (GameScene == gameScene_InGameMenu)
-            {
-                return gameScene_InGameMenu;
-            }
-
             // Opening cutscene
             if (GameScene == gameScene_MainMenu)
             {
@@ -643,22 +633,12 @@ int PluginKingdomHeartsDays::detectGameScene()
                 }
             }
 
-            if (nds->GPU.GPU3D.RenderNumPolygons > 0)
-            {
-                return gameScene_InGameMenu;
-            }
-
             if (nds->GPU.GPU2D_B.BlendCnt == 143 && nds->GPU.GPU2D_B.BlendAlpha == 16)
             {
                 return gameScene_LoadingScreen;
             }
 
             return gameScene_Cutscene;
-        }
-
-        if (nds->GPU.GPU3D.RenderNumPolygons < 100)
-        {
-            return gameScene_InGameMenu;
         }
 
         // Unknown
@@ -754,15 +734,13 @@ int PluginKingdomHeartsDays::detectGameScene()
         return gameScene_Shop;
     }
 
+    if (nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04)
+    {
+        return gameScene_InGameMenu;
+    }
+
     if (doesntLook3D)
     {
-        // Mission Mode / Story Mode - Challenges
-        bool inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && (nds->GPU.GPU2D_B.BlendCnt >= 143 && nds->GPU.GPU2D_B.BlendCnt <= 207);
-        if (inHoloMissionMenu)
-        {
-            return gameScene_InHoloMissionMenu;
-        }
-
         // Day 50 specific condition
         if (GameScene == gameScene_InGameWithMap && nds->GPU.GPU2D_B.BlendCnt == 172 && nds->GPU.GPU2D_B.BlendAlpha == 16 &&
                                                     nds->GPU.GPU2D_B.EVA == 16 && nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0)
@@ -789,16 +767,6 @@ int PluginKingdomHeartsDays::detectGameScene()
             {
                 return gameScene_DayCounter; // 3 digits
             }
-        }
-
-        // In Game Save Menu
-        bool isGameSaveMenu = nds->GPU.GPU2D_A.BlendCnt == 4164 && (nds->GPU.GPU2D_B.EVA == 0 || nds->GPU.GPU2D_B.EVA == 16) && 
-             nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0 &&
-            (nds->GPU.GPU2D_A.EVA < 10 && nds->GPU.GPU2D_A.EVA >= 2) && 
-            (nds->GPU.GPU2D_A.EVB >  7 && nds->GPU.GPU2D_A.EVB <= 14);
-        if (isGameSaveMenu) 
-        {
-            return gameScene_InGameSaveMenu;
         }
 
         // Bottom cutscene
@@ -843,11 +811,6 @@ int PluginKingdomHeartsDays::detectGameScene()
     if (inTutorialScreenWithoutWarningOnTop)
     {
         return gameScene_Tutorial;
-    }
-
-    if (nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04)
-    {
-        return gameScene_InGameMenu;
     }
 
     // Pause Menu
