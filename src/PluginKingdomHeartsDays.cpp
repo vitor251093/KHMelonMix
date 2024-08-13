@@ -19,9 +19,9 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 // 0x2C => intro and main menu
 #define IS_MAIN_MENU_US      0x0204242d
-#define IS_MAIN_MENU_EU      0x0204242d // TODO: KH
-#define IS_MAIN_MENU_JP      0x0204242d // TODO: KH
-#define IS_MAIN_MENU_JP_REV1 0x0204242d // TODO: KH
+#define IS_MAIN_MENU_EU      0x0204244d
+#define IS_MAIN_MENU_JP      0x0204288d
+#define IS_MAIN_MENU_JP_REV1 0x0204284d
 
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US      0x02044640
@@ -588,7 +588,8 @@ int PluginKingdomHeartsDays::detectGameScene()
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);
 
-    bool isMainMenuOrIntro = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP, IS_MAIN_MENU_JP_REV1)) == 0x2C;
+    u8 mainMenuOrIntroOrLoadMenuVal = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP, IS_MAIN_MENU_JP_REV1));
+    bool isMainMenuOrIntroOrLoadMenu = mainMenuOrIntroOrLoadMenuVal == 0x28 || mainMenuOrIntroOrLoadMenuVal == 0x2C;
     bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP, IS_CUTSCENE_JP_REV1)) == 0x03;
     bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04;
     bool isLoadMenu = nds->ARM7Read8(getAddressByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1)) ==
@@ -599,7 +600,7 @@ int PluginKingdomHeartsDays::detectGameScene()
         return gameScene_Cutscene;
     }
 
-    if (isMainMenuOrIntro)
+    if (isMainMenuOrIntroOrLoadMenu)
     {
         if (!wasSaveLoaded && has3DOnTopScreen && !has3DOnBottomScreen)
         {
