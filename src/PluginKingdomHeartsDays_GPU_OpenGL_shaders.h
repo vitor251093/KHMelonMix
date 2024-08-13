@@ -862,22 +862,16 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
     if (GameScene == 7) { // gameScene_InGameMenu
-        if (MainMenuView == 3) { // holo-mission
+        if (MainMenuView == 3) { // holo-mission / challenges
             return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
         }
-        if (MainMenuView == 4) { // challenges
+        if (MainMenuView == 4) { // roxas's diary / enemy profile
             return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
         }
-        if (MainMenuView == 5) { // roxas's diary
-            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
-        }
-        if (MainMenuView == 6) { // enemy profile
-            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
-        }
-        if (MainMenuView == 8) { // config
+        if (MainMenuView == 6) { // config
             return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(255, 191)));
         }
-        if (MainMenuView == 9) { // save
+        if (MainMenuView == 7) { // save
             return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(255, 191)));
         }
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 191)));
@@ -1057,19 +1051,13 @@ ivec4 getTopScreen3DColor()
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
     if (GameScene == 7) { // gameScene_InGameMenu
-        if (MainMenuView == 3) { // holo-mission
+        if (MainMenuView == 3) { // holo-mission / challenges
             return getHorizontalDualScreen3DColor(xpos, ypos);
         }
-        if (MainMenuView == 4) { // challenges
+        if (MainMenuView == 4) { // roxas's diary / enemy profile
             return getHorizontalDualScreen3DColor(xpos, ypos);
         }
-        if (MainMenuView == 5) { // roxas's diary
-            return getHorizontalDualScreen3DColor(xpos, ypos);
-        }
-        if (MainMenuView == 6) { // enemy profile
-            return getHorizontalDualScreen3DColor(xpos, ypos);
-        }
-        if (MainMenuView == 9) { // save
+        if (MainMenuView == 7) { // save
             return getSingleSquaredScreen3DColor(xpos, ypos);
         }
         return getHorizontalDualScreen3DColor(xpos, ypos);

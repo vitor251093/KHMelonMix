@@ -22,10 +22,10 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MISSION_JP      0x0204C67C
 #define CURRENT_MISSION_JP_REV1 0x0204C63C
 
-#define CURRENT_MAIN_MENU_VIEW_US      0x0219f3e8
-#define CURRENT_MAIN_MENU_VIEW_EU      0x0219f3e8 // TODO: KH
-#define CURRENT_MAIN_MENU_VIEW_JP      0x0219f3e8 // TODO: KH
-#define CURRENT_MAIN_MENU_VIEW_JP_REV1 0x0219f3e8 // TODO: KH
+#define CURRENT_MAIN_MENU_VIEW_US      0x020b572c
+#define CURRENT_MAIN_MENU_VIEW_EU      0x020b574c
+#define CURRENT_MAIN_MENU_VIEW_JP      0x020b19ac
+#define CURRENT_MAIN_MENU_VIEW_JP_REV1 0x020b196c
 
 #define CURRENT_WORLD_US      0x0204C2CF
 #define CURRENT_WORLD_EU      0x0204C2EF
@@ -1212,13 +1212,11 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
 // 0 -> none
 // 1 -> main menu root
 // 2 -> panel
-// 3 -> holo-mission
-// 4 -> challenges
-// 5 -> roxas's diary
-// 6 -> enemy profile
-// 7 -> tutorials
-// 8 -> config
-// 9 -> save
+// 3 -> holo-mission / challenges
+// 4 -> roxas's diary / enemy profile
+// 5 -> tutorials
+// 6 -> config
+// 7 -> save
 u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
 {
     if (GameScene == -1)
@@ -1227,15 +1225,13 @@ u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
     }
 
     u8 val = nds->ARM7Read8(getAddressByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1));
-    if (val == 0x5c) return 1;
-    if (val == 0x00) return 2;
-    if (val == 0xc0) return 3;
-    if (val == 0x40) return 4;
-    if (val == 0x20) return 5;
-    if (val == 0x28) return 6;
-    if (val == 0x14) return 7;
-    if (val == 0xcc) return 8;
-    if (val == 0xa0) return 9;
+    if (val == 0x00) return 1;
+    if (val == 0x02) return 2;
+    if (val == 0x01) return 3;
+    if (val == 0x07) return 4;
+    if (val == 0x06) return 5;
+    if (val == 0x05) return 6;
+    if (val == 0x04) return 7;
     return 0;
 }
 

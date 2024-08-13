@@ -6,8 +6,10 @@
 #define DEBUG_MODE_ENABLED false
 #define DEBUG_LOG_FILE_ENABLED false
 
-#define RAM_SEARCH_ENABLED false
+#define RAM_SEARCH_ENABLED true
 #define RAM_SEARCH_SIZE 8
+#define RAM_SEARCH_LIMIT_MIN 0
+#define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
 
 #if RAM_SEARCH_SIZE == 32
 #define RAM_SEARCH_READ(nds,addr) nds->ARM7Read32(addr)
@@ -104,9 +106,11 @@ public:
 #endif
 
         int byteSize = RAM_SEARCH_SIZE/8;
+        u32 limitMin = RAM_SEARCH_LIMIT_MIN;
+        u32 limitMax = RAM_SEARCH_LIMIT_MAX;
         if (HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
             printf("Resetting RAM search\n");
-            for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
+            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                 u32 addr = (0x02000000 | index);
                 u32 newVal = RAM_SEARCH_READ(nds, addr);
                 MainRAMState[index] = true;
@@ -115,7 +119,7 @@ public:
         }
         if (HotkeyPress & (1 << 13)) { // HK_VolumeUp (filter RAM by equal values)
             printf("Filtering RAM by equal values\n");
-            for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
+            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                 u32 addr = (0x02000000 | index);
                 u32 newVal = RAM_SEARCH_READ(nds, addr);
                 MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] == newVal);
@@ -124,7 +128,7 @@ public:
         }
         if (HotkeyPress & (1 << 14)) { // HK_VolumeDown (filter RAM by different values)
             printf("Filtering RAM by different values\n");
-            for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
+            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                 u32 addr = (0x02000000 | index);
                 u32 newVal = RAM_SEARCH_READ(nds, addr);
                 MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] != newVal);
@@ -133,14 +137,14 @@ public:
         }
         if (HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
             int total = 0;
-            for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
+            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                 if (MainRAMState[index]) {
                     total += 1;
                 }
             }
             if (total > 0) {
                 if (total < 50*(4/byteSize)) {
-                    for (u32 index = 0; index < 0x3FFFFF; index+=byteSize) {
+                    for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                         u32 addr = (0x02000000 | index);
                         if (MainRAMState[index]) {
                             printf("0x%08x: %d\n", addr, LastMainRAM[index]);
@@ -150,7 +154,7 @@ public:
                 }
                 else if (total < 100000) {
                     u32 firstAddr = 0;
-                    for (u32 index = byteSize; index < 0x3FFFFF; index+=byteSize) {
+                    for (u32 index = (limitMin == 0 ? byteSize : limitMin); index < limitMax; index += byteSize) {
                         u32 addr = (0x02000000 | index);
                         if (MainRAMState[index]) {
                             if (firstAddr == 0) {
