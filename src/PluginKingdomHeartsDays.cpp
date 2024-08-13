@@ -19,9 +19,9 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US      0x02044640
-#define IS_CUTSCENE_EU      0x02044640 // TODO: KH
-#define IS_CUTSCENE_JP      0x02044640 // TODO: KH
-#define IS_CUTSCENE_JP_REV1 0x02044640 // TODO: KH
+#define IS_CUTSCENE_EU      0x02044660
+#define IS_CUTSCENE_JP      0x02044aa0
+#define IS_CUTSCENE_JP_REV1 0x02044a60
 
 // 0x80 => playable (example: ingame); 0x04 => not playable (menus)
 #define IS_PLAYABLE_AREA_US      0x020446c6
