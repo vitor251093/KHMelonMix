@@ -45,3 +45,6 @@ compile_commands.json
 .vscode
 CMakeFiles
 CMakeCache.txt
+
+assets/days/textures_tmp/*.png
+assets/recoded/textures_tmp/*.png

@@ -78,6 +78,7 @@
 #include "Net.h"
 
 #include "CLI.h"
+#include "GPU3D.h"
 
 using namespace melonDS;
 
