@@ -1060,7 +1060,7 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
 // 2 -> panel
 // 3 -> holo-mission / challenges
 // 4 -> roxas's diary / enemy profile
-// 5 -> tutorials
+// 5 -> tutorials and mission review
 // 6 -> config
 // 7 -> save
 u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
