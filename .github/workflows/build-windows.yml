@@ -55,8 +55,8 @@ jobs:
         ls .
         echo "2"
         ls ..
-        cp ../scripts/MelonMix_KHDays.bat    ./dist/MelonMix_KHDays.bat
-        cp ../scripts/MelonMix_KHReCoded.bat ./dist/MelonMix_KHReCoded.bat
+        cp ../res/scripts/MelonMix_KHDays.bat    ./dist/MelonMix_KHDays.bat
+        cp ../res/scripts/MelonMix_KHReCoded.bat ./dist/MelonMix_KHReCoded.bat
 
     - uses: actions/upload-artifact@v4
       with:
