@@ -51,12 +51,6 @@ jobs:
         cp D:/a/_temp/msys64/mingw64/bin/*.dll ./dist/
         cp -r D:/a/_temp/msys64/mingw64/share/qt6/plugins/platforms ./dist/platforms/
         cp -r D:/a/_temp/msys64/mingw64/share/qt6/plugins/multimedia ./dist/multimedia/
-        echo "1"
-        ls .
-        echo "2"
-        ls ..
-        echo "3"
-        ls ../KHMelonMix
         cp ../KHMelonMix/res/scripts/MelonMix_KHDays.bat    ./dist/MelonMix_KHDays.bat
         cp ../KHMelonMix/res/scripts/MelonMix_KHReCoded.bat ./dist/MelonMix_KHReCoded.bat
 
