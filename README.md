@@ -128,6 +128,7 @@ If you want an app bundle that can be distributed to other computers without nee
  * All people that supported and developed melonDS
  * sandwichwater and DaniKH, for the innumerous amount of tests and for the hi-res textures
  * Michael Lipinski, for the [documentation](https://pdfs.semanticscholar.org/657d/adf4888f6302701095055b0d7a066e42b36f.pdf) regarding the way a NDS works
+ * Datel Design & Development Ltd, for the [documentation](https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf) regarding how to write AR Codes
 
 ## Licenses
 
