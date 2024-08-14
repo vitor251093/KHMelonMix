@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -28,11 +28,6 @@ using namespace Platform;
 // TODO: import codes from other sources (usrcheat.dat, ...)
 // TODO: more user-friendly error reporting
 
-
-ARCodeFile::ARCodeFile()
-{
-    Error = true;
-}
 
 ARCodeFile::ARCodeFile(const std::string& filename)
 {

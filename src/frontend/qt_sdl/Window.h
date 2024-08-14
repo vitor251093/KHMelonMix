@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -20,7 +20,7 @@
 #define WINDOW_H
 
 #include "glad/glad.h"
-#include "FrontendUtil.h"
+#include "ScreenLayout.h"
 #include "duckstation/gl/context.h"
 
 #include <QWidget>
@@ -34,9 +34,14 @@
 #include <QCloseEvent>
 
 #include "Screen.h"
+#include "Config.h"
 
+#include "MainWindow/MainWindowSettings.h"
 
+class EmuInstance;
 class EmuThread;
+
+const int kMaxRecentROMs = 10;
 
 /*
 class WindowBase : public QMainWindow
@@ -95,32 +100,33 @@ public:
     ScreenPanel* panel;
 };*/
 
-class MainWindow : public QMainWindow
+class MainWindow : public MainWindowSettings
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget* parent = nullptr);
+    explicit MainWindow(int id, EmuInstance* inst, QWidget* parent = nullptr);
     ~MainWindow();
 
-    bool hasOGL;
+    EmuInstance* getEmuInstance() { return emuInstance; }
+    Config::Table& getWindowConfig() { return windowCfg; }
+
+    bool hasOpenGL() { return hasOGL; }
     GL::Context* getOGLContext();
-    /*void initOpenGL();
+    void initOpenGL();
     void deinitOpenGL();
-    void drawScreenGL();*/
+    void setGLSwapInterval(int intv);
+    void makeCurrentGL();
+    void drawScreenGL();
 
     bool preloadROMs(QStringList file, QStringList gbafile, bool boot);
     QStringList splitArchivePath(const QString& filename, bool useMemberSyntax);
 
     void onAppStateChanged(Qt::ApplicationState state);
 
-    void osdAddMessage(unsigned int color, const char* fmt, ...);
+    void osdAddMessage(unsigned int color, const char* msg);
 
 protected:
-    void showEvent(QShowEvent* event) override;
-    void resizeEvent(QResizeEvent* event) override;
-    void changeEvent(QEvent* event) override;
-
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
 
@@ -129,6 +135,8 @@ protected:
 
     void focusInEvent(QFocusEvent* event) override;
     void focusOutEvent(QFocusEvent* event) override;
+
+    void showGame();
 
 signals:
     void screenLayoutChange();
@@ -171,6 +179,7 @@ private slots:
     void onOpenCameraSettings();
     void onCameraSettingsFinished(int res);
     void onOpenAudioSettings();
+    void onUpdateAudioVolume(int vol, int dsisync);
     void onUpdateAudioSettings();
     void onAudioSettingsFinished(int res);
     void onOpenMPSettings();
@@ -183,7 +192,7 @@ private slots:
     void onPathSettingsFinished(int res);
     void onOpenInterfaceSettings();
     void onInterfaceSettingsFinished(int res);
-    void onUpdateMouseTimer();
+    void onUpdateInterfaceSettings();
     void onChangeSavestateSRAMReloc(bool checked);
     void onChangeScreenSize();
     void onChangeScreenRotation(QAction* act);
@@ -202,6 +211,8 @@ private slots:
 
     void onEmuStart();
     void onEmuStop();
+    void onEmuPause(bool pause);
+    void onEmuReset();
 
     void onUpdateVideoSettings(bool glchange);
 
@@ -224,12 +235,21 @@ private:
 
     void createScreenPanel();
 
-    bool pausedManually = false;
+    bool showOSD;
 
-    int oldW, oldH;
-    bool oldMax;
+    bool hasOGL;
 
-    void loadMostRecentFile();
+    bool pauseOnLostFocus;
+    bool pausedManually;
+
+    int windowID;
+
+    EmuInstance* emuInstance;
+    EmuThread* emuThread;
+
+    Config::Table& globalCfg;
+    Config::Table& localCfg;
+    Config::Table windowCfg;
 
 public:
     ScreenPanel* panel;
@@ -278,14 +298,14 @@ public:
     QAction* actSavestateSRAMReloc;
     QAction* actScreenSize[4];
     QActionGroup* grpScreenRotation;
-    QAction* actScreenRotation[Frontend::screenRot_MAX];
+    QAction* actScreenRotation[screenRot_MAX];
     QActionGroup* grpScreenGap;
     QAction* actScreenGap[6];
     QActionGroup* grpScreenLayout;
-    QAction* actScreenLayout[Frontend::screenLayout_MAX];
+    QAction* actScreenLayout[screenLayout_MAX];
     QAction* actScreenSwap;
     QActionGroup* grpScreenSizing;
-    QAction* actScreenSizing[Frontend::screenSizing_MAX];
+    QAction* actScreenSizing[screenSizing_MAX];
     QAction* actIntegerScaling;
     QActionGroup* grpScreenAspectTop;
     QAction** actScreenAspectTop;

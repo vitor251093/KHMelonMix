@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -47,14 +47,13 @@ typedef std::list<ARCodeCat> ARCodeCatList;
 class ARCodeFile
 {
 public:
-    ARCodeFile();
     ARCodeFile(const std::string& filename);
     ~ARCodeFile();
 
     bool Error;
 
-    virtual bool Load();
-    virtual bool Save();
+    bool Load();
+    bool Save();
 
     ARCodeCatList Categories;
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -185,6 +185,9 @@ void SaveManager::FlushSecondaryBuffer(u8* dst, u32 dstLength)
             FileWrite(SecondaryBuffer.get(), SecondaryBufferLength, 1, f);
             Log(LogLevel::Info, "SaveManager: Wrote %u bytes to %s\n", SecondaryBufferLength, Path.c_str());
             CloseFile(f);
+        }
+        else {
+            Log(LogLevel::Error, "SaveManager: failed to write to %s\n", Path.c_str());
         }
     }
     PreviousFlushVersion = FlushVersion;

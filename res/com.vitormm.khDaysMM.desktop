@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=khDaysMM
+Name=MelonMix
 GenericName=Nintendo DS Emulator
 Comment=A fast and accurate Nintendo DS emulator.
-Exec=khDaysMM %f
+Exec=MelonMix %f
 Type=Application
 Categories=Game;Emulator;
 Terminal=false

@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -54,7 +54,15 @@ bool ComputeRenderer::CompileShader(GLuint& shader, const std::string& source, c
     shaderSource += ComputeRendererShaders::Common;
     shaderSource += source;
 
-    return OpenGL::CompileComputeProgram(shader, shaderSource.c_str(), shaderName.c_str());
+    bool compiled = OpenGL::CompileComputeProgram(shader, shaderSource.c_str(), shaderName.c_str());
+    if (!compiled) return false;
+
+    // TODO: Get compute renderer aspect ratio location
+    // GLuint& shaderId = static_cast<GLuint&>(*shader);
+    GLint uni_id = glGetUniformLocation(shader, "TopScreenAspectRatio");
+    // RenderShaderAspectRatio[flags] = uni_id;
+
+    return compiled;
 }
 
 void ComputeRenderer::ShaderCompileStep(int& current, int& count)
@@ -293,27 +301,6 @@ void ComputeRenderer::DeleteShaders()
 void ComputeRenderer::Reset(GPU& gpu)
 {
     Texcache.Reset();
-}
-
-void ComputeRenderer::SetGameScene(int gameScene)
-{
-    CurGLCompositor.SetGameScene(gameScene);
-}
-void ComputeRenderer::SetAspectRatio(float aspectRatio)
-{
-    CurGLCompositor.SetAspectRatio(aspectRatio);
-}
-void ComputeRenderer::SetShowMap(bool showMap)
-{
-    CurGLCompositor.SetShowMap(showMap);
-}
-void ComputeRenderer::SetShowTarget(bool showTarget)
-{
-    CurGLCompositor.SetShowTarget(showTarget);
-}
-void ComputeRenderer::SetShowMissionGauge(bool showMissionGauge)
-{
-    CurGLCompositor.SetShowMissionGauge(showMissionGauge);
 }
 
 void ComputeRenderer::SetRenderSettings(int scale, bool highResolutionCoordinates)
@@ -612,6 +599,9 @@ struct Variant
 
 void ComputeRenderer::RenderFrame(GPU& gpu)
 {
+    // TODO: Update compute renderer aspect ratio
+    // glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
+
     assert(!NeedsShaderCompile());
     if (!Texcache.Update(gpu) && gpu.GPU3D.RenderFrameIdentical)
     {

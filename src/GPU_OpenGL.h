@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -39,18 +39,8 @@ public:
     GLCompositor& operator=(GLCompositor&&) noexcept;
     ~GLCompositor();
 
-    void SetGameScene(int gameScene) noexcept;
-    void SetAspectRatio(float aspectRatio) noexcept;
     void SetScaleFactor(int scale) noexcept;
-    void SetShowMap(bool showMap) noexcept;
-    void SetShowTarget(bool showTarget) noexcept;
-    void SetShowMissionGauge(bool showMissionGauge) noexcept;
-    [[nodiscard]] int GetGameScene() const noexcept { return GameScene; }
-    [[nodiscard]] float GetAspectRatio() const noexcept { return AspectRatio; }
     [[nodiscard]] int GetScaleFactor() const noexcept { return Scale; }
-    [[nodiscard]] bool GetShowMap() const noexcept { return ShowMap; }
-    [[nodiscard]] bool GetShowTarget() const noexcept { return ShowTarget; }
-    [[nodiscard]] bool GetShowMissionGauge() const noexcept { return ShowMissionGauge; }
 
     void Stop(const GPU& gpu) noexcept;
     void RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept;
@@ -59,20 +49,9 @@ private:
     GLCompositor(GLuint CompShader) noexcept;
     int Scale = 0;
     int ScreenH = 0, ScreenW = 0;
-    int GameScene = 0;
-    float AspectRatio = 0;
-    bool ShowMap = false;
-    bool ShowTarget = false;
-    bool ShowMissionGauge = false;
 
     GLuint CompShader {};
     GLuint CompScaleLoc = 0;
-    GLuint Comp3DXPosLoc = 0;
-    GLuint CompGameSceneLoc = 0;
-    GLuint CompAspectRatioLoc = 0;
-    GLuint CompShowMapLoc = 0;
-    GLuint CompShowTargetLoc = 0;
-    GLuint CompShowMissionGaugeLoc = 0;
 
     GLuint CompVertexBufferID = 0;
     GLuint CompVertexArrayID = 0;

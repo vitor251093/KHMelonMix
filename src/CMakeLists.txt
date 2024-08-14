@@ -39,9 +39,9 @@ add_library(core STATIC
     GPU3D_Soft.cpp
     GPU3D_Texcache.cpp
     GPU3D_Texcache.h
-    KHDays_Plugin.cpp
-    KHReCoded_Plugin.cpp
-    CartValidator.cpp
+    PluginManager.cpp
+    PluginKingdomHeartsDays.cpp
+    PluginKingdomHeartsReCoded.cpp
     melonDLDI.h
     NDS.cpp
     NDSCart.cpp
@@ -84,8 +84,8 @@ if (ENABLE_OGLRENDERER)
     target_sources(core PRIVATE
         GPU_OpenGL.cpp
         GPU_OpenGL_shaders.h
-        KHDays_GPU_OpenGL_shaders.h
-        KHReCoded_GPU_OpenGL_shaders.h
+        PluginKingdomHeartsDays_GPU_OpenGL_shaders.h
+        PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h
         GPU3D_OpenGL.cpp
         GPU3D_Compute.cpp
         GPU3D_TexcacheOpenGL.cpp
@@ -140,6 +140,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.h.in" "${CMAKE_CURRENT_BINAR
 target_sources(core PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/version.h")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
 
+set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(teakra EXCLUDE_FROM_ALL)
 # Workaround for building teakra with -O0 on Windows either failing or hanging forever
 target_compile_options(teakra PRIVATE "$<$<CONFIG:DEBUG>:-Og>")
@@ -147,7 +148,9 @@ target_link_libraries(core PRIVATE teakra)
 
 if (NOT MSVC)
     # MSVC has its own compiler flag syntax; if we ever support it,
-    # be sure to silence any equivalent warnings there.
+    # be sure to add equivalent flags here.
+
+    target_compile_options(core PUBLIC -fwrapv)
 
     target_compile_options(core PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:-Wno-invalid-offsetof>")
     # These warnings are excessive, and are only triggered in the ARMJIT code

@@ -2314,11 +2314,6 @@
        <string>Touch Screen</string>
       </attribute>
      </widget>
-     <widget class="QWidget" name="tabCommandMenu">
-      <attribute name="title">
-       <string>Command Menu</string>
-      </attribute>
-     </widget>
     </widget>
    </item>
    <item row="8" column="1">

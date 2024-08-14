@@ -12,7 +12,7 @@
 #include <filesystem>
 #include <fstream>
 
-#include "KH_Plugin.h"
+#include "PluginManager.h"
 
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash/xxhash.h"
@@ -256,7 +256,7 @@ public:
             std::string uniqueIdentifier2 = oss.str();
             
             std::filesystem::path currentPath = std::filesystem::current_path();
-            std::string assetsFolder = KHPlugin::assetsFolder();
+            std::string assetsFolder = Plugins::PluginManager::get()->assetsFolder();
             std::string filename = uniqueIdentifier + ".png";
             std::string filename2 = uniqueIdentifier2 + ".png";
             std::filesystem::path fullPath = currentPath / "assets" / assetsFolder / "textures" / filename;

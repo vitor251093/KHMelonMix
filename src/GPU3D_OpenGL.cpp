@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2023 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -24,6 +24,7 @@
 #include "NDS.h"
 #include "GPU.h"
 #include "GPU3D_OpenGL_shaders.h"
+#include "PluginManager.h"
 
 namespace melonDS
 {
@@ -64,6 +65,8 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
+    Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z_initVariables(prog, flags);
+
     RenderShader[flags] = prog;
 
     return true;
@@ -74,6 +77,8 @@ void GLRenderer::UseRenderShader(u32 flags)
     if (CurShaderID == flags) return;
     glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
+
+    Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z_updateVariables(flags);
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -127,25 +132,28 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
 
-    if (!result->BuildRenderShader(0, kRenderVS_Z, kRenderFS_ZO))
+    const char* renderVS_Z_Custom = Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z();
+    const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
+
+    if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WO))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_Edge, kRenderVS_Z, kRenderFS_ZE))
+    if (!result->BuildRenderShader(RenderFlag_Edge, renderVS_Z, kRenderFS_ZE))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_Edge | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WE))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_Trans, kRenderVS_Z, kRenderFS_ZT))
+    if (!result->BuildRenderShader(RenderFlag_Trans, renderVS_Z, kRenderFS_ZT))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_Trans | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WT))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_ShadowMask, kRenderVS_Z, kRenderFS_ZSM))
+    if (!result->BuildRenderShader(RenderFlag_ShadowMask, renderVS_Z, kRenderFS_ZSM))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_ShadowMask | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WSM))
@@ -233,6 +241,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(IndexBuffer), nullptr, GL_DYNAMIC_DRAW);
 
     glGenFramebuffers(1, &result->MainFramebuffer);
+    glGenFramebuffers(1, &result->DownscaleFramebuffer);
 
     // color buffers
     glGenTextures(1, &result->ColorBufferTex);
@@ -321,29 +330,9 @@ void GLRenderer::SetBetterPolygons(bool betterpolygons) noexcept
     SetRenderSettings(betterpolygons, ScaleFactor);
 }
 
-void GLRenderer::SetGameScene(int gameScene) noexcept
-{
-    CurGLCompositor.SetGameScene(gameScene);
-}
-void GLRenderer::SetAspectRatio(float aspectRatio) noexcept
-{
-    CurGLCompositor.SetAspectRatio(aspectRatio);
-}
 void GLRenderer::SetScaleFactor(int scale) noexcept
 {
     SetRenderSettings(BetterPolygons, scale);
-}
-void GLRenderer::SetShowMap(bool showMap) noexcept
-{
-    CurGLCompositor.SetShowMap(showMap);
-}
-void GLRenderer::SetShowTarget(bool showTarget) noexcept
-{
-    CurGLCompositor.SetShowTarget(showTarget);
-}
-void GLRenderer::SetShowMissionGauge(bool showMissionGauge) noexcept
-{
-    CurGLCompositor.SetShowMissionGauge(showMissionGauge);
 }
 
 
