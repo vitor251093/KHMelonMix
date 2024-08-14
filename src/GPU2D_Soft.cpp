@@ -1924,6 +1924,8 @@ void SoftRenderer::DrawSprite_Rotscale(u32 num, u32 boundwidth, u32 boundheight,
     }
 }
 
+unsigned char* textureCache2D[0x03FF] = {};
+
 template<bool window>
 void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s32 ypos)
 {
@@ -1995,10 +1997,23 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     int r_width, r_height, r_channels;
     unsigned char* imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
     bool hasFinalImage = false;
-    if (imageData != nullptr) // load 2D image from elsewhere
+    if (imageData == nullptr) // load 2D image from elsewhere
     {
+        if (imageData == nullptr)
+        {
+            imageData = Texreplace::LoadTextureFromFile(pathTmp, &r_width, &r_height, &r_channels);
+
+            if (imageData == nullptr) {
+                imageData = textureCache2D[tilenum];
+            }
+            else {
+                hasFinalImage = true;
+            }
+        }
+    }
+    else {
         hasFinalImage = true;
-        imageData = Texreplace::LoadTextureFromFile(pathTmp, &r_width, &r_height, &r_channels);
+
         // TODO: For now, let's export the texture only
 
         // u32 alpha = attrib[2] >> 12;
@@ -2247,6 +2262,9 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     xoff = orig_xoff;
     xpos = orig_xpos;
 
+    u16* pal = (u16*)&GPU.Palette[CurUnit->Num ? 0x600 : 0x200];
+    u16* extpal = CurUnit->GetOBJExtPal();
+
     bool newLine = false;
     int y = ypos;
     for (; xoff < xend;)
@@ -2258,11 +2276,9 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
             color = og_pixel & 0x7FFF;
         }
         else if (og_pixel & 0x1000) {
-            u16* pal = (u16*)&GPU.Palette[CurUnit->Num ? 0x600 : 0x200];
             color = pal[og_pixel & 0xFF];
         }
         else {
-            u16* extpal = CurUnit->GetOBJExtPal();
             color = extpal[og_pixel & 0xFFF];
         }
 
@@ -2271,11 +2287,6 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         u8 b = ((color & 0x7C00) >> 9) << 2;
 
         unsigned char* pixel = imageData + (y * width + xpos) * (channels);
-
-        if (pixel[3] != 255)
-        {
-            newLine = true;
-        }
 
         pixel[0] = r;
         pixel[1] = g;
@@ -2286,14 +2297,8 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         xpos++;
     }
 
-    if (newLine)
-    {
-        if (ypos + 1 == height) {
-            Texreplace::ExportTextureAsFile(imageData, path, width, height, channels);
-        }
-        else {
-            Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
-        }
+    if (ypos + 1 == height) {
+        Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
     }
 }
 
