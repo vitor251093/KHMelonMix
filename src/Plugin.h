@@ -12,6 +12,11 @@
 #define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
 #define RAM_SEARCH_INTERVAL_MARGIN 0x200
 
+// #define RAM_SEARCH_EXACT_VALUE     0x05B07E00
+// #define RAM_SEARCH_EXACT_VALUE_MIN 0x05B07E00
+// #define RAM_SEARCH_EXACT_VALUE_MAX 0x05BEE334
+
+
 // #define RAM_SEARCH_LIMIT_MIN 0x04f6c5 - 0x1F00
 // #define RAM_SEARCH_LIMIT_MAX 0x04f6c5 + 0x1F00
 // #define RAM_SEARCH_LIMIT_MAX 0x19FFFF
@@ -119,6 +124,19 @@ public:
                 u32 addr = (0x02000000 | index);
                 u32 newVal = RAM_SEARCH_READ(nds, addr);
                 MainRAMState[index] = true;
+#ifdef RAM_SEARCH_EXACT_VALUE
+                MainRAMState[index] = RAM_SEARCH_EXACT_VALUE == newVal;
+#endif
+#ifdef RAM_SEARCH_EXACT_VALUE_MIN
+                if (newVal < RAM_SEARCH_EXACT_VALUE_MIN) {
+                    MainRAMState[index] = false;
+                }
+#endif
+#ifdef RAM_SEARCH_EXACT_VALUE_MAX
+                if (newVal > RAM_SEARCH_EXACT_VALUE_MAX) {
+                    MainRAMState[index] = false;
+                }
+#endif
                 LastMainRAM[index] = newVal;
             }
         }
