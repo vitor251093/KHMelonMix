@@ -229,6 +229,59 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     SwitchTargetPressOnHold = false;
 }
 
+void PluginKingdomHeartsDays::onLoadROM() {
+    u8* rom = (u8*)nds->GetNDSCart()->GetROM();
+    // *((u32*)&rom[0x01b613b5]) = 0x0033e943;
+    // *((u32*)&rom[0x050c57cb]) = 0x0033e943;
+    // *((u32*)&rom[0x05b3e4ff]) = 0x0033e943;
+    // *((u32*)&rom[0x07afdb4d]) = 0x0033e943;
+    // *((u32*)&rom[0x07f97608]) = 0x0033e943;
+    // *((u32*)&rom[0x0b02c7ff]) = 0x0033e943;
+    // *((u32*)&rom[0x0e104248]) = 0x0033e943;
+    // *((u32*)&rom[0x0e6e691f]) = 0x0033e943;
+
+    // for (u32 address = 0; address <= 0xF78870C; address+= 1) {
+    //     if (*((u8*)&rom[address])       == '_' &&
+    //         *((u8*)&rom[address + 0x1]) == 'l' &&
+    //         *((u8*)&rom[address + 0x2]) == 'a' &&
+    //         *((u8*)&rom[address + 0x3]) == 'r')
+    //     {
+    //         *((u8*)&rom[address])       = '_';
+    //         *((u8*)&rom[address + 0x1]) = 'a';
+    //         *((u8*)&rom[address + 0x2]) = 'b';
+    //         *((u8*)&rom[address + 0x3]) = 'c';
+    //     }
+
+    //     if (*((u8*)&rom[address])       == '_' &&
+    //         *((u8*)&rom[address + 0x1]) == 'v' &&
+    //         *((u8*)&rom[address + 0x2]) == 'e' &&
+    //         *((u8*)&rom[address + 0x3]) == 'n')
+    //     {
+    //         *((u8*)&rom[address])       = '_';
+    //         *((u8*)&rom[address + 0x1]) = 'l';
+    //         *((u8*)&rom[address + 0x2]) = 'a';
+    //         *((u8*)&rom[address + 0x3]) = 'r';
+    //     }
+    // }
+
+    // u16 tmp = *((u16*)&rom[0x0033e911]);
+    // *((u16*)&rom[0x0033e911]) = *((u16*)&rom[0x0033e943]);
+    // *((u16*)&rom[0x0033e943]) = tmp;
+
+    // *((u32*)&rom[0x0334d70d]) = 0x1033e943; // original: 0x1033e911;
+    
+    // printf("Roxas folder: %02x%02x\n", rom[0x0033e934], rom[0x0033e935]);
+
+    rom[0x0033e934] = 0x76;
+    rom[0x0033e935] = 0x65;
+
+
+
+    // PRINT_AS_8_BIT_HEX(0x0205ac04);
+    // PRINT_AS_8_BIT_HEX(0x020d73e4);
+    // printf("\n");
+}
+
 std::string PluginKingdomHeartsDays::assetsFolder() {
     return "days";
 }
@@ -1167,10 +1220,6 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
 
 void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
-    // PRINT_AS_8_BIT_HEX(0x0205ac04);
-    // PRINT_AS_8_BIT_HEX(0x020d73e4);
-    // printf("\n");
-
     if (!DEBUG_MODE_ENABLED) {
         return;
     }

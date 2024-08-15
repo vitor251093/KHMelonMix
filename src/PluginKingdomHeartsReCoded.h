@@ -23,6 +23,7 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
+    void onLoadROM() {};
 
     std::string assetsFolder();
 

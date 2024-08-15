@@ -55,6 +55,7 @@ public:
     static bool isCart(u32 gameCode) {return true;};
 
     virtual void setNds(melonDS::NDS* Nds) = 0;
+    virtual void onLoadROM() = 0;
 
     virtual std::string assetsFolder() = 0;
 

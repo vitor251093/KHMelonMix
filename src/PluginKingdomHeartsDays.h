@@ -24,6 +24,7 @@ public:
     bool isJapanCartRev1() { return false; }; // TODO: KH Add support to Rev1
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
+    void onLoadROM();
 
     std::string assetsFolder();
 

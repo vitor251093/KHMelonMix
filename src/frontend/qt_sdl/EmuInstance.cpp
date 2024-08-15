@@ -1767,6 +1767,9 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset)
         nds->SetNDSCart(std::move(cart));
     }
 
+    Plugins::PluginManager::get()->setNds(nds);
+    Plugins::PluginManager::get()->onLoadROM();
+
     cartType = 0;
     ndsSave = std::make_unique<SaveManager>(savname);
     loadCheats();

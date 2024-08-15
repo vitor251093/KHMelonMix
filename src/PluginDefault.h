@@ -14,6 +14,7 @@ public:
     PluginDefault(u32 gameCode) {GameCode = gameCode;};
 
     void setNds(melonDS::NDS* Nds) {}
+    void onLoadROM() {}
 
     std::string assetsFolder() {
         return std::to_string(GameCode);
