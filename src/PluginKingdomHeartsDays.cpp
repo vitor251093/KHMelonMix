@@ -80,6 +80,16 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_INGAME_MENU_VIEW_JP      0x020b19ac
 #define CURRENT_INGAME_MENU_VIEW_JP_REV1 0x020b196c
 
+#define IS_TUTORIAL_ADDRESS_US      0x020d73f0
+#define IS_TUTORIAL_ADDRESS_EU      0x020d7410
+#define IS_TUTORIAL_ADDRESS_JP      0x020d6950
+#define IS_TUTORIAL_ADDRESS_JP_REV1 0x020d6910
+
+#define IS_TUTORIAL_VALUE_US      0xd0
+#define IS_TUTORIAL_VALUE_EU      0xb0
+#define IS_TUTORIAL_VALUE_JP      0x30
+#define IS_TUTORIAL_VALUE_JP_REV1 0xb0
+
 #define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
 #define CURRENT_MAP_FROM_WORLD_EU      0x02189CC6
 #define CURRENT_MAP_FROM_WORLD_JP      0x02187FC6
@@ -656,6 +666,8 @@ int PluginKingdomHeartsDays::detectGameScene()
         getAddressByCart(LOAD_MENU_MAIN_MENU_VIEW_US, LOAD_MENU_MAIN_MENU_VIEW_EU, LOAD_MENU_MAIN_MENU_VIEW_JP, LOAD_MENU_MAIN_MENU_VIEW_JP_REV1);
     bool isDaysCounter = nds->ARM7Read8(getAddressByCart(IS_DAYS_COUNTER_US, IS_DAYS_COUNTER_EU, IS_DAYS_COUNTER_JP, IS_DAYS_COUNTER_JP_REV1)) ==
         getAddressByCart(IS_DAYS_COUNTER_VALUE_US, IS_DAYS_COUNTER_VALUE_EU, IS_DAYS_COUNTER_VALUE_JP, IS_DAYS_COUNTER_VALUE_JP_REV1);
+    bool isTutorial = nds->ARM7Read8(getAddressByCart(IS_TUTORIAL_ADDRESS_US, IS_TUTORIAL_ADDRESS_EU, IS_TUTORIAL_ADDRESS_JP, IS_TUTORIAL_ADDRESS_JP_REV1)) ==
+        getAddressByCart(IS_TUTORIAL_VALUE_US, IS_TUTORIAL_VALUE_EU, IS_TUTORIAL_VALUE_JP, IS_TUTORIAL_VALUE_JP_REV1);
 
     if (isCutscene)
     {
@@ -779,19 +791,7 @@ int PluginKingdomHeartsDays::detectGameScene()
         }
     }
 
-    // Tutorial
-    if (GameScene == gameScene_Tutorial && topScreenBrightness < 15)
-    {
-        return gameScene_Tutorial;
-    }
-    bool inTutorialScreen = topScreenBrightness == 8 && botScreenBrightness == 15;
-    if (inTutorialScreen)
-    {
-        return gameScene_Tutorial;
-    }
-    bool inTutorialScreenWithoutWarningOnTop = nds->GPU.GPU2D_A.BlendCnt == 193 && nds->GPU.GPU2D_B.BlendCnt == 172 && 
-                                                nds->GPU.GPU2D_B.MasterBrightness == 0 && nds->GPU.GPU2D_B.EVY == 0;
-    if (inTutorialScreenWithoutWarningOnTop)
+    if (isTutorial)
     {
         return gameScene_Tutorial;
     }
@@ -1220,6 +1220,10 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
 
 void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
+    // PRINT_AS_8_BIT_HEX(0x02046a60); // 0x9c
+    // PRINT_AS_8_BIT_HEX(0x020d73f0); // 0xd0
+    // printf("\n");
+
     if (!DEBUG_MODE_ENABLED) {
         return;
     }
