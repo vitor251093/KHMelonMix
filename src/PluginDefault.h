@@ -13,6 +13,12 @@ class PluginDefault : public Plugin
 public:
     PluginDefault(u32 gameCode) {GameCode = gameCode;};
 
+    u32 GameCode = 0;
+    u32 getGameCode() {
+        return GameCode;
+    };
+    static bool isCart(u32 gameCode) {return true;};
+
     void setNds(melonDS::NDS* Nds) {}
     void onLoadROM() {}
 

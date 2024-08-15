@@ -17,6 +17,7 @@ public:
     static u32 usGamecode;
     static u32 euGamecode;
     static u32 jpGamecode;
+    u32 getGameCode() { return GameCode; };
     static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };

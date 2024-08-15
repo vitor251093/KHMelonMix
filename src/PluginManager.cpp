@@ -10,8 +10,7 @@
 namespace Plugins
 {
 
-u32 PluginManager::GameCode = 0;
-std::map<u32, std::unique_ptr<Plugin>> PluginManager::PluginsCache = {};
+Plugin* PluginManager::LastPlugin = nullptr;
 
 struct IFactory { 
     virtual bool isCart(int gameCode) = 0;
@@ -32,24 +31,27 @@ IFactory* factories[] = {LOAD_PLUGINS};
 #undef LOAD_PLUGIN
 
 Plugin* PluginManager::load(u32 gameCode) {
-    GameCode = gameCode;
+    LastPlugin = nullptr;
+    for (IFactory* factory : factories) {
+        if (factory->isCart(gameCode)) {
+            LastPlugin = factory->create(gameCode);
+            break;
+        }
+    }
+    if (LastPlugin == nullptr) {
+        LastPlugin = new PluginDefault(gameCode);
+    }
+
     return get();
 }
 Plugin* PluginManager::get() {
-    if (auto search = PluginsCache.find(GameCode); search != PluginsCache.end()) {
-        return search->second.get();
+    if (LastPlugin == nullptr) {
+        LastPlugin = new PluginDefault(0);
     }
-    for (IFactory* factory : factories) {
-        if (factory->isCart(GameCode)) {
-            PluginsCache[GameCode] = std::unique_ptr<Plugin>(factory->create(GameCode));
-            return PluginsCache.at(GameCode).get();
-        }
-    }
-    PluginsCache[GameCode] = std::unique_ptr<Plugin>(new PluginDefault(GameCode));
-    return PluginsCache.at(GameCode).get();
+    return LastPlugin;
 }
 u32 PluginManager::getGameCode() {
-    return GameCode;
+    return get()->getGameCode();
 }
 
 }

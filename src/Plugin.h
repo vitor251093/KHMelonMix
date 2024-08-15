@@ -51,7 +51,7 @@ class Plugin
 public:
     virtual ~Plugin() { };
 
-    u32 GameCode = 0;
+    virtual u32 getGameCode() = 0;
     static bool isCart(u32 gameCode) {return true;};
 
     virtual void setNds(melonDS::NDS* Nds) = 0;
