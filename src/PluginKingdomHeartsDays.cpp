@@ -272,8 +272,8 @@ void PluginKingdomHeartsDays::onLoadROM() {
     
     // printf("Roxas folder: %02x%02x\n", rom[0x0033e934], rom[0x0033e935]);
 
-    rom[0x0033e934] = 0x76;
-    rom[0x0033e935] = 0x65;
+    // rom[0x0033e934] = 0x76;
+    // rom[0x0033e935] = 0x65;
 
 
 
