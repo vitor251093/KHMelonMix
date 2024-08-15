@@ -42,13 +42,13 @@ void main()
 
     if (GameScene == 5 || GameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
     {
-        float widthScale = TopScreenAspectRatio;
-
         float effectLayer = -0.300; // blue shine behind the heart counter and "CHAIN" label
         float textLayer = -0.900; // heart counter, timer, "BONUS" label and +X floating labels
 
+        float widthScale = TopScreenAspectRatio;
         int iuScale = KHUIScale;
         float iuTexScale = (5.0)/iuScale;
+
         float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0)*u3DScale;
         float heartWidth = (256.0*u3DScale*9)/20.0;
         float heartHeight = (192.0*u3DScale)/2.5;

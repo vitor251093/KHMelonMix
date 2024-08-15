@@ -23,6 +23,7 @@ namespace Plugins
 {
 const char* kRenderVS_Z_KhReCoded = R"(
 
+uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
 
 void main()
@@ -37,16 +38,20 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    float aspectRatio = TopScreenAspectRatio/(4.0/3.0);
-    float commandMenuLeftMargin = 10.0*4;
-    float commandMenuWidth = (256.0*u3DScale)/4.0;
+    float widthScale = TopScreenAspectRatio;
+    int iuScale = KHUIScale;
+    float iuTexScale = (5.0)/iuScale;
+
+    float commandMenuLeftMargin = 36.0;
+    float commandMenuBottomMargin = 2.0;
+    float commandMenuWidth = (256.0*u3DScale)/3.0;
     float commandMenuHeight = (192.0*u3DScale)/3.0;
     if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.375)*fpos.w &&
         fpos.y >= -(0.25)*fpos.w && fpos.y <= +(1.00)*fpos.w &&
         fpos.z == -1.0*fpos.w &&
         vColor.r < 200.0) {
-        fpos.x = ((((fpos.x/fpos.w + 1.0)*(commandMenuWidth/aspectRatio) + commandMenuLeftMargin)/uScreenSize.x)*2.0 - 1.0)*fpos.w;
-        fpos.y = (1.0 - (((1.0 - fpos.y/fpos.w)*(commandMenuHeight))/uScreenSize.y)*2.0)*fpos.w;
+        fpos.x = ((((fpos.x/fpos.w + 1.0)*(commandMenuWidth) + commandMenuLeftMargin)/uScreenSize.x)*2.0/widthScale - 1.0)*fpos.w;
+        fpos.y = (1.0 - (((1.0 - fpos.y/fpos.w)*(commandMenuHeight) + commandMenuBottomMargin)/uScreenSize.y)*2.0)*fpos.w;
     }
 
     fColor = vec4(vColor) / vec4(255.0,255.0,255.0,31.0);
