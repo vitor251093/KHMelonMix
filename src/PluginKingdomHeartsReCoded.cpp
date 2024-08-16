@@ -21,6 +21,11 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_MAIN_MENU_EU      0x02056b28 // TODO: KH
 #define IS_MAIN_MENU_JP      0x02056b28 // TODO: KH
 
+// 0x03 => cutscene; 0x01 => not cutscene
+#define IS_CUTSCENE_US      0x02056e90
+#define IS_CUTSCENE_EU      0x02056e90 // TODO: KH
+#define IS_CUTSCENE_JP      0x02056e90 // TODO: KH
+
 // 0x04 => playable (example: ingame); 0x02 => not playable (menus)
 #define IS_PLAYABLE_AREA_US      0x0205a8c0
 #define IS_PLAYABLE_AREA_EU      0x0205a8c0 // TODO: KH
@@ -339,14 +344,29 @@ int PluginKingdomHeartsReCoded::detectGameScene()
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
     bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
+    bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
     bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP)) == 0x02;
     
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);
 
+    if (isCutscene)
+    {
+        return gameScene_Cutscene;
+    }
+
     if (isMainMenuOrIntroOrLoadMenu)
     {
+        // Intro
+        if (GameScene == -1 || GameScene == gameScene_Intro)
+        {
+            if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0)
+            {
+                return gameScene_Intro;
+            }
+        }
+
         // Intro save menu
         bool isIntroLoadMenu = (nds->GPU.GPU2D_B.BlendCnt == 4164 || nds->GPU.GPU2D_B.BlendCnt == 4161) &&
             (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) &&
@@ -364,13 +384,6 @@ int PluginKingdomHeartsReCoded::detectGameScene()
             {
                 return gameScene_IntroLoadMenu;
             }
-        }
-
-        // Intro
-        if (GameScene == -1 || GameScene == gameScene_Intro)
-        {
-            bool mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
-            return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
         }
 
         return gameScene_MainMenu;
