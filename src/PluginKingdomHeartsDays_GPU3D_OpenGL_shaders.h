@@ -40,7 +40,7 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    if (GameScene == 5 || GameScene == 6) // gameScene_InGameWithMap and gameScene_InGameWithoutMap
+    if (GameScene == 5) // gameScene_InGameWithMap
     {
         float effectLayer = -0.300; // blue shine behind the heart counter and "CHAIN" label
         float textLayer = -0.900; // heart counter, timer, "BONUS" label and +X floating labels
