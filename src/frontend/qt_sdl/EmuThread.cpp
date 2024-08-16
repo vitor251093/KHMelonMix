@@ -113,7 +113,6 @@ void EmuThread::run()
     Config::Table& globalCfg = emuInstance->getGlobalConfig();
     u32 mainScreenPos[3];
     Platform::FileHandle* file;
-    u32 lastRomLoaded = 0;
 
     emuInstance->updateConsole(nullptr, nullptr);
     // No carts are inserted when melonDS first boots
@@ -164,6 +163,21 @@ void EmuThread::run()
     {
         emuInstance->inputProcess();
 
+        auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
+        if (rom != nullptr) {
+            u32 gamecode = rom->GetHeader().GameCodeAsU32();
+            if (plugin == nullptr || plugin->getGameCode() != gamecode)
+            {
+                lastVideoRenderer = -1;
+                videoSettingsDirty = true;
+
+                plugin = Plugins::PluginManager::load(gamecode);
+                plugin->setNds(emuInstance->getNDS());
+
+                printf("Loading plugin %s for game code %u\n", typeid(*plugin).name(), gamecode);
+            }
+        }
+
         if (emuInstance->hotkeyPressed(HK_FastForwardToggle)) emit windowLimitFPSChange();
 
         if (emuInstance->hotkeyPressed(HK_Pause)) emuTogglePause();
@@ -177,17 +191,6 @@ void EmuThread::run()
 
         if (emuStatus == emuStatus_Running || emuStatus == emuStatus_FrameStep)
         {
-            if (plugin == nullptr || lastRomLoaded != Plugins::PluginManager::getGameCode())
-            {
-                lastRomLoaded = Plugins::PluginManager::getGameCode();
-                lastVideoRenderer = -1;
-                videoSettingsDirty = true;
-                plugin = Plugins::PluginManager::load(lastRomLoaded);
-                printf("Loading plugin %s\n", typeid(*plugin).name());
-            }
-
-            plugin->setNds(emuInstance->getNDS());
-
             if (emuStatus == emuStatus_FrameStep) emuStatus = emuStatus_Paused;
 
             if (emuInstance->hotkeyPressed(HK_SolarSensorDecrease))

@@ -50,8 +50,5 @@ Plugin* PluginManager::get() {
     }
     return LastPlugin;
 }
-u32 PluginManager::getGameCode() {
-    return get()->getGameCode();
-}
 
 }

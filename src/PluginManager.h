@@ -11,7 +11,6 @@ class PluginManager
 public:
     static Plugin* load(u32 gameCode);
     static Plugin* get();
-    static u32 getGameCode();
 
 private:
     static Plugin* LastPlugin;

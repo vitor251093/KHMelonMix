@@ -26,7 +26,6 @@
 #include "melonDLDI.h"
 #include "FATStorage.h"
 #include "Utils.h"
-#include "PluginManager.h"
 
 namespace melonDS
 {
@@ -1610,9 +1609,6 @@ std::unique_ptr<CartCommon> ParseROM(std::unique_ptr<u8[]>&& romdata, u32 romlen
 
     const char *gametitle = header.GameTitle;
     u32 gamecode = header.GameCodeAsU32();
-
-    Plugins::PluginManager::load(gamecode);
-    Log(LogLevel::Info, "Game code: %u\n", gamecode);
 
     u32 arm9base = header.ARM9ROMOffset;
     bool homebrew = header.IsHomebrew();
