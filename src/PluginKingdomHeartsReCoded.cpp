@@ -16,6 +16,16 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define ASPECT_RATIO_ADDRESS_EU      0x0202A824
 #define ASPECT_RATIO_ADDRESS_JP      0x0202A728
 
+// 0x00 => intro and main menu
+#define IS_MAIN_MENU_US      0x02056b28
+#define IS_MAIN_MENU_EU      0x02056b28 // TODO: KH
+#define IS_MAIN_MENU_JP      0x02056b28 // TODO: KH
+
+// 0x04 => playable (example: ingame); 0x02 => not playable (menus)
+#define IS_PLAYABLE_AREA_US      0x0205a8c0
+#define IS_PLAYABLE_AREA_EU      0x0205a8c0 // TODO: KH
+#define IS_PLAYABLE_AREA_JP      0x0205a8c0 // TODO: KH
+
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
@@ -310,17 +320,6 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         return GameScene;
     }
 
-    // return gameScene_Other2D;
-
-    // printf("0x021D08B8: %d\n",   nds->ARM7Read8(0x021D08B8));
-    // printf("0x0223D38C: %d\n\n", nds->ARM7Read8(0x0223D38C));
-
-    // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
-    bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
-
-    // 3D element mimicking 2D behavior
-    bool doesntLook3D = nds->GPU.GPU3D.RenderNumPolygons < 30;
-
     bool wasSaveLoaded = isSaveLoaded();
     bool muchOlderHad3DOnTopScreen = _muchOlderHad3DOnTopScreen;
     bool muchOlderHad3DOnBottomScreen = _muchOlderHad3DOnBottomScreen;
@@ -339,12 +338,43 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
-    // The second screen can still look black and not be empty (invisible elements)
-    bool noElementsOnBottomScreen = nds->GPU.GPU2D_B.BlendCnt == 0;
-
+    bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
+    bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP)) == 0x02;
+    
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);
+
+    if (isMainMenuOrIntroOrLoadMenu)
+    {
+        // Intro save menu
+        bool isIntroLoadMenu = (nds->GPU.GPU2D_B.BlendCnt == 4164 || nds->GPU.GPU2D_B.BlendCnt == 4161) &&
+            (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) &&
+             nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
+            (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
+            (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
+
+        if (isIntroLoadMenu)
+        {
+            return gameScene_IntroLoadMenu;
+        }
+        if (GameScene == gameScene_IntroLoadMenu)
+        {
+            if (nds->GPU.GPU3D.NumVertices != 8)
+            {
+                return gameScene_IntroLoadMenu;
+            }
+        }
+
+        // Intro
+        if (GameScene == -1 || GameScene == gameScene_Intro)
+        {
+            bool mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
+            return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
+        }
+
+        return gameScene_MainMenu;
+    }
 
     if (has3DOnBothScreens)
     {
@@ -352,7 +382,21 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     }
     else if (has3DOnBottomScreen)
     {
-        return gameScene_InGameWithCutscene;
+        if (isUnplayableArea)
+        {
+            return gameScene_InGameMenu;
+        }
+
+        if (nds->GPU.GPU3D.RenderNumPolygons < 20)
+        {
+            if (nds->GPU.GPU2D_B.BlendCnt == 143 && nds->GPU.GPU2D_B.BlendAlpha == 16)
+            {
+                return gameScene_LoadingScreen;
+            }
+        }
+
+        // Unknown
+        return gameScene_Other;
     }
     else if (!has3DOnTopScreen)
     {
@@ -369,183 +413,24 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         return gameScene_Shop;
     }
 
-    if (has3DOnBothScreens)
+    if (isUnplayableArea)
     {
-        return gameScene_InGameWithCutscene;
+        return gameScene_InGameMenu;
     }
 
-    if (doesntLook3D)
-    {
-        // Intro save menu
-        bool isIntroLoadMenu = (nds->GPU.GPU2D_B.BlendCnt == 4164 || nds->GPU.GPU2D_B.BlendCnt == 4161) &&
-            (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) &&
-             nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
-            (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
-            (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
-        bool mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
+    // Pause Menu
+    // bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
+    // if (inMissionPauseMenu)
+    // {
+    //     return gameScene_PauseMenu;
+    // }
+    // else if (GameScene == gameScene_PauseMenu)
+    // {
+    //     return PriorGameScene;
+    // }
 
-        if (isIntroLoadMenu)
-        {
-            return gameScene_IntroLoadMenu;
-        }
-        if (GameScene == gameScene_IntroLoadMenu)
-        {
-            if (mayBeMainMenu)
-            {
-                return gameScene_MainMenu;
-            }
-            if (nds->GPU.GPU3D.NumVertices != 8)
-            {
-                return gameScene_IntroLoadMenu;
-            }
-        }
-
-        if (GameScene == gameScene_MainMenu)
-        {
-            if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0)
-            {
-                return gameScene_Cutscene;
-            }
-
-            mayBeMainMenu = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
-            if (mayBeMainMenu) {
-                return gameScene_MainMenu;
-            }
-        }
-
-        // Main menu
-        // if (mayBeMainMenu)
-        // {
-        //     return gameScene_MainMenu;
-        // }
-
-        // Intro
-        if (GameScene == -1 || GameScene == gameScene_Intro)
-        {
-            mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
-            return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
-        }
-
-        // Intro cutscene
-        if (GameScene == gameScene_Cutscene)
-        {
-            if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons >= 0 && nds->GPU.GPU3D.RenderNumPolygons <= 3)
-            {
-                return gameScene_Cutscene;
-            }
-        }
-
-        // In Game Save Menu
-        bool isGameSaveMenu = nds->GPU.GPU2D_A.BlendCnt == 4164 && (nds->GPU.GPU2D_B.EVA == 0 || nds->GPU.GPU2D_B.EVA == 16) && 
-             nds->GPU.GPU2D_B.EVB == 0 && nds->GPU.GPU2D_B.EVY == 0 &&
-            (nds->GPU.GPU2D_A.EVA < 10 && nds->GPU.GPU2D_A.EVA >= 2) && 
-            (nds->GPU.GPU2D_A.EVB >  7 && nds->GPU.GPU2D_A.EVB <= 14);
-        if (isGameSaveMenu) 
-        {
-            return gameScene_InGameSaveMenu;
-        }
-
-        mayBeMainMenu = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 0 &&
-                        nds->GPU.GPU2D_A.BlendCnt == 0;
-        if (mayBeMainMenu)
-        {
-            return gameScene_MainMenu;
-        }
-
-        if (nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0)
-        {
-            return gameScene_Cutscene;
-        }
-
-        if (has3DOnBottomScreen)
-        {
-            return gameScene_Cutscene;
-        }
-
-        return gameScene_CutsceneWithStaticImages;
-    }
-
-    if (has3DOnTopScreen)
-    {
-        // Tutorial
-        if (GameScene == gameScene_Tutorial && topScreenBrightness < 15)
-        {
-            return gameScene_Tutorial;
-        }
-        bool inTutorialScreen = topScreenBrightness == 8 && botScreenBrightness == 15;
-        if (inTutorialScreen)
-        {
-            return gameScene_Tutorial;
-        }
-        bool inTutorialScreenWithoutWarningOnTop = nds->GPU.GPU2D_A.BlendCnt == 193 && nds->GPU.GPU2D_B.BlendCnt == 172 && 
-                                                   nds->GPU.GPU2D_B.MasterBrightness == 0 && nds->GPU.GPU2D_B.EVY == 0;
-        if (inTutorialScreenWithoutWarningOnTop)
-        {
-            return gameScene_Tutorial;
-        }
-
-        bool inGameMenu = (nds->GPU.GPU3D.NumVertices > 940 || nds->GPU.GPU3D.NumVertices == 0) &&
-                          nds->GPU.GPU3D.RenderNumPolygons > 340 && nds->GPU.GPU3D.RenderNumPolygons < 370 &&
-                          (nds->GPU.GPU2D_A.BlendCnt == 0 || nds->GPU.GPU2D_A.BlendCnt == 2625) && nds->GPU.GPU2D_B.BlendCnt == 0;
-        if (inGameMenu)
-        {
-            return gameScene_InGameMenu;
-        }
-
-        // Story Mode - Normal missions
-        bool inHoloMissionMenu = ((nds->GPU.GPU3D.NumVertices == 344 && nds->GPU.GPU3D.NumPolygons == 89 && nds->GPU.GPU3D.RenderNumPolygons == 89) ||
-                                  (nds->GPU.GPU3D.NumVertices == 348 && nds->GPU.GPU3D.NumPolygons == 90 && nds->GPU.GPU3D.RenderNumPolygons == 90)) &&
-                                 nds->GPU.GPU2D_A.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendCnt == 0;
-        if (inHoloMissionMenu || GameScene == gameScene_InHoloMissionMenu)
-        {
-            return gameScene_InHoloMissionMenu;
-        }
-
-        // Story Mode - Normal missions - Day 357
-        inHoloMissionMenu = ((nds->GPU.GPU3D.NumVertices == 332 && nds->GPU.GPU3D.NumPolygons == 102 && nds->GPU.GPU3D.RenderNumPolygons == 102) ||
-                             (nds->GPU.GPU3D.NumVertices == 340 && nds->GPU.GPU3D.NumPolygons == 104 && nds->GPU.GPU3D.RenderNumPolygons == 104)) &&
-                            nds->GPU.GPU2D_A.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendCnt == 0;
-        if (inHoloMissionMenu || GameScene == gameScene_InHoloMissionMenu)
-        {
-            return gameScene_InHoloMissionMenu;
-        }
-
-        // Mission Mode / Story Mode - Challenges
-        inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 129 && (nds->GPU.GPU2D_B.BlendCnt >= 143 && nds->GPU.GPU2D_B.BlendCnt <= 207);
-        if (inHoloMissionMenu)
-        {
-            return gameScene_InHoloMissionMenu;
-        }
-
-        // I can't remember
-        inHoloMissionMenu = nds->GPU.GPU2D_A.BlendCnt == 2625 && nds->GPU.GPU2D_B.BlendCnt == 0;
-        if (inHoloMissionMenu)
-        {
-            return gameScene_InHoloMissionMenu;
-        }
-
-        // Pause Menu
-        // bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
-        // if (inMissionPauseMenu)
-        // {
-        //     return gameScene_PauseMenu;
-        // }
-        // else if (GameScene == gameScene_PauseMenu)
-        // {
-        //     return PriorGameScene;
-        // }
-
-        // Regular gameplay
-        return gameScene_InGameWithMap;
-    }
-
-    if (GameScene == gameScene_InGameWithMap)
-    {
-        return gameScene_InGameWithCutscene;
-    }
-
-    // Unknown
-    return gameScene_Other;
+    // Regular gameplay
+    return gameScene_InGameWithMap;
 }
 
 void PluginKingdomHeartsReCoded::setAspectRatio(float aspectRatio)
@@ -857,11 +742,21 @@ bool PluginKingdomHeartsReCoded::isSaveLoaded()
   ((byte) & 0x00000002 ? '1' : '0'), \
   ((byte) & 0x00000001 ? '1' : '0') 
 
+#define PRINT_AS_8_BIT_HEX(ADDRESS) printf("0x%08x: 0x%02x\n", ADDRESS, nds->ARM7Read8(ADDRESS))
+#define PRINT_AS_8_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read8(ADDRESS)))
+
+#define PRINT_AS_16_BIT_HEX(ADDRESS) printf("0x%08x: 0x%04x\n", ADDRESS, nds->ARM7Read16(ADDRESS))
+#define PRINT_AS_16_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read16(ADDRESS)))
+
 #define PRINT_AS_32_BIT_HEX(ADDRESS) printf("0x%08x: 0x%08x\n", ADDRESS, nds->ARM7Read32(ADDRESS))
 #define PRINT_AS_32_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))
 
 void PluginKingdomHeartsReCoded::debugLogs(int gameScene)
 {
+    // PRINT_AS_8_BIT_HEX(0x0205e704);
+    // PRINT_AS_8_BIT_HEX(0x0205e908);
+    // printf("\n");
+
     if (!DEBUG_MODE_ENABLED) {
         return;
     }

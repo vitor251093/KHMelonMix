@@ -625,11 +625,6 @@ int PluginKingdomHeartsDays::detectGameScene()
         return GameScene;
     }
 
-    // printf("0x02194CBF: %08x %08x\n", nds->ARM7Read32(0x02194CBF), nds->ARM7Read32(0x02194CC3));
-
-    // Also happens during intro, during the start of the mission review, on some menu screens; those seem to use real 2D elements
-    bool no3D = nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0 && nds->GPU.GPU3D.RenderNumPolygons == 0;
-
     bool wasSaveLoaded = isSaveLoaded();
     bool muchOlderHad3DOnTopScreen = _muchOlderHad3DOnTopScreen;
     bool muchOlderHad3DOnBottomScreen = _muchOlderHad3DOnBottomScreen;
