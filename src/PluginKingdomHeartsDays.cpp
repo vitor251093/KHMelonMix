@@ -1089,7 +1089,7 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
 
 // The states below also happen in multiple other places outside the main menu menus
 // 0 -> none
-// 1 -> main menu root
+// 1 -> main menu root / character selection
 // 2 -> panel
 // 3 -> holo-mission / challenges
 // 4 -> roxas's diary / enemy profile
