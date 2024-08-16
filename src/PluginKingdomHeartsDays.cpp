@@ -931,7 +931,6 @@ void PluginKingdomHeartsDays::refreshCutscene()
     }
     else { // Intro when waiting on the title screen, theater, and cutscenes before Day 7
 
-        // Intro when waiting on the title screen and cutscenes before Day 7
         if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && !isCutsceneScene) {
             onTerminateIngameCutscene();
         }
