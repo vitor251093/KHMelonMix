@@ -534,9 +534,8 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_RoxasThoughts: return "Game scene: Roxas Thoughts";
-        case gameScene_Other2D: return "Game scene: Unknown (2D)";
-        case gameScene_Other: return "Game scene: Unknown (3D)";
-        default: return "Game scene: Unknown";
+        case gameScene_Other: return "Game scene: Unknown";
+        default: return "Game scene: REALLY unknown";
     }
 }
 
@@ -747,7 +746,7 @@ int PluginKingdomHeartsDays::detectGameScene()
     else if (!has3DOnTopScreen)
     {
         // Unknown 2D
-        return gameScene_Other2D;
+        return gameScene_Other;
     }
 
     bool isShop = (nds->GPU.GPU3D.RenderNumPolygons == 264 && nds->GPU.GPU2D_A.BlendCnt == 0 && 

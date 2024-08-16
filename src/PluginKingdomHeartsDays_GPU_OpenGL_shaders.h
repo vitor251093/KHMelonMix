@@ -150,14 +150,6 @@ bool isColorBlack(ivec4 pixel)
 {
     return pixel.r < 5 && pixel.g < 5 && pixel.b < 5;
 }
-bool isColorVeryBlack(ivec4 pixel)
-{
-    return pixel.r < 2 && pixel.g < 2 && pixel.b < 2;
-}
-bool isColorWhite(ivec4 pixel)
-{
-    return pixel.r > 60 && pixel.g > 60 && pixel.b > 60;
-}
 ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
 {
     ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
@@ -170,15 +162,6 @@ ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
     ivec4 val3 = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0)));
     return combineLayers(_3dpix, val1, val2, val3);
 }
-bool isScreenWhite(int index)
-{
-    return isColorWhite(getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(1.0/3.0))) &&
-           isColorWhite(getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(2.0/3.0))) &&
-           isColorWhite(getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(1.0/3.0))) &&
-           isColorWhite(getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(2.0/3.0))) &&
-           isColorWhite(getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(1.0/3.0))) &&
-           isColorWhite(getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(2.0/3.0)));
-}
 bool isScreenBlack(int index)
 {
     return isColorBlack(getSimpleColorAtCoordinate(64, index*192.0 + 192.0*(1.0/3.0))) &&
@@ -187,35 +170,6 @@ bool isScreenBlack(int index)
            isColorBlack(getSimpleColorAtCoordinate(128, index*192.0 + 192.0*(2.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(1.0/3.0))) &&
            isColorBlack(getSimpleColorAtCoordinate(192, index*192.0 + 192.0*(2.0/3.0)));
-}
-bool isScreenBackgroundBlack(int index)
-{
-    return isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 0)) &&
-           isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(1.0/3.0))) &&
-           isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0*(2.0/3.0))) &&
-           isColorBlack(getSimpleColorAtCoordinate(0, index*192.0 + 192.0 - 1.0));
-}
-
-vec2 getGenericHudTextureCoordinates(float xpos, float ypos)
-{
-    vec2 texPosition3d = vec2(xpos, ypos);
-    float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = TopScreenAspectRatio;
-    vec2 fixStretch = vec2(widthScale, 1.0);
-
-    float sourceHeight = 192.0;
-    float sourceWidth = 256.0;
-    float height = sourceHeight;
-    float width = sourceWidth*heightScale;
-    float leftMargin = 256.0/2 - width/2;
-    if (texPosition3d.x <= width + leftMargin &&
-        texPosition3d.x > leftMargin)
-    {
-        return fixStretch*(texPosition3d - vec2(leftMargin, 0));
-    }
-
-    // nothing (clear screen)
-    return vec2(0, 0);
 }
 
 vec2 getSingleSquaredScreenTextureCoordinates(float xpos, float ypos, int screenIndex, vec2 clearVect)
@@ -538,10 +492,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 
     if (isCutsceneFromChallengeMissionVisible()) {
         return vec2(fTexcoord);
-    }
-
-    if (isScreenBackgroundBlack(0) && isScreenBackgroundBlack(1)) {
-        return getGenericHudTextureCoordinates(xpos, ypos);
     }
 
     // item notification
@@ -900,7 +850,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (GameScene == 15) { // gameScene_LoadingScreen
         return ivec2(getLoadingScreenTextureCoordinates(xpos, ypos));
     }
-    if (GameScene == 17) { // gameScene_Other2D
+    if (GameScene == 18) { // gameScene_Other
         return ivec2(getOther2DTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -1276,7 +1226,7 @@ ivec4 brightness()
         GameScene == 12 || // gameScene_InGameWithCutscene
         GameScene == 13 || // gameScene_MultiplayerMissionReview
         GameScene == 16 || // gameScene_RoxasThoughts
-        GameScene == 17) { // gameScene_Other2D
+        GameScene == 18) { // gameScene_Other
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
     if (GameScene == 11 || // gameScene_Tutorial
@@ -1306,18 +1256,18 @@ void main()
     {
         ivec4 _3dpix = getTopScreen3DColor();
 
-        ivec4 val1 = pixel;
-        ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(256,0), 0));
-        ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(512,0), 0));
-
-        if (fTexcoord.y <= 192)
+        if (fTexcoord.y <= 192) // top screen
         {
-            val1 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 0);
-            val2 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 1);
-            val3 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 2);
+            ivec4 val1 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 0);
+            ivec4 val2 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 1);
+            ivec4 val3 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 2);
+            pixel = combineLayers(_3dpix, val1, val2, val3);
         }
-
-        pixel = combineLayers(_3dpix, val1, val2, val3);
+        else // bottom screen
+        {
+            oColor = vec4(0.0, 0.0, 0.0, 1.0);
+            return;
+        }
     }
 
     if (dispmode != 0)
@@ -1343,8 +1293,6 @@ void main()
 
     pixel.rgb <<= 2;
     pixel.rgb |= (pixel.rgb >> 6);
-
-    // TODO: filters
 
     oColor = vec4(vec3(pixel.bgr) / 255.0, 1.0);
 }
