@@ -28,9 +28,7 @@ public:
 
     void onLoadState() {}
 
-    u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) {
-        return InputMask;
-    }
+    void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {}
     void applyTouchKeyMask(u32 TouchKeyMask) {}
     const char* getGameSceneName() {
         return "";

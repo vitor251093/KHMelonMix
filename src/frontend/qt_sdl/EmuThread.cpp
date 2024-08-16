@@ -176,6 +176,9 @@ void EmuThread::run()
 
                 printf("Loading plugin %s for game code %u\n", typeid(*plugin).name(), gamecode);
             }
+
+            plugin->applyTouchKeyMask(emuInstance->touchInputMask);
+            plugin->applyHotkeyToInputMask(&emuInstance->inputMask, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
         }
 
         if (emuInstance->hotkeyPressed(HK_FastForwardToggle)) emit windowLimitFPSChange();
@@ -270,9 +273,6 @@ void EmuThread::run()
                 videoSettingsDirty = false;
             }
 
-            // process input and hotkeys
-            plugin->applyTouchKeyMask(emuInstance->touchInputMask);
-            emuInstance->inputMask = plugin->applyHotkeyToInputMask(emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
             emuInstance->nds->SetKeyMask(emuInstance->inputMask);
 
             if (emuInstance->hotkeyPressed(HK_Lid))
@@ -473,8 +473,6 @@ void EmuThread::run()
             }
 
             if (plugin != nullptr) {
-                plugin->applyHotkeyToInputMask(emuInstance->inputMask, emuInstance->hotkeyMask, emuInstance->hotkeyPress);
-
                 refreshCutsceneState();
             }
         }

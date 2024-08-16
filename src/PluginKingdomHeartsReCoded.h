@@ -38,11 +38,11 @@ public:
 
     void onLoadState();
 
-    u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
+    void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     void applyTouchKeyMask(u32 TouchKeyMask);
 
-    int _StartPressCount;
-    int _SkipPressCount;
+    int _FastForwardPressCount;
+    int _SkipHdCutsceneCount;
     bool _PlayingCutsceneBeforeCredits;
     bool _PlayingCredits;
     bool _ShouldTerminateIngameCutscene;

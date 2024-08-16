@@ -39,11 +39,13 @@ public:
 
     void onLoadState();
 
-    u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress);
+    void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     void applyTouchKeyMask(u32 TouchKeyMask);
 
+    int _FastForwardPressCount;
     int _StartPressCount;
-    int _SkipPressCount;
+    bool _CanSkipHdCutscene;
+    bool _SkipDsCutscene;
     bool _PlayingCutsceneBeforeCredits;
     bool _PlayingCredits;
     bool _ShouldTerminateIngameCutscene;
@@ -56,6 +58,7 @@ public:
     bool _ShouldUnmuteAfterCutscene;
     bool _ShouldHideScreenForTransitions;
     CutsceneEntry* _CurrentCutscene;
+    CutsceneEntry* _NextCutscene;
     bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
     bool StoppedIngameCutscene() {
         if (_StoppedIngameCutscene) {

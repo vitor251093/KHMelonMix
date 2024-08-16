@@ -69,7 +69,7 @@ public:
 
     virtual void onLoadState() { };
 
-    virtual u32 applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress) = 0;
+    virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
     virtual void applyTouchKeyMask(u32 TouchKeyMask) = 0;
 
     virtual bool ShouldTerminateIngameCutscene() = 0;

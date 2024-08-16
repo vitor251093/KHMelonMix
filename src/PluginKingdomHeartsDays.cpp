@@ -174,9 +174,6 @@ CutsceneEntry Cutscenes[] =
     {"848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600},
 };
 
-#define SequentialCutscenesSize 3
-char SequentialCutscenes[SequentialCutscenesSize][2][12] = {{"837", "840"}, {"848", "834"}, {"842", "843"}};
-
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
@@ -207,8 +204,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _priorPriorIgnore3DOnBottomScreen = false;
 
     _StartPressCount = 0;
-    _SkipPressCount = 0;
-    _PlayingCutsceneBeforeCredits = false;
+    _CanSkipHdCutscene = false;
+    _SkipDsCutscene = false;
     _PlayingCredits = false;
     _StartedReplacementCutscene = false;
     _RunningReplacementCutscene = false;
@@ -220,6 +217,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _ShouldUnmuteAfterCutscene = false;
     _ShouldHideScreenForTransitions = false;
     _CurrentCutscene = nullptr;
+    _NextCutscene = nullptr;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -346,40 +344,51 @@ void PluginKingdomHeartsDays::onLoadState()
     nds->ARM7Write32(cutsceneAddress2, 0x0);
 }
 
-u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
+void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
 {
-    ramSearch(nds, HotkeyPress);
+    ramSearch(nds, *HotkeyPress);
 
     if (GameScene == -1)
     {
-        return InputMask;
+        return;
     }
 
     if (_PlayingCredits)
     {
-        return 0xFFF;
+        *InputMask = 0xFFF;
+        return;
     }
 
-    if (_RunningReplacementCutscene && (~InputMask) & (1 << 3) && _SkipPressCount > 0) { // Start (skip HD cutscene)
+    if (_RunningReplacementCutscene && (_SkipDsCutscene || (~(*InputMask)) & (1 << 3)) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
+        _SkipDsCutscene = true;
         if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
-            _SkipPressCount--;
+            _SkipDsCutscene = false;
+            _CanSkipHdCutscene = false;
             _ShouldStopReplacementCutscene = true;
-            InputMask |= (1<<3);
+            *InputMask |= (1<<3);
+        }
+        else {
+            if (_StartPressCount == 0) {
+                _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
+            }
         }
     }
 
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount > 0) {
-        _StartPressCount--;
-        InputMask &= ~(1<<3); // Start (skip DS cutscene)
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
+        if (_StartPressCount > 0) {
+            _StartPressCount--;
+            *InputMask &= ~(1<<3); // Start (skip DS cutscene)
+        }
+        *HotkeyMask |= (1<<4); // Fast Forward (skip DS cutscene)
     }
 
-    if (HotkeyPress & (1 << 15)) { // HUD Toggle
+    if (*HotkeyPress & (1 << 15)) { // HUD Toggle
         hudToggle();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
-        if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) { // D-pad
+        if ((*HotkeyMask) & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) { // D-pad
             u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP,
@@ -391,25 +400,25 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
         }
 
         // So the arrow keys can be used to control the command menu
-        if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
-            InputMask &= ~(1<<10); // X
-            InputMask |= (1<<5); // left
-            InputMask |= (1<<4); // right
-            InputMask |= (1<<6); // up
-            InputMask |= (1<<7); // down
+        if ((*HotkeyMask) & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
+            *InputMask &= ~(1<<10); // X
+            *InputMask |= (1<<5); // left
+            *InputMask |= (1<<4); // right
+            *InputMask |= (1<<6); // up
+            *InputMask |= (1<<7); // down
             if (PriorPriorHotkeyMask & (1 << 18)) // Old D-pad left
-                InputMask &= ~(1<<5); // left
+                *InputMask &= ~(1<<5); // left
             if (PriorPriorHotkeyMask & (1 << 19)) // Old D-pad right
-                InputMask &= ~(1<<4); // right
+                *InputMask &= ~(1<<4); // right
             if (PriorPriorHotkeyMask & (1 << 20)) // Old D-pad up
-                InputMask &= ~(1<<6); // up
+                *InputMask &= ~(1<<6); // up
             if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad down
-                InputMask &= ~(1<<7); // down
+                *InputMask &= ~(1<<7); // down
         }
 
         // R / Lock On
         {
-            if (HotkeyMask & (1 << 16)) {
+            if ((*HotkeyMask) & (1 << 16)) {
                 if (LastLockOnPress == 1) {
                     LastLockOnPress = 0;
                 }
@@ -418,16 +427,16 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
                 }
             }
             if (LastLockOnPress == 0) {
-                InputMask &= ~(1<<8); // R
+                *InputMask &= ~(1<<8); // R
             }
             if (LastLockOnPress == 4 || LastLockOnPress == 5 || LastLockOnPress == 6) {
-                InputMask &= ~(1<<8); // R (three frames later)
+                *InputMask &= ~(1<<8); // R (three frames later)
             }
         }
 
         // Switch Target
         {
-            if (HotkeyMask & (1 << 17)) {
+            if ((*HotkeyMask) & (1 << 17)) {
                 if (LastSwitchTargetPress == 1) {
                     LastSwitchTargetPress = 0;
                 }
@@ -447,37 +456,35 @@ u32 PluginKingdomHeartsDays::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMas
                 }
             }
             if (LastSwitchTargetPress == 0 || LastSwitchTargetPress == 1 || LastSwitchTargetPress == 2) {
-                InputMask &= ~(1<<8); // R
+                *InputMask &= ~(1<<8); // R
             }
         }
     }
     else {
         // So the arrow keys can be used as directionals
-        if (HotkeyMask & (1 << 18)) { // D-pad left
-            InputMask &= ~(1<<5); // left
+        if ((*HotkeyMask) & (1 << 18)) { // D-pad left
+            *InputMask &= ~(1<<5); // left
         }
-        if (HotkeyMask & (1 << 19)) { // D-pad right
-            InputMask &= ~(1<<4); // right
+        if ((*HotkeyMask) & (1 << 19)) { // D-pad right
+            *InputMask &= ~(1<<4); // right
         }
-        if (HotkeyMask & (1 << 20)) { // D-pad up
-            InputMask &= ~(1<<6); // up
+        if ((*HotkeyMask) & (1 << 20)) { // D-pad up
+            *InputMask &= ~(1<<6); // up
         }
-        if (HotkeyMask & (1 << 21)) { // D-pad down
-            InputMask &= ~(1<<7); // down
+        if ((*HotkeyMask) & (1 << 21)) { // D-pad down
+            *InputMask &= ~(1<<7); // down
         }
 
-        if (HotkeyMask & (1 << 16)) { // R / Lock On
-            InputMask &= ~(1<<8); // R
+        if ((*HotkeyMask) & (1 << 16)) { // R / Lock On
+            *InputMask &= ~(1<<8); // R
         }
     }
 
     PriorPriorHotkeyMask = PriorHotkeyMask;
-    PriorHotkeyMask = HotkeyMask;
+    PriorHotkeyMask = (*HotkeyMask);
 
     if (LastSwitchTargetPress < SWITCH_TARGET_PRESS_FRAME_LIMIT) LastSwitchTargetPress++;
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
-
-    return InputMask;
 }
 
 void PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
@@ -888,21 +895,6 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene()
 
 CutsceneEntry* PluginKingdomHeartsDays::detectSequenceCutscene()
 {
-    bool wasSaveLoaded = isSaveLoaded();
-    if (!wasSaveLoaded) {
-        return nullptr;
-    }
-
-    for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
-        if (strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][0]) == 0) {
-            for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-                if (strcmp(entry->DsName, SequentialCutscenes[seqIndex][1]) == 0) {
-                    return entry;
-                }
-            }
-        }
-    }
-
     return nullptr;
 }
 
@@ -915,15 +907,12 @@ void PluginKingdomHeartsDays::refreshCutscene()
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
     CutsceneEntry* cutscene = detectCutscene();
     bool wasSaveLoaded = isSaveLoaded();
-
-    // Avoiding bug with the credits
-    if (cutscene != nullptr && wasSaveLoaded && strcmp(cutscene->DsName, "843") == 0) {
-        cutscene = nullptr;
-    }
     
     if (cutscene != nullptr) {
         onIngameCutsceneIdentified(cutscene);
     }
+
+    bool cutsceneEnded = !isCutsceneScene || _NextCutscene != nullptr;
 
     // Natural progression for all cutscenes
     if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
@@ -932,30 +921,19 @@ void PluginKingdomHeartsDays::refreshCutscene()
 
     if (wasSaveLoaded) { // In game cutscenes (starting from Day 7)
         
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount == 0 && (!isCutsceneScene || _PlayingCutsceneBeforeCredits)) {
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && cutsceneEnded) {
             onTerminateIngameCutscene();
         }
 
-        if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || _PlayingCredits || _PlayingCutsceneBeforeCredits)) {
+        if (_ShouldReturnToGameAfterCutscene && (cutsceneEnded || _PlayingCredits)) {
             onReturnToGameAfterCutscene();
         }
     }
     else { // Intro when waiting on the title screen, theater, and cutscenes before Day 7
 
         // Intro when waiting on the title screen and cutscenes before Day 7
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount == 0 && !isCutsceneScene) {
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && !isCutsceneScene) {
             onTerminateIngameCutscene();
-        }
-
-        // Theater only
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount == 0 && isCutsceneScene) {
-            u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
-            u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
-            u32 fullMap = world;
-            fullMap = (fullMap << 4*2) | map;
-            if (fullMap != 128) {
-                onTerminateIngameCutscene();
-            }
         }
 
         if (_ShouldReturnToGameAfterCutscene) {
@@ -982,32 +960,24 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene
         return;
     }
 
-    // Workaround so those two cutscenes are played in sequence ingame,
-    // without playing the first cutscene again
-    bool wasSaveLoaded = isSaveLoaded();
-    if (wasSaveLoaded) {
-        for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
-            if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][1]) == 0 &&
-                                               strcmp(cutscene->DsName,         SequentialCutscenes[seqIndex][0]) == 0) {
-                return;
-            }
-        }
-    }
-
     std::string path = CutsceneFilePath(cutscene);
     if (path == "") {
+        return;
+    }
+
+    if (_CurrentCutscene != nullptr) {
+        _NextCutscene = cutscene;
         return;
     }
 
     printf("Preparing to load cutscene: %s\n", cutscene->Name);
     log("Cutscene detected");
 
-    _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
-    _SkipPressCount = 1;
+    _CanSkipHdCutscene = true;
     _CurrentCutscene = cutscene;
+    _NextCutscene = nullptr;
     _ShouldTerminateIngameCutscene = true;
-    _PlayingCredits = wasSaveLoaded && strcmp(cutscene->DsName, "843") == 0;
-    _PlayingCutsceneBeforeCredits = wasSaveLoaded && strcmp(cutscene->DsName, "842") == 0;
+    _PlayingCredits = isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
     if (_CurrentCutscene == nullptr) {
@@ -1017,7 +987,7 @@ void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
     _ShouldTerminateIngameCutscene = false;
     _StoppedIngameCutscene = true;
 
-    if (_PlayingCutsceneBeforeCredits || _PlayingCredits) {
+    if (_PlayingCredits) {
         _StoppedIngameCutscene = false;
     }
 }
@@ -1034,34 +1004,21 @@ void PluginKingdomHeartsDays::onReplacementCutsceneEnd() {
     _RunningReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = true;
-
-    CutsceneEntry* sequence = detectSequenceCutscene();
-    _ShouldHideScreenForTransitions = sequence != nullptr;
+    _ShouldHideScreenForTransitions = false;
 }
 void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     log("Returning to the game");
     _StartPressCount = 0;
     _PlayingCredits = false;
-    _PlayingCutsceneBeforeCredits = false;
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = false;
     _RunningReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
     _ShouldUnmuteAfterCutscene = true;
 
-    // Ugly workaround to play one cutscene after another one, because both are skipped with a single "Start" click
-    bool newCutsceneWillPlay = false;
-    CutsceneEntry* sequence = detectSequenceCutscene();
-    if (sequence != nullptr) {
-        onIngameCutsceneIdentified(sequence);
-        _ShouldStartReplacementCutscene = true;
-        _ShouldUnmuteAfterCutscene = false;
-        newCutsceneWillPlay = true;
-    }
+    _CurrentCutscene = nullptr;
 
-    if (!newCutsceneWillPlay) {
-        _CurrentCutscene = nullptr;
-
+    if (_NextCutscene == nullptr) {
         u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
         u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
         nds->ARM7Write32(cutsceneAddress, 0x0);

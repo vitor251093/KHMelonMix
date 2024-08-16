@@ -86,8 +86,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
 
-    _StartPressCount = 0;
-    _SkipPressCount = 0;
+    _SkipHdCutsceneCount = 0;
     _PlayingCutsceneBeforeCredits = false;
     _PlayingCredits = false;
     _StartedReplacementCutscene = false;
@@ -164,78 +163,76 @@ void PluginKingdomHeartsReCoded::onLoadState()
 
 }
 
-u32 PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32 InputMask, u32 HotkeyMask, u32 HotkeyPress)
+void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
 {
-    ramSearch(nds, HotkeyPress);
+    ramSearch(nds, *HotkeyPress);
 
     if (GameScene == -1)
     {
-        return InputMask;
+        return;
     }
 
     if (_PlayingCredits)
     {
-        return 0xFFF;
+        *InputMask = 0xFFF;
+        return;
     }
 
-    if (_RunningReplacementCutscene && (~InputMask) & (1 << 3) && _SkipPressCount > 0) { // Start (skip HD cutscene)
+    if (_RunningReplacementCutscene && (~(*InputMask)) & (1 << 3) && _SkipHdCutsceneCount > 0) { // Start (skip HD cutscene)
         if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
-            _SkipPressCount--;
+            _SkipHdCutsceneCount--;
             _ShouldStopReplacementCutscene = true;
-            InputMask |= (1<<3);
+            *InputMask |= (1<<3);
         }
     }
 
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount > 0) {
-        _StartPressCount--;
-        InputMask &= ~(1<<3); // Start (skip DS cutscene)
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
+        *HotkeyPress |= (1<<5); // Fast Forward (skip DS cutscene)
     }
 
-    if (HotkeyPress & (1 << 15)) { // HUD Toggle
+    if ((*HotkeyPress) & (1 << 15)) { // HUD Toggle
         hudToggle();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
-        if (HotkeyMask & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
-            InputMask &= ~(1<<10); // X
-            InputMask |= (1<<5); // left
-            InputMask |= (1<<4); // right
-            InputMask |= (1<<6); // up
-            InputMask |= (1<<7); // down
+        if ((*HotkeyMask) & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
+            *InputMask &= ~(1<<10); // X
+            *InputMask |= (1<<5); // left
+            *InputMask |= (1<<4); // right
+            *InputMask |= (1<<6); // up
+            *InputMask |= (1<<7); // down
             if (PriorPriorHotkeyMask & (1 << 18)) // Old D-pad left
-                InputMask &= ~(1<<5); // left
+                *InputMask &= ~(1<<5); // left
             if (PriorPriorHotkeyMask & (1 << 19)) // Old D-pad right
-                InputMask &= ~(1<<4); // right
+                *InputMask &= ~(1<<4); // right
             if (PriorPriorHotkeyMask & (1 << 20)) // Old D-pad up
-                InputMask &= ~(1<<6); // up
+                *InputMask &= ~(1<<6); // up
             if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad down
-                InputMask &= ~(1<<7); // down
+                *InputMask &= ~(1<<7); // down
         }
     }
     else {
         // So the arrow keys can be used as directionals
-        if (HotkeyMask & (1 << 18)) { // D-pad left
-            InputMask &= ~(1<<5); // left
+        if ((*HotkeyMask) & (1 << 18)) { // D-pad left
+            *InputMask &= ~(1<<5); // left
         }
-        if (HotkeyMask & (1 << 19)) { // D-pad right
-            InputMask &= ~(1<<4); // right
+        if ((*HotkeyMask) & (1 << 19)) { // D-pad right
+            *InputMask &= ~(1<<4); // right
         }
-        if (HotkeyMask & (1 << 20)) { // D-pad up
-            InputMask &= ~(1<<6); // up
+        if ((*HotkeyMask) & (1 << 20)) { // D-pad up
+            *InputMask &= ~(1<<6); // up
         }
-        if (HotkeyMask & (1 << 21)) { // D-pad down
-            InputMask &= ~(1<<7); // down
+        if ((*HotkeyMask) & (1 << 21)) { // D-pad down
+            *InputMask &= ~(1<<7); // down
         }
     }
 
     PriorPriorHotkeyMask = PriorHotkeyMask;
-    PriorHotkeyMask = HotkeyMask;
+    PriorHotkeyMask = (*HotkeyMask);
 
     if (LastSwitchTargetPress < SWITCH_TARGET_PRESS_FRAME_LIMIT) LastSwitchTargetPress++;
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
-
-    return InputMask;
 }
 
 void PluginKingdomHeartsReCoded::applyTouchKeyMask(u32 TouchKeyMask)
@@ -533,7 +530,7 @@ void PluginKingdomHeartsReCoded::refreshCutscene()
 
     if (wasSaveLoaded) { // In game cutscenes (starting from Day 7)
         
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount == 0 && (!isCutsceneScene || _PlayingCutsceneBeforeCredits)) {
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && (!isCutsceneScene || _PlayingCutsceneBeforeCredits)) {
             onTerminateIngameCutscene();
         }
 
@@ -544,12 +541,12 @@ void PluginKingdomHeartsReCoded::refreshCutscene()
     else { // Intro when waiting on the title screen, theater, and cutscenes before Day 7
 
         // Intro when waiting on the title screen and cutscenes before Day 7
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount == 0 && !isCutsceneScene) {
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && !isCutsceneScene) {
             onTerminateIngameCutscene();
         }
 
         // Theater only
-        // if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && _StartPressCount == 0 && isCutsceneScene) {
+        // if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && isCutsceneScene) {
         //     u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
         //     u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
         //     u32 fullMap = world;
@@ -603,8 +600,7 @@ void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(CutsceneEntry* cutsc
     printf("Preparing to load cutscene: %s\n", cutscene->Name);
     log("Cutscene detected");
 
-    _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
-    _SkipPressCount = 1;
+    _SkipHdCutsceneCount = 1;
     _CurrentCutscene = cutscene;
     _ShouldTerminateIngameCutscene = true;
     // _PlayingCredits = wasSaveLoaded && strcmp(cutscene->DsName, "843") == 0;
@@ -641,7 +637,6 @@ void PluginKingdomHeartsReCoded::onReplacementCutsceneEnd() {
 }
 void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene() {
     log("Returning to the game");
-    _StartPressCount = 0;
     _PlayingCredits = false;
     _PlayingCutsceneBeforeCredits = false;
     _ShouldStartReplacementCutscene = false;
