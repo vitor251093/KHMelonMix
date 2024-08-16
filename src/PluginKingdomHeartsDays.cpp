@@ -113,19 +113,15 @@ enum
     gameScene_DayCounter,               // 3
     gameScene_Cutscene,                 // 4
     gameScene_InGameWithMap,            // 5
-    gameScene_InGameWithoutMap,         // 6 (deprecated)
-    gameScene_InGameMenu,               // 7
-    gameScene_InGameSaveMenu,           // 8 (deprecated)
-    gameScene_InHoloMissionMenu,        // 9 (deprecated)
-    gameScene_PauseMenu,                // 10
-    gameScene_Tutorial,                 // 11
-    gameScene_InGameWithCutscene,       // 12
-    gameScene_MultiplayerMissionReview, // 13
-    gameScene_Shop,                     // 14
-    gameScene_LoadingScreen,            // 15
-    gameScene_RoxasThoughts,            // 16
-    gameScene_Other2D,                  // 17
-    gameScene_Other                     // 18
+    gameScene_InGameMenu,               // 6
+    gameScene_PauseMenu,                // 7
+    gameScene_Tutorial,                 // 8
+    gameScene_InGameWithCutscene,       // 9
+    gameScene_MultiplayerMissionReview, // 10
+    gameScene_Shop,                     // 11
+    gameScene_LoadingScreen,            // 12
+    gameScene_RoxasThoughts,            // 13
+    gameScene_Other                     // 14
 };
 
 CutsceneEntry Cutscenes[] =

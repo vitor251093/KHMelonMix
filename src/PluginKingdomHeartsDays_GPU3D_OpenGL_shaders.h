@@ -64,7 +64,7 @@ void main()
         }
     }
 
-    if (GameScene == 10) // gameScene_PauseMenu
+    if (GameScene == 7) // gameScene_PauseMenu
     {
         float heartWidth = (256.0*u3DScale)/2.5;
         float heartHeight = (192.0*u3DScale)/2.5;

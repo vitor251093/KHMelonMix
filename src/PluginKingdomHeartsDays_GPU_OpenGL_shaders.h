@@ -692,7 +692,7 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (!isScreenBlack(1) && PriorGameScene != 12) // gameScene_InGameWithCutscene
+    if (!isScreenBlack(1) && PriorGameScene != 9) // gameScene_InGameWithCutscene
     {
         if (isMissionInformationVisibleOnBottomScreen()) {
             vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, false, true);
@@ -800,7 +800,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     }
 
     if (GameScene == 3 ||  // gameScene_DayCounter
-        GameScene == 16) { // gameScene_RoxasThoughts
+        GameScene == 13) { // gameScene_RoxasThoughts
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
     }
 
@@ -812,7 +812,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
 
-    if (GameScene == 7) { // gameScene_InGameMenu
+    if (GameScene == 6) { // gameScene_InGameMenu
         if (MainMenuView == 3) { // holo-mission / challenges
             return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
         }
@@ -828,29 +828,29 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 191)));
     }
 
-    if (GameScene == 10) { // gameScene_PauseMenu
+    if (GameScene == 7) { // gameScene_PauseMenu
         return ivec2(getPauseHudTextureCoordinates(xpos, ypos));
     }
 
-    if (GameScene == 11) { // gameScene_Tutorial
+    if (GameScene == 8) { // gameScene_Tutorial
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
-    if (GameScene == 12) { // gameScene_InGameWithCutscene
+    if (GameScene == 9) { // gameScene_InGameWithCutscene
         if (!is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(130, 190))) {
             return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
         }
         return ivec2(-1, -1);
     }
-    if (GameScene == 13) { // gameScene_MultiplayerMissionReview
+    if (GameScene == 10) { // gameScene_MultiplayerMissionReview
         return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
     }
-    if (GameScene == 14) { // gameScene_Shop
+    if (GameScene == 11) { // gameScene_Shop
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
     }
-    if (GameScene == 15) { // gameScene_LoadingScreen
+    if (GameScene == 12) { // gameScene_LoadingScreen
         return ivec2(getLoadingScreenTextureCoordinates(xpos, ypos));
     }
-    if (GameScene == 18) { // gameScene_Other
+    if (GameScene == 14) { // gameScene_Other
         return ivec2(getOther2DTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -1000,7 +1000,7 @@ ivec4 getTopScreen3DColor()
     if (GameScene == 3) { // gameScene_DayCounter
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
-    if (GameScene == 7) { // gameScene_InGameMenu
+    if (GameScene == 6) { // gameScene_InGameMenu
         if (MainMenuView == 3) { // holo-mission / challenges
             return getHorizontalDualScreen3DColor(xpos, ypos);
         }
@@ -1012,10 +1012,10 @@ ivec4 getTopScreen3DColor()
         }
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
-    if (GameScene == 13) { // gameScene_MultiplayerMissionReview
+    if (GameScene == 10) { // gameScene_MultiplayerMissionReview
         return getVerticalDualScreen3DColor(xpos, ypos);
     }
-    if (GameScene == 14) { // gameScene_Shop
+    if (GameScene == 11) { // gameScene_Shop
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
 
@@ -1153,7 +1153,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         }
     }
 
-    if (GameScene == 5 || GameScene == 10) // gameScene_InGameWithMap or gameScene_PauseMenu
+    if (GameScene == 5 || GameScene == 7) // gameScene_InGameWithMap or gameScene_PauseMenu
     {
         if (!isDialogVisible())
         {
@@ -1222,18 +1222,18 @@ ivec4 brightness()
         }
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (GameScene == 10 || // gameScene_PauseMenu
-        GameScene == 12 || // gameScene_InGameWithCutscene
-        GameScene == 13 || // gameScene_MultiplayerMissionReview
-        GameScene == 16 || // gameScene_RoxasThoughts
-        GameScene == 18) { // gameScene_Other
+    if (GameScene == 7  || // gameScene_PauseMenu
+        GameScene == 9  || // gameScene_InGameWithCutscene
+        GameScene == 10 || // gameScene_MultiplayerMissionReview
+        GameScene == 13 || // gameScene_RoxasThoughts
+        GameScene == 14) { // gameScene_Other
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (GameScene == 11 || // gameScene_Tutorial
-        GameScene == 15) { // gameScene_LoadingScreen
+    if (GameScene == 8  || // gameScene_Tutorial
+        GameScene == 12) { // gameScene_LoadingScreen
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     }
-    if (GameScene == 14) { // gameScene_Shop
+    if (GameScene == 11) { // gameScene_Shop
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
 
