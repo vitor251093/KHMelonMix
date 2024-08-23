@@ -777,8 +777,8 @@ int PluginKingdomHeartsDays::detectGameScene()
     }
 
     // Pause Menu
-    bool inMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
-    if (inMissionPauseMenu)
+    bool mayBeMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
+    if (mayBeMissionPauseMenu)
     {
         return gameScene_PauseMenu;
     }

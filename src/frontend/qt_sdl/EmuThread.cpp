@@ -610,7 +610,7 @@ void EmuThread::handleMessages()
 void EmuThread::refreshGameScene()
 {
     bool updated = plugin->refreshGameScene();
-    if (updated && SHOW_GAME_SCENE_ENABLED)
+    if (updated && SHOW_GAME_SCENE)
     {
         emuInstance->osdAddMessage(0, plugin->getGameSceneName());
     }
