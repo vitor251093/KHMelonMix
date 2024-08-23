@@ -80,15 +80,10 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_INGAME_MENU_VIEW_JP      0x020b19ac
 #define CURRENT_INGAME_MENU_VIEW_JP_REV1 0x020b196c
 
-#define IS_TUTORIAL_ADDRESS_US      0x020d7408
-#define IS_TUTORIAL_ADDRESS_EU      0x020d7410
-#define IS_TUTORIAL_ADDRESS_JP      0x020d6950
-#define IS_TUTORIAL_ADDRESS_JP_REV1 0x020d6910
-
-#define IS_TUTORIAL_VALUE_US      0x55
-#define IS_TUTORIAL_VALUE_EU      0xb0
-#define IS_TUTORIAL_VALUE_JP      0x30
-#define IS_TUTORIAL_VALUE_JP_REV1 0xb0
+#define TUTORIAL_ADDRESS_US      0x0207f9dc
+#define TUTORIAL_ADDRESS_EU      0x020d7410 // TODO: KH
+#define TUTORIAL_ADDRESS_JP      0x020d6950 // TODO: KH
+#define TUTORIAL_ADDRESS_JP_REV1 0x020d6910 // TODO: KH
 
 #define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
 #define CURRENT_MAP_FROM_WORLD_EU      0x02189CC6
@@ -486,12 +481,9 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
 
 void PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
 {
-    if (GameScene == -1)
-    {
-        return;
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
+        nds->SetTouchKeyMask(TouchKeyMask);
     }
-
-    nds->SetTouchKeyMask(TouchKeyMask);
 }
 
 void PluginKingdomHeartsDays::hudToggle()
@@ -650,8 +642,7 @@ int PluginKingdomHeartsDays::detectGameScene()
         getAddressByCart(LOAD_MENU_MAIN_MENU_VIEW_US, LOAD_MENU_MAIN_MENU_VIEW_EU, LOAD_MENU_MAIN_MENU_VIEW_JP, LOAD_MENU_MAIN_MENU_VIEW_JP_REV1);
     bool isDaysCounter = nds->ARM7Read8(getAddressByCart(IS_DAYS_COUNTER_US, IS_DAYS_COUNTER_EU, IS_DAYS_COUNTER_JP, IS_DAYS_COUNTER_JP_REV1)) ==
         getAddressByCart(IS_DAYS_COUNTER_VALUE_US, IS_DAYS_COUNTER_VALUE_EU, IS_DAYS_COUNTER_VALUE_JP, IS_DAYS_COUNTER_VALUE_JP_REV1);
-    bool isTutorial = nds->ARM7Read8(getAddressByCart(IS_TUTORIAL_ADDRESS_US, IS_TUTORIAL_ADDRESS_EU, IS_TUTORIAL_ADDRESS_JP, IS_TUTORIAL_ADDRESS_JP_REV1)) ==
-        getAddressByCart(IS_TUTORIAL_VALUE_US, IS_TUTORIAL_VALUE_EU, IS_TUTORIAL_VALUE_JP, IS_TUTORIAL_VALUE_JP_REV1);
+    bool isTutorial = nds->ARM7Read8(getAddressByCart(TUTORIAL_ADDRESS_US, TUTORIAL_ADDRESS_EU, TUTORIAL_ADDRESS_JP, TUTORIAL_ADDRESS_JP_REV1)) != 0;
 
     if (isCutscene)
     {
@@ -708,6 +699,11 @@ int PluginKingdomHeartsDays::detectGameScene()
 
     if (has3DOnBothScreens)
     {
+        if (nds->GPU.GPU3D.RenderNumPolygons < 20)
+        {
+            return GameScene;
+        }
+
         bool isMissionVictory = (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 0) ||
                                 (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 130) ||
                                 (nds->GPU.GPU2D_A.BlendCnt == 0   && nds->GPU.GPU2D_B.BlendCnt == 2625) ||
