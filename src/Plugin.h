@@ -3,6 +3,7 @@
 
 #define REPLACEMENT_CUTSCENES_ENABLED true
 
+#define SHOW_GAME_SCENE_ENABLED false
 #define DEBUG_MODE_ENABLED false
 #define DEBUG_LOG_FILE_ENABLED false
 
