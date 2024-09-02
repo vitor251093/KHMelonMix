@@ -767,6 +767,10 @@ int PluginKingdomHeartsDays::detectGameScene()
     {
         return gameScene_PauseMenu;
     }
+    else if (GameScene == gameScene_PauseMenu)
+    {
+        return PriorGameScene;
+    }
 
     if (isUnplayableArea)
     {
@@ -789,12 +793,6 @@ int PluginKingdomHeartsDays::detectGameScene()
     if (isTutorial)
     {
         return gameScene_Tutorial;
-    }
-
-    // Back from Pause Menu
-    if (GameScene == gameScene_PauseMenu)
-    {
-        return PriorGameScene;
     }
 
     // Regular gameplay with a map
