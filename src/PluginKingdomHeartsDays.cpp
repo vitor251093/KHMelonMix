@@ -35,6 +35,15 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_PLAYABLE_AREA_JP      0x02044b26
 #define IS_PLAYABLE_AREA_JP_REV1 0x02044ae6
 
+#define PAUSE_SCREEN_ADDRESS_US      0x0204bd64
+#define PAUSE_SCREEN_ADDRESS_EU      0x0204bd64 // TODO: KH
+#define PAUSE_SCREEN_ADDRESS_JP      0x0204bd64 // TODO: KH
+#define PAUSE_SCREEN_ADDRESS_JP_REV1 0x0204bd64 // TODO: KH
+
+#define PAUSE_SCREEN_VALUE_NONE       0x00
+#define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
+#define PAUSE_SCREEN_VALUE_FAKE_PAUSE 0x02 // mission mode; game isn't paused, but pause view is shown
+
 #define CURRENT_WORLD_US      0x0204C2CF
 #define CURRENT_WORLD_EU      0x0204C2EF
 #define CURRENT_WORLD_JP      0x0204C72F
@@ -643,6 +652,7 @@ int PluginKingdomHeartsDays::detectGameScene()
     bool isDaysCounter = nds->ARM7Read8(getAddressByCart(IS_DAYS_COUNTER_US, IS_DAYS_COUNTER_EU, IS_DAYS_COUNTER_JP, IS_DAYS_COUNTER_JP_REV1)) ==
         getAddressByCart(IS_DAYS_COUNTER_VALUE_US, IS_DAYS_COUNTER_VALUE_EU, IS_DAYS_COUNTER_VALUE_JP, IS_DAYS_COUNTER_VALUE_JP_REV1);
     bool isTutorial = nds->ARM7Read32(getAddressByCart(TUTORIAL_ADDRESS_US, TUTORIAL_ADDRESS_EU, TUTORIAL_ADDRESS_JP, TUTORIAL_ADDRESS_JP_REV1)) != 0;
+    bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP, PAUSE_SCREEN_ADDRESS_JP_REV1)) != 0;
 
     if (isCutscene)
     {
@@ -753,6 +763,11 @@ int PluginKingdomHeartsDays::detectGameScene()
         return gameScene_Shop;
     }
 
+    if (isPauseScreen)
+    {
+        return gameScene_PauseMenu;
+    }
+
     if (isUnplayableArea)
     {
         return gameScene_InGameMenu;
@@ -776,13 +791,8 @@ int PluginKingdomHeartsDays::detectGameScene()
         return gameScene_Tutorial;
     }
 
-    // Pause Menu
-    bool mayBeMissionPauseMenu = nds->GPU.GPU2D_A.EVY == 8 && (nds->GPU.GPU2D_B.EVY == 8 || nds->GPU.GPU2D_B.EVY == 16);
-    if (mayBeMissionPauseMenu)
-    {
-        return gameScene_PauseMenu;
-    }
-    else if (GameScene == gameScene_PauseMenu)
+    // Back from Pause Menu
+    if (GameScene == gameScene_PauseMenu)
     {
         return PriorGameScene;
     }
