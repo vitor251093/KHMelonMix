@@ -37,7 +37,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 #define PAUSE_SCREEN_ADDRESS_US      0x0204bd64
 #define PAUSE_SCREEN_ADDRESS_EU      0x0204bd84
-#define PAUSE_SCREEN_ADDRESS_JP      0x0204bd64 // TODO: KH
+#define PAUSE_SCREEN_ADDRESS_JP      0x0204c1c4
 #define PAUSE_SCREEN_ADDRESS_JP_REV1 0x0204bd64 // TODO: KH
 
 #define PAUSE_SCREEN_VALUE_NONE       0x00
@@ -46,12 +46,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 #define DEATH_SCREEN_ADDRESS_US      0x0204bd84
 #define DEATH_SCREEN_ADDRESS_EU      0x0204c08e
-#define DEATH_SCREEN_ADDRESS_JP      0x0204bd84 // TODO: KH
+#define DEATH_SCREEN_ADDRESS_JP      0x0204c56e
 #define DEATH_SCREEN_ADDRESS_JP_REV1 0x0204bd84 // TODO: KH
 
 #define DEATH_SCREEN_VALUE_US      0x80
 #define DEATH_SCREEN_VALUE_EU      0x00
-#define DEATH_SCREEN_VALUE_JP      0x80 // TODO: KH
+#define DEATH_SCREEN_VALUE_JP      0x00
 #define DEATH_SCREEN_VALUE_JP_REV1 0x80 // TODO: KH
 
 #define CURRENT_WORLD_US      0x0204C2CF
@@ -101,7 +101,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 #define TUTORIAL_ADDRESS_US      0x0207f9dc
 #define TUTORIAL_ADDRESS_EU      0x0207f9fc
-#define TUTORIAL_ADDRESS_JP      0x020d6950 // TODO: KH
+#define TUTORIAL_ADDRESS_JP      0x0207f8dc
 #define TUTORIAL_ADDRESS_JP_REV1 0x020d6910 // TODO: KH
 
 #define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
@@ -808,7 +808,7 @@ int PluginKingdomHeartsDays::detectGameScene()
             return gameScene_DayCounter;
         }
 
-        if (nds->GPU.GPU2D_B.MasterBrightness == 32784)
+        if (nds->GPU.GPU2D_B.MasterBrightness == 32784) // TODO: Replace with memory detection
         {
             return gameScene_RoxasThoughts;
         }
