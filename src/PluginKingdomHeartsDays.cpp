@@ -44,6 +44,16 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
 #define PAUSE_SCREEN_VALUE_FAKE_PAUSE 0x02 // mission mode; game isn't paused, but pause view is shown
 
+#define DEATH_SCREEN_ADDRESS_US      0x0204bd84
+#define DEATH_SCREEN_ADDRESS_EU      0x0204bd84 // TODO: KH
+#define DEATH_SCREEN_ADDRESS_JP      0x0204bd84 // TODO: KH
+#define DEATH_SCREEN_ADDRESS_JP_REV1 0x0204bd84 // TODO: KH
+
+#define DEATH_SCREEN_VALUE_US      0x80
+#define DEATH_SCREEN_VALUE_EU      0x80 // TODO: KH
+#define DEATH_SCREEN_VALUE_JP      0x80 // TODO: KH
+#define DEATH_SCREEN_VALUE_JP_REV1 0x80 // TODO: KH
+
 #define CURRENT_WORLD_US      0x0204C2CF
 #define CURRENT_WORLD_EU      0x0204C2EF
 #define CURRENT_WORLD_JP      0x0204C72F
@@ -125,7 +135,8 @@ enum
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
     gameScene_RoxasThoughts,            // 13
-    gameScene_Other                     // 14
+    gameScene_DeathScreen,              // 14
+    gameScene_Other                     // 15
 };
 
 CutsceneEntry Cutscenes[] =
@@ -651,6 +662,8 @@ int PluginKingdomHeartsDays::detectGameScene()
         getAddressByCart(LOAD_MENU_MAIN_MENU_VIEW_US, LOAD_MENU_MAIN_MENU_VIEW_EU, LOAD_MENU_MAIN_MENU_VIEW_JP, LOAD_MENU_MAIN_MENU_VIEW_JP_REV1);
     bool isDaysCounter = nds->ARM7Read8(getAddressByCart(IS_DAYS_COUNTER_US, IS_DAYS_COUNTER_EU, IS_DAYS_COUNTER_JP, IS_DAYS_COUNTER_JP_REV1)) ==
         getAddressByCart(IS_DAYS_COUNTER_VALUE_US, IS_DAYS_COUNTER_VALUE_EU, IS_DAYS_COUNTER_VALUE_JP, IS_DAYS_COUNTER_VALUE_JP_REV1);
+    bool isDeathCounter = nds->ARM7Read8(getAddressByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP, DEATH_SCREEN_ADDRESS_JP_REV1)) ==
+        getAddressByCart(DEATH_SCREEN_VALUE_US, DEATH_SCREEN_VALUE_EU, DEATH_SCREEN_VALUE_JP, DEATH_SCREEN_VALUE_JP_REV1);
     bool isTutorial = nds->ARM7Read32(getAddressByCart(TUTORIAL_ADDRESS_US, TUTORIAL_ADDRESS_EU, TUTORIAL_ADDRESS_JP, TUTORIAL_ADDRESS_JP_REV1)) != 0;
     bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP, PAUSE_SCREEN_ADDRESS_JP_REV1)) != 0;
 
@@ -761,6 +774,11 @@ int PluginKingdomHeartsDays::detectGameScene()
     if (isShop)
     {
         return gameScene_Shop;
+    }
+
+    if (isDeathCounter)
+    {
+        return gameScene_DeathScreen;
     }
 
     if (isPauseScreen)
