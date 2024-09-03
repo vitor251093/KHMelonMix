@@ -15,7 +15,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_US      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_EU      0x02023CBC
 #define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
-#define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C9C
+#define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C9C // TODO: KH
 
 // 0x2C => intro and main menu
 #define IS_MAIN_MENU_US      0x0204242d
@@ -47,12 +47,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define DEATH_SCREEN_ADDRESS_US      0x0204bd84
 #define DEATH_SCREEN_ADDRESS_EU      0x0204c08e
 #define DEATH_SCREEN_ADDRESS_JP      0x0204c56e
-#define DEATH_SCREEN_ADDRESS_JP_REV1 0x0204bd84 // TODO: KH
+#define DEATH_SCREEN_ADDRESS_JP_REV1 0x0204c60c
 
 #define DEATH_SCREEN_VALUE_US      0x80
 #define DEATH_SCREEN_VALUE_EU      0x00
 #define DEATH_SCREEN_VALUE_JP      0x00
-#define DEATH_SCREEN_VALUE_JP_REV1 0x80 // TODO: KH
+#define DEATH_SCREEN_VALUE_JP_REV1 0x00
 
 #define CURRENT_WORLD_US      0x0204C2CF
 #define CURRENT_WORLD_EU      0x0204C2EF
@@ -865,14 +865,14 @@ u32 PluginKingdomHeartsDays::getAddressByCart(u32 usAddress, u32 euAddress, u32 
     if (isUsaCart()) {
         cutsceneAddress = usAddress;
     }
-    if (isEuropeCart()) {
+    else if (isEuropeCart()) {
         cutsceneAddress = euAddress;
     }
-    if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
-    }
-    if (isJapanCartRev1()) {
+    else if (isJapanCartRev1()) {
         cutsceneAddress = jpRev1Address;
+    }
+    else if (isJapanCart()) {
+        cutsceneAddress = jpAddress;
     }
     return cutsceneAddress;
 }

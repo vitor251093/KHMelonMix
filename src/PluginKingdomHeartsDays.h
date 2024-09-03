@@ -22,7 +22,7 @@ public:
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
-    bool isJapanCartRev1() { return false; }; // TODO: KH Add support to Rev1
+    bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROMLength() == 268435456; };
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
     void onLoadROM();
