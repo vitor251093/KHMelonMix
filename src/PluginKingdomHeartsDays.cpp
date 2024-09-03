@@ -193,18 +193,15 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
 
-    HUDState = 0;
-
     PriorGameScene = -1;
     GameScene = -1;
     priorMap = -1;
     Map = 0;
     UIScale = 4;
     AspectRatio = 0;
-    ShowMap = true;
-    ShowTarget = false;
-    ShowMissionGauge = false;
-    ShowMissionInfo = false;
+    
+    HUDState = -1;
+    hudToggle();
 
     _muchOlderHad3DOnTopScreen = false;
     _muchOlderHad3DOnBottomScreen = false;
@@ -318,8 +315,9 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
     CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
-    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideScene");
-    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "MainMenuView");
+    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideAllHUD");
+    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
+    CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
 }
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
@@ -332,8 +330,9 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     glUniform1i(CompGpuLoc[CompShader][5], ShowTarget ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][8], _ShouldHideScreenForTransitions ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][9], getCurrentMainMenuView());
+    glUniform1i(CompGpuLoc[CompShader][8], HideAllHUD ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][10], getCurrentMainMenuView());
 }
 
 void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
@@ -342,6 +341,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 fl
     CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
     CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
     CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
+    CompGpu3DLoc[flags][4] = glGetUniformLocation(prog, "HideAllHUD");
 }
 
 void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
@@ -351,6 +351,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
     glUniform1i(CompGpu3DLoc[flags][1], GameScene);
     glUniform1i(CompGpu3DLoc[flags][2], UIScale);
     glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
+    glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
 }
 
 void PluginKingdomHeartsDays::onLoadState()
@@ -514,24 +515,34 @@ void PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
 
 void PluginKingdomHeartsDays::hudToggle()
 {
-    HUDState = (HUDState + 1) % 3;
+    HUDState = (HUDState + 1) % 4;
     if (HUDState == 0) { // exploration mode
         ShowMap = true;
         ShowTarget = false;
         ShowMissionGauge = false;
         ShowMissionInfo = false;
+        HideAllHUD = false;
     }
-    else if (HUDState == 1) { // mission details mode
-        ShowMap = false;
-        ShowTarget = true;
-        ShowMissionGauge = true;
-        ShowMissionInfo = false;
-    }
-    else { // mission mode
+    else if (HUDState == 1) { // mission mode
         ShowMap = false;
         ShowTarget = false;
         ShowMissionGauge = false;
         ShowMissionInfo = true;
+        HideAllHUD = false;
+    }
+    else if (HUDState == 2) { // mission details mode
+        ShowMap = false;
+        ShowTarget = true;
+        ShowMissionGauge = true;
+        ShowMissionInfo = false;
+        HideAllHUD = false;
+    }
+    else { // zero hud
+        ShowMap = false;
+        ShowTarget = false;
+        ShowMissionGauge = false;
+        ShowMissionInfo = false;
+        HideAllHUD = true;
     }
 }
 

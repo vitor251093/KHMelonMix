@@ -27,6 +27,7 @@ uniform int GameScene;
 uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
 uniform bool ShowMissionInfo;
+uniform bool HideAllHUD;
 
 void main()
 {
@@ -40,7 +41,7 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    if (GameScene == 5) // gameScene_InGameWithMap
+    if (GameScene == 5 && !HideAllHUD) // gameScene_InGameWithMap
     {
         float effectLayer = -0.300; // blue shine behind the heart counter and "CHAIN" label
         float textLayer = -0.900; // heart counter, timer, "BONUS" label and +X floating labels
@@ -64,7 +65,7 @@ void main()
         }
     }
 
-    if (GameScene == 7) // gameScene_PauseMenu
+    if (GameScene == 7 || HideAllHUD) // gameScene_PauseMenu
     {
         float heartWidth = (256.0*u3DScale)/2.5;
         float heartHeight = (192.0*u3DScale)/2.5;

@@ -132,9 +132,10 @@ private:
     bool ShowTarget;
     bool ShowMissionGauge;
     bool ShowMissionInfo;
+    bool HideAllHUD;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
-    std::map<u32, GLuint[3]> CompGpu3DLoc{};
+    std::map<u32, GLuint[4]> CompGpu3DLoc{};
 
     bool _muchOlderHad3DOnTopScreen;
     bool _muchOlderHad3DOnBottomScreen;

@@ -32,6 +32,7 @@ uniform bool ShowMap;
 uniform bool ShowTarget;
 uniform bool ShowMissionGauge;
 uniform bool ShowMissionInfo;
+uniform bool HideAllHUD;
 uniform bool HideScene;
 uniform int MainMenuView;
 
@@ -464,6 +465,10 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
 
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
+    if (HideAllHUD) {
+        return vec2(255, 191);
+    }
+
     int iuScale = KHUIScale;
     float iuTexScale = (6.0)/iuScale;
     vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
