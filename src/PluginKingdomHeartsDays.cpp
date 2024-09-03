@@ -394,6 +394,10 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         *HotkeyMask |= (1<<4); // Fast Forward (skip DS cutscene)
     }
 
+    if (GameScene == gameScene_LoadingScreen) {
+        *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
+    }
+
     if (*HotkeyPress & (1 << 15)) { // HUD Toggle
         hudToggle();
     }
