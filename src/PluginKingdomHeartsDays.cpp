@@ -38,7 +38,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define PAUSE_SCREEN_ADDRESS_US      0x0204bd64
 #define PAUSE_SCREEN_ADDRESS_EU      0x0204bd84
 #define PAUSE_SCREEN_ADDRESS_JP      0x0204c1c4
-#define PAUSE_SCREEN_ADDRESS_JP_REV1 0x0204bd64 // TODO: KH
+#define PAUSE_SCREEN_ADDRESS_JP_REV1 0x0204c184
 
 #define PAUSE_SCREEN_VALUE_NONE       0x00
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
@@ -102,7 +102,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define TUTORIAL_ADDRESS_US      0x0207f9dc
 #define TUTORIAL_ADDRESS_EU      0x0207f9fc
 #define TUTORIAL_ADDRESS_JP      0x0207f8dc
-#define TUTORIAL_ADDRESS_JP_REV1 0x020d6910 // TODO: KH
+#define TUTORIAL_ADDRESS_JP_REV1 0x0207f89c
 
 #define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
 #define CURRENT_MAP_FROM_WORLD_EU      0x02189CC6
@@ -1191,8 +1191,8 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
 
 void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
-    // PRINT_AS_8_BIT_HEX(0x02046a60); // 0x9c
-    // PRINT_AS_8_BIT_HEX(0x020d73f0); // 0xd0
+    // PRINT_AS_8_BIT_HEX(0x0204c184);
+    // PRINT_AS_8_BIT_HEX(0x0204c185);
     // printf("\n");
 
     if (!DEBUG_MODE_ENABLED) {
