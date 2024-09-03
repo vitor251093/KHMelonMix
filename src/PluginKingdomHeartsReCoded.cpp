@@ -242,7 +242,7 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMask(u32 TouchKeyMask)
         return;
     }
 
-    nds->SetTouchKeyMask(TouchKeyMask);
+    nds->SetTouchKeyMask(TouchKeyMask, true);
 }
 
 void PluginKingdomHeartsReCoded::hudToggle()

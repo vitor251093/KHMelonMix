@@ -508,7 +508,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
 void PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
-        nds->SetTouchKeyMask(TouchKeyMask);
+        nds->SetTouchKeyMask(TouchKeyMask, false);
     }
 }
 

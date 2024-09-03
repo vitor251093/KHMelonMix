@@ -1167,7 +1167,7 @@ void NDS::SetKeyMask(u32 mask)
     CheckKeyIRQ(1, oldkey, KeyInput);
 }
 
-void NDS::SetTouchKeyMask(u32 mask)
+void NDS::SetTouchKeyMask(u32 mask, bool resetOnEdge)
 {
     u16 right = ((~mask) & 0xF) >> 1;
     u16 left  = ((((~mask) >> 4))  & 0xF) >> 1;
@@ -1196,38 +1196,60 @@ void NDS::SetTouchKeyMask(u32 mask)
     
     u16 TouchX = SPI.GetTSC()->GetTouchX();
     u16 TouchY = SPI.GetTSC()->GetTouchY();
-    bool invalidNextPosition = false;
+    bool resetTouchScreen = false;
 
     if (left)
     {
-        if (TouchX > left)
+        if (TouchX <= left)
+        {
+            resetTouchScreen = resetOnEdge;
+        }
+        else
         {
             TouchX -= left;
         }
     }
     if (right)
     {
-        if (TouchX + right < 255)
+        if (TouchX + right >= 255)
+        {
+            resetTouchScreen = resetOnEdge;
+        }
+        else
         {
             TouchX += right;
         }
     }
     if (down)
     {
-        if (TouchY > down)
+        if (TouchY <= down)
+        {
+            resetTouchScreen = resetOnEdge;
+        }
+        else
         {
             TouchY -= down;
         }
     }
     if (up)
     {
-        if (TouchY + up < 191)
+        if (TouchY + up >= 191)
+        {
+            resetTouchScreen = resetOnEdge;
+        }
+        else
         {
             TouchY += up;
         }
     }
 
-    TouchScreen(TouchX, TouchY);
+    if (resetTouchScreen)
+    {
+        ReleaseScreen();
+    }
+    else {
+        TouchScreen(TouchX, TouchY);
+    }
 }
 
 bool NDS::IsLidClosed() const
