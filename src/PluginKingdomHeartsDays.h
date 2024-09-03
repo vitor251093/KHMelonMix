@@ -44,6 +44,7 @@ public:
 
     int _FastForwardPressCount;
     int _StartPressCount;
+    int _ReplayLimitCount;
     bool _CanSkipHdCutscene;
     bool _SkipDsCutscene;
     bool _PlayingCutsceneBeforeCredits;
@@ -59,6 +60,7 @@ public:
     bool _ShouldHideScreenForTransitions;
     CutsceneEntry* _CurrentCutscene;
     CutsceneEntry* _NextCutscene;
+    CutsceneEntry* _LastCutscene;
     bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
     bool StoppedIngameCutscene() {
         if (_StoppedIngameCutscene) {

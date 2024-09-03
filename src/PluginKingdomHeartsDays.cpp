@@ -219,6 +219,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _priorPriorIgnore3DOnBottomScreen = false;
 
     _StartPressCount = 0;
+    _ReplayLimitCount = 0;
     _CanSkipHdCutscene = false;
     _SkipDsCutscene = false;
     _PlayingCredits = false;
@@ -233,6 +234,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _ShouldHideScreenForTransitions = false;
     _CurrentCutscene = nullptr;
     _NextCutscene = nullptr;
+    _LastCutscene = nullptr;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -930,6 +932,14 @@ void PluginKingdomHeartsDays::refreshCutscene()
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
     CutsceneEntry* cutscene = detectCutscene();
     bool wasSaveLoaded = isSaveLoaded();
+
+    if (_ReplayLimitCount > 0) {
+        _ReplayLimitCount--;
+        if (cutscene != nullptr && cutscene->usAddress == _LastCutscene->usAddress) {
+            cutscene = nullptr;
+        }
+    }
+
     
     if (cutscene != nullptr) {
         onIngameCutsceneIdentified(cutscene);
@@ -1038,7 +1048,9 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     _ShouldReturnToGameAfterCutscene = false;
     _ShouldUnmuteAfterCutscene = true;
 
+    _LastCutscene = _CurrentCutscene;
     _CurrentCutscene = nullptr;
+    _ReplayLimitCount = 30;
 
     if (_NextCutscene == nullptr) {
         u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
