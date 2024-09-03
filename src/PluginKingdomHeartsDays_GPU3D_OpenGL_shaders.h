@@ -41,39 +41,49 @@ void main()
     fpos.w = float(vPosition.w) / 65536.0f;
     fpos.xyz *= fpos.w;
 
-    if (GameScene == 5 && !HideAllHUD) // gameScene_InGameWithMap
+    if (HideAllHUD)
     {
-        float effectLayer = -0.300; // blue shine behind the heart counter and "CHAIN" label
-        float textLayer = -0.900; // heart counter, timer, "BONUS" label and +X floating labels
-
-        float widthScale = TopScreenAspectRatio;
-        int iuScale = KHUIScale;
-        float iuTexScale = (5.0)/iuScale;
-
-        float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0)*u3DScale;
-        float heartWidth = (256.0*u3DScale*9)/20.0;
-        float heartHeight = (192.0*u3DScale)/2.5;
-        if ((fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
-             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.200)*fpos.w &&
-             (abs(fpos.z - effectLayer * fpos.w) < 0.01))
-            ||
-            (fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.200)*fpos.w &&
-             fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
-             (abs(fpos.z - textLayer * fpos.w) < 0.01))) {
-            fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/iuTexScale))/uScreenSize.x)*2.0/widthScale - 1.0)*fpos.w;
-            fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/uScreenSize.y)*2.0 - 1.0)*fpos.w;
-        }
-    }
-
-    if (GameScene == 7 || HideAllHUD) // gameScene_PauseMenu
-    {
-        float heartWidth = (256.0*u3DScale)/2.5;
-        float heartHeight = (192.0*u3DScale)/2.5;
-        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
-            fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
-            fpos.z <  -(0.30)*fpos.w && fpos.z >= -(0.900)*fpos.w) {
+        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= +(1.00)*fpos.w &&
+            fpos.y >= -(1.00)*fpos.w && fpos.y <= +(1.00)*fpos.w &&
+            fpos.z >= -(1.00)*fpos.w && fpos.z <= -(0.30)*fpos.w) {
             fpos.x = (0 - 1.0)*fpos.w;
             fpos.y = (0 - 1.0)*fpos.w;
+        }
+    }
+    else 
+    {
+        if (GameScene == 5) // gameScene_InGameWithMap
+        {
+            float effectLayer = -0.300; // blue shine behind the heart counter and "CHAIN" label
+            float textLayer = -0.900; // heart counter, timer, "BONUS" label and +X floating labels
+
+            float widthScale = TopScreenAspectRatio;
+            int iuScale = KHUIScale;
+            float iuTexScale = (5.0)/iuScale;
+
+            float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0)*u3DScale;
+            float heartWidth = (256.0*u3DScale*9)/20.0;
+            float heartHeight = (192.0*u3DScale)/2.5;
+            if ((fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
+                fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.200)*fpos.w &&
+                (abs(fpos.z - effectLayer * fpos.w) < 0.01))
+                ||
+                (fpos.x >= -(1.000)*fpos.w && fpos.x <= -(0.200)*fpos.w &&
+                fpos.y >= -(1.000)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
+                (abs(fpos.z - textLayer * fpos.w) < 0.01))) {
+                fpos.x = ((((fpos.x/fpos.w + 1.0)*(heartWidth/iuTexScale))/uScreenSize.x)*2.0/widthScale - 1.0)*fpos.w;
+                fpos.y = ((((fpos.y/fpos.w + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/uScreenSize.y)*2.0 - 1.0)*fpos.w;
+            }
+        }
+
+        if (GameScene == 7) // gameScene_PauseMenu
+        {
+            if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.000)*fpos.w &&
+                fpos.y >= -(1.00)*fpos.w && fpos.y <= -(0.500)*fpos.w &&
+                fpos.z <  -(0.30)*fpos.w && fpos.z >= -(0.900)*fpos.w) {
+                fpos.x = (0 - 1.0)*fpos.w;
+                fpos.y = (0 - 1.0)*fpos.w;
+            }
         }
     }
 
