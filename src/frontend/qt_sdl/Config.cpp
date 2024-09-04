@@ -74,7 +74,7 @@ DefaultList<int> DefaultInts =
     {"Instance*.Joystick", -1},
     {"Instance*.Window*.Width", 256},
     {"Instance*.Window*.Height", 384},
-    {"Instance*.Window*.ScreenAspectTop", 3},
+    {"Instance*.Window*.ScreenAspectTop", 1},
     {"Instance*.Window*.ScreenSizing", 4},
     {"Screen.VSyncInterval", 1},
     {"3D.Renderer", renderer3D_OpenGL},
