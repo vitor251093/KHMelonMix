@@ -797,7 +797,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
     if (GameScene == 0 ||  // gameScene_Intro
         GameScene == 1) {  // gameScene_MainMenu
-        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(0, 0)));
+        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 0)));
     }
     
     if (GameScene == 2) { // gameScene_IntroLoadMenu
