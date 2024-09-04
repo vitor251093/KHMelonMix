@@ -563,6 +563,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_RoxasThoughts: return "Game scene: Roxas Thoughts";
+        case gameScene_DeathScreen: return "Game scene: Death screen";
         case gameScene_Other: return "Game scene: Unknown";
         default: return "Game scene: REALLY unknown";
     }
@@ -793,7 +794,7 @@ int PluginKingdomHeartsDays::detectGameScene()
         return gameScene_Shop;
     }
 
-    if (isDeathCounter)
+    if (!isUnplayableArea && isDeathCounter)
     {
         return gameScene_DeathScreen;
     }
