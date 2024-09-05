@@ -2,7 +2,7 @@
 #define KHDAYS_PLUGIN_H
 
 #include "Plugin.h"
-#include "NDS.h"
+#include "../NDS.h"
 
 namespace Plugins
 {

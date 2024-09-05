@@ -32,7 +32,7 @@
 #include "ui_MainWindowSettings.h"
 
 #include "EmuInstance.h"
-#include "PluginManager.h"
+#include "plugins/PluginManager.h"
 
 
 using namespace melonDS;

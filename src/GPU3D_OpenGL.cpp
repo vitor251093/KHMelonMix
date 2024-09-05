@@ -24,7 +24,7 @@
 #include "NDS.h"
 #include "GPU.h"
 #include "GPU3D_OpenGL_shaders.h"
-#include "PluginManager.h"
+#include "plugins/PluginManager.h"
 
 namespace melonDS
 {

@@ -31,7 +31,7 @@
 
 #include "NDSCart.h"
 #include "GBACart.h"
-#include "Plugin.h"
+#include "plugins/Plugin.h"
 
 using Keep = std::monostate;
 using UpdateConsoleNDSArgs = std::variant<Keep, std::unique_ptr<melonDS::NDSCart::CartCommon>>;

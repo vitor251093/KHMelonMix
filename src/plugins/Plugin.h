@@ -30,9 +30,9 @@
 #define RAM_SEARCH_READ(nds,addr) nds->ARM7Read8(addr)
 #endif
 
-#include "NDS.h"
+#include "../NDS.h"
 
-#include "OpenGLSupport.h"
+#include "../OpenGLSupport.h"
 
 namespace Plugins
 {

@@ -49,7 +49,7 @@
 #include "FreeBIOS.h"
 #include "main.h"
 
-#include "PluginManager.h"
+#include "plugins/PluginManager.h"
 
 using std::make_unique;
 using std::pair;

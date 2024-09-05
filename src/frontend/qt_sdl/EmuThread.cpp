@@ -16,7 +16,7 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
-#include "PluginManager.h"
+#include "plugins/PluginManager.h"
 
 #include <stdlib.h>
 #include <time.h>
