@@ -27,6 +27,7 @@ public:
     }
 
     void onLoadState() {}
+    bool togglePause() {return false;};
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {}
     void applyTouchKeyMask(u32 TouchKeyMask) {}
@@ -41,6 +42,8 @@ public:
     bool ShouldStartReplacementCutscene() {return false;}
     bool StartedReplacementCutscene() {return false;}
     bool RunningReplacementCutscene() {return false;}
+    bool ShouldPauseReplacementCutscene() {return false;}
+    bool ShouldUnpauseReplacementCutscene() {return false;}
     bool ShouldStopReplacementCutscene() {return false;}
     bool ShouldReturnToGameAfterCutscene() {return false;}
     bool ShouldUnmuteAfterCutscene() {return false;}

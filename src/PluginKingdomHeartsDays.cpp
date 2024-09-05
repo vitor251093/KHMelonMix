@@ -222,9 +222,12 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _PlayingCredits = false;
     _StartedReplacementCutscene = false;
     _RunningReplacementCutscene = false;
+    _PausedReplacementCutscene = false;
     _ShouldTerminateIngameCutscene = false;
     _StoppedIngameCutscene = false;
     _ShouldStartReplacementCutscene = false;
+    _ShouldPauseReplacementCutscene = false;
+    _ShouldUnpauseReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
     _ShouldUnmuteAfterCutscene = false;
@@ -359,6 +362,20 @@ void PluginKingdomHeartsDays::onLoadState()
     GameScene = gameScene_InGameWithMap;
 }
 
+bool PluginKingdomHeartsDays::togglePause()
+{
+    if (_RunningReplacementCutscene) {
+        if (_PausedReplacementCutscene) {
+            _ShouldUnpauseReplacementCutscene = true;
+        }
+        else {
+            _ShouldPauseReplacementCutscene = true;
+        }
+        return true;
+    }
+    return false;
+}
+
 void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
 {
     ramSearch(nds, *HotkeyPress);
@@ -374,7 +391,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         return;
     }
 
-    if (_RunningReplacementCutscene && (_SkipDsCutscene || (~(*InputMask)) & (1 << 3)) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
+    if (_RunningReplacementCutscene && !_PausedReplacementCutscene && (_SkipDsCutscene || (~(*InputMask)) & (1 << 3)) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
         _SkipDsCutscene = true;
         if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
             _SkipDsCutscene = false;

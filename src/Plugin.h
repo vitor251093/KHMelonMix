@@ -69,6 +69,7 @@ public:
     virtual void gpu3DOpenGL_VS_Z_updateVariables(u32 flags) { };
 
     virtual void onLoadState() { };
+    virtual bool togglePause() {return false;};
 
     virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
     virtual void applyTouchKeyMask(u32 TouchKeyMask) = 0;
@@ -78,6 +79,8 @@ public:
     virtual bool ShouldStartReplacementCutscene() = 0;
     virtual bool StartedReplacementCutscene() = 0;
     virtual bool RunningReplacementCutscene() = 0;
+    virtual bool ShouldPauseReplacementCutscene() = 0;
+    virtual bool ShouldUnpauseReplacementCutscene() = 0;
     virtual bool ShouldStopReplacementCutscene() = 0;
     virtual bool ShouldReturnToGameAfterCutscene() = 0;
     virtual bool ShouldUnmuteAfterCutscene() = 0;

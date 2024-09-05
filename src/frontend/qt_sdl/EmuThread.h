@@ -133,6 +133,8 @@ signals:
 
     void windowStartVideo(QString videoFilePath);
     void windowStopVideo();
+    void windowPauseVideo();
+    void windowUnpauseVideo();
 
 private:
     void handleMessages();

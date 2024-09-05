@@ -38,6 +38,7 @@ public:
     void gpu3DOpenGL_VS_Z_updateVariables(u32 flags);
 
     void onLoadState();
+    bool togglePause();
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     void applyTouchKeyMask(u32 TouchKeyMask);
@@ -54,6 +55,9 @@ public:
     bool _ShouldStartReplacementCutscene;
     bool _StartedReplacementCutscene;
     bool _RunningReplacementCutscene;
+    bool _PausedReplacementCutscene;
+    bool _ShouldPauseReplacementCutscene;
+    bool _ShouldUnpauseReplacementCutscene;
     bool _ShouldStopReplacementCutscene;
     bool _ShouldReturnToGameAfterCutscene;
     bool _ShouldUnmuteAfterCutscene;
@@ -84,6 +88,22 @@ public:
         return false;
     }
     bool RunningReplacementCutscene() {return _RunningReplacementCutscene;}
+    bool ShouldPauseReplacementCutscene() {
+        if (_ShouldPauseReplacementCutscene) {
+            _ShouldPauseReplacementCutscene = false;
+            _PausedReplacementCutscene = true;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldUnpauseReplacementCutscene() {
+        if (_ShouldUnpauseReplacementCutscene) {
+            _ShouldUnpauseReplacementCutscene = false;
+            _PausedReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
     bool ShouldStopReplacementCutscene() {
         if (_ShouldStopReplacementCutscene) {
             _ShouldStopReplacementCutscene = false;

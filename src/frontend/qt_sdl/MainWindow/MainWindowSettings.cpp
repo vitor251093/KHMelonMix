@@ -138,6 +138,26 @@ void MainWindowSettings::stopVideo()
     Plugins::PluginManager::get()->onReplacementCutsceneEnd();
 }
 
+void MainWindowSettings::asyncPauseVideo()
+{
+    QMetaObject::invokeMethod(this, "pauseVideo", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::pauseVideo()
+{
+    player->pause();
+}
+
+void MainWindowSettings::asyncUnpauseVideo()
+{
+    QMetaObject::invokeMethod(this, "unpauseVideo", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::unpauseVideo()
+{
+    player->play();
+}
+
 void MainWindowSettings::keyPressEvent(QKeyEvent* event)
 {
     /*if (event->key() == Qt::Key_Escape) {

@@ -97,9 +97,12 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _PlayingCredits = false;
     _StartedReplacementCutscene = false;
     _RunningReplacementCutscene = false;
+    _PausedReplacementCutscene = false;
     _ShouldTerminateIngameCutscene = false;
     _StoppedIngameCutscene = false;
     _ShouldStartReplacementCutscene = false;
+    _ShouldPauseReplacementCutscene = false;
+    _ShouldUnpauseReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
     _ShouldUnmuteAfterCutscene = false;
@@ -167,6 +170,20 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
 void PluginKingdomHeartsReCoded::onLoadState()
 {
 
+}
+
+bool PluginKingdomHeartsReCoded::togglePause()
+{
+    if (_RunningReplacementCutscene) {
+        if (_PausedReplacementCutscene) {
+            _ShouldUnpauseReplacementCutscene = true;
+        }
+        else {
+            _ShouldPauseReplacementCutscene = true;
+        }
+        return true;
+    }
+    return false;
 }
 
 void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)

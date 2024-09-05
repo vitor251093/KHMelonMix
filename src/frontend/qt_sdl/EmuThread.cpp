@@ -86,6 +86,8 @@ void EmuThread::attachWindow(MainWindow* window)
 
     connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
+    connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
+    connect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
 }
 
 void EmuThread::detachWindow(MainWindow* window)
@@ -104,6 +106,8 @@ void EmuThread::detachWindow(MainWindow* window)
 
     disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
+    disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
+    disconnect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
 }
 
 void EmuThread::run()
@@ -622,6 +626,14 @@ void EmuThread::refreshCutsceneState()
         emit windowStopVideo();
     }
 
+    if (plugin->ShouldPauseReplacementCutscene()) {
+        emit windowPauseVideo();
+    }
+
+    if (plugin->ShouldUnpauseReplacementCutscene()) {
+        emit windowUnpauseVideo();
+    }
+
     if (plugin->ShouldReturnToGameAfterCutscene()) {
         emuStatus = emuStatus_Running;
         auto& instcfg = emuInstance->getLocalConfig();
@@ -689,12 +701,22 @@ void EmuThread::emuRun()
 
 void EmuThread::emuPause()
 {
+    auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
+    if (rom != nullptr && plugin != nullptr && plugin->togglePause()) {
+        return;
+    }
+
     sendMessage(msg_EmuPause);
     waitMessage();
 }
 
 void EmuThread::emuUnpause()
 {
+    auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
+    if (rom != nullptr && plugin != nullptr && plugin->togglePause()) {
+        return;
+    }
+
     sendMessage(msg_EmuUnpause);
     waitMessage();
 }
