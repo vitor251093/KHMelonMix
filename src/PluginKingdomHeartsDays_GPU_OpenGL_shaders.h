@@ -299,7 +299,7 @@ vec2 getVerticalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearV
 vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
-    float iuTexScale = (6.0)/iuScale;
+    float iuTexScale = (4.5)/iuScale;
     vec2 texPosition3d = vec2(vec2(xpos, ypos)*iuTexScale);
     float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = TopScreenAspectRatio;
