@@ -169,7 +169,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
 
 void PluginKingdomHeartsReCoded::onLoadState()
 {
-
+    GameScene = gameScene_InGameWithMap;
 }
 
 bool PluginKingdomHeartsReCoded::togglePause()
@@ -219,20 +219,21 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
-            *InputMask &= ~(1<<10); // X
-            *InputMask |= (1<<5); // left
-            *InputMask |= (1<<4); // right
-            *InputMask |= (1<<6); // up
-            *InputMask |= (1<<7); // down
-            if (PriorPriorHotkeyMask & (1 << 18)) // Old D-pad left
-                *InputMask &= ~(1<<5); // left
-            if (PriorPriorHotkeyMask & (1 << 19)) // Old D-pad right
-                *InputMask &= ~(1<<4); // right
-            if (PriorPriorHotkeyMask & (1 << 20)) // Old D-pad up
-                *InputMask &= ~(1<<6); // up
-            if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad down
-                *InputMask &= ~(1<<7); // down
+        if ((*HotkeyMask) & ((1 << 20) | (1 << 21)))
+        {
+            *InputMask |= (1<<9); // L
+            *InputMask |= (1<<10); // X
+            *InputMask |= (1<<1);  // B
+            if (((PriorPriorHotkeyMask) & ((1 << 20) | (1 << 21))) == 0 && ((PriorHotkeyMask) & ((1 << 20) | (1 << 21))) == 0 && ((*HotkeyMask) & ((1 << 20) | (1 << 21))) != 0) {
+                *InputMask &= ~(1<<9); // L
+            }
+            if (((PriorPriorHotkeyMask) & ((1 << 20) | (1 << 21))) == 0 && ((PriorHotkeyMask) & ((1 << 20) | (1 << 21))) != 0 && ((*HotkeyMask) & ((1 << 20) | (1 << 21))) != 0) {
+                *InputMask &= ~(1<<9); // L
+                if (PriorHotkeyMask & (1 << 20)) // Old D-pad up
+                    *InputMask &= ~(1<<10); // X
+                if (PriorHotkeyMask & (1 << 21)) // Old D-pad down
+                    *InputMask &= ~(1<<1);  // B
+            }
         }
     }
     else {
