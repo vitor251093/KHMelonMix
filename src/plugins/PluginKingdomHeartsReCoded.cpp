@@ -17,9 +17,9 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define ASPECT_RATIO_ADDRESS_JP 0x0202A728
 
 // 0x00 => intro and main menu
-#define IS_MAIN_MENU_US 0x0205c286
-#define IS_MAIN_MENU_EU 0x0205c286 // TODO: KH
-#define IS_MAIN_MENU_JP 0x0205c286 // TODO: KH
+#define IS_MAIN_MENU_US 0x02060c94
+#define IS_MAIN_MENU_EU 0x02060c94 // TODO: KH
+#define IS_MAIN_MENU_JP 0x02060c94 // TODO: KH
 
 #define PAUSE_SCREEN_ADDRESS_US 0x020569d0 // may also be 0x02056c5c or 0x0205fde4
 #define PAUSE_SCREEN_ADDRESS_EU 0x020569d0 // TODO: KH
