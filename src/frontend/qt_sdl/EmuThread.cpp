@@ -370,7 +370,8 @@ void EmuThread::run()
                 winUpdateCount = 0;
             }
 
-            bool fastforward = emuInstance->hotkeyDown(HK_FastForward);
+            bool fastforward = emuInstance->hotkeyDown(HK_FastForward) ||
+                (plugin->ShouldTerminateIngameCutscene() && plugin->RunningReplacementCutscene());
 
             if (useOpenGL)
             {
@@ -680,6 +681,8 @@ void EmuThread::refreshCutsceneState()
     {
         emuInstance->audioVolume = 0;
 
+        emuInstance->maxFPS = 1000;
+
         int newVideoRenderer = renderer3D_Software;
         if (videoRenderer != newVideoRenderer) {
             videoRenderer = newVideoRenderer;
@@ -688,10 +691,13 @@ void EmuThread::refreshCutsceneState()
     }
     if (disableInvisibleFastMode)
     {
+        Config::Table& globalCfg = emuInstance->getGlobalConfig();
+
         auto& instcfg = emuInstance->getLocalConfig();
         emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
 
-        Config::Table& globalCfg = emuInstance->getGlobalConfig();
+        emuInstance->maxFPS = globalCfg.GetInt("MaxFPS");
+
         int newVideoRenderer = globalCfg.GetInt("3D.Renderer");
         if (videoRenderer != newVideoRenderer) {
             videoRenderer = newVideoRenderer;

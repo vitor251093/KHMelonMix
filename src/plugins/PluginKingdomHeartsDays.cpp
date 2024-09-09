@@ -411,7 +411,6 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
             _StartPressCount--;
             *InputMask &= ~(1<<3); // Start (skip DS cutscene)
         }
-        *HotkeyMask |= (1<<4); // Fast Forward (skip DS cutscene)
     }
 
     if (GameScene == gameScene_LoadingScreen) {
@@ -623,6 +622,10 @@ bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 
 bool PluginKingdomHeartsDays::shouldRenderFrame()
 {
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene)
+    {
+        return false;
+    }
     if (GameScene == gameScene_InGameWithCutscene)
     {
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
