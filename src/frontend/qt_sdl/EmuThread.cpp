@@ -622,6 +622,9 @@ void EmuThread::refreshGameScene()
 
 void EmuThread::refreshCutsceneState()
 {
+    bool enableInvisibleFastMode = false;
+    bool disableInvisibleFastMode = false;
+
     if (plugin->ShouldStopReplacementCutscene()) {
         emit windowStopVideo();
     }
@@ -636,19 +639,17 @@ void EmuThread::refreshCutsceneState()
 
     if (plugin->ShouldReturnToGameAfterCutscene()) {
         emuStatus = emuStatus_Running;
-        auto& instcfg = emuInstance->getLocalConfig();
-        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
+        disableInvisibleFastMode = true;
     }
 
     if (plugin->ShouldUnmuteAfterCutscene()) {
         emuStatus = emuStatus_Running;
-        auto& instcfg = emuInstance->getLocalConfig();
-        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
+        disableInvisibleFastMode = true;
     }
 
 
     if (plugin->ShouldTerminateIngameCutscene()) {
-        emuInstance->audioVolume = 0;
+        enableInvisibleFastMode = true;
     }
 
     if (plugin->ShouldStartReplacementCutscene()) {
@@ -668,11 +669,34 @@ void EmuThread::refreshCutsceneState()
 
     if (plugin->StartedReplacementCutscene()) {
         emuStatus = emuStatus_Running;
-        emuInstance->audioVolume = 0;
+        enableInvisibleFastMode = true;
     }
 
     if (plugin->StoppedIngameCutscene()) {
         emuStatus = emuStatus_Paused;
+    }
+
+    if (enableInvisibleFastMode)
+    {
+        emuInstance->audioVolume = 0;
+
+        int newVideoRenderer = renderer3D_Software;
+        if (videoRenderer != newVideoRenderer) {
+            videoRenderer = newVideoRenderer;
+            updateRenderer();
+        }
+    }
+    if (disableInvisibleFastMode)
+    {
+        auto& instcfg = emuInstance->getLocalConfig();
+        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
+
+        Config::Table& globalCfg = emuInstance->getGlobalConfig();
+        int newVideoRenderer = globalCfg.GetInt("3D.Renderer");
+        if (videoRenderer != newVideoRenderer) {
+            videoRenderer = newVideoRenderer;
+            updateRenderer();
+        }
     }
 }
 
