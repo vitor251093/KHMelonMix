@@ -167,7 +167,7 @@ private:
     int autoScreenSizing;
 
     Plugins::Plugin* plugin;
-    void pluginShouldFastForward();
+    bool pluginShouldFastForward();
     void refreshPluginGameScene();
     void refreshPluginCutsceneState();
 

@@ -611,7 +611,7 @@ void EmuThread::handleMessages()
     msgMutex.unlock();
 }
 
-void EmuThread::pluginShouldFastForward()
+bool EmuThread::pluginShouldFastForward()
 {
     return plugin->ShouldTerminateIngameCutscene() && plugin->RunningReplacementCutscene();
 }
