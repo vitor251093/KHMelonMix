@@ -167,8 +167,9 @@ private:
     int autoScreenSizing;
 
     Plugins::Plugin* plugin;
-    void refreshGameScene();
-    void refreshCutsceneState();
+    void pluginShouldFastForward();
+    void refreshPluginGameScene();
+    void refreshPluginCutsceneState();
 
     int lastVideoRenderer = -1;
 

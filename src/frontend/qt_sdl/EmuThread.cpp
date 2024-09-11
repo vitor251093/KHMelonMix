@@ -289,7 +289,7 @@ void EmuThread::run()
             // microphone input
             emuInstance->micProcess();
 
-            refreshGameScene();
+            refreshPluginGameScene();
             bool shouldRenderFrame = plugin->shouldRenderFrame();
 
             // auto screen layout
@@ -370,8 +370,7 @@ void EmuThread::run()
                 winUpdateCount = 0;
             }
 
-            bool fastforward = emuInstance->hotkeyDown(HK_FastForward) ||
-                (plugin->ShouldTerminateIngameCutscene() && plugin->RunningReplacementCutscene());
+            bool fastforward = emuInstance->hotkeyDown(HK_FastForward) || pluginShouldFastForward();
 
             if (useOpenGL)
             {
@@ -386,7 +385,7 @@ void EmuThread::run()
                 }
             }
 
-            refreshCutsceneState();
+            refreshPluginCutsceneState();
 
             if (emuInstance->audioDSiVolumeSync && emuInstance->nds->ConsoleType == 1)
             {
@@ -478,7 +477,7 @@ void EmuThread::run()
             }
 
             if (plugin != nullptr) {
-                refreshCutsceneState();
+                refreshPluginCutsceneState();
             }
         }
 
@@ -612,7 +611,12 @@ void EmuThread::handleMessages()
     msgMutex.unlock();
 }
 
-void EmuThread::refreshGameScene()
+void EmuThread::pluginShouldFastForward()
+{
+    return plugin->ShouldTerminateIngameCutscene() && plugin->RunningReplacementCutscene();
+}
+
+void EmuThread::refreshPluginGameScene()
 {
     bool updated = plugin->refreshGameScene();
     if (updated && SHOW_GAME_SCENE)
@@ -621,7 +625,7 @@ void EmuThread::refreshGameScene()
     }
 }
 
-void EmuThread::refreshCutsceneState()
+void EmuThread::refreshPluginCutsceneState()
 {
     bool enableInvisibleFastMode = false;
     bool disableInvisibleFastMode = false;
