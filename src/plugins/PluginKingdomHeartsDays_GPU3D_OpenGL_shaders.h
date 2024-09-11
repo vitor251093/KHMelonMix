@@ -43,11 +43,15 @@ void main()
 
     if (HideAllHUD)
     {
-        if (fpos.x >= -(1.00)*fpos.w && fpos.x <= +(1.00)*fpos.w &&
-            fpos.y >= -(1.00)*fpos.w && fpos.y <= +(1.00)*fpos.w &&
-            fpos.z >= -(1.00)*fpos.w && fpos.z <= -(0.30)*fpos.w) {
-            fpos.x = (0 - 1.0)*fpos.w;
-            fpos.y = (0 - 1.0)*fpos.w;
+        // gameScene_InGameWithMap or gameScene_PauseMenu or gameScene_InGameWithCutscene
+        if (GameScene == 5 || GameScene == 7 || GameScene == 9)
+        {
+            if (fpos.x >= -(1.00)*fpos.w && fpos.x <= +(1.00)*fpos.w &&
+                fpos.y >= -(1.00)*fpos.w && fpos.y <= +(1.00)*fpos.w &&
+                fpos.z >= -(1.00)*fpos.w && fpos.z <= -(0.30)*fpos.w) {
+                fpos.x = (0 - 1.0)*fpos.w;
+                fpos.y = (0 - 1.0)*fpos.w;
+            }
         }
     }
     else 
