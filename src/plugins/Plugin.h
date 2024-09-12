@@ -43,6 +43,7 @@ using namespace melonDS;
 struct CutsceneEntry
 {
     char DsName[12];
+    char MmName[12];
     char Name[40];
     int usAddress;
     int euAddress;

@@ -141,52 +141,52 @@ enum
 
 CutsceneEntry Cutscenes[] =
 {
-    {"802",    "802_opening",                       0x088b2e00, 0x08b3d400, 0x0876e800},
-    {"803",    "803_meet_xion",                     0x0987ec00, 0x09b09200, 0x097c8800},
-    {"804",    "804_roxas_recusant_sigil",          0x09ae9400, 0x09d73a00, 0x09a4e000},
-    {"805",    "805_the_dark_margin",               0x09b80600, 0x09e0ac00, 0x09aeb200},
-    {"806",    "806_sora_entering_pod",             0x09e83800, 0x0a10de00, 0x09e0ba00},
-    {"808",    "808_sunset_memory",                 0x09f24c00, 0x0a1af200, 0x09eb2e00},
-    {"809",    "809_xions_defeat",                  0x09f79400, 0x0a203a00, 0x09f0ac00},
-    {"810",    "810_the_main_in_black_reflects",    0x09ff8000, 0x0a282600, 0x09f8d400},
-    {"813",    "813_xions_defeat",                  0x0a13f600, 0x0a3c9c00, 0x0a0e1600},
-    {"814",    "814_sora_walk",                     0x0a677c00, 0x0a902200, 0x0a64f000},
-    {"815",    "815_sora_release_kairi",            0x0a6e4200, 0x0a96e800, 0x0a6bf000},
-    {"816",    "816_kairi_memories",                0x0a7a9200, 0x0aa33800, 0x0a78ca00},
-    {"817",    "817_namine_and_diz",                0x0a857600, 0x0aae1c00, 0x0a845800},
-    {"818",    "818_why_the_sun_sets_red",          0x0ab4be00, 0x0add6400, 0x0ab57800},
-    {"819",    "819_sora_wakes_up",                 0x0afeac00, 0x0afeac00, 0x0afeac00}, // double cutscene complement
-    {"821",    "821_snarl_of_memories",             0x0b043e00, 0x0b2ce400, 0x0b084a00},
-    {"822",    "822_riku_takes_care_of_xion",       0x0b514600, 0x0b79ec00, 0x0b57ea00},
-    {"823",    "823_roxas_passes_by",               0x0b5b5e00, 0x0b840400, 0x0b626e00},
-    {"824",    "824_xions_dream",                   0x0b65a200, 0x0b8e4800, 0x0b6d1800},
-    {"825",    "825_xions_capture",                 0x0b8a7a00, 0x0bb32000, 0x0b937600},
-    {"826",    "826_hollow_bastion_memories",       0x0bd74600, 0x0bffec00, 0x0be21a00},
-    {"827",    "827_agrabah_keyhole_memory",        0x0be7e000, 0x0c108600, 0x0bf35400},
-    {"828",    "828_xion_and_riku",                 0x0bedf200, 0x0c169800, 0x0bf9ae00},
-    {"829",    "829_rikus_resolve",                 0x0c76a800, 0x0c9f4e00, 0x0c873400},
-    {"830",    "830_mickey_and_riku_ansem",         0x0c863a00, 0x0caee000, 0x0c981000},
-    {"831",    "831_xion_and_namine",               0x0ca47c00, 0x0ccd2200, 0x0cb79400},
-    {"832",    "832_xion_and_axel_face_off",        0x0cb01c00, 0x0cd8c200, 0x0cc3b000},
-    {"833",    "833_xion_attacks",                  0x0cee2000, 0x0d16c600, 0x0d043200},
-    {"834",    "834_winner",                        0x0d45bc00, 0x0d6e6200, 0x0d5f7800},
-    {"835",    "835_skyscrapper_battle",            0x0d5e0400, 0x0d86aa00, 0x0d782e00},
-    {"836",    "836_roxas_and_riku",                0x0d6f9400, 0x0d983a00, 0x0d8a7e00},
-    {"837",    "837_riku_turns_into_ansem",         0x0da1ea00, 0x0dca9000, 0x0dbed000},
-    {"838",    "838_clocktower",                    0x0e063600, 0x0e063600, 0x0e063600}, // double cutscene complement
-    {"839_de", "839_riku_please_stop_him_de",       0x0e0db400, 0x0e0db400, 0x0e0db400}, // double cutscene complement
-    {"839_en", "839_riku_please_stop_him_en",       0x0e0e1200, 0x0e0e1200, 0x0e0e1200}, // double cutscene complement
-    {"839_es", "839_riku_please_stop_him_es",       0x0e0e6c00, 0x0e0e6c00, 0x0e0e6c00}, // double cutscene complement
-    {"839_fr", "839_riku_please_stop_him_fr",       0x0e0ecc00, 0x0e0ecc00, 0x0e0ecc00}, // double cutscene complement
-    {"839_it", "839_riku_please_stop_him_it",       0x0e0f1600, 0x0e0f1600, 0x0e0f1600}, // double cutscene complement
-    {"840",    "840_after_the_battle",              0x0e0f5e00, 0x0e380400, 0x0e2e4200},
-    {"841",    "841_xion_fading_from_clocktower",   0x0e444c00, 0x0e444c00, 0x0e444c00}, // double cutscene complement
-    {"842",    "842_a_new_day",                     0x0e4bd400, 0x0e747a00, 0x0e6dfa00},
-    {"843",    "843_the_usual_spot",                0x0e641200, 0x0e8cb800, 0x0e873800},
-    {"845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e984c00, 0x0e938e00},
-    {"846",    "846_axel_and_saix",                 0x0e75bc00, 0x0e9e6200, 0x0e99ee00},
-    {"847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0ec4c600, 0x0ec12c00},
-    {"848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600},
+    {"802",    "802_mm", "802_opening",                       0x088b2e00, 0x08b3d400, 0x0876e800},
+    {"803",    "803",    "803_meet_xion",                     0x0987ec00, 0x09b09200, 0x097c8800},
+    {"804",    "804",    "804_roxas_recusant_sigil",          0x09ae9400, 0x09d73a00, 0x09a4e000},
+    {"805",    "805",    "805_the_dark_margin",               0x09b80600, 0x09e0ac00, 0x09aeb200},
+    {"806",    "806",    "806_sora_entering_pod",             0x09e83800, 0x0a10de00, 0x09e0ba00},
+    {"808",    "808",    "808_sunset_memory",                 0x09f24c00, 0x0a1af200, 0x09eb2e00},
+    {"809",    "809",    "809_xions_defeat",                  0x09f79400, 0x0a203a00, 0x09f0ac00},
+    {"810",    "810",    "810_the_main_in_black_reflects",    0x09ff8000, 0x0a282600, 0x09f8d400},
+    {"813",    "813",    "813_xions_defeat",                  0x0a13f600, 0x0a3c9c00, 0x0a0e1600},
+    {"814",    "814",    "814_sora_walk",                     0x0a677c00, 0x0a902200, 0x0a64f000},
+    {"815",    "815",    "815_sora_release_kairi",            0x0a6e4200, 0x0a96e800, 0x0a6bf000},
+    {"816",    "816",    "816_kairi_memories",                0x0a7a9200, 0x0aa33800, 0x0a78ca00},
+    {"817",    "817_mm", "817_namine_and_diz",                0x0a857600, 0x0aae1c00, 0x0a845800},
+    {"818",    "818",    "818_why_the_sun_sets_red",          0x0ab4be00, 0x0add6400, 0x0ab57800},
+    {"819",    "819",    "819_sora_wakes_up",                 0x0afeac00, 0x0afeac00, 0x0afeac00}, // double cutscene complement
+    {"821",    "821",    "821_snarl_of_memories",             0x0b043e00, 0x0b2ce400, 0x0b084a00},
+    {"822",    "822",    "822_riku_takes_care_of_xion",       0x0b514600, 0x0b79ec00, 0x0b57ea00},
+    {"823",    "823",    "823_roxas_passes_by",               0x0b5b5e00, 0x0b840400, 0x0b626e00},
+    {"824",    "824",    "824_xions_dream",                   0x0b65a200, 0x0b8e4800, 0x0b6d1800},
+    {"825",    "825",    "825_xions_capture",                 0x0b8a7a00, 0x0bb32000, 0x0b937600},
+    {"826",    "826",    "826_hollow_bastion_memories",       0x0bd74600, 0x0bffec00, 0x0be21a00},
+    {"827",    "827",    "827_agrabah_keyhole_memory",        0x0be7e000, 0x0c108600, 0x0bf35400},
+    {"828",    "828",    "828_xion_and_riku",                 0x0bedf200, 0x0c169800, 0x0bf9ae00},
+    {"829",    "829",    "829_rikus_resolve",                 0x0c76a800, 0x0c9f4e00, 0x0c873400},
+    {"830",    "830_mm", "830_mickey_and_riku_ansem",         0x0c863a00, 0x0caee000, 0x0c981000},
+    {"831",    "831",    "831_xion_and_namine",               0x0ca47c00, 0x0ccd2200, 0x0cb79400},
+    {"832",    "832",    "832_xion_and_axel_face_off",        0x0cb01c00, 0x0cd8c200, 0x0cc3b000},
+    {"833",    "833_mm", "833_xion_attacks",                  0x0cee2000, 0x0d16c600, 0x0d043200},
+    {"834",    "834",    "834_winner",                        0x0d45bc00, 0x0d6e6200, 0x0d5f7800},
+    {"835",    "835",    "835_skyscrapper_battle",            0x0d5e0400, 0x0d86aa00, 0x0d782e00},
+    {"836",    "836_mm", "836_roxas_and_riku",                0x0d6f9400, 0x0d983a00, 0x0d8a7e00},
+    {"837",    "837",    "837_riku_turns_into_ansem",         0x0da1ea00, 0x0dca9000, 0x0dbed000},
+    {"838",    "838",    "838_clocktower",                    0x0e063600, 0x0e063600, 0x0e063600}, // double cutscene complement
+    {"839_de", "839",    "839_riku_please_stop_him_de",       0x0e0db400, 0x0e0db400, 0x0e0db400}, // double cutscene complement
+    {"839_en", "839",    "839_riku_please_stop_him_en",       0x0e0e1200, 0x0e0e1200, 0x0e0e1200}, // double cutscene complement
+    {"839_es", "839",    "839_riku_please_stop_him_es",       0x0e0e6c00, 0x0e0e6c00, 0x0e0e6c00}, // double cutscene complement
+    {"839_fr", "839",    "839_riku_please_stop_him_fr",       0x0e0ecc00, 0x0e0ecc00, 0x0e0ecc00}, // double cutscene complement
+    {"839_it", "839",    "839_riku_please_stop_him_it",       0x0e0f1600, 0x0e0f1600, 0x0e0f1600}, // double cutscene complement
+    {"840",    "840",    "840_after_the_battle",              0x0e0f5e00, 0x0e380400, 0x0e2e4200},
+    {"841",    "841",    "841_xion_fading_from_clocktower",   0x0e444c00, 0x0e444c00, 0x0e444c00}, // double cutscene complement
+    {"842",    "842",    "842_a_new_day",                     0x0e4bd400, 0x0e747a00, 0x0e6dfa00},
+    {"843",    "843_mm", "843_the_usual_spot",                0x0e641200, 0x0e8cb800, 0x0e873800},
+    {"845",    "845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e984c00, 0x0e938e00},
+    {"846",    "846",    "846_axel_and_saix",                 0x0e75bc00, 0x0e9e6200, 0x0e99ee00},
+    {"847",    "847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0ec4c600, 0x0ec12c00},
+    {"848",    "848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600},
 };
 
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
@@ -1029,8 +1029,36 @@ void PluginKingdomHeartsDays::refreshCutscene()
     }
 }
 
-void PluginKingdomHeartsDays::patchCutsceneIfNeeded(std::filesystem::path path) {
-    // TODO: KH Cutscene should be patched, if needed
+std::filesystem::path PluginKingdomHeartsDays::patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
+    std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
+    std::filesystem::path fullPath = folderPath / filename;
+    if (!std::filesystem::exists(fullPath))
+    {
+        // TODO: KH Cutscene should be patched, if needed
+        if (strcmp(cutscene->MmName, "802_mm") == 0) {
+            fullPath = folderPath / "DOP.mp4";
+        }
+        if (strcmp(cutscene->MmName, "817_mm") == 0) {
+            fullPath = folderPath / "hd817.mp4";
+        }
+        if (strcmp(cutscene->MmName, "830_mm") == 0) {
+            fullPath = folderPath / "hd830.mp4";
+        }
+        if (strcmp(cutscene->MmName, "833_mm") == 0) {
+            fullPath = folderPath / "hd833.mp4";
+        }
+        if (strcmp(cutscene->MmName, "836_mm") == 0) {
+            fullPath = folderPath / "hd836.mp4";
+        }
+        if (strcmp(cutscene->MmName, "843_mm") == 0) {
+            fullPath = folderPath / "DED.mp4";
+        }
+    }
+    if (!std::filesystem::exists(fullPath))
+    {
+        return "";
+    }
+    return fullPath;
 }
 
 std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
@@ -1045,15 +1073,19 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
 
     if (!KH_15_25_Remix_Location.empty()) {
         std::filesystem::path collectionPath = KH_15_25_Remix_Location;
-        std::filesystem::path newEpicFullPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "Days" / "en" / filename;
-        if (std::filesystem::exists(newEpicFullPath)) {
-            patchCutsceneIfNeeded(newEpicFullPath);
-            return newEpicFullPath.string();
+        std::filesystem::path newEpicFolderPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "Days" / "en";
+        if (std::filesystem::exists(newEpicFolderPath)) {
+            std::filesystem::path newEpicFullPath = patchCutsceneIfNeeded(cutscene, newEpicFolderPath);
+            if (newEpicFullPath != "") {
+                return newEpicFullPath.string();
+            }
         }
-        std::filesystem::path newSteamFullPath = collectionPath / "STEAM" / "Mare" / "MOVIE" / "Days" / "en" / filename;
-        if (std::filesystem::exists(newSteamFullPath)) {
-            patchCutsceneIfNeeded(newSteamFullPath);
-            return newSteamFullPath.string();
+        std::filesystem::path newSteamFolderPath = collectionPath / "STEAM" / "Mare" / "MOVIE" / "Days" / "en";
+        if (std::filesystem::exists(newSteamFolderPath)) {
+            std::filesystem::path newSteamFullPath = patchCutsceneIfNeeded(cutscene, newSteamFolderPath);
+            if (newSteamFullPath != "") {
+                return newSteamFullPath.string();
+            }
         }
     }
 
