@@ -1029,6 +1029,10 @@ void PluginKingdomHeartsDays::refreshCutscene()
     }
 }
 
+void PluginKingdomHeartsDays::patchCutsceneIfNeeded(std::filesystem::path path) {
+    // TODO: KH Cutscene should be patched, if needed
+}
+
 std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->DsName) + ".mp4";
     std::string assetsFolderName = assetsFolder();
@@ -1041,10 +1045,15 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
 
     if (!KH_15_25_Remix_Location.empty()) {
         std::filesystem::path collectionPath = KH_15_25_Remix_Location;
-        std::filesystem::path newFullPath = collectionPath / "Mare" / "MOVIE" / "Days" / "en" / filename;
-        if (std::filesystem::exists(newFullPath)) {
-            // TODO: KH Cutscene should be patched, if needed
-            return newFullPath.string();
+        std::filesystem::path newEpicFullPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "Days" / "en" / filename;
+        if (std::filesystem::exists(newEpicFullPath)) {
+            patchCutsceneIfNeeded(newEpicFullPath);
+            return newEpicFullPath.string();
+        }
+        std::filesystem::path newSteamFullPath = collectionPath / "STEAM" / "Mare" / "MOVIE" / "Days" / "en" / filename;
+        if (std::filesystem::exists(newSteamFullPath)) {
+            patchCutsceneIfNeeded(newSteamFullPath);
+            return newSteamFullPath.string();
         }
     }
 

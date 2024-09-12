@@ -121,6 +121,7 @@ public:
     }
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
+    void patchCutsceneIfNeeded(std::filesystem::path path);
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
     void onTerminateIngameCutscene();
     void onReturnToGameAfterCutscene();
