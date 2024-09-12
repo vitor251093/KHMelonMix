@@ -321,10 +321,15 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideAllHUD");
     CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
     CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
+    CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
 }
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
+    CutsceneEntry* tsCutscene = detectTopScreenCutscene();
+    CutsceneEntry* bsCutscene = detectBottomScreenCutscene();
+    int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
+
     glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
     glUniform1i(CompGpuLoc[CompShader][1], GameScene);
     glUniform1i(CompGpuLoc[CompShader][2], UIScale);
@@ -336,6 +341,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     glUniform1i(CompGpuLoc[CompShader][8], HideAllHUD ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][10], getCurrentMainMenuView());
+    glUniform1i(CompGpuLoc[CompShader][11], dsCutsceneState);
 }
 
 void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
@@ -909,7 +915,7 @@ u32 PluginKingdomHeartsDays::getAddressByCart(u32 usAddress, u32 euAddress, u32 
     return cutsceneAddress;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectCutscene()
+CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
 {
     if (GameScene == -1)
     {
@@ -922,29 +928,46 @@ CutsceneEntry* PluginKingdomHeartsDays::detectCutscene()
         cutsceneAddressValue = 0;
     }
 
+    CutsceneEntry* cutscene1 = nullptr;
+    for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
+            cutscene1 = entry;
+        }
+    }
+
+    return cutscene1;
+}
+
+CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
+{
+    if (GameScene == -1)
+    {
+        return nullptr;
+    }
+
     u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
     u32 cutsceneAddressValue2 = nds->ARM7Read32(cutsceneAddress2);
     if (cutsceneAddressValue2 == 0 || (cutsceneAddressValue2 - (cutsceneAddressValue2 & 0xFF)) == 0xea000000) {
         cutsceneAddressValue2 = 0;
     }
 
-    CutsceneEntry* cutscene1 = nullptr;
     CutsceneEntry* cutscene2 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
-            cutscene1 = entry;
-        }
         if (getCutsceneAddress(entry) == cutsceneAddressValue2) {
             cutscene2 = entry;
         }
     }
 
+    return cutscene2;
+}
+
+CutsceneEntry* PluginKingdomHeartsDays::detectCutscene()
+{
+    CutsceneEntry* cutscene1 = detectTopScreenCutscene();
+    CutsceneEntry* cutscene2 = detectBottomScreenCutscene();
+
     if (cutscene1 == nullptr && cutscene2 != nullptr) {
         cutscene1 = cutscene2;
-    }
-
-    if (cutscene1 == nullptr && cutsceneAddressValue != 0 && cutsceneAddressValue2 != 0) {
-        // printf("Unknown cutscene: 0x%08x - 0x%08x\n", cutsceneAddressValue, cutsceneAddressValue2);
     }
 
     return cutscene1;

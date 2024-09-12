@@ -35,6 +35,7 @@ uniform bool ShowMissionInfo;
 uniform bool HideAllHUD;
 uniform bool HideScene;
 uniform int MainMenuView;
+uniform int DSCutsceneState;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -748,6 +749,9 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
+    if (DSCutsceneState == 2) { // top only
+        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(-1, -1)));
+    }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
 }
 
@@ -1214,18 +1218,21 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     return color;
 }
 
+ivec4 horizontalBrightness()
+{
+    if (fTexcoord.x < 128) {
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 96), 0));
+    }
+    return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192 + 96), 0));
+}
+
 ivec4 brightness()
 {
     if (HideScene) {
         return ivec4(0x1F, 2 << 6, 0x2, 0);
     }
-    if (GameScene == 1) { // gameScene_MainMenu
-        ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
-        int brightmode = mbright.g >> 6;
-        if ((mbright.b & 0x3) != 0 && brightmode == 2) {
-            return mbright;
-        }
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    if (GameScene == 4) { // gameScene_Cutscene
+        return horizontalBrightness();
     }
     if (GameScene == 7  || // gameScene_PauseMenu
         GameScene == 9  || // gameScene_InGameWithCutscene
@@ -1245,7 +1252,7 @@ ivec4 brightness()
 
     ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     int brightmode = mbright.g >> 6;
-    if (brightmode != 0) {
+    if ((mbright.b & 0x3) != 0 && brightmode == 2) {
         return mbright;
     }
     return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));

@@ -154,7 +154,7 @@ private:
     bool ShowMissionInfo;
     bool HideAllHUD;
 
-    std::map<GLuint, GLuint[10]> CompGpuLoc{};
+    std::map<GLuint, GLuint[11]> CompGpuLoc{};
     std::map<u32, GLuint[4]> CompGpu3DLoc{};
 
     bool _muchOlderHad3DOnTopScreen;
@@ -179,6 +179,8 @@ private:
     u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address);
 
     u32 getCutsceneAddress(CutsceneEntry* entry);
+    CutsceneEntry* detectTopScreenCutscene();
+    CutsceneEntry* detectBottomScreenCutscene();
     CutsceneEntry* detectCutscene();
     CutsceneEntry* detectSequenceCutscene();
     void refreshCutscene();
