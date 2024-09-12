@@ -137,7 +137,7 @@ public:
 
     void loadConfigs(std::function<std::string(std::string)> getStringConfig)
     {
-        // printf("%s: %s\n", "LastROMFolder", getStringConfig("LastROMFolder").c_str());
+        KH_15_25_Remix_Location = getStringConfig("Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
     }
 private:
     melonDS::NDS* nds;
@@ -177,6 +177,8 @@ private:
     u32 PriorHotkeyMask, PriorPriorHotkeyMask;
     u32 LastLockOnPress, LastSwitchTargetPress;
     bool SwitchTargetPressOnHold;
+
+    std::string KH_15_25_Remix_Location = "";
 
     int detectGameScene();
     bool setGameScene(int newGameScene);

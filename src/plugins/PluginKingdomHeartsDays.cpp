@@ -199,7 +199,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     Map = 0;
     UIScale = 4;
     AspectRatio = 0;
-    
+
     HUDState = -1;
     hudToggle();
 
@@ -1035,11 +1035,20 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
     std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
-    if (!std::filesystem::exists(fullPath)) {
-        // TODO: KH try to load the cutscene from EPIC\Mare\MOVIE\Days\en
-        return "";
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
     }
-    return fullPath.string();
+
+    if (!KH_15_25_Remix_Location.empty()) {
+        std::filesystem::path collectionPath = KH_15_25_Remix_Location;
+        std::filesystem::path newFullPath = collectionPath / "Mare" / "MOVIE" / "Days" / "en" / filename;
+        if (std::filesystem::exists(newFullPath)) {
+            // TODO: KH Cutscene should be patched, if needed
+            return newFullPath.string();
+        }
+    }
+
+    return "";
 }
 
 void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
