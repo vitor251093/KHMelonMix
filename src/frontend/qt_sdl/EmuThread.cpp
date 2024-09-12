@@ -177,6 +177,10 @@ void EmuThread::run()
 
                 plugin = Plugins::PluginManager::load(gamecode);
                 plugin->setNds(emuInstance->getNDS());
+                plugin->loadConfigs([cfg = globalCfg](const std::string& path){
+                    Config::Table& ref = const_cast <Config::Table&>(cfg);
+                    return ref.GetString(path);
+                });
 
                 printf("Loading plugin %s for game code %u\n", typeid(*plugin).name(), gamecode);
             }

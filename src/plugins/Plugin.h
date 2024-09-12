@@ -100,6 +100,12 @@ public:
 
     virtual void setAspectRatio(float aspectRatio) = 0;
 
+    template<typename Callback>
+    void loadConfigs(Callback getStringConfig)
+    {
+        // printf("%s: %s\n", "LastROMFolder", getStringConfig("LastROMFolder").c_str());
+    }
+
     void log(const char* log) {
         printf("%s\n", log);
 
