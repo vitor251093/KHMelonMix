@@ -134,6 +134,11 @@ public:
     void setAspectRatio(float aspectRatio);
 
     bool refreshGameScene();
+
+    void loadConfigs(std::function<std::string(std::string)> getStringConfig)
+    {
+        // printf("%s: %s\n", "LastROMFolder", getStringConfig("LastROMFolder").c_str());
+    }
 private:
     melonDS::NDS* nds;
 

@@ -30,6 +30,8 @@
 #define RAM_SEARCH_READ(nds,addr) nds->ARM7Read8(addr)
 #endif
 
+#include <functional>
+
 #include "../NDS.h"
 
 #include "../OpenGLSupport.h"
@@ -100,11 +102,7 @@ public:
 
     virtual void setAspectRatio(float aspectRatio) = 0;
 
-    template<typename Callback>
-    void loadConfigs(Callback getStringConfig)
-    {
-        // printf("%s: %s\n", "LastROMFolder", getStringConfig("LastROMFolder").c_str());
-    }
+    virtual void loadConfigs(std::function<std::string(std::string)> getStringConfig) {}
 
     void log(const char* log) {
         printf("%s\n", log);
