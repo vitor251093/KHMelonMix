@@ -99,6 +99,7 @@ EmuInstance::EmuInstance(int inst) : instanceID(inst),
 
     Net::RegisterInstance(instanceID);
 
+    plugin = nullptr;
     emuThread = new EmuThread(this);
 
     numWindows = 0;
@@ -111,8 +112,6 @@ EmuInstance::EmuInstance(int inst) : instanceID(inst),
 
     emuThread->start();
     emuThread->emuPause();
-
-    plugin = nullptr;
 }
 
 EmuInstance::~EmuInstance()
