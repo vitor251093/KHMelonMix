@@ -10,8 +10,6 @@
 namespace Plugins
 {
 
-Plugin* PluginManager::LastPlugin = nullptr;
-
 struct IFactory { 
     virtual bool isCart(int gameCode) = 0;
     virtual Plugin* create(int gameCode) = 0;
@@ -31,24 +29,18 @@ IFactory* factories[] = {LOAD_PLUGINS};
 #undef LOAD_PLUGIN
 
 Plugin* PluginManager::load(u32 gameCode) {
-    LastPlugin = nullptr;
+    Plugin* plugin = nullptr;
     for (IFactory* factory : factories) {
         if (factory->isCart(gameCode)) {
-            LastPlugin = factory->create(gameCode);
+            plugin = factory->create(gameCode);
             break;
         }
     }
-    if (LastPlugin == nullptr) {
-        LastPlugin = new PluginDefault(gameCode);
+    if (plugin == nullptr) {
+        plugin = new PluginDefault(gameCode);
     }
 
-    return get();
-}
-Plugin* PluginManager::get() {
-    if (LastPlugin == nullptr) {
-        LastPlugin = new PluginDefault(0);
-    }
-    return LastPlugin;
+    return plugin;
 }
 
 }

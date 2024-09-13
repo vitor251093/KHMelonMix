@@ -47,8 +47,6 @@
 #include "OSD_shaders.h"
 #include "font.h"
 
-#include "plugins/PluginManager.h"
-
 using namespace melonDS;
 
 
