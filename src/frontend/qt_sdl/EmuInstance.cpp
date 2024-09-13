@@ -111,6 +111,8 @@ EmuInstance::EmuInstance(int inst) : instanceID(inst),
 
     emuThread->start();
     emuThread->emuPause();
+
+    plugin = nullptr;
 }
 
 EmuInstance::~EmuInstance()
@@ -1765,8 +1767,10 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset)
         nds->SetNDSCart(std::move(cart));
     }
 
-    plugin->setNds(nds);
-    plugin->onLoadROM();
+    if (plugin != nullptr) {
+        plugin->setNds(nds);
+        plugin->onLoadROM();
+    }
 
     cartType = 0;
     ndsSave = std::make_unique<SaveManager>(savname);

@@ -237,8 +237,13 @@ void ScreenPanel::refreshAspectRatio()
     if (aspectTop == 0) {
         aspectTop = 16.0 / 9;
     }
-    auto plugin = Plugins::PluginManager::get();
-    plugin->setAspectRatio(aspectTop);
+
+    if (emuInstance->getNDS() != nullptr) {
+        auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
+        if (rom != nullptr && emuInstance->plugin != nullptr) {
+            emuInstance->plugin->setAspectRatio(aspectTop);
+        }
+    }
 }
 
 void ScreenPanel::mousePressEvent(QMouseEvent* event)

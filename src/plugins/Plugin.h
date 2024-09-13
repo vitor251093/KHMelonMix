@@ -101,7 +101,7 @@ public:
 
     virtual bool refreshGameScene() = 0;
 
-    virtual void setAspectRatio(float aspectRatio) = 0;
+    virtual void setAspectRatio(float aspectRatio) {}
 
     virtual void loadConfigs(std::function<std::string(std::string)> getStringConfig) {}
 

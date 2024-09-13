@@ -67,6 +67,7 @@ protected:
 private:
     Ui::MainWindowSettings* ui;
     Config::Table& localCfg;
+    EmuInstance* emuInstance;
 
     QVideoWidget* playerWidget;
     QAudioOutput* playerAudioOutput;
