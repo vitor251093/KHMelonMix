@@ -184,7 +184,7 @@ void blah(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length
 
 std::unique_ptr<ComputeRenderer> ComputeRenderer::New(Plugins::Plugin* plugin)
 {
-    std::optional<GLCompositor> compositor =  GLCompositor::New();
+    std::optional<GLCompositor> compositor =  GLCompositor::New(plugin);
     if (!compositor)
         return nullptr;
 

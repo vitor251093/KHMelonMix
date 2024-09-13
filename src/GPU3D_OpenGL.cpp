@@ -106,7 +106,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New(Plugins::Plugin* plugin) noexcept
 {
     assert(glEnable != nullptr);
 
-    std::optional<GLCompositor> compositor =  GLCompositor::New();
+    std::optional<GLCompositor> compositor =  GLCompositor::New(plugin);
     if (!compositor)
         return nullptr;
 
