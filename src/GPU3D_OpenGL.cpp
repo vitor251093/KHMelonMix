@@ -24,7 +24,6 @@
 #include "NDS.h"
 #include "GPU.h"
 #include "GPU3D_OpenGL_shaders.h"
-#include "plugins/PluginManager.h"
 
 namespace melonDS
 {
@@ -65,7 +64,9 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
-    Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z_initVariables(prog, flags);
+    if (GamePlugin != nullptr) {
+        GamePlugin->gpu3DOpenGL_VS_Z_initVariables(prog, flags);
+    }
 
     RenderShader[flags] = prog;
 
@@ -78,7 +79,9 @@ void GLRenderer::UseRenderShader(u32 flags)
     glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
 
-    Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z_updateVariables(flags);
+    if (GamePlugin != nullptr) {
+        GamePlugin->gpu3DOpenGL_VS_Z_updateVariables(flags);
+    }
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -99,7 +102,7 @@ GLRenderer::GLRenderer(GLCompositor&& compositor) noexcept :
     // so we can just let the destructor clean up a half-initialized renderer.
 }
 
-std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
+std::unique_ptr<GLRenderer> GLRenderer::New(Plugins::Plugin* plugin) noexcept
 {
     assert(glEnable != nullptr);
 
@@ -110,6 +113,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
     // Will be returned if the initialization succeeds,
     // or cleaned up via RAII if it fails.
     std::unique_ptr<GLRenderer> result = std::unique_ptr<GLRenderer>(new GLRenderer(std::move(*compositor)));
+    result->GamePlugin = plugin;
     compositor = std::nullopt;
 
     glEnable(GL_DEPTH_TEST);
@@ -132,7 +136,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
 
-    const char* renderVS_Z_Custom = Plugins::PluginManager::get()->gpu3DOpenGL_VS_Z();
+    const char* renderVS_Z_Custom = result->GamePlugin == nullptr ? nullptr : result->GamePlugin->gpu3DOpenGL_VS_Z();
     const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
 
     if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))
