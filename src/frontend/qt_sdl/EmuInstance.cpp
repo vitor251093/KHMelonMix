@@ -49,8 +49,6 @@
 #include "FreeBIOS.h"
 #include "main.h"
 
-#include "plugins/PluginManager.h"
-
 using std::make_unique;
 using std::pair;
 using std::string;
@@ -623,7 +621,7 @@ bool EmuInstance::loadState(const std::string& filename)
 
     savestateLoaded = true;
 
-    Plugins::PluginManager::get()->onLoadState();
+    plugin->onLoadState();
 
     return true;
 }
@@ -1767,8 +1765,8 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset)
         nds->SetNDSCart(std::move(cart));
     }
 
-    Plugins::PluginManager::get()->setNds(nds);
-    Plugins::PluginManager::get()->onLoadROM();
+    plugin->setNds(nds);
+    plugin->onLoadROM();
 
     cartType = 0;
     ndsSave = std::make_unique<SaveManager>(savname);

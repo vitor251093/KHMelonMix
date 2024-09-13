@@ -112,7 +112,7 @@ void EmuThread::detachWindow(MainWindow* window)
 
 void EmuThread::run()
 {
-    plugin = nullptr;
+    emuInstance->plugin = nullptr;
 
     Config::Table& globalCfg = emuInstance->getGlobalConfig();
     u32 mainScreenPos[3];
@@ -170,23 +170,23 @@ void EmuThread::run()
         auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
         if (rom != nullptr) {
             u32 gamecode = rom->GetHeader().GameCodeAsU32();
-            if (plugin == nullptr || plugin->getGameCode() != gamecode)
+            if (emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode)
             {
                 lastVideoRenderer = -1;
                 videoSettingsDirty = true;
 
-                plugin = Plugins::PluginManager::load(gamecode);
-                plugin->setNds(emuInstance->getNDS());
-                plugin->loadConfigs([cfg = globalCfg](const std::string& path){
+                emuInstance->plugin = Plugins::PluginManager::load(gamecode);
+                emuInstance->plugin->setNds(emuInstance->getNDS());
+                emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetString(path);
                 });
 
-                printf("Loading plugin %s for game code %u\n", typeid(*plugin).name(), gamecode);
+                printf("Loading plugin %s for game code %u\n", typeid(*emuInstance->plugin).name(), gamecode);
             }
 
-            plugin->applyTouchKeyMask(emuInstance->touchInputMask);
-            plugin->applyHotkeyToInputMask(&emuInstance->inputMask, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
+            emuInstance->plugin->applyTouchKeyMask(emuInstance->touchInputMask);
+            emuInstance->plugin->applyHotkeyToInputMask(&emuInstance->inputMask, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
         }
 
         if (emuInstance->hotkeyPressed(HK_FastForwardToggle)) emit windowLimitFPSChange();
@@ -294,7 +294,7 @@ void EmuThread::run()
             emuInstance->micProcess();
 
             refreshPluginGameScene();
-            bool shouldRenderFrame = plugin->shouldRenderFrame();
+            bool shouldRenderFrame = emuInstance->plugin->shouldRenderFrame();
 
             // auto screen layout
             {
@@ -480,7 +480,7 @@ void EmuThread::run()
                 emuInstance->drawScreenGL();
             }
 
-            if (plugin != nullptr) {
+            if (emuInstance->plugin != nullptr) {
                 refreshPluginCutsceneState();
             }
         }
@@ -617,15 +617,15 @@ void EmuThread::handleMessages()
 
 bool EmuThread::pluginShouldFastForward()
 {
-    return plugin->ShouldTerminateIngameCutscene() && plugin->RunningReplacementCutscene();
+    return emuInstance->plugin->ShouldTerminateIngameCutscene() && emuInstance->plugin->RunningReplacementCutscene();
 }
 
 void EmuThread::refreshPluginGameScene()
 {
-    bool updated = plugin->refreshGameScene();
+    bool updated = emuInstance->plugin->refreshGameScene();
     if (updated && SHOW_GAME_SCENE)
     {
-        emuInstance->osdAddMessage(0, plugin->getGameSceneName());
+        emuInstance->osdAddMessage(0, emuInstance->plugin->getGameSceneName());
     }
 }
 
@@ -634,37 +634,37 @@ void EmuThread::refreshPluginCutsceneState()
     bool enableInvisibleFastMode = false;
     bool disableInvisibleFastMode = false;
 
-    if (plugin->ShouldStopReplacementCutscene()) {
+    if (emuInstance->plugin->ShouldStopReplacementCutscene()) {
         emit windowStopVideo();
     }
 
-    if (plugin->ShouldPauseReplacementCutscene()) {
+    if (emuInstance->plugin->ShouldPauseReplacementCutscene()) {
         emit windowPauseVideo();
     }
 
-    if (plugin->ShouldUnpauseReplacementCutscene()) {
+    if (emuInstance->plugin->ShouldUnpauseReplacementCutscene()) {
         emit windowUnpauseVideo();
     }
 
-    if (plugin->ShouldReturnToGameAfterCutscene()) {
+    if (emuInstance->plugin->ShouldReturnToGameAfterCutscene()) {
         emuStatus = emuStatus_Running;
         disableInvisibleFastMode = true;
     }
 
-    if (plugin->ShouldUnmuteAfterCutscene()) {
+    if (emuInstance->plugin->ShouldUnmuteAfterCutscene()) {
         emuStatus = emuStatus_Running;
         disableInvisibleFastMode = true;
     }
 
 
-    if (plugin->ShouldTerminateIngameCutscene()) {
+    if (emuInstance->plugin->ShouldTerminateIngameCutscene()) {
         enableInvisibleFastMode = true;
     }
 
-    if (plugin->ShouldStartReplacementCutscene()) {
-        auto cutscene = plugin->CurrentCutscene();
+    if (emuInstance->plugin->ShouldStartReplacementCutscene()) {
+        auto cutscene = emuInstance->plugin->CurrentCutscene();
         if (cutscene != nullptr) {
-            std::string path = plugin->CutsceneFilePath(cutscene);
+            std::string path = emuInstance->plugin->CutsceneFilePath(cutscene);
             if (path != "") {
                 // disabling fast-foward, otherwise it will affect the cutscenes
                 emuInstance->setVSyncGL(true);
@@ -676,12 +676,12 @@ void EmuThread::refreshPluginCutsceneState()
         }
     }
 
-    if (plugin->StartedReplacementCutscene()) {
+    if (emuInstance->plugin->StartedReplacementCutscene()) {
         emuStatus = emuStatus_Running;
         enableInvisibleFastMode = true;
     }
 
-    if (plugin->StoppedIngameCutscene()) {
+    if (emuInstance->plugin->StoppedIngameCutscene()) {
         emuStatus = emuStatus_Paused;
     }
 
@@ -740,7 +740,7 @@ void EmuThread::emuRun()
 void EmuThread::emuPause()
 {
     auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
-    if (rom != nullptr && plugin != nullptr && plugin->togglePause()) {
+    if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
         return;
     }
 
@@ -751,7 +751,7 @@ void EmuThread::emuPause()
 void EmuThread::emuUnpause()
 {
     auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
-    if (rom != nullptr && plugin != nullptr && plugin->togglePause()) {
+    if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
         return;
     }
 
@@ -814,10 +814,10 @@ void EmuThread::updateRenderer()
                 emuInstance->nds->GPU.SetRenderer3D(std::make_unique<SoftRenderer>());
                 break;
             case renderer3D_OpenGL:
-                emuInstance->nds->GPU.SetRenderer3D(GLRenderer::New(plugin));
+                emuInstance->nds->GPU.SetRenderer3D(GLRenderer::New(emuInstance->plugin));
                 break;
             case renderer3D_OpenGLCompute:
-                emuInstance->nds->GPU.SetRenderer3D(ComputeRenderer::New(plugin));
+                emuInstance->nds->GPU.SetRenderer3D(ComputeRenderer::New(emuInstance->plugin));
                 break;
             default: __builtin_unreachable();
         }

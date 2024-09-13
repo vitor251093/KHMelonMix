@@ -27,6 +27,8 @@
 #include "Config.h"
 #include "SaveManager.h"
 
+#include "plugins/Plugin.h"
+
 const int kMaxWindows = 16;
 
 enum
@@ -140,6 +142,8 @@ public:
     int getJoystickID() { return joystickID; }
     SDL_Joystick* getJoystick() { return joystick; }
     void autoMapJoystick();
+
+    Plugins::Plugin* plugin;
 
 private:
     static int lastSep(const std::string& path);
