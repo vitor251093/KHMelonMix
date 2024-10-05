@@ -859,6 +859,9 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (GameScene == 12) { // gameScene_LoadingScreen
         return ivec2(getLoadingScreenTextureCoordinates(xpos, ypos));
     }
+    if (GameScene == 15) { // gameScene_TheEnd
+        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
+    }
     if (GameScene == 16) { // gameScene_Other
         return ivec2(getOther2DTextureCoordinates(xpos, ypos));
     }
