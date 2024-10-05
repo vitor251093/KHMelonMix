@@ -31,9 +31,9 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 // 0x10 => credits
 #define IS_CREDITS_US      0x020446c2
-#define IS_CREDITS_EU      0x020446c2 // TODO: KH
-#define IS_CREDITS_JP      0x020446c2 // TODO: KH
-#define IS_CREDITS_JP_REV1 0x020446c2 // TODO: KH
+#define IS_CREDITS_EU      0x020446e2 // TODO: KH
+#define IS_CREDITS_JP      0x02044b22 // TODO: KH
+#define IS_CREDITS_JP_REV1 0x02044ae2 // TODO: KH
 
 // 0x80 => playable (example: ingame); 0x04 => not playable (menus and credits)
 #define IS_PLAYABLE_AREA_US      0x020446c6
