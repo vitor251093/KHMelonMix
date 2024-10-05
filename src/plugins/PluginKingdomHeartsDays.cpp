@@ -29,7 +29,13 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_CUTSCENE_JP      0x02044aa0
 #define IS_CUTSCENE_JP_REV1 0x02044a60
 
-// 0x80 => playable (example: ingame); 0x04 => not playable (menus)
+// 0x10 => credits
+#define IS_CREDITS_US      0x020446c2
+#define IS_CREDITS_EU      0x020446c2 // TODO: KH
+#define IS_CREDITS_JP      0x020446c2 // TODO: KH
+#define IS_CREDITS_JP_REV1 0x020446c2 // TODO: KH
+
+// 0x80 => playable (example: ingame); 0x04 => not playable (menus and credits)
 #define IS_PLAYABLE_AREA_US      0x020446c6
 #define IS_PLAYABLE_AREA_EU      0x020446e6
 #define IS_PLAYABLE_AREA_JP      0x02044b26
@@ -39,6 +45,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define PAUSE_SCREEN_ADDRESS_EU      0x0204bd84
 #define PAUSE_SCREEN_ADDRESS_JP      0x0204c1c4
 #define PAUSE_SCREEN_ADDRESS_JP_REV1 0x0204c184
+
+// 0x60 => The End
+#define THE_END_SCREEN_ADDRESS_US      0x0204becd
+#define THE_END_SCREEN_ADDRESS_EU      0x0204becd // TODO: KH
+#define THE_END_SCREEN_ADDRESS_JP      0x0204becd // TODO: KH
+#define THE_END_SCREEN_ADDRESS_JP_REV1 0x0204becd // TODO: KH
 
 #define PAUSE_SCREEN_VALUE_NONE       0x00
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
@@ -136,7 +148,8 @@ enum
     gameScene_LoadingScreen,            // 12
     gameScene_RoxasThoughts,            // 13
     gameScene_DeathScreen,              // 14
-    gameScene_Other                     // 15
+    gameScene_TheEnd,                   // 15
+    gameScene_Other                     // 16
 };
 
 CutsceneEntry Cutscenes[] =
@@ -329,6 +342,11 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     CutsceneEntry* tsCutscene = detectTopScreenCutscene();
     CutsceneEntry* bsCutscene = detectBottomScreenCutscene();
     int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
+
+    bool isCredits = nds->ARM7Read8(getAddressByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
+    if (isCredits) {
+        dsCutsceneState = 3;
+    }
 
     glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
     glUniform1i(CompGpuLoc[CompShader][1], GameScene);
@@ -586,6 +604,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_RoxasThoughts: return "Game scene: Roxas Thoughts";
         case gameScene_DeathScreen: return "Game scene: Death screen";
+        case gameScene_TheEnd: return "Game scene: The End";
         case gameScene_Other: return "Game scene: Unknown";
         default: return "Game scene: REALLY unknown";
     }
@@ -701,6 +720,7 @@ int PluginKingdomHeartsDays::detectGameScene()
     u8 mainMenuOrIntroOrLoadMenuVal = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP, IS_MAIN_MENU_JP_REV1));
     bool isMainMenuOrIntroOrLoadMenu = mainMenuOrIntroOrLoadMenuVal == 0x28 || mainMenuOrIntroOrLoadMenuVal == 0x2C;
     bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP, IS_CUTSCENE_JP_REV1)) == 0x03;
+    bool isCredits = nds->ARM7Read8(getAddressByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
     bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04;
     bool isLoadMenu = nds->ARM7Read8(getAddressByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1)) ==
         getAddressByCart(LOAD_MENU_MAIN_MENU_VIEW_US, LOAD_MENU_MAIN_MENU_VIEW_EU, LOAD_MENU_MAIN_MENU_VIEW_JP, LOAD_MENU_MAIN_MENU_VIEW_JP_REV1);
@@ -710,6 +730,19 @@ int PluginKingdomHeartsDays::detectGameScene()
         getAddressByCart(DEATH_SCREEN_VALUE_US, DEATH_SCREEN_VALUE_EU, DEATH_SCREEN_VALUE_JP, DEATH_SCREEN_VALUE_JP_REV1);
     bool isTutorial = nds->ARM7Read32(getAddressByCart(TUTORIAL_ADDRESS_US, TUTORIAL_ADDRESS_EU, TUTORIAL_ADDRESS_JP, TUTORIAL_ADDRESS_JP_REV1)) != 0;
     bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP, PAUSE_SCREEN_ADDRESS_JP_REV1)) != 0;
+    bool isTheEnd = nds->ARM7Read8(getAddressByCart(THE_END_SCREEN_ADDRESS_US, THE_END_SCREEN_ADDRESS_EU, THE_END_SCREEN_ADDRESS_JP, THE_END_SCREEN_ADDRESS_JP_REV1)) == 0x60;
+
+    if (isCredits)
+    {
+        if (isTheEnd)
+        {
+            return gameScene_TheEnd;
+        }
+        else
+        {
+            return gameScene_Cutscene;
+        }
+    }
 
     if (isCutscene)
     {
