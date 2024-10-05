@@ -31,9 +31,9 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 // 0x10 => credits
 #define IS_CREDITS_US      0x020446c2
-#define IS_CREDITS_EU      0x020446e2 // TODO: KH
-#define IS_CREDITS_JP      0x02044b22 // TODO: KH
-#define IS_CREDITS_JP_REV1 0x02044ae2 // TODO: KH
+#define IS_CREDITS_EU      0x020446e2 // TODO: KH Unconfirmed (calculated)
+#define IS_CREDITS_JP      0x02044b22 // TODO: KH Unconfirmed (calculated)
+#define IS_CREDITS_JP_REV1 0x02044ae2 // TODO: KH Unconfirmed (calculated)
 
 // 0x80 => playable (example: ingame); 0x04 => not playable (menus and credits)
 #define IS_PLAYABLE_AREA_US      0x020446c6
@@ -45,12 +45,6 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define PAUSE_SCREEN_ADDRESS_EU      0x0204bd84
 #define PAUSE_SCREEN_ADDRESS_JP      0x0204c1c4
 #define PAUSE_SCREEN_ADDRESS_JP_REV1 0x0204c184
-
-// 0x60 => The End
-#define THE_END_SCREEN_ADDRESS_US      0x0204becd
-#define THE_END_SCREEN_ADDRESS_EU      0x0204becd // TODO: KH
-#define THE_END_SCREEN_ADDRESS_JP      0x0204becd // TODO: KH
-#define THE_END_SCREEN_ADDRESS_JP_REV1 0x0204becd // TODO: KH
 
 #define PAUSE_SCREEN_VALUE_NONE       0x00
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
@@ -65,6 +59,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define DEATH_SCREEN_VALUE_EU      0x00
 #define DEATH_SCREEN_VALUE_JP      0x00
 #define DEATH_SCREEN_VALUE_JP_REV1 0x00
+
+// 0x60 => The End
+#define THE_END_SCREEN_ADDRESS_US      0x0204becd
+#define THE_END_SCREEN_ADDRESS_EU      0x0204beed // TODO: KH Unconfirmed (calculated)
+#define THE_END_SCREEN_ADDRESS_JP      0x0204c32d // TODO: KH Unconfirmed (calculated)
+#define THE_END_SCREEN_ADDRESS_JP_REV1 0x0204c2ed // TODO: KH Unconfirmed (calculated)
 
 #define CURRENT_WORLD_US      0x0204C2CF
 #define CURRENT_WORLD_EU      0x0204C2EF
