@@ -51,12 +51,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define PAUSE_SCREEN_VALUE_FAKE_PAUSE 0x02 // mission mode; game isn't paused, but pause view is shown
 
 #define DEATH_SCREEN_ADDRESS_US      0x0204bd84
-#define DEATH_SCREEN_ADDRESS_EU      0x0204c08e
+#define DEATH_SCREEN_ADDRESS_EU      0x0204bda4
 #define DEATH_SCREEN_ADDRESS_JP      0x0204c56e
 #define DEATH_SCREEN_ADDRESS_JP_REV1 0x0204c60c
 
 #define DEATH_SCREEN_VALUE_US      0x80
-#define DEATH_SCREEN_VALUE_EU      0x00
+#define DEATH_SCREEN_VALUE_EU      0x80
 #define DEATH_SCREEN_VALUE_JP      0x00
 #define DEATH_SCREEN_VALUE_JP_REV1 0x00
 
