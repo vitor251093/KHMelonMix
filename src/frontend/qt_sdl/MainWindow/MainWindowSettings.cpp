@@ -61,14 +61,27 @@ void MainWindowSettings::initWidgets()
 
 void MainWindowSettings::createVideoPlayer()
 {
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    playerWidgetArea = new QWidget(centralWidget);
+    centralWidget->addWidget(playerWidgetArea);
+    playerWidgetArea->setContentsMargins(0, 0, 0, 0);
+    playerWidgetArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    playerWidgetAreaLayout = new QGridLayout(playerWidgetArea);
+    playerWidgetAreaLayout->setContentsMargins(0, 0, 0, 0);
+
     playerWidget = new QVideoWidget(this);
     playerWidget->setCursor(Qt::BlankCursor);
+    playerWidgetAreaLayout->addWidget(playerWidget, 0, 0, 1, 1);
+
+    subtitleLabel = new QLabel(this);
+    subtitleLabel->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+    subtitleLabel->setWordWrap(true);
+    subtitleLabel->setStyleSheet("QLabel {background-color : red; color : blue;}");
+    playerWidgetAreaLayout->addWidget(subtitleLabel, 0, 0, 1, 1);
 
     playerAudioOutput = new QAudioOutput(this);
     player = new QMediaPlayer(this);
-
-    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    centralWidget->addWidget(playerWidget);
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         emuInstance->plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
@@ -114,6 +127,18 @@ void MainWindowSettings::startVideo(QString videoFilePath)
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(playerWidget);
 
+    int playerWidth = centralWidget->geometry().width();
+    int playerHeight = centralWidget->geometry().height();
+    playerWidgetArea->setGeometry(0, 0, playerWidth, playerHeight);
+    playerWidgetArea->setVisible(true);
+
+    subtitleLabel->setText("example subtitle");
+
+    // printf("centralWidget: %d - %d\n", centralWidget->geometry().width(), centralWidget->geometry().height());
+    // printf("playerWidgetArea: %d - %d\n", playerWidgetArea->geometry().width(), playerWidgetArea->geometry().height());
+    // printf("playerWidgetAreaLayout: %d - %d\n", playerWidgetAreaLayout->geometry().width(), playerWidgetAreaLayout->geometry().height());
+    // printf("playerWidget: %d - %d\n", playerWidget->geometry().width(), playerWidget->geometry().height());
+
     int volume = localCfg.GetInt("Audio.Volume");
     playerAudioOutput->setVolume(volume / 256.0);
 
@@ -131,6 +156,8 @@ void MainWindowSettings::stopVideo()
     if (isCutscenePlaying) {
         player->stop();
     }
+
+    playerWidgetArea->setVisible(false);
 
     showGame();
 

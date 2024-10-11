@@ -21,10 +21,12 @@
 
 #include <QMainWindow>
 #include <QStackedWidget>
+#include <QGridLayout>
 #include <QMediaPlayer>
 #include <QVideoWidget>
 #include <QAudioOutput>
 #include <QPushButton>
+#include <QLabel>
 #include <initializer_list>
 
 #include "Config.h"
@@ -69,9 +71,12 @@ private:
     Config::Table& localCfg;
     EmuInstance* emuInstance;
 
+    QWidget* playerWidgetArea;
+    QGridLayout* playerWidgetAreaLayout;
     QVideoWidget* playerWidget;
     QAudioOutput* playerAudioOutput;
     QMediaPlayer* player;
+    QLabel* subtitleLabel;
 
     void createVideoPlayer();
 
