@@ -73,9 +73,13 @@ private:
 
     QWidget* playerWidgetArea;
     QGridLayout* playerWidgetAreaLayout;
+
     QVideoWidget* playerWidget;
     QAudioOutput* playerAudioOutput;
     QMediaPlayer* player;
+
+    QWidget* subtitleWidget;
+    QGridLayout* subtitleWidgetLayout;
     QLabel* subtitleLabel;
 
     void createVideoPlayer();

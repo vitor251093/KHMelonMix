@@ -62,26 +62,34 @@ void MainWindowSettings::initWidgets()
 void MainWindowSettings::createVideoPlayer()
 {
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    playerWidgetArea = new QWidget(centralWidget);
-    centralWidget->addWidget(playerWidgetArea);
+
+    playerWidgetArea = new QWidget();
     playerWidgetArea->setContentsMargins(0, 0, 0, 0);
     playerWidgetArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    centralWidget->addWidget(playerWidgetArea);
 
     playerWidgetAreaLayout = new QGridLayout(playerWidgetArea);
     playerWidgetAreaLayout->setContentsMargins(0, 0, 0, 0);
 
-    playerWidget = new QVideoWidget(this);
+    playerWidget = new QVideoWidget();
     playerWidget->setCursor(Qt::BlankCursor);
     playerWidgetAreaLayout->addWidget(playerWidget, 0, 0, 1, 1);
 
-    subtitleLabel = new QLabel(this);
+    subtitleWidget = new QWidget(this);
+    subtitleWidget->setContentsMargins(0, 0, 0, 0);
+    subtitleWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    subtitleWidgetLayout = new QGridLayout(subtitleWidget);
+    subtitleWidgetLayout->setContentsMargins(0, 0, 0, 0);
+
+    subtitleLabel = new QLabel();
     subtitleLabel->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
     subtitleLabel->setWordWrap(true);
-    subtitleLabel->setStyleSheet("QLabel {background-color : red; color : blue;}");
-    playerWidgetAreaLayout->addWidget(subtitleLabel, 0, 0, 1, 1);
+    subtitleLabel->setStyleSheet("background-color: transparent; color: white; font-size: 24px;");
+    subtitleWidgetLayout->addWidget(subtitleLabel, 0, 0, 1, 1);
 
     playerAudioOutput = new QAudioOutput(this);
-    player = new QMediaPlayer(this);
+    player = new QMediaPlayer(playerWidget);
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         emuInstance->plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
@@ -129,15 +137,14 @@ void MainWindowSettings::startVideo(QString videoFilePath)
 
     int playerWidth = centralWidget->geometry().width();
     int playerHeight = centralWidget->geometry().height();
+
     playerWidgetArea->setGeometry(0, 0, playerWidth, playerHeight);
     playerWidgetArea->setVisible(true);
 
-    subtitleLabel->setText("example subtitle");
+    subtitleWidget->setGeometry(0, 0, playerWidth, playerHeight);
+    subtitleWidget->show();
 
-    // printf("centralWidget: %d - %d\n", centralWidget->geometry().width(), centralWidget->geometry().height());
-    // printf("playerWidgetArea: %d - %d\n", playerWidgetArea->geometry().width(), playerWidgetArea->geometry().height());
-    // printf("playerWidgetAreaLayout: %d - %d\n", playerWidgetAreaLayout->geometry().width(), playerWidgetAreaLayout->geometry().height());
-    // printf("playerWidget: %d - %d\n", playerWidget->geometry().width(), playerWidget->geometry().height());
+    subtitleLabel->setText("example subtitle");
 
     int volume = localCfg.GetInt("Audio.Volume");
     playerAudioOutput->setVolume(volume / 256.0);
@@ -158,6 +165,7 @@ void MainWindowSettings::stopVideo()
     }
 
     playerWidgetArea->setVisible(false);
+    subtitleWidget->hide();
 
     showGame();
 
