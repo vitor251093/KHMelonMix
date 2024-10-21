@@ -1,3 +1,4 @@
+# Assets
 assets/days/cutscenes/cinematics/*.mp4
 assets/days/textures_tmp
 assets/days/2d_textures_tmp
@@ -6,11 +7,12 @@ assets/recoded/cutscenes/cinematics/*.mp4
 assets/recoded/textures_tmp
 assets/recoded/2d_textures_tmp
 
+# ROMs
 roms/*
 !roms/.keep
 
+# Build and run artifacts
 debug.log
-
 build
 build*/
 bin
@@ -24,14 +26,17 @@ melon.rc
 cmake-build*
 cmake-build-debug
 compile_commands.json
+*.exe
+CMakeFiles
+CMakeCache.txt
+
+# ???
 .idea
 .cache
 
-*.exe
-
+# macOS artifacts
 .DS_Store
 
+# Visual Studio artifacts
 .vs
 .vscode
-CMakeFiles
-CMakeCache.txt
