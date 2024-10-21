@@ -6,18 +6,8 @@ assets/recoded/cutscenes/cinematics/*.mp4
 assets/recoded/textures_tmp
 assets/recoded/2d_textures_tmp
 
-roms/*.nds
-roms/*.sav
-roms/*.mch
-roms/*.ml1
-roms/*.ml2
-roms/*.ml3
-roms/*.ml4
-roms/*.ml5
-roms/*.ml6
-roms/*.ml7
-roms/*.ml8
-roms/*.ml9
+roms/*
+!roms/.keep
 
 debug.log
 
