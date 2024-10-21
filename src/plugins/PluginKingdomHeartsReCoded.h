@@ -43,7 +43,10 @@ public:
     void applyTouchKeyMask(u32 TouchKeyMask);
 
     int _FastForwardPressCount;
-    int _SkipHdCutsceneCount;
+    int _StartPressCount;
+    int _ReplayLimitCount;
+    bool _CanSkipHdCutscene;
+    bool _SkipDsCutscene;
     bool _PlayingCutsceneBeforeCredits;
     bool _PlayingCredits;
     bool _ShouldTerminateIngameCutscene;
@@ -59,6 +62,8 @@ public:
     bool _ShouldUnmuteAfterCutscene;
     bool _ShouldHideScreenForTransitions;
     CutsceneEntry* _CurrentCutscene;
+    CutsceneEntry* _NextCutscene;
+    CutsceneEntry* _LastCutscene;
     bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
     bool StoppedIngameCutscene() {
         if (_StoppedIngameCutscene) {
@@ -115,6 +120,7 @@ public:
     }
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
+    std::filesystem::path patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
     void onTerminateIngameCutscene();
     void onReturnToGameAfterCutscene();
@@ -128,6 +134,11 @@ public:
     void setAspectRatio(float aspectRatio);
 
     bool refreshGameScene();
+
+    void loadConfigs(std::function<std::string(std::string)> getStringConfig)
+    {
+        KH_15_25_Remix_Location = getStringConfig("Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
+    }
 private:
     melonDS::NDS* nds;
 
@@ -157,12 +168,17 @@ private:
     u32 LastLockOnPress, LastSwitchTargetPress;
     bool SwitchTargetPressOnHold;
 
+    std::array<CutsceneEntry, 15> Cutscenes;
+    std::string KH_15_25_Remix_Location = "";
+
     int detectGameScene();
     bool setGameScene(int newGameScene);
 
     u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
 
     u32 getCutsceneAddress(CutsceneEntry* entry);
+    CutsceneEntry* detectTopScreenCutscene();
+    CutsceneEntry* detectBottomScreenCutscene();
     CutsceneEntry* detectCutscene();
     CutsceneEntry* detectSequenceCutscene();
     void refreshCutscene();

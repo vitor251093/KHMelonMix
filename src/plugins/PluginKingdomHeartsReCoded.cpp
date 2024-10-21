@@ -37,6 +37,10 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0 // TODO: KH
 #define IS_PLAYABLE_AREA_JP 0x0205a8c0 // TODO: KH
 
+#define CUTSCENE_ADDRESS_US      0x020b7db8
+#define CUTSCENE_ADDRESS_EU      0x020b7db8 // TODO: KH
+#define CUTSCENE_ADDRESS_JP      0x020b7db8 // TODO: KH
+
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
@@ -92,8 +96,10 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
 
-    _SkipHdCutsceneCount = 0;
-    _PlayingCutsceneBeforeCredits = false;
+    _StartPressCount = 0;
+    _ReplayLimitCount = 0;
+    _CanSkipHdCutscene = false;
+    _SkipDsCutscene = false;
     _PlayingCredits = false;
     _StartedReplacementCutscene = false;
     _RunningReplacementCutscene = false;
@@ -108,6 +114,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _ShouldUnmuteAfterCutscene = false;
     _ShouldHideScreenForTransitions = false;
     _CurrentCutscene = nullptr;
+    _NextCutscene = nullptr;
+    _LastCutscene = nullptr;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -115,6 +123,24 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
     SwitchTargetPressOnHold = false;
+
+    Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
+        {"OP",     "802_mm", "802_opening",                       0x04bb3a00, 0x04bb3a00, 0x04bb3a00},
+        {"Secret", "803",    "803_meet_xion",                     0x05e9b400, 0x05e9b400, 0x05e9b400},
+        {"w1_ED",  "804",    "804_roxas_recusant_sigil",          0x06784800, 0x06784800, 0x06784800},
+        {"w1_OP",  "805",    "805_the_dark_margin",               0x06e43800, 0x06e43800, 0x06e43800},
+        {"w2_ED",  "806",    "806_sora_entering_pod",             0x07c4ee00, 0x07c4ee00, 0x07c4ee00},
+        {"w2_OP",  "808",    "808_sunset_memory",                 0x08548600, 0x08548600, 0x08548600},
+        {"w3_ED",  "809",    "809_xions_defeat",                  0x08706200, 0x08706200, 0x08706200},
+        {"w4_ED",  "810",    "810_the_main_in_black_reflects",    0x09503000, 0x09503000, 0x09503000},
+        {"w5_ED",  "813",    "813_xions_defeat",                  0x09990800, 0x09990800, 0x09990800},
+        {"w6_ED",  "814",    "814_sora_walk",                     0x0a3c9400, 0x0a3c9400, 0x0a3c9400},
+        {"w7_ED",  "815",    "815_sora_release_kairi",            0x0ac3aa00, 0x0ac3aa00, 0x0ac3aa00},
+        {"w8_ED1", "816",    "816_kairi_memories",                0x0b150400, 0x0b150400, 0x0b150400},
+        {"w8_ED2", "817_mm", "817_namine_and_diz",                0x0bcd3400, 0x0bcd3400, 0x0bcd3400},
+        {"w8_ED3", "818",    "818_why_the_sun_sets_red",          0x0c216800, 0x0c216800, 0x0c216800},
+        {"w8_OP",  "819",    "819_sora_wakes_up",                 0x0c426000, 0x0c426000, 0x0c426000},
+    }};
 }
 
 std::string PluginKingdomHeartsReCoded::assetsFolder() {
@@ -201,16 +227,30 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         return;
     }
 
-    if (_RunningReplacementCutscene && (~(*InputMask)) & (1 << 3) && _SkipHdCutsceneCount > 0) { // Start (skip HD cutscene)
+    if (_RunningReplacementCutscene && !_PausedReplacementCutscene && (_SkipDsCutscene || (~(*InputMask)) & (1 << 3)) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
+        _SkipDsCutscene = true;
         if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
-            _SkipHdCutsceneCount--;
+            _SkipDsCutscene = false;
+            _CanSkipHdCutscene = false;
             _ShouldStopReplacementCutscene = true;
             *InputMask |= (1<<3);
+        }
+        else {
+            if (_StartPressCount == 0) {
+                _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
+            }
         }
     }
 
     if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
-        *HotkeyPress |= (1<<5); // Fast Forward (skip DS cutscene)
+        if (_StartPressCount > 0) {
+            _StartPressCount--;
+            *InputMask &= ~(1<<3); // Start (skip DS cutscene)
+        }
+    }
+
+    if (GameScene == gameScene_LoadingScreen) {
+        *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
     }
 
     if ((*HotkeyPress) & (1 << 15)) { // HUD Toggle
@@ -336,6 +376,11 @@ bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
 
 bool PluginKingdomHeartsReCoded::shouldRenderFrame()
 {
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene)
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -517,9 +562,37 @@ u32 PluginKingdomHeartsReCoded::getAddressByCart(u32 usAddress, u32 euAddress, u
     return cutsceneAddress;
 }
 
-CutsceneEntry* PluginKingdomHeartsReCoded::detectCutscene()
+CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
+{
+    if (GameScene == -1)
+    {
+        return nullptr;
+    }
+
+    u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+    u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
+    if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
+        cutsceneAddressValue = 0;
+    }
+
+    CutsceneEntry* cutscene1 = nullptr;
+    for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
+            cutscene1 = entry;
+        }
+    }
+
+    return cutscene1;
+}
+
+CutsceneEntry* PluginKingdomHeartsReCoded::detectBottomScreenCutscene()
 {
     return nullptr;
+}
+
+CutsceneEntry* PluginKingdomHeartsReCoded::detectCutscene()
+{
+    return detectTopScreenCutscene();
 }
 
 CutsceneEntry* PluginKingdomHeartsReCoded::detectSequenceCutscene()
@@ -537,14 +610,19 @@ void PluginKingdomHeartsReCoded::refreshCutscene()
     CutsceneEntry* cutscene = detectCutscene();
     bool wasSaveLoaded = isSaveLoaded();
 
-    // Avoiding bug with the credits
-    // if (cutscene != nullptr && wasSaveLoaded && strcmp(cutscene->DsName, "843") == 0) {
-    //     cutscene = nullptr;
-    // }
+    if (_ReplayLimitCount > 0) {
+        _ReplayLimitCount--;
+        if (cutscene != nullptr && cutscene->usAddress == _LastCutscene->usAddress) {
+            cutscene = nullptr;
+        }
+    }
+
     
     if (cutscene != nullptr) {
         onIngameCutsceneIdentified(cutscene);
     }
+
+    bool cutsceneEnded = !isCutsceneScene || _NextCutscene != nullptr;
 
     // Natural progression for all cutscenes
     if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
@@ -553,36 +631,38 @@ void PluginKingdomHeartsReCoded::refreshCutscene()
 
     if (wasSaveLoaded) { // In game cutscenes (starting from Day 7)
         
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && (!isCutsceneScene || _PlayingCutsceneBeforeCredits)) {
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && cutsceneEnded) {
             onTerminateIngameCutscene();
         }
 
-        if (_ShouldReturnToGameAfterCutscene && (!isCutsceneScene || _PlayingCredits || _PlayingCutsceneBeforeCredits)) {
+        if (_ShouldReturnToGameAfterCutscene && (cutsceneEnded || _PlayingCredits)) {
             onReturnToGameAfterCutscene();
         }
     }
     else { // Intro when waiting on the title screen, theater, and cutscenes before Day 7
 
-        // Intro when waiting on the title screen and cutscenes before Day 7
         if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && !isCutsceneScene) {
             onTerminateIngameCutscene();
         }
-
-        // Theater only
-        // if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && isCutsceneScene) {
-        //     u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
-        //     u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
-        //     u32 fullMap = world;
-        //     fullMap = (fullMap << 4*2) | map;
-        //     if (fullMap != 128) {
-        //         onTerminateIngameCutscene();
-        //     }
-        // }
 
         if (_ShouldReturnToGameAfterCutscene) {
             onReturnToGameAfterCutscene();
         }
     }
+}
+
+std::filesystem::path PluginKingdomHeartsReCoded::patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
+    std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
+    std::filesystem::path fullPath = folderPath / filename;
+    if (!std::filesystem::exists(fullPath))
+    {
+        // TODO: KH Cutscene should be patched, if needed
+    }
+    if (!std::filesystem::exists(fullPath))
+    {
+        return "";
+    }
+    return fullPath;
 }
 
 std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene) {
@@ -591,11 +671,29 @@ std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
     std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
-    if (!std::filesystem::exists(fullPath)) {
-        // TODO: KH try to load the cutscene from EPIC\Mare\MOVIE\?\en
-        return "";
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
     }
-    return fullPath.string();
+
+    if (!KH_15_25_Remix_Location.empty()) {
+        std::filesystem::path collectionPath = KH_15_25_Remix_Location;
+        std::filesystem::path newEpicFolderPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "ReCoded" / "en";
+        if (std::filesystem::exists(newEpicFolderPath)) {
+            std::filesystem::path newEpicFullPath = patchCutsceneIfNeeded(cutscene, newEpicFolderPath);
+            if (newEpicFullPath != "") {
+                return newEpicFullPath.string();
+            }
+        }
+        std::filesystem::path newSteamFolderPath = collectionPath / "STEAM" / "Mare" / "MOVIE" / "ReCoded" / "dt";
+        if (std::filesystem::exists(newSteamFolderPath)) {
+            std::filesystem::path newSteamFullPath = patchCutsceneIfNeeded(cutscene, newSteamFolderPath);
+            if (newSteamFullPath != "") {
+                return newSteamFullPath.string();
+            }
+        }
+    }
+
+    return "";
 }
 
 void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
@@ -603,31 +701,24 @@ void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(CutsceneEntry* cutsc
         return;
     }
 
-    // Workaround so those two cutscenes are played in sequence ingame,
-    // without playing the first cutscene again
-    bool wasSaveLoaded = isSaveLoaded();
-    if (wasSaveLoaded) {
-        // for (int seqIndex = 0; seqIndex < SequentialCutscenesSize; seqIndex++) {
-        //     if (_CurrentCutscene != nullptr && strcmp(_CurrentCutscene->DsName, SequentialCutscenes[seqIndex][1]) == 0 &&
-        //                                        strcmp(cutscene->DsName,         SequentialCutscenes[seqIndex][0]) == 0) {
-        //         return;
-        //     }
-        // }
-    }
-
     std::string path = CutsceneFilePath(cutscene);
     if (path == "") {
+        return;
+    }
+
+    if (_CurrentCutscene != nullptr) {
+        _NextCutscene = cutscene;
         return;
     }
 
     printf("Preparing to load cutscene: %s\n", cutscene->Name);
     log("Cutscene detected");
 
-    _SkipHdCutsceneCount = 1;
+    _CanSkipHdCutscene = true;
     _CurrentCutscene = cutscene;
+    _NextCutscene = nullptr;
     _ShouldTerminateIngameCutscene = true;
-    // _PlayingCredits = wasSaveLoaded && strcmp(cutscene->DsName, "843") == 0;
-    // _PlayingCutsceneBeforeCredits = wasSaveLoaded && strcmp(cutscene->DsName, "842") == 0;
+    // _PlayingCredits = isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 void PluginKingdomHeartsReCoded::onTerminateIngameCutscene() {
     if (_CurrentCutscene == nullptr) {
@@ -637,7 +728,7 @@ void PluginKingdomHeartsReCoded::onTerminateIngameCutscene() {
     _ShouldTerminateIngameCutscene = false;
     _StoppedIngameCutscene = true;
 
-    if (_PlayingCutsceneBeforeCredits || _PlayingCredits) {
+    if (_PlayingCredits) {
         _StoppedIngameCutscene = false;
     }
 }
@@ -654,36 +745,26 @@ void PluginKingdomHeartsReCoded::onReplacementCutsceneEnd() {
     _RunningReplacementCutscene = false;
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = true;
-
-    CutsceneEntry* sequence = detectSequenceCutscene();
-    _ShouldHideScreenForTransitions = sequence != nullptr;
+    _ShouldHideScreenForTransitions = false;
 }
 void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene() {
     log("Returning to the game");
+    _StartPressCount = 0;
     _PlayingCredits = false;
-    _PlayingCutsceneBeforeCredits = false;
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = false;
     _RunningReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = false;
     _ShouldUnmuteAfterCutscene = true;
 
-    // Ugly workaround to play one cutscene after another one, because both are skipped with a single "Start" click
-    bool newCutsceneWillPlay = false;
-    CutsceneEntry* sequence = detectSequenceCutscene();
-    if (sequence != nullptr) {
-        onIngameCutsceneIdentified(sequence);
-        _ShouldStartReplacementCutscene = true;
-        _ShouldUnmuteAfterCutscene = false;
-        newCutsceneWillPlay = true;
-    }
+    _LastCutscene = _CurrentCutscene;
+    _CurrentCutscene = nullptr;
+    _ReplayLimitCount = 30;
 
-    if (!newCutsceneWillPlay) {
-        _CurrentCutscene = nullptr;
-
-        // u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
-        // u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
-        // nds->ARM7Write32(cutsceneAddress, 0x0);
+    if (_NextCutscene == nullptr) {
+        u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+        // u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP);
+        nds->ARM7Write32(cutsceneAddress, 0x0);
         // nds->ARM7Write32(cutsceneAddress2, 0x0);
     }
 }
@@ -738,54 +819,10 @@ bool PluginKingdomHeartsReCoded::isSaveLoaded()
     return getCurrentMap() != 0;
 }
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  ((byte) & 0x80000000 ? '1' : '0'), \
-  ((byte) & 0x40000000 ? '1' : '0'), \
-  ((byte) & 0x20000000 ? '1' : '0'), \
-  ((byte) & 0x10000000 ? '1' : '0'), \
-  ((byte) & 0x08000000 ? '1' : '0'), \
-  ((byte) & 0x04000000 ? '1' : '0'), \
-  ((byte) & 0x02000000 ? '1' : '0'), \
-  ((byte) & 0x01000000 ? '1' : '0'), \
-  ((byte) & 0x00800000 ? '1' : '0'), \
-  ((byte) & 0x00400000 ? '1' : '0'), \
-  ((byte) & 0x00200000 ? '1' : '0'), \
-  ((byte) & 0x00100000 ? '1' : '0'), \
-  ((byte) & 0x00080000 ? '1' : '0'), \
-  ((byte) & 0x00040000 ? '1' : '0'), \
-  ((byte) & 0x00020000 ? '1' : '0'), \
-  ((byte) & 0x00010000 ? '1' : '0'), \
-  ((byte) & 0x00008000 ? '1' : '0'), \
-  ((byte) & 0x00004000 ? '1' : '0'), \
-  ((byte) & 0x00002000 ? '1' : '0'), \
-  ((byte) & 0x00001000 ? '1' : '0'), \
-  ((byte) & 0x00000800 ? '1' : '0'), \
-  ((byte) & 0x00000400 ? '1' : '0'), \
-  ((byte) & 0x00000200 ? '1' : '0'), \
-  ((byte) & 0x00000100 ? '1' : '0'), \
-  ((byte) & 0x00000080 ? '1' : '0'), \
-  ((byte) & 0x00000040 ? '1' : '0'), \
-  ((byte) & 0x00000020 ? '1' : '0'), \
-  ((byte) & 0x00000010 ? '1' : '0'), \
-  ((byte) & 0x00000008 ? '1' : '0'), \
-  ((byte) & 0x00000004 ? '1' : '0'), \
-  ((byte) & 0x00000002 ? '1' : '0'), \
-  ((byte) & 0x00000001 ? '1' : '0') 
-
-#define PRINT_AS_8_BIT_HEX(ADDRESS) printf("0x%08x: 0x%02x\n", ADDRESS, nds->ARM7Read8(ADDRESS))
-#define PRINT_AS_8_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read8(ADDRESS)))
-
-#define PRINT_AS_16_BIT_HEX(ADDRESS) printf("0x%08x: 0x%04x\n", ADDRESS, nds->ARM7Read16(ADDRESS))
-#define PRINT_AS_16_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read16(ADDRESS)))
-
-#define PRINT_AS_32_BIT_HEX(ADDRESS) printf("0x%08x: 0x%08x\n", ADDRESS, nds->ARM7Read32(ADDRESS))
-#define PRINT_AS_32_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))
-
 void PluginKingdomHeartsReCoded::debugLogs(int gameScene)
 {
-    // PRINT_AS_8_BIT_HEX(0x0205e704);
-    // PRINT_AS_8_BIT_HEX(0x0205e908);
+    // PRINT_AS_32_BIT_HEX(0x020dacd0);
+    // PRINT_AS_32_BIT_HEX(0x020b7db8);
     // printf("\n");
 
     if (!DEBUG_MODE_ENABLED) {

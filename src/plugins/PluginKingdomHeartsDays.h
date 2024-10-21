@@ -179,6 +179,7 @@ private:
     u32 LastLockOnPress, LastSwitchTargetPress;
     bool SwitchTargetPressOnHold;
 
+    std::array<CutsceneEntry, 46> Cutscenes;
     std::string KH_15_25_Remix_Location = "";
 
     int detectGameScene();
