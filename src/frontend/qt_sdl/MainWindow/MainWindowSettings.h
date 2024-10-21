@@ -23,7 +23,9 @@
 #include <QStackedWidget>
 #include <QGridLayout>
 #include <QMediaPlayer>
-#include <QVideoWidget>
+#include <QGraphicsView>
+#include <QGraphicsVideoItem>
+#include <QGraphicsScene>
 #include <QAudioOutput>
 #include <QPushButton>
 #include <QLabel>
@@ -74,7 +76,9 @@ private:
     QWidget* playerWidgetArea;
     QGridLayout* playerWidgetAreaLayout;
 
-    QVideoWidget* playerWidget;
+    QGraphicsView* playerGraphicsView;
+    QGraphicsScene* playerGraphicsScene;
+    QGraphicsVideoItem* playerGraphicsVideoItem;
     QAudioOutput* playerAudioOutput;
     QMediaPlayer* player;
 

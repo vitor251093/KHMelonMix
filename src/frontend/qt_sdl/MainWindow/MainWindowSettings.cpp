@@ -71,9 +71,14 @@ void MainWindowSettings::createVideoPlayer()
     playerWidgetAreaLayout = new QGridLayout(playerWidgetArea);
     playerWidgetAreaLayout->setContentsMargins(0, 0, 0, 0);
 
-    playerWidget = new QVideoWidget();
-    playerWidget->setCursor(Qt::BlankCursor);
-    playerWidgetAreaLayout->addWidget(playerWidget, 0, 0, 1, 1);
+    QGraphicsView* playerGraphicsView = new QGraphicsView;
+    QGraphicsScene* playerGraphicsScene = new QGraphicsScene(playerGraphicsView);
+    // playerGraphicsView->setSceneRect(centralWidget->geometry());
+    playerGraphicsView->setScene(playerGraphicsScene);
+    playerWidgetAreaLayout->addWidget(playerGraphicsView, 0, 0, 1, 1);
+
+    QGraphicsVideoItem* playerGraphicsVideoItem = new QGraphicsVideoItem;
+    playerGraphicsScene->addItem(playerGraphicsVideoItem);
 
     subtitleWidget = new QWidget(this);
     subtitleWidget->setContentsMargins(0, 0, 0, 0);
@@ -89,7 +94,7 @@ void MainWindowSettings::createVideoPlayer()
     subtitleWidgetLayout->addWidget(subtitleLabel, 0, 0, 1, 1);
 
     playerAudioOutput = new QAudioOutput(this);
-    player = new QMediaPlayer(playerWidget);
+    player = new QMediaPlayer();
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         emuInstance->plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
@@ -115,7 +120,7 @@ void MainWindowSettings::createVideoPlayer()
     });
 #endif
 
-    player->setVideoOutput(playerWidget);
+    player->setVideoOutput(playerGraphicsVideoItem);
     player->setAudioOutput(playerAudioOutput);
 }
 
@@ -133,7 +138,7 @@ void MainWindowSettings::startVideo(QString videoFilePath)
 #endif
 
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    centralWidget->setCurrentWidget(playerWidget);
+    centralWidget->setCurrentWidget(playerGraphicsView);
 
     int playerWidth = centralWidget->geometry().width();
     int playerHeight = centralWidget->geometry().height();
@@ -141,7 +146,9 @@ void MainWindowSettings::startVideo(QString videoFilePath)
     playerWidgetArea->setGeometry(0, 0, playerWidth, playerHeight);
     playerWidgetArea->setVisible(true);
 
-    subtitleWidget->setGeometry(0, 0, playerWidth, playerHeight);
+    // playerGraphicsView->setSceneRect(centralWidget->geometry());
+    // playerGraphicsVideoItem->setSize(QSizeF(playerWidth, playerHeight));
+    subtitleWidget->setGeometry(0, (playerHeight*5)/6, playerWidth, playerHeight/6);
     subtitleWidget->show();
 
     subtitleLabel->setText("example subtitle");
@@ -200,7 +207,7 @@ void MainWindowSettings::keyPressEvent(QKeyEvent* event)
         if (showingSettings) {
             if (player->playbackState() == QMediaPlayer::PlaybackState::PausedState) {
                 player->play();
-                centralWidget->setCurrentWidget(playerWidget);
+                centralWidget->setCurrentWidget(playerGraphicsView);
             }
             else {
                 showGame();
