@@ -65,19 +65,16 @@ enum
     gameScene_DayCounter,               // 3
     gameScene_Cutscene,                 // 4
     gameScene_InGameWithMap,            // 5
-    gameScene_InGameWithoutMap,         // 6 (unused)
-    gameScene_InGameMenu,               // 7
-    gameScene_InGameSaveMenu,           // 8
-    gameScene_InHoloMissionMenu,        // 9
-    gameScene_PauseMenu,                // 10
-    gameScene_Tutorial,                 // 11
-    gameScene_InGameWithCutscene,       // 12
-    gameScene_MultiplayerMissionReview, // 13
-    gameScene_Shop,                     // 14
-    gameScene_LoadingScreen,            // 15
-    gameScene_CutsceneWithStaticImages, // 16
-    gameScene_Other2D,                  // 17
-    gameScene_Other                     // 18
+    gameScene_InGameMenu,               // 6
+    gameScene_InGameSaveMenu,           // 7
+    gameScene_PauseMenu,                // 8
+    gameScene_Tutorial,                 // 9
+    gameScene_InGameWithCutscene,       // 10
+    gameScene_Shop,                     // 11
+    gameScene_LoadingScreen,            // 12
+    gameScene_CutsceneWithStaticImages, // 13
+    gameScene_Other2D,                  // 14
+    gameScene_Other                     // 15
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -259,7 +256,7 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         hudToggle();
     }
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithoutMap || GameScene == gameScene_InGameWithCutscene) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
         if ((*HotkeyMask) & ((1 << 20) | (1 << 21)))
         {
@@ -339,11 +336,9 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_InGameWithMap: return "Game scene: Ingame (with minimap)";
         case gameScene_InGameMenu: return "Game scene: Ingame menu";
         case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
-        case gameScene_InHoloMissionMenu: return "Game scene: Holo mission menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_Tutorial: return "Game scene: Tutorial";
         case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
-        case gameScene_MultiplayerMissionReview: return "Game scene: Multiplayer Mission Review";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
