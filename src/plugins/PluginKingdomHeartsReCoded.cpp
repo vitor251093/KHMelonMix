@@ -32,7 +32,7 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_CUTSCENE_EU 0x02056e90 // TODO: KH
 #define IS_CUTSCENE_JP 0x02056e90 // TODO: KH
 
-// 0x08 => gameScene_CutsceneWithStaticImages, 0x10 => gameScene_InGameWithMap
+// 0x01 => cutscene with skip button, 0x03 => regular cutscene, 0x08 => cutscene with static images, 0x10 => in-game, main menu
 #define GAME_STATE_ADDRESS_US 0x02056f4a
 #define GAME_STATE_ADDRESS_EU 0x02056f4a // TODO: KH
 #define GAME_STATE_ADDRESS_JP 0x02056f4a // TODO: KH
