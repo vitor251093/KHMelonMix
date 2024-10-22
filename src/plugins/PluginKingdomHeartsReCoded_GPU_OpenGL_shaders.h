@@ -31,6 +31,7 @@ uniform bool ShowMap;
 uniform bool ShowTarget;
 uniform bool ShowMissionGauge;
 uniform bool ShowMissionInfo;
+uniform bool HideAllHUD;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -111,9 +112,15 @@ bool is2DGraphicEqualToColor(ivec4 diffColor, ivec2 texcoord)
     return (pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
 }
 
+bool isMissionInformationVisibleOnTopScreen()
+{
+    return is2DGraphicDifferentFromColor(ivec4(63,0,0,31), ivec2(256/2, 0)) ||
+           is2DGraphicDifferentFromColor(ivec4(63,0,0,31), ivec2(256/2, 10));
+}
+
 bool isMissionInformationVisible()
 {
-    return is2DGraphicEqualToColor(ivec4(0,7,42,31), ivec2(86, 12));
+    return isMissionInformationVisibleOnTopScreen();
 }
 
 bool isDialogVisible()
@@ -339,14 +346,59 @@ vec2 getVerticalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearV
     return clearVect;
 }
 
+vec2 getMissionInformationCoordinates(vec2 texPosition3d)
+{
+    float heightScale = 1.0/TopScreenAspectRatio;
+    float widthScale = TopScreenAspectRatio;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
+    // mission information
+    float sourceMissionInfoHeight = 40.0;
+    float sourceMissionInfoWidth = 256.0;
+    float missionInfoHeight = sourceMissionInfoHeight;
+    float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+    float missionInfoY1 = 0;
+    float missionInfoY2 = missionInfoHeight;
+    float missionInfoDetailsLeftMargin = -5.4*heightScale;
+
+    if (texPosition3d.x >= 0 &&
+        texPosition3d.x <  missionInfoWidth &&
+        texPosition3d.y >= 0 &&
+        texPosition3d.y <  missionInfoY2) {
+        return fixStretch*(texPosition3d);
+    }
+
+    return vec2(-1, -1);
+}
+
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
+    if (HideAllHUD) {
+        return vec2(255, 191);
+    }
+
     int iuScale = KHUIScale;
     float iuTexScale = (6.0)/iuScale;
     vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
     float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
+
+    if (isDialogVisible()) {
+        return vec2(fTexcoord);
+    }
+
+    if (isMissionInformationVisible()) {
+        vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d);
+        if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
+            return missionInfoCoords;
+        }
+
+        if (texPosition3d.y <= (192*iuTexScale)/3) {
+            // nothing (clear screen)
+            return vec2(-1, -1);
+        }
+    }
 
     if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
@@ -369,77 +421,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             texPosition3d.y >= minimapTopMargin) {
             return increaseMapSize*fixStretch*(texPosition3d - vec2(minimapLeftMargin, minimapTopMargin)) +
                 vec2(0, 192.0) + vec2(bottomMinimapLeftMargin, bottomMinimapTopMargin);
-        }
-    }
-
-    if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
-    {
-        float increaseTargetSize = 1.5;
-
-        // target label
-        float bottomTargetLabelWidth = 42.0;
-        float bottomTargetLabelHeight = 6.0;
-        float targetLabelWidth = bottomTargetLabelWidth*heightScale;
-        float targetLabelHeight = bottomTargetLabelHeight;
-        float targetLabelRightMargin = 9.0;
-        float targetLabelTopMargin = 30.0;
-        float targetLabelLeftMargin = 256.0*iuTexScale - targetLabelWidth - targetLabelRightMargin;
-        float bottomTargetLabelCenterX = 54.0;
-        float bottomTargetLabelCenterY = 54.0;
-        float bottomTargetLabelLeftMargin = bottomTargetLabelCenterX - bottomTargetLabelWidth/2;
-        float bottomTargetLabelTopMargin = bottomTargetLabelCenterY - bottomTargetLabelHeight/2;
-        if (texPosition3d.x >= targetLabelLeftMargin &&
-            texPosition3d.x < (256.0*iuTexScale - targetLabelRightMargin) && 
-            texPosition3d.y <= targetLabelHeight + targetLabelTopMargin && 
-            texPosition3d.y >= targetLabelTopMargin) {
-            return increaseTargetSize*fixStretch*(texPosition3d - vec2(targetLabelLeftMargin, targetLabelTopMargin)) +
-                vec2(0, 192.0) + vec2(bottomTargetLabelLeftMargin, bottomTargetLabelTopMargin);
-        }
-
-        // target
-        float bottomTargetWidth = 42.0;
-        float bottomTargetHeight = 50.0;
-        float targetWidth = bottomTargetWidth*heightScale;
-        float targetHeight = bottomTargetHeight;
-        float targetRightMargin = 9.0;
-        float targetTopMargin = 38.0;
-        float targetLeftMargin = 256.0*iuTexScale - targetWidth - targetRightMargin;
-        float bottomTargetCenterX = 54.0;
-        float bottomTargetCenterY = 92.0;
-        float bottomTargetLeftMargin = bottomTargetCenterX - bottomTargetWidth/2;
-        float bottomTargetTopMargin = bottomTargetCenterY - bottomTargetHeight/2;
-        if (texPosition3d.x >= targetLeftMargin &&
-            texPosition3d.x < (256.0*iuTexScale - targetRightMargin) && 
-            texPosition3d.y <= targetHeight + targetTopMargin && 
-            texPosition3d.y >= targetTopMargin) {
-            return increaseTargetSize*fixStretch*(texPosition3d - vec2(targetLeftMargin, targetTopMargin)) +
-                vec2(0, 192.0) + vec2(bottomTargetLeftMargin, bottomTargetTopMargin);
-        }
-    }
-
-    if (ShowMissionGauge && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
-    {
-        // mission gauge
-        float sourceMissionGaugeHeight = 39.0;
-        float sourceMissionGaugeWidth = 246.0;
-        float missionGaugeHeight = sourceMissionGaugeHeight;
-        float missionGaugeWidth = sourceMissionGaugeWidth*heightScale;
-        float missionGaugeRightMargin = (256.0*iuTexScale - missionGaugeWidth)/2;
-        float bottomMissionGaugeCenterX = 128.0;
-        float bottomMissionGaugeCenterY = 172.5;
-        float bottomMissionGaugeLeftMargin = bottomMissionGaugeCenterX - sourceMissionGaugeWidth/2;
-        float bottomMissionGaugeTopMargin = bottomMissionGaugeCenterY - sourceMissionGaugeHeight/2;
-        if (texPosition3d.x >= (256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin) &&
-            texPosition3d.x <= (256.0*iuTexScale - missionGaugeRightMargin) &&
-            texPosition3d.y >= (192.0*iuTexScale - missionGaugeHeight) &&
-            texPosition3d.y < (192.0*iuTexScale)) {
-
-            vec2 finalPos = fixStretch*(texPosition3d - vec2(256.0*iuTexScale - missionGaugeWidth - missionGaugeRightMargin, 192.0*iuTexScale - missionGaugeHeight)) +
-                    vec2(0, 192.0) + vec2(bottomMissionGaugeLeftMargin, bottomMissionGaugeTopMargin);
-            if (finalPos.x + finalPos.y > 355.0 && finalPos.y - finalPos.x > 99.0)
-            {
-                return finalPos;
-            }
         }
     }
 
@@ -485,39 +466,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(128, 170));
     }
 
-    if (!isHealthVisible() || !isCommandMenuVisible())
-    {
-        // texts over screen, like in the tutorial
-        if (texPosition3d.y >= 115.0*iuTexScale)
-        {
-            return vec2(0, 0); // fake health
-        }
-
-        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(128, 170));
-    }
-
-    if (isDialogVisible()) {
-        return vec2(fTexcoord);
-    }
-
-    if (isScreenBackgroundBlack(0) && isScreenBackgroundBlack(1)) {
-        return getGenericHudTextureCoordinates(xpos, ypos);
-    }
-
-    // item notification
-    float sourceItemNotificationHeight = 98.0;
-    float sourceItemNotificationWidth = 108.0;
-    float itemNotificationHeight = sourceItemNotificationHeight;
-    float itemNotificationWidth = sourceItemNotificationWidth*heightScale;
-    float itemNotificationLeftMargin = 0.0;
-    float itemNotificationTopMargin = 15.0*iuTexScale;
-    if (texPosition3d.x <= itemNotificationWidth + itemNotificationLeftMargin &&
-        texPosition3d.x > itemNotificationLeftMargin &&
-        texPosition3d.y <= itemNotificationHeight + itemNotificationTopMargin &&
-        texPosition3d.y >= itemNotificationTopMargin) {
-        return fixStretch*(texPosition3d - vec2(itemNotificationLeftMargin, itemNotificationTopMargin));
-    }
-
     // enemy health
     float sourceEnemyHealthHeight = 22.0;
     float sourceEnemyHealthWidth = 93.0;
@@ -552,37 +500,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         if (texPosition3d.x < (256.0*iuTexScale - countdownRightMargin)) {
             return vec2(128, 191);
         }
-    }
-
-    // sigils and death counter
-    float sourceMiscHeight = 30.0;
-    float sourceMiscWidth = 93.0;
-    float miscHeight = sourceMiscHeight;
-    float miscWidth = sourceMiscWidth*heightScale;
-    float miscRightMargin = 12.0;
-    float miscTopMargin = 92.5;
-    float sourceMiscTopMargin = 25.0;
-    if (texPosition3d.x >= (256.0*iuTexScale - miscWidth - miscRightMargin) &&
-        texPosition3d.x < (256.0*iuTexScale - miscRightMargin) && 
-        texPosition3d.y <= miscHeight + miscTopMargin && 
-        texPosition3d.y >= miscTopMargin) {
-        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - miscWidth - miscRightMargin, miscTopMargin)) + 
-            vec2(256.0 - sourceMiscWidth, sourceMiscTopMargin);
-    }
-
-    // countdown and locked on
-    float sourceCountdownHeight = 20.0;
-    float sourceCountdownWidth = 70.0;
-    float countdownHeight = sourceCountdownHeight;
-    float countdownWidth = sourceCountdownWidth*heightScale;
-    float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
-    float countdownTopMargin = 9.0;
-    if (texPosition3d.x >= (256.0*iuTexScale - countdownWidth - countdownRightMargin) &&
-        texPosition3d.x < (256.0*iuTexScale - countdownRightMargin) && 
-        texPosition3d.y <= countdownHeight + countdownTopMargin && 
-        texPosition3d.y >= countdownTopMargin) {
-        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - countdownWidth - countdownRightMargin, countdownTopMargin)) + 
-            vec2(128.0 - sourceCountdownWidth/2, 0);
     }
 
     // nothing (clear screen)

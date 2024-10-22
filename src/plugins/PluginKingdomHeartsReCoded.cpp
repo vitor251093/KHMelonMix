@@ -79,7 +79,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 {
     GameCode = gameCode;
 
-    HUDState = 0;
+    HUDState = -1;
+    hudToggle();
 
     PriorGameScene = -1;
     GameScene = -1;
@@ -161,9 +162,7 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "KHUIScale");
     CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
     CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
-    // CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
-    // CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
-    // CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "HideAllHUD");
 }
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
@@ -173,9 +172,7 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader)
     glUniform1i(CompGpuLoc[CompShader][2], UIScale);
     glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
     glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
-    // glUniform1i(CompGpuLoc[CompShader][5], ShowTarget ? 1 : 0);
-    // glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
-    // glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][5], HideAllHUD ? 1 : 0);
 }
 
 void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
@@ -311,7 +308,19 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMask(u32 TouchKeyMask)
 
 void PluginKingdomHeartsReCoded::hudToggle()
 {
-    ShowMap = !ShowMap;
+    HUDState = (HUDState + 1) % 3;
+    if (HUDState == 0) { // map mode
+        ShowMap = true;
+        HideAllHUD = false;
+    }
+    else if (HUDState == 1) { // no map mode
+        ShowMap = false;
+        HideAllHUD = false;
+    }
+    else { // zero hud
+        ShowMap = false;
+        HideAllHUD = true;
+    }
 }
 
 const char* PluginKingdomHeartsReCoded::getGameSceneName()
