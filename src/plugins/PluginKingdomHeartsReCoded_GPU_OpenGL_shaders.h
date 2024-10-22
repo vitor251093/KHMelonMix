@@ -458,6 +458,20 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             return fixStretch*(texPosition3d - vec2(commandMenuLeftMargin, 192.0*iuTexScale - commandMenuHeight - commandMenuBottomMargin)) +
                 vec2(0, 192.0 - sourceCommandMenuHeight);
         }
+
+        // next area name
+        float sourceNextAreaNameHeight = 32.0;
+        float sourceNextAreaNameWidth = 90.0;
+        float nextAreaNameHeight = sourceNextAreaNameHeight;
+        float nextAreaNameWidth = sourceNextAreaNameWidth*heightScale;
+        float nextAreaNameBottomMargin = 0.0;
+        if (texPosition3d.x >= (128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2) &&
+            texPosition3d.x <= (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2) &&
+            texPosition3d.y >= (192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin) &&
+            texPosition3d.y < (192.0*iuTexScale - nextAreaNameBottomMargin)) {
+            return fixStretch*(texPosition3d - vec2(128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2, 192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin)) +
+                vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
+        }
     }
 
     if (!isHealthVisible() && !isCommandMenuVisible())
@@ -479,27 +493,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         texPosition3d.y >= enemyHealthTopMargin - 1) {
         return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - enemyHealthWidth - enemyHealthRightMargin, enemyHealthTopMargin)) + 
             vec2(256.0 - sourceEnemyHealthWidth, 0);
-    }
-
-    if (isMissionInformationVisible())
-    {
-        // mission information
-        float sourceCountdownHeight = 20.0;
-        float sourceCountdownWidth = 256.0;
-        float countdownHeight = sourceCountdownHeight;
-        float countdownWidth = sourceCountdownWidth*heightScale;
-        float countdownRightMargin = (256.0*iuTexScale - countdownWidth)/2;
-        float countdownTopMargin = 9.0;
-        if (texPosition3d.x >= (256.0*iuTexScale - countdownWidth - countdownRightMargin) &&
-            texPosition3d.x < (256.0*iuTexScale - countdownRightMargin) && 
-            texPosition3d.y <= countdownHeight + countdownTopMargin && 
-            texPosition3d.y >= countdownTopMargin) {
-            return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - countdownWidth - countdownRightMargin, countdownTopMargin)) + 
-                vec2(128.0 - sourceCountdownWidth/2, 0);
-        }
-        if (texPosition3d.x < (256.0*iuTexScale - countdownRightMargin)) {
-            return vec2(128, 191);
-        }
     }
 
     // nothing (clear screen)
