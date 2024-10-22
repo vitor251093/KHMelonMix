@@ -467,7 +467,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 
         // next area name
         float sourceNextAreaNameHeight = 32.0;
-        float sourceNextAreaNameWidth = 90.0;
+        float sourceNextAreaNameWidth = 74.0;
         float nextAreaNameHeight = sourceNextAreaNameHeight;
         float nextAreaNameWidth = sourceNextAreaNameWidth*heightScale;
         float nextAreaNameBottomMargin = 0.0;
