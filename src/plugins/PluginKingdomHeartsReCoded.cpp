@@ -32,6 +32,11 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_CUTSCENE_EU 0x02056e90 // TODO: KH
 #define IS_CUTSCENE_JP 0x02056e90 // TODO: KH
 
+// 0x08 => gameScene_CutsceneWithStaticImages, 0x10 => gameScene_InGameWithMap
+#define GAME_STATE_ADDRESS_US 0x02056f4a
+#define GAME_STATE_ADDRESS_EU 0x02056f4a // TODO: KH
+#define GAME_STATE_ADDRESS_JP 0x02056f4a // TODO: KH
+
 // 0x04 => playable (example: ingame); 0x02 => not playable (menus)
 #define IS_PLAYABLE_AREA_US 0x0205a8c0
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0 // TODO: KH
@@ -418,6 +423,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
+    int ingameState = nds->ARM7Read8(getAddressByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
     bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
     bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
     bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
@@ -500,6 +506,11 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     if (isShop)
     {
         return gameScene_Shop;
+    }
+
+    if (ingameState == 0x08)
+    {
+        return gameScene_CutsceneWithStaticImages;
     }
 
     if (isUnplayableArea)
