@@ -384,10 +384,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (isDialogVisible()) {
-        return vec2(fTexcoord);
-    }
-
     if (isMissionInformationVisible()) {
         vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d);
         if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
@@ -398,6 +394,16 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             // nothing (clear screen)
             return vec2(-1, -1);
         }
+    }
+
+    if (!isHealthVisible() && !isCommandMenuVisible())
+    {
+        // texts over screen, like in the tutorial
+        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(128, 170));
+    }
+
+    if (isDialogVisible()) {
+        return vec2(fTexcoord);
     }
 
     if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
@@ -472,12 +478,6 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             return fixStretch*(texPosition3d - vec2(128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2, 192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin)) +
                 vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
         }
-    }
-
-    if (!isHealthVisible() && !isCommandMenuVisible())
-    {
-        // texts over screen, like in the tutorial
-        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(128, 170));
     }
 
     // enemy health
@@ -791,6 +791,10 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
+        if (!isHealthVisible() && !isCommandMenuVisible()) {
+            return color;
+        }
+
         if (!isDialogVisible() && !isMissionInformationVisible())
         {
             int iuScale = KHUIScale;
@@ -833,73 +837,6 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                     float transparency = 15.0/16;
                     int blur = int((xBlur * yBlur * transparency)/16);
-                    color = ivec4(color.r, blur, 16 - blur, 0x01);
-                }
-            }
-        }
-    }
-
-
-    if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
-    {
-        if (!isDialogVisible() && !isMissionInformationVisible())
-        {
-            int iuScale = KHUIScale;
-            float iuTexScale = (6.0)/iuScale;
-            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-            float heightScale = 1.0/TopScreenAspectRatio;
-            float widthScale = TopScreenAspectRatio;
-
-            // target label
-            float bottomTargetLabelWidth = 42.0;
-            float bottomTargetLabelHeight = 6.0;
-            float targetLabelWidth = bottomTargetLabelWidth*heightScale;
-            float targetLabelHeight = bottomTargetLabelHeight;
-            float targetLabelRightMargin = 9.0;
-            float targetLabelTopMargin = 30.0;
-            float targetLabelLeftMargin = 256.0*iuTexScale - targetLabelWidth - targetLabelRightMargin;
-            if (((texPosition3d.x >= targetLabelLeftMargin &&
-                  texPosition3d.x <  targetLabelLeftMargin + (targetLabelWidth/5)) ||
-                 (texPosition3d.x >= (256.0*iuTexScale - targetLabelRightMargin) - (targetLabelWidth/5) &&
-                  texPosition3d.x <  (256.0*iuTexScale - targetLabelRightMargin))) && 
-                texPosition3d.y <= targetLabelHeight + targetLabelTopMargin && 
-                texPosition3d.y >= targetLabelTopMargin) {
-                
-                if (index == 0)
-                {
-                    color = ivec4(0, 0, 0, 31);
-                }
-                if (index == 2)
-                {
-                    ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                    int blur = int((63 - colorZero.r)/2);
-                    color = ivec4(color.r, blur, 16 - blur, 0x01);
-                }
-            }
-
-            // target
-            float bottomTargetWidth = 42.0;
-            float bottomTargetHeight = 50.0;
-            float targetWidth = bottomTargetWidth*heightScale;
-            float targetHeight = bottomTargetHeight;
-            float targetRightMargin = 9.0;
-            float targetTopMargin = 38.0;
-            float targetLeftMargin = 256.0*iuTexScale - targetWidth - targetRightMargin;
-            if (texPosition3d.x >= targetLeftMargin &&
-                texPosition3d.x < (256.0*iuTexScale - targetRightMargin) && 
-                ((texPosition3d.y <= targetTopMargin + (targetHeight/15) && 
-                  texPosition3d.y >= targetTopMargin) ||
-                 (texPosition3d.y <= targetHeight + targetTopMargin && 
-                  texPosition3d.y >= targetHeight + targetTopMargin - (targetHeight/15)))) {
-                
-                if (index == 0)
-                {
-                    color = ivec4(0, 0, 0, 31);
-                }
-                if (index == 2)
-                {
-                    ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                    int blur = int((63 - colorZero.r)/2);
                     color = ivec4(color.r, blur, 16 - blur, 0x01);
                 }
             }
