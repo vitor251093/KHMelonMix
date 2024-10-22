@@ -398,7 +398,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     if (!isHealthVisible() && !isCommandMenuVisible())
     {
         // texts over screen, like in the tutorial
-        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(128, 170));
+        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(128, 190));
     }
 
     if (isDialogVisible()) {
@@ -497,7 +497,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     }
 
     // nothing (clear screen)
-    return vec2(255, 191);
+    return vec2(-1, -1);
 }
 
 vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
