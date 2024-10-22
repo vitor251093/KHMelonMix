@@ -428,7 +428,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     {
         // player health
         float sourcePlayerHealthHeight = 78.0;
-        float sourcePlayerHealthWidth = 108.0;
+        float sourcePlayerHealthWidth = 96.0;
         float playerHealthHeight = sourcePlayerHealthHeight;
         float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
         float playerHealthRightMargin = 8.0;
@@ -446,7 +446,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     {
         // command menu
         float sourceCommandMenuHeight = 88.0;
-        float sourceCommandMenuWidth = 108.0;
+        float sourceCommandMenuWidth = 95.0;
         float commandMenuHeight = sourceCommandMenuHeight;
         float commandMenuWidth = sourceCommandMenuWidth*heightScale;
         float commandMenuLeftMargin = 10.0;
