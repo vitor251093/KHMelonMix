@@ -42,9 +42,17 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0 // TODO: KH
 #define IS_PLAYABLE_AREA_JP 0x0205a8c0 // TODO: KH
 
-#define CUTSCENE_ADDRESS_US      0x020b7db8
-#define CUTSCENE_ADDRESS_EU      0x020b7db8 // TODO: KH
-#define CUTSCENE_ADDRESS_JP      0x020b7db8 // TODO: KH
+#define CUTSCENE_ADDRESS_US 0x020b7db8
+#define CUTSCENE_ADDRESS_EU 0x020b7db8 // TODO: KH
+#define CUTSCENE_ADDRESS_JP 0x020b7db8 // TODO: KH
+
+#define MINIMAP_CENTER_X_ADDRESS_US 0x023d8054
+#define MINIMAP_CENTER_X_ADDRESS_EU 0x023d8054 // TODO: KH
+#define MINIMAP_CENTER_X_ADDRESS_JP 0x023d8054 // TODO: KH
+
+#define MINIMAP_CENTER_Y_ADDRESS_US 0x023d8058
+#define MINIMAP_CENTER_Y_ADDRESS_EU 0x023d8058 // TODO: KH
+#define MINIMAP_CENTER_Y_ADDRESS_JP 0x023d8058 // TODO: KH
 
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 
@@ -91,6 +99,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     UIScale = 4;
     AspectRatio = 0;
     ShowMap = true;
+    MinimapCenterX = 128;
+    MinimapCenterY = 96;
 
     _muchOlderHad3DOnTopScreen = false;
     _muchOlderHad3DOnBottomScreen = false;
@@ -164,7 +174,9 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "KHUIScale");
     CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
     CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "HideAllHUD");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "MinimapCenterX");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "MinimapCenterY");
+    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "HideAllHUD");
 }
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
@@ -174,7 +186,9 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader)
     glUniform1i(CompGpuLoc[CompShader][2], UIScale);
     glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
     glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][5], HideAllHUD ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][5], MinimapCenterX);
+    glUniform1i(CompGpuLoc[CompShader][6], MinimapCenterY);
+    glUniform1i(CompGpuLoc[CompShader][7], HideAllHUD ? 1 : 0);
 }
 
 void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
@@ -423,7 +437,12 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
     bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
     bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP)) == 0x02;
-    
+
+    u32 minimapCenterXAddress = getAddressByCart(MINIMAP_CENTER_X_ADDRESS_US, MINIMAP_CENTER_X_ADDRESS_EU, MINIMAP_CENTER_X_ADDRESS_JP);
+    u32 minimapCenterYAddress = getAddressByCart(MINIMAP_CENTER_Y_ADDRESS_US, MINIMAP_CENTER_Y_ADDRESS_EU, MINIMAP_CENTER_Y_ADDRESS_JP);
+    MinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
+    MinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
+
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
     u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);

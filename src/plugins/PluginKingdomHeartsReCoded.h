@@ -153,6 +153,8 @@ private:
     int UIScale = 4;
     float AspectRatio;
     bool ShowMap;
+    int MinimapCenterX;
+    int MinimapCenterY;
     bool HideAllHUD;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};

@@ -28,9 +28,8 @@ uniform int GameScene;
 uniform int KHUIScale;
 uniform float TopScreenAspectRatio;
 uniform bool ShowMap;
-uniform bool ShowTarget;
-uniform bool ShowMissionGauge;
-uniform bool ShowMissionInfo;
+uniform int MinimapCenterX;
+uniform int MinimapCenterY;
 uniform bool HideAllHUD;
 
 uniform usampler2D ScreenTex;
@@ -425,8 +424,10 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             texPosition3d.x < (256.0*iuTexScale - minimapRightMargin) && 
             texPosition3d.y <= minimapHeight + minimapTopMargin && 
             texPosition3d.y >= minimapTopMargin) {
+            int finalMinimapCenterX = (MinimapCenterY > 198) ? 198 : ((MinimapCenterX < 58) ? 58 : MinimapCenterX);
+            int finalMinimapCenterY = (MinimapCenterY > 105) ? 105 : ((MinimapCenterY < 87) ? 87 : MinimapCenterY);
             return increaseMapSize*fixStretch*(texPosition3d - vec2(minimapLeftMargin, minimapTopMargin)) +
-                vec2(0, 192.0) + vec2(bottomMinimapLeftMargin, bottomMinimapTopMargin);
+                vec2(0, 192.0) + vec2(bottomMinimapLeftMargin + finalMinimapCenterX - 128, bottomMinimapTopMargin + finalMinimapCenterY - 96);
         }
     }
 
