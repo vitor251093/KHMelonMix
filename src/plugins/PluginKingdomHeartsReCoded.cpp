@@ -138,21 +138,21 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     SwitchTargetPressOnHold = false;
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
-        {"OP",     "802_mm", "802_opening",                       0x04bb3a00, 0x04bb3a00, 0x04bb3a00},
-        {"Secret", "803",    "803_meet_xion",                     0x05e9b400, 0x05e9b400, 0x05e9b400},
-        {"w1_ED",  "804",    "804_roxas_recusant_sigil",          0x06784800, 0x06784800, 0x06784800},
-        {"w1_OP",  "805",    "805_the_dark_margin",               0x06e43800, 0x06e43800, 0x06e43800},
-        {"w2_ED",  "806",    "806_sora_entering_pod",             0x07c4ee00, 0x07c4ee00, 0x07c4ee00},
-        {"w2_OP",  "808",    "808_sunset_memory",                 0x08548600, 0x08548600, 0x08548600},
-        {"w3_ED",  "809",    "809_xions_defeat",                  0x08706200, 0x08706200, 0x08706200},
-        {"w4_ED",  "810",    "810_the_main_in_black_reflects",    0x09503000, 0x09503000, 0x09503000},
-        {"w5_ED",  "813",    "813_xions_defeat",                  0x09990800, 0x09990800, 0x09990800},
-        {"w6_ED",  "814",    "814_sora_walk",                     0x0a3c9400, 0x0a3c9400, 0x0a3c9400},
-        {"w7_ED",  "815",    "815_sora_release_kairi",            0x0ac3aa00, 0x0ac3aa00, 0x0ac3aa00},
-        {"w8_ED1", "816",    "816_kairi_memories",                0x0b150400, 0x0b150400, 0x0b150400},
-        {"w8_ED2", "817_mm", "817_namine_and_diz",                0x0bcd3400, 0x0bcd3400, 0x0bcd3400},
-        {"w8_ED3", "818",    "818_why_the_sun_sets_red",          0x0c216800, 0x0c216800, 0x0c216800},
-        {"w8_OP",  "819",    "819_sora_wakes_up",                 0x0c426000, 0x0c426000, 0x0c426000},
+        {"OP",     "hd501",         "501_",                       0x04bb3a00, 0x04bb3a00, 0x04bb3a00}, // TODO: KH EU and JP
+        {"Secret", "hd593",         "593_",                       0x05e9b400, 0x05e9b400, 0x05e9b400}, // TODO: KH EU and JP
+        {"w1_ED",  "hd510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x06784800, 0x06784800}, // TODO: KH EU and JP
+        {"w1_OP",  "hd502",         "502_",                       0x06e43800, 0x06e43800, 0x06e43800}, // TODO: KH EU and JP
+        {"w2_ED",  "hd510_PLUS_mm", "510_",                       0x07c4ee00, 0x07c4ee00, 0x07c4ee00}, // TODO: KH EU and JP
+        {"w2_OP",  "hd512_PLUS_mm", "512_",                       0x08548600, 0x08548600, 0x08548600}, // TODO: KH EU and JP
+        {"w3_ED",  "hd524",         "524_",                       0x08706200, 0x08706200, 0x08706200}, // TODO: KH EU and JP
+        {"w4_ED",  "hd531",         "531_",                       0x09503000, 0x09503000, 0x09503000}, // TODO: KH EU and JP
+        {"w5_ED",  "hd539_PLUS_mm", "539_",                       0x09990800, 0x09990800, 0x09990800}, // TODO: KH EU and JP
+        {"w6_ED",  "hd549",         "549_",                       0x0a3c9400, 0x0a3c9400, 0x0a3c9400}, // TODO: KH EU and JP
+        {"w7_ED",  "hd572",         "572_",                       0x0ac3aa00, 0x0ac3aa00, 0x0ac3aa00}, // TODO: KH EU and JP
+        {"w8_ED1", "hd590_PLUS_mm", "590_",                       0x0b150400, 0x0b150400, 0x0b150400}, // TODO: KH EU and JP
+        {"w8_ED2", "hd592",         "592_",                       0x0bcd3400, 0x0bcd3400, 0x0bcd3400}, // TODO: KH EU and JP
+        {"w8_ED3", "hd576_PLUS_mm", "576_",                       0x0c216800, 0x0c216800, 0x0c216800}, // TODO: KH EU and JP
+        {"w8_OP",  "hd573_PLUS_mm", "573_",                       0x0c426000, 0x0c426000, 0x0c426000}, // TODO: KH EU and JP
     }};
 }
 
