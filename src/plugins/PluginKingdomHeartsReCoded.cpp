@@ -440,8 +440,16 @@ int PluginKingdomHeartsReCoded::detectGameScene()
 
     u32 minimapCenterXAddress = getAddressByCart(MINIMAP_CENTER_X_ADDRESS_US, MINIMAP_CENTER_X_ADDRESS_EU, MINIMAP_CENTER_X_ADDRESS_JP);
     u32 minimapCenterYAddress = getAddressByCart(MINIMAP_CENTER_Y_ADDRESS_US, MINIMAP_CENTER_Y_ADDRESS_EU, MINIMAP_CENTER_Y_ADDRESS_JP);
-    MinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
-    MinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
+    u32 newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
+    u32 newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
+    if (newMinimapCenterX > 0 && newMinimapCenterY > 0) {
+        MinimapCenterX = newMinimapCenterX;
+        MinimapCenterY = newMinimapCenterY;
+    }
+    else {
+        MinimapCenterX = 128;
+        MinimapCenterY = 96;
+    }
 
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
