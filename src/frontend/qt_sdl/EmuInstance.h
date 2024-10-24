@@ -36,7 +36,7 @@ enum
     HK_Pause,
     HK_Reset,
     HK_FastForward,
-    HK_FastForwardToggle,
+    HK_FrameLimitToggle,
     HK_FullscreenToggle,
     HK_SwapScreens,
     HK_SwapScreenEmphasis,
@@ -46,6 +46,9 @@ enum
     HK_PowerButton,
     HK_VolumeUp,
     HK_VolumeDown,
+    HK_SlowMo,
+    HK_FastForwardToggle,
+    HK_SlowMoToggle,
     HK_MAX
 };
 
@@ -91,6 +94,8 @@ public:
     std::string instanceFileSuffix();
 
     void createWindow();
+    void deleteWindow(int id, bool close);
+    void deleteAllWindows();
 
     void osdAddMessage(unsigned int color, const char* fmt, ...);
 
@@ -163,7 +168,6 @@ private:
     std::optional<melonDS::FATStorageArgs> getSDCardArgs(const std::string& key) noexcept;
     std::optional<melonDS::FATStorage> loadSDCard(const std::string& key) noexcept;
     void setBatteryLevels();
-    void setDateTime();
     void reset();
     bool bootToMenu();
     melonDS::u32 decompressROM(const melonDS::u8* inContent, const melonDS::u32 inSize, std::unique_ptr<melonDS::u8[]>& outContent);
@@ -181,6 +185,7 @@ private:
     void loadGBAAddon(int type);
     void ejectGBACart();
     bool gbaCartInserted();
+    QString gbaAddonName(int addon);
     QString gbaCartLabel();
 
     void audioInit();
@@ -217,6 +222,12 @@ private:
     bool hotkeyPressed(int id)  { return hotkeyPress   & (1<<id); }
     bool hotkeyReleased(int id) { return hotkeyRelease & (1<<id); }
 
+    void loadRTCData();
+    void saveRTCData();
+    void setDateTime();
+
+    bool deleting;
+
     int instanceID;
 
     EmuThread* emuThread;
@@ -248,7 +259,12 @@ public:
     std::unique_ptr<SaveManager> firmwareSave;
 
     bool doLimitFPS;
-    int maxFPS;
+    double curFPS;
+    double targetFPS;
+    double fastForwardFPS;
+    double slowmoFPS;
+    bool fastForwardToggled;
+    bool slowmoToggled;
     bool doAudioSync;
 private:
 

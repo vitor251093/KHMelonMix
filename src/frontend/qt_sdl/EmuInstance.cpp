@@ -39,7 +39,7 @@
 #include "Config.h"
 #include "Platform.h"
 #include "Net.h"
-#include "LocalMP.h"
+#include "MPInterface.h"
 
 #include "NDS.h"
 #include "DSi.h"
@@ -62,11 +62,11 @@ using namespace melonDS::Platform;
 MainWindow* topWindow = nullptr;
 
 const string kWifiSettingsPath = "wfcsettings.bin";
-extern LocalMP localMp;
 extern Net net;
 
 
-EmuInstance::EmuInstance(int inst) : instanceID(inst),
+EmuInstance::EmuInstance(int inst) : deleting(false),
+    instanceID(inst),
     globalCfg(Config::GetGlobalTable()),
     localCfg(Config::GetLocalTable(inst))
 {
@@ -88,7 +88,31 @@ EmuInstance::EmuInstance(int inst) : instanceID(inst),
     cheatsOn = localCfg.GetBool("EnableCheats");
 
     doLimitFPS = globalCfg.GetBool("LimitFPS");
-    maxFPS = globalCfg.GetInt("MaxFPS");
+
+    double val = globalCfg.GetDouble("TargetFPS");
+    if (val == 0.0)
+    {
+        Platform::Log(Platform::LogLevel::Error, "Target FPS in config invalid\n");
+        targetFPS = 1.0 / 60.0;
+    }
+    else targetFPS = 1.0 / val;
+
+    val = globalCfg.GetDouble("FastForwardFPS");
+    if (val == 0.0)
+    {
+        Platform::Log(Platform::LogLevel::Error, "Fast-Forward FPS in config invalid\n");
+        fastForwardFPS = 1.0 / 60.0;
+    }
+    else fastForwardFPS = 1.0 / val;
+
+    val = globalCfg.GetDouble("SlowmoFPS");
+    if (val == 0.0)
+    {
+        Platform::Log(Platform::LogLevel::Error, "Slow-Mo FPS in config invalid\n");
+        slowmoFPS = 1.0 / 60.0;
+    }
+    else slowmoFPS = 1.0 / val;
+
     doAudioSync = globalCfg.GetBool("AudioSync");
 
     mpAudioMode = globalCfg.GetInt("MP.AudioMode");
@@ -117,8 +141,10 @@ EmuInstance::EmuInstance(int inst) : instanceID(inst),
 
 EmuInstance::~EmuInstance()
 {
-    // TODO window cleanup and shit?
-    localMp.End(instanceID);
+    deleting = true;
+    deleteAllWindows();
+
+    MPInterface::Get().End(instanceID);
 
     emuThread->emuExit();
     emuThread->wait();
@@ -128,6 +154,13 @@ EmuInstance::~EmuInstance()
 
     audioDeInit();
     inputDeInit();
+
+    NDS::Current = nullptr;
+    if (nds)
+    {
+        saveRTCData();
+        delete nds;
+    }
 }
 
 
@@ -166,6 +199,44 @@ void EmuInstance::createWindow()
     numWindows++;
 
     emuThread->attachWindow(win);
+}
+
+void EmuInstance::deleteWindow(int id, bool close)
+{
+    if (id >= kMaxWindows) return;
+
+    MainWindow* win = windowList[id];
+    if (!win) return;
+
+    if (win->hasOpenGL() && win == mainWindow)
+    {
+        // we intentionally don't unpause here
+        emuThread->emuPause();
+        emuThread->deinitContext();
+    }
+
+    emuThread->detachWindow(win);
+
+    windowList[id] = nullptr;
+    numWindows--;
+
+    if (topWindow == win) topWindow = nullptr;
+    if (mainWindow == win) mainWindow = nullptr;
+
+    if (close)
+        win->close();
+
+    if ((!mainWindow) && (!deleting))
+    {
+        // if we closed this instance's main window, delete the instance
+        deleteEmuInstance(instanceID);
+    }
+}
+
+void EmuInstance::deleteAllWindows()
+{
+    for (int i = kMaxWindows-1; i >= 0; i--)
+        deleteWindow(i, true);
 }
 
 
@@ -1041,6 +1112,30 @@ void EmuInstance::setBatteryLevels()
     }
 }
 
+void EmuInstance::loadRTCData()
+{
+    auto file = Platform::OpenLocalFile("rtc.bin", Platform::FileMode::Read);
+    if (file)
+    {
+        RTC::StateData state;
+        Platform::FileRead(&state, sizeof(state), 1, file);
+        Platform::CloseFile(file);
+        nds->RTC.SetState(state);
+    }
+}
+
+void EmuInstance::saveRTCData()
+{
+    auto file = Platform::OpenLocalFile("rtc.bin", Platform::FileMode::Write);
+    if (file)
+    {
+        RTC::StateData state;
+        nds->RTC.GetState(state);
+        Platform::FileWrite(&state, sizeof(state), 1, file);
+        Platform::CloseFile(file);
+    }
+}
+
 void EmuInstance::setDateTime()
 {
     QDateTime hosttime = QDateTime::currentDateTime();
@@ -1052,6 +1147,9 @@ void EmuInstance::setDateTime()
 
 bool EmuInstance::updateConsole(UpdateConsoleNDSArgs&& _ndsargs, UpdateConsoleGBAArgs&& _gbaargs) noexcept
 {
+    // update the console type
+    consoleType = globalCfg.GetInt("Emu.ConsoleType");
+
     // Let's get the cart we want to use;
     // if we wnat to keep the cart, we'll eject it from the existing console first.
     std::unique_ptr<NDSCart::CartCommon> nextndscart;
@@ -1085,8 +1183,6 @@ bool EmuInstance::updateConsole(UpdateConsoleNDSArgs&& _ndsargs, UpdateConsoleGB
     }
 
 
-    int consoletype = globalCfg.GetInt("Emu.ConsoleType");
-
     auto arm9bios = loadARM9BIOS();
     if (!arm9bios)
         return false;
@@ -1095,7 +1191,7 @@ bool EmuInstance::updateConsole(UpdateConsoleNDSArgs&& _ndsargs, UpdateConsoleGB
     if (!arm7bios)
         return false;
 
-    auto firmware = loadFirmware(consoletype);
+    auto firmware = loadFirmware(consoleType);
     if (!firmware)
         return false;
 
@@ -1113,14 +1209,14 @@ bool EmuInstance::updateConsole(UpdateConsoleNDSArgs&& _ndsargs, UpdateConsoleGB
 #endif
 
 #ifdef GDBSTUB_ENABLED
-    Config::Table gdbopt = globalCfg.GetTable("Gdb");
+    Config::Table gdbopt = localCfg.GetTable("Gdb");
     GDBArgs _gdbargs {
             static_cast<u16>(gdbopt.GetInt("ARM7.Port")),
             static_cast<u16>(gdbopt.GetInt("ARM9.Port")),
             gdbopt.GetBool("ARM7.BreakOnStartup"),
             gdbopt.GetBool("ARM9.BreakOnStartup"),
     };
-    auto gdbargs = gdbopt.GetBool("Enable") ? std::make_optional(_gdbargs) : std::nullopt;
+    auto gdbargs = gdbopt.GetBool("Enabled") ? std::make_optional(_gdbargs) : std::nullopt;
 #else
     optional<GDBArgs> gdbargs = std::nullopt;
 #endif
@@ -1139,7 +1235,7 @@ bool EmuInstance::updateConsole(UpdateConsoleNDSArgs&& _ndsargs, UpdateConsoleGB
     NDSArgs* args = &ndsargs;
 
     std::optional<DSiArgs> dsiargs = std::nullopt;
-    if (consoletype == 1)
+    if (consoleType == 1)
     {
         ndsargs.GBAROM = nullptr;
 
@@ -1170,19 +1266,24 @@ bool EmuInstance::updateConsole(UpdateConsoleNDSArgs&& _ndsargs, UpdateConsoleGB
         args = &(*dsiargs);
     }
 
-
-    if ((!nds) || (consoletype != nds->ConsoleType))
+    if ((!nds) || (consoleType != nds->ConsoleType))
     {
         NDS::Current = nullptr;
-        if (nds) delete nds;
+        if (nds)
+        {
+            saveRTCData();
+            delete nds;
+        }
 
-        if (consoletype == 1)
+        if (consoleType == 1)
             nds = new DSi(std::move(dsiargs.value()), this);
         else
             nds = new NDS(std::move(ndsargs), this);
 
         NDS::Current = nds;
         nds->Reset();
+        loadRTCData();
+        //emuThread->updateVideoRenderer(); // not actually needed?
     }
     else
     {
@@ -1196,7 +1297,7 @@ bool EmuInstance::updateConsole(UpdateConsoleNDSArgs&& _ndsargs, UpdateConsoleGB
         nds->SPU.SetInterpolation(args->Interpolation);
         nds->SPU.SetDegrade10Bit(args->BitDepth);
 
-        if (consoletype == 1)
+        if (consoleType == 1)
         {
             DSi* dsi = (DSi*)nds;
             DSiArgs& _dsiargs = *dsiargs;
@@ -1218,8 +1319,6 @@ bool EmuInstance::updateConsole(UpdateConsoleNDSArgs&& _ndsargs, UpdateConsoleGB
 
 void EmuInstance::reset()
 {
-    consoleType = globalCfg.GetInt("Emu.ConsoleType");
-    
     updateConsole(Keep {}, Keep {});
 
     if (consoleType == 1) ejectGBACart();
@@ -1909,25 +2008,36 @@ bool EmuInstance::gbaCartInserted()
     return gbaCartType != -1;
 }
 
+QString EmuInstance::gbaAddonName(int addon)
+{
+    switch (addon)
+    {
+    case GBAAddon_RumblePak:
+        return "Rumble Pak";
+    case GBAAddon_RAMExpansion:
+        return "Memory expansion";
+    }
+
+    return "???";
+}
+
 QString EmuInstance::gbaCartLabel()
 {
     if (consoleType == 1) return "none (DSi)";
 
-    switch (gbaCartType)
+    if (gbaCartType == 0)
     {
-        case 0:
-        {
-            QString ret = QString::fromStdString(baseGBAROMName);
+        QString ret = QString::fromStdString(baseGBAROMName);
 
-            int maxlen = 32;
-            if (ret.length() > maxlen)
-                ret = ret.left(maxlen-6) + "..." + ret.right(3);
+        int maxlen = 32;
+        if (ret.length() > maxlen)
+            ret = ret.left(maxlen-6) + "..." + ret.right(3);
 
-            return ret;
-        }
-
-        case GBAAddon_RAMExpansion:
-            return "Memory expansion";
+        return ret;
+    }
+    else if (gbaCartType != -1)
+    {
+        return gbaAddonName(gbaCartType);
     }
 
     return "(none)";
