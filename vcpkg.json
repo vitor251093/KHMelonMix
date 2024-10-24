@@ -41,6 +41,7 @@
 				},
 				{
 					"name": "qtmultimedia",
+					"features": ["widgets"],
 					"default-features": false
 				},
 				{
