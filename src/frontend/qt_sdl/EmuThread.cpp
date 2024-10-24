@@ -164,7 +164,8 @@ void EmuThread::run()
         MPInterface::Get().Process();
         emuInstance->inputProcess();
 
-        auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
+        auto nds = emuInstance->getNDS();
+        auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
         if (rom != nullptr) {
             u32 gamecode = rom->GetHeader().GameCodeAsU32();
             if (emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode)
@@ -798,9 +799,9 @@ void EmuThread::emuRun()
 void EmuThread::emuPause()
 {
     auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
-    if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-        return;
-    }
+    // if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
+    //     return;
+    // }
 
     sendMessage(msg_EmuPause);
     waitMessage();
@@ -809,9 +810,9 @@ void EmuThread::emuPause()
 void EmuThread::emuUnpause()
 {
     auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
-    if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-        return;
-    }
+    // if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
+    //     return;
+    // }
 
     sendMessage(msg_EmuUnpause);
     waitMessage();
