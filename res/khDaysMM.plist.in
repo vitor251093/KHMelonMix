@@ -5,9 +5,9 @@
     <key>CFBundleExecutable</key>
     <string>melonDS</string>
     <key>CFBundleIconFile</key>
-    <string>melon.icns</string>
+    <string>khDaysMM.icns</string>
     <key>CFBundleIdentifier</key>
-    <string>net.kuribo64.melonDS</string>
+    <string>com.vitormm.khDaysMM</string>
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
     <key>CFBundlePackageType</key>

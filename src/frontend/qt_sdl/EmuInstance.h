@@ -27,6 +27,8 @@
 #include "Config.h"
 #include "SaveManager.h"
 
+#include "plugins/Plugin.h"
+
 const int kMaxWindows = 16;
 
 enum
@@ -49,6 +51,13 @@ enum
     HK_SlowMo,
     HK_FastForwardToggle,
     HK_SlowMoToggle,
+    HK_HUDToggle,
+    HK_RLockOn,
+    HK_SwitchTarget,
+    HK_CommandMenuLeft,
+    HK_CommandMenuRight,
+    HK_CommandMenuUp,
+    HK_CommandMenuDown,
     HK_MAX
 };
 
@@ -128,6 +137,7 @@ public:
 
     static const char* buttonNames[12];
     static const char* hotkeyNames[HK_MAX];
+    static const char* touchButtonNames[4];
 
     void inputInit();
     void inputDeInit();
@@ -138,6 +148,9 @@ public:
     void setJoystick(int id);
     int getJoystickID() { return joystickID; }
     SDL_Joystick* getJoystick() { return joystick; }
+    void autoMapJoystick();
+
+    Plugins::Plugin* plugin;
 
 private:
     static int lastSep(const std::string& path);
@@ -212,9 +225,14 @@ private:
     void onKeyRelease(QKeyEvent* event);
     void keyReleaseAll();
 
+    void setAutoJoystickConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
+                               int camRight, int camLeft, int camUp, int camDown,
+                               int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
+                               int pause, int fullscreen);
+
     void openJoystick();
     void closeJoystick();
-    bool joystickButtonDown(int val);
+    Sint16 joystickButtonDown(int val);
 
     void inputProcess();
 
@@ -306,6 +324,8 @@ private:
     int joyMapping[12];
     int hkKeyMapping[HK_MAX];
     int hkJoyMapping[HK_MAX];
+    int touchKeyMapping[4];
+    int touchJoyMapping[4];
 
     int joystickID;
     SDL_Joystick* joystick;
@@ -317,8 +337,10 @@ private:
     melonDS::u32 keyHotkeyMask, joyHotkeyMask;
     melonDS::u32 hotkeyMask, lastHotkeyMask;
     melonDS::u32 hotkeyPress, hotkeyRelease;
+    melonDS::u32 keyTouchInputMask, joyTouchInputMask;
 
     melonDS::u32 inputMask;
+    melonDS::u32 touchInputMask;
 
     friend class EmuThread;
     friend class MainWindow;

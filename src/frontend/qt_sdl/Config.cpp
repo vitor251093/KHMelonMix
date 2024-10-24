@@ -16,6 +16,7 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
+#include <locale>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -46,26 +47,50 @@ const char* kLegacyUniqueConfigFile = "melonDS.%d.ini";
 
 toml::value RootTable;
 
+int getLocaleIndex() {
+    #if defined(_WIN32)
+    return 1;
+    #endif
+
+    int localIndex = 1;
+    std::string userlocale = std::locale("").name().substr(0, 2);
+    if (userlocale == "ja")
+        localIndex = 0;
+    else if (userlocale == "en")
+        localIndex = 1;
+    else if (userlocale == "fr")
+        localIndex = 2;
+    else if (userlocale == "de")
+        localIndex = 3;
+    else if (userlocale == "it")
+        localIndex = 4;
+    else if (userlocale == "es")
+        localIndex = 5;
+    return localIndex;
+}
+
 DefaultList<int> DefaultInts =
 {
     {"Instance*.Keyboard", -1},
     {"Instance*.Joystick", -1},
     {"Instance*.Window*.Width", 256},
     {"Instance*.Window*.Height", 384},
+    {"Instance*.Window*.ScreenAspectTop", 1},
+    {"Instance*.Window*.ScreenSizing", 4},
     {"Screen.VSyncInterval", 1},
-    {"3D.Renderer", renderer3D_Software},
-    {"3D.GL.ScaleFactor", 1},
+    {"3D.Renderer", renderer3D_OpenGL},
+    {"3D.GL.ScaleFactor", 3},
 #ifdef JIT_ENABLED
     {"JIT.MaxBlockSize", 32},
 #endif
-    {"Instance*.Firmware.Language", 1},
+    {"Instance*.Firmware.Language", getLocaleIndex()},
     {"Instance*.Firmware.BirthdayMonth", 1},
     {"Instance*.Firmware.BirthdayDay", 1},
     {"MP.AudioMode", 1},
     {"MP.RecvTimeout", 25},
     {"Instance*.Audio.Volume", 256},
     {"Mic.InputType", 1},
-    {"Mouse.HideSeconds", 5},
+    {"Mouse.HideSeconds", 2},
     {"Instance*.DSi.Battery.Level", 0xF},
 #ifdef GDBSTUB_ENABLED
     {"Instance*.Gdb.ARM7.Port", 3334},
@@ -101,6 +126,7 @@ DefaultList<bool> DefaultBools =
     {"LimitFPS", true},
     {"Window*.ShowOSD", true},
     {"Emu.DirectBoot", true},
+    {"Mouse.Hide", true},
     {"Instance*.DS.Battery.LevelOkay", true},
     {"Instance*.DSi.Battery.Charging", true},
 #ifdef JIT_ENABLED
@@ -116,7 +142,9 @@ DefaultList<std::string> DefaultStrings =
 {
     {"DLDI.ImagePath",                  "dldi.bin"},
     {"DSi.SD.ImagePath",                "dsisd.bin"},
-    {"Instance*.Firmware.Username",     "melonDS"}
+    {"Instance*.Firmware.Username",     "melonDS"},
+    {"LastROMFolder",                   "rom"},
+    {"RecentROM[0]",                    "rom/game.nds"}
 };
 
 DefaultList<double> DefaultDoubles =
@@ -170,6 +198,18 @@ LegacyEntry LegacyFile[] =
     {"HKKey_VolumeUp",            0, "Keyboard.HK_VolumeUp", true},
     {"HKKey_VolumeDown",          0, "Keyboard.HK_VolumeDown", true},
 
+    {"HKKey_HUDToggle",           0, "Keyboard.HK_HUDToggle", true},
+    {"HKKey_LockOn",              0, "Keyboard.HK_RLockOn", true},
+    {"HKKey_RSwitchTarget",       0, "Keyboard.HK_SwitchTarget", true},
+    {"Key_CmdMenuLeft",           0, "Keyboard.HK_CmdMenuLeft", true},
+    {"Key_CmdMenuRight",          0, "Keyboard.HK_CmdMenuRight", true},
+    {"Key_CmdMenuUp",             0, "Keyboard.HK_CmdMenuUp", true},
+    {"Key_CmdMenuDown",           0, "Keyboard.HK_CmdMenuDown", true},
+    {"Key_TouchRight",            0, "Keyboard.HK_CameraRight", true},
+    {"Key_TouchLeft",             0, "Keyboard.HK_CameraLeft", true},
+    {"Key_TouchUp",               0, "Keyboard.HK_CameraUp", true},
+    {"Key_TouchDown",             0, "Keyboard.HK_CameraDown", true},
+
     {"HKJoy_Lid",                 0, "Joystick.HK_Lid", true},
     {"HKJoy_Mic",                 0, "Joystick.HK_Mic", true},
     {"HKJoy_Pause",               0, "Joystick.HK_Pause", true},
@@ -185,6 +225,18 @@ LegacyEntry LegacyFile[] =
     {"HKJoy_PowerButton",         0, "Joystick.HK_PowerButton", true},
     {"HKJoy_VolumeUp",            0, "Joystick.HK_VolumeUp", true},
     {"HKJoy_VolumeDown",          0, "Joystick.HK_VolumeDown", true},
+
+    {"HKJoy_HUDToggle",           0, "Joystick.HK_HUDToggle", true},
+    {"HKJoy_LockOn",              0, "Joystick.HK_RLockOn", true},
+    {"HKJoy_RSwitchTarget",       0, "Joystick.HK_SwitchTarget", true},
+    {"Joy_CmdMenuLeft",           0, "Joystick.HK_CmdMenuLeft", true},
+    {"Joy_CmdMenuRight",          0, "Joystick.HK_CmdMenuRight", true},
+    {"Joy_CmdMenuUp",             0, "Joystick.HK_CmdMenuUp", true},
+    {"Joy_CmdMenuDown",           0, "Joystick.HK_CmdMenuDown", true},
+    {"Joy_TouchRight",            0, "Joystick.HK_CameraRight", true},
+    {"Joy_TouchLeft",             0, "Joystick.HK_CameraLeft", true},
+    {"Joy_TouchUp",               0, "Joystick.HK_CameraUp", true},
+    {"Joy_TouchDown",             0, "Joystick.HK_CameraDown", true},
 
     {"JoystickID", 0, "JoystickID", true},
 
@@ -218,7 +270,7 @@ LegacyEntry LegacyFile[] =
     {"DirectBoot", 1, "Emu.DirectBoot", false},
 
 #ifdef JIT_ENABLED
-    {"JIT_Enable", 1, "JIT.Enable", false},
+    {"JIT_Enable", 1, "JIT.Enable", false}, // Is believed that enabling this may cause issues (#94)
     {"JIT_MaxBlockSize", 0, "JIT.MaxBlockSize", false},
     {"JIT_BranchOptimisations", 1, "JIT.BranchOptimisations", false},
     {"JIT_LiteralOptimisations", 1, "JIT.LiteralOptimisations", false},

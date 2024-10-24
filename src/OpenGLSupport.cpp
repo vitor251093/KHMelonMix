@@ -210,6 +210,12 @@ bool CompilerShader(GLuint& id, const std::string& source, const std::string& na
         glGetShaderInfoLog(id, res+1, NULL, log);
         Log(LogLevel::Error, "OpenGL: failed to compile %s shader %s: %s\n", type.c_str(), name.c_str(), log);
         Log(LogLevel::Debug, "shader source:\n--\n%s\n--\n", source.c_str());
+
+        std::string fileName = std::string("shaderfail-") + type + std::string("-") + name + std::string(".log");
+        Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::WriteText);
+        Platform::FileWrite(log, strlen(log)+1, 1, logf);
+        Platform::CloseFile(logf);
+
         delete[] log;
 
         glDeleteShader(id);

@@ -31,6 +31,7 @@
 
 #include "NDSCart.h"
 #include "GBACart.h"
+#include "plugins/Plugin.h"
 
 using Keep = std::monostate;
 using UpdateConsoleNDSArgs = std::variant<Keep, std::unique_ptr<melonDS::NDSCart::CartCommon>>;
@@ -150,6 +151,11 @@ signals:
 
     void syncVolumeLevel();
 
+    void windowStartVideo(QString videoFilePath);
+    void windowStopVideo();
+    void windowPauseVideo();
+    void windowUnpauseVideo();
+
 private:
     void handleMessages();
 
@@ -181,6 +187,10 @@ private:
     EmuInstance* emuInstance;
 
     int autoScreenSizing;
+
+    bool pluginShouldFastForward();
+    void refreshPluginGameScene();
+    void refreshPluginCutsceneState();
 
     int lastVideoRenderer = -1;
 

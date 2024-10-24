@@ -40,6 +40,7 @@
 #include <QVector>
 #include <QCommandLineParser>
 #include <QDesktopServices>
+#include <QStackedWidget>
 #ifndef _WIN32
 #include <QGuiApplication>
 #include <QSocketNotifier>
@@ -56,6 +57,7 @@
 #include "DateTimeDialog.h"
 #include "EmuSettingsDialog.h"
 #include "InputConfig/InputConfigDialog.h"
+#include "MainWindow/MainWindowSettings.h"
 #include "VideoSettingsDialog.h"
 #include "CameraSettingsDialog.h"
 #include "AudioSettingsDialog.h"
@@ -228,7 +230,7 @@ static void signalHandler(int)
 
 
 MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
-    QMainWindow(parent),
+    MainWindowSettings(inst, parent),
     windowID(id),
     emuInstance(inst),
     globalCfg(inst->globalCfg),
@@ -259,7 +261,7 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
 
     showOSD = windowCfg.GetBool("ShowOSD");
 
-    setWindowTitle("melonDS " MELONDS_VERSION);
+    setWindowTitle("khDaysMM " MELONDS_VERSION);
     setAttribute(Qt::WA_DeleteOnClose);
     setAcceptDrops(true);
     setFocusPolicy(Qt::ClickFocus);
@@ -768,6 +770,8 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     onUpdateInterfaceSettings();
 
     updateMPInterface(MPInterface::GetType());
+
+    initWidgets();
 }
 
 MainWindow::~MainWindow()
@@ -818,13 +822,21 @@ void MainWindow::createScreenPanel()
         panel = panelNative;
         panel->show();
     }
-    setCentralWidget(panel);
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->addWidget(panel);
+    showGame();
 
     actScreenFiltering->setEnabled(hasOGL);
     panel->osdSetEnabled(showOSD);
 
     connect(this, SIGNAL(screenLayoutChange()), panel, SLOT(onScreenLayoutChanged()));
     emit screenLayoutChange();
+}
+
+void MainWindow::showGame()
+{
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    centralWidget->setCurrentWidget(panel);
 }
 
 GL::Context* MainWindow::getOGLContext()
@@ -881,6 +893,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     // TODO!! REMOVE ME IN RELEASE BUILDS!!
     //if (event->key() == Qt::Key_F11) emuThread->NDS->debug(0);
+
+    MainWindowSettings::keyPressEvent(event);
 
     emuInstance->onKeyPress(event);
 }

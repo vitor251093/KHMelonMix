@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="ds">
+    <file>ds_open.svg</file>
+    <file>ds_back.svg</file>
+    <file>KHGummi.ttf</file>
+    <file>KHMenu.ttf</file>
+  </qresource>
+</RCC>

@@ -37,6 +37,7 @@
 #include "Config.h"
 #include "MPInterface.h"
 
+#include "MainWindow/MainWindowSettings.h"
 
 class EmuInstance;
 class EmuThread;
@@ -100,7 +101,7 @@ public:
     ScreenPanel* panel;
 };*/
 
-class MainWindow : public QMainWindow
+class MainWindow : public MainWindowSettings
 {
     Q_OBJECT
 
@@ -138,6 +139,8 @@ protected:
 
     void focusInEvent(QFocusEvent* event) override;
     void focusOutEvent(QFocusEvent* event) override;
+
+    void showGame();
 
 signals:
     void screenLayoutChange();

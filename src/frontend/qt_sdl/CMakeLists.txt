@@ -20,6 +20,9 @@ set(SOURCES_QT_SDL
     InputConfig/InputConfigDialog.cpp
     InputConfig/MapButton.h
     InputConfig/resources/ds.qrc
+    MainWindow/MainWindowSettings.cpp
+    MainWindow/MapButton.h
+    MainWindow/resources/ds.qrc
     VideoSettingsDialog.cpp
     CameraSettingsDialog.cpp
     AudioSettingsDialog.cpp
@@ -51,6 +54,7 @@ set(SOURCES_QT_SDL
     ../duckstation/gl/context.cpp
 
     ${CMAKE_SOURCE_DIR}/res/melon.qrc
+    ${CMAKE_SOURCE_DIR}/res/images/images.qrc
 
     CLI.h
     CLI.cpp
@@ -66,11 +70,11 @@ else()
 endif()
 
 if (USE_QT6)
-    find_package(Qt6 COMPONENTS Core Gui Widgets Network Multimedia OpenGL OpenGLWidgets Svg REQUIRED)
-    set(QT_LINK_LIBS Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Multimedia Qt6::OpenGL Qt6::OpenGLWidgets)
+    find_package(Qt6 COMPONENTS Core Gui Widgets Network Multimedia MultimediaWidgets OpenGL OpenGLWidgets Svg REQUIRED)
+    set(QT_LINK_LIBS Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Multimedia Qt6::MultimediaWidgets Qt6::OpenGL Qt6::OpenGLWidgets)
 else()
-    find_package(Qt5 COMPONENTS Core Gui Widgets Network Multimedia Svg REQUIRED)
-    set(QT_LINK_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Multimedia)
+    find_package(Qt5 COMPONENTS Core Gui Widgets Network Multimedia MultimediaWidgets Svg REQUIRED)
+    set(QT_LINK_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Multimedia Qt5::MultimediaWidgets)
 endif()
 
 set(CMAKE_AUTOMOC ON)
@@ -185,6 +189,8 @@ target_link_libraries(melonDS PRIVATE PkgConfig::SDL2 PkgConfig::LibArchive PkgC
 target_link_libraries(melonDS PRIVATE ${QT_LINK_LIBS} ${CMAKE_DL_LIBS})
 
 if (WIN32)
+    option(QT_DEPLOY_FFMPEG "Bundle ffmpeg with the app on Windows" ON)
+
     option(PORTABLE "Make a portable build that looks for its configuration in the current directory" ON)
 
     if (PORTABLE)
@@ -213,12 +219,12 @@ if (APPLE)
     target_sources(melonDS PRIVATE sem_timedwait.cpp)
 
     # Copy icon into the bundle
-    set(RESOURCE_FILES "${CMAKE_SOURCE_DIR}/res/melon.icns")
+    set(RESOURCE_FILES "${CMAKE_SOURCE_DIR}/res/khDaysMM.icns")
     target_sources(melonDS PUBLIC "${RESOURCE_FILES}")
 
     set_target_properties(melonDS PROPERTIES
         MACOSX_BUNDLE true
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/melon.plist.in
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/khDaysMM.plist.in
         OUTPUT_NAME melonDS
         RESOURCE "${RESOURCE_FILES}")
 
@@ -238,12 +244,12 @@ endif()
 
 if (UNIX AND NOT APPLE)
     foreach(SIZE 16 32 48 64 128 256)
-        install(FILES ${CMAKE_SOURCE_DIR}/res/icon/melon_${SIZE}x${SIZE}.png
+        install(FILES ${CMAKE_SOURCE_DIR}/res/icon/khDaysMM_${SIZE}x${SIZE}.png
             DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/${SIZE}x${SIZE}/apps
-            RENAME net.kuribo64.melonDS.png)
+            RENAME com.vitormm.khDaysMM.png)
     endforeach()
 
-    install(FILES ${CMAKE_SOURCE_DIR}/res/net.kuribo64.melonDS.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
+    install(FILES ${CMAKE_SOURCE_DIR}/res/com.vitormm.khDaysMM.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
     install(TARGETS melonDS BUNDLE DESTINATION ${CMAKE_BINARY_DIR} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
     if (NOT USE_QT6)

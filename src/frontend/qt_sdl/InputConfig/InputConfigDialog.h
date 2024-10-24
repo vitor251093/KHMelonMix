@@ -27,17 +27,32 @@
 #include "EmuInstance.h"
 
 static constexpr int keypad_num = 12;
+static constexpr int touchscreen_num = 4;
 
 static constexpr std::initializer_list<int> hk_addons =
 {
     HK_SolarSensorIncrease,
     HK_SolarSensorDecrease,
+    HK_HUDToggle,
+    HK_RLockOn,
+    HK_SwitchTarget,
+    HK_CommandMenuLeft,
+    HK_CommandMenuRight,
+    HK_CommandMenuUp,
+    HK_CommandMenuDown,
 };
 
 static constexpr std::initializer_list<const char*> hk_addons_labels =
 {
     "[Boktai] Sunlight + ",
     "[Boktai] Sunlight - ",
+    "[KH Days] HUD Toggle",
+    "[KH Days] (R1) R / Lock On",
+    "[KH Days] (R2) Switch Target",
+    "[KH Days] Command Menu - Left",
+    "[KH Days] Command Menu - Right",
+    "[KH Days] Command Menu - Up",
+    "[KH Days] Command Menu - Down",
 };
 
 static_assert(hk_addons.size() == hk_addons_labels.size());
@@ -84,6 +99,13 @@ static constexpr std::initializer_list<const char*> hk_general_labels =
 
 static_assert(hk_general.size() == hk_general_labels.size());
 
+static constexpr std::initializer_list<const char*> ds_touch_key_labels =
+{
+    "Touch Left",
+    "Touch Right",
+    "Touch Up",
+    "Touch Down"
+};
 
 namespace Ui { class InputConfigDialog; }
 class InputConfigDialog;
@@ -123,12 +145,14 @@ private slots:
     void on_btnKeyMapSwitch_clicked();
     void on_btnJoyMapSwitch_clicked();
     void on_cbxJoystick_currentIndexChanged(int id);
+    void on_btnJoystickAuto_clicked();
 
 private:
     void populatePage(QWidget* page,
         const std::initializer_list<const char*>& labels,
         int* keymap, int* joymap);
     void setupKeypadPage();
+    void setupTouchScreenPage();
 
     Ui::InputConfigDialog* ui;
 
@@ -137,6 +161,7 @@ private:
     int keypadKeyMap[12], keypadJoyMap[12];
     int addonsKeyMap[hk_addons.size()], addonsJoyMap[hk_addons.size()];
     int hkGeneralKeyMap[hk_general.size()], hkGeneralJoyMap[hk_general.size()];
+    int touchScreenKeyMap[4], touchScreenJoyMap[4];
     int joystickID;
 };
 

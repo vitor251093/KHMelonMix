@@ -54,7 +54,15 @@ bool ComputeRenderer::CompileShader(GLuint& shader, const std::string& source, c
     shaderSource += ComputeRendererShaders::Common;
     shaderSource += source;
 
-    return OpenGL::CompileComputeProgram(shader, shaderSource.c_str(), shaderName.c_str());
+    bool compiled = OpenGL::CompileComputeProgram(shader, shaderSource.c_str(), shaderName.c_str());
+    if (!compiled) return false;
+
+    // TODO: Get compute renderer aspect ratio location
+    // GLuint& shaderId = static_cast<GLuint&>(*shader);
+    GLint uni_id = glGetUniformLocation(shader, "TopScreenAspectRatio");
+    // RenderShaderAspectRatio[flags] = uni_id;
+
+    return compiled;
 }
 
 void ComputeRenderer::ShaderCompileStep(int& current, int& count)
@@ -174,13 +182,14 @@ void blah(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length
     printf("%s\n", message);
 }
 
-std::unique_ptr<ComputeRenderer> ComputeRenderer::New()
+std::unique_ptr<ComputeRenderer> ComputeRenderer::New(Plugins::Plugin* plugin)
 {
-    std::optional<GLCompositor> compositor =  GLCompositor::New();
+    std::optional<GLCompositor> compositor =  GLCompositor::New(plugin);
     if (!compositor)
         return nullptr;
 
     std::unique_ptr<ComputeRenderer> result = std::unique_ptr<ComputeRenderer>(new ComputeRenderer(std::move(*compositor)));
+    result->GamePlugin = plugin;
 
     //glDebugMessageCallback(blah, NULL);
     //glEnable(GL_DEBUG_OUTPUT);
@@ -591,6 +600,9 @@ struct Variant
 
 void ComputeRenderer::RenderFrame(GPU& gpu)
 {
+    // TODO: Update compute renderer aspect ratio
+    // glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
+
     assert(!NeedsShaderCompile());
     if (!Texcache.Update(gpu) && gpu.GPU3D.RenderFrameIdentical)
     {
