@@ -747,7 +747,7 @@ void EmuThread::refreshPluginCutsceneState()
     {
         emuInstance->audioVolume = 0;
 
-        emuInstance->maxFPS = 1000;
+        emuInstance->targetFPS = 1.0 / 1000;
 
         int newVideoRenderer = renderer3D_Software;
         if (videoRenderer != newVideoRenderer) {
@@ -762,7 +762,7 @@ void EmuThread::refreshPluginCutsceneState()
         auto& instcfg = emuInstance->getLocalConfig();
         emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
 
-        emuInstance->maxFPS = globalCfg.GetInt("MaxFPS");
+        emuInstance->targetFPS = 1.0 / globalCfg.GetDouble("TargetFPS");
 
         int newVideoRenderer = globalCfg.GetInt("3D.Renderer");
         if (videoRenderer != newVideoRenderer) {

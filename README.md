@@ -56,9 +56,9 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
 
 ### Linux
 1. Install dependencies:
-   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libqt5svg5-dev libarchive-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev libenet-dev libzstd-dev`
-   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libqt5svg5-dev libarchive-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev libenet-dev libzstd-dev`
-   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia qt5-svg qt6-base-dev qt6-base-private-dev qt6-multimedia-dev libarchive enet zstd`
+   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libqt5svg5-dev libarchive-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libenet-dev libzstd-dev`
+   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libqt5svg5-dev libarchive-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libenet-dev libzstd-dev`
+   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia qt5-svg qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive enet zstd`
 3. Download the KH Melon Mix repository and prepare:
    ```bash
    git clone https://github.com/vitor251093/KHMelonMix
