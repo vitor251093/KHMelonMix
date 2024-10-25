@@ -74,6 +74,19 @@
 #define PRINT_AS_32_BIT_HEX(ADDRESS) printf("0x%08x: 0x%08x\n", ADDRESS, nds->ARM7Read32(ADDRESS))
 #define PRINT_AS_32_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))
 
+#ifdef __APPLE__
+
+#define PRINT_AS_8_BIT_HEX(ADDRESS)
+#define PRINT_AS_8_BIT_BIN(ADDRESS)
+
+#define PRINT_AS_16_BIT_HEX(ADDRESS)
+#define PRINT_AS_16_BIT_BIN(ADDRESS)
+
+#define PRINT_AS_32_BIT_HEX(ADDRESS)
+#define PRINT_AS_32_BIT_BIN(ADDRESS)
+
+#endif
+
 #include <functional>
 
 #include "../NDS.h"
