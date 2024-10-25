@@ -38,18 +38,16 @@ jobs:
     - name: Build
       run: cmake --build --preset=release-mingw-x86_64
     - name: Preparing artifacts
+      working-directory: ${{runner.workspace}}
       run: |
+        pwd
         ls
-        cd build
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
         mkdir -p ./dist/assets/days/cutscenes/cinematics
         touch ./dist/assets/days/cutscenes/cinematics/DELETE_ME
         mv ./release-mingw-x86_64/melonDS.exe ./dist/MelonMix.exe
-        cp D:/a/_temp/msys64/mingw64/bin/*.dll ./dist/
-        cp -r D:/a/_temp/msys64/mingw64/share/qt6/plugins/platforms ./dist/platforms/
-        cp -r D:/a/_temp/msys64/mingw64/share/qt6/plugins/multimedia ./dist/multimedia/
         cp ../KHMelonMix/res/scripts/MelonMix_KHDays.bat    ./dist/MelonMix_KHDays.bat
         cp ../KHMelonMix/res/scripts/MelonMix_KHReCoded.bat ./dist/MelonMix_KHReCoded.bat
 
