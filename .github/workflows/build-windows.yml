@@ -38,10 +38,8 @@ jobs:
     - name: Build
       run: cmake --build --preset=release-mingw-x86_64
     - name: Preparing artifacts
-      working-directory: ${{runner.workspace}}
+      working-directory: ${{runner.workspace}}\KHMelonMix\build
       run: |
-        pwd
-        ls
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
@@ -54,4 +52,4 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-windows-x86_64
-        path: ${{runner.workspace}}\build\dist
+        path: ${{runner.workspace}}\KHMelonMix\build\dist
