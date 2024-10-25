@@ -266,41 +266,41 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
     }
 
-    if ((*HotkeyPress) & (1 << 15)) { // HUD Toggle
+    if ((*HotkeyPress) & (1 << 18)) { // HUD Toggle (HK_HUDToggle)
         hudToggle();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 20) | (1 << 21)))
+        if ((*HotkeyMask) & ((1 << 23) | (1 << 24))) // (HK_CommandMenuUp, HK_CommandMenuDown)
         {
             *InputMask |= (1<<9); // L
             *InputMask |= (1<<10); // X
             *InputMask |= (1<<1);  // B
-            if (((PriorPriorHotkeyMask) & ((1 << 20) | (1 << 21))) == 0 && ((PriorHotkeyMask) & ((1 << 20) | (1 << 21))) == 0 && ((*HotkeyMask) & ((1 << 20) | (1 << 21))) != 0) {
+            if (((PriorPriorHotkeyMask) & ((1 << 23) | (1 << 24))) == 0 && ((PriorHotkeyMask) & ((1 << 23) | (1 << 24))) == 0 && ((*HotkeyMask) & ((1 << 23) | (1 << 24))) != 0) {
                 *InputMask &= ~(1<<9); // L
             }
-            if (((PriorPriorHotkeyMask) & ((1 << 20) | (1 << 21))) == 0 && ((PriorHotkeyMask) & ((1 << 20) | (1 << 21))) != 0 && ((*HotkeyMask) & ((1 << 20) | (1 << 21))) != 0) {
+            if (((PriorPriorHotkeyMask) & ((1 << 23) | (1 << 24))) == 0 && ((PriorHotkeyMask) & ((1 << 23) | (1 << 24))) != 0 && ((*HotkeyMask) & ((1 << 23) | (1 << 24))) != 0) {
                 *InputMask &= ~(1<<9); // L
-                if (PriorHotkeyMask & (1 << 20)) // Old D-pad up
+                if (PriorHotkeyMask & (1 << 23)) // Old D-pad up
                     *InputMask &= ~(1<<10); // X
-                if (PriorHotkeyMask & (1 << 21)) // Old D-pad down
+                if (PriorHotkeyMask & (1 << 24)) // Old D-pad down
                     *InputMask &= ~(1<<1);  // B
             }
         }
     }
     else {
         // So the arrow keys can be used as directionals
-        if ((*HotkeyMask) & (1 << 18)) { // D-pad left
+        if ((*HotkeyMask) & (1 << 21)) { // D-pad left (HK_CommandMenuLeft)
             *InputMask &= ~(1<<5); // left
         }
-        if ((*HotkeyMask) & (1 << 19)) { // D-pad right
+        if ((*HotkeyMask) & (1 << 22)) { // D-pad right (HK_CommandMenuRight)
             *InputMask &= ~(1<<4); // right
         }
-        if ((*HotkeyMask) & (1 << 20)) { // D-pad up
+        if ((*HotkeyMask) & (1 << 23)) { // D-pad up (HK_CommandMenuUp)
             *InputMask &= ~(1<<6); // up
         }
-        if ((*HotkeyMask) & (1 << 21)) { // D-pad down
+        if ((*HotkeyMask) & (1 << 24)) { // D-pad down (HK_CommandMenuDown)
             *InputMask &= ~(1<<7); // down
         }
     }

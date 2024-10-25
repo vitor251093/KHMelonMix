@@ -39,6 +39,7 @@
 #include <QMimeData>
 #include <QVector>
 #include <QCommandLineParser>
+#include <QDesktopServices>
 #include <QStackedWidget>
 #ifndef _WIN32
 #include <QGuiApplication>
@@ -74,13 +75,16 @@
 #include "Config.h"
 #include "version.h"
 #include "Savestate.h"
-#include "LocalMP.h"
+#include "MPInterface.h"
+#include "LANDialog.h"
 
 //#include "main_shaders.h"
 
 #include "EmuInstance.h"
 #include "ArchiveUtil.h"
 #include "CameraManager.h"
+#include "Window.h"
+#include "AboutDialog.h"
 
 using namespace melonDS;
 
@@ -310,10 +314,17 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
 
         {
             QMenu* submenu = menu->addMenu("Insert add-on cart");
+            QAction* act;
 
-            actInsertGBAAddon[0] = submenu->addAction("Memory expansion");
-            actInsertGBAAddon[0]->setData(QVariant(GBAAddon_RAMExpansion));
-            connect(actInsertGBAAddon[0], &QAction::triggered, this, &MainWindow::onInsertGBAAddon);
+            int addons[] = {GBAAddon_RAMExpansion, GBAAddon_RumblePak, -1};
+            for (int i = 0; addons[i] != -1; i++)
+            {
+                int addon = addons[i];
+                act = submenu->addAction(emuInstance->gbaAddonName(addon));
+                act->setData(QVariant(addon));
+                connect(act, &QAction::triggered, this, &MainWindow::onInsertGBAAddon);
+                actInsertGBAAddon.append(act);
+            }
         }
 
         actEjectGBACart = menu->addAction("Eject cart");
@@ -362,6 +373,12 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
         actUndoStateLoad = menu->addAction("Undo state load");
         actUndoStateLoad->setShortcut(QKeySequence(Qt::Key_F12));
         connect(actUndoStateLoad, &QAction::triggered, this, &MainWindow::onUndoStateLoad);
+
+        menu->addSeparator();
+        actOpenConfig = menu->addAction("Open melonDS directory");
+        connect(actOpenConfig, &QAction::triggered, this, [&]() {
+            QDesktopServices::openUrl(QUrl::fromLocalFile(emuDirectory));
+        });
 
         menu->addSeparator();
 
@@ -422,56 +439,29 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
 
             actMPNewInstance = submenu->addAction("Launch new instance");
             connect(actMPNewInstance, &QAction::triggered, this, &MainWindow::onMPNewInstance);
+
+            submenu->addSeparator();
+
+            actLANStartHost = submenu->addAction("Host LAN game");
+            connect(actLANStartHost, &QAction::triggered, this, &MainWindow::onLANStartHost);
+
+            actLANStartClient = submenu->addAction("Join LAN game");
+            connect(actLANStartClient, &QAction::triggered, this, &MainWindow::onLANStartClient);
+
+            /*submenu->addSeparator();
+
+            actNPStartHost = submenu->addAction("NETPLAY HOST");
+            connect(actNPStartHost, &QAction::triggered, this, &MainWindow::onNPStartHost);
+
+            actNPStartClient = submenu->addAction("NETPLAY CLIENT");
+            connect(actNPStartClient, &QAction::triggered, this, &MainWindow::onNPStartClient);
+
+            actNPTest = submenu->addAction("NETPLAY GO");
+            connect(actNPTest, &QAction::triggered, this, &MainWindow::onNPTest);*/
         }
     }
     {
-        QMenu* menu = menubar->addMenu("Config");
-
-        actEmuSettings = menu->addAction("Emu settings");
-        connect(actEmuSettings, &QAction::triggered, this, &MainWindow::onOpenEmuSettings);
-
-#ifdef __APPLE__
-        actPreferences = menu->addAction("Preferences...");
-        connect(actPreferences, &QAction::triggered, this, &MainWindow::onOpenEmuSettings);
-        actPreferences->setMenuRole(QAction::PreferencesRole);
-#endif
-
-        actInputConfig = menu->addAction("Input and hotkeys");
-        connect(actInputConfig, &QAction::triggered, this, &MainWindow::onOpenInputConfig);
-
-        actVideoSettings = menu->addAction("Video settings");
-        connect(actVideoSettings, &QAction::triggered, this, &MainWindow::onOpenVideoSettings);
-
-        actCameraSettings = menu->addAction("Camera settings");
-        connect(actCameraSettings, &QAction::triggered, this, &MainWindow::onOpenCameraSettings);
-
-        actAudioSettings = menu->addAction("Audio settings");
-        connect(actAudioSettings, &QAction::triggered, this, &MainWindow::onOpenAudioSettings);
-
-        actMPSettings = menu->addAction("Multiplayer settings");
-        connect(actMPSettings, &QAction::triggered, this, &MainWindow::onOpenMPSettings);
-
-        actWifiSettings = menu->addAction("Wifi settings");
-        connect(actWifiSettings, &QAction::triggered, this, &MainWindow::onOpenWifiSettings);
-
-        actFirmwareSettings = menu->addAction("Firmware settings");
-        connect(actFirmwareSettings, &QAction::triggered, this, &MainWindow::onOpenFirmwareSettings);
-
-        actInterfaceSettings = menu->addAction("Interface settings");
-        connect(actInterfaceSettings, &QAction::triggered, this, &MainWindow::onOpenInterfaceSettings);
-
-        actPathSettings = menu->addAction("Path settings");
-        connect(actPathSettings, &QAction::triggered, this, &MainWindow::onOpenPathSettings);
-
-        {
-            QMenu* submenu = menu->addMenu("Savestate settings");
-
-            actSavestateSRAMReloc = submenu->addAction("Separate savefiles");
-            actSavestateSRAMReloc->setCheckable(true);
-            connect(actSavestateSRAMReloc, &QAction::triggered, this, &MainWindow::onChangeSavestateSRAMReloc);
-        }
-
-        menu->addSeparator();
+        QMenu *menu = menubar->addMenu("View");
 
         {
             QMenu* submenu = menu->addMenu("Screen size");
@@ -593,13 +583,6 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
             }
         }
 
-        if (parentWidget() != nullptr) // TEST
-        {
-            QMenu* menu = menubar->addMenu("Test");
-
-            menu->addAction("Test");
-        }
-
         actScreenFiltering = menu->addAction("Screen filtering");
         actScreenFiltering->setCheckable(true);
         connect(actScreenFiltering, &QAction::triggered, this, &MainWindow::onChangeScreenFiltering);
@@ -607,6 +590,53 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
         actShowOSD = menu->addAction("Show OSD");
         actShowOSD->setCheckable(true);
         connect(actShowOSD, &QAction::triggered, this, &MainWindow::onChangeShowOSD);
+    }
+    {
+        QMenu* menu = menubar->addMenu("Config");
+
+        actEmuSettings = menu->addAction("Emu settings");
+        connect(actEmuSettings, &QAction::triggered, this, &MainWindow::onOpenEmuSettings);
+
+#ifdef __APPLE__
+        actPreferences = menu->addAction("Preferences...");
+        connect(actPreferences, &QAction::triggered, this, &MainWindow::onOpenEmuSettings);
+        actPreferences->setMenuRole(QAction::PreferencesRole);
+#endif
+
+        actInputConfig = menu->addAction("Input and hotkeys");
+        connect(actInputConfig, &QAction::triggered, this, &MainWindow::onOpenInputConfig);
+
+        actVideoSettings = menu->addAction("Video settings");
+        connect(actVideoSettings, &QAction::triggered, this, &MainWindow::onOpenVideoSettings);
+
+        actCameraSettings = menu->addAction("Camera settings");
+        connect(actCameraSettings, &QAction::triggered, this, &MainWindow::onOpenCameraSettings);
+
+        actAudioSettings = menu->addAction("Audio settings");
+        connect(actAudioSettings, &QAction::triggered, this, &MainWindow::onOpenAudioSettings);
+
+        actMPSettings = menu->addAction("Multiplayer settings");
+        connect(actMPSettings, &QAction::triggered, this, &MainWindow::onOpenMPSettings);
+
+        actWifiSettings = menu->addAction("Wifi settings");
+        connect(actWifiSettings, &QAction::triggered, this, &MainWindow::onOpenWifiSettings);
+
+        actFirmwareSettings = menu->addAction("Firmware settings");
+        connect(actFirmwareSettings, &QAction::triggered, this, &MainWindow::onOpenFirmwareSettings);
+
+        actInterfaceSettings = menu->addAction("Interface settings");
+        connect(actInterfaceSettings, &QAction::triggered, this, &MainWindow::onOpenInterfaceSettings);
+
+        actPathSettings = menu->addAction("Path settings");
+        connect(actPathSettings, &QAction::triggered, this, &MainWindow::onOpenPathSettings);
+
+        {
+            QMenu* submenu = menu->addMenu("Savestate settings");
+
+            actSavestateSRAMReloc = submenu->addAction("Separate savefiles");
+            actSavestateSRAMReloc->setCheckable(true);
+            connect(actSavestateSRAMReloc, &QAction::triggered, this, &MainWindow::onChangeSavestateSRAMReloc);
+        }
 
         menu->addSeparator();
 
@@ -618,6 +648,15 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
         actAudioSync->setCheckable(true);
         connect(actAudioSync, &QAction::triggered, this, &MainWindow::onChangeAudioSync);
     }
+    {
+        QMenu* menu = menubar->addMenu("Help");
+        actAbout = menu->addAction("About...");
+        connect(actAbout, &QAction::triggered, this, [&]{
+            auto dialog = AboutDialog(this);
+            dialog.exec();
+        });
+    }
+
     setMenuBar(menubar);
 
     if (localCfg.GetString("Firmware.Username") == "Arisotura")
@@ -637,6 +676,8 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
         QByteArray dec = QByteArray::fromBase64(raw, QByteArray::Base64Encoding | QByteArray::AbortOnBase64DecodingErrors);
         if (!dec.isEmpty())
             restoreGeometry(dec);
+        // if the window was closed in fullscreen do not restore this
+        setWindowState(windowState() & ~Qt::WindowFullScreen);
     }
     show();
 
@@ -648,8 +689,8 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     if (globalCfg.GetInt("Emu.ConsoleType") == 1)
     {
         actInsertGBACart->setEnabled(false);
-        for (int i = 0; i < 1; i++)
-            actInsertGBAAddon[i]->setEnabled(false);
+        for (auto act : actInsertGBAAddon)
+            act->setEnabled(false);
     }
 
     for (int i = 0; i < 9; i++)
@@ -728,6 +769,8 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     QObject::connect(qApp, &QApplication::applicationStateChanged, this, &MainWindow::onAppStateChanged);
     onUpdateInterfaceSettings();
 
+    updateMPInterface(MPInterface::GetType());
+
     initWidgets();
 }
 
@@ -748,24 +791,13 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QByteArray geom = saveGeometry();
     QByteArray enc = geom.toBase64(QByteArray::Base64Encoding);
     windowCfg.SetString("Geometry", enc.toStdString());
-
     Config::Save();
 
-    if (hasOGL && (windowID == 0))
-    {
-        // we intentionally don't unpause here
-        emuThread->emuPause();
-        emuThread->deinitContext();
-    }
+    emuInstance->deleteWindow(windowID, false);
 
-    emuThread->detachWindow(this);
-
-    if (windowID == 0)
-    {
-        int inst = emuInstance->instanceID;
-        deleteEmuInstance(inst);
-    }
-
+    // emuInstance may be deleted
+    // prevent use after free from us
+    emuInstance = nullptr;
     QMainWindow::closeEvent(event);
 }
 
@@ -966,7 +998,10 @@ void MainWindow::focusInEvent(QFocusEvent* event)
 
 void MainWindow::focusOutEvent(QFocusEvent* event)
 {
-    emuInstance->audioMute();
+    // focusOutEvent is called through the window close event handler
+    // prevent use after free
+    if (emuInstance)
+        emuInstance->audioMute();
 }
 
 void MainWindow::onAppStateChanged(Qt::ApplicationState state)
@@ -998,6 +1033,9 @@ bool MainWindow::verifySetup()
 
 bool MainWindow::preloadROMs(QStringList file, QStringList gbafile, bool boot)
 {
+    if (file.isEmpty() && gbafile.isEmpty())
+        return false;
+
     if (!verifySetup())
     {
         return false;
@@ -1006,7 +1044,8 @@ bool MainWindow::preloadROMs(QStringList file, QStringList gbafile, bool boot)
     bool gbaloaded = false;
     if (!gbafile.isEmpty())
     {
-        if (!emuInstance->loadGBAROM(gbafile)) return false;
+        if (!emuThread->insertCart(gbafile, true))
+            return false;
 
         gbaloaded = true;
     }
@@ -1014,33 +1053,31 @@ bool MainWindow::preloadROMs(QStringList file, QStringList gbafile, bool boot)
     bool ndsloaded = false;
     if (!file.isEmpty())
     {
-        if (!emuInstance->loadROM(file, true)) return false;
+        if (boot)
+        {
+            if (!emuThread->bootROM(file))
+                return false;
+        }
+        else
+        {
+            if (!emuThread->insertCart(file, false))
+                return false;
+        }
         
         recentFileList.removeAll(file.join("|"));
         recentFileList.prepend(file.join("|"));
         updateRecentFilesMenu();
         ndsloaded = true;
     }
-
-    if (boot)
+    else if (boot)
     {
-        if (ndsloaded)
-        {
-            emuInstance->nds->Start();
-            emuThread->emuRun();
-        }
-        else
-        {
-            onBootFirmware();
-        }
+        if (!emuThread->bootFirmware())
+            return false;
     }
 
     updateCartInserted(false);
-
     if (gbaloaded)
-    {
         updateCartInserted(true);
-    }
 
     return true;
 }
@@ -1204,24 +1241,15 @@ void MainWindow::updateCartInserted(bool gba)
 
 void MainWindow::onOpenFile()
 {
-    emuThread->emuPause();
-
     if (!verifySetup())
-    {
-        emuThread->emuUnpause();
         return;
-    }
 
     QStringList file = pickROM(false);
     if (file.isEmpty())
-    {
-        emuThread->emuUnpause();
         return;
-    }
-    
-    if (!emuInstance->loadROM(file, true))
+
+    if (!emuThread->bootROM(file))
     {
-        emuThread->emuUnpause();
         return;
     }
 
@@ -1229,10 +1257,6 @@ void MainWindow::onOpenFile()
     recentFileList.removeAll(filename);
     recentFileList.prepend(filename);
     updateRecentFilesMenu();
-
-    assert(emuInstance->nds != nullptr);
-    emuInstance->nds->Start();
-    emuThread->emuRun();
 
     updateCartInserted(false);
 }
@@ -1303,24 +1327,15 @@ void MainWindow::onClickRecentFile()
     QAction *act = (QAction *)sender();
     QString filename = act->data().toString();
 
-    emuThread->emuPause();
-
     if (!verifySetup())
-    {
-        emuThread->emuUnpause();
         return;
-    }
 
     const QStringList file = splitArchivePath(filename, true);
     if (file.isEmpty())
-    {
-        emuThread->emuUnpause();
         return;
-    }
-    
-    if (!emuInstance->loadROM(file, true))
+
+    if (!emuThread->bootROM(file))
     {
-        emuThread->emuUnpause();
         return;
     }
 
@@ -1328,87 +1343,51 @@ void MainWindow::onClickRecentFile()
     recentFileList.prepend(filename);
     updateRecentFilesMenu();
 
-    assert(emuInstance->nds != nullptr);
-    emuInstance->nds->Start();
-    emuThread->emuRun();
-
     updateCartInserted(false);
 }
 
 void MainWindow::onBootFirmware()
 {
-    emuThread->emuPause();
-
     if (!verifySetup())
-    {
-        emuThread->emuUnpause();
         return;
-    }
 
-    if (!emuInstance->bootToMenu())
+    if (!emuThread->bootFirmware())
     {
-        // TODO: better error reporting?
         QMessageBox::critical(this, "melonDS", "This firmware is not bootable.");
-        emuThread->emuUnpause();
         return;
     }
-
-    assert(emuInstance->nds != nullptr);
-    emuInstance->nds->Start();
-    emuThread->emuRun();
 }
 
 void MainWindow::onInsertCart()
 {
-    emuThread->emuPause();
-
     QStringList file = pickROM(false);
     if (file.isEmpty())
+        return;
+
+    if (!emuThread->insertCart(file, false))
     {
-        emuThread->emuUnpause();
         return;
     }
-
-    if (!emuInstance->loadROM(file, false))
-    {
-        emuThread->emuUnpause();
-        return;
-    }
-
-    emuThread->emuUnpause();
 
     updateCartInserted(false);
 }
 
 void MainWindow::onEjectCart()
 {
-    emuThread->emuPause();
-
-    emuInstance->ejectCart();
-
-    emuThread->emuUnpause();
-
+    emuThread->ejectCart(false);
     updateCartInserted(false);
 }
 
 void MainWindow::onInsertGBACart()
 {
-    emuThread->emuPause();
-
     QStringList file = pickROM(true);
     if (file.isEmpty())
+        return;
+
+    if (!emuThread->insertCart(file, true))
     {
-        emuThread->emuUnpause();
         return;
     }
-
-    if (!emuInstance->loadGBAROM(file))
-    {
-        emuThread->emuUnpause();
-        return;
-    }
-
-    emuThread->emuUnpause();
 
     updateCartInserted(true);
 }
@@ -1418,23 +1397,13 @@ void MainWindow::onInsertGBAAddon()
     QAction* act = (QAction*)sender();
     int type = act->data().toInt();
 
-    emuThread->emuPause();
-
-    emuInstance->loadGBAAddon(type);
-
-    emuThread->emuUnpause();
-
+    emuThread->insertGBAAddon(type);
     updateCartInserted(true);
 }
 
 void MainWindow::onEjectGBACart()
 {
-    emuThread->emuPause();
-
-    emuInstance->ejectGBACart();
-
-    emuThread->emuUnpause();
-
+    emuThread->ejectCart(true);
     updateCartInserted(true);
 }
 
@@ -1442,30 +1411,23 @@ void MainWindow::onSaveState()
 {
     int slot = ((QAction*)sender())->data().toInt();
 
-    emuThread->emuPause();
-
-    std::string filename;
+    QString filename;
     if (slot > 0)
     {
-        filename = emuInstance->getSavestateName(slot);
+        filename = QString::fromStdString(emuInstance->getSavestateName(slot));
     }
     else
     {
         // TODO: specific 'last directory' for savestate files?
-        QString qfilename = QFileDialog::getSaveFileName(this,
+        filename = QFileDialog::getSaveFileName(this,
                                                          "Save state",
                                                          globalCfg.GetQString("LastROMFolder"),
                                                          "melonDS savestates (*.mln);;Any file (*.*)");
-        if (qfilename.isEmpty())
-        {
-            emuThread->emuUnpause();
+        if (filename.isEmpty())
             return;
-        }
-
-        filename = qfilename.toStdString();
     }
 
-    if (emuInstance->saveState(filename))
+    if (emuThread->saveState(filename))
     {
         if (slot > 0) emuInstance->osdAddMessage(0, "State saved to slot %d", slot);
         else          emuInstance->osdAddMessage(0, "State saved to file");
@@ -1476,47 +1438,37 @@ void MainWindow::onSaveState()
     {
         emuInstance->osdAddMessage(0xFFA0A0, "State save failed");
     }
-
-    emuThread->emuUnpause();
 }
 
 void MainWindow::onLoadState()
 {
     int slot = ((QAction*)sender())->data().toInt();
 
-    emuThread->emuPause();
-
-    std::string filename;
+    QString filename;
     if (slot > 0)
     {
-        filename = emuInstance->getSavestateName(slot);
+        filename = QString::fromStdString(emuInstance->getSavestateName(slot));
     }
     else
     {
         // TODO: specific 'last directory' for savestate files?
-        QString qfilename = QFileDialog::getOpenFileName(this,
+        filename = QFileDialog::getOpenFileName(this,
                                                          "Load state",
                                                          globalCfg.GetQString("LastROMFolder"),
                                                          "melonDS savestates (*.ml*);;Any file (*.*)");
-        if (qfilename.isEmpty())
-        {
-            emuThread->emuUnpause();
+        if (filename.isEmpty())
             return;
-        }
-
-        filename = qfilename.toStdString();
     }
 
-    if (!Platform::FileExists(filename))
+    if (!Platform::FileExists(filename.toStdString()))
     {
         if (slot > 0) emuInstance->osdAddMessage(0xFFA0A0, "State slot %d is empty", slot);
         else          emuInstance->osdAddMessage(0xFFA0A0, "State file does not exist");
 
-        emuThread->emuUnpause();
         return;
     }
 
-    if (emuInstance->loadState(filename))
+    if (emuThread->loadState(filename))
     {
         if (slot > 0) emuInstance->osdAddMessage(0, "State loaded from slot %d", slot);
         else          emuInstance->osdAddMessage(0, "State loaded from file");
@@ -1527,15 +1479,11 @@ void MainWindow::onLoadState()
     {
         emuInstance->osdAddMessage(0xFFA0A0, "State load failed");
     }
-
-    emuThread->emuUnpause();
 }
 
 void MainWindow::onUndoStateLoad()
 {
-    emuThread->emuPause();
-    emuInstance->undoStateLoad();
-    emuThread->emuUnpause();
+    emuThread->undoStateLoad();
 
     emuInstance->osdAddMessage(0, "State load undone");
 }
@@ -1687,6 +1635,67 @@ void MainWindow::onMPNewInstance()
     createEmuInstance();
 }
 
+void MainWindow::onLANStartHost()
+{
+    if (!lanWarning(true)) return;
+    LANStartHostDialog::openDlg(this);
+}
+
+void MainWindow::onLANStartClient()
+{
+    if (!lanWarning(false)) return;
+    LANStartClientDialog::openDlg(this);
+}
+
+void MainWindow::onNPStartHost()
+{
+    //Netplay::StartHost();
+    //NetplayStartHostDialog::openDlg(this);
+}
+
+void MainWindow::onNPStartClient()
+{
+    //Netplay::StartClient();
+    //NetplayStartClientDialog::openDlg(this);
+}
+
+void MainWindow::onNPTest()
+{
+    // HAX
+    //Netplay::StartGame();
+}
+
+void MainWindow::updateMPInterface(MPInterfaceType type)
+{
+    // MP interface was changed, reflect it in the UI
+
+    bool enable = (type == MPInterface_Local);
+    actMPNewInstance->setEnabled(enable);
+    actLANStartHost->setEnabled(enable);
+    actLANStartClient->setEnabled(enable);
+    /*actNPStartHost->setEnabled(enable);
+    actNPStartClient->setEnabled(enable);
+    actNPTest->setEnabled(enable);*/
+}
+
+bool MainWindow::lanWarning(bool host)
+{
+    if (numEmuInstances() < 2)
+        return true;
+
+    QString verb = host ? "host" : "join";
+    QString msg = "Multiple emulator instances are currently open.\n"
+            "If you "+verb+" a LAN game now, all secondary instances will be closed.\n\n"
+            "Do you wish to continue?";
+
+    auto res = QMessageBox::warning(this, "melonDS", msg, QMessageBox::Yes|QMessageBox::No, QMessageBox::No);
+    if (res == QMessageBox::No)
+        return false;
+
+    deleteAllEmuInstances(1);
+    return true;
+}
+
 void MainWindow::onOpenEmuSettings()
 {
     emuThread->emuPause();
@@ -1700,15 +1709,15 @@ void MainWindow::onEmuSettingsDialogFinished(int res)
     if (globalCfg.GetInt("Emu.ConsoleType") == 1)
     {
         actInsertGBACart->setEnabled(false);
-        for (int i = 0; i < 1; i++)
-            actInsertGBAAddon[i]->setEnabled(false);
+        for (auto act : actInsertGBAAddon)
+            act->setEnabled(false);
         actEjectGBACart->setEnabled(false);
     }
     else
     {
         actInsertGBACart->setEnabled(true);
-        for (int i = 0; i < 1; i++)
-            actInsertGBAAddon[i]->setEnabled(true);
+        for (auto act : actInsertGBAAddon)
+            act->setEnabled(true);
         actEjectGBACart->setEnabled(emuInstance->gbaCartInserted());
     }
 
@@ -1842,7 +1851,7 @@ void MainWindow::onMPSettingsFinished(int res)
 {
     emuInstance->mpAudioMode = globalCfg.GetInt("MP.AudioMode");
     emuInstance->audioMute();
-    LocalMP::SetRecvTimeout(globalCfg.GetInt("MP.RecvTimeout"));
+    MPInterface::Get().SetRecvTimeout(globalCfg.GetInt("MP.RecvTimeout"));
 
     emuThread->emuUnpause();
 }
@@ -1874,8 +1883,9 @@ void MainWindow::onOpenInterfaceSettings()
 void MainWindow::onUpdateInterfaceSettings()
 {
     pauseOnLostFocus = globalCfg.GetBool("PauseLostFocus");
-    emuInstance->maxFPS = globalCfg.GetInt("MaxFPS");
-
+    emuInstance->targetFPS = 1.0 / globalCfg.GetDouble("TargetFPS");
+    emuInstance->fastForwardFPS = 1.0 / globalCfg.GetDouble("FastForwardFPS");
+    emuInstance->slowmoFPS = 1.0 / globalCfg.GetDouble("SlowmoFPS");
     panel->setMouseHide(globalCfg.GetBool("MouseHide"),
                         globalCfg.GetInt("MouseHideSeconds")*1000);
 }

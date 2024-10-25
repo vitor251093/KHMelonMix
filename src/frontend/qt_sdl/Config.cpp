@@ -23,6 +23,7 @@
 #include <inttypes.h>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <regex>
 #include "toml/toml.hpp"
 
@@ -79,7 +80,6 @@ DefaultList<int> DefaultInts =
     {"Screen.VSyncInterval", 1},
     {"3D.Renderer", renderer3D_OpenGL},
     {"3D.GL.ScaleFactor", 3},
-    {"MaxFPS", 1000},
 #ifdef JIT_ENABLED
     {"JIT.MaxBlockSize", 32},
 #endif
@@ -96,6 +96,7 @@ DefaultList<int> DefaultInts =
     {"Instance*.Gdb.ARM7.Port", 3334},
     {"Instance*.Gdb.ARM9.Port", 3333},
 #endif
+    {"LAN.HostNumPlayers", 16},
 };
 
 RangeList IntRanges =
@@ -104,7 +105,7 @@ RangeList IntRanges =
     {"3D.Renderer", {0, renderer3D_Max-1}},
     {"Screen.VSyncInterval", {1, 20}},
     {"3D.GL.ScaleFactor", {1, 16}},
-    {"Audio.Interpolation", {0, 3}},
+    {"Audio.Interpolation", {0, 4}},
     {"Instance*.Audio.Volume", {0, 256}},
     {"Mic.InputType", {0, micInputType_MAX-1}},
     {"Instance*.Window*.ScreenRotation", {0, screenRot_MAX-1}},
@@ -114,6 +115,7 @@ RangeList IntRanges =
     {"Instance*.Window*.ScreenAspectTop", {0, AspectRatiosNum-1}},
     {"Instance*.Window*.ScreenAspectBot", {0, AspectRatiosNum-1}},
     {"MP.AudioMode", {0, 2}},
+    {"LAN.HostNumPlayers", {2, 16}},
 };
 
 DefaultList<bool> DefaultBools =
@@ -143,6 +145,13 @@ DefaultList<std::string> DefaultStrings =
     {"Instance*.Firmware.Username",     "melonDS"},
     {"LastROMFolder",                   "rom"},
     {"RecentROM[0]",                    "rom/game.nds"}
+};
+
+DefaultList<double> DefaultDoubles =
+{
+    {"TargetFPS", 60.0},
+    {"FastForwardFPS", 1000.0},
+    {"SlowmoFPS", 30.0},
 };
 
 LegacyEntry LegacyFile[] =
@@ -178,7 +187,7 @@ LegacyEntry LegacyFile[] =
     {"HKKey_Pause",               0, "Keyboard.HK_Pause", true},
     {"HKKey_Reset",               0, "Keyboard.HK_Reset", true},
     {"HKKey_FastForward",         0, "Keyboard.HK_FastForward", true},
-    {"HKKey_FastForwardToggle",   0, "Keyboard.HK_FastForwardToggle", true},
+    {"HKKey_FastForwardToggle",   0, "Keyboard.HK_FrameLimitToggle", true},
     {"HKKey_FullscreenToggle",    0, "Keyboard.HK_FullscreenToggle", true},
     {"HKKey_SwapScreens",         0, "Keyboard.HK_SwapScreens", true},
     {"HKKey_SwapScreenEmphasis",  0, "Keyboard.HK_SwapScreenEmphasis", true},
@@ -206,7 +215,7 @@ LegacyEntry LegacyFile[] =
     {"HKJoy_Pause",               0, "Joystick.HK_Pause", true},
     {"HKJoy_Reset",               0, "Joystick.HK_Reset", true},
     {"HKJoy_FastForward",         0, "Joystick.HK_FastForward", true},
-    {"HKJoy_FastForwardToggle",   0, "Joystick.HK_FastForwardToggle", true},
+    {"HKJoy_FastForwardToggle",   0, "Joystick.HK_FrameLimitToggle", true},
     {"HKJoy_FullscreenToggle",    0, "Joystick.HK_FullscreenToggle", true},
     {"HKJoy_SwapScreens",         0, "Joystick.HK_SwapScreens", true},
     {"HKJoy_SwapScreenEmphasis",  0, "Joystick.HK_SwapScreenEmphasis", true},
@@ -483,6 +492,18 @@ std::string Array::GetString(const int id)
     return tval.as_string();
 }
 
+double Array::GetDouble(const int id)
+{
+    while (Data.size() < id+1)
+        Data.push_back(0.0);
+
+    toml::value& tval = Data[id];
+    if (!tval.is_floating())
+        tval = 0.0;
+
+    return tval.as_floating();
+}
+
 void Array::SetInt(const int id, int val)
 {
     while (Data.size() < id+1)
@@ -514,6 +535,15 @@ void Array::SetString(const int id, const std::string& val)
 {
     while (Data.size() < id+1)
         Data.push_back("");
+
+    toml::value& tval = Data[id];
+    tval = val;
+}
+
+void Array::SetDouble(const int id, double val)
+{
+    while (Data.size() < id+1)
+        Data.push_back(0.0);
 
     toml::value& tval = Data[id];
     tval = val;
@@ -611,6 +641,15 @@ std::string Table::GetString(const std::string& path)
     return tval.as_string();
 }
 
+double Table::GetDouble(const std::string& path)
+{
+    toml::value& tval = ResolvePath(path);
+    if (!tval.is_floating())
+        tval = FindDefault(path, 0.0, DefaultDoubles);
+
+    return tval.as_floating();
+}
+
 void Table::SetInt(const std::string& path, int val)
 {
     std::string rngkey = GetDefaultKey(PathPrefix+path);
@@ -637,6 +676,12 @@ void Table::SetBool(const std::string& path, bool val)
 }
 
 void Table::SetString(const std::string& path, const std::string& val)
+{
+    toml::value& tval = ResolvePath(path);
+    tval = val;
+}
+
+void Table::SetDouble(const std::string& path, double val)
 {
     toml::value& tval = ResolvePath(path);
     tval = val;
@@ -793,7 +838,7 @@ bool Load()
 
     try
     {
-        RootTable = toml::parse(cfgpath);
+        RootTable = toml::parse(std::filesystem::u8path(cfgpath));
     }
     catch (toml::syntax_error& err)
     {
@@ -810,7 +855,7 @@ void Save()
         return;
 
     std::ofstream file;
-    file.open(cfgpath, std::ofstream::out | std::ofstream::trunc);
+    file.open(std::filesystem::u8path(cfgpath), std::ofstream::out | std::ofstream::trunc);
     file << RootTable;
     file.close();
 }

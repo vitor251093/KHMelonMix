@@ -116,9 +116,8 @@ void EmuThread::run()
 
     Config::Table& globalCfg = emuInstance->getGlobalConfig();
     u32 mainScreenPos[3];
-    Platform::FileHandle* file;
 
-    emuInstance->updateConsole(nullptr, nullptr);
+    //emuInstance->updateConsole(nullptr, nullptr);
     // No carts are inserted when melonDS first boots
 
     mainScreenPos[0] = 0;
@@ -126,7 +125,7 @@ void EmuThread::run()
     mainScreenPos[2] = 0;
     autoScreenSizing = 0;
 
-    videoSettingsDirty = false;
+    //videoSettingsDirty = false;
 
     if (emuInstance->usesOpenGL())
     {
@@ -141,7 +140,8 @@ void EmuThread::run()
         videoRenderer = 0;
     }
 
-    updateRenderer();
+    //updateRenderer();
+    videoSettingsDirty = true;
 
     u32 nframes = 0;
     double perfCountsSec = 1.0 / SDL_GetPerformanceFrequency();
@@ -152,22 +152,20 @@ void EmuThread::run()
     u32 winUpdateCount = 0, winUpdateFreq = 1;
     u8 dsiVolumeLevel = 0x1F;
 
-    file = Platform::OpenLocalFile("rtc.bin", Platform::FileMode::Read);
-    if (file)
-    {
-        RTC::StateData state;
-        Platform::FileRead(&state, sizeof(state), 1, file);
-        Platform::CloseFile(file);
-        emuInstance->nds->RTC.SetState(state);
-    }
-
     char melontitle[100];
+
+    bool fastforward = false;
+    bool slowmo = false;
+    emuInstance->fastForwardToggled = false;
+    emuInstance->slowmoToggled = false;
 
     while (emuStatus != emuStatus_Exit)
     {
+        MPInterface::Get().Process();
         emuInstance->inputProcess();
 
-        auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
+        auto nds = emuInstance->getNDS();
+        auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
         if (rom != nullptr) {
             u32 gamecode = rom->GetHeader().GameCodeAsU32();
             if (emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode)
@@ -189,7 +187,7 @@ void EmuThread::run()
             emuInstance->plugin->applyHotkeyToInputMask(&emuInstance->inputMask, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
         }
 
-        if (emuInstance->hotkeyPressed(HK_FastForwardToggle)) emit windowLimitFPSChange();
+        if (emuInstance->hotkeyPressed(HK_FrameLimitToggle)) emit windowLimitFPSChange();
 
         if (emuInstance->hotkeyPressed(HK_Pause)) emuTogglePause();
         if (emuInstance->hotkeyPressed(HK_Reset)) emuReset();
@@ -373,21 +371,33 @@ void EmuThread::run()
                 emit windowUpdate();
                 winUpdateCount = 0;
             }
+            
+            if (emuInstance->hotkeyPressed(HK_FastForwardToggle)) emuInstance->fastForwardToggled = !emuInstance->fastForwardToggled;
+            if (emuInstance->hotkeyPressed(HK_SlowMoToggle)) emuInstance->slowmoToggled = !emuInstance->slowmoToggled;
 
-            bool fastforward = emuInstance->hotkeyDown(HK_FastForward) || pluginShouldFastForward();
+            bool enablefastforward = (emuInstance->hotkeyDown(HK_FastForward) | emuInstance->fastForwardToggled) || pluginShouldFastForward();
+            bool enableslowmo = emuInstance->hotkeyDown(HK_SlowMo) | emuInstance->slowmoToggled;
 
             if (useOpenGL)
             {
-                // when using OpenGL: when toggling fast-forward, change the vsync interval
-                if (emuInstance->hotkeyPressed(HK_FastForward))
+                // when using OpenGL: when toggling fast-forward or slowmo, change the vsync interval
+                if ((enablefastforward || enableslowmo) && !(fastforward || slowmo))
                 {
                     emuInstance->setVSyncGL(false);
                 }
-                else if (emuInstance->hotkeyReleased(HK_FastForward))
+                else if (!(enablefastforward || enableslowmo) && (fastforward || slowmo))
                 {
                     emuInstance->setVSyncGL(true);
                 }
             }
+
+            fastforward = enablefastforward;
+            slowmo = enableslowmo;
+
+            if (slowmo) emuInstance->curFPS = emuInstance->slowmoFPS;
+            else if (fastforward) emuInstance->curFPS = emuInstance->fastForwardFPS;
+            else if (!emuInstance->doLimitFPS) emuInstance->curFPS = 1.0 / 1000.0;
+            else emuInstance->curFPS = emuInstance->targetFPS;
 
             refreshPluginCutsceneState();
 
@@ -404,23 +414,19 @@ void EmuThread::run()
                 emuInstance->audioVolume = volumeLevel * (256.0 / 31.0);
             }
 
-            if (emuInstance->doAudioSync && !fastforward)
+            if (emuInstance->doAudioSync && !(fastforward || slowmo))
                 emuInstance->audioSync();
 
             double frametimeStep = nlines / (60.0 * 263.0);
 
             {
-                bool limitfps = emuInstance->doLimitFPS && !fastforward;
-
-                double practicalFramelimit = limitfps ? frametimeStep : 1.0 / emuInstance->maxFPS;
-
                 double curtime = SDL_GetPerformanceCounter() * perfCountsSec;
 
-                frameLimitError += practicalFramelimit - (curtime - lastTime);
-                if (frameLimitError < -practicalFramelimit)
-                    frameLimitError = -practicalFramelimit;
-                if (frameLimitError > practicalFramelimit)
-                    frameLimitError = practicalFramelimit;
+                frameLimitError += emuInstance->curFPS - (curtime - lastTime);
+                if (frameLimitError < -emuInstance->curFPS)
+                    frameLimitError = -emuInstance->curFPS;
+                if (frameLimitError > emuInstance->curFPS)
+                    frameLimitError = emuInstance->curFPS;
 
                 if (round(frameLimitError * 1000.0) > 0.0)
                 {
@@ -487,17 +493,6 @@ void EmuThread::run()
 
         handleMessages();
     }
-
-    file = Platform::OpenLocalFile("rtc.bin", Platform::FileMode::Write);
-    if (file)
-    {
-        RTC::StateData state;
-        emuInstance->nds->RTC.GetState(state);
-        Platform::FileWrite(&state, sizeof(state), 1, file);
-        Platform::CloseFile(file);
-    }
-
-    NDS::Current = nullptr;
 }
 
 void EmuThread::sendMessage(Message msg)
@@ -575,7 +570,8 @@ void EmuThread::handleMessages()
             break;
 
         case msg_EmuStop:
-            if (msg.stopExternal) emuInstance->nds->Stop();
+            if (msg.param.value<bool>())
+                emuInstance->nds->Stop();
             emuStatus = emuStatus_Paused;
             emuActive = false;
 
@@ -607,6 +603,69 @@ void EmuThread::handleMessages()
         case msg_DeInitGL:
             emuInstance->deinitOpenGL();
             useOpenGL = false;
+            break;
+
+        case msg_BootROM:
+            msgResult = 0;
+            if (!emuInstance->loadROM(msg.param.value<QStringList>(), true))
+                break;
+
+            assert(emuInstance->nds != nullptr);
+            emuInstance->nds->Start();
+            msgResult = 1;
+            break;
+
+        case msg_BootFirmware:
+            msgResult = 0;
+            if (!emuInstance->bootToMenu())
+                break;
+
+            assert(emuInstance->nds != nullptr);
+            emuInstance->nds->Start();
+            msgResult = 1;
+            break;
+
+        case msg_InsertCart:
+            msgResult = 0;
+            if (!emuInstance->loadROM(msg.param.value<QStringList>(), false))
+                break;
+
+            msgResult = 1;
+            break;
+
+        case msg_EjectCart:
+            emuInstance->ejectCart();
+            break;
+
+        case msg_InsertGBACart:
+            msgResult = 0;
+            if (!emuInstance->loadGBAROM(msg.param.value<QStringList>()))
+                break;
+
+            msgResult = 1;
+            break;
+
+        case msg_InsertGBAAddon:
+            msgResult = 0;
+            emuInstance->loadGBAAddon(msg.param.value<int>());
+            msgResult = 1;
+            break;
+
+        case msg_EjectGBACart:
+            emuInstance->ejectGBACart();
+            break;
+
+        case msg_SaveState:
+            msgResult = emuInstance->saveState(msg.param.value<QString>().toStdString());
+            break;
+
+        case msg_LoadState:
+            msgResult = emuInstance->loadState(msg.param.value<QString>().toStdString());
+            break;
+
+        case msg_UndoStateLoad:
+            emuInstance->undoStateLoad();
+            msgResult = 1;
             break;
         }
 
@@ -689,7 +748,7 @@ void EmuThread::refreshPluginCutsceneState()
     {
         emuInstance->audioVolume = 0;
 
-        emuInstance->maxFPS = 1000;
+        emuInstance->targetFPS = 1.0 / 1000;
 
         int newVideoRenderer = renderer3D_Software;
         if (videoRenderer != newVideoRenderer) {
@@ -704,7 +763,7 @@ void EmuThread::refreshPluginCutsceneState()
         auto& instcfg = emuInstance->getLocalConfig();
         emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
 
-        emuInstance->maxFPS = globalCfg.GetInt("MaxFPS");
+        emuInstance->targetFPS = 1.0 / globalCfg.GetDouble("TargetFPS");
 
         int newVideoRenderer = globalCfg.GetInt("3D.Renderer");
         if (videoRenderer != newVideoRenderer) {
@@ -739,9 +798,12 @@ void EmuThread::emuRun()
 
 void EmuThread::emuPause()
 {
-    auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
-    if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-        return;
+    auto nds = emuInstance->getNDS();
+    if (nds != nullptr) {
+        auto rom = nds->NDSCartSlot.GetCart();
+        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
+            return;
+        }
     }
 
     sendMessage(msg_EmuPause);
@@ -750,9 +812,12 @@ void EmuThread::emuPause()
 
 void EmuThread::emuUnpause()
 {
-    auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
-    if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-        return;
+    auto nds = emuInstance->getNDS();
+    if (nds != nullptr) {
+        auto rom = nds->NDSCartSlot.GetCart();
+        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
+            return;
+        }
     }
 
     sendMessage(msg_EmuUnpause);
@@ -769,7 +834,7 @@ void EmuThread::emuTogglePause()
 
 void EmuThread::emuStop(bool external)
 {
-    sendMessage({.type = msg_EmuStop, .stopExternal = external});
+    sendMessage({.type = msg_EmuStop, .param = external});
     waitMessage();
 }
 
@@ -803,11 +868,77 @@ bool EmuThread::emuIsActive()
     return emuActive;
 }
 
+int EmuThread::bootROM(const QStringList& filename)
+{
+    sendMessage({.type = msg_BootROM, .param = filename});
+    waitMessage();
+    if (!msgResult)
+        return msgResult;
+
+    sendMessage(msg_EmuRun);
+    waitMessage();
+    return msgResult;
+}
+
+int EmuThread::bootFirmware()
+{
+    sendMessage(msg_BootFirmware);
+    waitMessage();
+    if (!msgResult)
+        return msgResult;
+
+    sendMessage(msg_EmuRun);
+    waitMessage();
+    return msgResult;
+}
+
+int EmuThread::insertCart(const QStringList& filename, bool gba)
+{
+    MessageType msgtype = gba ? msg_InsertGBACart : msg_InsertCart;
+
+    sendMessage({.type = msgtype, .param = filename});
+    waitMessage();
+    return msgResult;
+}
+
+void EmuThread::ejectCart(bool gba)
+{
+    sendMessage(gba ? msg_EjectGBACart : msg_EjectCart);
+    waitMessage();
+}
+
+int EmuThread::insertGBAAddon(int type)
+{
+    sendMessage({.type = msg_InsertGBAAddon, .param = type});
+    waitMessage();
+    return msgResult;
+}
+
+int EmuThread::saveState(const QString& filename)
+{
+    sendMessage({.type = msg_SaveState, .param = filename});
+    waitMessage();
+    return msgResult;
+}
+
+int EmuThread::loadState(const QString& filename)
+{
+    sendMessage({.type = msg_LoadState, .param = filename});
+    waitMessage();
+    return msgResult;
+}
+
+int EmuThread::undoStateLoad()
+{
+    sendMessage(msg_UndoStateLoad);
+    waitMessage();
+    return msgResult;
+}
+
 void EmuThread::updateRenderer()
 {
     if (videoRenderer != lastVideoRenderer)
     {
-        printf("creating renderer %d\n", videoRenderer);
         switch (videoRenderer)
         {
             case renderer3D_Software:
