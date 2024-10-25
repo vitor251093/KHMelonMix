@@ -38,7 +38,7 @@ jobs:
     - name: Build
       run: cmake --build --preset=release-mingw-x86_64
     - name: Preparing artifacts
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ${{runner.workspace}}\build
       run: |
         mkdir dist
         mkdir -p ./dist/roms
