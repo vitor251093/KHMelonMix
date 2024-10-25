@@ -440,13 +440,13 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
     }
 
-    if (*HotkeyPress & (1 << 15)) { // HUD Toggle
+    if (*HotkeyPress & (1 << 18)) { // HUD Toggle (HK_HUDToggle)
         hudToggle();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
-        if ((*HotkeyMask) & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) { // D-pad
+        if ((*HotkeyMask) & ((1 << 21) | (1 << 22) | (1 << 23) | (1 << 24))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP,
@@ -458,25 +458,25 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         }
 
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 18) | (1 << 19) | (1 << 20) | (1 << 21))) {
+        if ((*HotkeyMask) & ((1 << 21) | (1 << 22) | (1 << 23) | (1 << 24))) { //  (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             *InputMask &= ~(1<<10); // X
             *InputMask |= (1<<5); // left
             *InputMask |= (1<<4); // right
             *InputMask |= (1<<6); // up
             *InputMask |= (1<<7); // down
-            if (PriorPriorHotkeyMask & (1 << 18)) // Old D-pad left
+            if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad left (HK_CommandMenuLeft)
                 *InputMask &= ~(1<<5); // left
-            if (PriorPriorHotkeyMask & (1 << 19)) // Old D-pad right
+            if (PriorPriorHotkeyMask & (1 << 22)) // Old D-pad right (HK_CommandMenuRight)
                 *InputMask &= ~(1<<4); // right
-            if (PriorPriorHotkeyMask & (1 << 20)) // Old D-pad up
+            if (PriorPriorHotkeyMask & (1 << 23)) // Old D-pad up (HK_CommandMenuUp)
                 *InputMask &= ~(1<<6); // up
-            if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad down
+            if (PriorPriorHotkeyMask & (1 << 24)) // Old D-pad down (HK_CommandMenuDown)
                 *InputMask &= ~(1<<7); // down
         }
 
         // R / Lock On
         {
-            if ((*HotkeyMask) & (1 << 16)) {
+            if ((*HotkeyMask) & (1 << 19)) { // (HK_RLockOn)
                 if (LastLockOnPress == 1) {
                     LastLockOnPress = 0;
                 }
@@ -494,7 +494,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
 
         // Switch Target
         {
-            if ((*HotkeyMask) & (1 << 17)) {
+            if ((*HotkeyMask) & (1 << 20)) { // (HK_SwitchTarget)
                 if (LastSwitchTargetPress == 1) {
                     LastSwitchTargetPress = 0;
                 }
@@ -520,20 +520,20 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
     }
     else {
         // So the arrow keys can be used as directionals
-        if ((*HotkeyMask) & (1 << 18)) { // D-pad left
+        if ((*HotkeyMask) & (1 << 21)) { // D-pad left (HK_CommandMenuLeft)
             *InputMask &= ~(1<<5); // left
         }
-        if ((*HotkeyMask) & (1 << 19)) { // D-pad right
+        if ((*HotkeyMask) & (1 << 22)) { // D-pad right (HK_CommandMenuRight)
             *InputMask &= ~(1<<4); // right
         }
-        if ((*HotkeyMask) & (1 << 20)) { // D-pad up
+        if ((*HotkeyMask) & (1 << 23)) { // D-pad up (HK_CommandMenuUp)
             *InputMask &= ~(1<<6); // up
         }
-        if ((*HotkeyMask) & (1 << 21)) { // D-pad down
+        if ((*HotkeyMask) & (1 << 24)) { // D-pad down (HK_CommandMenuDown)
             *InputMask &= ~(1<<7); // down
         }
 
-        if ((*HotkeyMask) & (1 << 16)) { // R / Lock On
+        if ((*HotkeyMask) & (1 << 19)) { // R / Lock On (HK_RLockOn)
             *InputMask &= ~(1<<8); // R
         }
     }

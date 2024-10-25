@@ -8,6 +8,11 @@ on:
     branches:
       - master
 
+env:
+  MELONDS_GIT_BRANCH: ${{ github.ref }}
+  MELONDS_GIT_HASH: ${{ github.sha }}
+  MELONDS_BUILD_PROVIDER: GitHub Actions
+
 jobs:
   build-x86_64:
     name: x86_64
@@ -20,8 +25,8 @@ jobs:
       run: |
         sudo rm -f /etc/apt/sources.list.d/dotnetdev.list /etc/apt/sources.list.d/microsoft-prod.list
         sudo apt update
-        sudo apt install --allow-downgrades cmake ninja-build extra-cmake-modules libpcap0.8-dev libsdl2-dev \
-          qt6-{base,base-private,multimedia}-dev libarchive-dev libzstd-dev libfuse2
+        sudo apt install --allow-downgrades cmake ninja-build extra-cmake-modules libpcap0.8-dev libsdl2-dev libenet-dev \
+          qt6-{base,base-private,multimedia}-dev libqt6svg6-dev libarchive-dev libzstd-dev libfuse2
     - name: Install GStreamer dependencies
       run: |
         sudo apt-get install --allow-downgrades libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
@@ -29,7 +34,7 @@ jobs:
           gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl \
           gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
     - name: Configure
-      run: cmake -B build -G Ninja -DUSE_QT6=ON -DCMAKE_INSTALL_PREFIX=/usr
+      run: cmake -B build -G Ninja -DUSE_QT6=ON -DCMAKE_INSTALL_PREFIX=/usr -DMELONDS_EMBED_BUILD_INFO=ON
     - name: Build
       run: |
         cmake --build build
@@ -98,7 +103,7 @@ jobs:
           apt update
           apt -y full-upgrade
           apt -y install git {gcc-12,g++-12}-aarch64-linux-gnu cmake ninja-build extra-cmake-modules \
-            {libsdl2,qt6-{base,base-private,multimedia},libarchive,libzstd}-dev:arm64 \
+            {libsdl2,qt6-{base,base-private,multimedia},libqt6svg6,libarchive,libzstd,libenet}-dev:arm64 \
             pkg-config dpkg-dev
       - name: Check out source
         uses: actions/checkout@v4
@@ -109,7 +114,8 @@ jobs:
             -DPKG_CONFIG_EXECUTABLE=/usr/bin/aarch64-linux-gnu-pkg-config \
             -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc-12 \
             -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++-12 \
-            -DUSE_QT6=ON
+            -DUSE_QT6=ON \
+            -DMELONDS_EMBED_BUILD_INFO=ON
       - name: Build
         shell: bash
         run: |

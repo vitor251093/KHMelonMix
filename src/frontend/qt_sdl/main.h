@@ -22,19 +22,14 @@
 #include "glad/glad.h"
 
 #include <QApplication>
-#include <QWidget>
-#include <QWindow>
-#include <QMainWindow>
-#include <QImage>
-#include <QActionGroup>
-#include <QTimer>
-#include <QScreen>
-#include <QCloseEvent>
+#include <QEvent>
+#include <QElapsedTimer>
 
 #include "EmuInstance.h"
 #include "Window.h"
 #include "EmuThread.h"
 #include "ScreenLayout.h"
+#include "MPInterface.h"
 
 class MelonApplication : public QApplication
 {
@@ -48,8 +43,13 @@ public:
 extern QString* systemThemeName;
 extern QString emuDirectory;
 
+extern QElapsedTimer sysTimer;
+
 bool createEmuInstance();
 void deleteEmuInstance(int id);
-void deleteAllEmuInstances();
+void deleteAllEmuInstances(int first = 0);
+int numEmuInstances();
+
+void setMPInterface(melonDS::MPInterfaceType type);
 
 #endif // MAIN_H

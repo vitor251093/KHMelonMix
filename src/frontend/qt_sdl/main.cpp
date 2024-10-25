@@ -22,18 +22,14 @@
 #include <string.h>
 
 #include <optional>
-#include <vector>
 #include <string>
-#include <algorithm>
 
-#include <QProcess>
 #include <QApplication>
+#include <QStyle>
 #include <QMessageBox>
 #include <QMenuBar>
-#include <QMimeDatabase>
 #include <QFileDialog>
 #include <QInputDialog>
-#include <QPaintEvent>
 #include <QPainter>
 #include <QKeyEvent>
 #include <QMimeData>
@@ -57,32 +53,24 @@
 #include "duckstation/gl/context.h"
 
 #include "main.h"
-#include "CheatsDialog.h"
-#include "DateTimeDialog.h"
-#include "EmuSettingsDialog.h"
-#include "InputConfig/InputConfigDialog.h"
-#include "VideoSettingsDialog.h"
-#include "ROMInfoDialog.h"
-#include "RAMInfoDialog.h"
-#include "PowerManagement/PowerManagementDialog.h"
-
 #include "version.h"
 
 #include "Config.h"
-#include "DSi.h"
 
 #include "EmuInstance.h"
 #include "ArchiveUtil.h"
 #include "CameraManager.h"
-#include "LocalMP.h"
+#include "MPInterface.h"
 #include "Net.h"
 
 #include "CLI.h"
 
+#include "Net_PCap.h"
+#include "Net_Slirp.h"
+
 using namespace melonDS;
 
 QString* systemThemeName;
-
 
 
 QString emuDirectory;
@@ -92,6 +80,42 @@ EmuInstance* emuInstances[kMaxEmuInstances];
 
 CameraManager* camManager[2];
 bool camStarted[2];
+
+std::optional<LibPCap> pcap;
+Net net;
+
+
+QElapsedTimer sysTimer;
+
+
+void NetInit()
+{
+    Config::Table cfg = Config::GetGlobalTable();
+    if (cfg.GetBool("LAN.DirectMode"))
+    {
+        if (!pcap)
+            pcap = LibPCap::New();
+
+        if (pcap)
+        {
+            std::string devicename = cfg.GetString("LAN.Device");
+            std::unique_ptr<Net_PCap> netPcap = pcap->Open(devicename, [](const u8* data, int len) {
+                net.RXEnqueue(data, len);
+            });
+
+            if (netPcap)
+            {
+                net.SetDriver(std::move(netPcap));
+            }
+        }
+    }
+    else
+    {
+        net.SetDriver(std::make_unique<Net_Slirp>([](const u8* data, int len) {
+            net.RXEnqueue(data, len);
+        }));
+    }
+}
 
 
 bool createEmuInstance()
@@ -124,10 +148,23 @@ void deleteEmuInstance(int id)
     emuInstances[id] = nullptr;
 }
 
-void deleteAllEmuInstances()
+void deleteAllEmuInstances(int first)
 {
-    for (int i = 0; i < kMaxEmuInstances; i++)
+    for (int i = first; i < kMaxEmuInstances; i++)
         deleteEmuInstance(i);
+}
+
+int numEmuInstances()
+{
+    int ret = 0;
+
+    for (int i = 0; i < kMaxEmuInstances; i++)
+    {
+        if (emuInstances[i])
+            ret++;
+    }
+
+    return ret;
 }
 
 
@@ -168,6 +205,28 @@ void pathInit()
 }
 
 
+void setMPInterface(MPInterfaceType type)
+{
+    // switch to the requested MP interface
+    MPInterface::Set(type);
+
+    // set receive timeout
+    // TODO: different settings per interface?
+    MPInterface::Get().SetRecvTimeout(Config::GetGlobalTable().GetInt("MP.RecvTimeout"));
+
+    // update UI appropriately
+    // TODO: decide how to deal with multi-window when it becomes a thing
+    for (int i = 0; i < kMaxEmuInstances; i++)
+    {
+        EmuInstance* inst = emuInstances[i];
+        if (!inst) continue;
+
+        MainWindow* win = inst->getMainWindow();
+        if (win) win->updateMPInterface(type);
+    }
+}
+
+
 
 MelonApplication::MelonApplication(int& argc, char** argv)
     : QApplication(argc, argv)
@@ -191,10 +250,8 @@ bool MelonApplication::event(QEvent *event)
         MainWindow* win = inst->getMainWindow();
         QFileOpenEvent *openEvent = static_cast<QFileOpenEvent*>(event);
 
-        inst->getEmuThread()->emuPause();
         const QStringList file = win->splitArchivePath(openEvent->file(), true);
-        if (!win->preloadROMs(file, {}, true))
-            inst->getEmuThread()->emuUnpause();
+        win->preloadROMs(file, {}, true);
     }
 
     return QApplication::event(event);
@@ -202,6 +259,7 @@ bool MelonApplication::event(QEvent *event)
 
 int main(int argc, char** argv)
 {
+    sysTimer.start();
     srand(time(nullptr));
 
     for (int i = 0; i < kMaxEmuInstances; i++)
@@ -273,8 +331,11 @@ int main(int argc, char** argv)
         }
     }
 
-    LocalMP::Init();
-    Net::Init();
+    // default MP interface type is local MP
+    // this will be changed if a LAN or netplay session is initiated
+    setMPInterface(MPInterface_Local);
+
+    NetInit();
 
     createEmuInstance();
 
@@ -301,6 +362,9 @@ int main(int argc, char** argv)
         if (memberSyntaxUsed) printf("Warning: use the a.zip|b.nds format at your own risk!\n");
 
         win->preloadROMs(dsfile, gbafile, options->boot);
+
+        if (options->fullscreen)
+            ToggleFullscreen(win);
     }
 
     int ret = melon.exec();
@@ -310,9 +374,6 @@ int main(int argc, char** argv)
     // if we get here, all the existing emu instances should have been deleted already
     // but with this we make extra sure they are all deleted
     deleteAllEmuInstances();
-
-    LocalMP::DeInit();
-    Net::DeInit();
 
     delete camManager[0];
     delete camManager[1];
@@ -329,6 +390,12 @@ int main(int argc, char** argv)
 
 int CALLBACK WinMain(HINSTANCE hinst, HINSTANCE hprev, LPSTR cmdline, int cmdshow)
 {
+    if (AttachConsole(ATTACH_PARENT_PROCESS) && GetStdHandle(STD_OUTPUT_HANDLE))
+    {
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+    }
+
     int ret = main(__argc, __argv);
 
     printf("\n\n>");

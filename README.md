@@ -56,9 +56,9 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
 
 ### Linux
 1. Install dependencies:
-   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev`
-   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libarchive-dev libzstd-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev`
-   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia libarchive zstd qt6-base-dev qt6-base-private-dev qt6-multimedia-dev`
+   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libqt5svg5-dev libarchive-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libenet-dev libzstd-dev`
+   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libqt5svg5-dev libarchive-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libenet-dev libzstd-dev`
+   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia qt5-svg qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive enet zstd`
 3. Download the KH Melon Mix repository and prepare:
    ```bash
    git clone https://github.com/vitor251093/KHMelonMix
@@ -85,7 +85,7 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
    cd KHMelonMix
    ```
 #### Dynamic builds (with DLLs)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-multimedia,libarchive,zstd}`
+5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-svg,qt6-multimedia,qt6-tools,libarchive,enet,zstd}`
 6. Compile:
    ```bash
    cmake -B build -DUSE_QT6=ON
@@ -96,7 +96,7 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
 If everything went well, KH Melon Mix and the libraries it needs should now be in the `dist` folder.
 
 #### Static builds (without DLLs, standalone executable) (currently failing)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-multimedia,libarchive,zstd}`
+5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-multimedia,libarchive,enet,zstd}`
 6. Compile:
    ```bash
    cmake -B build -DBUILD_STATIC=ON -DUSE_QT6=ON
@@ -106,7 +106,7 @@ If everything went well, KH Melon Mix should now be in the `build` folder.
 
 ### macOS
 1. Install the [Homebrew Package Manager](https://brew.sh)
-2. Install dependencies: `brew install git pkg-config cmake sdl2 qt@6 libarchive zstd`
+2. Install dependencies: `brew install git pkg-config cmake sdl2 qt@6 libarchive enet zstd`
 3. Download the KH Melon Mix repository and prepare:
    ```zsh
    git clone https://github.com/vitor251093/KHMelonMix
@@ -114,14 +114,30 @@ If everything went well, KH Melon Mix should now be in the `build` folder.
    ```
 4. Compile:
    ```zsh
-   cmake -B build -DCMAKE_PREFIX_PATH="$(brew --prefix qt@6);$(brew --prefix libarchive)" -DUSE_QT6=ON
+   cmake -B build -DCMAKE_PREFIX_PATH="$(brew --prefix qt@6);$(brew --prefix libarchive)"
    cmake --build build -j$(sysctl -n hw.logicalcpu)
    ```
 If everything went well, MelonMix.app should now be in the `build` directory.
 
 #### Self-contained app bundle
 If you want an app bundle that can be distributed to other computers without needing to install dependencies through Homebrew, you can additionally run `
-../tools/mac-bundle.rb MelonMix.app` after the build is completed, or add `-DMACOS_BUNDLE_LIBS=ON` to the first CMake command.
+../tools/mac-libs.rb .` after the build is completed, or add `-DMACOS_BUNDLE_LIBS=ON` to the first CMake command.
+
+## TODO LIST
+
+ * better DSi emulation
+ * better OpenGL rendering
+ * netplay
+ * the impossible quest of pixel-perfect 3D graphics
+ * support for rendering screens to separate windows
+ * emulating some fancy addons
+ * other non-core shit (debugger, graphics viewers, etc)
+
+### TODO LIST FOR LATER (low priority)
+
+ * big-endian compatibility (Wii, etc)
+ * LCD refresh time (used by some games for blending effects)
+ * any feature you can eventually ask for that isn't outright stupid
 
 ## Credits
 
