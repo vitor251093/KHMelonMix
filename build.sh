@@ -7,3 +7,5 @@ cmake --build build -j$(nproc --all) || exit 1
 # ./build/melonDS "roms/days_jp_rev1.nds"
 
 # ./build/melonDS "roms/recoded_us.nds"
+# ./build/melonDS "roms/recoded_eu.nds"
+# ./build/melonDS "roms/recoded_jp.nds"
