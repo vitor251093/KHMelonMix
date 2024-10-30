@@ -23,24 +23,24 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 
 #define PAUSE_SCREEN_ADDRESS_US 0x020569d0
 #define PAUSE_SCREEN_ADDRESS_EU 0x020569d0
-#define PAUSE_SCREEN_ADDRESS_JP 0x020569d0 // TODO: KH
+#define PAUSE_SCREEN_ADDRESS_JP 0x020567f0
 
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
 
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US 0x02056e90
 #define IS_CUTSCENE_EU 0x02056e90
-#define IS_CUTSCENE_JP 0x02056e90 // TODO: KH
+#define IS_CUTSCENE_JP 0x02056cb0
 
 // 0x01 => cutscene with skip button, 0x03 => regular cutscene, 0x08 => cutscene with static images, 0x10 => in-game, main menu
 #define GAME_STATE_ADDRESS_US 0x02056f4a
 #define GAME_STATE_ADDRESS_EU 0x02056f4a
-#define GAME_STATE_ADDRESS_JP 0x02056f4a // TODO: KH
+#define GAME_STATE_ADDRESS_JP 0x02056d6a
 
 // 0x04 => playable (example: ingame); 0x02 => not playable (menus)
 #define IS_PLAYABLE_AREA_US 0x0205a8c0
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0
-#define IS_PLAYABLE_AREA_JP 0x0205a8c0 // TODO: KH
+#define IS_PLAYABLE_AREA_JP 0x0205a6e0
 
 #define CUTSCENE_ADDRESS_US 0x020b7db8
 #define CUTSCENE_ADDRESS_EU 0x020b7e08
@@ -138,21 +138,21 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     SwitchTargetPressOnHold = false;
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
-        {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04bb3a00}, // TODO: KH JP
-        {"Secret", "593",         "593_",                       0x05e9b400, 0x05f03800, 0x05e9b400}, // TODO: KH JP
-        {"w1_ED",  "510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x067ecc00, 0x06784800}, // TODO: KH JP
-        {"w1_OP",  "502",         "502_",                       0x06e43800, 0x06eabc00, 0x06e43800}, // TODO: KH JP
-        {"w2_ED",  "510_PLUS_mm", "510_",                       0x07c4ee00, 0x07cb7200, 0x07c4ee00}, // TODO: KH JP
-        {"w2_OP",  "512_PLUS_mm", "512_",                       0x08548600, 0x085b0a00, 0x08548600}, // TODO: KH JP
-        {"w3_ED",  "524",         "524_",                       0x08706200, 0x0876e600, 0x08706200}, // TODO: KH JP
-        {"w4_ED",  "531",         "531_",                       0x09503000, 0x0956b400, 0x09503000}, // TODO: KH JP
-        {"w5_ED",  "539_PLUS_mm", "539_",                       0x09990800, 0x099f8c00, 0x09990800}, // TODO: KH JP
-        {"w6_ED",  "549",         "549_",                       0x0a3c9400, 0x0a431800, 0x0a3c9400}, // TODO: KH JP
-        {"w7_ED",  "572",         "572_",                       0x0ac3aa00, 0x0aca2e00, 0x0ac3aa00}, // TODO: KH JP
-        {"w8_ED1", "590_PLUS_mm", "590_",                       0x0b150400, 0x0b1b8800, 0x0b150400}, // TODO: KH JP
-        {"w8_ED2", "592",         "592_",                       0x0bcd3400, 0x0bd3b800, 0x0bcd3400}, // TODO: KH JP
-        {"w8_ED3", "576_PLUS_mm", "576_",                       0x0c216800, 0x0c27ec00, 0x0c216800}, // TODO: KH JP
-        {"w8_OP",  "573_PLUS_mm", "573_",                       0x0c426000, 0x0c48e400, 0x0c426000}, // TODO: KH JP
+        {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200},
+        {"Secret", "593",         "593_",                       0x05e9b400, 0x05f03800, 0x05db0200},
+        {"w1_ED",  "510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x067ecc00, 0x06699e00},
+        {"w1_OP",  "502",         "502_",                       0x06e43800, 0x06eabc00, 0x06d58e00},
+        {"w2_ED",  "510_PLUS_mm", "510_",                       0x07c4ee00, 0x07cb7200, 0x07b64400},
+        {"w2_OP",  "512_PLUS_mm", "512_",                       0x08548600, 0x085b0a00, 0x0845f800},
+        {"w3_ED",  "524",         "524_",                       0x08706200, 0x0876e600, 0x0861D400},
+        {"w4_ED",  "531",         "531_",                       0x09503000, 0x0956b400, 0x0941a200},
+        {"w5_ED",  "539_PLUS_mm", "539_",                       0x09990800, 0x099f8c00, 0x098a7a00},
+        {"w6_ED",  "549",         "549_",                       0x0a3c9400, 0x0a431800, 0x0a2e0600},
+        {"w7_ED",  "572",         "572_",                       0x0ac3aa00, 0x0aca2e00, 0x0ab51c00},
+        {"w8_ED1", "590_PLUS_mm", "590_",                       0x0b150400, 0x0b1b8800, 0x0b067600},
+        {"w8_ED2", "592",         "592_",                       0x0bcd3400, 0x0bd3b800, 0x0bbea600},
+        {"w8_ED3", "576_PLUS_mm", "576_",                       0x0c216800, 0x0c27ec00, 0x0c12cc00},
+        {"w8_OP",  "573_PLUS_mm", "573_",                       0x0c426000, 0x0c48e400, 0x0c33c400},
     }};
 }
 
