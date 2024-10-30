@@ -138,21 +138,21 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     SwitchTargetPressOnHold = false;
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
-        {"OP",     "501",         "501_",                       0x04bb3a00, 0x04bb3a00, 0x04bb3a00}, // TODO: KH EU and JP
-        {"Secret", "593",         "593_",                       0x05e9b400, 0x05e9b400, 0x05e9b400}, // TODO: KH EU and JP
-        {"w1_ED",  "510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x06784800, 0x06784800}, // TODO: KH EU and JP
-        {"w1_OP",  "502",         "502_",                       0x06e43800, 0x06e43800, 0x06e43800}, // TODO: KH EU and JP
-        {"w2_ED",  "510_PLUS_mm", "510_",                       0x07c4ee00, 0x07c4ee00, 0x07c4ee00}, // TODO: KH EU and JP
-        {"w2_OP",  "512_PLUS_mm", "512_",                       0x08548600, 0x08548600, 0x08548600}, // TODO: KH EU and JP
-        {"w3_ED",  "524",         "524_",                       0x08706200, 0x08706200, 0x08706200}, // TODO: KH EU and JP
-        {"w4_ED",  "531",         "531_",                       0x09503000, 0x09503000, 0x09503000}, // TODO: KH EU and JP
-        {"w5_ED",  "539_PLUS_mm", "539_",                       0x09990800, 0x09990800, 0x09990800}, // TODO: KH EU and JP
-        {"w6_ED",  "549",         "549_",                       0x0a3c9400, 0x0a3c9400, 0x0a3c9400}, // TODO: KH EU and JP
-        {"w7_ED",  "572",         "572_",                       0x0ac3aa00, 0x0ac3aa00, 0x0ac3aa00}, // TODO: KH EU and JP
-        {"w8_ED1", "590_PLUS_mm", "590_",                       0x0b150400, 0x0b150400, 0x0b150400}, // TODO: KH EU and JP
-        {"w8_ED2", "592",         "592_",                       0x0bcd3400, 0x0bcd3400, 0x0bcd3400}, // TODO: KH EU and JP
-        {"w8_ED3", "576_PLUS_mm", "576_",                       0x0c216800, 0x0c216800, 0x0c216800}, // TODO: KH EU and JP
-        {"w8_OP",  "573_PLUS_mm", "573_",                       0x0c426000, 0x0c426000, 0x0c426000}, // TODO: KH EU and JP
+        {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04bb3a00}, // TODO: KH JP
+        {"Secret", "593",         "593_",                       0x05e9b400, 0x05f03800, 0x05e9b400}, // TODO: KH JP
+        {"w1_ED",  "510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x067ecc00, 0x06784800}, // TODO: KH JP
+        {"w1_OP",  "502",         "502_",                       0x06e43800, 0x06eabc00, 0x06e43800}, // TODO: KH JP
+        {"w2_ED",  "510_PLUS_mm", "510_",                       0x07c4ee00, 0x07cb7200, 0x07c4ee00}, // TODO: KH JP
+        {"w2_OP",  "512_PLUS_mm", "512_",                       0x08548600, 0x085b0a00, 0x08548600}, // TODO: KH JP
+        {"w3_ED",  "524",         "524_",                       0x08706200, 0x0876e600, 0x08706200}, // TODO: KH JP
+        {"w4_ED",  "531",         "531_",                       0x09503000, 0x0956b400, 0x09503000}, // TODO: KH JP
+        {"w5_ED",  "539_PLUS_mm", "539_",                       0x09990800, 0x099f8c00, 0x09990800}, // TODO: KH JP
+        {"w6_ED",  "549",         "549_",                       0x0a3c9400, 0x0a431800, 0x0a3c9400}, // TODO: KH JP
+        {"w7_ED",  "572",         "572_",                       0x0ac3aa00, 0x0aca2e00, 0x0ac3aa00}, // TODO: KH JP
+        {"w8_ED1", "590_PLUS_mm", "590_",                       0x0b150400, 0x0b1b8800, 0x0b150400}, // TODO: KH JP
+        {"w8_ED2", "592",         "592_",                       0x0bcd3400, 0x0bd3b800, 0x0bcd3400}, // TODO: KH JP
+        {"w8_ED3", "576_PLUS_mm", "576_",                       0x0c216800, 0x0c27ec00, 0x0c216800}, // TODO: KH JP
+        {"w8_OP",  "573_PLUS_mm", "573_",                       0x0c426000, 0x0c48e400, 0x0c426000}, // TODO: KH JP
     }};
 }
 
