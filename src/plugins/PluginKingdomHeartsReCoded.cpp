@@ -18,32 +18,32 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 
 // 0x00 => intro and main menu
 #define IS_MAIN_MENU_US 0x02060c94
-#define IS_MAIN_MENU_EU 0x02060c94 // TODO: KH
+#define IS_MAIN_MENU_EU 0x0205fdc4
 #define IS_MAIN_MENU_JP 0x02060c94 // TODO: KH
 
-#define PAUSE_SCREEN_ADDRESS_US 0x020569d0 // may also be 0x02056c5c or 0x0205fde4
-#define PAUSE_SCREEN_ADDRESS_EU 0x020569d0 // TODO: KH
+#define PAUSE_SCREEN_ADDRESS_US 0x020569d0
+#define PAUSE_SCREEN_ADDRESS_EU 0x020569d0
 #define PAUSE_SCREEN_ADDRESS_JP 0x020569d0 // TODO: KH
 
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
 
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US 0x02056e90
-#define IS_CUTSCENE_EU 0x02056e90 // TODO: KH
+#define IS_CUTSCENE_EU 0x02056e90
 #define IS_CUTSCENE_JP 0x02056e90 // TODO: KH
 
 // 0x01 => cutscene with skip button, 0x03 => regular cutscene, 0x08 => cutscene with static images, 0x10 => in-game, main menu
 #define GAME_STATE_ADDRESS_US 0x02056f4a
-#define GAME_STATE_ADDRESS_EU 0x02056f4a // TODO: KH
+#define GAME_STATE_ADDRESS_EU 0x02056f4a
 #define GAME_STATE_ADDRESS_JP 0x02056f4a // TODO: KH
 
 // 0x04 => playable (example: ingame); 0x02 => not playable (menus)
 #define IS_PLAYABLE_AREA_US 0x0205a8c0
-#define IS_PLAYABLE_AREA_EU 0x0205a8c0 // TODO: KH
+#define IS_PLAYABLE_AREA_EU 0x0205a8c0
 #define IS_PLAYABLE_AREA_JP 0x0205a8c0 // TODO: KH
 
 #define CUTSCENE_ADDRESS_US 0x020b7db8
-#define CUTSCENE_ADDRESS_EU 0x020b7db8 // TODO: KH
+#define CUTSCENE_ADDRESS_EU 0x020b7e08
 #define CUTSCENE_ADDRESS_JP 0x020b7db8 // TODO: KH
 
 #define MINIMAP_CENTER_X_ADDRESS_US 0x023d8054
