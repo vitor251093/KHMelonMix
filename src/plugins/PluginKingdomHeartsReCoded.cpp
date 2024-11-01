@@ -713,11 +713,17 @@ std::filesystem::path PluginKingdomHeartsReCoded::patchCutsceneIfNeeded(Cutscene
 }
 
 std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene) {
-    std::string filename = "hd" + std::string(cutscene->DsName) + ".mp4";
+    std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
     std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = "hd" + std::string(cutscene->DsName) + ".mp4";
+    fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
