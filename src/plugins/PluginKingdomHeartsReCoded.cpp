@@ -54,6 +54,10 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define MINIMAP_CENTER_Y_ADDRESS_EU 0x023d8058 // TODO: KH
 #define MINIMAP_CENTER_Y_ADDRESS_JP 0x023d8058 // TODO: KH
 
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US 0x02198311
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU 0x02198311 // TODO: KH
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP 0x02198311 // TODO: KH
+
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 #define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
 
@@ -292,22 +296,33 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
+        // Enabling L + D-Pad
+        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+            u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
+                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
+                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP);
+
+            if ((nds->ARM7Read8(dpadMenuAddress) & 0x02) == 0) {
+                nds->ARM7Write8(dpadMenuAddress, nds->ARM7Read8(dpadMenuAddress) + 0x02);
+            }
+        }
+
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 24) | (1 << 25))) // (HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) // (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
         {
-            *InputMask |= (1<<9); // L
-            *InputMask |= (1<<10); // X
-            *InputMask |= (1<<1);  // B
-            if (((PriorPriorHotkeyMask) & ((1 << 24) | (1 << 25))) == 0 && ((PriorHotkeyMask) & ((1 << 24) | (1 << 25))) == 0 && ((*HotkeyMask) & ((1 << 24) | (1 << 25))) != 0) {
-                *InputMask &= ~(1<<9); // L
-            }
-            if (((PriorPriorHotkeyMask) & ((1 << 24) | (1 << 25))) == 0 && ((PriorHotkeyMask) & ((1 << 24) | (1 << 25))) != 0 && ((*HotkeyMask) & ((1 << 24) | (1 << 25))) != 0) {
-                *InputMask &= ~(1<<9); // L
-                if (PriorHotkeyMask & (1 << 24)) // Old D-pad up
-                    *InputMask &= ~(1<<10); // X
-                if (PriorHotkeyMask & (1 << 25)) // Old D-pad down
-                    *InputMask &= ~(1<<1);  // B
-            }
+            *InputMask &= ~(1<<9); // L
+            *InputMask |= (1<<5); // left
+            *InputMask |= (1<<4); // right
+            *InputMask |= (1<<6); // up
+            *InputMask |= (1<<7); // down
+            if (PriorPriorHotkeyMask & (1 << 22)) // Old D-pad left (HK_CommandMenuLeft)
+                *InputMask &= ~(1<<5); // left
+            if (PriorPriorHotkeyMask & (1 << 23)) // Old D-pad right (HK_CommandMenuRight)
+                *InputMask &= ~(1<<4); // right
+            if (PriorPriorHotkeyMask & (1 << 24)) // Old D-pad up (HK_CommandMenuUp)
+                *InputMask &= ~(1<<6); // up
+            if (PriorPriorHotkeyMask & (1 << 25)) // Old D-pad down (HK_CommandMenuDown)
+                *InputMask &= ~(1<<7); // down
         }
 
         // R / Lock On
