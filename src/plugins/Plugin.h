@@ -107,6 +107,7 @@ struct CutsceneEntry
     int usAddress;
     int euAddress;
     int jpAddress;
+    int dsScreensState;
 };
 
 class Plugin

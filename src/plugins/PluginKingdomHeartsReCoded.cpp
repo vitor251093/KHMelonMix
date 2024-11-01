@@ -138,21 +138,21 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     SwitchTargetPressOnHold = false;
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
-        {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200},
-        {"Secret", "593",         "593_",                       0x05e9b400, 0x05f03800, 0x05db0200},
-        {"w1_ED",  "510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x067ecc00, 0x06699e00},
-        {"w1_OP",  "502",         "502_",                       0x06e43800, 0x06eabc00, 0x06d58e00},
-        {"w2_ED",  "510_PLUS_mm", "510_",                       0x07c4ee00, 0x07cb7200, 0x07b64400},
-        {"w2_OP",  "512_PLUS_mm", "512_",                       0x08548600, 0x085b0a00, 0x0845f800},
-        {"w3_ED",  "524",         "524_",                       0x08706200, 0x0876e600, 0x0861D400},
-        {"w4_ED",  "531",         "531_",                       0x09503000, 0x0956b400, 0x0941a200},
-        {"w5_ED",  "539_PLUS_mm", "539_",                       0x09990800, 0x099f8c00, 0x098a7a00},
-        {"w6_ED",  "549",         "549_",                       0x0a3c9400, 0x0a431800, 0x0a2e0600},
-        {"w7_ED",  "572",         "572_",                       0x0ac3aa00, 0x0aca2e00, 0x0ab51c00},
-        {"w8_ED1", "590_PLUS_mm", "590_",                       0x0b150400, 0x0b1b8800, 0x0b067600},
-        {"w8_ED2", "592",         "592_",                       0x0bcd3400, 0x0bd3b800, 0x0bbea600},
-        {"w8_ED3", "576_PLUS_mm", "576_",                       0x0c216800, 0x0c27ec00, 0x0c12cc00},
-        {"w8_OP",  "573_PLUS_mm", "573_",                       0x0c426000, 0x0c48e400, 0x0c33c400},
+        {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200, 3},
+        {"Secret", "593",         "593_",                       0x05e9b400, 0x05f03800, 0x05db0200, 2},
+        {"w1_ED",  "510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x067ecc00, 0x06699e00, 2},
+        {"w1_OP",  "502",         "502_",                       0x06e43800, 0x06eabc00, 0x06d58e00, 2},
+        {"w2_ED",  "510_PLUS_mm", "510_",                       0x07c4ee00, 0x07cb7200, 0x07b64400, 2},
+        {"w2_OP",  "512_PLUS_mm", "512_",                       0x08548600, 0x085b0a00, 0x0845f800, 2},
+        {"w3_ED",  "524",         "524_",                       0x08706200, 0x0876e600, 0x0861D400, 2},
+        {"w4_ED",  "531",         "531_",                       0x09503000, 0x0956b400, 0x0941a200, 2},
+        {"w5_ED",  "539_PLUS_mm", "539_",                       0x09990800, 0x099f8c00, 0x098a7a00, 2},
+        {"w6_ED",  "549",         "549_",                       0x0a3c9400, 0x0a431800, 0x0a2e0600, 2},
+        {"w7_ED",  "572",         "572_",                       0x0ac3aa00, 0x0aca2e00, 0x0ab51c00, 2},
+        {"w8_ED1", "590_PLUS_mm", "590_",                       0x0b150400, 0x0b1b8800, 0x0b067600, 2},
+        {"w8_ED2", "592",         "592_",                       0x0bcd3400, 0x0bd3b800, 0x0bbea600, 2},
+        {"w8_ED3", "576_PLUS_mm", "576_",                       0x0c216800, 0x0c27ec00, 0x0c12cc00, 2},
+        {"w8_OP",  "573_PLUS_mm", "573_",                       0x0c426000, 0x0c48e400, 0x0c33c400, 2},
     }};
 }
 
@@ -177,10 +177,14 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "MinimapCenterX");
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "MinimapCenterY");
     CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "HideAllHUD");
+    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "DSCutsceneState");
 }
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
+    CutsceneEntry* tsCutscene = detectTopScreenCutscene();
+    int dsCutsceneState = (tsCutscene == nullptr ? 0 : tsCutscene->dsScreensState);
+
     glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
     glUniform1i(CompGpuLoc[CompShader][1], GameScene);
     glUniform1i(CompGpuLoc[CompShader][2], UIScale);
@@ -189,6 +193,7 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader)
     glUniform1i(CompGpuLoc[CompShader][5], MinimapCenterX);
     glUniform1i(CompGpuLoc[CompShader][6], MinimapCenterY);
     glUniform1i(CompGpuLoc[CompShader][7], HideAllHUD ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][8], dsCutsceneState);
 }
 
 void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
