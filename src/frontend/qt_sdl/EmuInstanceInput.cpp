@@ -62,7 +62,8 @@ const char* EmuInstance::hotkeyNames[HK_MAX] =
     "HK_SlowMoToggle",
     "HK_HUDToggle",
     "HK_RLockOn",
-    "HK_SwitchTarget",
+    "HK_LSwitchTarget",
+    "HK_RSwitchTarget",
     "HK_CommandMenuLeft",
     "HK_CommandMenuRight",
     "HK_CommandMenuUp",
@@ -205,7 +206,8 @@ void EmuInstance::setAutoJoystickConfig(int a, int b, int select, int start, int
 
     hkJoyMapping[HK_HUDToggle] = -1;
     hkJoyMapping[HK_RLockOn] = -1;
-    hkJoyMapping[HK_SwitchTarget] = -1;
+    hkJoyMapping[HK_LSwitchTarget] = -1;
+    hkJoyMapping[HK_RSwitchTarget] = -1;
     hkJoyMapping[HK_CommandMenuLeft] = cmdLeft;
     hkJoyMapping[HK_CommandMenuRight] = cmdRight;
     hkJoyMapping[HK_CommandMenuUp] = cmdUp;

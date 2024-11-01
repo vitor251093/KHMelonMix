@@ -200,7 +200,7 @@ LegacyEntry LegacyFile[] =
 
     {"HKKey_HUDToggle",           0, "Keyboard.HK_HUDToggle", true},
     {"HKKey_LockOn",              0, "Keyboard.HK_RLockOn", true},
-    {"HKKey_RSwitchTarget",       0, "Keyboard.HK_SwitchTarget", true},
+    {"HKKey_RSwitchTarget",       0, "Keyboard.HK_RSwitchTarget", true},
     {"Key_CmdMenuLeft",           0, "Keyboard.HK_CmdMenuLeft", true},
     {"Key_CmdMenuRight",          0, "Keyboard.HK_CmdMenuRight", true},
     {"Key_CmdMenuUp",             0, "Keyboard.HK_CmdMenuUp", true},
@@ -228,7 +228,7 @@ LegacyEntry LegacyFile[] =
 
     {"HKJoy_HUDToggle",           0, "Joystick.HK_HUDToggle", true},
     {"HKJoy_LockOn",              0, "Joystick.HK_RLockOn", true},
-    {"HKJoy_RSwitchTarget",       0, "Joystick.HK_SwitchTarget", true},
+    {"HKJoy_RSwitchTarget",       0, "Joystick.HK_RSwitchTarget", true},
     {"Joy_CmdMenuLeft",           0, "Joystick.HK_CmdMenuLeft", true},
     {"Joy_CmdMenuRight",          0, "Joystick.HK_CmdMenuRight", true},
     {"Joy_CmdMenuUp",             0, "Joystick.HK_CmdMenuUp", true},

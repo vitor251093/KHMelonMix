@@ -293,35 +293,58 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 23) | (1 << 24))) // (HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*HotkeyMask) & ((1 << 24) | (1 << 25))) // (HK_CommandMenuUp, HK_CommandMenuDown)
         {
             *InputMask |= (1<<9); // L
             *InputMask |= (1<<10); // X
             *InputMask |= (1<<1);  // B
-            if (((PriorPriorHotkeyMask) & ((1 << 23) | (1 << 24))) == 0 && ((PriorHotkeyMask) & ((1 << 23) | (1 << 24))) == 0 && ((*HotkeyMask) & ((1 << 23) | (1 << 24))) != 0) {
+            if (((PriorPriorHotkeyMask) & ((1 << 24) | (1 << 25))) == 0 && ((PriorHotkeyMask) & ((1 << 24) | (1 << 25))) == 0 && ((*HotkeyMask) & ((1 << 24) | (1 << 25))) != 0) {
                 *InputMask &= ~(1<<9); // L
             }
-            if (((PriorPriorHotkeyMask) & ((1 << 23) | (1 << 24))) == 0 && ((PriorHotkeyMask) & ((1 << 23) | (1 << 24))) != 0 && ((*HotkeyMask) & ((1 << 23) | (1 << 24))) != 0) {
+            if (((PriorPriorHotkeyMask) & ((1 << 24) | (1 << 25))) == 0 && ((PriorHotkeyMask) & ((1 << 24) | (1 << 25))) != 0 && ((*HotkeyMask) & ((1 << 24) | (1 << 25))) != 0) {
                 *InputMask &= ~(1<<9); // L
-                if (PriorHotkeyMask & (1 << 23)) // Old D-pad up
+                if (PriorHotkeyMask & (1 << 24)) // Old D-pad up
                     *InputMask &= ~(1<<10); // X
-                if (PriorHotkeyMask & (1 << 24)) // Old D-pad down
+                if (PriorHotkeyMask & (1 << 25)) // Old D-pad down
                     *InputMask &= ~(1<<1);  // B
+            }
+        }
+
+        // R / Lock On
+        {
+            if ((*HotkeyMask) & (1 << 19)) { // (HK_RLockOn)
+                *InputMask &= ~(1<<8); // R
+                *InputMask &= ~(1<<9); // L
+            }
+        }
+
+        // Switch Target
+        {
+            if ((*HotkeyMask) & (1 << 20)) { // (HK_LSwitchTarget)
+                *InputMask &= ~(1<<5); // left
+                *InputMask &= ~(1<<8); // R
+                *InputMask &= ~(1<<9); // L
+            }
+
+            if ((*HotkeyMask) & (1 << 21)) { // (HK_RSwitchTarget)
+                *InputMask &= ~(1<<4); // right
+                *InputMask &= ~(1<<8); // R
+                *InputMask &= ~(1<<9); // L
             }
         }
     }
     else {
         // So the arrow keys can be used as directionals
-        if ((*HotkeyMask) & (1 << 21)) { // D-pad left (HK_CommandMenuLeft)
+        if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
             *InputMask &= ~(1<<5); // left
         }
-        if ((*HotkeyMask) & (1 << 22)) { // D-pad right (HK_CommandMenuRight)
+        if ((*HotkeyMask) & (1 << 23)) { // D-pad right (HK_CommandMenuRight)
             *InputMask &= ~(1<<4); // right
         }
-        if ((*HotkeyMask) & (1 << 23)) { // D-pad up (HK_CommandMenuUp)
+        if ((*HotkeyMask) & (1 << 24)) { // D-pad up (HK_CommandMenuUp)
             *InputMask &= ~(1<<6); // up
         }
-        if ((*HotkeyMask) & (1 << 24)) { // D-pad down (HK_CommandMenuDown)
+        if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
             *InputMask &= ~(1<<7); // down
         }
     }

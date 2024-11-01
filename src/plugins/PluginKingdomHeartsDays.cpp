@@ -446,7 +446,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
-        if ((*HotkeyMask) & ((1 << 21) | (1 << 22) | (1 << 23) | (1 << 24))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP,
@@ -458,19 +458,19 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         }
 
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 21) | (1 << 22) | (1 << 23) | (1 << 24))) { //  (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { //  (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             *InputMask &= ~(1<<10); // X
             *InputMask |= (1<<5); // left
             *InputMask |= (1<<4); // right
             *InputMask |= (1<<6); // up
             *InputMask |= (1<<7); // down
-            if (PriorPriorHotkeyMask & (1 << 21)) // Old D-pad left (HK_CommandMenuLeft)
+            if (PriorPriorHotkeyMask & (1 << 22)) // Old D-pad left (HK_CommandMenuLeft)
                 *InputMask &= ~(1<<5); // left
-            if (PriorPriorHotkeyMask & (1 << 22)) // Old D-pad right (HK_CommandMenuRight)
+            if (PriorPriorHotkeyMask & (1 << 23)) // Old D-pad right (HK_CommandMenuRight)
                 *InputMask &= ~(1<<4); // right
-            if (PriorPriorHotkeyMask & (1 << 23)) // Old D-pad up (HK_CommandMenuUp)
+            if (PriorPriorHotkeyMask & (1 << 24)) // Old D-pad up (HK_CommandMenuUp)
                 *InputMask &= ~(1<<6); // up
-            if (PriorPriorHotkeyMask & (1 << 24)) // Old D-pad down (HK_CommandMenuDown)
+            if (PriorPriorHotkeyMask & (1 << 25)) // Old D-pad down (HK_CommandMenuDown)
                 *InputMask &= ~(1<<7); // down
         }
 
@@ -494,7 +494,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
 
         // Switch Target
         {
-            if ((*HotkeyMask) & (1 << 20)) { // (HK_SwitchTarget)
+            if ((*HotkeyMask) & (1 << 20) || (*HotkeyMask) & (1 << 21)) { // (HK_LSwitchTarget, HK_RSwitchTarget)
                 if (LastSwitchTargetPress == 1) {
                     LastSwitchTargetPress = 0;
                 }
@@ -520,16 +520,16 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
     }
     else {
         // So the arrow keys can be used as directionals
-        if ((*HotkeyMask) & (1 << 21)) { // D-pad left (HK_CommandMenuLeft)
+        if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
             *InputMask &= ~(1<<5); // left
         }
-        if ((*HotkeyMask) & (1 << 22)) { // D-pad right (HK_CommandMenuRight)
+        if ((*HotkeyMask) & (1 << 23)) { // D-pad right (HK_CommandMenuRight)
             *InputMask &= ~(1<<4); // right
         }
-        if ((*HotkeyMask) & (1 << 23)) { // D-pad up (HK_CommandMenuUp)
+        if ((*HotkeyMask) & (1 << 24)) { // D-pad up (HK_CommandMenuUp)
             *InputMask &= ~(1<<6); // up
         }
-        if ((*HotkeyMask) & (1 << 24)) { // D-pad down (HK_CommandMenuDown)
+        if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
             *InputMask &= ~(1<<7); // down
         }
 

@@ -35,7 +35,8 @@ static constexpr std::initializer_list<int> hk_addons =
     HK_SolarSensorDecrease,
     HK_HUDToggle,
     HK_RLockOn,
-    HK_SwitchTarget,
+    HK_LSwitchTarget,
+    HK_RSwitchTarget,
     HK_CommandMenuLeft,
     HK_CommandMenuRight,
     HK_CommandMenuUp,
@@ -46,13 +47,14 @@ static constexpr std::initializer_list<const char*> hk_addons_labels =
 {
     "[Boktai] Sunlight + ",
     "[Boktai] Sunlight - ",
-    "[KH Days] HUD Toggle",
-    "[KH Days] (R1) R / Lock On",
-    "[KH Days] (R2) Switch Target",
-    "[KH Days] Command Menu - Left",
-    "[KH Days] Command Menu - Right",
-    "[KH Days] Command Menu - Up",
-    "[KH Days] Command Menu - Down",
+    "[KH] HUD Toggle",
+    "[KH] (R1) R / Lock On",
+    "[KH] (L2) Switch Target",
+    "[KH] (R2) Switch Target",
+    "[KH] Command Menu - Left",
+    "[KH] Command Menu - Right",
+    "[KH] Command Menu - Up",
+    "[KH] Command Menu - Down",
 };
 
 static_assert(hk_addons.size() == hk_addons_labels.size());
