@@ -55,6 +55,7 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define MINIMAP_CENTER_Y_ADDRESS_JP 0x023d8058 // TODO: KH
 
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
+#define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
@@ -138,10 +139,10 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     SwitchTargetPressOnHold = false;
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
-        {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200, 3},
+        {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200, 2+1},
         {"Secret", "593",         "593_",                       0x05e9b400, 0x05f03800, 0x05db0200, 2},
         {"w1_ED",  "510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x067ecc00, 0x06699e00, 2},
-        {"w1_OP",  "502",         "502_",                       0x06e43800, 0x06eabc00, 0x06d58e00, 2},
+        {"w1_OP",  "502",         "502_",                       0x06e43800, 0x06eabc00, 0x06d58e00, 4+2},
         {"w2_ED",  "510_PLUS_mm", "510_",                       0x07c4ee00, 0x07cb7200, 0x07b64400, 2},
         {"w2_OP",  "512_PLUS_mm", "512_",                       0x08548600, 0x085b0a00, 0x0845f800, 2},
         {"w3_ED",  "524",         "524_",                       0x08706200, 0x0876e600, 0x0861D400, 2},
@@ -255,7 +256,13 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         }
         else {
             if (_StartPressCount == 0) {
-                _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
+                bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
+                if (requiresDoubleStart) {
+                    _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT*2 + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT;
+                }
+                else {
+                    _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
+                }
             }
         }
     }
@@ -263,7 +270,16 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
     if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
         if (_StartPressCount > 0) {
             _StartPressCount--;
-            *InputMask &= ~(1<<3); // Start (skip DS cutscene)
+
+            bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
+            if (requiresDoubleStart) {
+                if (_StartPressCount < CUTSCENE_SKIP_START_FRAMES_COUNT || _StartPressCount > CUTSCENE_SKIP_START_FRAMES_COUNT + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT) {
+                    *InputMask &= ~(1<<3); // Start (skip DS cutscene)
+                }
+            }
+            else {
+                *InputMask &= ~(1<<3); // Start (skip DS cutscene)
+            }
         }
     }
 

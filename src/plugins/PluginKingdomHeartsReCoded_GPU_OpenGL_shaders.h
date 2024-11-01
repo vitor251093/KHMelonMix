@@ -557,7 +557,7 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
 
 ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 {
-    if (DSCutsceneState == 2) { // top only
+    if ((DSCutsceneState & 2) == 2 && (DSCutsceneState & 1) == 0) { // top only
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(-1, -1)));
     }
     return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, 0)));
