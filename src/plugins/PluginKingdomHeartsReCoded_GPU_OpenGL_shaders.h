@@ -862,6 +862,9 @@ ivec4 brightness()
     if (GameScene == 5) { // gameScene_InGameWithMap
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
+    if (GameScene == 6) { // gameScene_InGameMenu
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+    }
     if (GameScene == 8) { // gameScene_PauseMenu
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
