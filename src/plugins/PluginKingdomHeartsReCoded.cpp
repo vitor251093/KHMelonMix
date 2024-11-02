@@ -37,7 +37,7 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define GAME_STATE_ADDRESS_EU 0x02056f4a
 #define GAME_STATE_ADDRESS_JP 0x02056d6a
 
-// 0x04 => playable (example: ingame); 0x02 => not playable (menus)
+// 0x04 => playable (example: ingame); 0x03 => world selection; 0x02 => not playable (menus)
 #define IS_PLAYABLE_AREA_US 0x0205a8c0
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0
 #define IS_PLAYABLE_AREA_JP 0x0205a6e0
@@ -86,8 +86,9 @@ enum
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
     gameScene_CutsceneWithStaticImages, // 13
-    gameScene_Other2D,                  // 14
-    gameScene_Other                     // 15
+    gameScene_WorldSelection,           // 14
+    gameScene_Other2D,                  // 15
+    gameScene_Other                     // 16
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -415,6 +416,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
+        case gameScene_WorldSelection: return "Game scene: World selection";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         case gameScene_Other: return "Game scene: Unknown (3D)";
         default: return "Game scene: Unknown";
@@ -495,7 +497,10 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
     bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
     bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
-    bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP)) == 0x02;
+
+    u8 gameState2 = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
+    bool isUnplayableArea = gameState2 == 0x02;
+    bool isWorldSelection = gameState2 == 0x03;
 
     u32 minimapCenterXAddress = getAddressByCart(MINIMAP_CENTER_X_ADDRESS_US, MINIMAP_CENTER_X_ADDRESS_EU, MINIMAP_CENTER_X_ADDRESS_JP);
     u32 minimapCenterYAddress = getAddressByCart(MINIMAP_CENTER_Y_ADDRESS_US, MINIMAP_CENTER_Y_ADDRESS_EU, MINIMAP_CENTER_Y_ADDRESS_JP);
@@ -597,6 +602,10 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     if (isUnplayableArea)
     {
         return gameScene_InGameMenu;
+    }
+    if (isWorldSelection)
+    {
+        return gameScene_WorldSelection;
     }
 
     if (isPauseScreen)

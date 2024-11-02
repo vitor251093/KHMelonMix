@@ -604,7 +604,10 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (GameScene == 13) { // gameScene_CutsceneWithStaticImages
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
     }
-    if (GameScene == 14) { // gameScene_Other2D
+    if (GameScene == 14) { // gameScene_WorldSelection
+        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(1, 1)));
+    }
+    if (GameScene == 15) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -766,7 +769,10 @@ ivec4 getTopScreen3DColor()
     if (GameScene == 13) { // gameScene_CutsceneWithStaticImages
         return getSingleSquaredScreen3DColor(xpos, ypos);
     }
-    if (GameScene == 14) { // gameScene_Other2D
+    if (GameScene == 14) { // gameScene_WorldSelection
+        return getHorizontalDualScreen3DColor(xpos, ypos);
+    }
+    if (GameScene == 15) { // gameScene_Other2D
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
 
@@ -871,7 +877,10 @@ ivec4 brightness()
     if (GameScene == 13) { // gameScene_CutsceneWithStaticImages
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (GameScene == 14) { // gameScene_Other2D
+    if (GameScene == 14) { // gameScene_WorldSelection
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    }
+    if (GameScene == 15) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
 
