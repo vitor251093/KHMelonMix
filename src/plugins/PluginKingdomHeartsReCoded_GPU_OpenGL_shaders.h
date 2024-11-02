@@ -878,7 +878,7 @@ ivec4 brightness()
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
     if (GameScene == 14) { // gameScene_WorldSelection
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     }
     if (GameScene == 15) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
