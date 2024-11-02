@@ -363,6 +363,10 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
             *InputMask &= ~(1<<7); // down
         }
+
+        if ((*HotkeyMask) & (1 << 19)) { // R / Lock On (HK_RLockOn)
+            *InputMask &= ~(1<<8); // R
+        }
     }
 
     PriorPriorHotkeyMask = PriorHotkeyMask;
