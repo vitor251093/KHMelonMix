@@ -233,7 +233,7 @@ void ScreenPanel::refreshAspectRatio()
             aspectTop = ratio.ratio * 4.0/3;
     }
     if (aspectTop == 0) {
-        aspectTop = 16.0 / 9;
+        aspectTop = ((float)((QWidget*)this)->width()) / ((QWidget*)this)->height();
     }
 
     if (emuInstance->getNDS() != nullptr) {
