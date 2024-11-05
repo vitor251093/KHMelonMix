@@ -42,15 +42,15 @@ void main()
     int iuScale = KHUIScale;
     float iuTexScale = (5.0)/iuScale;
 
-    float commandMenuLeftMargin = 45.0;
+    float commandMenuLeftMargin = 33.5;
     float commandMenuBottomMargin = 2.5;
-    float commandMenuWidth = (256.0*u3DScale)/2.4;
+    float commandMenuWidth = (256.0*u3DScale)/(2.4*widthScale);
     float commandMenuHeight = (192.0*u3DScale)/2.4;
     if (fpos.x >= -(1.00)*fpos.w && fpos.x <= -(0.375)*fpos.w &&
         fpos.y >= -(0.25)*fpos.w && fpos.y <= +(1.00)*fpos.w &&
         fpos.z == -1.0*fpos.w &&
         vColor.r < 200.0) {
-        fpos.x = ((((fpos.x/fpos.w + 1.0)*(commandMenuWidth/iuTexScale) + commandMenuLeftMargin/iuTexScale)/uScreenSize.x)*2.0/widthScale - 1.0)*fpos.w;
+        fpos.x = ((((fpos.x/fpos.w + 1.0)*(commandMenuWidth/iuTexScale) + commandMenuLeftMargin/iuTexScale)/uScreenSize.x)*2.0 - 1.0)*fpos.w;
         fpos.y = (1.0 - (((1.0 - fpos.y/fpos.w)*(commandMenuHeight/iuTexScale) + commandMenuBottomMargin/iuTexScale)/uScreenSize.y)*2.0)*fpos.w;
     }
 
