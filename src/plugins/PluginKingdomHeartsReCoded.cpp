@@ -62,6 +62,14 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define MINIMAP_2_CENTER_Y_ADDRESS_EU 0x023d6c6c // TODO: KH
 #define MINIMAP_2_CENTER_Y_ADDRESS_JP 0x023d6c6c // TODO: KH
 
+#define MINIMAP_3_CENTER_X_ADDRESS_US 0x023d8081
+#define MINIMAP_3_CENTER_X_ADDRESS_EU 0x023d8081 // TODO: KH
+#define MINIMAP_3_CENTER_X_ADDRESS_JP 0x023d8081 // TODO: KH
+
+#define MINIMAP_3_CENTER_Y_ADDRESS_US 0x023d8085
+#define MINIMAP_3_CENTER_Y_ADDRESS_EU 0x023d8085 // TODO: KH
+#define MINIMAP_3_CENTER_Y_ADDRESS_JP 0x023d8085 // TODO: KH
+
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US 0x02198311
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU 0x02198311 // TODO: KH
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP 0x02198311 // TODO: KH
@@ -518,7 +526,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     u32 minimapCenterYAddress = getAddressByCart(MINIMAP_CENTER_Y_ADDRESS_US, MINIMAP_CENTER_Y_ADDRESS_EU, MINIMAP_CENTER_Y_ADDRESS_JP);
     u32 newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
     u32 newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-    if (newMinimapCenterX > 0 && newMinimapCenterY > 0) {
+    if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
         MinimapCenterX = newMinimapCenterX;
         MinimapCenterY = newMinimapCenterY;
     }
@@ -527,8 +535,18 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         minimapCenterYAddress = getAddressByCart(MINIMAP_2_CENTER_Y_ADDRESS_US, MINIMAP_2_CENTER_Y_ADDRESS_EU, MINIMAP_2_CENTER_Y_ADDRESS_JP);
         newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
         newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-        MinimapCenterX = newMinimapCenterX;
-        MinimapCenterY = newMinimapCenterY;
+        if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
+            MinimapCenterX = newMinimapCenterX;
+            MinimapCenterY = newMinimapCenterY;
+        }
+        else {
+            minimapCenterXAddress = getAddressByCart(MINIMAP_3_CENTER_X_ADDRESS_US, MINIMAP_3_CENTER_X_ADDRESS_EU, MINIMAP_3_CENTER_X_ADDRESS_JP);
+            minimapCenterYAddress = getAddressByCart(MINIMAP_3_CENTER_Y_ADDRESS_US, MINIMAP_3_CENTER_Y_ADDRESS_EU, MINIMAP_3_CENTER_Y_ADDRESS_JP);
+            newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
+            newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
+            MinimapCenterX = newMinimapCenterX;
+            MinimapCenterY = newMinimapCenterY;
+        }
     }
 
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
