@@ -4,6 +4,8 @@
 #include "Plugin.h"
 #include "../NDS.h"
 
+#define PRIOR_HOTKEY_MASK_SIZE 15
+
 namespace Plugins
 {
 using namespace melonDS;
@@ -167,8 +169,8 @@ private:
     bool _had3DOnTopScreen;
     bool _had3DOnBottomScreen;
 
-    u32 PriorHotkeyMask[12];
-    u32 LastLockOnPress, LastSwitchTargetPress;
+    u32 PriorHotkeyMask[PRIOR_HOTKEY_MASK_SIZE];
+    u32 LastLockOnPress, LastSwitchTargetPress, LastScreenTogglePress;
     bool SwitchTargetPressOnHold;
 
     std::array<CutsceneEntry, 15> Cutscenes;
