@@ -863,7 +863,12 @@ ivec4 brightness()
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
     if (GameScene == 6) { // gameScene_InGameMenu
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+        ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+        int brightmode = mbright.g >> 6;
+        if ((mbright.b & 0x3) != 0 && brightmode == 2) {
+            return mbright;
+        }
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
     if (GameScene == 8) { // gameScene_PauseMenu
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
