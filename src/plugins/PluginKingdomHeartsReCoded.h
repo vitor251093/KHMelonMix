@@ -167,7 +167,7 @@ private:
     bool _had3DOnTopScreen;
     bool _had3DOnBottomScreen;
 
-    u32 PriorHotkeyMask, PriorPriorHotkeyMask;
+    u32 PriorHotkeyMask[12];
     u32 LastLockOnPress, LastSwitchTargetPress;
     bool SwitchTargetPressOnHold;
 

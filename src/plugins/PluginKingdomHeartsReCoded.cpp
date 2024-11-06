@@ -152,8 +152,9 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _NextCutscene = nullptr;
     _LastCutscene = nullptr;
 
-    PriorHotkeyMask = 0;
-    PriorPriorHotkeyMask = 0;
+    for (int i = 0; i < 12; i++) {
+        PriorHotkeyMask[i] = 0;
+    }
 
     LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
@@ -332,13 +333,13 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
             *InputMask |= (1<<4); // right
             *InputMask |= (1<<6); // up
             *InputMask |= (1<<7); // down
-            if (PriorPriorHotkeyMask & (1 << 22)) // Old D-pad left (HK_CommandMenuLeft)
+            if (PriorHotkeyMask[1] & (1 << 22)) // Old D-pad left (HK_CommandMenuLeft)
                 *InputMask &= ~(1<<5); // left
-            if (PriorPriorHotkeyMask & (1 << 23)) // Old D-pad right (HK_CommandMenuRight)
+            if (PriorHotkeyMask[1] & (1 << 23)) // Old D-pad right (HK_CommandMenuRight)
                 *InputMask &= ~(1<<4); // right
-            if (PriorPriorHotkeyMask & (1 << 24)) // Old D-pad up (HK_CommandMenuUp)
+            if (PriorHotkeyMask[1] & (1 << 24)) // Old D-pad up (HK_CommandMenuUp)
                 *InputMask &= ~(1<<6); // up
-            if (PriorPriorHotkeyMask & (1 << 25)) // Old D-pad down (HK_CommandMenuDown)
+            if (PriorHotkeyMask[1] & (1 << 25)) // Old D-pad down (HK_CommandMenuDown)
                 *InputMask &= ~(1<<7); // down
         }
 
@@ -385,8 +386,45 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         }
     }
 
-    PriorPriorHotkeyMask = PriorHotkeyMask;
-    PriorHotkeyMask = (*HotkeyMask);
+    if (GameScene == gameScene_InGameMenu) {
+        // Toggle screens
+        {
+            { // (HK_LSwitchTarget)
+                if (PriorHotkeyMask[10] & (1 << 20)) {}
+                else if (PriorHotkeyMask[9] & (1 << 20) || PriorHotkeyMask[8] & (1 << 20) || PriorHotkeyMask[7] & (1 << 20)) {
+                    *InputMask &= ~(1<<10); // X
+                }
+                else if (PriorHotkeyMask[6] & (1 << 20)) {}
+                else if (PriorHotkeyMask[5] & (1 << 20) || PriorHotkeyMask[4] & (1 << 20) || PriorHotkeyMask[3] & (1 << 20)) {
+                    *InputMask &= ~(1<<9); // L
+                }
+                else if (PriorHotkeyMask[2] & (1 << 20)) {}
+                else if (PriorHotkeyMask[1] & (1 << 20) || PriorHotkeyMask[0] & (1 << 20) || (*HotkeyMask) & (1 << 20)) {
+                    *InputMask &= ~(1<<10); // X
+                }
+            }
+
+            { // (HK_RSwitchTarget)
+                if (PriorHotkeyMask[10] & (1 << 21)) {}
+                else if (PriorHotkeyMask[9] & (1 << 21) || PriorHotkeyMask[8] & (1 << 21) || PriorHotkeyMask[7] & (1 << 21)) {
+                    *InputMask &= ~(1<<10); // X
+                }
+                else if (PriorHotkeyMask[6] & (1 << 21)) {}
+                else if (PriorHotkeyMask[5] & (1 << 21) || PriorHotkeyMask[4] & (1 << 21) || PriorHotkeyMask[3] & (1 << 21)) {
+                    *InputMask &= ~(1<<8); // R
+                }
+                else if (PriorHotkeyMask[2] & (1 << 21)) {}
+                else if (PriorHotkeyMask[1] & (1 << 21) || PriorHotkeyMask[0] & (1 << 21) || (*HotkeyMask) & (1 << 21)) {
+                    *InputMask &= ~(1<<10); // X
+                }
+            }
+        }
+    }
+
+    for (int i = 12 - 1; i > 0; i--) {
+        PriorHotkeyMask[i] = PriorHotkeyMask[i - 1];
+    }
+    PriorHotkeyMask[0] = (*HotkeyMask);
 
     if (LastSwitchTargetPress < SWITCH_TARGET_PRESS_FRAME_LIMIT) LastSwitchTargetPress++;
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
