@@ -453,7 +453,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     if (isCommandMenuVisible())
     {
         // command menu
-        float sourceCommandMenuHeight = 88.0;
+        float sourceCommandMenuHeight = 84.0;
         float sourceCommandMenuWidth = 95.0;
         float commandMenuHeight = sourceCommandMenuHeight;
         float commandMenuWidth = sourceCommandMenuWidth*heightScale;
@@ -480,6 +480,21 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             return fixStretch*(texPosition3d - vec2(128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2, 192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin)) +
                 vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
         }
+    }
+
+    // overclock notification
+    float sourceOverclockNotificationHeight = 27.0;
+    float sourceOverclockNotificationWidth = 95.0;
+    float overclockNotificationHeight = sourceOverclockNotificationHeight;
+    float overclockNotificationWidth = sourceOverclockNotificationWidth*heightScale;
+    float overclockNotificationLeftMargin = 0.0;
+    float overclockNotificationBottomMargin = 84.0;
+    if (texPosition3d.x >= overclockNotificationLeftMargin &&
+        texPosition3d.x <= overclockNotificationWidth + overclockNotificationLeftMargin &&
+        texPosition3d.y >= (192.0*iuTexScale - overclockNotificationHeight - overclockNotificationBottomMargin) &&
+        texPosition3d.y < (192.0*iuTexScale - overclockNotificationBottomMargin)) {
+        return fixStretch*(texPosition3d - vec2(overclockNotificationLeftMargin, 192.0*iuTexScale - overclockNotificationHeight - overclockNotificationBottomMargin)) +
+            vec2(0, 192.0 - sourceOverclockNotificationHeight - overclockNotificationBottomMargin);
     }
 
     // enemy health
