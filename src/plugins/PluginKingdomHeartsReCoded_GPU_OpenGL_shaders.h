@@ -445,8 +445,14 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
             texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
             texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
-            return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin, 192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
-                vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
+
+            vec2 finalPos = vec2((playerHealthWidth + playerHealthRightMargin) - (256.0*iuTexScale - texPosition3d.x),
+                                 (playerHealthHeight + playerHealthBottomMargin) - (192.0*iuTexScale - texPosition3d.y));
+            if (finalPos.x*1.7 + finalPos.y > 64.0) {
+                return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin,
+                                                        192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
+                    vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
+            }
         }
     }
 
