@@ -436,7 +436,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     {
         // player health
         float sourcePlayerHealthHeight = 78.0;
-        float sourcePlayerHealthWidth = 96.0;
+        float sourcePlayerHealthWidth = 92.0;
         float playerHealthHeight = sourcePlayerHealthHeight;
         float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
         float playerHealthRightMargin = 8.0;
@@ -454,7 +454,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     {
         // command menu
         float sourceCommandMenuHeight = 84.0;
-        float sourceCommandMenuWidth = 95.0;
+        float sourceCommandMenuWidth = 88.0;
         float commandMenuHeight = sourceCommandMenuHeight;
         float commandMenuWidth = sourceCommandMenuWidth*heightScale;
         float commandMenuLeftMargin = 10.0;
@@ -469,15 +469,16 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 
         // next area name
         float sourceNextAreaNameHeight = 32.0;
-        float sourceNextAreaNameWidth = 72.0;
+        float sourceNextAreaNameWidth = 78.0;
         float nextAreaNameHeight = sourceNextAreaNameHeight;
         float nextAreaNameWidth = sourceNextAreaNameWidth*heightScale;
+        float nextAreaNameRightMargin = 0.5;
         float nextAreaNameBottomMargin = 0.0;
         if (texPosition3d.x >= (128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2) &&
             texPosition3d.x <= (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2) &&
             texPosition3d.y >= (192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin) &&
             texPosition3d.y < (192.0*iuTexScale - nextAreaNameBottomMargin)) {
-            return fixStretch*(texPosition3d - vec2(128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2, 192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin)) +
+            return fixStretch*(texPosition3d - vec2(128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2 + nextAreaNameRightMargin, 192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin)) +
                 vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
         }
     }
