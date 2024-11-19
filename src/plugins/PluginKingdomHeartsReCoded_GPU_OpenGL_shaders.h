@@ -497,6 +497,36 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             vec2(0, 192.0 - sourceOverclockNotificationHeight - overclockNotificationBottomMargin);
     }
 
+    // item notification
+    float sourceItemNotificationHeight = 32.0;
+    float sourceItemNotificationWidth = 95.0;
+    float itemNotificationHeight = sourceItemNotificationHeight;
+    float itemNotificationWidth = sourceItemNotificationWidth*heightScale;
+    float itemNotificationLeftMargin = 0.0;
+    float itemNotificationBottomMargin = 121.0;
+    if (texPosition3d.x >= itemNotificationLeftMargin &&
+        texPosition3d.x <= itemNotificationWidth + itemNotificationLeftMargin &&
+        texPosition3d.y >= (192.0*iuTexScale - itemNotificationHeight - itemNotificationBottomMargin) &&
+        texPosition3d.y < (192.0*iuTexScale - itemNotificationBottomMargin)) {
+        return fixStretch*(texPosition3d - vec2(itemNotificationLeftMargin, 192.0*iuTexScale - itemNotificationHeight - itemNotificationBottomMargin)) +
+            vec2(0, 192.0 - sourceItemNotificationHeight - itemNotificationBottomMargin);
+    }
+
+    // level up notification
+    float sourceLevelNotificationHeight = 32.0;
+    float sourceLevelNotificationWidth = 95.0;
+    float levelNotificationHeight = sourceLevelNotificationHeight;
+    float levelNotificationWidth = sourceLevelNotificationWidth*heightScale;
+    float levelNotificationRightMargin = 0.0;
+    float levelNotificationBottomMargin = 121.0;
+    if (texPosition3d.x >= (256.0*iuTexScale - levelNotificationWidth - levelNotificationRightMargin) &&
+        texPosition3d.x <= (256.0*iuTexScale - levelNotificationRightMargin) &&
+        texPosition3d.y >= (192.0*iuTexScale - levelNotificationHeight - levelNotificationBottomMargin) &&
+        texPosition3d.y < (192.0*iuTexScale - levelNotificationBottomMargin)) {
+        return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - levelNotificationWidth - levelNotificationRightMargin, 192.0*iuTexScale - levelNotificationHeight - levelNotificationBottomMargin)) +
+            vec2(256.0 - sourceLevelNotificationWidth, 192.0 - sourceLevelNotificationHeight - levelNotificationBottomMargin);
+    }
+
     // enemy health
     float sourceEnemyHealthHeight = 22.0;
     float sourceEnemyHealthWidth = 93.0;
