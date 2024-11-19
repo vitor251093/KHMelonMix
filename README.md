@@ -14,8 +14,6 @@ This is a version of melonDS with some modifications made specifically to improv
 
 Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the latest updates and/or to help with the project.
 
-> **WARNING:** Kingdom Hearts Re:Coded support is still in development
-
 <hr>
 
 ## How to play "Kingdom Hearts 358/2 Days"
@@ -27,7 +25,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 5. Replace the assets folder with [this assets folder](https://mega.nz/folder/lpgykK5Y#HPJuOSceHSzncDjQh0DUtw) (this step is only required if you want to replace the DS cutscenes with HD cutscenes);
 6. Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat" (or MelonMix_KHDays.sh if you are not on Windows).
 
-## How to play "Kingdom Hearts Re:Coded" (still a WIP; only for testing purposes)
+## How to play "Kingdom Hearts Re:Coded"
 
 1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for your system (not the source code zip);
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
