@@ -51,96 +51,13 @@ The AppImage build is compatible with the Steam Deck. In order to use it, downlo
 <p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.2</i></p>
 
 ## How to build from scratch
-
-### Linux
-1. Install dependencies:
-   * Ubuntu 22.04: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qtbase5-dev qtbase5-private-dev qtmultimedia5-dev libqt5svg5-dev libarchive-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libenet-dev libzstd-dev`
-   * Older Ubuntu: `sudo apt install cmake extra-cmake-modules libcurl4-gnutls-dev libpcap0.8-dev libsdl2-dev qt5-default qtbase5-private-dev qtmultimedia5-dev libqt5svg5-dev libarchive-dev qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libenet-dev libzstd-dev`
-   * Arch Linux: `sudo pacman -S base-devel cmake extra-cmake-modules git libpcap sdl2 qt5-base qt5-multimedia qt5-svg qt6-base-dev qt6-base-private-dev qt6-multimedia-dev qt6-svg-dev libarchive enet zstd`
-3. Download the KH Melon Mix repository and prepare:
-   ```bash
-   git clone https://github.com/vitor251093/KHMelonMix
-   cd KHMelonMix
-   ```
-
-3. Compile:
-   ```bash
-   cmake -B build -DUSE_QT6=ON
-   cmake --build build -j$(nproc --all)
-   ```
-
-### Windows
-1. Install [MSYS2](https://www.msys2.org/)
-2. Open the **MSYS2 MinGW 64-bit** terminal
-3. Update the packages using `pacman -Syu` and reopen the terminal if it asks you to
-4. Install git to clone the repository
-   ```bash
-   pacman -S git
-   ```
-5. Download the KH Melon Mix repository and prepare:
-   ```bash
-   git clone https://github.com/vitor251093/KHMelonMix
-   cd KHMelonMix
-   ```
-#### Dynamic builds (with DLLs)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-svg,qt6-multimedia,qt6-tools,libarchive,enet,zstd}`
-6. Compile:
-   ```bash
-   cmake -B build -DUSE_QT6=ON
-   cmake --build build
-   cd build
-   ../tools/msys-dist.sh
-   ```
-If everything went well, KH Melon Mix and the libraries it needs should now be in the `dist` folder.
-
-#### Static builds (without DLLs, standalone executable) (currently failing)
-5. Install dependencies: `pacman -S mingw-w64-x86_64-{cmake,SDL2,toolchain,qt6-static,qt6-base,qt6-multimedia,libarchive,enet,zstd}`
-6. Compile:
-   ```bash
-   cmake -B build -DBUILD_STATIC=ON -DUSE_QT6=ON
-   cmake --build build
-   ```
-If everything went well, KH Melon Mix should now be in the `build` folder.
-
-### macOS
-1. Install the [Homebrew Package Manager](https://brew.sh)
-2. Install dependencies: `brew install git pkg-config cmake sdl2 qt@6 libarchive enet zstd`
-3. Download the KH Melon Mix repository and prepare:
-   ```zsh
-   git clone https://github.com/vitor251093/KHMelonMix
-   cd KHMelonMix
-   ```
-4. Compile:
-   ```zsh
-   cmake -B build -DCMAKE_PREFIX_PATH="$(brew --prefix qt@6);$(brew --prefix libarchive)"
-   cmake --build build -j$(sysctl -n hw.logicalcpu)
-   ```
-If everything went well, MelonMix.app should now be in the `build` directory.
-
-#### Self-contained app bundle
-If you want an app bundle that can be distributed to other computers without needing to install dependencies through Homebrew, you can additionally run `
-../tools/mac-libs.rb .` after the build is completed, or add `-DMACOS_BUNDLE_LIBS=ON` to the first CMake command.
-
-## TODO LIST
-
- * better DSi emulation
- * better OpenGL rendering
- * netplay
- * the impossible quest of pixel-perfect 3D graphics
- * support for rendering screens to separate windows
- * emulating some fancy addons
- * other non-core shit (debugger, graphics viewers, etc)
-
-### TODO LIST FOR LATER (low priority)
-
- * big-endian compatibility (Wii, etc)
- * LCD refresh time (used by some games for blending effects)
- * any feature you can eventually ask for that isn't outright stupid
+See [BUILD.md](./BUILD.md) for build instructions.
 
 ## Credits
 
- * All people that supported and developed melonDS
+ * All people that supported and developed [melonDS](https://github.com/melonDS-emu/melonDS) (seriously, support them if possible; this project wouldn't exist without melonDS)
  * sandwichwater and DaniKH, for the innumerous amount of tests and for the hi-res textures
+ * All the members from our Discord server that helped testing and developing the Melon Mix!
  * Michael Lipinski, for the [documentation](https://pdfs.semanticscholar.org/657d/adf4888f6302701095055b0d7a066e42b36f.pdf) regarding the way a NDS works
  * Datel Design & Development Ltd, for the [documentation](https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf) regarding how to write AR Codes
 

@@ -12,6 +12,7 @@ env:
   MELONDS_GIT_BRANCH: ${{ github.ref }}
   MELONDS_GIT_HASH: ${{ github.sha }}
   MELONDS_BUILD_PROVIDER: GitHub Actions
+  MELONDS_VERSION_SUFFIX: " RC"
 
 jobs:
   build-x86_64:
@@ -34,7 +35,7 @@ jobs:
           gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl \
           gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
     - name: Configure
-      run: cmake -B build -G Ninja -DUSE_QT6=ON -DCMAKE_INSTALL_PREFIX=/usr -DMELONDS_EMBED_BUILD_INFO=ON
+      run: cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DMELONDS_EMBED_BUILD_INFO=ON
     - name: Build
       run: |
         cmake --build build
@@ -114,7 +115,6 @@ jobs:
             -DPKG_CONFIG_EXECUTABLE=/usr/bin/aarch64-linux-gnu-pkg-config \
             -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc-12 \
             -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++-12 \
-            -DUSE_QT6=ON \
             -DMELONDS_EMBED_BUILD_INFO=ON
       - name: Build
         shell: bash

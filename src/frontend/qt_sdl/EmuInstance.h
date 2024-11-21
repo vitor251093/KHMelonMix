@@ -21,6 +21,7 @@
 
 #include <SDL2/SDL.h>
 
+#include "main.h"
 #include "NDS.h"
 #include "EmuThread.h"
 #include "Window.h"
@@ -29,7 +30,7 @@
 
 #include "plugins/Plugin.h"
 
-const int kMaxWindows = 16;
+const int kMaxWindows = 4;
 
 enum
 {
@@ -96,14 +97,21 @@ public:
     melonDS::NDS* getNDS() { return nds; }
 
     MainWindow* getMainWindow() { return mainWindow; }
+    int getNumWindows() { return numWindows; }
     MainWindow* getWindow(int id) { return windowList[id]; }
+
+    void doOnAllWindows(std::function<void(MainWindow*)> func, int exclude = -1);
+    void saveEnabledWindows();
 
     Config::Table& getGlobalConfig() { return globalCfg; }
     Config::Table& getLocalConfig() { return localCfg; }
 
+    void broadcastCommand(int cmd, QVariant param = QVariant());
+    void handleCommand(int cmd, QVariant& param);
+
     std::string instanceFileSuffix();
 
-    void createWindow();
+    void createWindow(int id = -1);
     void deleteWindow(int id, bool close);
     void deleteAllWindows();
 
@@ -113,8 +121,8 @@ public:
     void emuStop(melonDS::Platform::StopReason reason);
 
     bool usesOpenGL();
-    void initOpenGL();
-    void deinitOpenGL();
+    void initOpenGL(int win);
+    void deinitOpenGL(int win);
     void setVSyncGL(bool vsync);
     void makeCurrentGL();
     void drawScreenGL();
@@ -122,7 +130,7 @@ public:
     // return: empty string = setup OK, non-empty = error message
     QString verifySetup();
 
-    bool updateConsole(UpdateConsoleNDSArgs&& ndsargs, UpdateConsoleGBAArgs&& gbaargs) noexcept;
+    bool updateConsole() noexcept;
 
     void enableCheats(bool enable);
     melonDS::ARCodeFile* getCheatFile();
@@ -152,6 +160,11 @@ public:
     void autoMapJoystick();
 
     Plugins::Plugin* plugin;
+
+    void touchScreen(int x, int y);
+    void releaseScreen();
+
+    QMutex renderLock;
 
 private:
     static int lastSep(const std::string& path);
@@ -183,20 +196,22 @@ private:
     std::optional<melonDS::FATStorage> loadSDCard(const std::string& key) noexcept;
     void setBatteryLevels();
     void reset();
-    bool bootToMenu();
+    bool bootToMenu(QString& errorstr);
     melonDS::u32 decompressROM(const melonDS::u8* inContent, const melonDS::u32 inSize, std::unique_ptr<melonDS::u8[]>& outContent);
     void clearBackupState();
     std::pair<std::unique_ptr<melonDS::Firmware>, std::string> generateDefaultFirmware();
     bool parseMacAddress(void* data);
     void customizeFirmware(melonDS::Firmware& firmware, bool overridesettings) noexcept;
+
     bool loadROMData(const QStringList& filepath, std::unique_ptr<melonDS::u8[]>& filedata, melonDS::u32& filelen, std::string& basepath, std::string& romname) noexcept;
     QString getSavErrorString(std::string& filepath, bool gba);
-    bool loadROM(QStringList filepath, bool reset);
+    bool loadROM(QStringList filepath, bool reset, QString& errorstr);
     void ejectCart();
     bool cartInserted();
     QString cartLabel();
-    bool loadGBAROM(QStringList filepath);
-    void loadGBAAddon(int type);
+
+    bool loadGBAROM(QStringList filepath, QString& errorstr);
+    void loadGBAAddon(int type, QString& errorstr);
     void ejectGBACart();
     bool gbaCartInserted();
     QString gbaAddonName(int addon);
@@ -265,11 +280,15 @@ private:
     std::string baseROMDir;
     std::string baseROMName;
     std::string baseAssetName;
+    bool changeCart;
+    std::unique_ptr<melonDS::NDSCart::CartCommon> nextCart;
 
     int gbaCartType;
     std::string baseGBAROMDir;
     std::string baseGBAROMName;
     std::string baseGBAAssetName;
+    bool changeGBACart;
+    std::unique_ptr<melonDS::GBACart::CartCommon> nextGBACart;
 
     // HACK
 public:
@@ -304,8 +323,9 @@ private:
     int mpAudioMode;
 
     SDL_AudioDeviceID micDevice;
-    melonDS::s16 micExtBuffer[2048];
+    melonDS::s16 micExtBuffer[4096];
     melonDS::u32 micExtBufferWritePos;
+    melonDS::u32 micExtBufferCount;
 
     melonDS::u32 micWavLength;
     melonDS::s16* micWavBuffer;
@@ -313,6 +333,8 @@ private:
     melonDS::s16* micBuffer;
     melonDS::u32 micBufferLength;
     melonDS::u32 micBufferReadPos;
+
+    SDL_mutex* micLock;
 
     //int audioInterp;
     int audioVolume;
@@ -342,6 +364,9 @@ private:
 
     melonDS::u32 inputMask;
     melonDS::u32 touchInputMask;
+
+    bool isTouching;
+    melonDS::u16 touchX, touchY;
 
     friend class EmuThread;
     friend class MainWindow;

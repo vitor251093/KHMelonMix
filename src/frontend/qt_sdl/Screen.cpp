@@ -46,11 +46,13 @@
 #include "main_shaders.h"
 #include "OSD_shaders.h"
 #include "font.h"
+#include "version.h"
 
 using namespace melonDS;
 
 
 const u32 kOSDMargin = 6;
+const int kLogoWidth = 192;
 
 
 ScreenPanel::ScreenPanel(QWidget* parent) : QWidget(parent)
@@ -80,6 +82,29 @@ ScreenPanel::ScreenPanel(QWidget* parent) : QWidget(parent)
     
     loadConfig();
     setFilter(mainWindow->getWindowConfig().GetBool("ScreenFilter"));
+
+    splashLogo = QPixmap(":/melon-logo");
+
+    strncpy(splashText[0].text, "File->Open ROM...", 256);
+    splashText[0].id = 0x80000000;
+    splashText[0].color = 0;
+    splashText[0].rendered = false;
+    splashText[0].rainbowstart = -1;
+
+    strncpy(splashText[1].text, "to get started", 256);
+    splashText[1].id = 0x80000001;
+    splashText[1].color = 0;
+    splashText[1].rendered = false;
+    splashText[1].rainbowstart = -1;
+
+    std::string url = MELONDS_URL;
+    int urlpos = url.find("://");
+    urlpos = (urlpos == std::string::npos) ? 0 : urlpos+3;
+    strncpy(splashText[2].text, url.c_str() + urlpos, 256);
+    splashText[2].id = 0x80000002;
+    splashText[2].color = 0;
+    splashText[2].rendered = false;
+    splashText[2].rainbowstart = -1;
 }
 
 ScreenPanel::~ScreenPanel()
@@ -150,6 +175,8 @@ void ScreenPanel::setupScreenLayout()
                 aspectBot);
 
     numScreens = layout.GetScreenTransforms(screenMatrix[0], screenKind);
+
+    calcSplashLayout();
 }
 
 QSize ScreenPanel::screenGetMinSize(int factor = 1)
@@ -247,6 +274,7 @@ void ScreenPanel::refreshAspectRatio()
 void ScreenPanel::mousePressEvent(QMouseEvent* event)
 {
     event->accept();
+    if (!emuInstance->emuIsActive()) { touching = false; return; }
     if (event->button() != Qt::LeftButton) return;
 
     int x = event->pos().x();
@@ -255,21 +283,20 @@ void ScreenPanel::mousePressEvent(QMouseEvent* event)
     if (layout.GetTouchCoords(x, y, false))
     {
         touching = true;
-        assert(emuInstance->getNDS() != nullptr);
-        emuInstance->getNDS()->TouchScreen(x, y);
+        emuInstance->touchScreen(x, y);
     }
 }
 
 void ScreenPanel::mouseReleaseEvent(QMouseEvent* event)
 {
     event->accept();
+    if (!emuInstance->emuIsActive()) { touching = false; return; }
     if (event->button() != Qt::LeftButton) return;
 
     if (touching)
     {
         touching = false;
-        assert(emuInstance->getNDS() != nullptr);
-        emuInstance->getNDS()->ReleaseScreen();
+        emuInstance->releaseScreen();
     }
 }
 
@@ -279,6 +306,7 @@ void ScreenPanel::mouseMoveEvent(QMouseEvent* event)
 
     showCursor();
 
+    if (!emuInstance->emuIsActive()) return;
     //if (!(event->buttons() & Qt::LeftButton)) return;
     if (!touching) return;
 
@@ -287,14 +315,14 @@ void ScreenPanel::mouseMoveEvent(QMouseEvent* event)
 
     if (layout.GetTouchCoords(x, y, true))
     {
-        assert(emuInstance->getNDS() != nullptr);
-        emuInstance->getNDS()->TouchScreen(x, y);
+        emuInstance->touchScreen(x, y);
     }
 }
 
 void ScreenPanel::tabletEvent(QTabletEvent* event)
 {
     event->accept();
+    if (!emuInstance->emuIsActive()) { touching = false; return; }
 
     switch(event->type())
     {
@@ -312,16 +340,14 @@ void ScreenPanel::tabletEvent(QTabletEvent* event)
             if (layout.GetTouchCoords(x, y, event->type()==QEvent::TabletMove))
             {
                 touching = true;
-                assert(emuInstance->getNDS() != nullptr);
-                emuInstance->getNDS()->TouchScreen(x, y);
+                emuInstance->touchScreen(x, y);
             }
         }
         break;
     case QEvent::TabletRelease:
         if (touching)
         {
-            assert(emuInstance->getNDS() != nullptr);
-            emuInstance->getNDS()->ReleaseScreen();
+            emuInstance->releaseScreen();
             touching = false;
         }
         break;
@@ -338,6 +364,7 @@ void ScreenPanel::touchEvent(QTouchEvent* event)
 #endif
 
     event->accept();
+    if (!emuInstance->emuIsActive()) { touching = false; return; }
 
     switch(event->type())
     {
@@ -358,16 +385,14 @@ void ScreenPanel::touchEvent(QTouchEvent* event)
             if (layout.GetTouchCoords(x, y, event->type()==QEvent::TouchUpdate))
             {
                 touching = true;
-                assert(emuInstance->getNDS() != nullptr);
-                emuInstance->getNDS()->TouchScreen(x, y);
+                emuInstance->touchScreen(x, y);
             }
         }
         break;
     case QEvent::TouchEnd:
         if (touching)
         {
-            assert(emuInstance->getNDS() != nullptr);
-            emuInstance->getNDS()->ReleaseScreen();
+            emuInstance->releaseScreen();
             touching = false;
         }
         break;
@@ -385,6 +410,10 @@ bool ScreenPanel::event(QEvent* event)
         touchEvent((QTouchEvent*)event);
         return true;
     }
+    else if (event->type() == QEvent::FocusIn)
+        mainWindow->onFocusIn();
+    else if (event->type() == QEvent::FocusOut)
+        mainWindow->onFocusOut();
 
     return QWidget::event(event);
 }
@@ -503,8 +532,14 @@ void ScreenPanel::osdRenderItem(OSDItem* item)
     u32 color = item->color;
 
     bool rainbow = (color == 0);
-    u32 ticks = (u32)QDateTime::currentMSecsSinceEpoch();
-    u32 rainbowinc = ((text[0] * 17) + (ticks * 13)) % 600;
+    u32 rainbowinc;
+    if (item->rainbowstart == -1)
+    {
+        u32 ticks = (u32) QDateTime::currentMSecsSinceEpoch();
+        rainbowinc = ((text[0] * 17) + (ticks * 13)) % 600;
+    }
+    else
+        rainbowinc = (u32)item->rainbowstart;
 
     color |= 0xFF000000;
     const u32 shadow = 0xE0000000;
@@ -602,6 +637,8 @@ void ScreenPanel::osdRenderItem(OSDItem* item)
                 bitmap[(y * w) + x] = shadow;
         }
     }
+
+    item->rainbowend = (int)rainbowinc;
 }
 
 void ScreenPanel::osdDeleteItem(OSDItem* item)
@@ -623,11 +660,12 @@ void ScreenPanel::osdAddMessage(unsigned int color, const char* text)
 
     OSDItem item;
 
-    item.id = osdID++;
+    item.id = (osdID++) & 0x7FFFFFFF;
     item.timestamp = QDateTime::currentMSecsSinceEpoch();
     strncpy(item.text, text, 255); item.text[255] = '\0';
     item.color = color;
     item.rendered = false;
+    item.rainbowstart = -1;
 
     osdItems.push_back(item);
 
@@ -660,6 +698,73 @@ void ScreenPanel::osdUpdate()
 
         it++;
     }
+
+    // render splashscreen text items if needed
+
+    int rainbowinc = -1;
+    bool needrecalc = false;
+
+    for (int i = 0; i < 3; i++)
+    {
+        if (!splashText[i].rendered)
+        {
+            splashText[i].rainbowstart = rainbowinc;
+            osdRenderItem(&splashText[i]);
+            splashText[i].rendered = true;
+            rainbowinc = splashText[i].rainbowend;
+            needrecalc = true;
+        }
+    }
+
+    osdMutex.unlock();
+
+    if (needrecalc)
+        calcSplashLayout();
+}
+
+void ScreenPanel::calcSplashLayout()
+{
+    if (!splashText[0].rendered)
+        return;
+
+    osdMutex.lock();
+
+    int w = width();
+    int h = height();
+
+    int xlogo = (w - kLogoWidth) / 2;
+    int ylogo = (h - kLogoWidth) / 2;
+
+    // top text
+    int totalwidth = splashText[0].bitmap.width() + 6 + splashText[1].bitmap.width();
+    if (totalwidth >= w)
+    {
+        // stacked vertically
+        splashPos[0].setX((width() - splashText[0].bitmap.width()) / 2);
+        splashPos[1].setX((width() - splashText[1].bitmap.width()) / 2);
+
+        int basey = ylogo / 2;
+        splashPos[0].setY(basey - splashText[0].bitmap.height() - 1);
+        splashPos[1].setY(basey + 1);
+    }
+    else
+    {
+        // horizontal
+        splashPos[0].setX((w - totalwidth) / 2);
+        splashPos[1].setX(splashPos[0].x() + splashText[0].bitmap.width() + 6);
+
+        int basey = (ylogo - splashText[0].bitmap.height()) / 2;
+        splashPos[0].setY(basey);
+        splashPos[1].setY(basey);
+    }
+
+    // bottom text
+    splashPos[2].setX((w - splashText[2].bitmap.width()) / 2);
+    splashPos[2].setY(ylogo + kLogoWidth + ((ylogo - splashText[2].bitmap.height()) / 2));
+
+    // logo
+    splashPos[3].setX(xlogo);
+    splashPos[3].setY(ylogo);
 
     osdMutex.unlock();
 }
@@ -703,20 +808,21 @@ void ScreenPanelNative::paintEvent(QPaintEvent* event)
 
     if (emuThread->emuIsActive())
     {
+        emuInstance->renderLock.lock();
         auto nds = emuInstance->getNDS();
 
         assert(nds != nullptr);
-        emuThread->FrontBufferLock.lock();
-        int frontbuf = emuThread->FrontBuffer;
+        emuThread->frontBufferLock.lock();
+        int frontbuf = emuThread->frontBuffer;
         if (!nds->GPU.Framebuffer[frontbuf][0] || !nds->GPU.Framebuffer[frontbuf][1])
         {
-            emuThread->FrontBufferLock.unlock();
+            emuThread->frontBufferLock.unlock();
             return;
         }
 
         memcpy(screen[0].scanLine(0), nds->GPU.Framebuffer[frontbuf][0].get(), 256 * 192 * 4);
         memcpy(screen[1].scanLine(0), nds->GPU.Framebuffer[frontbuf][1].get(), 256 * 192 * 4);
-        emuThread->FrontBufferLock.unlock();
+        emuThread->frontBufferLock.unlock();
 
         QRect screenrc(0, 0, 256, 192);
 
@@ -725,9 +831,24 @@ void ScreenPanelNative::paintEvent(QPaintEvent* event)
             painter.setTransform(screenTrans[i]);
             painter.drawImage(screenrc, screen[screenKind[i]]);
         }
+        emuInstance->renderLock.unlock();
     }
 
     osdUpdate();
+
+    if (!emuThread->emuIsActive())
+    {
+        // splashscreen
+        osdMutex.lock();
+
+        painter.drawPixmap(QRect(splashPos[3], QSize(kLogoWidth, kLogoWidth)), splashLogo);
+
+        for (int i = 0; i < 3; i++)
+            painter.drawImage(splashPos[i], splashText[i].bitmap);
+
+        osdMutex.unlock();
+    }
+
     if (osdEnabled)
     {
         osdMutex.lock();
@@ -761,6 +882,8 @@ ScreenPanelGL::ScreenPanelGL(QWidget* parent) : ScreenPanel(parent)
     setAttribute(Qt::WA_KeyCompression, false);
     setFocusPolicy(Qt::StrongFocus);
     setMinimumSize(screenGetMinSize());
+
+    glInited = false;
 }
 
 ScreenPanelGL::~ScreenPanelGL()
@@ -772,14 +895,14 @@ bool ScreenPanelGL::createContext()
 
     // if our parent window is parented to another window, we will
     // share our OpenGL context with that window
+    MainWindow* ourwin = (MainWindow*)parentWidget();
     MainWindow* parentwin = (MainWindow*)parentWidget()->parentWidget();
-    if (parentwin)
+    //if (parentwin)
+    if (ourwin->getWindowID() != 0)
     {
         if (windowinfo.has_value())
-        {
-            glContext = parentwin->getOGLContext()->CreateSharedContext(*windowinfo);
-            glContext->DoneCurrent();
-        }
+            if (glContext = parentwin->getOGLContext()->CreateSharedContext(*windowinfo))
+                glContext->DoneCurrent();
     }
     else
     {
@@ -787,10 +910,8 @@ bool ScreenPanelGL::createContext()
                 GL::Context::Version{GL::Context::Profile::Core, 4, 3},
                 GL::Context::Version{GL::Context::Profile::Core, 3, 2}};
         if (windowinfo.has_value())
-        {
-            glContext = GL::Context::Create(*windowinfo, versionsToTry);
-            glContext->DoneCurrent();
-        }
+            if (glContext = GL::Context::Create(*windowinfo, versionsToTry))
+                glContext->DoneCurrent();
     }
 
     return glContext != nullptr;
@@ -806,6 +927,7 @@ void ScreenPanelGL::setSwapInterval(int intv)
 void ScreenPanelGL::initOpenGL()
 {
     if (!glContext) return;
+    if (glInited) return;
 
     glContext->MakeCurrent();
 
@@ -881,6 +1003,7 @@ void ScreenPanelGL::initOpenGL()
     osdPosULoc = glGetUniformLocation(osdShader, "uOSDPos");
     osdSizeULoc = glGetUniformLocation(osdShader, "uOSDSize");
     osdScaleFactorULoc = glGetUniformLocation(osdShader, "uScaleFactor");
+    osdTexScaleULoc = glGetUniformLocation(osdShader, "uTexScale");
 
     const float osdvertices[6*2] =
     {
@@ -901,12 +1024,26 @@ void ScreenPanelGL::initOpenGL()
     glEnableVertexAttribArray(0); // position
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)(0));
 
+    // splash logo texture
+    QImage logo = splashLogo.scaled(kLogoWidth*2, kLogoWidth*2).toImage();
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, logo.width(), logo.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, logo.bits());
+    logoTexture = tex;
+
     transferLayout();
+    glInited = true;
 }
 
 void ScreenPanelGL::deinitOpenGL()
 {
     if (!glContext) return;
+    if (!glInited) return;
 
     glDeleteTextures(1, &screenTexture);
 
@@ -925,12 +1062,15 @@ void ScreenPanelGL::deinitOpenGL()
     glDeleteVertexArrays(1, &osdVertexArray);
     glDeleteBuffers(1, &osdVertexBuffer);
 
+    glDeleteTextures(1, &logoTexture);
+
     glDeleteProgram(osdShader);
 
 
     glContext->DoneCurrent();
 
     lastScreenWidth = lastScreenHeight = -1;
+    glInited = false;
 }
 
 void ScreenPanelGL::makeCurrentGL()
@@ -999,7 +1139,7 @@ void ScreenPanelGL::drawScreenGL()
         glUseProgram(screenShaderProgram);
         glUniform2f(screenShaderScreenSizeULoc, w / factor, h / factor);
 
-        int frontbuf = emuThread->FrontBuffer;
+        int frontbuf = emuThread->frontBuffer;
         glActiveTexture(GL_TEXTURE0);
 
 #ifdef OGLRENDERER_ENABLED
@@ -1041,6 +1181,52 @@ void ScreenPanelGL::drawScreenGL()
     }
 
     osdUpdate();
+
+    if (!emuThread->emuIsActive())
+    {
+        // splashscreen
+        osdMutex.lock();
+
+        glUseProgram(osdShader);
+
+        glUniform2f(osdScreenSizeULoc, w, h);
+        glUniform1f(osdScaleFactorULoc, factor);
+        glUniform1f(osdTexScaleULoc, 2.0);
+
+        glBindBuffer(GL_ARRAY_BUFFER, osdVertexBuffer);
+        glBindVertexArray(osdVertexArray);
+
+        glActiveTexture(GL_TEXTURE0);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+        glBindTexture(GL_TEXTURE_2D, logoTexture);
+        glUniform2i(osdPosULoc, splashPos[3].x(), splashPos[3].y());
+        glUniform2i(osdSizeULoc, kLogoWidth, kLogoWidth);
+        glDrawArrays(GL_TRIANGLES, 0, 2*3);
+
+        glUniform1f(osdTexScaleULoc, 1.0);
+
+        for (int i = 0; i < 3; i++)
+        {
+            OSDItem& item = splashText[i];
+
+            if (!osdTextures.count(item.id))
+                continue;
+
+            glBindTexture(GL_TEXTURE_2D, osdTextures[item.id]);
+            glUniform2i(osdPosULoc, splashPos[i].x(), splashPos[i].y());
+            glUniform2i(osdSizeULoc, item.bitmap.width(), item.bitmap.height());
+            glDrawArrays(GL_TRIANGLES, 0, 2*3);
+        }
+
+        glDisable(GL_BLEND);
+        glUseProgram(0);
+
+        osdMutex.unlock();
+    }
+
     if (osdEnabled)
     {
         osdMutex.lock();
@@ -1051,6 +1237,7 @@ void ScreenPanelGL::drawScreenGL()
 
         glUniform2f(osdScreenSizeULoc, w, h);
         glUniform1f(osdScaleFactorULoc, factor);
+        glUniform1f(osdTexScaleULoc, 1.0);
 
         glBindBuffer(GL_ARRAY_BUFFER, osdVertexBuffer);
         glBindVertexArray(osdVertexArray);

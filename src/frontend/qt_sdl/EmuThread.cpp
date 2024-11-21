@@ -72,17 +72,20 @@ EmuThread::EmuThread(EmuInstance* inst, QObject* parent) : QThread(parent)
 
 void EmuThread::attachWindow(MainWindow* window)
 {
-    connect(this, SIGNAL(windowUpdate()), window->panel, SLOT(repaint()));
     connect(this, SIGNAL(windowTitleChange(QString)), window, SLOT(onTitleUpdate(QString)));
     connect(this, SIGNAL(windowEmuStart()), window, SLOT(onEmuStart()));
     connect(this, SIGNAL(windowEmuStop()), window, SLOT(onEmuStop()));
     connect(this, SIGNAL(windowEmuPause(bool)), window, SLOT(onEmuPause(bool)));
     connect(this, SIGNAL(windowEmuReset()), window, SLOT(onEmuReset()));
-    connect(this, SIGNAL(windowLimitFPSChange()), window->actLimitFramerate, SLOT(trigger()));
     connect(this, SIGNAL(autoScreenSizingChange(int)), window->panel, SLOT(onAutoScreenSizingChanged(int)));
     connect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
-    connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     connect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
+
+    if (window->winHasMenu())
+    {
+        connect(this, SIGNAL(windowLimitFPSChange()), window->actLimitFramerate, SLOT(trigger()));
+        connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
+    }
 
     connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
@@ -92,17 +95,20 @@ void EmuThread::attachWindow(MainWindow* window)
 
 void EmuThread::detachWindow(MainWindow* window)
 {
-    disconnect(this, SIGNAL(windowUpdate()), window->panel, SLOT(repaint()));
     disconnect(this, SIGNAL(windowTitleChange(QString)), window, SLOT(onTitleUpdate(QString)));
     disconnect(this, SIGNAL(windowEmuStart()), window, SLOT(onEmuStart()));
     disconnect(this, SIGNAL(windowEmuStop()), window, SLOT(onEmuStop()));
     disconnect(this, SIGNAL(windowEmuPause(bool)), window, SLOT(onEmuPause(bool)));
     disconnect(this, SIGNAL(windowEmuReset()), window, SLOT(onEmuReset()));
-    disconnect(this, SIGNAL(windowLimitFPSChange()), window->actLimitFramerate, SLOT(trigger()));
     disconnect(this, SIGNAL(autoScreenSizingChange(int)), window->panel, SLOT(onAutoScreenSizingChanged(int)));
     disconnect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
-    disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     disconnect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
+
+    if (window->winHasMenu())
+    {
+        disconnect(this, SIGNAL(windowLimitFPSChange()), window->actLimitFramerate, SLOT(trigger()));
+        disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
+    }
 
     disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
@@ -117,7 +123,7 @@ void EmuThread::run()
     Config::Table& globalCfg = emuInstance->getGlobalConfig();
     u32 mainScreenPos[3];
 
-    //emuInstance->updateConsole(nullptr, nullptr);
+    //emuInstance->updateConsole();
     // No carts are inserted when melonDS first boots
 
     mainScreenPos[0] = 0;
@@ -129,7 +135,7 @@ void EmuThread::run()
 
     if (emuInstance->usesOpenGL())
     {
-        emuInstance->initOpenGL();
+        emuInstance->initOpenGL(0);
 
         useOpenGL = true;
         videoRenderer = globalCfg.GetInt("3D.Renderer");
@@ -262,6 +268,7 @@ void EmuThread::run()
             // update render settings if needed
             if (videoSettingsDirty)
             {
+                emuInstance->renderLock.lock();
                 if (useOpenGL)
                 {
                     emuInstance->setVSyncGL(true);
@@ -277,9 +284,15 @@ void EmuThread::run()
                 updateRenderer();
 
                 videoSettingsDirty = false;
+                emuInstance->renderLock.unlock();
             }
 
             emuInstance->nds->SetKeyMask(emuInstance->inputMask);
+
+            if (emuInstance->isTouching)
+                emuInstance->nds->TouchScreen(emuInstance->touchX, emuInstance->touchY);
+            else
+                emuInstance->nds->ReleaseScreen();
 
             if (emuInstance->hotkeyPressed(HK_Lid))
             {
@@ -347,13 +360,13 @@ void EmuThread::run()
 
             if (!useOpenGL)
             {
-                FrontBufferLock.lock();
-                FrontBuffer = emuInstance->nds->GPU.FrontBuffer;
-                FrontBufferLock.unlock();
+                frontBufferLock.lock();
+                frontBuffer = emuInstance->nds->GPU.FrontBuffer;
+                frontBufferLock.unlock();
             }
             else
             {
-                FrontBuffer = emuInstance->nds->GPU.FrontBuffer;
+                frontBuffer = emuInstance->nds->GPU.FrontBuffer;
 
                 if (shouldRenderFrame)
                 {
@@ -396,7 +409,7 @@ void EmuThread::run()
 
             if (slowmo) emuInstance->curFPS = emuInstance->slowmoFPS;
             else if (fastforward) emuInstance->curFPS = emuInstance->fastForwardFPS;
-            else if (!emuInstance->doLimitFPS) emuInstance->curFPS = 1.0 / 1000.0;
+            else if (!emuInstance->doLimitFPS) emuInstance->curFPS = 1000.0;
             else emuInstance->curFPS = emuInstance->targetFPS;
 
             refreshPluginCutsceneState();
@@ -417,16 +430,18 @@ void EmuThread::run()
             if (emuInstance->doAudioSync && !(fastforward || slowmo))
                 emuInstance->audioSync();
 
-            double frametimeStep = nlines / (60.0 * 263.0);
+            double frametimeStep = nlines / (emuInstance->curFPS * 263.0);
+
+            if (frametimeStep < 0.001) frametimeStep = 0.001;
 
             {
                 double curtime = SDL_GetPerformanceCounter() * perfCountsSec;
 
-                frameLimitError += emuInstance->curFPS - (curtime - lastTime);
-                if (frameLimitError < -emuInstance->curFPS)
-                    frameLimitError = -emuInstance->curFPS;
-                if (frameLimitError > emuInstance->curFPS)
-                    frameLimitError = emuInstance->curFPS;
+                frameLimitError += frametimeStep - (curtime - lastTime);
+                if (frameLimitError < -frametimeStep)
+                    frameLimitError = -frametimeStep;
+                if (frameLimitError > frametimeStep)
+                    frameLimitError = frametimeStep;
 
                 if (round(frameLimitError * 1000.0) > 0.0)
                 {
@@ -454,10 +469,11 @@ void EmuThread::run()
                 winUpdateFreq = fps / (u32)round(fpstarget);
                 if (winUpdateFreq < 1)
                     winUpdateFreq = 1;
-
+                    
+                double actualfps = (59.8261 * 263.0) / nlines;
                 int inst = emuInstance->instanceID;
                 if (inst == 0)
-                    sprintf(melontitle, "[%d/%.0f] khDaysMM " MELONDS_VERSION, fps, fpstarget);
+                    sprintf(melontitle, "[%d/%.0f] khDaysMM " MELONDS_VERSION, fps, actualfps);
                 else
                     sprintf(melontitle, "[%d/%.0f] khDaysMM (%d)", fps, fpstarget, inst+1);
                 changeWindowTitle(melontitle);
@@ -511,7 +527,8 @@ void EmuThread::waitMessage(int num)
 void EmuThread::waitAllMessages()
 {
     if (QThread::currentThread() == this) return;
-    msgSemaphore.acquire(msgSemaphore.available());
+    while (!msgQueue.empty())
+        msgSemaphore.acquire();
 }
 
 void EmuThread::handleMessages()
@@ -527,6 +544,7 @@ void EmuThread::handleMessages()
             emuPauseStack = emuPauseStackRunning;
 
             emuInstance->audioDisable();
+            MPInterface::Get().End(emuInstance->instanceID);
             break;
 
         case msg_EmuRun:
@@ -596,18 +614,19 @@ void EmuThread::handleMessages()
             break;
 
         case msg_InitGL:
-            emuInstance->initOpenGL();
+            emuInstance->initOpenGL(msg.param.value<int>());
             useOpenGL = true;
             break;
 
         case msg_DeInitGL:
-            emuInstance->deinitOpenGL();
-            useOpenGL = false;
+            emuInstance->deinitOpenGL(msg.param.value<int>());
+            if (msg.param.value<int>() == 0)
+                useOpenGL = false;
             break;
 
         case msg_BootROM:
             msgResult = 0;
-            if (!emuInstance->loadROM(msg.param.value<QStringList>(), true))
+            if (!emuInstance->loadROM(msg.param.value<QStringList>(), true, msgError))
                 break;
 
             assert(emuInstance->nds != nullptr);
@@ -617,7 +636,7 @@ void EmuThread::handleMessages()
 
         case msg_BootFirmware:
             msgResult = 0;
-            if (!emuInstance->bootToMenu())
+            if (!emuInstance->bootToMenu(msgError))
                 break;
 
             assert(emuInstance->nds != nullptr);
@@ -627,7 +646,7 @@ void EmuThread::handleMessages()
 
         case msg_InsertCart:
             msgResult = 0;
-            if (!emuInstance->loadROM(msg.param.value<QStringList>(), false))
+            if (!emuInstance->loadROM(msg.param.value<QStringList>(), false, msgError))
                 break;
 
             msgResult = 1;
@@ -639,7 +658,7 @@ void EmuThread::handleMessages()
 
         case msg_InsertGBACart:
             msgResult = 0;
-            if (!emuInstance->loadGBAROM(msg.param.value<QStringList>()))
+            if (!emuInstance->loadGBAROM(msg.param.value<QStringList>(), msgError))
                 break;
 
             msgResult = 1;
@@ -647,7 +666,7 @@ void EmuThread::handleMessages()
 
         case msg_InsertGBAAddon:
             msgResult = 0;
-            emuInstance->loadGBAAddon(msg.param.value<int>());
+            emuInstance->loadGBAAddon(msg.param.value<int>(), msgError);
             msgResult = 1;
             break;
 
@@ -666,6 +685,30 @@ void EmuThread::handleMessages()
         case msg_UndoStateLoad:
             emuInstance->undoStateLoad();
             msgResult = 1;
+            break;
+
+        case msg_ImportSavefile:
+            {
+                msgResult = 0;
+                auto f = Platform::OpenFile(msg.param.value<QString>().toStdString(), Platform::FileMode::Read);
+                if (!f) break;
+
+                u32 len = FileLength(f);
+
+                std::unique_ptr<u8[]> data = std::make_unique<u8[]>(len);
+                Platform::FileRewind(f);
+                Platform::FileRead(data.get(), len, 1, f);
+
+                assert(emuInstance->nds != nullptr);
+                emuInstance->nds->SetNDSSave(data.get(), len);
+
+                CloseFile(f);
+                msgResult = 1;
+            }
+            break;
+
+        case msg_EnableCheats:
+            emuInstance->enableCheats(msg.param.value<bool>());
             break;
         }
 
@@ -778,15 +821,15 @@ void EmuThread::changeWindowTitle(char* title)
     emit windowTitleChange(QString(title));
 }
 
-void EmuThread::initContext()
+void EmuThread::initContext(int win)
 {
-    sendMessage(msg_InitGL);
+    sendMessage({.type = msg_InitGL, .param = win});
     waitMessage();
 }
 
-void EmuThread::deinitContext()
+void EmuThread::deinitContext(int win)
 {
-    sendMessage(msg_DeInitGL);
+    sendMessage({.type = msg_DeInitGL, .param = win});
     waitMessage();
 }
 
@@ -796,7 +839,7 @@ void EmuThread::emuRun()
     waitMessage();
 }
 
-void EmuThread::emuPause()
+void EmuThread::emuPause(bool broadcast)
 {
     auto nds = emuInstance->getNDS();
     if (nds != nullptr) {
@@ -808,9 +851,12 @@ void EmuThread::emuPause()
 
     sendMessage(msg_EmuPause);
     waitMessage();
+
+    if (broadcast)
+        emuInstance->broadcastCommand(InstCmd_Pause);
 }
 
-void EmuThread::emuUnpause()
+void EmuThread::emuUnpause(bool broadcast)
 {
     auto nds = emuInstance->getNDS();
     if (nds != nullptr) {
@@ -822,14 +868,17 @@ void EmuThread::emuUnpause()
 
     sendMessage(msg_EmuUnpause);
     waitMessage();
+
+    if (broadcast)
+        emuInstance->broadcastCommand(InstCmd_Unpause);
 }
 
-void EmuThread::emuTogglePause()
+void EmuThread::emuTogglePause(bool broadcast)
 {
     if (emuStatus == emuStatus_Paused)
-        emuUnpause();
+        emuUnpause(broadcast);
     else
-        emuPause();
+        emuPause(broadcast);
 }
 
 void EmuThread::emuStop(bool external)
@@ -868,36 +917,45 @@ bool EmuThread::emuIsActive()
     return emuActive;
 }
 
-int EmuThread::bootROM(const QStringList& filename)
+int EmuThread::bootROM(const QStringList& filename, QString& errorstr)
 {
     sendMessage({.type = msg_BootROM, .param = filename});
     waitMessage();
     if (!msgResult)
+    {
+        errorstr = msgError;
         return msgResult;
+    }
 
     sendMessage(msg_EmuRun);
     waitMessage();
+    errorstr = "";
     return msgResult;
 }
 
-int EmuThread::bootFirmware()
+int EmuThread::bootFirmware(QString& errorstr)
 {
     sendMessage(msg_BootFirmware);
     waitMessage();
     if (!msgResult)
+    {
+        errorstr = msgError;
         return msgResult;
+    }
 
     sendMessage(msg_EmuRun);
     waitMessage();
+    errorstr = "";
     return msgResult;
 }
 
-int EmuThread::insertCart(const QStringList& filename, bool gba)
+int EmuThread::insertCart(const QStringList& filename, bool gba, QString& errorstr)
 {
     MessageType msgtype = gba ? msg_InsertGBACart : msg_InsertCart;
 
     sendMessage({.type = msgtype, .param = filename});
     waitMessage();
+    errorstr = msgResult ? "" : msgError;
     return msgResult;
 }
 
@@ -907,10 +965,11 @@ void EmuThread::ejectCart(bool gba)
     waitMessage();
 }
 
-int EmuThread::insertGBAAddon(int type)
+int EmuThread::insertGBAAddon(int type, QString& errorstr)
 {
     sendMessage({.type = msg_InsertGBAAddon, .param = type});
     waitMessage();
+    errorstr = msgResult ? "" : msgError;
     return msgResult;
 }
 
@@ -933,6 +992,20 @@ int EmuThread::undoStateLoad()
     sendMessage(msg_UndoStateLoad);
     waitMessage();
     return msgResult;
+}
+
+int EmuThread::importSavefile(const QString& filename)
+{
+    sendMessage(msg_EmuReset);
+    sendMessage({.type = msg_ImportSavefile, .param = filename});
+    waitMessage(2);
+    return msgResult;
+}
+
+void EmuThread::enableCheats(bool enable)
+{
+    sendMessage({.type = msg_EnableCheats, .param = enable});
+    waitMessage();
 }
 
 void EmuThread::updateRenderer()

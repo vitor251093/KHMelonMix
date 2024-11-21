@@ -168,6 +168,18 @@ int numEmuInstances()
 }
 
 
+void broadcastInstanceCommand(int cmd, QVariant& param, int sourceinst)
+{
+    for (int i = 0; i < kMaxEmuInstances; i++)
+    {
+        if (i == sourceinst) continue;
+        if (!emuInstances[i]) continue;
+
+        emuInstances[i]->handleCommand(cmd, param);
+    }
+}
+
+
 void pathInit()
 {
     // First, check for the portable directory next to the executable.
@@ -364,7 +376,7 @@ int main(int argc, char** argv)
         win->preloadROMs(dsfile, gbafile, options->boot);
 
         if (options->fullscreen)
-            ToggleFullscreen(win);
+            win->toggleFullscreen();
     }
 
     int ret = melon.exec();

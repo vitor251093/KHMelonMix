@@ -19,9 +19,9 @@
         then sourceInfo.dirtyShortRev
         else sourceInfo.shortRev;
 
-      melonDS = pkgs.qt6.qtbase.stdenv.mkDerivation {
+      melonDS = pkgs.stdenv.mkDerivation {
         pname = "melonDS";
-        version = "0.9.5-${shortRevision}";
+        version = "1.0-${shortRevision}";
         src = ./.;
 
         nativeBuildInputs = with pkgs; [
@@ -76,6 +76,9 @@
       devShells = {
         default = pkgs.mkShell {
           inputsFrom = [ self.packages.${system}.default ];
+          packages = with pkgs; [
+            qt6.qttools
+          ];
         };
 
         # Shell for building static melonDS release builds with vcpkg

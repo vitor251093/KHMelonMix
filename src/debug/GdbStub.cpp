@@ -51,16 +51,17 @@ static int SocketSetBlocking(int fd, bool block)
 namespace Gdb
 {
 
-GdbStub::GdbStub(StubCallbacks* cb, int port)
-	: Cb(cb), Port(port)
+GdbStub::GdbStub(StubCallbacks* cb)
+	: Cb(cb), Port(0)
 	, SockFd(0), ConnFd(0)
 	, Stat(TgtStatus::None), CurBkpt(0), CurWatchpt(0), StatFlag(false), NoAck(false)
 	, ServerSA((void*)new struct sockaddr_in())
 	, ClientSA((void*)new struct sockaddr_in())
 { }
 
-bool GdbStub::Init()
+bool GdbStub::Init(int port)
 {
+    Port = port;
 	Log(LogLevel::Info, "[GDB] initializing GDB stub for core %d on port %d\n",
 		Cb->GetCPU(), Port);
 
@@ -100,6 +101,15 @@ bool GdbStub::Init()
 	{
 		Log(LogLevel::Error, "[GDB] err: can't create a socket fd\n");
 		goto err;
+	}
+	{
+		// Make sure the port can be reused immediately after melonDS stops and/or restarts
+		int enable = 1;
+#ifdef _WIN32
+		setsockopt(SockFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&enable, sizeof(enable));
+#else
+		setsockopt(SockFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+#endif
 	}
 #ifndef __linux__
 	SocketSetBlocking(SockFd, false);

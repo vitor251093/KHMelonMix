@@ -111,6 +111,13 @@ public:
 
     EmuInstance* getEmuInstance() { return emuInstance; }
     Config::Table& getWindowConfig() { return windowCfg; }
+    int getWindowID() { return windowID; }
+
+    bool winHasMenu() { return hasMenu; }
+
+    void saveEnabled(bool enabled);
+
+    void toggleFullscreen();
 
     bool hasOpenGL() { return hasOGL; }
     GL::Context* getOGLContext();
@@ -125,10 +132,17 @@ public:
 
     void onAppStateChanged(Qt::ApplicationState state);
 
+    void onFocusIn();
+    void onFocusOut();
+    bool isFocused() { return focused; }
+
     void osdAddMessage(unsigned int color, const char* msg);
 
     // called when the MP interface is changed
     void updateMPInterface(melonDS::MPInterfaceType type);
+
+    void loadRecentFilesMenu(bool loadcfg);
+    //void updateVideoSettings(bool glchange);
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -211,6 +225,7 @@ private slots:
     void onChangeScreenSizing(QAction* act);
     void onChangeScreenAspect(QAction* act);
     void onChangeIntegerScaling(bool checked);
+    void onOpenNewWindow();
     void onChangeScreenFiltering(bool checked);
     void onChangeShowOSD(bool checked);
     void onChangeLimitFramerate(bool checked);
@@ -254,6 +269,9 @@ private:
     bool pausedManually;
 
     int windowID;
+    bool enabledSaved;
+
+    bool focused;
 
     EmuInstance* emuInstance;
     EmuThread* emuThread;
@@ -264,6 +282,8 @@ private:
 
 public:
     ScreenPanel* panel;
+
+    bool hasMenu;
 
     QAction* actOpenROM;
     QAction* actBootFirmware;
@@ -328,6 +348,7 @@ public:
     QAction** actScreenAspectTop;
     QActionGroup* grpScreenAspectBot;
     QAction** actScreenAspectBot;
+    QAction* actNewWindow;
     QAction* actScreenFiltering;
     QAction* actShowOSD;
     QAction* actLimitFramerate;
@@ -335,7 +356,5 @@ public:
 
     QAction* actAbout;
 };
-
-void ToggleFullscreen(MainWindow* mainWindow);
 
 #endif // WINDOW_H

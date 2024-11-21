@@ -124,7 +124,7 @@ DefaultList<bool> DefaultBools =
     {"3D.Soft.Threaded", true},
     {"3D.GL.HiresCoordinates", true},
     {"LimitFPS", true},
-    {"Window*.ShowOSD", true},
+    {"Instance*.Window*.ShowOSD", true},
     {"Emu.DirectBoot", true},
     {"Mouse.Hide", true},
     {"Instance*.DS.Battery.LevelOkay", true},
@@ -684,7 +684,8 @@ void Table::SetString(const std::string& path, const std::string& val)
 void Table::SetDouble(const std::string& path, double val)
 {
     toml::value& tval = ResolvePath(path);
-    tval = val;
+    toml::floating_format_info info = {.prec=10};
+    tval = toml::value(val, info);
 }
 
 toml::value& Table::ResolvePath(const std::string& path)
@@ -868,7 +869,7 @@ Table GetLocalTable(int instance)
 
     std::string key = "Instance" + std::to_string(instance);
     toml::value& tbl = RootTable[key];
-    if (tbl.is_uninitialized())
+    if (tbl.is_empty())
         RootTable[key] = RootTable["Instance0"];
 
     return Table(tbl, key);
