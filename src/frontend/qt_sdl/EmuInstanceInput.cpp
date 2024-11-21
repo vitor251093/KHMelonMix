@@ -59,7 +59,23 @@ const char* EmuInstance::hotkeyNames[HK_MAX] =
     "HK_VolumeDown",
     "HK_SlowMo",
     "HK_FastForwardToggle",
-    "HK_SlowMoToggle"
+    "HK_SlowMoToggle",
+    "HK_HUDToggle",
+    "HK_RLockOn",
+    "HK_LSwitchTarget",
+    "HK_RSwitchTarget",
+    "HK_CommandMenuLeft",
+    "HK_CommandMenuRight",
+    "HK_CommandMenuUp",
+    "HK_CommandMenuDown"
+};
+
+const char* EmuInstance::touchButtonNames[4] =
+{
+    "CameraRight",
+    "CameraLeft",
+    "CameraUp",
+    "CameraDown"
 };
 
 
@@ -68,6 +84,10 @@ void EmuInstance::inputInit()
     keyInputMask = 0xFFF;
     joyInputMask = 0xFFF;
     inputMask = 0xFFF;
+
+    keyTouchInputMask = 0xFFFF;
+    joyTouchInputMask = 0xFFFF;
+    touchInputMask = 0xFFFF;
 
     keyHotkeyMask = 0;
     joyHotkeyMask = 0;
@@ -92,13 +112,19 @@ void EmuInstance::inputDeInit()
 
 void EmuInstance::inputLoadConfig()
 {
-    Config::Table keycfg = localCfg.GetTable("Keyboard");
-    Config::Table joycfg = localCfg.GetTable("Joystick");
+    auto keycfg = localCfg.GetTable("Keyboard");
+    auto joycfg = localCfg.GetTable("Joystick");
 
     for (int i = 0; i < 12; i++)
     {
         keyMapping[i] = keycfg.GetInt(buttonNames[i]);
         joyMapping[i] = joycfg.GetInt(buttonNames[i]);
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        touchKeyMapping[i] = keycfg.GetInt(touchButtonNames[i]);
+        touchJoyMapping[i] = joycfg.GetInt(touchButtonNames[i]);
     }
 
     for (int i = 0; i < HK_MAX; i++)
@@ -133,6 +159,101 @@ void EmuInstance::setJoystick(int id)
 {
     joystickID = id;
     openJoystick();
+}
+
+void EmuInstance::setAutoJoystickConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
+                                        int camRight, int camLeft, int camUp, int camDown,
+                                        int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
+                                        int pause, int fullscreen)
+{
+    bool shouldUpdate = (joyMapping[0] == -1) && (joyMapping[1]  && -1) || (joyMapping[2]  && -1) ||
+                        (joyMapping[3] == -1) && (joyMapping[4]  && -1) || (joyMapping[5]  && -1) ||
+                        (joyMapping[6] == -1) && (joyMapping[7]  && -1) || (joyMapping[8]  && -1) ||
+                        (joyMapping[9] == -1) && (joyMapping[10] && -1) || (joyMapping[11] && -1);
+    if (!shouldUpdate) {
+        return;
+    }
+
+    joyMapping[0] = a;
+    joyMapping[1] = b;
+    joyMapping[2] = select;
+    joyMapping[3] = start;
+    joyMapping[4] = right;
+    joyMapping[5] = left;
+    joyMapping[6] = up;
+    joyMapping[7] = down;
+    joyMapping[8] = r;
+    joyMapping[9] = l;
+    joyMapping[10] = x;
+    joyMapping[11] = y;
+
+    touchJoyMapping[0] = camRight;
+    touchJoyMapping[1] = camLeft;
+    touchJoyMapping[2] = camUp;
+    touchJoyMapping[3] = camDown;
+
+    hkJoyMapping[HK_Lid] = -1;
+    hkJoyMapping[HK_Mic] = -1;
+    hkJoyMapping[HK_Pause] = pause;
+    hkJoyMapping[HK_Reset] = -1;
+    hkJoyMapping[HK_FastForward] = -1;
+    hkJoyMapping[HK_FastForwardToggle] = -1;
+    hkJoyMapping[HK_FullscreenToggle] = fullscreen;
+    hkJoyMapping[HK_SwapScreens] = -1;
+    hkJoyMapping[HK_SwapScreenEmphasis] = -1;
+    hkJoyMapping[HK_SolarSensorDecrease] = -1;
+    hkJoyMapping[HK_SolarSensorIncrease] = -1;
+    hkJoyMapping[HK_FrameStep] = -1;
+    hkJoyMapping[HK_PowerButton] = -1;
+    hkJoyMapping[HK_VolumeUp] = -1;
+    hkJoyMapping[HK_VolumeDown] = -1;
+
+    hkJoyMapping[HK_HUDToggle] = -1;
+    hkJoyMapping[HK_RLockOn] = -1;
+    hkJoyMapping[HK_LSwitchTarget] = -1;
+    hkJoyMapping[HK_RSwitchTarget] = -1;
+    hkJoyMapping[HK_CommandMenuLeft] = cmdLeft;
+    hkJoyMapping[HK_CommandMenuRight] = cmdRight;
+    hkJoyMapping[HK_CommandMenuUp] = cmdUp;
+    hkJoyMapping[HK_CommandMenuDown] = cmdDown;
+}
+
+void EmuInstance::autoMapJoystick()
+{
+    int JoystickVendorID = SDL_JoystickGetDeviceVendor(joystickID);
+    int JoystickDeviceID = SDL_JoystickGetDeviceProduct(joystickID);
+
+    printf("Joystick - Vendor ID %04x - Device ID %04x\n", JoystickVendorID, JoystickDeviceID);
+    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268) { // PS3 Controller
+
+    }
+    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4) { // PS4 Controller V1
+
+    }
+    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc) { // PS4 Controller V2
+        setAutoJoystickConfig(1, 0, 4, 6, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048778, 69271561, 3, 2,
+                                0x201FFFF, 0x211FFFF, 0x311FFFF, 0x301FFFF,
+                                0x102, 0x108, 0x101, 0x104,
+                                69271559, 86048776);
+    }
+    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
+        setAutoJoystickConfig(1, 0, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048773, 35717124, 3, 2,
+                                0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
+                                0x102, 0x108, 0x101, 0x104,
+                                9, 10);
+    }
+    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028f) { // Xbox 360 Controller (Wireless)
+
+    }
+    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x02d1) { // Xbox One Controller
+
+    }
+    if (JoystickVendorID == 0x28de) { // Valve controllers
+        setAutoJoystickConfig(0, 1, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 5, 4, 3, 2,
+                                0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
+                                0x102, 0x108, 0x101, 0x104,
+                                0x221FFFF, 0x521FFFF);
+    }
 }
 
 void EmuInstance::openJoystick()
@@ -237,6 +358,10 @@ void EmuInstance::onKeyPress(QKeyEvent* event)
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == hkKeyMapping[i])
             keyHotkeyMask |= (1<<i);
+    
+    for (int i = 0; i < 4; i++)
+        if (keyKP == touchKeyMapping[i])
+            keyTouchInputMask &= ~(0xF << (i*4));
 }
 
 void EmuInstance::onKeyRelease(QKeyEvent* event)
@@ -253,6 +378,10 @@ void EmuInstance::onKeyRelease(QKeyEvent* event)
     for (int i = 0; i < HK_MAX; i++)
         if (keyHK == hkKeyMapping[i])
             keyHotkeyMask &= ~(1<<i);
+
+    for (int i = 0; i < 4; i++)
+        if (keyKP == touchKeyMapping[i])
+            keyTouchInputMask |= (0xF << (i*4));
 }
 
 void EmuInstance::keyReleaseAll()
@@ -261,9 +390,9 @@ void EmuInstance::keyReleaseAll()
     keyHotkeyMask = 0;
 }
 
-bool EmuInstance::joystickButtonDown(int val)
+Sint16 EmuInstance::joystickButtonDown(int val)
 {
-    if (val == -1) return false;
+    if (val == -1) return 0;
 
     bool hasbtn = ((val & 0xFFFF) != 0xFFFF);
 
@@ -281,14 +410,14 @@ bool EmuInstance::joystickButtonDown(int val)
             else if (hatdir == 0x2) pressed = (hatval & SDL_HAT_RIGHT);
             else if (hatdir == 0x8) pressed = (hatval & SDL_HAT_LEFT);
 
-            if (pressed) return true;
+            if (pressed) return 1;
         }
         else
         {
             int btnnum = val & 0xFFFF;
             Uint8 btnval = SDL_JoystickGetButton(joystick, btnnum);
 
-            if (btnval) return true;
+            if (btnval) return 1;
         }
     }
 
@@ -296,25 +425,25 @@ bool EmuInstance::joystickButtonDown(int val)
     {
         int axisnum = (val >> 24) & 0xF;
         int axisdir = (val >> 20) & 0xF;
-        Sint16 axisval = SDL_JoystickGetAxis(joystick, axisnum);
+        Sint16 axisval = SDL_JoystickGetAxis(joystick, axisnum); // from -32768 to 32767
 
         switch (axisdir)
         {
-            case 0: // positive
-                if (axisval > 16384) return true;
-                break;
+        case 0: // positive
+            if (axisval > 16384) return (axisval >> 10);
+            break;
 
-            case 1: // negative
-                if (axisval < -16384) return true;
-                break;
+        case 1: // negative
+            if (axisval < -16384) return ((~axisval) >> 10);
+            break;
 
-            case 2: // trigger
-                if (axisval > 0) return true;
-                break;
+        case 2: // trigger
+            if (axisval > 0) return 1;
+            break;
         }
     }
 
-    return false;
+    return 0;
 }
 
 void EmuInstance::inputProcess()
@@ -335,14 +464,21 @@ void EmuInstance::inputProcess()
     }
 
     joyInputMask = 0xFFF;
+    joyTouchInputMask = 0xFFFF;
     if (joystick)
     {
         for (int i = 0; i < 12; i++)
             if (joystickButtonDown(joyMapping[i]))
                 joyInputMask &= ~(1 << i);
+        for (int i = 0; i < 4; i++) {
+            Sint16 joyValue = joystickButtonDown(touchJoyMapping[i]);
+            if (joyValue != 0)
+                joyTouchInputMask &= ~(joyValue << (i*4));
+        }
     }
 
     inputMask = keyInputMask & joyInputMask;
+    touchInputMask = keyTouchInputMask & joyTouchInputMask;
 
     joyHotkeyMask = 0;
     if (joystick)

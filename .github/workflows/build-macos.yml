@@ -45,7 +45,8 @@ jobs:
         shell: bash
         run: |
           cd build/release-mac-${{ matrix.arch }}
-          zip -r -y ../../macOS-${{ matrix.arch }}.zip melonDS.app
+          mv melonDS.app khDaysMM.app
+          zip -r -y ../../macOS-${{ matrix.arch }}.zip khDaysMM.app
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -74,20 +75,14 @@ jobs:
         run: |
           unzip x86_64/*.zip -d x86_64
           unzip arm64/*.zip -d arm64
-          lipo {x86_64,arm64}/melonDS.app/Contents/MacOS/melonDS -create -output melonDS
-          cp -a arm64/melonDS.app melonDS.app
-          cp melonDS melonDS.app/Contents/MacOS/melonDS
-          codesign -s - --deep melonDS.app
-          zip -r -y macOS-universal.zip melonDS.app
+          lipo {x86_64,arm64}/khDaysMM.app/Contents/MacOS/melonDS -create -output melonDS
+          cp -a arm64/khDaysMM.app khDaysMM.app
+          rm khDaysMM.app/Contents/MacOS/melonDS
+          cp melonDS khDaysMM.app/Contents/MacOS/melonDS
+          codesign -s - --deep khDaysMM.app
+          zip -r -y macOS-universal.zip khDaysMM.app
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: macOS-universal
           path: macOS-universal.zip
-#     - name: Clean up architecture-specific artifacts
-#       uses: geekyeggo/delete-artifact@v4
-#       with:
-#         failOnError: false
-#         name: |
-#           macOS-x86_64
-#           macOS-arm64

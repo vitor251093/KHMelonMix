@@ -209,8 +209,8 @@ void pathInit()
 #else
         QString confdir;
         QDir config(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
-        config.mkdir("melonDS");
-        confdir = config.absolutePath() + QDir::separator() + "melonDS";
+        config.mkdir("khDaysMM");
+        confdir = config.absolutePath() + QDir::separator() + "khDaysMM";
         emuDirectory = confdir;
 #endif
     }
@@ -284,7 +284,7 @@ int main(int argc, char** argv)
     qputenv("QT_QPA_PLATFORM", "windows:darkmode=2");
 #endif
 
-    printf("melonDS " MELONDS_VERSION "\n");
+    printf("khDaysMM " MELONDS_VERSION "\n");
     printf(MELONDS_URL "\n");
 
     // easter egg - not worth checking other cases for something so dumb

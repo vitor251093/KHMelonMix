@@ -1,67 +1,71 @@
-<p align="center"><img src="https://raw.githubusercontent.com/melonDS-emu/melonDS/master/res/icon/melon_128x128.png"></p>
-<h2 align="center"><b>melonDS</b></h2>
+<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/res/icon/khDaysMM_128x128.png"></p>
+<h2 align="center"><b>Kingdom Hearts - Melon Mix</b></h2>
 <p align="center">
-<a href="http://melonds.kuribo64.net/" alt="melonDS website"><img src="https://img.shields.io/badge/website-melonds.kuribo64.net-%2331352e.svg"></a>
-<a href="http://melonds.kuribo64.net/downloads.php" alt="Release: 0.9.5"><img src="https://img.shields.io/badge/release-0.9.5-%235c913b.svg"></a>
 <a href="https://www.gnu.org/licenses/gpl-3.0" alt="License: GPLv3"><img src="https://img.shields.io/badge/License-GPL%20v3-%23ff554d.svg"></a>
-<a href="https://kiwiirc.com/client/irc.badnik.net/?nick=IRC-Source_?#melonds" alt="IRC channel: #melonds"><img src="https://img.shields.io/badge/IRC%20chat-%23melonds-%23dd2e44.svg"></a>
-<a href="https://discord.gg/pAMAtExcqV" alt="Discord"><img src="https://img.shields.io/badge/Discord-Kuribo64-7289da?logo=discord&logoColor=white"></a>
-<br>
-<a href="https://github.com/melonDS-emu/melonDS/actions/workflows/build-windows.yml?query=event%3Apush"><img src="https://github.com/melonDS-emu/melonDS/actions/workflows/build-windows.yml/badge.svg" /></a>
-<a href="https://github.com/melonDS-emu/melonDS/actions/workflows/build-ubuntu.yml?query=event%3Apush"><img src="https://github.com/melonDS-emu/melonDS/actions/workflows/build-ubuntu.yml/badge.svg" /></a>
-<a href="https://github.com/melonDS-emu/melonDS/actions/workflows/build-macos.yml?query=event%3Apush"><img src="https://github.com/melonDS-emu/melonDS/actions/workflows/build-macos.yml/badge.svg" /></a>
+<a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-windows.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-windows.yml/badge.svg" /></a>
+<a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-ubuntu.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-ubuntu.yml/badge.svg" /></a>
+<a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-macos.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-macos.yml/badge.svg" /></a>
 </p>
-DS emulator, sorta
+melonDS, sorta
 
-The goal is to do things right and fast, akin to blargSNES (but hopefully better). But also to, you know, have a fun challenge :)
+This project aims to turn the Kingdom Hearts DS games into playable PC games with a single screen and controls suited for a regular controller.
+
+This is a version of melonDS with some modifications made specifically to improve those specific games experience. Any issues you have with KH Melon Mix should be reported in this same repository, and not in melonDS repository.
+
+Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the latest updates and/or to help with the project.
+
 <hr>
 
-## How to use
+## How to play "Kingdom Hearts 358/2 Days"
 
-Firmware boot (not direct boot) requires a BIOS/firmware dump from an original DS or DS Lite.
-DS firmwares dumped from a DSi or 3DS aren't bootable and only contain configuration data, thus they are only suitable when booting games directly.
+1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for your system (not the source code zip);
+2. Open the downloaded ZIP file and copy the contents to an empty folder;
+3. Dump an original copy of "Kingdom Hearts 358/2 Days" and copy the NDS file to your computer;
+4. Rename that NDS file to "days.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
+5. Replace the assets folder with [this assets folder](https://mega.nz/folder/lpgykK5Y#HPJuOSceHSzncDjQh0DUtw) (this step is only required if you want to replace the DS cutscenes with HD cutscenes);
+6. Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat" (or MelonMix_KHDays.sh if you are not on Windows).
 
-### Possible firmware sizes
+## How to play "Kingdom Hearts Re:Coded"
 
- * 128KB: DSi/3DS DS-mode firmware (reduced size due to lacking bootcode)
- * 256KB: regular DS firmware
- * 512KB: iQue DS firmware
+1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for your system (not the source code zip);
+2. Open the downloaded ZIP file and copy the contents to an empty folder;
+3. Dump an original copy of "Kingdom Hearts Re:Coded" and copy the NDS file to your computer;
+4. Rename that NDS file to "recoded.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
+5. Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.bat" (or MelonMix_KHReCoded.sh if you are not on Windows).
 
-DS BIOS dumps from a DSi or 3DS can be used with no compatibility issues. DSi BIOS dumps (in DSi mode) are not compatible. Or maybe they are. I don't know.
+### Recommended Controller Binds
+* (DS Keypad tab) Map the DS D-Pad to your controller's left analog stick
+* (DS Keypad tab) Map the Select/Start buttons to the equivalent keys in your controller
+* (DS Keypad tab) Map the A/B/X/Y buttons to the equivalent keys in your controller
+* (DS Keypad tab) Map the L button to the L/L1/LB button in your controller
+* (Touch Screen tab) Map the DS Touch Screen to your controller's right analog stick
+* (Add-ons tab) Map the command menu to your controller's D-Pad
+* (Add-ons tab) Map R1 and R2 rather than the R button from the DS keypad tab
+* (Add-ons tab) Map the HUD Toggle to an available button of your preference
+* (General hotkeys) Map Toggle fullscreen to an available button of your preference
 
-As for the rest, the interface should be pretty straightforward. If you have a question, don't hesitate to ask, though!
+### Steam Deck
+The AppImage build is compatible with the Steam Deck. In order to use it, download the AppImage build, extract the zip, right click the AppImage and go to "Properties". Then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Don't forget the NDS file, like mentioned above.
 
-## How to build
+<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/screenshot.png"></p>
+<p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.2</i></p>
+
+## How to build from scratch
 See [BUILD.md](./BUILD.md) for build instructions.
-
-## TODO LIST
-
- * better DSi emulation
- * better OpenGL rendering
- * netplay
- * the impossible quest of pixel-perfect 3D graphics
- * support for rendering screens to separate windows
- * emulating some fancy addons
- * other non-core shit (debugger, graphics viewers, etc)
-
-### TODO LIST FOR LATER (low priority)
-
- * big-endian compatibility (Wii, etc)
- * LCD refresh time (used by some games for blending effects)
- * any feature you can eventually ask for that isn't outright stupid
 
 ## Credits
 
- * Martin for GBAtek, a good piece of documentation
- * Cydrak for the extra 3D GPU research
- * limittox for the icon
- * All of you comrades who have been testing melonDS, reporting issues, suggesting shit, etc
+ * All people that supported and developed [melonDS](https://github.com/melonDS-emu/melonDS) (seriously, support them if possible; this project wouldn't exist without melonDS)
+ * sandwichwater and DaniKH, for the innumerous amount of tests and for the hi-res textures
+ * All the members from our Discord server that helped testing and developing the Melon Mix!
+ * Michael Lipinski, for the [documentation](https://pdfs.semanticscholar.org/657d/adf4888f6302701095055b0d7a066e42b36f.pdf) regarding the way a NDS works
+ * Datel Design & Development Ltd, for the [documentation](https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf) regarding how to write AR Codes
 
 ## Licenses
 
 [![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)
 
-melonDS is free software: you can redistribute it and/or modify
+KH Melon Mix is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.

@@ -38,7 +38,19 @@ jobs:
       run: cmake --preset=release-mingw-x86_64 -DMELONDS_EMBED_BUILD_INFO=ON
     - name: Build
       run: cmake --build --preset=release-mingw-x86_64
+    - name: Preparing artifacts
+      working-directory: ${{runner.workspace}}\KHMelonMix\build
+      run: |
+        mkdir dist
+        mkdir -p ./dist/roms
+        touch ./dist/roms/DELETE_ME
+        mkdir -p ./dist/assets/days/cutscenes/cinematics
+        touch ./dist/assets/days/cutscenes/cinematics/DELETE_ME
+        mv ./release-mingw-x86_64/melonDS.exe ./dist/MelonMix.exe
+        cp ../res/scripts/MelonMix_KHDays.bat    ./dist/MelonMix_KHDays.bat
+        cp ../res/scripts/MelonMix_KHReCoded.bat ./dist/MelonMix_KHReCoded.bat
+
     - uses: actions/upload-artifact@v4
       with:
-        name: melonDS-windows-x86_64
-        path: .\build\release-mingw-x86_64\melonDS.exe
+        name: MelonMix-windows-x86_64
+        path: ${{runner.workspace}}\KHMelonMix\build\dist

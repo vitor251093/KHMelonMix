@@ -16,6 +16,8 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
+#include "plugins/PluginManager.h"
+
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -84,6 +86,11 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowLimitFPSChange()), window->actLimitFramerate, SLOT(trigger()));
         connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
+
+    connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+    connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
+    connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
+    connect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
 }
 
 void EmuThread::detachWindow(MainWindow* window)
@@ -102,10 +109,17 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(windowLimitFPSChange()), window->actLimitFramerate, SLOT(trigger()));
         disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
+
+    disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+    disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
+    disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
+    disconnect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
 }
 
 void EmuThread::run()
 {
+    emuInstance->plugin = nullptr;
+
     Config::Table& globalCfg = emuInstance->getGlobalConfig();
     u32 mainScreenPos[3];
 
@@ -155,6 +169,29 @@ void EmuThread::run()
     {
         MPInterface::Get().Process();
         emuInstance->inputProcess();
+
+        auto nds = emuInstance->getNDS();
+        auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
+        if (rom != nullptr) {
+            u32 gamecode = rom->GetHeader().GameCodeAsU32();
+            if (emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode)
+            {
+                lastVideoRenderer = -1;
+                videoSettingsDirty = true;
+
+                emuInstance->plugin = Plugins::PluginManager::load(gamecode);
+                emuInstance->plugin->setNds(emuInstance->getNDS());
+                emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
+                    Config::Table& ref = const_cast <Config::Table&>(cfg);
+                    return ref.GetString(path);
+                });
+
+                printf("Loading plugin %s for game code %u\n", typeid(*emuInstance->plugin).name(), gamecode);
+            }
+
+            emuInstance->plugin->applyTouchKeyMask(emuInstance->touchInputMask);
+            emuInstance->plugin->applyHotkeyToInputMask(&emuInstance->inputMask, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
+        }
 
         if (emuInstance->hotkeyPressed(HK_FrameLimitToggle)) emit windowLimitFPSChange();
 
@@ -250,7 +287,6 @@ void EmuThread::run()
                 emuInstance->renderLock.unlock();
             }
 
-            // process input and hotkeys
             emuInstance->nds->SetKeyMask(emuInstance->inputMask);
 
             if (emuInstance->isTouching)
@@ -267,6 +303,9 @@ void EmuThread::run()
 
             // microphone input
             emuInstance->micProcess();
+
+            refreshPluginGameScene();
+            bool shouldRenderFrame = emuInstance->plugin->shouldRenderFrame();
 
             // auto screen layout
             {
@@ -328,7 +367,11 @@ void EmuThread::run()
             else
             {
                 frontBuffer = emuInstance->nds->GPU.FrontBuffer;
-                emuInstance->drawScreenGL();
+
+                if (shouldRenderFrame)
+                {
+                    emuInstance->drawScreenGL();
+                }
             }
 
 #ifdef MELONCAP
@@ -345,7 +388,7 @@ void EmuThread::run()
             if (emuInstance->hotkeyPressed(HK_FastForwardToggle)) emuInstance->fastForwardToggled = !emuInstance->fastForwardToggled;
             if (emuInstance->hotkeyPressed(HK_SlowMoToggle)) emuInstance->slowmoToggled = !emuInstance->slowmoToggled;
 
-            bool enablefastforward = emuInstance->hotkeyDown(HK_FastForward) | emuInstance->fastForwardToggled;
+            bool enablefastforward = (emuInstance->hotkeyDown(HK_FastForward) | emuInstance->fastForwardToggled) || pluginShouldFastForward();
             bool enableslowmo = emuInstance->hotkeyDown(HK_SlowMo) | emuInstance->slowmoToggled;
 
             if (useOpenGL)
@@ -368,6 +411,8 @@ void EmuThread::run()
             else if (fastforward) emuInstance->curFPS = emuInstance->fastForwardFPS;
             else if (!emuInstance->doLimitFPS) emuInstance->curFPS = 1000.0;
             else emuInstance->curFPS = emuInstance->targetFPS;
+
+            refreshPluginCutsceneState();
 
             if (emuInstance->audioDSiVolumeSync && emuInstance->nds->ConsoleType == 1)
             {
@@ -428,9 +473,9 @@ void EmuThread::run()
                 double actualfps = (59.8261 * 263.0) / nlines;
                 int inst = emuInstance->instanceID;
                 if (inst == 0)
-                    sprintf(melontitle, "[%d/%.0f] melonDS " MELONDS_VERSION, fps, actualfps);
+                    sprintf(melontitle, "[%d/%.0f] khDaysMM " MELONDS_VERSION, fps, actualfps);
                 else
-                    sprintf(melontitle, "[%d/%.0f] melonDS (%d)", fps, fpstarget, inst+1);
+                    sprintf(melontitle, "[%d/%.0f] khDaysMM (%d)", fps, fpstarget, inst+1);
                 changeWindowTitle(melontitle);
             }
         }
@@ -445,9 +490,9 @@ void EmuThread::run()
 
             int inst = emuInstance->instanceID;
             if (inst == 0)
-                sprintf(melontitle, "melonDS " MELONDS_VERSION);
+                sprintf(melontitle, "khDaysMM " MELONDS_VERSION);
             else
-                sprintf(melontitle, "melonDS (%d)", inst+1);
+                sprintf(melontitle, "khDaysMM (%d)", inst+1);
             changeWindowTitle(melontitle);
 
             SDL_Delay(75);
@@ -455,6 +500,10 @@ void EmuThread::run()
             if (useOpenGL)
             {
                 emuInstance->drawScreenGL();
+            }
+
+            if (emuInstance->plugin != nullptr) {
+                refreshPluginCutsceneState();
             }
         }
 
@@ -668,6 +717,105 @@ void EmuThread::handleMessages()
     msgMutex.unlock();
 }
 
+bool EmuThread::pluginShouldFastForward()
+{
+    return emuInstance->plugin->ShouldTerminateIngameCutscene() && emuInstance->plugin->RunningReplacementCutscene();
+}
+
+void EmuThread::refreshPluginGameScene()
+{
+    bool updated = emuInstance->plugin->refreshGameScene();
+    if (updated && SHOW_GAME_SCENE)
+    {
+        emuInstance->osdAddMessage(0, emuInstance->plugin->getGameSceneName());
+    }
+}
+
+void EmuThread::refreshPluginCutsceneState()
+{
+    bool enableInvisibleFastMode = false;
+    bool disableInvisibleFastMode = false;
+
+    if (emuInstance->plugin->ShouldStopReplacementCutscene()) {
+        emit windowStopVideo();
+    }
+
+    if (emuInstance->plugin->ShouldPauseReplacementCutscene()) {
+        emit windowPauseVideo();
+    }
+
+    if (emuInstance->plugin->ShouldUnpauseReplacementCutscene()) {
+        emit windowUnpauseVideo();
+    }
+
+    if (emuInstance->plugin->ShouldReturnToGameAfterCutscene()) {
+        emuStatus = emuStatus_Running;
+        disableInvisibleFastMode = true;
+    }
+
+    if (emuInstance->plugin->ShouldUnmuteAfterCutscene()) {
+        emuStatus = emuStatus_Running;
+        disableInvisibleFastMode = true;
+    }
+
+
+    if (emuInstance->plugin->ShouldTerminateIngameCutscene()) {
+        enableInvisibleFastMode = true;
+    }
+
+    if (emuInstance->plugin->ShouldStartReplacementCutscene()) {
+        auto cutscene = emuInstance->plugin->CurrentCutscene();
+        if (cutscene != nullptr) {
+            std::string path = emuInstance->plugin->CutsceneFilePath(cutscene);
+            if (path != "") {
+                // disabling fast-foward, otherwise it will affect the cutscenes
+                emuInstance->setVSyncGL(true);
+
+                emuStatus = emuStatus_Paused;
+                QString filePath = QString::fromUtf8(path.c_str());
+                emit windowStartVideo(filePath);
+            }
+        }
+    }
+
+    if (emuInstance->plugin->StartedReplacementCutscene()) {
+        emuStatus = emuStatus_Running;
+        enableInvisibleFastMode = true;
+    }
+
+    if (emuInstance->plugin->StoppedIngameCutscene()) {
+        emuStatus = emuStatus_Paused;
+    }
+
+    if (enableInvisibleFastMode)
+    {
+        emuInstance->audioVolume = 0;
+
+        emuInstance->targetFPS = 1.0 / 1000;
+
+        int newVideoRenderer = renderer3D_Software;
+        if (videoRenderer != newVideoRenderer) {
+            videoRenderer = newVideoRenderer;
+            updateRenderer();
+        }
+    }
+    if (disableInvisibleFastMode)
+    {
+        Config::Table& globalCfg = emuInstance->getGlobalConfig();
+
+        auto& instcfg = emuInstance->getLocalConfig();
+        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
+
+        emuInstance->targetFPS = 1.0 / globalCfg.GetDouble("TargetFPS");
+
+        int newVideoRenderer = globalCfg.GetInt("3D.Renderer");
+        if (videoRenderer != newVideoRenderer) {
+            videoRenderer = newVideoRenderer;
+            updateRenderer();
+        }
+    }
+}
+
 void EmuThread::changeWindowTitle(char* title)
 {
     emit windowTitleChange(QString(title));
@@ -693,6 +841,14 @@ void EmuThread::emuRun()
 
 void EmuThread::emuPause(bool broadcast)
 {
+    auto nds = emuInstance->getNDS();
+    if (nds != nullptr) {
+        auto rom = nds->NDSCartSlot.GetCart();
+        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
+            return;
+        }
+    }
+
     sendMessage(msg_EmuPause);
     waitMessage();
 
@@ -702,6 +858,14 @@ void EmuThread::emuPause(bool broadcast)
 
 void EmuThread::emuUnpause(bool broadcast)
 {
+    auto nds = emuInstance->getNDS();
+    if (nds != nullptr) {
+        auto rom = nds->NDSCartSlot.GetCart();
+        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
+            return;
+        }
+    }
+
     sendMessage(msg_EmuUnpause);
     waitMessage();
 
@@ -854,10 +1018,10 @@ void EmuThread::updateRenderer()
                 emuInstance->nds->GPU.SetRenderer3D(std::make_unique<SoftRenderer>());
                 break;
             case renderer3D_OpenGL:
-                emuInstance->nds->GPU.SetRenderer3D(GLRenderer::New());
+                emuInstance->nds->GPU.SetRenderer3D(GLRenderer::New(emuInstance->plugin));
                 break;
             case renderer3D_OpenGLCompute:
-                emuInstance->nds->GPU.SetRenderer3D(ComputeRenderer::New());
+                emuInstance->nds->GPU.SetRenderer3D(ComputeRenderer::New(emuInstance->plugin));
                 break;
             default: __builtin_unreachable();
         }

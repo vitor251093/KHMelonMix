@@ -128,6 +128,7 @@ EmuInstance::EmuInstance(int inst) : deleting(false),
 
     net.RegisterInstance(instanceID);
 
+    plugin = nullptr;
     emuThread = new EmuThread(this);
 
     numWindows = 0;
@@ -759,6 +760,8 @@ bool EmuInstance::loadState(const std::string& filename)
     }
 
     savestateLoaded = true;
+
+    plugin->onLoadState();
 
     return true;
 }
@@ -1952,6 +1955,11 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
             nextCart = std::move(cart);
             changeCart = true;
         }
+    }
+
+    if (plugin != nullptr) {
+        plugin->setNds(nds);
+        plugin->onLoadROM();
     }
 
     cartType = 0;

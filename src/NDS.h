@@ -398,6 +398,7 @@ public: // TODO: Encapsulate the rest of these members
     void ReleaseScreen();
 
     void SetKeyMask(u32 mask);
+    void SetTouchKeyMask(u32 mask, bool resetOnEdge);
 
     bool IsLidClosed() const;
     void SetLidClosed(bool closed);

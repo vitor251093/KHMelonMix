@@ -128,6 +128,8 @@ protected:
 
     virtual void setupScreenLayout();
 
+    void refreshAspectRatio();
+
     void resizeEvent(QResizeEvent* event) override;
 
     void mousePressEvent(QMouseEvent* event) override;

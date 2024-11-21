@@ -64,6 +64,10 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
+    if (GamePlugin != nullptr) {
+        GamePlugin->gpu3DOpenGL_VS_Z_initVariables(prog, flags);
+    }
+
     RenderShader[flags] = prog;
 
     return true;
@@ -74,6 +78,10 @@ void GLRenderer::UseRenderShader(u32 flags)
     if (CurShaderID == flags) return;
     glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
+
+    if (GamePlugin != nullptr) {
+        GamePlugin->gpu3DOpenGL_VS_Z_updateVariables(flags);
+    }
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -94,17 +102,18 @@ GLRenderer::GLRenderer(GLCompositor&& compositor) noexcept :
     // so we can just let the destructor clean up a half-initialized renderer.
 }
 
-std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
+std::unique_ptr<GLRenderer> GLRenderer::New(Plugins::Plugin* plugin) noexcept
 {
     assert(glEnable != nullptr);
 
-    std::optional<GLCompositor> compositor =  GLCompositor::New();
+    std::optional<GLCompositor> compositor =  GLCompositor::New(plugin);
     if (!compositor)
         return nullptr;
 
     // Will be returned if the initialization succeeds,
     // or cleaned up via RAII if it fails.
     std::unique_ptr<GLRenderer> result = std::unique_ptr<GLRenderer>(new GLRenderer(std::move(*compositor)));
+    result->GamePlugin = plugin;
     compositor = std::nullopt;
 
     glEnable(GL_DEPTH_TEST);
@@ -127,25 +136,28 @@ std::unique_ptr<GLRenderer> GLRenderer::New() noexcept
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
 
-    if (!result->BuildRenderShader(0, kRenderVS_Z, kRenderFS_ZO))
+    const char* renderVS_Z_Custom = result->GamePlugin == nullptr ? nullptr : result->GamePlugin->gpu3DOpenGL_VS_Z();
+    const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
+
+    if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WO))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_Edge, kRenderVS_Z, kRenderFS_ZE))
+    if (!result->BuildRenderShader(RenderFlag_Edge, renderVS_Z, kRenderFS_ZE))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_Edge | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WE))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_Trans, kRenderVS_Z, kRenderFS_ZT))
+    if (!result->BuildRenderShader(RenderFlag_Trans, renderVS_Z, kRenderFS_ZT))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_Trans | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WT))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_ShadowMask, kRenderVS_Z, kRenderFS_ZSM))
+    if (!result->BuildRenderShader(RenderFlag_ShadowMask, renderVS_Z, kRenderFS_ZSM))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_ShadowMask | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WSM))

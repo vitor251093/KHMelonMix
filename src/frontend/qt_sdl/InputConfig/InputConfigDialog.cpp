@@ -20,6 +20,8 @@
 #include <QLabel>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 #include <SDL2/SDL.h>
 
@@ -36,6 +38,8 @@ InputConfigDialog* InputConfigDialog::currentDlg = nullptr;
 
 const int dskeyorder[12] = {0, 1, 10, 11, 5, 4, 6, 7, 9, 8, 2, 3};
 const char* dskeylabels[12] = {"A", "B", "X", "Y", "Left", "Right", "Up", "Down", "L", "R", "Select", "Start"};
+
+const int dstouchkeyorder[12] = {1, 0, 2, 3};
 
 InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new Ui::InputConfigDialog)
 {
@@ -73,6 +77,13 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
         i++;
     }
 
+    for (int i = 0; i < touchscreen_num; i++)
+    {
+        const char* btn = EmuInstance::touchButtonNames[dstouchkeyorder[i]];
+        touchScreenKeyMap[i] = keycfg.GetInt(btn);
+        touchScreenJoyMap[i] = joycfg.GetInt(btn);
+    }
+
     populatePage(ui->tabAddons, hk_addons_labels, addonsKeyMap, addonsJoyMap);
     populatePage(ui->tabHotkeysGeneral, hk_general_labels, hkGeneralKeyMap, hkGeneralJoyMap);
 
@@ -95,6 +106,7 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
     }
 
     setupKeypadPage();
+    setupTouchScreenPage();
 
     int inst = emuInstance->getInstanceID();
     if (inst > 0)
@@ -129,6 +141,17 @@ void InputConfigDialog::setupKeypadPage()
             ui->stackMapping->setCurrentIndex(1);
         }
     }
+}
+
+void InputConfigDialog::setupTouchScreenPage()
+{
+    QVBoxLayout* main_layout = new QVBoxLayout();
+
+    QWidget* touch_widget = new QWidget();
+    populatePage(touch_widget, ds_touch_key_labels, touchScreenKeyMap, touchScreenJoyMap);
+    main_layout->addWidget(touch_widget);
+
+    ui->tabTouchScreen->setLayout(main_layout);
 }
 
 void InputConfigDialog::populatePage(QWidget* page,
@@ -213,6 +236,13 @@ void InputConfigDialog::on_InputConfigDialog_accepted()
         i++;
     }
 
+    for (int i = 0; i < touchscreen_num; i++)
+    {
+        const char* btn = EmuInstance::touchButtonNames[dstouchkeyorder[i]];
+        keycfg.SetInt(btn, touchScreenKeyMap[i]);
+        joycfg.SetInt(btn, touchScreenJoyMap[i]);
+    }
+
     instcfg.SetInt("JoystickID", joystickID);
     Config::Save();
 
@@ -252,3 +282,8 @@ SDL_Joystick* InputConfigDialog::getJoystick()
 {
     return emuInstance->getJoystick();
 }
+void InputConfigDialog::on_btnJoystickAuto_clicked()
+{
+    emuInstance->autoMapJoystick();
+}
+

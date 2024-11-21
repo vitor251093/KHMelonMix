@@ -33,24 +33,32 @@ namespace melonDS
 
 using namespace OpenGL;
 
-std::optional<GLCompositor> GLCompositor::New() noexcept
+std::optional<GLCompositor> GLCompositor::New(Plugins::Plugin* plugin) noexcept
 {
     assert(glBindAttribLocation != nullptr);
     GLuint CompShader {};
 
+    const char* kCompositorFS_Custom = plugin == nullptr ? nullptr : plugin->gpuOpenGL_FS();
+    const char* compositorFS = kCompositorFS_Custom == nullptr ? kCompositorFS_Nearest : kCompositorFS_Custom;
     if (!OpenGL::CompileVertexFragmentProgram(CompShader,
-            kCompositorVS, kCompositorFS_Nearest, 
+            kCompositorVS, compositorFS,
             "CompositorShader",
             {{"vPosition", 0}, {"vTexcoord", 1}},
             {{"oColor", 0}}))
         return std::nullopt;
 
-    return { GLCompositor(CompShader) };
+    return { GLCompositor(CompShader, plugin) };
 }
 
-GLCompositor::GLCompositor(GLuint compShader) noexcept : CompShader(compShader)
+GLCompositor::GLCompositor(GLuint compShader, Plugins::Plugin* plugin) noexcept : CompShader(compShader)
 {
     CompScaleLoc = glGetUniformLocation(CompShader, "u3DScale");
+
+    GamePlugin = plugin;
+
+    if (GamePlugin != nullptr) {
+        GamePlugin->gpuOpenGL_FS_initVariables(CompShader);
+    }
 
     glUseProgram(CompShader);
     GLuint screenTextureUniform = glGetUniformLocation(CompShader, "ScreenTex");
@@ -145,7 +153,8 @@ GLCompositor::GLCompositor(GLCompositor&& other) noexcept :
     CompVertexArrayID(other.CompVertexArrayID),
     CompScreenInputTex(other.CompScreenInputTex),
     CompScreenOutputTex(other.CompScreenOutputTex),
-    CompScreenOutputFB(other.CompScreenOutputFB)
+    CompScreenOutputFB(other.CompScreenOutputFB),
+    GamePlugin(other.GamePlugin)
 {
     other.CompScreenOutputFB = {};
     other.CompScreenInputTex = {};
@@ -254,6 +263,10 @@ void GLCompositor::RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept
     // TODO: select more shaders (filtering, etc)
     glUseProgram(CompShader);
     glUniform1ui(CompScaleLoc, Scale);
+
+    if (GamePlugin != nullptr) {
+        GamePlugin->gpuOpenGL_FS_updateVariables(CompShader);
+    }
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, CompScreenInputTex);

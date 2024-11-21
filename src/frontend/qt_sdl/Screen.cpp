@@ -244,6 +244,31 @@ void ScreenPanel::resizeEvent(QResizeEvent* event)
 {
     setupScreenLayout();
     QWidget::resizeEvent(event);
+
+    refreshAspectRatio();
+}
+
+void ScreenPanel::refreshAspectRatio()
+{
+    auto& cfg = mainWindow->getWindowConfig();
+    int screenAspectTop = cfg.GetInt("ScreenAspectTop");
+
+    float aspectTop = (cfg.GetInt("Width") * 1.f) / cfg.GetInt("Height");
+    for (auto ratio : aspectRatios)
+    {
+        if (ratio.id == screenAspectTop)
+            aspectTop = ratio.ratio * 4.0/3;
+    }
+    if (aspectTop == 0) {
+        aspectTop = ((float)((QWidget*)this)->width()) / ((QWidget*)this)->height();
+    }
+
+    if (emuInstance->getNDS() != nullptr) {
+        auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
+        if (rom != nullptr && emuInstance->plugin != nullptr) {
+            emuInstance->plugin->setAspectRatio(aspectTop);
+        }
+    }
 }
 
 void ScreenPanel::mousePressEvent(QMouseEvent* event)
@@ -1086,6 +1111,8 @@ void ScreenPanelGL::osdDeleteItem(OSDItem* item)
 void ScreenPanelGL::drawScreenGL()
 {
     if (!glContext) return;
+
+    refreshAspectRatio();
 
     auto emuThread = emuInstance->getEmuThread();
 
