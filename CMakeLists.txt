@@ -16,7 +16,7 @@ if (USE_VCPKG)
 endif()
 
 project(melonDS
-    VERSION 0.9.5
+    VERSION 1.0
     DESCRIPTION "DS emulator, sorta"
     HOMEPAGE_URL "https://melonds.kuribo64.net"
     LANGUAGES C CXX)
@@ -27,6 +27,7 @@ include(CMakeDependentOption)
 include(CheckIPOSupported)
 
 include(SetupCCache)
+include(Sanitizers)
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 
