@@ -545,11 +545,14 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
 }
 
-void PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
+bool PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         nds->SetTouchKeyMask(TouchKeyMask, false);
+        return true;
     }
+
+    return false;
 }
 
 void PluginKingdomHeartsDays::hudToggle()

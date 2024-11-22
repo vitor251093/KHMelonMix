@@ -42,7 +42,7 @@ public:
     bool togglePause();
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
-    void applyTouchKeyMask(u32 TouchKeyMask);
+    bool applyTouchKeyMask(u32 TouchKeyMask);
 
     int _FastForwardPressCount;
     int _StartPressCount;

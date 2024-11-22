@@ -30,7 +30,7 @@ public:
     bool togglePause() {return false;};
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {}
-    void applyTouchKeyMask(u32 TouchKeyMask) {}
+    bool applyTouchKeyMask(u32 TouchKeyMask) { return false; }
     const char* getGameSceneName() {
         return "";
     }
