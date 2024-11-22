@@ -373,6 +373,12 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d)
 
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
+    bool _isHealthVisible = isHealthVisible();
+
+    if (!_isHealthVisible && GameScene == 15) { // gameScene_InGameDialog
+        return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0));
+    }
+
     if (HideAllHUD) {
         return vec2(255, 191);
     }
@@ -396,7 +402,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         }
     }
 
-    if (!isHealthVisible() && !isCommandMenuVisible())
+    if (!_isHealthVisible && !isCommandMenuVisible())
     {
         // texts over screen, like in the tutorial
         return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(128, 190));
@@ -432,7 +438,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         }
     }
 
-    if (isHealthVisible())
+    if (_isHealthVisible)
     {
         // player health
         float sourcePlayerHealthHeight = 78.0;
@@ -665,7 +671,10 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (GameScene == 14) { // gameScene_WorldSelection
         return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(1, 1)));
     }
-    if (GameScene == 15) { // gameScene_Other2D
+    if (GameScene == 15) { // gameScene_InGameDialog
+        return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
+    }
+    if (GameScene == 16) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -830,7 +839,7 @@ ivec4 getTopScreen3DColor()
     if (GameScene == 14) { // gameScene_WorldSelection
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
-    if (GameScene == 15) { // gameScene_Other2D
+    if (GameScene == 16) { // gameScene_Other2D
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
 
@@ -946,7 +955,10 @@ ivec4 brightness()
     if (GameScene == 14) { // gameScene_WorldSelection
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     }
-    if (GameScene == 15) { // gameScene_Other2D
+    if (GameScene == 15) { // gameScene_InGameDialog
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+    }
+    if (GameScene == 16) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
 

@@ -25,6 +25,14 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define PAUSE_SCREEN_ADDRESS_EU 0x020569d0
 #define PAUSE_SCREEN_ADDRESS_JP 0x020567f0
 
+#define DIALOG_SCREEN_ADDRESS_US 0x0219e9a8 // may also be 0x0219c484 with value 0x08
+#define DIALOG_SCREEN_ADDRESS_EU 0x0219e9a8 // TODO: KH
+#define DIALOG_SCREEN_ADDRESS_JP 0x0219e9a8 // TODO: KH
+
+#define DIALOG_SCREEN_VALUE_US 0x00000000
+#define DIALOG_SCREEN_VALUE_EU 0x00000000 // TODO: KH
+#define DIALOG_SCREEN_VALUE_JP 0x00000000 // TODO: KH
+
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
 
 // 0x03 => cutscene; 0x01 => not cutscene
@@ -111,8 +119,9 @@ enum
     gameScene_LoadingScreen,            // 12
     gameScene_CutsceneWithStaticImages, // 13
     gameScene_WorldSelection,           // 14
-    gameScene_Other2D,                  // 15
-    gameScene_Other                     // 16
+    gameScene_InGameDialog,             // 15
+    gameScene_Other2D,                  // 16
+    gameScene_Other                     // 17
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -487,6 +496,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
         case gameScene_WorldSelection: return "Game scene: World selection";
+        case gameScene_InGameDialog: return "Game scene: Ingame dialog";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         case gameScene_Other: return "Game scene: Unknown (3D)";
         default: return "Game scene: Unknown";
@@ -567,6 +577,8 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
     bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
     bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
+    bool isInGameDialog = nds->ARM7Read32(getAddressByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
+        getAddressByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
 
     u8 gameState2 = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x02;
@@ -709,6 +721,11 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     else if (GameScene == gameScene_PauseMenu)
     {
         return PriorGameScene;
+    }
+
+    if (isInGameDialog)
+    {
+        return gameScene_InGameDialog;
     }
 
     // Regular gameplay
