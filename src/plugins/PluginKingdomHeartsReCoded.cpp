@@ -581,7 +581,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         getAddressByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
 
     u8 gameState2 = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
-    bool isUnplayableArea = gameState2 == 0x02;
+    bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
     bool isWorldSelection = gameState2 == 0x03;
 
     u32 minimapCenterXAddress = getAddressByCart(MINIMAP_1_CENTER_X_ADDRESS_US, MINIMAP_1_CENTER_X_ADDRESS_EU, MINIMAP_1_CENTER_X_ADDRESS_JP);
