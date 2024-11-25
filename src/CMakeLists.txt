@@ -1,3 +1,5 @@
+project(core)
+
 set (CMAKE_CXX_STANDARD 17)
 
 include(FixInterfaceIncludes)
@@ -167,6 +169,11 @@ endif()
 
 if (WIN32)
     target_link_libraries(core PRIVATE ole32 comctl32 wsock32 ws2_32)
+elseif (ANDROID)
+    target_link_libraries(core)
+    if (ENABLE_OGLRENDERER)
+        target_link_libraries(core PRIVATE EGL GLESv3)
+    endif()
 elseif(NOT APPLE AND NOT HAIKU)
     check_library_exists(rt shm_open "" NEED_LIBRT)
     if (NEED_LIBRT)
