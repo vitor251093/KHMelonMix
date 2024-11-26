@@ -1,6 +1,6 @@
-<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/logo.png"></p>
-<h2 align="center"><b>Kingdom Hearts - Melon Mix</b></h2>
+![Kingdom Hearts - Melon Mix](logo.png)
 ###### *Logo by JackSilverson*
+
 <p align="center">
 <a href="https://www.gnu.org/licenses/gpl-3.0" alt="License: GPLv3"><img src="https://img.shields.io/badge/License-GPL%20v3-%23ff554d.svg"></a>
 <a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-windows.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-windows.yml/badge.svg" /></a>
