@@ -219,12 +219,12 @@ if (APPLE)
     target_sources(melonDS PRIVATE sem_timedwait.cpp)
 
     # Copy icon into the bundle
-    set(RESOURCE_FILES "${CMAKE_SOURCE_DIR}/res/khDaysMM.icns")
+    set(RESOURCE_FILES "${CMAKE_SOURCE_DIR}/res/melon.icns")
     target_sources(melonDS PUBLIC "${RESOURCE_FILES}")
 
     set_target_properties(melonDS PROPERTIES
         MACOSX_BUNDLE true
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/khDaysMM.plist.in
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/melon.plist.in
         OUTPUT_NAME melonDS
         RESOURCE "${RESOURCE_FILES}")
 
