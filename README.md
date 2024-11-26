@@ -1,5 +1,6 @@
 <p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/logo.png"></p>
 <h2 align="center"><b>Kingdom Hearts - Melon Mix</b></h2>
+###### *Logo by JackSilverson*
 <p align="center">
 <a href="https://www.gnu.org/licenses/gpl-3.0" alt="License: GPLv3"><img src="https://img.shields.io/badge/License-GPL%20v3-%23ff554d.svg"></a>
 <a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-windows.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-windows.yml/badge.svg" /></a>
@@ -56,6 +57,8 @@ See [BUILD.md](./BUILD.md) for build instructions.
 ## Credits
 
  * All people that supported and developed [melonDS](https://github.com/melonDS-emu/melonDS) (seriously, support them if possible; this project wouldn't exist without melonDS)
+ * Logo of the project by JackSilverson
+ * Logo of Days Melon Mix and ReCoded Melon Mix by DiabeticMedic
  * sandwichwater and DaniKH, for the innumerous amount of tests and for the hi-res textures
  * All the members from our Discord server that helped testing and developing the Melon Mix!
  * Michael Lipinski, for the [documentation](https://pdfs.semanticscholar.org/657d/adf4888f6302701095055b0d7a066e42b36f.pdf) regarding the way a NDS works
