@@ -49,10 +49,8 @@ jobs:
         mkdir -p ./dist/assets/days/cutscenes/cinematics
         touch ./dist/assets/days/cutscenes/cinematics/DELETE_ME
         cp AppDir/usr/bin/MelonMix ./dist/MelonMix
-        echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > ./dist/MelonMix_KHDays.sh
-        echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > ./dist/MelonMix_KHReCoded.sh
-        chmod +x ./dist/MelonMix_KHDays.sh
-        chmod +x ./dist/MelonMix_KHReCoded.sh
+        cp ../res/scripts/MelonMix_KHDays.sh    ./dist/MelonMix_KHDays.sh
+        cp ../res/scripts/MelonMix_KHReCoded.sh ./dist/MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-ubuntu-x86_64
@@ -79,10 +77,8 @@ jobs:
         mkdir -p ./dist_appimage/assets/days/cutscenes/cinematics
         touch ./dist_appimage/assets/days/cutscenes/cinematics/DELETE_ME
         mv MelonMix*.AppImage ./dist_appimage/MelonMix.AppImage
-        echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/days.nds"    > ./dist_appimage/MelonMix_KHDays.sh
-        echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/recoded.nds" > ./dist_appimage/MelonMix_KHReCoded.sh
-        chmod +x ./dist_appimage/MelonMix_KHDays.sh
-        chmod +x ./dist_appimage/MelonMix_KHReCoded.sh
+        cp ../res/scripts/MelonMix_KHDays_AppImage.sh    ./dist_appimage/MelonMix_KHDays.sh
+        cp ../res/scripts/MelonMix_KHReCoded_AppImage.sh ./dist_appimage/MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-appimage-x86_64
@@ -126,10 +122,8 @@ jobs:
           mkdir -p ./dist/assets/days/cutscenes/cinematics
           touch ./dist/assets/days/cutscenes/cinematics/DELETE_ME
           mv build/melonDS dist/MelonMix
-          echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > dist/MelonMix_KHDays.sh
-          echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > dist/MelonMix_KHReCoded.sh
-          chmod +x dist/MelonMix_KHDays.sh
-          chmod +x dist/MelonMix_KHReCoded.sh
+          cp ../res/scripts/MelonMix_KHDays.sh    ./dist/MelonMix_KHDays.sh
+          cp ../res/scripts/MelonMix_KHReCoded.sh ./dist/MelonMix_KHReCoded.sh
       - uses: actions/upload-artifact@v4
         with:
           name: MelonMix-ubuntu-aarch64
