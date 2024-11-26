@@ -243,9 +243,9 @@ endif()
 
 if (UNIX AND NOT APPLE)
     foreach(SIZE 16 32 48 64 128 256)
-        install(FILES ${CMAKE_SOURCE_DIR}/res/icon/khDaysMM_${SIZE}x${SIZE}.png
+        install(FILES ${CMAKE_SOURCE_DIR}/res/icon/melon_${SIZE}x${SIZE}.png
             DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/${SIZE}x${SIZE}/apps
-            RENAME com.vitormm.khDaysMM.png)
+            RENAME com.vitormm.melonMix.png)
     endforeach()
 
     install(FILES ${CMAKE_SOURCE_DIR}/res/com.vitormm.khDaysMM.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
