@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/res/icon/khDaysMM_128x128.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/logo.png"></p>
 <h2 align="center"><b>Kingdom Hearts - Melon Mix</b></h2>
 <p align="center">
 <a href="https://www.gnu.org/licenses/gpl-3.0" alt="License: GPLv3"><img src="https://img.shields.io/badge/License-GPL%20v3-%23ff554d.svg"></a>
