@@ -196,7 +196,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     }};
 }
 
-void PluginKingdomHeartsDays::onLoadROM() {
+void PluginKingdomHeartsReCoded::onLoadROM() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
     std::string localizationFilePath = LocalizationFilePath("en-US");
