@@ -22,6 +22,10 @@
 // #define RAM_SEARCH_LIMIT_MAX 0x04f6c5 + 0x1F00
 // #define RAM_SEARCH_LIMIT_MAX 0x19FFFF
 
+// WARNING: THE MACRO BELOW CAN ONLY BE USED ALONGSIDE RAM_SEARCH_EXACT_VALUE* MACROS,
+// OTHERWISE IT WILL DO NOTHING BUT MAKE SEARCH IMPOSSIBLE, AND DECREASE THE FRAMERATE
+#define RAM_SEARCH_EVERY_SINGLE_FRAME false
+
 #if RAM_SEARCH_SIZE == 32
 #define RAM_SEARCH_READ(nds,addr) nds->ARM7Read32(addr)
 #elif RAM_SEARCH_SIZE == 16
@@ -188,8 +192,10 @@ public:
         int byteSize = RAM_SEARCH_SIZE/8;
         u32 limitMin = RAM_SEARCH_LIMIT_MIN;
         u32 limitMax = RAM_SEARCH_LIMIT_MAX;
-        if (HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
-            printf("Resetting RAM search\n");
+        if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
+            if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
+                printf("Resetting RAM search\n");
+            }
             for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                 u32 addr = (0x02000000 | index);
                 u32 newVal = RAM_SEARCH_READ(nds, addr);
@@ -228,7 +234,7 @@ public:
                 LastMainRAM[index] = newVal;
             }
         }
-        if (HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
+        if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
             int total = 0;
             for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                 if (MainRAMState[index]) {
@@ -284,7 +290,9 @@ public:
                     printf("\n");
                 }
             }
-            printf("Addresses matching the search: %d\n", total);
+            if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
+                printf("Addresses matching the search: %d\n", total);
+            }
         }
     }
 };
