@@ -8,10 +8,10 @@
 #define DEBUG_LOG_FILE_ENABLED false
 
 #define RAM_SEARCH_ENABLED true
-#define RAM_SEARCH_SIZE 8
+#define RAM_SEARCH_SIZE 32
 #define RAM_SEARCH_LIMIT_MIN 0
 #define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
-#define RAM_SEARCH_INTERVAL_MARGIN 0x200
+#define RAM_SEARCH_INTERVAL_MARGIN 0x050
 
 // #define RAM_SEARCH_EXACT_VALUE     0x05B07E00
 // #define RAM_SEARCH_EXACT_VALUE_MIN 0x05B07E00
@@ -246,29 +246,40 @@ public:
                     printf("\n");
                 }
                 else {
+                    int validDistance = RAM_SEARCH_INTERVAL_MARGIN;
                     u32 firstAddr = 0;
+                    u32 lastAddr = 0;
                     for (u32 index = (limitMin == 0 ? byteSize : limitMin); index < limitMax; index += byteSize) {
                         u32 addr = (0x02000000 | index);
                         if (MainRAMState[index]) {
                             if (firstAddr == 0) {
                                 firstAddr = addr;
+                                lastAddr = addr;
+                            }
+                            else {
+                                lastAddr = addr;
                             }
                         }
                         else {
-                            int validDistance = RAM_SEARCH_INTERVAL_MARGIN;
-                            if (firstAddr != 0 && firstAddr < (addr - byteSize*(validDistance - 1))) {
-                                if (firstAddr == addr - byteSize*validDistance) {
+                            if (firstAddr != 0 && lastAddr < (addr - byteSize*validDistance)) {
+                                if (firstAddr == lastAddr) {
                                     printf("0x%08x\n", firstAddr);
                                 }
                                 else {
-                                    printf("0x%08x - 0x%08x\n", firstAddr, addr - byteSize*validDistance);
+                                    printf("0x%08x - 0x%08x\n", firstAddr, lastAddr);
                                 }
                                 firstAddr = 0;
+                                lastAddr = 0;
                             }
                         }
                     }
                     if (firstAddr != 0) {
-                        printf("0x%08x - 0x%08x\n", firstAddr, firstAddr);
+                        if (firstAddr == lastAddr) {
+                            printf("0x%08x\n", firstAddr);
+                        }
+                        else {
+                            printf("0x%08x - 0x%08x\n", firstAddr, lastAddr);
+                        }
                     }
                     printf("\n");
                 }
