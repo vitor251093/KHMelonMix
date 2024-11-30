@@ -258,55 +258,37 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
 void PluginKingdomHeartsDays::onLoadROM() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
-    // *((u32*)&rom[0x01b613b5]) = 0x0033e943;
-    // *((u32*)&rom[0x050c57cb]) = 0x0033e943;
-    // *((u32*)&rom[0x05b3e4ff]) = 0x0033e943;
-    // *((u32*)&rom[0x07afdb4d]) = 0x0033e943;
-    // *((u32*)&rom[0x07f97608]) = 0x0033e943;
-    // *((u32*)&rom[0x0b02c7ff]) = 0x0033e943;
-    // *((u32*)&rom[0x0e104248]) = 0x0033e943;
-    // *((u32*)&rom[0x0e6e691f]) = 0x0033e943;
 
-    // for (u32 address = 0; address <= 0xF78870C; address+= 1) {
-    //     if (*((u8*)&rom[address])       == '_' &&
-    //         *((u8*)&rom[address + 0x1]) == 'l' &&
-    //         *((u8*)&rom[address + 0x2]) == 'a' &&
-    //         *((u8*)&rom[address + 0x3]) == 'r')
-    //     {
-    //         *((u8*)&rom[address])       = '_';
-    //         *((u8*)&rom[address + 0x1]) = 'a';
-    //         *((u8*)&rom[address + 0x2]) = 'b';
-    //         *((u8*)&rom[address + 0x3]) = 'c';
-    //     }
+    std::string localizationFilePath = LocalizationFilePath("en-US");
+    Platform::FileHandle* f = Platform::OpenLocalFile(localizationFilePath.c_str(), Platform::FileMode::ReadText);
+    if (f) {
+        char linebuf[1024];
+        char entryname[32];
+        char entryval[1024];
+        while (!Platform::IsEndOfFile(f))
+        {
+            if (!Platform::FileReadLine(linebuf, 1024, f))
+                break;
 
-    //     if (*((u8*)&rom[address])       == '_' &&
-    //         *((u8*)&rom[address + 0x1]) == 'v' &&
-    //         *((u8*)&rom[address + 0x2]) == 'e' &&
-    //         *((u8*)&rom[address + 0x3]) == 'n')
-    //     {
-    //         *((u8*)&rom[address])       = '_';
-    //         *((u8*)&rom[address + 0x1]) = 'l';
-    //         *((u8*)&rom[address + 0x2]) = 'a';
-    //         *((u8*)&rom[address + 0x3]) = 'r';
-    //     }
-    // }
+            int ret = sscanf(linebuf, "%31[A-Za-z_0-9]=%[^\t\r\n]", entryname, entryval);
+            entryname[31] = '\0';
+            if (ret < 2) continue;
 
-    // u16 tmp = *((u16*)&rom[0x0033e911]);
-    // *((u16*)&rom[0x0033e911]) = *((u16*)&rom[0x0033e943]);
-    // *((u16*)&rom[0x0033e943]) = tmp;
+            std::string entrynameStr = std::string(entryname);
+            if (entrynameStr.compare(0, 2, "0x") == 0) {
+                unsigned int addr = std::stoul(entrynameStr.substr(2), nullptr, 16);
 
-    // *((u32*)&rom[0x0334d70d]) = 0x1033e943; // original: 0x1033e911;
-    
-    // printf("Roxas folder: %02x%02x\n", rom[0x0033e934], rom[0x0033e935]);
+                for (int i = 0; i < 1024; i++) {
+                    *((u8*)&rom[addr + i]) = entryval[i];
+                    if (entryval[i] == 0 || entryval[i] == '\0') {
+                        break;
+                    }
+                }
+            }
+        }
 
-    // rom[0x0033e934] = 0x76;
-    // rom[0x0033e935] = 0x65;
-
-
-
-    // PRINT_AS_8_BIT_HEX(0x0205ac04);
-    // PRINT_AS_8_BIT_HEX(0x020d73e4);
-    // printf("\n");
+        CloseFile(f);
+    }
 }
 
 std::string PluginKingdomHeartsDays::assetsFolder() {
@@ -1128,6 +1110,19 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
                 return newSteamFullPath.string();
             }
         }
+    }
+
+    return "";
+}
+
+std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
+    std::string filename = language + ".ini";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "localization" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
     }
 
     return "";

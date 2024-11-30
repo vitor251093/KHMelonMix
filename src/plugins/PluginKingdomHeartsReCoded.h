@@ -26,7 +26,7 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
-    void onLoadROM() {};
+    void onLoadROM();
 
     std::string assetsFolder();
 
@@ -122,6 +122,7 @@ public:
     }
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
+    std::string LocalizationFilePath(std::string language);
     std::filesystem::path patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
     void onTerminateIngameCutscene();

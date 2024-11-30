@@ -182,6 +182,7 @@ void EmuThread::run()
 
                 emuInstance->plugin = Plugins::PluginManager::load(gamecode);
                 emuInstance->plugin->setNds(emuInstance->getNDS());
+                emuInstance->plugin->onLoadROM();
                 emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetString(path);

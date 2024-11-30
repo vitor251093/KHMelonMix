@@ -196,6 +196,41 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     }};
 }
 
+void PluginKingdomHeartsDays::onLoadROM() {
+    u8* rom = (u8*)nds->GetNDSCart()->GetROM();
+
+    std::string localizationFilePath = LocalizationFilePath("en-US");
+    Platform::FileHandle* f = Platform::OpenLocalFile(localizationFilePath.c_str(), Platform::FileMode::ReadText);
+    if (f) {
+        char linebuf[1024];
+        char entryname[32];
+        char entryval[1024];
+        while (!Platform::IsEndOfFile(f))
+        {
+            if (!Platform::FileReadLine(linebuf, 1024, f))
+                break;
+
+            int ret = sscanf(linebuf, "%31[A-Za-z_0-9]=%[^\t\r\n]", entryname, entryval);
+            entryname[31] = '\0';
+            if (ret < 2) continue;
+
+            std::string entrynameStr = std::string(entryname);
+            if (entrynameStr.compare(0, 2, "0x") == 0) {
+                unsigned int addr = std::stoul(entrynameStr.substr(2), nullptr, 16);
+
+                for (int i = 0; i < 1024; i++) {
+                    *((u8*)&rom[addr + i]) = entryval[i];
+                    if (entryval[i] == 0 || entryval[i] == '\0') {
+                        break;
+                    }
+                }
+            }
+        }
+
+        CloseFile(f);
+    }
+}
+
 std::string PluginKingdomHeartsReCoded::assetsFolder() {
     return "recoded";
 }
@@ -919,6 +954,19 @@ std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene
                 return newSteamFullPath.string();
             }
         }
+    }
+
+    return "";
+}
+
+std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string language) {
+    std::string filename = language + ".ini";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "localization" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
     }
 
     return "";

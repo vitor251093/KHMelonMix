@@ -153,6 +153,7 @@ public:
     virtual bool ShouldUnmuteAfterCutscene() = 0;
     virtual CutsceneEntry* CurrentCutscene() = 0;
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
+    virtual std::string LocalizationFilePath(std::string language) = 0;
     virtual void onIngameCutsceneIdentified(CutsceneEntry* cutscene) = 0;
     virtual void onTerminateIngameCutscene() = 0;
     virtual void onReturnToGameAfterCutscene() = 0;
