@@ -8,7 +8,7 @@
 #define DEBUG_LOG_FILE_ENABLED false
 
 #define RAM_SEARCH_ENABLED true
-#define RAM_SEARCH_SIZE 8
+#define RAM_SEARCH_SIZE 32
 #define RAM_SEARCH_LIMIT_MIN 0
 #define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
 #define RAM_SEARCH_INTERVAL_MARGIN 0x200
@@ -236,7 +236,7 @@ public:
                 }
             }
             if (total > 0) {
-                if (total < 50*(4/byteSize)) {
+                if (total < 200*(4/byteSize)) {
                     for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                         u32 addr = (0x02000000 | index);
                         if (MainRAMState[index]) {

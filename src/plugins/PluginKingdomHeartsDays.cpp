@@ -166,6 +166,12 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     HUDState = -1;
     hudToggle();
 
+    cameraPositionX = 0x10000;
+    cameraPositionY = 0x10000;
+    cameraPositionZ = 0x10000;
+    cameraAngleX = 0x10000;
+    cameraAngleY = 0x10000;
+
     _muchOlderHad3DOnTopScreen = false;
     _muchOlderHad3DOnBottomScreen = false;
     _olderHad3DOnTopScreen = false;
@@ -445,6 +451,86 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
+        if (HUDState == 3) {
+            if (cameraPositionX == 0x10000) {
+                cameraPositionX = nds->ARM7Read32(0x02232298);
+            }
+            if (cameraPositionY == 0x10000) {
+                cameraPositionY = nds->ARM7Read32(0x0223229c);
+            }
+            if (cameraPositionZ == 0x10000) {
+                cameraPositionZ = nds->ARM7Read32(0x022322a0);
+            }
+            if (cameraAngleY == 0x10000) {
+                cameraAngleY = nds->ARM7Read32(0x022322d8);
+            }
+            
+            if ((~*InputMask) & (1<<5)) { // left
+                *InputMask |= (1<<5);
+                cameraPositionX -= 0x080;
+            }
+            if ((~*InputMask) & (1<<4)) { // right
+                *InputMask |= (1<<4);
+                cameraPositionX += 0x080;
+            }
+            if ((~*InputMask) & (1<<6)) { // up
+                *InputMask |= (1<<6);
+                cameraPositionY += 0x080;
+            }
+            if ((~*InputMask) & (1<<7)) { // down
+                *InputMask |= (1<<7);
+                cameraPositionY -= 0x080;
+            }
+
+            if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
+                *HotkeyMask &= ~(1<<22); // left
+                cameraAngleX -= 0x080;
+            }
+            if ((*HotkeyMask) & (1 << 23)) { // D-pad right (HK_CommandMenuRight)
+                *HotkeyMask &= ~(1<<23); // right
+                cameraAngleX += 0x080;
+            }
+            if ((*HotkeyMask) & (1 << 24)) { // D-pad up (HK_CommandMenuUp)
+                *HotkeyMask &= ~(1<<24); // up
+                cameraAngleY += 0x080;
+            }
+            if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
+                *HotkeyMask &= ~(1<<25); // down
+                cameraAngleY -= 0x080;
+            }
+
+            // nds->ARM7Write32(0x02232298, cameraPositionX);
+            // nds->ARM7Write32(0x0223229c, cameraPositionY);
+            // nds->ARM7Write16(0x022322d4, (u16)cameraAngleX);
+            // nds->ARM7Write32(0x022322d8, cameraAngleY);
+
+            // PRINT_AS_32_BIT_HEX(0x02232298); // camera coordinate inside the map (X)
+            // PRINT_AS_32_BIT_HEX(0x0223229c); // camera coordinate inside the map (Y)
+            // PRINT_AS_32_BIT_HEX(0x022322a0); // camera coordinate inside the map (Z)
+            // PRINT_AS_32_BIT_HEX(0x022322d4); // camera angle (X)
+            // PRINT_AS_32_BIT_HEX(0x022322d8); // camera angle (Y)
+        }
+        else {
+            cameraPositionX = 0x10000;
+            cameraPositionY = 0x10000;
+            cameraPositionZ = 0x10000;
+            cameraAngleY = 0x10000;
+
+            if ((~*InputMask) & (1<<5)) { // left
+                // *InputMask |= (1<<5);
+                // *InputMask &= ~(1<<6);
+                cameraAngleX += 0x0200;
+            }
+            else if ((~*InputMask) & (1<<4)) { // right
+                // *InputMask |= (1<<4);
+                // *InputMask &= ~(1<<6);
+                cameraAngleX -= 0x0200;
+            }
+
+            // nds->ARM7Write16(0x022206c4, (u16)cameraAngleX);
+            // nds->ARM7Write16(0x022322d4, (u16)cameraAngleX);
+        }
+
         // Enabling X + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
@@ -519,6 +605,8 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         }
     }
     else {
+        cameraAngleX = (u32)nds->ARM7Read16(0x022206c4);
+
         // So the arrow keys can be used as directionals
         if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
             *InputMask &= ~(1<<5); // left
@@ -1293,6 +1381,21 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
 
 void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
+    // nds->ARM7Write16(0x0225231c,   0x4000);
+    // nds->ARM7Write16(0x0225231c+2, 0x0000);
+    // nds->ARM7Write16(0x02252324,   0x4000);
+    // nds->ARM7Write16(0x02252324+2, 0x0000);
+    // nds->ARM7Write16(0x02236690,   0x8000);
+    // nds->ARM7Write16(0x02236690+2, 0x0000);
+
+    // Twilight Town Lobby
+    // PRINT_AS_32_BIT_HEX(0x022206c4); // direction (angle) where roxas is gonna move by going forward
+    // PRINT_AS_32_BIT_HEX(0x02232298); // camera coordinate inside the map (X)
+    // PRINT_AS_32_BIT_HEX(0x0223229c); // camera coordinate inside the map (Y)
+    // PRINT_AS_32_BIT_HEX(0x022322a0); // camera coordinate inside the map (Z)
+    // PRINT_AS_32_BIT_HEX(0x022322d4); // camera angle (X)
+    // PRINT_AS_32_BIT_HEX(0x022322d8); // camera angle (Y)
+
     // PRINT_AS_8_BIT_HEX(0x0204c184);
     // PRINT_AS_8_BIT_HEX(0x0204c185);
     // printf("\n");

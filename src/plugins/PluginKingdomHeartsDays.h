@@ -160,6 +160,12 @@ private:
     bool ShowMissionInfo;
     bool HideAllHUD;
 
+    u32 cameraPositionX;
+    u32 cameraPositionY;
+    u32 cameraPositionZ;
+    u32 cameraAngleX;
+    u32 cameraAngleY;
+
     std::map<GLuint, GLuint[11]> CompGpuLoc{};
     std::map<u32, GLuint[4]> CompGpu3DLoc{};
 
