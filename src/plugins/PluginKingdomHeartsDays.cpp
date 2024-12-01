@@ -259,6 +259,11 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 void PluginKingdomHeartsDays::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
+    std::string language = getStringByCart(KHDaysUSLanguage, KHDaysEULanguage, KHDaysJPLanguage, KHDaysJPRev1Language);
+    if (language == "") {
+        language = "en-US";
+    }
+
     std::string localizationFilePath = LocalizationFilePath("en-US");
     Platform::FileHandle* f = Platform::OpenLocalFile(localizationFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
@@ -369,16 +374,7 @@ std::string PluginKingdomHeartsDays::assetsFolder() {
 }
 
 std::string PluginKingdomHeartsDays::assetsRegionSubfolder() {
-    if (isEuropeCart()) {
-        return "eu";
-    }
-    else if (isJapanCartRev1()) {
-        return "jp_rev1";
-    }
-    else if (isJapanCart()) {
-        return "jp";
-    }
-    return "us";
+    return getStringByCart("us", "eu", "jp", "jp_rev1");
 }
 
 const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
@@ -410,7 +406,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     CutsceneEntry* bsCutscene = detectBottomScreenCutscene();
     int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
 
-    bool isCredits = nds->ARM7Read8(getAddressByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
+    bool isCredits = nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
     if (isCredits) {
         dsCutsceneState = 3;
     }
@@ -517,7 +513,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling X + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
-            u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
+            u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1);
@@ -789,20 +785,20 @@ int PluginKingdomHeartsDays::detectGameScene()
     bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
-    u8 mainMenuOrIntroOrLoadMenuVal = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP, IS_MAIN_MENU_JP_REV1));
+    u8 mainMenuOrIntroOrLoadMenuVal = nds->ARM7Read8(getU32ByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP, IS_MAIN_MENU_JP_REV1));
     bool isMainMenuOrIntroOrLoadMenu = mainMenuOrIntroOrLoadMenuVal == 0x28 || mainMenuOrIntroOrLoadMenuVal == 0x2C;
-    bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP, IS_CUTSCENE_JP_REV1)) == 0x03;
-    bool isCredits = nds->ARM7Read8(getAddressByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
-    bool isUnplayableArea = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04;
-    bool isLoadMenu = nds->ARM7Read8(getAddressByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1)) ==
-        getAddressByCart(LOAD_MENU_MAIN_MENU_VIEW_US, LOAD_MENU_MAIN_MENU_VIEW_EU, LOAD_MENU_MAIN_MENU_VIEW_JP, LOAD_MENU_MAIN_MENU_VIEW_JP_REV1);
-    bool isDaysCounter = nds->ARM7Read8(getAddressByCart(IS_DAYS_COUNTER_US, IS_DAYS_COUNTER_EU, IS_DAYS_COUNTER_JP, IS_DAYS_COUNTER_JP_REV1)) ==
-        getAddressByCart(IS_DAYS_COUNTER_VALUE_US, IS_DAYS_COUNTER_VALUE_EU, IS_DAYS_COUNTER_VALUE_JP, IS_DAYS_COUNTER_VALUE_JP_REV1);
-    bool isDeathCounter = nds->ARM7Read8(getAddressByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP, DEATH_SCREEN_ADDRESS_JP_REV1)) ==
-        getAddressByCart(DEATH_SCREEN_VALUE_US, DEATH_SCREEN_VALUE_EU, DEATH_SCREEN_VALUE_JP, DEATH_SCREEN_VALUE_JP_REV1);
-    bool isTutorial = nds->ARM7Read32(getAddressByCart(TUTORIAL_ADDRESS_US, TUTORIAL_ADDRESS_EU, TUTORIAL_ADDRESS_JP, TUTORIAL_ADDRESS_JP_REV1)) != 0;
-    bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP, PAUSE_SCREEN_ADDRESS_JP_REV1)) != 0;
-    bool isTheEnd = nds->ARM7Read8(getAddressByCart(THE_END_SCREEN_ADDRESS_US, THE_END_SCREEN_ADDRESS_EU, THE_END_SCREEN_ADDRESS_JP, THE_END_SCREEN_ADDRESS_JP_REV1)) == 0x60;
+    bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP, IS_CUTSCENE_JP_REV1)) == 0x03;
+    bool isCredits = nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
+    bool isUnplayableArea = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04;
+    bool isLoadMenu = nds->ARM7Read8(getU32ByCart(CURRENT_MAIN_MENU_VIEW_US, CURRENT_MAIN_MENU_VIEW_EU, CURRENT_MAIN_MENU_VIEW_JP, CURRENT_MAIN_MENU_VIEW_JP_REV1)) ==
+        getU32ByCart(LOAD_MENU_MAIN_MENU_VIEW_US, LOAD_MENU_MAIN_MENU_VIEW_EU, LOAD_MENU_MAIN_MENU_VIEW_JP, LOAD_MENU_MAIN_MENU_VIEW_JP_REV1);
+    bool isDaysCounter = nds->ARM7Read8(getU32ByCart(IS_DAYS_COUNTER_US, IS_DAYS_COUNTER_EU, IS_DAYS_COUNTER_JP, IS_DAYS_COUNTER_JP_REV1)) ==
+        getU32ByCart(IS_DAYS_COUNTER_VALUE_US, IS_DAYS_COUNTER_VALUE_EU, IS_DAYS_COUNTER_VALUE_JP, IS_DAYS_COUNTER_VALUE_JP_REV1);
+    bool isDeathCounter = nds->ARM7Read8(getU32ByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP, DEATH_SCREEN_ADDRESS_JP_REV1)) ==
+        getU32ByCart(DEATH_SCREEN_VALUE_US, DEATH_SCREEN_VALUE_EU, DEATH_SCREEN_VALUE_JP, DEATH_SCREEN_VALUE_JP_REV1);
+    bool isTutorial = nds->ARM7Read32(getU32ByCart(TUTORIAL_ADDRESS_US, TUTORIAL_ADDRESS_EU, TUTORIAL_ADDRESS_JP, TUTORIAL_ADDRESS_JP_REV1)) != 0;
+    bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP, PAUSE_SCREEN_ADDRESS_JP_REV1)) != 0;
+    bool isTheEnd = nds->ARM7Read8(getU32ByCart(THE_END_SCREEN_ADDRESS_US, THE_END_SCREEN_ADDRESS_EU, THE_END_SCREEN_ADDRESS_JP, THE_END_SCREEN_ADDRESS_JP_REV1)) == 0x60;
 
     if (isCredits)
     {
@@ -972,7 +968,7 @@ void PluginKingdomHeartsDays::setAspectRatio(float aspectRatio)
     {
         int aspectRatioKey = (int)round(0x1000 * aspectRatio);
 
-        u32 aspectRatioMenuAddress = getAddressByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
+        u32 aspectRatioMenuAddress = getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
 
         if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
             nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
@@ -999,12 +995,30 @@ bool PluginKingdomHeartsDays::setGameScene(int newGameScene)
 
 u32 PluginKingdomHeartsDays::getCutsceneAddress(CutsceneEntry* entry)
 {
-    return getAddressByCart(entry->usAddress, entry->euAddress, entry->jpAddress, entry->jpAddress - 0x200);
+    return getU32ByCart(entry->usAddress, entry->euAddress, entry->jpAddress, entry->jpAddress - 0x200);
 }
 
-u32 PluginKingdomHeartsDays::getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address)
+u32 PluginKingdomHeartsDays::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address)
 {
     u32 cutsceneAddress = 0;
+    if (isUsaCart()) {
+        cutsceneAddress = usAddress;
+    }
+    else if (isEuropeCart()) {
+        cutsceneAddress = euAddress;
+    }
+    else if (isJapanCartRev1()) {
+        cutsceneAddress = jpRev1Address;
+    }
+    else if (isJapanCart()) {
+        cutsceneAddress = jpAddress;
+    }
+    return cutsceneAddress;
+}
+
+std::string PluginKingdomHeartsDays::getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress, std::string jpRev1Address)
+{
+    std::string cutsceneAddress = "";
     if (isUsaCart()) {
         cutsceneAddress = usAddress;
     }
@@ -1027,7 +1041,7 @@ CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
         return nullptr;
     }
 
-    u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
+    u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
     u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
     if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
         cutsceneAddressValue = 0;
@@ -1050,7 +1064,7 @@ CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
         return nullptr;
     }
 
-    u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
+    u32 cutsceneAddress2 = getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
     u32 cutsceneAddressValue2 = nds->ARM7Read32(cutsceneAddress2);
     if (cutsceneAddressValue2 == 0 || (cutsceneAddressValue2 - (cutsceneAddressValue2 & 0xFF)) == 0xea000000) {
         cutsceneAddressValue2 = 0;
@@ -1283,8 +1297,8 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     _ReplayLimitCount = 30;
 
     if (_NextCutscene == nullptr) {
-        u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
-        u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
+        u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
+        u32 cutsceneAddress2 = getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
         nds->ARM7Write32(cutsceneAddress, 0x0);
         nds->ARM7Write32(cutsceneAddress2, 0x0);
     }
@@ -1305,7 +1319,7 @@ bool PluginKingdomHeartsDays::refreshGameScene()
 
 u32 PluginKingdomHeartsDays::getCurrentMission()
 {
-    return nds->ARM7Read8(getAddressByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
+    return nds->ARM7Read8(getU32ByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
 }
 
 // The states below also happen in multiple other places outside the main menu menus
@@ -1324,7 +1338,7 @@ u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
         return 0;
     }
 
-    u8 val = nds->ARM7Read8(getAddressByCart(CURRENT_INGAME_MENU_VIEW_US, CURRENT_INGAME_MENU_VIEW_EU, CURRENT_INGAME_MENU_VIEW_JP, CURRENT_INGAME_MENU_VIEW_JP_REV1));
+    u8 val = nds->ARM7Read8(getU32ByCart(CURRENT_INGAME_MENU_VIEW_US, CURRENT_INGAME_MENU_VIEW_EU, CURRENT_INGAME_MENU_VIEW_JP, CURRENT_INGAME_MENU_VIEW_JP_REV1));
     if (val == 0x00) return 1;
     if (val == 0x02) return 2;
     if (val == 0x01) return 3;
@@ -1353,8 +1367,8 @@ u32 PluginKingdomHeartsDays::getCurrentMap()
         return 0;
     }
 
-    u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
-    u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
+    u8 world = nds->ARM7Read8(getU32ByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
+    u8 map = nds->ARM7Read8(getU32ByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
     u32 fullMap = world;
     fullMap = (fullMap << 4*2) | map;
 

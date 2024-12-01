@@ -181,7 +181,7 @@ private:
     int detectGameScene();
     bool setGameScene(int newGameScene);
 
-    u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
+    u32 getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
 
     u32 getCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* detectTopScreenCutscene();

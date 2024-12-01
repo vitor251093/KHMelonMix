@@ -142,6 +142,11 @@ public:
     void loadConfigs(std::function<std::string(std::string)> getStringConfig)
     {
         KH_15_25_Remix_Location = getStringConfig("Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
+
+        KHDaysUSLanguage = getStringConfig("KHDays_US.Language");
+        KHDaysEULanguage = getStringConfig("KHDays_EU.Language");
+        KHDaysJPLanguage = getStringConfig("KHDays_JP.Language");
+        KHDaysJPRev1Language = getStringConfig("KHDays_JPRev1.Language");
     }
 private:
     melonDS::NDS* nds;
@@ -184,11 +189,16 @@ private:
 
     std::array<CutsceneEntry, 46> Cutscenes;
     std::string KH_15_25_Remix_Location = "";
+    std::string KHDaysUSLanguage = "";
+    std::string KHDaysEULanguage = "";
+    std::string KHDaysJPLanguage = "";
+    std::string KHDaysJPRev1Language = "";
 
     int detectGameScene();
     bool setGameScene(int newGameScene);
 
-    u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address);
+    u32 getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address);
+    std::string getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress, std::string jpRev1Address);
 
     u32 getCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* detectTopScreenCutscene();

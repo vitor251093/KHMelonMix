@@ -443,7 +443,7 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling L + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
-            u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
+            u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP);
 
@@ -684,19 +684,19 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
-    int ingameState = nds->ARM7Read8(getAddressByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
-    bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
-    bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
-    bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
-    bool isInGameDialog = nds->ARM7Read32(getAddressByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
-        getAddressByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
+    int ingameState = nds->ARM7Read8(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
+    bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getU32ByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
+    bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
+    bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
+    bool isInGameDialog = nds->ARM7Read32(getU32ByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
+        getU32ByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
 
-    u8 gameState2 = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
+    u8 gameState2 = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
     bool isWorldSelection = gameState2 == 0x03;
 
-    u32 minimapCenterXAddress = getAddressByCart(MINIMAP_1_CENTER_X_ADDRESS_US, MINIMAP_1_CENTER_X_ADDRESS_EU, MINIMAP_1_CENTER_X_ADDRESS_JP);
-    u32 minimapCenterYAddress = getAddressByCart(MINIMAP_1_CENTER_Y_ADDRESS_US, MINIMAP_1_CENTER_Y_ADDRESS_EU, MINIMAP_1_CENTER_Y_ADDRESS_JP);
+    u32 minimapCenterXAddress = getU32ByCart(MINIMAP_1_CENTER_X_ADDRESS_US, MINIMAP_1_CENTER_X_ADDRESS_EU, MINIMAP_1_CENTER_X_ADDRESS_JP);
+    u32 minimapCenterYAddress = getU32ByCart(MINIMAP_1_CENTER_Y_ADDRESS_US, MINIMAP_1_CENTER_Y_ADDRESS_EU, MINIMAP_1_CENTER_Y_ADDRESS_JP);
     u32 newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
     u32 newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
     if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
@@ -704,8 +704,8 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         MinimapCenterY = newMinimapCenterY;
     }
     else {
-        minimapCenterXAddress = getAddressByCart(MINIMAP_2_CENTER_X_ADDRESS_US, MINIMAP_2_CENTER_X_ADDRESS_EU, MINIMAP_2_CENTER_X_ADDRESS_JP);
-        minimapCenterYAddress = getAddressByCart(MINIMAP_2_CENTER_Y_ADDRESS_US, MINIMAP_2_CENTER_Y_ADDRESS_EU, MINIMAP_2_CENTER_Y_ADDRESS_JP);
+        minimapCenterXAddress = getU32ByCart(MINIMAP_2_CENTER_X_ADDRESS_US, MINIMAP_2_CENTER_X_ADDRESS_EU, MINIMAP_2_CENTER_X_ADDRESS_JP);
+        minimapCenterYAddress = getU32ByCart(MINIMAP_2_CENTER_Y_ADDRESS_US, MINIMAP_2_CENTER_Y_ADDRESS_EU, MINIMAP_2_CENTER_Y_ADDRESS_JP);
         newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
         newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
         if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
@@ -713,8 +713,8 @@ int PluginKingdomHeartsReCoded::detectGameScene()
             MinimapCenterY = newMinimapCenterY;
         }
         else {
-            minimapCenterXAddress = getAddressByCart(MINIMAP_3_CENTER_X_ADDRESS_US, MINIMAP_3_CENTER_X_ADDRESS_EU, MINIMAP_3_CENTER_X_ADDRESS_JP);
-            minimapCenterYAddress = getAddressByCart(MINIMAP_3_CENTER_Y_ADDRESS_US, MINIMAP_3_CENTER_Y_ADDRESS_EU, MINIMAP_3_CENTER_Y_ADDRESS_JP);
+            minimapCenterXAddress = getU32ByCart(MINIMAP_3_CENTER_X_ADDRESS_US, MINIMAP_3_CENTER_X_ADDRESS_EU, MINIMAP_3_CENTER_X_ADDRESS_JP);
+            minimapCenterYAddress = getU32ByCart(MINIMAP_3_CENTER_Y_ADDRESS_US, MINIMAP_3_CENTER_Y_ADDRESS_EU, MINIMAP_3_CENTER_Y_ADDRESS_JP);
             newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
             newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
             if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
@@ -722,8 +722,8 @@ int PluginKingdomHeartsReCoded::detectGameScene()
                 MinimapCenterY = newMinimapCenterY;
             }
             else {
-                minimapCenterXAddress = getAddressByCart(MINIMAP_4_CENTER_X_ADDRESS_US, MINIMAP_4_CENTER_X_ADDRESS_EU, MINIMAP_4_CENTER_X_ADDRESS_JP);
-                minimapCenterYAddress = getAddressByCart(MINIMAP_4_CENTER_Y_ADDRESS_US, MINIMAP_4_CENTER_Y_ADDRESS_EU, MINIMAP_4_CENTER_Y_ADDRESS_JP);
+                minimapCenterXAddress = getU32ByCart(MINIMAP_4_CENTER_X_ADDRESS_US, MINIMAP_4_CENTER_X_ADDRESS_EU, MINIMAP_4_CENTER_X_ADDRESS_JP);
+                minimapCenterYAddress = getU32ByCart(MINIMAP_4_CENTER_Y_ADDRESS_US, MINIMAP_4_CENTER_Y_ADDRESS_EU, MINIMAP_4_CENTER_Y_ADDRESS_JP);
                 newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
                 newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
                 MinimapCenterX = newMinimapCenterX;
@@ -849,7 +849,7 @@ void PluginKingdomHeartsReCoded::setAspectRatio(float aspectRatio)
     {
         int aspectRatioKey = (int)round(0x1000 * aspectRatio);
 
-        u32 aspectRatioMenuAddress = getAddressByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
+        u32 aspectRatioMenuAddress = getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
 
         if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
             nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
@@ -876,10 +876,10 @@ bool PluginKingdomHeartsReCoded::setGameScene(int newGameScene)
 
 u32 PluginKingdomHeartsReCoded::getCutsceneAddress(CutsceneEntry* entry)
 {
-    return getAddressByCart(entry->usAddress, entry->euAddress, entry->jpAddress);
+    return getU32ByCart(entry->usAddress, entry->euAddress, entry->jpAddress);
 }
 
-u32 PluginKingdomHeartsReCoded::getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress)
+u32 PluginKingdomHeartsReCoded::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress)
 {
     u32 cutsceneAddress = 0;
     if (isUsaCart()) {
@@ -901,7 +901,7 @@ CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
         return nullptr;
     }
 
-    u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+    u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
     u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
     if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
         cutsceneAddressValue = 0;
@@ -1113,8 +1113,8 @@ void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene() {
     _ReplayLimitCount = 30;
 
     if (_NextCutscene == nullptr) {
-        u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
-        // u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP);
+        u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+        // u32 cutsceneAddress2 = getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP);
         nds->ARM7Write32(cutsceneAddress, 0x0);
         // nds->ARM7Write32(cutsceneAddress2, 0x0);
     }
@@ -1136,7 +1136,7 @@ bool PluginKingdomHeartsReCoded::refreshGameScene()
 u32 PluginKingdomHeartsReCoded::getCurrentMission()
 {
     return 0;
-    // return nds->ARM7Read8(getAddressByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
+    // return nds->ARM7Read8(getU32ByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMap()
@@ -1148,8 +1148,8 @@ u32 PluginKingdomHeartsReCoded::getCurrentMap()
     //     return 0;
     // }
 
-    // u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
-    // u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
+    // u8 world = nds->ARM7Read8(getU32ByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
+    // u8 map = nds->ARM7Read8(getU32ByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
     // u32 fullMap = world;
     // fullMap = (fullMap << 4*2) | map;
 
