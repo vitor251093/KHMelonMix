@@ -281,7 +281,7 @@ void PluginKingdomHeartsDays::loadLocalization() {
                 unsigned int addr = std::stoul(entrynameStr.substr(2), nullptr, 16);
 
                 for (int i = 0; i < 1023; i++) {
-                    if (entryval[i + addrGap] == '\\' || entryval[i + addrGap + 1] == 'n') {
+                    if (entryval[i + addrGap] == '\\' && entryval[i + addrGap + 1] == 'n') {
                         *((u8*)&rom[addr + i]) = 0x0A;
                         addrGap++;
                         continue;
@@ -302,7 +302,7 @@ void PluginKingdomHeartsDays::loadLocalization() {
         int lastAddr = 0;
         bool validCharFound = false;
         bool forbCharFound = false;
-        for (int addr = 0x06A19DEC; addr < 0x06C49D0C; addr++) {
+        for (int addr = 0x0689D330; addr < 0x06C49D0C; addr++) {
             bool usual = rom[addr] >= 0x41 && rom[addr] <= 0x7E;
             bool accents = rom[addr] == 0xC2 || rom[addr] == 0xC3 || (rom[addr] >= 0x80 && rom[addr] <= 0xBF);
             bool quotes = rom[addr] == 0xE2 || rom[addr] == 0x80 || rom[addr] == 0x9C || rom[addr] == 0x9D;
