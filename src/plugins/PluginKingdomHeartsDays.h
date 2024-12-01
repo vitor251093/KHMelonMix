@@ -42,6 +42,9 @@ public:
     void onLoadState();
     bool togglePause();
 
+    u32 lastCameraBaseAddress = 0;
+    bool isCameraBaseAddress(u32 addr);
+    u32 getCameraBaseAddress();
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     bool applyTouchKeyMask(u32 TouchKeyMask);
 

@@ -483,6 +483,45 @@ bool PluginKingdomHeartsDays::togglePause()
     return false;
 }
 
+bool PluginKingdomHeartsDays::isCameraBaseAddress(u32 addr)
+{
+    u32 pattern[5] = {0x000007fe, 0x00000ddc, 0x00001c72, 0x0000019a, 0x006a4000};
+    u32 first = nds->ARM7Read32(addr);
+    if (first == pattern[0]) {
+        u32 second = nds->ARM7Read32(addr+4);
+        if (second == pattern[1]) {
+            u32 third = nds->ARM7Read32(addr+8);
+            if (third == pattern[2]) {
+                u32 forth = nds->ARM7Read32(addr+12);
+                if (forth == pattern[3]) {
+                    u32 fifth = nds->ARM7Read32(addr+16);
+                    if (fifth == pattern[4]) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+u32 PluginKingdomHeartsDays::getCameraBaseAddress()
+{
+    if (lastCameraBaseAddress != 0 && isCameraBaseAddress(lastCameraBaseAddress)) {
+        return lastCameraBaseAddress;
+    }
+
+    lastCameraBaseAddress = 0;
+
+    for (u32 addr = 0x02000000; addr < 0x02500000; addr+=4) {
+        if (isCameraBaseAddress(addr)) {
+            lastCameraBaseAddress = addr;
+        }
+    }
+
+    return lastCameraBaseAddress;
+}
+
 void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
 {
     ramSearch(nds, *HotkeyPress);
@@ -1509,35 +1548,25 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
 
 void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
-    u32 pattern[5] = {0x000007fe, 0x00000ddc, 0x00001c72, 0x0000019a, 0x006a4000};
-    for (u32 addr = 0x02000000; addr < 0x02500000; addr+=4) {
-        u32 first = nds->ARM7Read32(addr);
-        if (first == pattern[0]) {
-            u32 second = nds->ARM7Read32(addr+4);
-            if (second == pattern[1]) {
-                u32 third = nds->ARM7Read32(addr+8);
-                if (third == pattern[2]) {
-                    u32 forth = nds->ARM7Read32(addr+12);
-                    if (forth == pattern[3]) {
-                        u32 fifth = nds->ARM7Read32(addr+16);
-                        if (fifth == pattern[4]) {
-                            printf("0x%08x\n", addr);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    printf("\n");
+    u32 base = getCameraBaseAddress() + 0x14;
+    // printf("0x%08x\n", base);
 
-    // 000007fe00000ddc00001c720000019a006a4000 0000a0750000150dffffaf330000cf1b00002f0ffffffa1b0000000000001000000000000000000300000004000000000000000000000000000000000000000000005c00000016b600001a00000014cd
-    // for (u32 addr = 0x0223229c - 0x20; addr <= 0x0223229c + 0x40; addr += 4) {
+    // u32 cameraX = base + 0x08;
+    // u32 cameraY = base + 0x0C;
+    // u32 cameraZ = base + 0x10;
+    // printf("cameraX 0x%08x\n", cameraX);
+    // printf("cameraY 0x%08x\n", cameraY);
+    // printf("cameraZ 0x%08x\n", cameraZ);
+    // printf("\n");
+
+    // 0000a075 0000150d ffffaf33 0000cf1b 00002f0f fffffa1b0000000000001000000000000000000300000004000000000000000000000000000000000000000000005c00000016b600001a00000014cd
+    // for (u32 addr = 0x0223229c - 0x08; addr <= 0x0223229c + 0x40; addr += 4) {
     //     printf("%08x", nds->ARM7Read32(addr));
     // }
     // printf("\n");
 
-    // 000007fe00000ddc00001c720000019a006a4000 ffffe15e000014cd000019810000399d00002ecf000019810000000000001000000000001000000300000003000000000000000000000000000000000000000000005c00
-    // for (u32 addr = 0x022f3368 - 0x14; addr <= 0x022f3368 + 0x40; addr += 4) {
+    // ffffe15e 000014cd 00001981 0000399d 00002ecf 000019810000000000001000000000001000000300000003000000000000000000000000000000000000000000005c00
+    // for (u32 addr = 0x022f3368; addr <= 0x022f3368 + 0x40; addr += 4) {
     //     printf("%08x", nds->ARM7Read32(addr));
     // }
     // printf("\n");
