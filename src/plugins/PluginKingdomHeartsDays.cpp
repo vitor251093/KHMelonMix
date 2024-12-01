@@ -368,7 +368,7 @@ std::string PluginKingdomHeartsDays::assetsFolder() {
     return "days";
 }
 
-std::string PluginKingdomHeartsDays::assetsLanguageSubfolder() {
+std::string PluginKingdomHeartsDays::assetsRegionSubfolder() {
     if (isEuropeCart()) {
         return "eu";
     }
@@ -1206,10 +1206,10 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
 std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::string assetsFolderName = assetsFolder();
-    std::string assetsLanguageSubfolderName = assetsLanguageSubfolder();
+    std::string assetsRegionSubfolderName = assetsRegionSubfolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "localization" / assetsLanguageSubfolderName / filename;
+    std::filesystem::path fullPath = assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }

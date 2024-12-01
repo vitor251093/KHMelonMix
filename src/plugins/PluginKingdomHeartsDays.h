@@ -29,7 +29,7 @@ public:
     void onLoadROM();
 
     std::string assetsFolder();
-    std::string assetsLanguageSubfolder();
+    std::string assetsRegionSubfolder();
 
     const char* gpuOpenGL_FS();
     const char* gpu3DOpenGL_VS_Z();
