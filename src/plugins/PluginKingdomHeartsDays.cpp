@@ -378,10 +378,22 @@ std::string PluginKingdomHeartsDays::assetsRegionSubfolder() {
 }
 
 const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
+    bool disable = getBoolByCart(KHDaysUSDisableEnhancedGraphics, KHDaysEUDisableEnhancedGraphics,
+                                 KHDaysJPDisableEnhancedGraphics, KHDaysJPRev1DisableEnhancedGraphics);
+    if (disable) {
+        return nullptr;
+    }
+
     return kCompositorFS_KhDays;
 };
 
 const char* PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z() {
+    bool disable = getBoolByCart(KHDaysUSDisableEnhancedGraphics, KHDaysEUDisableEnhancedGraphics,
+                                 KHDaysJPDisableEnhancedGraphics, KHDaysJPRev1DisableEnhancedGraphics);
+    if (disable) {
+        return nullptr;
+    }
+
     return kRenderVS_Z_KhDays;
 };
 
@@ -1019,6 +1031,24 @@ u32 PluginKingdomHeartsDays::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAd
 std::string PluginKingdomHeartsDays::getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress, std::string jpRev1Address)
 {
     std::string cutsceneAddress = "";
+    if (isUsaCart()) {
+        cutsceneAddress = usAddress;
+    }
+    else if (isEuropeCart()) {
+        cutsceneAddress = euAddress;
+    }
+    else if (isJapanCartRev1()) {
+        cutsceneAddress = jpRev1Address;
+    }
+    else if (isJapanCart()) {
+        cutsceneAddress = jpAddress;
+    }
+    return cutsceneAddress;
+}
+
+bool PluginKingdomHeartsDays::getBoolByCart(bool usAddress, bool euAddress, bool jpAddress, bool jpRev1Address)
+{
+    bool cutsceneAddress = false;
     if (isUsaCart()) {
         cutsceneAddress = usAddress;
     }

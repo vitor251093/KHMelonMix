@@ -139,7 +139,7 @@ public:
 
     bool refreshGameScene();
 
-    void loadConfigs(std::function<std::string(std::string)> getStringConfig)
+    void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
     {
         KH_15_25_Remix_Location = getStringConfig("Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
     }

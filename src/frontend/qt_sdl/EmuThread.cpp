@@ -185,6 +185,10 @@ void EmuThread::run()
                 emuInstance->plugin->onLoadROM();
                 emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
+                    return ref.GetBool(path);
+                },
+                [cfg = globalCfg](const std::string& path){
+                    Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetString(path);
                 });
 

@@ -168,7 +168,7 @@ public:
 
     virtual void setAspectRatio(float aspectRatio) {}
 
-    virtual void loadConfigs(std::function<std::string(std::string)> getStringConfig) {}
+    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig) {}
 
     void log(const char* log) {
         printf("%s\n", log);
