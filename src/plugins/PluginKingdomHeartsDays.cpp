@@ -298,15 +298,16 @@ void PluginKingdomHeartsDays::onLoadROM() {
         CloseFile(f);
     }
     else {
-        /*
         int firstAddr = 0;
         int lastAddr = 0;
         bool validCharFound = false;
         bool forbCharFound = false;
         for (int addr = 0x06A66638; addr < 0x06C49D0C; addr++) {
-            bool usual = rom[addr] >= 0x20 && rom[addr] <= 0x7F;
-            bool unusual = rom[addr] == 0x0A || (rom[addr] >= 0x91 && rom[addr] <= 0x94) || rom[addr] == 0xB0;
-            bool forb = rom[addr] == 0x5F || rom[addr] == 0x2F;
+            bool usual = rom[addr] >= 0x41 && rom[addr] <= 0x7E;
+            bool accents = rom[addr] == 0xC2 || rom[addr] == 0xC3 || (rom[addr] >= 0x80 && rom[addr] <= 0xBF);
+            bool quotes = rom[addr] == 0xE2 || rom[addr] == 0x80 || rom[addr] == 0x9C || rom[addr] == 0x9D;
+            bool unusual = (rom[addr] >= 0x20 && rom[addr] <= 0x40) || accents || quotes || rom[addr] == 0x0A;
+            bool forb = rom[addr] == 0x93 || rom[addr] == 0x5F || rom[addr] == 0x2F;
             if (usual || unusual) {
                 if (firstAddr == 0) {
                     firstAddr = addr;
@@ -344,7 +345,6 @@ void PluginKingdomHeartsDays::onLoadROM() {
                 }
             }
         }
-        */
     }
 }
 
