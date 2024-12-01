@@ -257,7 +257,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     }};
 }
 
-void PluginKingdomHeartsDays::onLoadROM() {
+void PluginKingdomHeartsDays::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
     std::string localizationFilePath = LocalizationFilePath("en-US");
@@ -348,6 +348,12 @@ void PluginKingdomHeartsDays::onLoadROM() {
     }
 }
 
+void PluginKingdomHeartsDays::onLoadROM() {
+    loadLocalization();
+
+    u8* rom = (u8*)nds->GetNDSCart()->GetROM();
+}
+
 std::string PluginKingdomHeartsDays::assetsFolder() {
     return "days";
 }
@@ -421,6 +427,8 @@ void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
 
 void PluginKingdomHeartsDays::onLoadState()
 {
+    loadLocalization();
+
     GameScene = gameScene_InGameWithMap;
 }
 

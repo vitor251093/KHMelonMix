@@ -25,6 +25,7 @@ public:
     bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROMLength() == 268435456; };
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
+    void loadLocalization();
     void onLoadROM();
 
     std::string assetsFolder();
