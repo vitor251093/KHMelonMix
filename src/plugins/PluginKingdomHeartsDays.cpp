@@ -302,7 +302,7 @@ void PluginKingdomHeartsDays::loadLocalization() {
         int lastAddr = 0;
         bool validCharFound = false;
         bool forbCharFound = false;
-        for (int addr = 0x06A66638; addr < 0x06C49D0C; addr++) {
+        for (int addr = 0x06A19DEC; addr < 0x06C49D0C; addr++) {
             bool usual = rom[addr] >= 0x41 && rom[addr] <= 0x7E;
             bool accents = rom[addr] == 0xC2 || rom[addr] == 0xC3 || (rom[addr] >= 0x80 && rom[addr] <= 0xBF);
             bool quotes = rom[addr] == 0xE2 || rom[addr] == 0x80 || rom[addr] == 0x9C || rom[addr] == 0x9D;
