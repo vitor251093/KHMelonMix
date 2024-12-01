@@ -280,16 +280,27 @@ void PluginKingdomHeartsDays::loadLocalization() {
                 int addrGap = 0;
                 unsigned int addr = std::stoul(entrynameStr.substr(2), nullptr, 16);
 
+                bool ended = false;
                 for (int i = 0; i < 1023; i++) {
+                    if (*((u8*)&rom[addr + i]) == 0x00) {
+                        break;
+                    }
+
                     if (entryval[i + addrGap] == '\\' && entryval[i + addrGap + 1] == 'n') {
                         *((u8*)&rom[addr + i]) = 0x0A;
                         addrGap++;
                         continue;
                     }
 
-                    *((u8*)&rom[addr + i]) = entryval[i + addrGap];
                     if (entryval[i + addrGap] == 0 || entryval[i + addrGap] == '\0') {
-                        break;
+                        ended = true;
+                    }
+
+                    if (ended) {
+                        *((u8*)&rom[addr + i]) = 0x20;
+                    }
+                    else {
+                        *((u8*)&rom[addr + i]) = entryval[i + addrGap];
                     }
                 }
             }
