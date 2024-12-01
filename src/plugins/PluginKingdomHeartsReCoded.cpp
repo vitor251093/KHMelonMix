@@ -196,6 +196,114 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     }};
 }
 
+void PluginKingdomHeartsReCoded::loadLocalization() {
+    u8* rom = (u8*)nds->GetNDSCart()->GetROM();
+
+    std::string localizationFilePath = LocalizationFilePath("en-US");
+    Platform::FileHandle* f = Platform::OpenLocalFile(localizationFilePath.c_str(), Platform::FileMode::ReadText);
+    if (f) {
+        char linebuf[1024];
+        char entryname[32];
+        char entryval[1024];
+        while (!Platform::IsEndOfFile(f))
+        {
+            if (!Platform::FileReadLine(linebuf, 1024, f))
+                break;
+
+            int ret = sscanf(linebuf, "%31[A-Za-z_0-9]=%[^\t\r\n]", entryname, entryval);
+            entryname[31] = '\0';
+            if (ret < 2) continue;
+
+            std::string entrynameStr = std::string(entryname);
+            if (entrynameStr.compare(0, 2, "0x") == 0) {
+                int addrGap = 0;
+                unsigned int addr = std::stoul(entrynameStr.substr(2), nullptr, 16);
+
+                bool ended = false;
+                for (int i = 0; i < 1023; i++) {
+                    if (*((u8*)&rom[addr + i]) == 0x00) {
+                        break;
+                    }
+
+                    if (entryval[i + addrGap] == '\\' && entryval[i + addrGap + 1] == 'n') {
+                        *((u8*)&rom[addr + i]) = 0x0A;
+                        addrGap++;
+                        continue;
+                    }
+
+                    if (entryval[i + addrGap] == 0 || entryval[i + addrGap] == '\0') {
+                        ended = true;
+                    }
+
+                    if (ended) {
+                        *((u8*)&rom[addr + i]) = 0x20;
+                    }
+                    else {
+                        *((u8*)&rom[addr + i]) = entryval[i + addrGap];
+                    }
+                }
+            }
+        }
+
+        CloseFile(f);
+    }
+    else {
+        int firstAddr = 0;
+        int lastAddr = 0;
+        bool validCharFound = false;
+        bool forbCharFound = false;
+        for (int addr = 0x06A66638; addr < 0x06C49D0C; addr++) { // TODO: KH Those are the Days addresses
+            bool usual = rom[addr] >= 0x41 && rom[addr] <= 0x7E;
+            bool accents = rom[addr] == 0xC2 || rom[addr] == 0xC3 || (rom[addr] >= 0x80 && rom[addr] <= 0xBF);
+            bool quotes = rom[addr] == 0xE2 || rom[addr] == 0x80 || rom[addr] == 0x9C || rom[addr] == 0x9D;
+            bool unusual = (rom[addr] >= 0x20 && rom[addr] <= 0x40) || accents || quotes || rom[addr] == 0x0A;
+            bool forb = rom[addr] == 0x93 || rom[addr] == 0x5F || rom[addr] == 0x2F;
+            if (usual || unusual) {
+                if (firstAddr == 0) {
+                    firstAddr = addr;
+                    lastAddr = addr;
+                }
+                else {
+                    lastAddr = addr;
+                }
+            }
+            if (usual) {
+                validCharFound = true;
+            }
+            if (forb) {
+                forbCharFound = true;
+            }
+            if (!usual && !unusual) {
+                if (firstAddr != 0) {
+                    if (!forbCharFound && validCharFound && lastAddr - firstAddr > 2) {
+                        printf("0x%08X=", firstAddr);
+                        for (int pAddr = firstAddr; pAddr <= lastAddr; pAddr++) {
+                            if ((char)rom[pAddr] == 0x0A) {
+                                printf("\\n");
+                            }
+                            else {
+                                printf("%c", (char)rom[pAddr]);
+                            }
+                        }
+                        printf("\n");
+                    }
+
+                    firstAddr = 0;
+                    lastAddr = 0;
+                    validCharFound = false;
+                    forbCharFound = false;
+                }
+            }
+        }
+    }
+}
+
+void PluginKingdomHeartsReCoded::onLoadROM() {
+    loadLocalization();
+
+    u8* rom = (u8*)nds->GetNDSCart()->GetROM();
+}
+
 std::string PluginKingdomHeartsReCoded::assetsFolder() {
     return "recoded";
 }
@@ -253,6 +361,8 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
 
 void PluginKingdomHeartsReCoded::onLoadState()
 {
+    loadLocalization();
+
     GameScene = gameScene_InGameWithMap;
 }
 
@@ -333,7 +443,7 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
         // Enabling L + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
-            u32 dpadMenuAddress = getAddressByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
+            u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP);
 
@@ -574,19 +684,19 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
-    int ingameState = nds->ARM7Read8(getAddressByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
-    bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getAddressByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
-    bool isPauseScreen = nds->ARM7Read8(getAddressByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
-    bool isCutscene = nds->ARM7Read8(getAddressByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
-    bool isInGameDialog = nds->ARM7Read32(getAddressByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
-        getAddressByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
+    int ingameState = nds->ARM7Read8(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
+    bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getU32ByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
+    bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
+    bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
+    bool isInGameDialog = nds->ARM7Read32(getU32ByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
+        getU32ByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
 
-    u8 gameState2 = nds->ARM7Read8(getAddressByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
+    u8 gameState2 = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
     bool isWorldSelection = gameState2 == 0x03;
 
-    u32 minimapCenterXAddress = getAddressByCart(MINIMAP_1_CENTER_X_ADDRESS_US, MINIMAP_1_CENTER_X_ADDRESS_EU, MINIMAP_1_CENTER_X_ADDRESS_JP);
-    u32 minimapCenterYAddress = getAddressByCart(MINIMAP_1_CENTER_Y_ADDRESS_US, MINIMAP_1_CENTER_Y_ADDRESS_EU, MINIMAP_1_CENTER_Y_ADDRESS_JP);
+    u32 minimapCenterXAddress = getU32ByCart(MINIMAP_1_CENTER_X_ADDRESS_US, MINIMAP_1_CENTER_X_ADDRESS_EU, MINIMAP_1_CENTER_X_ADDRESS_JP);
+    u32 minimapCenterYAddress = getU32ByCart(MINIMAP_1_CENTER_Y_ADDRESS_US, MINIMAP_1_CENTER_Y_ADDRESS_EU, MINIMAP_1_CENTER_Y_ADDRESS_JP);
     u32 newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
     u32 newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
     if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
@@ -594,8 +704,8 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         MinimapCenterY = newMinimapCenterY;
     }
     else {
-        minimapCenterXAddress = getAddressByCart(MINIMAP_2_CENTER_X_ADDRESS_US, MINIMAP_2_CENTER_X_ADDRESS_EU, MINIMAP_2_CENTER_X_ADDRESS_JP);
-        minimapCenterYAddress = getAddressByCart(MINIMAP_2_CENTER_Y_ADDRESS_US, MINIMAP_2_CENTER_Y_ADDRESS_EU, MINIMAP_2_CENTER_Y_ADDRESS_JP);
+        minimapCenterXAddress = getU32ByCart(MINIMAP_2_CENTER_X_ADDRESS_US, MINIMAP_2_CENTER_X_ADDRESS_EU, MINIMAP_2_CENTER_X_ADDRESS_JP);
+        minimapCenterYAddress = getU32ByCart(MINIMAP_2_CENTER_Y_ADDRESS_US, MINIMAP_2_CENTER_Y_ADDRESS_EU, MINIMAP_2_CENTER_Y_ADDRESS_JP);
         newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
         newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
         if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
@@ -603,8 +713,8 @@ int PluginKingdomHeartsReCoded::detectGameScene()
             MinimapCenterY = newMinimapCenterY;
         }
         else {
-            minimapCenterXAddress = getAddressByCart(MINIMAP_3_CENTER_X_ADDRESS_US, MINIMAP_3_CENTER_X_ADDRESS_EU, MINIMAP_3_CENTER_X_ADDRESS_JP);
-            minimapCenterYAddress = getAddressByCart(MINIMAP_3_CENTER_Y_ADDRESS_US, MINIMAP_3_CENTER_Y_ADDRESS_EU, MINIMAP_3_CENTER_Y_ADDRESS_JP);
+            minimapCenterXAddress = getU32ByCart(MINIMAP_3_CENTER_X_ADDRESS_US, MINIMAP_3_CENTER_X_ADDRESS_EU, MINIMAP_3_CENTER_X_ADDRESS_JP);
+            minimapCenterYAddress = getU32ByCart(MINIMAP_3_CENTER_Y_ADDRESS_US, MINIMAP_3_CENTER_Y_ADDRESS_EU, MINIMAP_3_CENTER_Y_ADDRESS_JP);
             newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
             newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
             if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
@@ -612,8 +722,8 @@ int PluginKingdomHeartsReCoded::detectGameScene()
                 MinimapCenterY = newMinimapCenterY;
             }
             else {
-                minimapCenterXAddress = getAddressByCart(MINIMAP_4_CENTER_X_ADDRESS_US, MINIMAP_4_CENTER_X_ADDRESS_EU, MINIMAP_4_CENTER_X_ADDRESS_JP);
-                minimapCenterYAddress = getAddressByCart(MINIMAP_4_CENTER_Y_ADDRESS_US, MINIMAP_4_CENTER_Y_ADDRESS_EU, MINIMAP_4_CENTER_Y_ADDRESS_JP);
+                minimapCenterXAddress = getU32ByCart(MINIMAP_4_CENTER_X_ADDRESS_US, MINIMAP_4_CENTER_X_ADDRESS_EU, MINIMAP_4_CENTER_X_ADDRESS_JP);
+                minimapCenterYAddress = getU32ByCart(MINIMAP_4_CENTER_Y_ADDRESS_US, MINIMAP_4_CENTER_Y_ADDRESS_EU, MINIMAP_4_CENTER_Y_ADDRESS_JP);
                 newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
                 newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
                 MinimapCenterX = newMinimapCenterX;
@@ -739,7 +849,7 @@ void PluginKingdomHeartsReCoded::setAspectRatio(float aspectRatio)
     {
         int aspectRatioKey = (int)round(0x1000 * aspectRatio);
 
-        u32 aspectRatioMenuAddress = getAddressByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
+        u32 aspectRatioMenuAddress = getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
 
         if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
             nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
@@ -766,10 +876,10 @@ bool PluginKingdomHeartsReCoded::setGameScene(int newGameScene)
 
 u32 PluginKingdomHeartsReCoded::getCutsceneAddress(CutsceneEntry* entry)
 {
-    return getAddressByCart(entry->usAddress, entry->euAddress, entry->jpAddress);
+    return getU32ByCart(entry->usAddress, entry->euAddress, entry->jpAddress);
 }
 
-u32 PluginKingdomHeartsReCoded::getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress)
+u32 PluginKingdomHeartsReCoded::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress)
 {
     u32 cutsceneAddress = 0;
     if (isUsaCart()) {
@@ -791,7 +901,7 @@ CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
         return nullptr;
     }
 
-    u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+    u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
     u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
     if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
         cutsceneAddressValue = 0;
@@ -924,6 +1034,19 @@ std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene
     return "";
 }
 
+std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string language) {
+    std::string filename = language + ".ini";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "localization" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    return "";
+}
+
 void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
         return;
@@ -990,8 +1113,8 @@ void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene() {
     _ReplayLimitCount = 30;
 
     if (_NextCutscene == nullptr) {
-        u32 cutsceneAddress = getAddressByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
-        // u32 cutsceneAddress2 = getAddressByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP);
+        u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+        // u32 cutsceneAddress2 = getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP);
         nds->ARM7Write32(cutsceneAddress, 0x0);
         // nds->ARM7Write32(cutsceneAddress2, 0x0);
     }
@@ -1013,7 +1136,7 @@ bool PluginKingdomHeartsReCoded::refreshGameScene()
 u32 PluginKingdomHeartsReCoded::getCurrentMission()
 {
     return 0;
-    // return nds->ARM7Read8(getAddressByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
+    // return nds->ARM7Read8(getU32ByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMap()
@@ -1025,8 +1148,8 @@ u32 PluginKingdomHeartsReCoded::getCurrentMap()
     //     return 0;
     // }
 
-    // u8 world = nds->ARM7Read8(getAddressByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
-    // u8 map = nds->ARM7Read8(getAddressByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
+    // u8 world = nds->ARM7Read8(getU32ByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
+    // u8 map = nds->ARM7Read8(getU32ByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
     // u32 fullMap = world;
     // fullMap = (fullMap << 4*2) | map;
 

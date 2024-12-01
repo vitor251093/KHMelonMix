@@ -49,6 +49,7 @@ public:
     bool ShouldUnmuteAfterCutscene() {return false;}
     CutsceneEntry* CurrentCutscene() {return nullptr;}
     std::string CutsceneFilePath(CutsceneEntry* cutscene) {return "";}
+    std::string LocalizationFilePath(std::string language) {return "";}
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {}
     void onTerminateIngameCutscene() {}
     void onReturnToGameAfterCutscene() {}

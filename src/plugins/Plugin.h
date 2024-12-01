@@ -11,7 +11,7 @@
 #define RAM_SEARCH_SIZE 32
 #define RAM_SEARCH_LIMIT_MIN 0
 #define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
-#define RAM_SEARCH_INTERVAL_MARGIN 0x200
+#define RAM_SEARCH_INTERVAL_MARGIN 0x050
 
 // #define RAM_SEARCH_EXACT_VALUE     0x05B07E00
 // #define RAM_SEARCH_EXACT_VALUE_MIN 0x05B07E00
@@ -21,6 +21,10 @@
 // #define RAM_SEARCH_LIMIT_MIN 0x04f6c5 - 0x1F00
 // #define RAM_SEARCH_LIMIT_MAX 0x04f6c5 + 0x1F00
 // #define RAM_SEARCH_LIMIT_MAX 0x19FFFF
+
+// WARNING: THE MACRO BELOW CAN ONLY BE USED ALONGSIDE RAM_SEARCH_EXACT_VALUE* MACROS,
+// OTHERWISE IT WILL DO NOTHING BUT MAKE SEARCH IMPOSSIBLE, AND DECREASE THE FRAMERATE
+#define RAM_SEARCH_EVERY_SINGLE_FRAME false
 
 #if RAM_SEARCH_SIZE == 32
 #define RAM_SEARCH_READ(nds,addr) nds->ARM7Read32(addr)
@@ -149,6 +153,7 @@ public:
     virtual bool ShouldUnmuteAfterCutscene() = 0;
     virtual CutsceneEntry* CurrentCutscene() = 0;
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
+    virtual std::string LocalizationFilePath(std::string language) = 0;
     virtual void onIngameCutsceneIdentified(CutsceneEntry* cutscene) = 0;
     virtual void onTerminateIngameCutscene() = 0;
     virtual void onReturnToGameAfterCutscene() = 0;
@@ -163,7 +168,7 @@ public:
 
     virtual void setAspectRatio(float aspectRatio) {}
 
-    virtual void loadConfigs(std::function<std::string(std::string)> getStringConfig) {}
+    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig) {}
 
     void log(const char* log) {
         printf("%s\n", log);
@@ -188,8 +193,10 @@ public:
         int byteSize = RAM_SEARCH_SIZE/8;
         u32 limitMin = RAM_SEARCH_LIMIT_MIN;
         u32 limitMax = RAM_SEARCH_LIMIT_MAX;
-        if (HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
-            printf("Resetting RAM search\n");
+        if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
+            if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
+                printf("Resetting RAM search\n");
+            }
             for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                 u32 addr = (0x02000000 | index);
                 u32 newVal = RAM_SEARCH_READ(nds, addr);
@@ -228,7 +235,7 @@ public:
                 LastMainRAM[index] = newVal;
             }
         }
-        if (HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
+        if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
             int total = 0;
             for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                 if (MainRAMState[index]) {
@@ -246,34 +253,47 @@ public:
                     printf("\n");
                 }
                 else {
+                    int validDistance = RAM_SEARCH_INTERVAL_MARGIN;
                     u32 firstAddr = 0;
+                    u32 lastAddr = 0;
                     for (u32 index = (limitMin == 0 ? byteSize : limitMin); index < limitMax; index += byteSize) {
                         u32 addr = (0x02000000 | index);
                         if (MainRAMState[index]) {
                             if (firstAddr == 0) {
                                 firstAddr = addr;
+                                lastAddr = addr;
+                            }
+                            else {
+                                lastAddr = addr;
                             }
                         }
                         else {
-                            int validDistance = RAM_SEARCH_INTERVAL_MARGIN;
-                            if (firstAddr != 0 && firstAddr < (addr - byteSize*(validDistance - 1))) {
-                                if (firstAddr == addr - byteSize*validDistance) {
+                            if (firstAddr != 0 && lastAddr < (addr - byteSize*validDistance)) {
+                                if (firstAddr == lastAddr) {
                                     printf("0x%08x\n", firstAddr);
                                 }
                                 else {
-                                    printf("0x%08x - 0x%08x\n", firstAddr, addr - byteSize*validDistance);
+                                    printf("0x%08x - 0x%08x\n", firstAddr, lastAddr);
                                 }
                                 firstAddr = 0;
+                                lastAddr = 0;
                             }
                         }
                     }
                     if (firstAddr != 0) {
-                        printf("0x%08x - 0x%08x\n", firstAddr, firstAddr);
+                        if (firstAddr == lastAddr) {
+                            printf("0x%08x\n", firstAddr);
+                        }
+                        else {
+                            printf("0x%08x - 0x%08x\n", firstAddr, lastAddr);
+                        }
                     }
                     printf("\n");
                 }
             }
-            printf("Addresses matching the search: %d\n", total);
+            if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
+                printf("Addresses matching the search: %d\n", total);
+            }
         }
     }
 };

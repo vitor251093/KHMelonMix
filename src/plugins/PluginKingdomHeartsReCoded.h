@@ -26,7 +26,8 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
-    void onLoadROM() {};
+    void loadLocalization();
+    void onLoadROM();
 
     std::string assetsFolder();
 
@@ -122,6 +123,7 @@ public:
     }
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
+    std::string LocalizationFilePath(std::string language);
     std::filesystem::path patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
     void onTerminateIngameCutscene();
@@ -137,7 +139,7 @@ public:
 
     bool refreshGameScene();
 
-    void loadConfigs(std::function<std::string(std::string)> getStringConfig)
+    void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
     {
         KH_15_25_Remix_Location = getStringConfig("Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
     }
@@ -179,7 +181,7 @@ private:
     int detectGameScene();
     bool setGameScene(int newGameScene);
 
-    u32 getAddressByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
+    u32 getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
 
     u32 getCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* detectTopScreenCutscene();

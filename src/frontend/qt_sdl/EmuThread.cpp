@@ -182,7 +182,12 @@ void EmuThread::run()
 
                 emuInstance->plugin = Plugins::PluginManager::load(gamecode);
                 emuInstance->plugin->setNds(emuInstance->getNDS());
+                emuInstance->plugin->onLoadROM();
                 emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
+                    Config::Table& ref = const_cast <Config::Table&>(cfg);
+                    return ref.GetBool(path);
+                },
+                [cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetString(path);
                 });
@@ -795,7 +800,7 @@ void EmuThread::refreshPluginCutsceneState()
     {
         emuInstance->audioVolume = 0;
 
-        emuInstance->targetFPS = 1.0 / 1000;
+        emuInstance->targetFPS = 1000.0;
 
         int newVideoRenderer = renderer3D_Software;
         if (videoRenderer != newVideoRenderer) {
@@ -810,7 +815,7 @@ void EmuThread::refreshPluginCutsceneState()
         auto& instcfg = emuInstance->getLocalConfig();
         emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
 
-        emuInstance->targetFPS = 1.0 / globalCfg.GetDouble("TargetFPS");
+        emuInstance->targetFPS = globalCfg.GetDouble("TargetFPS");
 
         int newVideoRenderer = globalCfg.GetInt("3D.Renderer");
         if (videoRenderer != newVideoRenderer) {
