@@ -4,7 +4,6 @@
 #include "PluginKingdomHeartsDays_GPU3D_OpenGL_shaders.h"
 
 #include <math.h>
-#include <fstream>
 
 namespace Plugins
 {
@@ -308,7 +307,7 @@ void PluginKingdomHeartsDays::loadLocalization() {
 
         CloseFile(f);
     }
-    else {
+    else if (false) { // Method that exports the strings from the game ROM
         int firstAddr = 0;
         int lastAddr = 0;
         bool validCharFound = false;
