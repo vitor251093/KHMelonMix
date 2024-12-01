@@ -46,8 +46,8 @@ jobs:
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
-        mkdir -p ./dist/assets/days/cutscenes/cinematics
-        touch ./dist/assets/days/cutscenes/cinematics/DELETE_ME
+        cp -r ./assets ./dist/assets
+        rm -r ./dist/assets/days/2d_textures
         cp AppDir/usr/bin/MelonMix ./dist/MelonMix
         cp ./res/scripts/MelonMix_KHDays.sh    ./dist/MelonMix_KHDays.sh
         cp ./res/scripts/MelonMix_KHReCoded.sh ./dist/MelonMix_KHReCoded.sh
@@ -75,6 +75,7 @@ jobs:
         mkdir -p ./dist_appimage/roms
         touch ./dist_appimage/roms/DELETE_ME
         cp -r ./assets ./dist_appimage/assets
+        rm -r ./dist_appimage/assets/days/2d_textures
         mv MelonMix*.AppImage ./dist_appimage/MelonMix.AppImage
         cp ./res/scripts/MelonMix_KHDays_AppImage.sh    ./dist_appimage/MelonMix_KHDays.sh
         cp ./res/scripts/MelonMix_KHReCoded_AppImage.sh ./dist_appimage/MelonMix_KHReCoded.sh
@@ -119,6 +120,7 @@ jobs:
           mkdir -p ./dist/roms
           touch ./dist/roms/DELETE_ME
           cp -r ./assets ./dist/assets
+          rm -r ./dist/assets/days/2d_textures
           mv build/melonDS dist/MelonMix
           cp ./res/scripts/MelonMix_KHDays.sh    ./dist/MelonMix_KHDays.sh
           cp ./res/scripts/MelonMix_KHReCoded.sh ./dist/MelonMix_KHReCoded.sh
