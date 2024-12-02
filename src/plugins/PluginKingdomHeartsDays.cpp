@@ -1618,20 +1618,6 @@ void PluginKingdomHeartsDays::debugLogs(int gameScene)
     if (base != 0x14) {
         // printf("0x%08x\n", base);
 
-        // u32 cameraX = nds->ARM7Read32(base);
-        // u32 cameraZ = nds->ARM7Read32(base + 0x04);
-        // u32 cameraY = nds->ARM7Read32(base + 0x08);
-        // printf("cameraX 0x%08x\n", cameraX);
-        // printf("cameraZ 0x%08x\n", cameraZ);
-        // printf("cameraY 0x%08x\n", cameraY);
-
-        // nds->ARM7Write32(base + 0x00, 0x4000);
-        // nds->ARM7Write32(base + 0x04, 0x4000);
-        // nds->ARM7Write32(base + 0x08, 0x4000);
-        // nds->ARM7Write32(base + 0x10, 0x4000);
-        // nds->ARM7Write32(base + 0x14, 0x4000);
-        // nds->ARM7Write32(base + 0x18, 0x4000);
-
         // Agrabah
         //   ffff8089 000014cd ffffee42 ffffd8c8 00002ecf ffffee42 0000000000001000000000001000000300000003000000000000000000000000000000000000000000005c00
         // Twilight Town Lobby
@@ -1646,50 +1632,10 @@ void PluginKingdomHeartsDays::debugLogs(int gameScene)
         // printf("\n");
     }
 
-    // u32 cameraX = base + 0x08;
-    // u32 cameraY = base + 0x0C;
-    // u32 cameraZ = base + 0x10;
-    // printf("cameraX 0x%08x\n", cameraX);
-    // printf("cameraY 0x%08x\n", cameraY);
-    // printf("cameraZ 0x%08x\n", cameraZ);
-    // printf("\n");
-
-    // 0000a075 0000150d ffffaf33 0000cf1b 00002f0f fffffa1b0000000000001000000000000000000300000004000000000000000000000000000000000000000000005c00000016b600001a00000014cd
-    // for (u32 addr = 0x0223229c - 0x08; addr <= 0x0223229c + 0x40; addr += 4) {
-    //     printf("%08x", nds->ARM7Read32(addr));
-    // }
-    // printf("\n");
-
-    // ffffe15e 000014cd 00001981 0000399d 00002ecf 000019810000000000001000000000001000000300000003000000000000000000000000000000000000000000005c00
-    // for (u32 addr = 0x022f3368; addr <= 0x022f3368 + 0x40; addr += 4) {
-    //     printf("%08x", nds->ARM7Read32(addr));
-    // }
-    // printf("\n");
-
     // Roxas position coordinates in Agrabah
     // PRINT_AS_32_BIT_HEX(0x021aa858);
     // PRINT_AS_32_BIT_HEX(0x021aa85c);
     // PRINT_AS_32_BIT_HEX(0x021aa860);
-
-    // nds->ARM7Write16(0x022f3370,   0x4000);
-    // nds->ARM7Write16(0x022f3370+2, 0x0000);
-    // nds->ARM7Write16(0x022f3368,   0x4000);
-    // nds->ARM7Write16(0x022f3368+2, 0x0000);
-    // nds->ARM7Write16(0x022f336c,   0x8000);
-    // nds->ARM7Write16(0x022f336c+2, 0x0000);
-
-    // Twilight Town Lobby
-    // PRINT_AS_32_BIT_HEX(0x022206c4); // direction (angle) where roxas is gonna move by going forward
-    // PRINT_AS_32_BIT_HEX(0x02232298); // camera coordinate inside the map (X)
-    // PRINT_AS_32_BIT_HEX(0x0223229c); // camera coordinate inside the map (Y)
-    // PRINT_AS_32_BIT_HEX(0x022322a0); // camera coordinate inside the map (Z)
-    // PRINT_AS_32_BIT_HEX(0x022322d4); // camera angle (X)
-    // PRINT_AS_32_BIT_HEX(0x022322d8); // camera angle (Y)
-
-    // Agrabah
-    // PRINT_AS_32_BIT_HEX(0x022f3370); // camera coordinate inside the map (X)
-    // PRINT_AS_32_BIT_HEX(0x022f3368); // camera coordinate inside the map (Y)
-    // PRINT_AS_32_BIT_HEX(0x022f336c); // camera coordinate inside the map (Z)
 
     // PRINT_AS_8_BIT_HEX(0x0204c184);
     // PRINT_AS_8_BIT_HEX(0x0204c185);
