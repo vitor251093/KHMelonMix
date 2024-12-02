@@ -483,26 +483,21 @@ bool PluginKingdomHeartsDays::togglePause()
     return false;
 }
 
+bool PluginKingdomHeartsDays::doesAddressValuesMatch(u32 addr, u32* values, u32 len)
+{
+    for (u32 i = 0; i < len; i++) {
+        u32 val = nds->ARM7Read32(addr + 4*i);
+        if (val != values[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool PluginKingdomHeartsDays::isCameraBaseAddress(u32 addr)
 {
     u32 pattern[5] = {0x000007fe, 0x00000ddc, 0x00001c72, 0x0000019a, 0x006a4000};
-    u32 first = nds->ARM7Read32(addr);
-    if (first == pattern[0]) {
-        u32 second = nds->ARM7Read32(addr+4);
-        if (second == pattern[1]) {
-            u32 third = nds->ARM7Read32(addr+8);
-            if (third == pattern[2]) {
-                u32 forth = nds->ARM7Read32(addr+12);
-                if (forth == pattern[3]) {
-                    u32 fifth = nds->ARM7Read32(addr+16);
-                    if (fifth == pattern[4]) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
+    return doesAddressValuesMatch(addr, pattern, 5);
 }
 
 u32 PluginKingdomHeartsDays::getCameraBaseAddress()

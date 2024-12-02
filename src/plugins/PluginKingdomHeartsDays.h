@@ -42,6 +42,8 @@ public:
     void onLoadState();
     bool togglePause();
 
+    bool doesAddressValuesMatch(u32 addr, u32* values, u32 len);
+
     u32 lastCameraBaseAddress = 0;
     bool isCameraBaseAddress(u32 addr);
     u32 getCameraBaseAddress();
