@@ -569,17 +569,16 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene || GameScene == gameScene_MultiplayerMissionReview) {
-        u32 cameraBase = getCameraBaseAddress();
+        u32 cameraBase = getCameraBaseAddress() + 0x14;
     
         if (HUDState == 3) {
             u32 cameraFocusXAddr = cameraBase + 0x00;
-            u32 cameraFocusYAddr = cameraBase + 0x04;
-            u32 cameraFocusZAddr = cameraBase + 0x08;
-            u32 cameraXAddr = cameraBase + 0x1C;
-            u32 cameraYAddr = cameraBase + 0x20;
-            u32 cameraZAddr = cameraBase + 0x24;
-            u32 cameraAngleXAddr = cameraBase + 0x44;
-            u32 cameraAngleYAddr = cameraBase + 0x48;
+            u32 cameraFocusZAddr = cameraBase + 0x04;
+            u32 cameraXAddr = cameraBase + 0x08;
+            u32 cameraYAddr = cameraBase + 0x0C;
+            u32 cameraZAddr = cameraBase + 0x10;
+            u32 cameraAngleXAddr = cameraBase + 0x40;
+            u32 cameraAngleYAddr = cameraBase + 0x44;
 
             if (cameraPositionX == 0x10000) {
                 cameraPositionX = nds->ARM7Read32(cameraXAddr);
@@ -597,43 +596,27 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
                 cameraAngleY = nds->ARM7Read32(cameraAngleYAddr);
             }
             
-            if ((~*InputMask) & (1<<5)) { // left
-                *InputMask |= (1<<5);
-                cameraPositionX -= 0x080;
-            }
-            if ((~*InputMask) & (1<<4)) { // right
-                *InputMask |= (1<<4);
-                cameraPositionX += 0x080;
-            }
-            if ((~*InputMask) & (1<<6)) { // up
-                *InputMask |= (1<<6);
-                cameraPositionY += 0x080;
-            }
-            if ((~*InputMask) & (1<<7)) { // down
-                *InputMask |= (1<<7);
-                cameraPositionY -= 0x080;
-            }
-
+            u32 cameraAngleMovement = 0x200;
             if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
                 *HotkeyMask &= ~(1<<22); // left
-                cameraAngleX -= 0x080;
+                cameraAngleX -= cameraAngleMovement;
             }
             if ((*HotkeyMask) & (1 << 23)) { // D-pad right (HK_CommandMenuRight)
                 *HotkeyMask &= ~(1<<23); // right
-                cameraAngleX += 0x080;
+                cameraAngleX += cameraAngleMovement;
             }
             if ((*HotkeyMask) & (1 << 24)) { // D-pad up (HK_CommandMenuUp)
                 *HotkeyMask &= ~(1<<24); // up
-                cameraAngleY += 0x080;
+                cameraAngleY += cameraAngleMovement;
             }
             if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
                 *HotkeyMask &= ~(1<<25); // down
-                cameraAngleY -= 0x080;
+                cameraAngleY -= cameraAngleMovement;
             }
 
             float cameraAngleXSin = 0;
             float cameraAngleXCos = 0;
-            float cameraAngleXRadius = ((float)cameraAngleX)/65535.0;
+            float cameraAngleXRadius = ((float)(cameraAngleX & 0xFFFF))/65535.0;
             if (cameraAngleXRadius < 1.0/4) {
                 cameraAngleXSin = cameraAngleXRadius*4;
                 cameraAngleXCos = 1.0 - cameraAngleXRadius*4;
@@ -650,24 +633,54 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
                 cameraAngleXSin = - (1.0 - (cameraAngleXRadius - 3.0/4)*4);
                 cameraAngleXCos = (cameraAngleXRadius - 3.0/4)*4;
             }
+
+            u32 cameraMovement = 0x080;
+            if ((~*InputMask) & (1<<5)) { // left
+                *InputMask |= (1<<5);
+                cameraPositionX -= cameraMovement;
+                // cameraPositionX += -(u32)(cameraMovement*cameraAngleXCos);
+                // cameraPositionY +=  (u32)(cameraMovement*cameraAngleXSin);
+            }
+            if ((~*InputMask) & (1<<4)) { // right
+                *InputMask |= (1<<4);
+                cameraPositionX += cameraMovement;
+                // cameraPositionX +=  (u32)(cameraMovement*cameraAngleXCos);
+                // cameraPositionY += -(u32)(cameraMovement*cameraAngleXSin);
+            }
+            if ((~*InputMask) & (1<<6)) { // up
+                *InputMask |= (1<<6);
+                cameraPositionY += cameraMovement;
+                // cameraPositionX += -(u32)(cameraMovement*cameraAngleXSin);
+                // cameraPositionY +=  (u32)(cameraMovement*cameraAngleXCos);
+            }
+            if ((~*InputMask) & (1<<7)) { // down
+                *InputMask |= (1<<7);
+                cameraPositionY -= cameraMovement;
+                // cameraPositionX +=  (u32)(cameraMovement*cameraAngleXSin);
+                // cameraPositionY += -(u32)(cameraMovement*cameraAngleXCos);
+            }
+
             u32 distance = 0x4000;
             u32 cameraFocusX = cameraPositionX + (u32)(cameraAngleXSin*distance);
-            u32 cameraFocusY = cameraPositionY + (u32)(cameraAngleXCos*distance);
-            u32 cameraFocusZ = cameraPositionZ + 0x0140;
-            // nds->ARM7Write32(cameraFocusXAddr, cameraFocusX);
-            // nds->ARM7Write32(cameraFocusYAddr, cameraFocusY);
-            // nds->ARM7Write32(cameraFocusZAddr, cameraFocusZ);
+            u32 cameraFocusZ = cameraPositionZ - 0x0140;
+            nds->ARM7Write32(cameraFocusXAddr, cameraFocusX);
+            nds->ARM7Write32(cameraFocusZAddr, cameraFocusZ);
+            nds->ARM7Write32(cameraFocusXAddr + 0x5C, cameraFocusX);
+            nds->ARM7Write32(cameraFocusZAddr + 0x5C, cameraFocusZ);
             
             nds->ARM7Write32(cameraXAddr, cameraPositionX);
             nds->ARM7Write32(cameraYAddr, cameraPositionY);
             nds->ARM7Write32(cameraZAddr, cameraPositionZ);
+            nds->ARM7Write32(cameraXAddr + 0x50, cameraPositionX);
+            nds->ARM7Write32(cameraYAddr + 0x50, cameraPositionY);
+            nds->ARM7Write32(cameraZAddr + 0x50, cameraPositionZ);
             nds->ARM7Write16(cameraAngleXAddr, (u16)cameraAngleX);
             nds->ARM7Write32(cameraAngleYAddr, cameraAngleY);
 
-            printf("Camera angle X: sin %f - cos %f\n", cameraAngleXSin, cameraAngleXCos);
-            printf("Camera focus: %d - %d - %d\n", cameraFocusX, cameraFocusY, cameraFocusZ);
             printf("Camera: %d - %d - %d\n", cameraPositionX, cameraPositionY, cameraPositionZ);
-            printf("Camera angle: %d - %d\n", cameraAngleX, cameraAngleY);
+            printf("Camera focus: %d - %d\n", cameraFocusX, cameraFocusZ);
+            printf("Camera angle: %d - %d\n", (u16)cameraAngleX, cameraAngleY);
+            printf("Camera angle X: sin %f - cos %f\n\n", cameraAngleXSin, cameraAngleXCos);
 
             // u32 cameraXAddr = cameraBase + 0x1C;
             // u32 cameraYAddr = cameraBase + 0x20;
@@ -685,6 +698,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
             cameraPositionX = 0x10000;
             cameraPositionY = 0x10000;
             cameraPositionZ = 0x10000;
+            cameraAngleX = 0x10000;
             cameraAngleY = 0x10000;
 
             if ((~*InputMask) & (1<<5)) { // left
@@ -1632,8 +1646,8 @@ void PluginKingdomHeartsDays::debugLogs(int gameScene)
         //   00008448 00009bf8 fffd9a6d 0000dbad 0000b5fa fffd8e23 0000000000001000000000000000000300000004000000000000000000000000000000000000000000005c00
         // Multiplayer victory
         //   fffe98c3 00001d9c 0000e0d9 fffef0e6 00003798 0000e551 0000000000001000000000000000000300000004000000000000000000000000000000000000000000005c00
-        for (u32 addr = base; addr <= base + 0x60; addr += 4) {
-            printf("%08x", nds->ARM7Read32(addr));
+        for (u32 addr = base; addr <= base + 0x80; addr += 4) {
+            printf("%08x ", nds->ARM7Read32(addr));
         }
         printf("\n");
     }
