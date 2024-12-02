@@ -511,7 +511,6 @@ u32 PluginKingdomHeartsDays::getCameraBaseAddress()
     for (u32 addr = 0x02000000; addr < 0x02500000; addr+=4) {
         if (isCameraBaseAddress(addr)) {
             lastCameraBaseAddress = addr;
-            return lastCameraBaseAddress;
         }
     }
 
@@ -1610,14 +1609,14 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
 void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
     // for (u32 addr = 0x01000000; addr < 0x03000000; addr+=4) {
-    //     if (isCameraBaseAddress(addr)) {
-    //         printf("0x%08x\n", addr);
-    //     }
+        // if (isCameraBaseAddress(addr)) {
+        //     printf("0x%08x\n", addr);
+        // }
     // }
 
     u32 base = getCameraBaseAddress() + 0x14;
     if (base != 0x14) {
-        printf("0x%08x\n", base);
+        // printf("0x%08x\n", base);
 
         // u32 cameraX = nds->ARM7Read32(base);
         // u32 cameraZ = nds->ARM7Read32(base + 0x04);
@@ -1641,10 +1640,10 @@ void PluginKingdomHeartsDays::debugLogs(int gameScene)
         //   00008448 00009bf8 fffd9a6d 0000dbad 0000b5fa fffd8e23 0000000000001000000000000000000300000004000000000000000000000000000000000000000000005c00
         // Multiplayer victory
         //   fffe98c3 00001d9c 0000e0d9 fffef0e6 00003798 0000e551 0000000000001000000000000000000300000004000000000000000000000000000000000000000000005c00
-        for (u32 addr = base; addr <= base + 0x80; addr += 4) {
-            printf("%08x ", nds->ARM7Read32(addr));
-        }
-        printf("\n");
+        // for (u32 addr = base; addr <= base + 0x80; addr += 4) {
+        //     printf("%08x ", nds->ARM7Read32(addr));
+        // }
+        // printf("\n");
     }
 
     // u32 cameraX = base + 0x08;
