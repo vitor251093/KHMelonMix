@@ -76,9 +76,9 @@ void MainWindowSettings::asyncStartBgmMusic(QString bgmMusicFilePath)
 void MainWindowSettings::startBgmMusic(QString bgmMusicFilePath)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    player->setMedia(QUrl::fromLocalFile(bgmMusicFilePath));
+    bgmPlayer->setMedia(QUrl::fromLocalFile(bgmMusicFilePath));
 #else
-    player->setSource(QUrl::fromLocalFile(bgmMusicFilePath));
+    bgmPlayer->setSource(QUrl::fromLocalFile(bgmMusicFilePath));
 #endif
 
     int volume = localCfg.GetInt("Audio.Volume");
