@@ -160,6 +160,11 @@ public:
     virtual void onReplacementCutsceneStarted() = 0;
     virtual void onReplacementCutsceneEnd() = 0;
 
+    virtual bool ShouldStartReplacementBgmMusic() = 0;
+    virtual bool ShouldStopReplacementBgmMusic()  = 0;
+    virtual u16 CurrentBackgroundMusic() = 0;
+    virtual std::string BackgroundMusicFilePath(std::string type, u16 id) = 0;
+
     virtual const char* getGameSceneName() = 0;
 
     virtual bool shouldRenderFrame() = 0;

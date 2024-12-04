@@ -87,6 +87,9 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
 
+    connect(this, SIGNAL(windowStartBgmMusic(QString)), window, SLOT(asyncStartBgmMusic(QString)));
+    connect(this, SIGNAL(windowStopBgmMusic()), window, SLOT(asyncStopBgmMusic()));
+    
     connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
     connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
@@ -110,6 +113,9 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
 
+    disconnect(this, SIGNAL(windowStartBgmMusic(QString)), window, SLOT(asyncStartBgmMusic(QString)));
+    disconnect(this, SIGNAL(windowStopBgmMusic()), window, SLOT(asyncStopBgmMusic()));
+    
     disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
     disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
@@ -744,6 +750,21 @@ void EmuThread::refreshPluginCutsceneState()
 {
     bool enableInvisibleFastMode = false;
     bool disableInvisibleFastMode = false;
+
+    if (emuInstance->plugin->ShouldStartReplacementBgmMusic()) {
+        auto bgm = emuInstance->plugin->CurrentBackgroundMusic();
+        if (bgm != 0) {
+            std::string path = emuInstance->plugin->BackgroundMusicFilePath("bgm", bgm);
+            if (path != "") {
+                QString filePath = QString::fromUtf8(path.c_str());
+                emit windowStartBgmMusic(filePath);
+            }
+        }
+    }
+
+    if (emuInstance->plugin->ShouldStopReplacementBgmMusic()) {
+        emit windowStopBgmMusic();
+    }
 
     if (emuInstance->plugin->ShouldStopReplacementCutscene()) {
         emit windowStopVideo();

@@ -131,6 +131,26 @@ public:
     void onReplacementCutsceneStarted();
     void onReplacementCutsceneEnd();
 
+    bool _ShouldStartReplacementBgmMusic;
+    bool _ShouldStopReplacementBgmMusic;
+    u16 _CurrentBackgroundMusic;
+    bool ShouldStartReplacementBgmMusic() {
+        if (_ShouldStartReplacementBgmMusic) {
+            _ShouldStartReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldStopReplacementBgmMusic() {
+        if (_ShouldStopReplacementBgmMusic) {
+            _ShouldStopReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
+    std::string BackgroundMusicFilePath(std::string type, u16 id);
+
     const char* getGameSceneName();
 
     bool shouldRenderFrame();

@@ -157,6 +157,9 @@ signals:
 
     void syncVolumeLevel();
 
+    void windowStartBgmMusic(QString videoFilePath);
+    void windowStopBgmMusic();
+
     void windowStartVideo(QString videoFilePath);
     void windowStopVideo();
     void windowPauseVideo();

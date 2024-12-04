@@ -1034,19 +1034,6 @@ std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene
     return "";
 }
 
-std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string language) {
-    std::string filename = language + ".ini";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "localization" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
-    }
-
-    return "";
-}
-
 void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
         return;
@@ -1118,6 +1105,38 @@ void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene() {
         nds->ARM7Write32(cutsceneAddress, 0x0);
         // nds->ARM7Write32(cutsceneAddress2, 0x0);
     }
+}
+
+std::string PluginKingdomHeartsReCoded::BackgroundMusicFilePath(std::string type, u16 id) {
+    std::string filename = type + std::to_string(id) + ".wav";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = type + std::to_string(id) + ".mp3";
+    fullPath = assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    return "";
+}
+
+std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string language) {
+    std::string filename = language + ".ini";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "localization" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    return "";
 }
 
 bool PluginKingdomHeartsReCoded::refreshGameScene()

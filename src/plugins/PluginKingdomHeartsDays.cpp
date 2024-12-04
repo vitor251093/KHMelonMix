@@ -204,7 +204,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _NextCutscene = nullptr;
     _LastCutscene = nullptr;
 
-    CurrentBackgroundMusic = 0;
+    _CurrentBackgroundMusic = 0;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -1335,21 +1335,42 @@ u16 PluginKingdomHeartsDays::detectBackgroundMusic() {
     return 0;
 }
 
+std::string PluginKingdomHeartsDays::BackgroundMusicFilePath(std::string type, u16 id) {
+    std::string filename = type + std::to_string(id) + ".wav";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = type + std::to_string(id) + ".mp3";
+    fullPath = assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    return "";
+}
+
 void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     u16 soundtrackId = detectBackgroundMusic();
 
-    if (soundtrackId != CurrentBackgroundMusic) {
+    if (soundtrackId != _CurrentBackgroundMusic) {
         if (soundtrackId == 0xFFFF) {
-            if (CurrentBackgroundMusic != 0) {
-                printf("Stopping song %d\n", CurrentBackgroundMusic);
+            if (_CurrentBackgroundMusic != 0) {
+                _ShouldStopReplacementBgmMusic = true;
+                // printf("Stopping song %d\n", _CurrentBackgroundMusic);
             }
         }
         else {
-            printf("Starting song %d\n", soundtrackId);
+            _ShouldStartReplacementBgmMusic = true;
+            // printf("Starting song %d\n", soundtrackId);
         }
     }
     
-    CurrentBackgroundMusic = soundtrackId;
+    _CurrentBackgroundMusic = soundtrackId;
 }
 
 std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {

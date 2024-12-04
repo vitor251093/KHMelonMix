@@ -56,7 +56,48 @@ MainWindowSettings::~MainWindowSettings()
 
 void MainWindowSettings::initWidgets()
 {
+    createBgmPlayer();
     createVideoPlayer();
+}
+
+void MainWindowSettings::createBgmPlayer()
+{
+    bgmPlayerAudioOutput = new QAudioOutput(this);
+    bgmPlayer = new QMediaPlayer(this);
+
+    bgmPlayer->setAudioOutput(bgmPlayerAudioOutput);
+}
+
+void MainWindowSettings::asyncStartBgmMusic(QString bgmMusicFilePath)
+{
+    QMetaObject::invokeMethod(this, "startBgmMusic", Qt::QueuedConnection, Q_ARG(QString, bgmMusicFilePath));
+}
+
+void MainWindowSettings::startBgmMusic(QString bgmMusicFilePath)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    player->setMedia(QUrl::fromLocalFile(bgmMusicFilePath));
+#else
+    player->setSource(QUrl::fromLocalFile(bgmMusicFilePath));
+#endif
+
+    int volume = localCfg.GetInt("Audio.Volume");
+    bgmPlayerAudioOutput->setVolume(volume / 256.0);
+
+    bgmPlayer->play();
+}
+
+void MainWindowSettings::asyncStopBgmMusic()
+{
+    QMetaObject::invokeMethod(this, "stopBgmMusic", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::stopBgmMusic()
+{
+    bool isCutscenePlaying = bgmPlayer->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
+    if (isCutscenePlaying) {
+        bgmPlayer->stop();
+    }
 }
 
 void MainWindowSettings::createVideoPlayer()
