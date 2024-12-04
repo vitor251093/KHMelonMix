@@ -751,19 +751,19 @@ void EmuThread::refreshPluginCutsceneState()
     bool enableInvisibleFastMode = false;
     bool disableInvisibleFastMode = false;
 
+    if (emuInstance->plugin->ShouldStopReplacementBgmMusic()) {
+        emit windowStopBgmMusic();
+    }
+
     if (emuInstance->plugin->ShouldStartReplacementBgmMusic()) {
         auto bgm = emuInstance->plugin->CurrentBackgroundMusic();
         if (bgm != 0) {
-            std::string path = emuInstance->plugin->BackgroundMusicFilePath("bgm", bgm);
+            std::string path = emuInstance->plugin->BackgroundMusicFilePath("bgm" + std::to_string(bgm));
             if (path != "") {
                 QString filePath = QString::fromUtf8(path.c_str());
                 emit windowStartBgmMusic(filePath);
             }
         }
-    }
-
-    if (emuInstance->plugin->ShouldStopReplacementBgmMusic()) {
-        emit windowStopBgmMusic();
     }
 
     if (emuInstance->plugin->ShouldStopReplacementCutscene()) {

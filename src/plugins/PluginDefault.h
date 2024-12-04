@@ -59,7 +59,7 @@ public:
     bool ShouldStartReplacementBgmMusic() {return false;}
     bool ShouldStopReplacementBgmMusic() {return false;}
     u16 CurrentBackgroundMusic() {return 0;}
-    std::string BackgroundMusicFilePath(std::string type, u16 id) {return "";}
+    std::string BackgroundMusicFilePath(std::string name) {return "";}
 
     bool refreshGameScene() {
         return false;

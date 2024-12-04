@@ -149,7 +149,7 @@ public:
         return false;
     }
     u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
-    std::string BackgroundMusicFilePath(std::string type, u16 id);
+    std::string BackgroundMusicFilePath(std::string name);
 
     const char* getGameSceneName();
 

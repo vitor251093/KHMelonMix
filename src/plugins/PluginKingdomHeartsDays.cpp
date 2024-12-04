@@ -1335,8 +1335,8 @@ u16 PluginKingdomHeartsDays::detectBackgroundMusic() {
     return 0;
 }
 
-std::string PluginKingdomHeartsDays::BackgroundMusicFilePath(std::string type, u16 id) {
-    std::string filename = type + std::to_string(id) + ".wav";
+std::string PluginKingdomHeartsDays::BackgroundMusicFilePath(std::string name) {
+    std::string filename = name + ".wav";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
@@ -1345,7 +1345,7 @@ std::string PluginKingdomHeartsDays::BackgroundMusicFilePath(std::string type, u
         return fullPath.string();
     }
 
-    filename = type + std::to_string(id) + ".mp3";
+    filename = name + ".mp3";
     fullPath = assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
@@ -1361,12 +1361,13 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
         if (soundtrackId == 0xFFFF) {
             if (_CurrentBackgroundMusic != 0) {
                 _ShouldStopReplacementBgmMusic = true;
-                // printf("Stopping song %d\n", _CurrentBackgroundMusic);
+                printf("Stopping song %d\n", _CurrentBackgroundMusic);
             }
         }
         else {
+            _ShouldStopReplacementBgmMusic = true;
             _ShouldStartReplacementBgmMusic = true;
-            // printf("Starting song %d\n", soundtrackId);
+            printf("Starting song %d\n", soundtrackId);
         }
     }
     

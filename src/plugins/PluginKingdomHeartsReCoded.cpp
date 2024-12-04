@@ -1107,8 +1107,8 @@ void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene() {
     }
 }
 
-std::string PluginKingdomHeartsReCoded::BackgroundMusicFilePath(std::string type, u16 id) {
-    std::string filename = type + std::to_string(id) + ".wav";
+std::string PluginKingdomHeartsReCoded::BackgroundMusicFilePath(std::string name) {
+    std::string filename = name + ".wav";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
@@ -1117,7 +1117,7 @@ std::string PluginKingdomHeartsReCoded::BackgroundMusicFilePath(std::string type
         return fullPath.string();
     }
 
-    filename = type + std::to_string(id) + ".mp3";
+    filename = name + ".mp3";
     fullPath = assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
