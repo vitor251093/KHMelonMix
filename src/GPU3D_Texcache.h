@@ -12,7 +12,7 @@
 #include <filesystem>
 #include <fstream>
 
-#include "PluginManager.h"
+#include "plugins/PluginManager.h"
 
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash/xxhash.h"
@@ -43,6 +43,8 @@ public:
     Texcache(const TexLoaderT& texloader)
         : TexLoader(texloader) // probably better if this would be a move constructor???
     {}
+
+    Plugins::Plugin* GamePlugin;
 
     u64 MaskedHash(u8* vram, u32 vramSize, u32 addr, u32 size)
     {
@@ -278,7 +280,7 @@ public:
             std::string filename = uniqueIdentifier + ".png";
             std::string filename2 = uniqueIdentifier2 + ".png";
 
-            std::string assetsFolder = Plugins::PluginManager::get()->assetsFolder();
+            std::string assetsFolder = GamePlugin->assetsFolder();
             std::filesystem::path currentPath = std::filesystem::current_path();
             std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolder;
             std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";

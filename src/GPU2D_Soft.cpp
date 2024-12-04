@@ -21,7 +21,6 @@
 #include "GPU3D.h"
 #include "GPU_Texreplace.h"
 
-#include "PluginManager.h"
 #include <filesystem>
 
 namespace melonDS
@@ -1984,7 +1983,7 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     std::string uniqueIdentifier = oss.str();
 
     std::filesystem::path currentPath = std::filesystem::current_path();
-    std::string assetsFolder = Plugins::PluginManager::get()->assetsFolder();
+    std::string assetsFolder = plugin->assetsFolder();
     std::string filename = uniqueIdentifier + ".png";
     std::filesystem::path fullPath = currentPath / "assets" / assetsFolder /"2d_textures" / filename;
     std::filesystem::path fullPathTmp = currentPath / "assets" / assetsFolder /"2d_textures_tmp" / filename;

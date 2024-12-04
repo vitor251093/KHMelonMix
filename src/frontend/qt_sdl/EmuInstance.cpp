@@ -48,6 +48,8 @@
 #include "FreeBIOS.h"
 #include "main.h"
 
+#include "GPU2D_Soft.h"
+
 using std::make_unique;
 using std::pair;
 using std::string;
@@ -1960,6 +1962,8 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
     if (plugin != nullptr) {
         plugin->setNds(nds);
         plugin->onLoadROM();
+        
+        static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
     }
 
     cartType = 0;
