@@ -131,6 +131,8 @@ public:
     void onReplacementCutsceneStarted();
     void onReplacementCutsceneEnd();
 
+    u16 CurrentBackgroundMusic;
+
     const char* getGameSceneName();
 
     bool shouldRenderFrame();
@@ -217,6 +219,9 @@ private:
     CutsceneEntry* detectCutscene();
     CutsceneEntry* detectSequenceCutscene();
     void refreshCutscene();
+
+    u16 detectBackgroundMusic();
+    void refreshBackgroundMusic();
 
     u32 getCurrentMission();
     u32 getCurrentMainMenuView();

@@ -121,6 +121,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MAP_FROM_WORLD_JP      0x02187FC6
 #define CURRENT_MAP_FROM_WORLD_JP_REV1 0x02188046
 
+#define SONG_ADDRESS_US      0x02191D5E
+#define SONG_ADDRESS_EU      0x02191D5E // TODO: KH
+#define SONG_ADDRESS_JP      0x02191D5E // TODO: KH
+#define SONG_ADDRESS_JP_REV1 0x02191D5E // TODO: KH
+
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
@@ -198,6 +203,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _CurrentCutscene = nullptr;
     _NextCutscene = nullptr;
     _LastCutscene = nullptr;
+
+    CurrentBackgroundMusic = 0;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -1247,20 +1254,6 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
     return "";
 }
 
-std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
-    std::string filename = language + ".ini";
-    std::string assetsFolderName = assetsFolder();
-    std::string assetsRegionSubfolderName = assetsRegionSubfolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
-    }
-
-    return "";
-}
-
 void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
         return;
@@ -1334,6 +1327,45 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     }
 }
 
+u16 PluginKingdomHeartsDays::detectBackgroundMusic() {
+    u32 soundtrack = nds->ARM7Read32(getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1));
+    if (soundtrack > 0) {
+        return (u16)(soundtrack >> 16);
+    }
+    return 0;
+}
+
+void PluginKingdomHeartsDays::refreshBackgroundMusic() {
+    u16 soundtrackId = detectBackgroundMusic();
+
+    if (soundtrackId != CurrentBackgroundMusic) {
+        if (soundtrackId == 0xFFFF) {
+            if (CurrentBackgroundMusic != 0) {
+                printf("Stopping song %d\n", CurrentBackgroundMusic);
+            }
+        }
+        else {
+            printf("Starting song %d\n", soundtrackId);
+        }
+    }
+    
+    CurrentBackgroundMusic = soundtrackId;
+}
+
+std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
+    std::string filename = language + ".ini";
+    std::string assetsFolderName = assetsFolder();
+    std::string assetsRegionSubfolderName = assetsRegionSubfolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    return "";
+}
+
 bool PluginKingdomHeartsDays::refreshGameScene()
 {
     int newGameScene = detectGameScene();
@@ -1343,6 +1375,8 @@ bool PluginKingdomHeartsDays::refreshGameScene()
     bool updated = setGameScene(newGameScene);
 
     refreshCutscene();
+
+    refreshBackgroundMusic();
 
     return updated;
 }
@@ -1433,22 +1467,6 @@ void PluginKingdomHeartsDays::debugLogs(int gameScene)
     printf("Current map: %d\n", getCurrentMap());
     printf("Current main menu view: %d\n", getCurrentMainMenuView());
     printf("Is save loaded: %d\n", isSaveLoaded() ? 1 : 0);
-    printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);
-    printf("NDS->GPU.GPU3D.NumPolygons: %d\n",        nds->GPU.GPU3D.NumPolygons);
-    printf("NDS->GPU.GPU3D.RenderNumPolygons: %d\n",  nds->GPU.GPU3D.RenderNumPolygons);
-    printf("NDS->PowerControl9: %d\n",                nds->PowerControl9);
-    printf("NDS->GPU.GPU2D_A.BlendCnt: %d\n",         nds->GPU.GPU2D_A.BlendCnt);
-    printf("NDS->GPU.GPU2D_A.BlendAlpha: %d\n",       nds->GPU.GPU2D_A.BlendAlpha);
-    printf("NDS->GPU.GPU2D_A.EVA: %d\n",              nds->GPU.GPU2D_A.EVA);
-    printf("NDS->GPU.GPU2D_A.EVB: %d\n",              nds->GPU.GPU2D_A.EVB);
-    printf("NDS->GPU.GPU2D_A.EVY: %d\n",              nds->GPU.GPU2D_A.EVY);
-    printf("NDS->GPU.GPU2D_A.MasterBrightness: %d\n", nds->GPU.GPU2D_A.MasterBrightness);
-    printf("NDS->GPU.GPU2D_B.BlendCnt: %d\n",         nds->GPU.GPU2D_B.BlendCnt);
-    printf("NDS->GPU.GPU2D_B.BlendAlpha: %d\n",       nds->GPU.GPU2D_B.BlendAlpha);
-    printf("NDS->GPU.GPU2D_B.EVA: %d\n",              nds->GPU.GPU2D_B.EVA);
-    printf("NDS->GPU.GPU2D_B.EVB: %d\n",              nds->GPU.GPU2D_B.EVB);
-    printf("NDS->GPU.GPU2D_B.EVY: %d\n",              nds->GPU.GPU2D_B.EVY);
-    printf("NDS->GPU.GPU2D_B.MasterBrightness: %d\n", nds->GPU.GPU2D_B.MasterBrightness);
     printf("\n");
 }
 
