@@ -45,9 +45,13 @@ public:
 public slots:
     void asyncStartVideo(QString videoFilePath);
     void asyncStopVideo();
+    void asyncPauseVideo();
+    void asyncUnpauseVideo();
 
     void startVideo(QString videoFilePath);
     void stopVideo();
+    void pauseVideo();
+    void unpauseVideo();
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -63,6 +67,7 @@ protected:
 private:
     Ui::MainWindowSettings* ui;
     Config::Table& localCfg;
+    EmuInstance* emuInstance;
 
     QVideoWidget* playerWidget;
     QAudioOutput* playerAudioOutput;

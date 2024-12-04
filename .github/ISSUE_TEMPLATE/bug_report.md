@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create the report of a bug (bugs involving Re:Coded are currently not being accepted)
+about: Create the report of a bug
 title: ''
 labels: bug
 assignees: ''
@@ -24,8 +24,10 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Melon Mix Version [e.g. 22]
+ - Game: [e.g. Days / ReCoded]
+ - OS: [e.g. Windows 10]
+ - Melon Mix Version: [e.g. 0.4.2]
+ - ROM Region: US / EU / JP / JP Rev 1
 
 **Additional context**
 Add any other context about the problem here.

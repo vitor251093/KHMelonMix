@@ -38,7 +38,7 @@
 #include "main.h"
 #include "CameraManager.h"
 #include "Net.h"
-#include "LocalMP.h"
+#include "MPInterface.h"
 #include "SPI_Firmware.h"
 
 #ifdef __WIN32__
@@ -48,6 +48,7 @@
 
 extern CameraManager* camManager[2];
 
+extern melonDS::Net net;
 
 namespace melonDS::Platform
 {
@@ -351,6 +352,14 @@ void Semaphore_Wait(Semaphore* sema)
     ((QSemaphore*) sema)->acquire();
 }
 
+bool Semaphore_TryWait(Semaphore* sema, int timeout_ms)
+{
+    if (!timeout_ms)
+        return ((QSemaphore*)sema)->tryAcquire(1);
+
+    return ((QSemaphore*)sema)->tryAcquire(1, timeout_ms);
+}
+
 void Semaphore_Post(Semaphore* sema, int count)
 {
     ((QSemaphore*) sema)->release(count);
@@ -384,6 +393,16 @@ bool Mutex_TryLock(Mutex* mutex)
 void Sleep(u64 usecs)
 {
     QThread::usleep(usecs);
+}
+
+u64 GetMSCount()
+{
+    return sysTimer.elapsed();
+}
+
+u64 GetUSCount()
+{
+    return sysTimer.nsecsElapsed() / 1000;
 }
 
 
@@ -449,69 +468,69 @@ void WriteDateTime(int year, int month, int day, int hour, int minute, int secon
 void MP_Begin(void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    LocalMP::Begin(inst);
+    MPInterface::Get().Begin(inst);
 }
 
 void MP_End(void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    LocalMP::End(inst);
+    MPInterface::Get().End(inst);
 }
 
 int MP_SendPacket(u8* data, int len, u64 timestamp, void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    return LocalMP::SendPacket(inst, data, len, timestamp);
+    return MPInterface::Get().SendPacket(inst, data, len, timestamp);
 }
 
 int MP_RecvPacket(u8* data, u64* timestamp, void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    return LocalMP::RecvPacket(inst, data, timestamp);
+    return MPInterface::Get().RecvPacket(inst, data, timestamp);
 }
 
 int MP_SendCmd(u8* data, int len, u64 timestamp, void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    return LocalMP::SendCmd(inst, data, len, timestamp);
+    return MPInterface::Get().SendCmd(inst, data, len, timestamp);
 }
 
 int MP_SendReply(u8* data, int len, u64 timestamp, u16 aid, void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    return LocalMP::SendReply(inst, data, len, timestamp, aid);
+    return MPInterface::Get().SendReply(inst, data, len, timestamp, aid);
 }
 
 int MP_SendAck(u8* data, int len, u64 timestamp, void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    return LocalMP::SendAck(inst, data, len, timestamp);
+    return MPInterface::Get().SendAck(inst, data, len, timestamp);
 }
 
 int MP_RecvHostPacket(u8* data, u64* timestamp, void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    return LocalMP::RecvHostPacket(inst, data, timestamp);
+    return MPInterface::Get().RecvHostPacket(inst, data, timestamp);
 }
 
 u16 MP_RecvReplies(u8* data, u64 timestamp, u16 aidmask, void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    return LocalMP::RecvReplies(inst, data, timestamp, aidmask);
+    return MPInterface::Get().RecvReplies(inst, data, timestamp, aidmask);
 }
 
 
 int Net_SendPacket(u8* data, int len, void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    Net::SendPacket(data, len, inst);
+    net.SendPacket(data, len, inst);
     return 0;
 }
 
 int Net_RecvPacket(u8* data, void* userdata)
 {
     int inst = ((EmuInstance*)userdata)->getInstanceID();
-    return Net::RecvPacket(data, inst);
+    return net.RecvPacket(data, inst);
 }
 
 
@@ -528,6 +547,16 @@ void Camera_Stop(int num, void* userdata)
 void Camera_CaptureFrame(int num, u32* frame, int width, int height, bool yuv, void* userdata)
 {
     return camManager[num]->captureFrame(frame, width, height, yuv);
+}
+
+void Addon_RumbleStart(u32 len, void* userdata)
+{
+    ((EmuInstance*)userdata)->inputRumbleStart(len);
+}
+
+void Addon_RumbleStop(void* userdata)
+{
+    ((EmuInstance*)userdata)->inputRumbleStop();
 }
 
 DynamicLibrary* DynamicLibrary_Load(const char* lib)

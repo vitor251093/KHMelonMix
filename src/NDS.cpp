@@ -74,13 +74,11 @@ const s32 kIterationCycleMargin = 8;
 //
 // timings for GBA slot and wifi are set up at runtime
 
-NDS* NDS::Current = nullptr;
+thread_local NDS* NDS::Current = nullptr;
 
 NDS::NDS() noexcept :
     NDS(
         NDSArgs {
-            nullptr,
-            nullptr,
             std::make_unique<ARM9BIOSImage>(bios_arm9_bin),
             std::make_unique<ARM7BIOSImage>(bios_arm7_bin),
             Firmware(0),
@@ -102,11 +100,14 @@ NDS::NDS(NDSArgs&& args, int type, void* userdata) noexcept :
     SPI(*this, std::move(args.Firmware)),
     RTC(*this),
     Wifi(*this),
-    NDSCartSlot(*this, std::move(args.NDSROM)),
-    GBACartSlot(*this, type == 1 ? nullptr : std::move(args.GBAROM)),
+    NDSCartSlot(*this, nullptr),
+    GBACartSlot(*this, nullptr),
     AREngine(*this),
     ARM9(*this, args.GDB, args.JIT.has_value()),
     ARM7(*this, args.GDB, args.JIT.has_value()),
+#ifdef GDBSTUB_ENABLED
+    EnableGDBStub(args.GDB.has_value()),
+#endif
 #ifdef JIT_ENABLED
     EnableJIT(args.JIT.has_value()),
 #endif
@@ -121,8 +122,8 @@ NDS::NDS(NDSArgs&& args, int type, void* userdata) noexcept :
         DMA(1, 3, *this),
     }
 {
-    RegisterEventFunc(Event_Div, 0, MemberEventFunc(NDS, DivDone));
-    RegisterEventFunc(Event_Sqrt, 0, MemberEventFunc(NDS, SqrtDone));
+    RegisterEventFuncs(Event_Div, this, {MakeEventThunk(NDS, DivDone)});
+    RegisterEventFuncs(Event_Sqrt, this, {MakeEventThunk(NDS, SqrtDone)});
 
     MainRAM = JIT.Memory.GetMainRAM();
     SharedWRAM = JIT.Memory.GetSharedWRAM();
@@ -131,8 +132,8 @@ NDS::NDS(NDSArgs&& args, int type, void* userdata) noexcept :
 
 NDS::~NDS() noexcept
 {
-    UnregisterEventFunc(Event_Div, 0);
-    UnregisterEventFunc(Event_Sqrt, 0);
+    UnregisterEventFuncs(Event_Div);
+    UnregisterEventFuncs(Event_Sqrt);
     // The destructor for each component is automatically called by the compiler
 }
 
@@ -223,6 +224,15 @@ void NDS::SetJITArgs(std::optional<JITArgs> args) noexcept
     }
 
     EnableJIT = args.has_value();
+}
+#endif
+
+#ifdef GDBSTUB_ENABLED
+void NDS::SetGdbArgs(std::optional<GDBArgs> args) noexcept
+{
+    ARM9.SetGdbArgs(args);
+    ARM7.SetGdbArgs(args);
+    EnableGDBStub = args.has_value();
 }
 #endif
 
@@ -749,11 +759,6 @@ void NDS::SetGBASave(const u8* savedata, u32 savelen)
 
 }
 
-void NDS::LoadGBAAddon(int type)
-{
-    GBACartSlot.LoadAddon(type);
-}
-
 void NDS::LoadBIOS()
 {
     Reset();
@@ -813,7 +818,7 @@ void NDS::RunSystem(u64 timestamp)
                 SchedListMask &= ~(1<<i);
 
                 EventFunc func = evt.Funcs[evt.FuncID];
-                func(evt.Param);
+                func(evt.That, evt.Param);
             }
         }
 
@@ -870,7 +875,7 @@ void NDS::RunSystemSleep(u64 timestamp)
                         param = evt.Param;
 
                     EventFunc func = evt.Funcs[evt.FuncID];
-                    func(param);
+                    func(this, param);
                 }
             }
         }
@@ -886,9 +891,11 @@ void NDS::RunSystemSleep(u64 timestamp)
     }
 }
 
-template <bool EnableJIT>
+template <CPUExecuteMode cpuMode>
 u32 NDS::RunFrame()
 {
+    Current = this;
+
     FrameStartTimestamp = SysTimestamp;
 
     GPU.TotalScanlines = 0;
@@ -927,8 +934,11 @@ u32 NDS::RunFrame()
         }
         else
         {
-            ARM9.CheckGdbIncoming();
-            ARM7.CheckGdbIncoming();
+            if (cpuMode == CPUExecuteMode::InterpreterGDB)
+            {
+                ARM9.CheckGdbIncoming();
+                ARM7.CheckGdbIncoming();
+            }
 
             if (!(CPUStop & CPUStop_Wakeup))
             {
@@ -963,12 +973,7 @@ u32 NDS::RunFrame()
                 }
                 else
                 {
-#ifdef JIT_ENABLED
-                    if (EnableJIT)
-                        ARM9.ExecuteJIT();
-                    else
-#endif
-                        ARM9.Execute();
+                    ARM9.Execute<cpuMode>();
                 }
 
                 RunTimers(0);
@@ -995,12 +1000,7 @@ u32 NDS::RunFrame()
                     }
                     else
                     {
-#ifdef JIT_ENABLED
-                        if (EnableJIT)
-                            ARM7.ExecuteJIT();
-                        else
-#endif
-                            ARM7.Execute();
+                        ARM7.Execute<cpuMode>();
                     }
 
                     RunTimers(1);
@@ -1045,10 +1045,18 @@ u32 NDS::RunFrame()
 {
 #ifdef JIT_ENABLED
     if (EnableJIT)
-        return RunFrame<true>();
+        return RunFrame<CPUExecuteMode::JIT>();
     else
 #endif
-        return RunFrame<false>();
+#ifdef GDBSTUB_ENABLED
+    if (EnableGDBStub)
+    {
+        return RunFrame<CPUExecuteMode::InterpreterGDB>();
+    } else
+#endif
+    {
+        return RunFrame<CPUExecuteMode::Interpreter>();
+    }
 }
 
 void NDS::Reschedule(u64 target)
@@ -1065,18 +1073,26 @@ void NDS::Reschedule(u64 target)
     }
 }
 
-void NDS::RegisterEventFunc(u32 id, u32 funcid, EventFunc func)
+void NDS::RegisterEventFuncs(u32 id, void* that, const std::initializer_list<EventFunc>& funcs)
 {
     SchedEvent& evt = SchedList[id];
 
-    evt.Funcs[funcid] = func;
+    evt.That = that;
+    assert(funcs.size() <= MaxEventFunctions);
+    int i = 0;
+    for (EventFunc func : funcs)
+    {
+        evt.Funcs[i++] = func;        
+    }
 }
 
-void NDS::UnregisterEventFunc(u32 id, u32 funcid)
+void NDS::UnregisterEventFuncs(u32 id)
 {
     SchedEvent& evt = SchedList[id];
 
-    evt.Funcs.erase(funcid);
+    evt.That = nullptr;
+    for (int i = 0; i < MaxEventFunctions; i++)
+        evt.Funcs[i] = nullptr;
 }
 
 void NDS::ScheduleEvent(u32 id, bool periodic, s32 delay, u32 funcid, u32 param)
@@ -1084,7 +1100,7 @@ void NDS::ScheduleEvent(u32 id, bool periodic, s32 delay, u32 funcid, u32 param)
     if (SchedListMask & (1<<id))
     {
         Log(LogLevel::Debug, "!! EVENT %d ALREADY SCHEDULED\n", id);
-        return;
+        return; 
     }
 
     SchedEvent& evt = SchedList[id];
@@ -1167,7 +1183,7 @@ void NDS::SetKeyMask(u32 mask)
     CheckKeyIRQ(1, oldkey, KeyInput);
 }
 
-void NDS::SetTouchKeyMask(u32 mask)
+void NDS::SetTouchKeyMask(u32 mask, bool resetOnEdge)
 {
     u16 right = ((~mask) & 0xF) >> 1;
     u16 left  = ((((~mask) >> 4))  & 0xF) >> 1;
@@ -1196,38 +1212,60 @@ void NDS::SetTouchKeyMask(u32 mask)
     
     u16 TouchX = SPI.GetTSC()->GetTouchX();
     u16 TouchY = SPI.GetTSC()->GetTouchY();
-    bool invalidNextPosition = false;
+    bool resetTouchScreen = false;
 
     if (left)
     {
-        if (TouchX > left)
+        if (TouchX <= left)
+        {
+            resetTouchScreen = resetOnEdge;
+        }
+        else
         {
             TouchX -= left;
         }
     }
     if (right)
     {
-        if (TouchX + right < 255)
+        if (TouchX + right >= 255)
+        {
+            resetTouchScreen = resetOnEdge;
+        }
+        else
         {
             TouchX += right;
         }
     }
     if (down)
     {
-        if (TouchY > down)
+        if (TouchY <= down)
+        {
+            resetTouchScreen = resetOnEdge;
+        }
+        else
         {
             TouchY -= down;
         }
     }
     if (up)
     {
-        if (TouchY + up < 191)
+        if (TouchY + up >= 191)
+        {
+            resetTouchScreen = resetOnEdge;
+        }
+        else
         {
             TouchY += up;
         }
     }
 
-    TouchScreen(TouchX, TouchY);
+    if (resetTouchScreen)
+    {
+        ReleaseScreen();
+    }
+    else {
+        TouchScreen(TouchX, TouchY);
+    }
 }
 
 bool NDS::IsLidClosed() const
@@ -1526,7 +1564,7 @@ u64 NDS::GetSysClockCycles(int num)
     return ret;
 }
 
-void NDS::NocashPrint(u32 ncpu, u32 addr)
+void NDS::NocashPrint(u32 ncpu, u32 addr, bool appendNewline)
 {
     // addr: debug string
 
@@ -1604,7 +1642,7 @@ void NDS::NocashPrint(u32 ncpu, u32 addr)
     }
 
     output[ptr] = '\0';
-    Log(LogLevel::Debug, "%s\n", output);
+    Log(LogLevel::Debug, appendNewline ? "%s\n" : "%s", output);
 }
 
 void NDS::MonitorARM9Jump(u32 addr)
@@ -2793,6 +2831,9 @@ u8 NDS::ARM9IORead8(u32 addr)
     case 0x04000132: return KeyCnt[0] & 0xFF;
     case 0x04000133: return KeyCnt[0] >> 8;
 
+    case 0x04000180: return IPCSync9 & 0xFF;
+    case 0x04000181: return IPCSync9 >> 8;
+
     case 0x040001A0:
         if (!(ExMemCnt[0] & (1<<11)))
             return NDSCartSlot.GetSPICnt() & 0xFF;
@@ -3009,6 +3050,8 @@ u16 NDS::ARM9IORead16(u32 addr)
     case 0x04000208: return IME[0];
     case 0x04000210: return IE[0] & 0xFFFF;
     case 0x04000212: return IE[0] >> 16;
+    case 0x04000214: return IF[0] & 0xFFFF;
+    case 0x04000216: return IF[0] >> 16;
 
     case 0x04000240: return GPU.VRAMCNT[0] | (GPU.VRAMCNT[1] << 8);
     case 0x04000242: return GPU.VRAMCNT[2] | (GPU.VRAMCNT[3] << 8);
@@ -3230,6 +3273,17 @@ void NDS::ARM9IOWrite8(u32 addr, u8 val)
         KeyCnt[0] = (KeyCnt[0] & 0x00FF) | (val << 8);
         return;
 
+    case 0x04000181:
+        IPCSync7 &= 0xFFF0;
+        IPCSync7 |= (val & 0x0F);
+        IPCSync9 &= 0xB0FF;
+        IPCSync9 |= ((val & 0x4F) << 8);
+        if ((val & 0x20) && (IPCSync7 & 0x4000))
+        {
+            SetIRQ(1, IRQ_IPCSync);
+        }
+        return;
+
     case 0x04000188:
         NDS::ARM9IOWrite32(addr, val | (val << 8) | (val << 16) | (val << 24));
         return;
@@ -3319,6 +3373,9 @@ void NDS::ARM9IOWrite16(u32 addr, u16 val)
     case 0x04000006: GPU.SetVCount(val); return;
 
     case 0x04000060: GPU.GPU3D.Write16(addr, val); return;
+
+    case 0x04000064:
+    case 0x04000066: GPU.GPU2D_A.Write16(addr, val); return;
 
     case 0x04000068:
     case 0x0400006A: GPU.GPU2D_A.Write16(addr, val); return;
@@ -3448,6 +3505,8 @@ void NDS::ARM9IOWrite16(u32 addr, u16 val)
     case 0x04000210: IE[0] = (IE[0] & 0xFFFF0000) | val; UpdateIRQ(0); return;
     case 0x04000212: IE[0] = (IE[0] & 0x0000FFFF) | (val << 16); UpdateIRQ(0); return;
     // TODO: what happens when writing to IF this way??
+    case 0x04000214: IF[0] &= ~val; GPU.GPU3D.CheckFIFOIRQ(); UpdateIRQ(0); return;
+    case 0x04000216: IF[0] &= ~(val<<16); GPU.GPU3D.CheckFIFOIRQ(); UpdateIRQ(0); return;
 
     case 0x04000240:
         GPU.MapVRAM_AB(0, val & 0xFF);
@@ -3672,10 +3731,8 @@ void NDS::ARM9IOWrite32(u32 addr, u32 val)
     case 0x04FFFA14:
     case 0x04FFFA18:
         {
-            bool appendLF = 0x04FFFA18 == addr;
-            NocashPrint(0, val);
-            if(appendLF)
-                Log(LogLevel::Debug, "\n");
+            NocashPrint(0, val, 0x04FFFA18 == addr);
+
             return;
         }
 
@@ -3717,6 +3774,9 @@ u8 NDS::ARM7IORead8(u32 addr)
     case 0x04000137: return KeyInput >> 24;
 
     case 0x04000138: return RTC.Read() & 0xFF;
+
+    case 0x04000180: return IPCSync7 & 0xFF;
+    case 0x04000181: return IPCSync7 >> 8;
 
     case 0x040001A0:
         if (ExMemCnt[0] & (1<<11))
@@ -4025,6 +4085,17 @@ void NDS::ARM7IOWrite8(u32 addr, u8 val)
         return;
 
     case 0x04000138: RTC.Write(val, true); return;
+
+    case 0x04000181:
+        IPCSync9 &= 0xFFF0;
+        IPCSync9 |= (val & 0x0F);
+        IPCSync7 &= 0xB0FF;
+        IPCSync7 |= ((val & 0x4F) << 8);
+        if ((val & 0x20) && (IPCSync9 & 0x4000))
+        {
+            SetIRQ(0, IRQ_IPCSync);
+        }
+        return;
 
     case 0x04000188:
         NDS::ARM7IOWrite32(addr, val | (val << 8) | (val << 16) | (val << 24));

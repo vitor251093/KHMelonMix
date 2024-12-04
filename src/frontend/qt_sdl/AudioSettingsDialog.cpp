@@ -41,7 +41,7 @@ AudioSettingsDialog::AudioSettingsDialog(QWidget* parent) : QDialog(parent), ui(
     emuInstance = ((MainWindow*)parent)->getEmuInstance();
     auto& cfg = emuInstance->getGlobalConfig();
     auto& instcfg = emuInstance->getLocalConfig();
-    bool emuActive = emuInstance->getEmuThread()->emuIsActive();
+    bool emuActive = emuInstance->emuIsActive();
 
     oldInterp = cfg.GetInt("Audio.Interpolation");
     oldBitDepth = cfg.GetInt("Audio.BitDepth");
@@ -103,7 +103,11 @@ AudioSettingsDialog::AudioSettingsDialog(QWidget* parent) : QDialog(parent), ui(
     grpMicMode->addButton(ui->rbMicExternal, micInputType_External);
     grpMicMode->addButton(ui->rbMicNoise,    micInputType_Noise);
     grpMicMode->addButton(ui->rbMicWav,      micInputType_Wav);
+#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
     connect(grpMicMode, SIGNAL(buttonClicked(int)), this, SLOT(onChangeMicMode(int)));
+#else
+    connect(grpMicMode, SIGNAL(idClicked(int)), this, SLOT(onChangeMicMode(int)));
+#endif
     grpMicMode->button(mictype)->setChecked(true);
 
     ui->txtMicWavPath->setText(cfg.GetQString("Mic.WavPath"));
@@ -166,6 +170,12 @@ void AudioSettingsDialog::on_AudioSettingsDialog_accepted()
 
 void AudioSettingsDialog::on_AudioSettingsDialog_rejected()
 {
+    if (!((MainWindow*)parent())->getEmuInstance())
+    {
+        closeDlg();
+        return;
+    }
+
     auto& cfg = emuInstance->getGlobalConfig();
     auto& instcfg = emuInstance->getLocalConfig();
     cfg.SetInt("Audio.Interpolation", oldInterp);

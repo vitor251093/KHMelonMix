@@ -6,6 +6,6 @@ Exec=MelonMix %f
 Type=Application
 Categories=Game;Emulator;
 Terminal=false
-Icon=com.vitormm.khDaysMM
+Icon=com.vitormm.melonMix
 MimeType=application/x-nintendo-ds-rom;
 Keywords=emulator;Nintendo;DS;NDS;Nintendo DS;

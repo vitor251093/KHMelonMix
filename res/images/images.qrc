@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="images">
-    <file>logo.png</file>
-    <file>mainmenu_bg.jpg</file>
-  </qresource>
-</RCC>

@@ -32,13 +32,15 @@
 
 #include "NonStupidBitfield.h"
 
+#include "plugins/Plugin.h"
+
 namespace melonDS
 {
 
 class ComputeRenderer : public Renderer3D
 {
 public:
-    static std::unique_ptr<ComputeRenderer> New();
+    static std::unique_ptr<ComputeRenderer> New(Plugins::Plugin* plugin);
     ~ComputeRenderer() override;
 
     void Reset(GPU& gpu) override;
@@ -59,7 +61,7 @@ public:
     void Blit(const GPU& gpu) override;
     void Stop(const GPU& gpu) override;
 
-    bool NeedsShaderCompile() { return ShaderStepIdx != 33; }
+    bool NeedsShaderCompile() override { return ShaderStepIdx != 33; }
     void ShaderCompileStep(int& current, int& count) override;
 private:
     ComputeRenderer(GLCompositor&& compositor);
@@ -235,6 +237,8 @@ private:
     void SetupYSpanDummy(RenderPolygon* rp, SpanSetupY* span, Polygon* poly, int vertex, int side, s32 positions[10][2]);
 
     bool CompileShader(GLuint& shader, const std::string& source, const std::initializer_list<const char*>& defines);
+
+    Plugins::Plugin* GamePlugin;
 };
 
 }

@@ -32,13 +32,13 @@
 #include "ui_MainWindowSettings.h"
 
 #include "EmuInstance.h"
-#include "PluginManager.h"
 
 
 using namespace melonDS;
 
 MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
     QMainWindow(parent),
+    emuInstance(inst),
     localCfg(inst->getLocalConfig()),
     ui(new Ui::MainWindowSettings)
 {
@@ -71,27 +71,26 @@ void MainWindowSettings::createVideoPlayer()
     centralWidget->addWidget(playerWidget);
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
-        Plugins::Plugin* plugin = Plugins::PluginManager::get();
-        plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
+        emuInstance->plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
 
         if (status == QMediaPlayer::BufferingMedia || status == QMediaPlayer::BufferedMedia) {
-            plugin->onReplacementCutsceneStarted();
+            emuInstance->plugin->onReplacementCutsceneStarted();
         }
         if (status == QMediaPlayer::EndOfMedia) {
             asyncStopVideo();
         }
         if (status == QMediaPlayer::InvalidMedia) {
-            plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
+            emuInstance->plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
         }
     });
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
-        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
+        emuInstance->plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
     });
 #else
     connect(player, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
-        Plugins::PluginManager::get()->log(("======= Error: " + player->errorString().toStdString()).c_str());
+        emuInstance->plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
     });
 #endif
 
@@ -135,7 +134,27 @@ void MainWindowSettings::stopVideo()
 
     showGame();
 
-    Plugins::PluginManager::get()->onReplacementCutsceneEnd();
+    emuInstance->plugin->onReplacementCutsceneEnd();
+}
+
+void MainWindowSettings::asyncPauseVideo()
+{
+    QMetaObject::invokeMethod(this, "pauseVideo", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::pauseVideo()
+{
+    player->pause();
+}
+
+void MainWindowSettings::asyncUnpauseVideo()
+{
+    QMetaObject::invokeMethod(this, "unpauseVideo", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::unpauseVideo()
+{
+    player->play();
 }
 
 void MainWindowSettings::keyPressEvent(QKeyEvent* event)

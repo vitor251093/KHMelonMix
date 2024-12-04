@@ -23,6 +23,8 @@
 #include <array>
 #include <optional>
 
+#include "plugins/Plugin.h"
+
 namespace melonDS
 {
 class GPU;
@@ -32,7 +34,7 @@ class Renderer3D;
 class GLCompositor
 {
 public:
-    static std::optional<GLCompositor> New() noexcept;
+    static std::optional<GLCompositor> New(Plugins::Plugin* plugin) noexcept;
     GLCompositor(const GLCompositor&) = delete;
     GLCompositor& operator=(const GLCompositor&) = delete;
     GLCompositor(GLCompositor&&) noexcept;
@@ -46,7 +48,7 @@ public:
     void RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept;
     void BindOutputTexture(int buf);
 private:
-    GLCompositor(GLuint CompShader) noexcept;
+    GLCompositor(GLuint CompShader, Plugins::Plugin* plugin) noexcept;
     int Scale = 0;
     int ScreenH = 0, ScreenW = 0;
 
@@ -66,6 +68,8 @@ private:
     GLuint CompScreenInputTex = 0;
     std::array<GLuint, 2> CompScreenOutputTex {};
     std::array<GLuint, 2> CompScreenOutputFB {};
+
+    Plugins::Plugin* GamePlugin;
 };
 
 }
