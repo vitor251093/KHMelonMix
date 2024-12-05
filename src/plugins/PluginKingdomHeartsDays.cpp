@@ -1328,9 +1328,9 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
 }
 
 u16 PluginKingdomHeartsDays::detectBackgroundMusic() {
-    u32 soundtrack = nds->ARM7Read32(getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1));
+    u16 soundtrack = nds->ARM7Read16(getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1));
     if (soundtrack > 0) {
-        return (u16)(soundtrack >> 16);
+        return soundtrack;
     }
     return 0;
 }
@@ -1370,7 +1370,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
         }
         else {
             u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-            nds->ARM7Write32(address, 0);
+            nds->ARM7Write16(address, 0);
 
             _ShouldStopReplacementBgmMusic = true;
             _ShouldStartReplacementBgmMusic = replacementAvailable;
@@ -1379,7 +1379,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     }
     else {
         u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-        nds->ARM7Write32(address, 0);
+        nds->ARM7Write16(address, 0);
     }
     
     _CurrentBackgroundMusic = soundtrackId;
