@@ -100,7 +100,11 @@ void MainWindowSettings::startBgmMusic(QString bgmMusicFilePath)
     bgmPlayer->setSource(QUrl::fromLocalFile(bgmMusicFilePath));
 #endif
 
-    int volume = localCfg.GetInt("Audio.Volume");
+    int volume = localCfg.GetInt("Audio.BGMVolume");
+    if (volume == 0) {
+        volume = localCfg.GetInt("Audio.Volume");
+        localCfg.SetInt("Audio.BGMVolume", volume);
+    }
     bgmPlayerAudioOutput->setVolume(volume / 256.0);
 
     bgmPlayer->play();
