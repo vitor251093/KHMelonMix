@@ -1357,17 +1357,26 @@ std::string PluginKingdomHeartsDays::BackgroundMusicFilePath(std::string name) {
 void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     u16 soundtrackId = detectBackgroundMusic();
 
+    std::string soundtrackPath = BackgroundMusicFilePath("bgm" + std::to_string(soundtrackId));
+    if (soundtrackPath == "") {
+        return;
+    }
+
     if (soundtrackId != _CurrentBackgroundMusic) {
-        if (soundtrackId == 0xFFFF) {
-            if (_CurrentBackgroundMusic != 0) {
-                _ShouldStopReplacementBgmMusic = true;
-                printf("Stopping song %d\n", _CurrentBackgroundMusic);
-            }
+        if (soundtrackId == 0x0000) {
+            soundtrackId = _CurrentBackgroundMusic;
+        }
+        else if (soundtrackId == 0xFFFF) {
+            _ShouldStopReplacementBgmMusic = true;
+            printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
         }
         else {
+            u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
+            nds->ARM7Write32(address, 0);
+
             _ShouldStopReplacementBgmMusic = true;
             _ShouldStartReplacementBgmMusic = true;
-            printf("Starting song %d\n", soundtrackId);
+            printf("Starting replacement song %d\n", soundtrackId);
         }
     }
     
