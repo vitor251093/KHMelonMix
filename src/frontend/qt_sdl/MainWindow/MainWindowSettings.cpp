@@ -84,6 +84,7 @@ void MainWindowSettings::createBgmPlayer()
 #endif
 
     bgmPlayer->setAudioOutput(bgmPlayerAudioOutput);
+    bgmPlayer->setLoops(QMediaPlayer::Infinite);
 }
 
 void MainWindowSettings::asyncStartBgmMusic(QString bgmMusicFilePath)
