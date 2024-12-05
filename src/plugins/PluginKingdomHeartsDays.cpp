@@ -1365,7 +1365,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
             soundtrackId = _CurrentBackgroundMusic;
         }
         else if (soundtrackId == 0xFFFF) {
-            _ShouldStopReplacementBgmMusic = replacementAvailable;
+            _ShouldStopReplacementBgmMusic = true;
             printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
         }
         else {
