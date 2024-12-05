@@ -1379,6 +1379,10 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
             printf("Starting replacement song %d\n", soundtrackId);
         }
     }
+    else {
+        u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
+        nds->ARM7Write32(address, 0);
+    }
     
     _CurrentBackgroundMusic = soundtrackId;
 }
