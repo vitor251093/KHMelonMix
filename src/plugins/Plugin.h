@@ -2,6 +2,7 @@
 #define PLUGIN_H
 
 #define REPLACEMENT_CUTSCENES_ENABLED true
+#define REPLACEMENT_BGM_ENABLED true
 
 #define SHOW_GAME_SCENE false
 #define DEBUG_MODE_ENABLED false
