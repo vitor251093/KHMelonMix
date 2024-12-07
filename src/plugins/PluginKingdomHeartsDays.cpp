@@ -876,8 +876,6 @@ int PluginKingdomHeartsDays::detectGameScene()
                 return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
             }
         }
-
-        return gameScene_MainMenu;
     }
     if (!wasSaveLoaded && (GameScene == -1 || GameScene == gameScene_Intro))
     {
