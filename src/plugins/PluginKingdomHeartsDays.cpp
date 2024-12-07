@@ -740,9 +740,12 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
     }
     if (GameScene == gameScene_InGameWithDouble3D)
     {
+        u32 currentMap = getCurrentMap();
+        bool alternateSecondScreenDetection = (currentMap == 346);
+
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
         {
-            _hasVisible3DOnBottomScreen = !IsBottomScreen2DTextureBlack;
+            _hasVisible3DOnBottomScreen = alternateSecondScreenDetection ? true : !IsBottomScreen2DTextureBlack;
 
             if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
                 _hasVisible3DOnBottomScreen = false;
@@ -760,7 +763,7 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
             _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
             _ignore3DOnBottomScreen = false;
 
-            if (_hasVisible3DOnBottomScreen) {
+            if (!alternateSecondScreenDetection && _hasVisible3DOnBottomScreen) {
                 int FrontBuffer = nds->GPU.FrontBuffer;
                 u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
                 if (bottomBuffer) {
