@@ -114,7 +114,7 @@ enum
     gameScene_InGameSaveMenu,           // 7
     gameScene_PauseMenu,                // 8
     gameScene_Tutorial,                 // 9
-    gameScene_InGameWithCutscene,       // 10
+    gameScene_InGameWithDouble3D,       // 10
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
     gameScene_CutsceneWithStaticImages, // 13
@@ -440,7 +440,7 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         hudToggle();
     }
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
         // Enabling L + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
@@ -602,7 +602,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_Tutorial: return "Game scene: Tutorial";
-        case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
+        case gameScene_InGameWithDouble3D: return "Game scene: Ingame (with cutscene)";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
@@ -776,7 +776,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
 
     if (has3DOnBothScreens)
     {
-        return gameScene_InGameWithCutscene;
+        return gameScene_InGameWithDouble3D;
     }
     else if (has3DOnBottomScreen)
     {

@@ -147,7 +147,7 @@ enum
     gameScene_InGameMenu,               // 6
     gameScene_PauseMenu,                // 7
     gameScene_Tutorial,                 // 8
-    gameScene_InGameWithCutscene,       // 9
+    gameScene_InGameWithDouble3D,       // 9
     gameScene_MultiplayerMissionReview, // 10
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
@@ -529,7 +529,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         hudToggle();
     }
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
         // Enabling X + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
@@ -632,7 +632,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
 
 bool PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
 {
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
         nds->SetTouchKeyMask(TouchKeyMask, false);
         return true;
     }
@@ -685,7 +685,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_InGameMenu: return "Game scene: Ingame menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_Tutorial: return "Game scene: Tutorial";
-        case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
+        case gameScene_InGameWithDouble3D: return "Game scene: Ingame (with cutscene)";
         case gameScene_MultiplayerMissionReview: return "Game scene: Multiplayer Mission Review";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
@@ -738,7 +738,7 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
     {
         return false;
     }
-    if (GameScene == gameScene_InGameWithCutscene)
+    if (GameScene == gameScene_InGameWithDouble3D)
     {
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
         {
@@ -898,13 +898,13 @@ int PluginKingdomHeartsDays::detectGameScene()
                                 (nds->GPU.GPU2D_A.BlendCnt == 840 && nds->GPU.GPU2D_B.BlendCnt == 0);
         if (isMissionVictory)
         {
-            if (GameScene != gameScene_InGameWithCutscene)
+            if (GameScene != gameScene_InGameWithDouble3D)
             {
                 return gameScene_MultiplayerMissionReview;
             }
         }
 
-        return gameScene_InGameWithCutscene;
+        return gameScene_InGameWithDouble3D;
     }
     else if (has3DOnBottomScreen)
     {
