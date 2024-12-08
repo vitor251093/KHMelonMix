@@ -404,7 +404,7 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z() {
     return kRenderVS_Z_KhDays;
 };
 
-void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z) {
+void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     float iuTexScale = (5.0)/UIScale;
 

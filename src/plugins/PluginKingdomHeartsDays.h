@@ -33,7 +33,7 @@ public:
 
     const char* gpuOpenGL_FS();
     const char* gpu3DOpenGL_VS_Z();
-    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z);
+    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb);
 
     void gpuOpenGL_FS_initVariables(GLuint CompShader);
     void gpuOpenGL_FS_updateVariables(GLuint CompShader);
