@@ -405,7 +405,59 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z() {
 };
 
 void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    float iuTexScale = (5.0)/UIScale;
 
+    float _x = (float)(*x - ScreenWidth/2);
+    float _y = (float)(*y - ScreenHeight/2);
+    float _z = ((float)z)/(1 << 22);
+    if (HideAllHUD)
+    {
+        if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D)
+        {
+            if (_x >= -(1.00)*(ScreenWidth/2)  && _x <= +(1.00)*(ScreenWidth/2) &&
+                _y >= -(1.00)*(ScreenHeight/2) && _y <= +(1.00)*(ScreenHeight/2) &&
+                _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
+                _x = (0 - 1.0)*(ScreenWidth/2);
+                _y = (0 - 1.0)*(ScreenHeight/2);
+            }
+        }
+    }
+    else
+    {
+        if (GameScene == gameScene_InGameWithMap)
+        {
+            float effectLayer = -0.0007; // blue shine behind the heart counter and "CHAIN" label
+            float textLayer = -0.0009; // heart counter, timer, "BONUS" label and +X floating labels
+
+            float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
+            float heartWidth = (ScreenWidth*9)/20.0;
+            float heartHeight = ScreenHeight/2.5;
+            if ((_x >= -(1.000)*(ScreenWidth/2)  && _x <= -(0.000)*(ScreenWidth/2) &&
+                 _y >= -(1.000)*(ScreenHeight/2) && _y <= -(0.200)*(ScreenHeight/2) &&
+                (abs(_z - effectLayer) < 0.0001))
+                ||
+                (_x >= -(1.000)*(ScreenWidth/2) && _x <= -(0.200)*(ScreenWidth/2) &&
+                 _y >= -(1.000)*(ScreenHeight/2) && _y <= -(0.500)*(ScreenHeight/2) &&
+                (abs(_z - textLayer) < 0.0001))) {
+                _x = ((((_x/(ScreenWidth/2)  + 1.0)*(heartWidth/iuTexScale))/ScreenWidth)*2.0/aspectRatio - 1.0)*(ScreenWidth/2);
+                _y = ((((_y/(ScreenHeight/2) + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/ScreenHeight)*2.0 - 1.0)*(ScreenHeight/2);
+            }
+        }
+
+        if (GameScene == gameScene_PauseMenu)
+        {
+            if (_x >= -(1.00)*(ScreenWidth/2)  && _x <= -(0.000)*(ScreenWidth/2) &&
+                _y >= -(1.00)*(ScreenHeight/2) && _y <= -(0.500)*(ScreenHeight/2) &&
+                _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
+                _x = (0 - 1.0)*(ScreenWidth/2);
+                _y = (0 - 1.0)*(ScreenHeight/2);
+            }
+        }
+    }
+
+    *x = (s32)(_x + ScreenWidth/2);
+    *y = (s32)(_y + ScreenHeight/2);
 };
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
