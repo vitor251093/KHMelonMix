@@ -394,7 +394,7 @@ const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
     return kCompositorFS_KhDays;
 };
 
-const char* PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z() {
+const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     bool disable = getBoolByCart(KHDaysUSDisableEnhancedGraphics, KHDaysEUDisableEnhancedGraphics,
                                  KHDaysJPDisableEnhancedGraphics, KHDaysJPRev1DisableEnhancedGraphics);
     if (disable) {

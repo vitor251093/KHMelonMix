@@ -129,7 +129,7 @@ public:
     virtual std::string assetsFolder() = 0;
 
     virtual const char* gpuOpenGL_FS() { return nullptr; };
-    virtual const char* gpu3DOpenGL_VS_Z() { return nullptr; };
+    virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
     virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {};
 
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) { };

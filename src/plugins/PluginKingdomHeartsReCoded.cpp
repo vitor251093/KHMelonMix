@@ -312,7 +312,7 @@ const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
     return kCompositorFS_KhReCoded;
 };
 
-const char* PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z() {
+const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
     return kRenderVS_Z_KhReCoded;
 };
 
