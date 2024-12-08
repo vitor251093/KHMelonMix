@@ -114,7 +114,7 @@ enum
     gameScene_InGameSaveMenu,           // 7
     gameScene_PauseMenu,                // 8
     gameScene_Tutorial,                 // 9
-    gameScene_InGameWithCutscene,       // 10
+    gameScene_InGameWithDouble3D,       // 10
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
     gameScene_CutsceneWithStaticImages, // 13
@@ -247,7 +247,7 @@ void PluginKingdomHeartsReCoded::loadLocalization() {
 
         CloseFile(f);
     }
-    else {
+    else if (false) {
         int firstAddr = 0;
         int lastAddr = 0;
         bool validCharFound = false;
@@ -312,8 +312,32 @@ const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
     return kCompositorFS_KhReCoded;
 };
 
-const char* PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z() {
+const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
     return kRenderVS_Z_KhReCoded;
+};
+
+void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    float commandMenuLeftMargin = 33.5;
+    float commandMenuBottomMargin = 2.5;
+    float commandMenuWidth = ScreenWidth/(2.4*aspectRatio);
+    float commandMenuHeight = ScreenHeight/2.4;
+
+    float iuTexScale = (5.0)/UIScale;
+
+    float _x = (float)(*x - ScreenWidth/2);
+    float _y = (float)(*y - ScreenHeight/2);
+    if (_x >= -(1.000)*(ScreenWidth/2)  && _x <= -(0.375)*(ScreenWidth/2) &&
+        _y >= -(0.250)*(ScreenHeight/2) && _y <= +(1.000)*(ScreenHeight/2) &&
+        z == (s32)(-(1.000)*(1 << 22)) &&
+        rgb[0] < 200) {
+
+        _x = ((((_x/(ScreenWidth/2) + 1.0)*(commandMenuWidth/iuTexScale) + commandMenuLeftMargin/iuTexScale)/ScreenWidth)*2.0 - 1.0)*(ScreenWidth/2);
+        _y = (1.0 - (((1.0 - _y/(ScreenHeight/2))*(commandMenuHeight/iuTexScale) + commandMenuBottomMargin/iuTexScale)/ScreenHeight)*2.0)*(ScreenHeight/2);
+
+        *x = (s32)(_x + ScreenWidth/2);
+        *y = (s32)(_y + ScreenHeight/2);
+    }
 };
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
@@ -440,7 +464,7 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         hudToggle();
     }
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
         // Enabling L + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
@@ -602,7 +626,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_Tutorial: return "Game scene: Tutorial";
-        case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
+        case gameScene_InGameWithDouble3D: return "Game scene: Ingame (with cutscene)";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
@@ -776,7 +800,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
 
     if (has3DOnBothScreens)
     {
-        return gameScene_InGameWithCutscene;
+        return gameScene_InGameWithDouble3D;
     }
     else if (has3DOnBottomScreen)
     {
@@ -1034,19 +1058,6 @@ std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene
     return "";
 }
 
-std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string language) {
-    std::string filename = language + ".ini";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "localization" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
-    }
-
-    return "";
-}
-
 void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
         return;
@@ -1118,6 +1129,38 @@ void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene() {
         nds->ARM7Write32(cutsceneAddress, 0x0);
         // nds->ARM7Write32(cutsceneAddress2, 0x0);
     }
+}
+
+std::string PluginKingdomHeartsReCoded::BackgroundMusicFilePath(std::string name) {
+    std::string filename = name + ".wav";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = name + ".mp3";
+    fullPath = assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    return "";
+}
+
+std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string language) {
+    std::string filename = language + ".ini";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "localization" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    return "";
 }
 
 bool PluginKingdomHeartsReCoded::refreshGameScene()

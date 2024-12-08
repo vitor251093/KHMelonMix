@@ -136,7 +136,7 @@ std::unique_ptr<GLRenderer> GLRenderer::New(Plugins::Plugin* plugin) noexcept
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
 
-    const char* renderVS_Z_Custom = result->GamePlugin == nullptr ? nullptr : result->GamePlugin->gpu3DOpenGL_VS_Z();
+    const char* renderVS_Z_Custom = result->GamePlugin == nullptr ? nullptr : result->GamePlugin->gpu3DOpenGLClassic_VS_Z();
     const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
 
     if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))

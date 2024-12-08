@@ -698,7 +698,7 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (!isScreenBlack(1) && PriorGameScene != 9) // gameScene_InGameWithCutscene
+    if (!isScreenBlack(1) && PriorGameScene != 9) // gameScene_InGameWithDouble3D
     {
         if (isMissionInformationVisibleOnBottomScreen()) {
             vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, false, true);
@@ -844,7 +844,7 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (GameScene == 8) { // gameScene_Tutorial
         return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
     }
-    if (GameScene == 9) { // gameScene_InGameWithCutscene
+    if (GameScene == 9) { // gameScene_InGameWithDouble3D
         if (!is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(130, 190))) {
             return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
         }
@@ -1238,7 +1238,7 @@ ivec4 brightness()
         return horizontalBrightness();
     }
     if (GameScene == 7  || // gameScene_PauseMenu
-        GameScene == 9  || // gameScene_InGameWithCutscene
+        GameScene == 9  || // gameScene_InGameWithDouble3D
         GameScene == 10 || // gameScene_MultiplayerMissionReview
         GameScene == 13 || // gameScene_RoxasThoughts
         GameScene == 14 || // gameScene_DeathScreen

@@ -32,7 +32,8 @@ public:
     std::string assetsFolder();
 
     const char* gpuOpenGL_FS();
-    const char* gpu3DOpenGL_VS_Z();
+    const char* gpu3DOpenGLClassic_VS_Z();
+    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb);
 
     void gpuOpenGL_FS_initVariables(GLuint CompShader);
     void gpuOpenGL_FS_updateVariables(GLuint CompShader);
@@ -130,6 +131,26 @@ public:
     void onReturnToGameAfterCutscene();
     void onReplacementCutsceneStarted();
     void onReplacementCutsceneEnd();
+
+    bool _ShouldStartReplacementBgmMusic;
+    bool _ShouldStopReplacementBgmMusic;
+    u16 _CurrentBackgroundMusic;
+    bool ShouldStartReplacementBgmMusic() {
+        if (_ShouldStartReplacementBgmMusic) {
+            _ShouldStartReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldStopReplacementBgmMusic() {
+        if (_ShouldStopReplacementBgmMusic) {
+            _ShouldStopReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
+    std::string BackgroundMusicFilePath(std::string name);
 
     const char* getGameSceneName();
 
