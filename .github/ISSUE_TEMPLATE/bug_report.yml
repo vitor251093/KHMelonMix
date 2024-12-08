@@ -1,9 +1,8 @@
 name: Bug report
-about: Create the report of a bug.
+about: Create the report of a bug
 title: ''
-labels: ["bug"]
-projects: []
-assignees: []
+labels: bug
+assignees: ''
 body:
   - type: markdown
     attributes:
