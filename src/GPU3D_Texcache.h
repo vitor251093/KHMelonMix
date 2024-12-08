@@ -266,34 +266,46 @@ public:
         unsigned char* imageData = (unsigned char*)DecodingBuffer;
         bool textureReplacementEnabled = true;
         if (textureReplacementEnabled) {
+            std::ostringstream oss0;
+            oss0 << "3d-";
+            for (int i = 0; i < 2; i++)
+            {
+                if (entry.TextureRAMSize[i])
+                    oss0 << static_cast<char32_t>(entry.TextureHash[i]);
+            }
+            std::string uniqueIdentifier1 = oss0.str();
             std::ostringstream oss;
             for (int i = 0; i < 2; i++)
             {
                 if (entry.TextureRAMSize[i])
-                    oss << static_cast<char32_t>(entry.TextureHash[i]);
+                    oss << static_cast<char32_t>(XXH3_64bits(&gpu.VRAMFlat_Texture[entry.TextureRAMStart[i]], entry.TextureRAMSize[i]));
             }
-            std::string uniqueIdentifier = oss.str();
+            std::string uniqueIdentifier2 = oss.str();
             oss << "-";
             oss << palBase;
-            std::string uniqueIdentifier2 = oss.str();
+            std::string uniqueIdentifier3 = oss.str();
             
-            std::string filename = uniqueIdentifier + ".png";
-            std::string filename2 = uniqueIdentifier2 + ".png";
+            std::string filename1 = uniqueIdentifier1 + ".png";
+            std::string filename2 = uniqueIdentifier3 + ".png";
+            std::string filename3 = uniqueIdentifier2 + ".png";
 
             std::string assetsFolder = GamePlugin->assetsFolder();
             std::filesystem::path currentPath = std::filesystem::current_path();
             std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolder;
             std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";
-            std::filesystem::path fullPath = assetsFolderPath / "textures" / filename;
+            std::filesystem::path fullPath1 = assetsFolderPath / "textures" / filename1;
             std::filesystem::path fullPath2 = assetsFolderPath / "textures" / filename2;
-            std::filesystem::path fullPathTmp = tmpFolderPath / filename2;
+            std::filesystem::path fullPath3 = assetsFolderPath / "textures" / filename3;
+            std::filesystem::path fullPathTmp = tmpFolderPath / filename1;
 #ifdef _WIN32
-            const char* path = fullPath.string().c_str();
+            const char* path1 = fullPath1.string().c_str();
             const char* path2 = fullPath2.string().c_str();
+            const char* path3 = fullPath3.string().c_str();
             const char* pathTmp = fullPathTmp.string().c_str();
 #else
-            const char* path = fullPath.c_str();
+            const char* path1 = fullPath1.c_str();
             const char* path2 = fullPath2.c_str();
+            const char* path3 = fullPath3.c_str();
             const char* pathTmp = fullPathTmp.c_str();
 #endif
 
@@ -306,23 +318,31 @@ public:
 
             int channels = 4;
             int r_width, r_height, r_channels;
-            imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
+            imageData = Texreplace::LoadTextureFromFile(path1, &r_width, &r_height, &r_channels);
             if (imageData != nullptr) {
-                printf("Loading texture %s\n", path2);
+                printf("Loading texture %s\n", path1);
                 width = r_width;
                 height = r_height;
             }
             else {
-                imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+                imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
                 if (imageData != nullptr) {
-                    printf("Loading texture %s\n", path);
+                    printf("Loading texture %s\n", path2);
                     width = r_width;
                     height = r_height;
                 }
                 else {
-                    printf("Saving texture %s\n", pathTmp);
-                    imageData = (unsigned char*)DecodingBuffer;
-                    Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+                    imageData = Texreplace::LoadTextureFromFile(path3, &r_width, &r_height, &r_channels);
+                    if (imageData != nullptr) {
+                        printf("Loading texture %s\n", path3);
+                        width = r_width;
+                        height = r_height;
+                    }
+                    else {
+                        printf("Saving texture %s\n", pathTmp);
+                        imageData = (unsigned char*)DecodingBuffer;
+                        Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+                    }
                 }
             }
 
