@@ -1,0 +1,73 @@
+name: Bug report
+about: Create the report of a bug
+title: ''
+labels: bug
+assignees: ''
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If a save state or a screenshot makes your bug easier to reproduce or understandd, add it as a comment after creating the issue.
+  - type: dropdown
+    id: game
+    attributes:
+      label: In which games in this bug happening?
+      multiple: true
+      options:
+        - Days
+        - ReCoded
+    validations:
+      required: true
+  - type: dropdown
+    id: rom-region
+    attributes:
+      label: Which is your NDS file region?
+      multiple: false
+      options:
+        - US
+        - EU
+        - JP
+        - JP Rev1
+  - type: textarea
+    id: describe-the-bug
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what you see
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Explain to use the steps to reproduce this behavior.
+      placeholder: Tell us how to do it
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: Tell us what should happen instead
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Which operating system were you using when the bug happened?
+      multiple: false
+      options:
+        - Windows
+        - Linux
+        - macOS
+        - Steam Deck
+        - Other
+  - type: input
+    id: melon-mix-version
+    attributes:
+      label: Melon Mix version
+      description: Which Melon Mix version were you using when the bug happened?
+      placeholder: ex. 0.5.0
+    validations:
+      required: false
