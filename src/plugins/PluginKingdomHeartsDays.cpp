@@ -121,6 +121,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MAP_FROM_WORLD_JP      0x02187FC6
 #define CURRENT_MAP_FROM_WORLD_JP_REV1 0x02188046
 
+#define SONG_ADDRESS_US      0x02191D5E
+#define SONG_ADDRESS_EU      0x02192B3E
+#define SONG_ADDRESS_JP      0x02191D5E // TODO: KH
+#define SONG_ADDRESS_JP_REV1 0x02191D5E // TODO: KH
+
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
@@ -142,7 +147,7 @@ enum
     gameScene_InGameMenu,               // 6
     gameScene_PauseMenu,                // 7
     gameScene_Tutorial,                 // 8
-    gameScene_InGameWithCutscene,       // 9
+    gameScene_InGameWithDouble3D,       // 9
     gameScene_MultiplayerMissionReview, // 10
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
@@ -198,6 +203,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _CurrentCutscene = nullptr;
     _NextCutscene = nullptr;
     _LastCutscene = nullptr;
+
+    _CurrentBackgroundMusic = 0;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -397,6 +404,10 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z() {
     return kRenderVS_Z_KhDays;
 };
 
+void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z) {
+
+};
+
 void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "PriorGameScene");
     CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "GameScene");
@@ -522,7 +533,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         hudToggle();
     }
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
         // Enabling X + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
@@ -625,7 +636,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
 
 bool PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
 {
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithCutscene) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
         nds->SetTouchKeyMask(TouchKeyMask, false);
         return true;
     }
@@ -678,7 +689,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_InGameMenu: return "Game scene: Ingame menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_Tutorial: return "Game scene: Tutorial";
-        case gameScene_InGameWithCutscene: return "Game scene: Ingame (with cutscene)";
+        case gameScene_InGameWithDouble3D: return "Game scene: Ingame (with cutscene)";
         case gameScene_MultiplayerMissionReview: return "Game scene: Multiplayer Mission Review";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
@@ -731,11 +742,14 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
     {
         return false;
     }
-    if (GameScene == gameScene_InGameWithCutscene)
+    if (GameScene == gameScene_InGameWithDouble3D)
     {
+        u32 currentMap = getCurrentMap();
+        bool alternateSecondScreenDetection = (currentMap == 346);
+
         if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
         {
-            _hasVisible3DOnBottomScreen = !IsBottomScreen2DTextureBlack;
+            _hasVisible3DOnBottomScreen = alternateSecondScreenDetection ? true : !IsBottomScreen2DTextureBlack;
 
             if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
                 _hasVisible3DOnBottomScreen = false;
@@ -753,7 +767,7 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
             _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
             _ignore3DOnBottomScreen = false;
 
-            if (_hasVisible3DOnBottomScreen) {
+            if (!alternateSecondScreenDetection && _hasVisible3DOnBottomScreen) {
                 int FrontBuffer = nds->GPU.FrontBuffer;
                 u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
                 if (bottomBuffer) {
@@ -869,8 +883,6 @@ int PluginKingdomHeartsDays::detectGameScene()
                 return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
             }
         }
-
-        return gameScene_MainMenu;
     }
     if (!wasSaveLoaded && (GameScene == -1 || GameScene == gameScene_Intro))
     {
@@ -893,13 +905,13 @@ int PluginKingdomHeartsDays::detectGameScene()
                                 (nds->GPU.GPU2D_A.BlendCnt == 840 && nds->GPU.GPU2D_B.BlendCnt == 0);
         if (isMissionVictory)
         {
-            if (GameScene != gameScene_InGameWithCutscene)
+            if (GameScene != gameScene_InGameWithDouble3D)
             {
                 return gameScene_MultiplayerMissionReview;
             }
         }
 
-        return gameScene_InGameWithCutscene;
+        return gameScene_InGameWithDouble3D;
     }
     else if (has3DOnBottomScreen)
     {
@@ -1247,20 +1259,6 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
     return "";
 }
 
-std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
-    std::string filename = language + ".ini";
-    std::string assetsFolderName = assetsFolder();
-    std::string assetsRegionSubfolderName = assetsRegionSubfolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
-    }
-
-    return "";
-}
-
 void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
         return;
@@ -1334,6 +1332,84 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     }
 }
 
+u16 PluginKingdomHeartsDays::detectBackgroundMusic() {
+    u16 soundtrack = nds->ARM7Read16(getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1));
+    if (soundtrack > 0) {
+        return soundtrack;
+    }
+    return 0;
+}
+
+std::string PluginKingdomHeartsDays::BackgroundMusicFilePath(std::string name) {
+    std::string filename = name + ".wav";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = name + ".mp3";
+    fullPath = assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    return "";
+}
+
+void PluginKingdomHeartsDays::refreshBackgroundMusic() {
+#if !REPLACEMENT_BGM_ENABLED
+    return;
+#endif
+
+    u16 soundtrackId = detectBackgroundMusic();
+
+    std::string soundtrackPath = BackgroundMusicFilePath("bgm" + std::to_string(soundtrackId));
+    bool replacementAvailable = (soundtrackPath != "");
+
+    if (soundtrackId != _CurrentBackgroundMusic) {
+        if (soundtrackId == 0x0000) {
+            soundtrackId = _CurrentBackgroundMusic;
+        }
+        else if (soundtrackId == 0xFFFF) {
+            _ShouldStopReplacementBgmMusic = true;
+            printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
+        }
+        else {
+            if (replacementAvailable) {
+                u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
+                nds->ARM7Write16(address, 0);
+            }
+
+            _ShouldStopReplacementBgmMusic = true;
+            _ShouldStartReplacementBgmMusic = replacementAvailable;
+            printf("Starting replacement song %d\n", soundtrackId);
+        }
+    }
+    else {
+        u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
+        nds->ARM7Write16(address, 0);
+    }
+    
+    _CurrentBackgroundMusic = soundtrackId;
+}
+
+std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
+    std::string filename = language + ".ini";
+    std::string assetsFolderName = assetsFolder();
+    std::string assetsRegionSubfolderName = assetsRegionSubfolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path fullPath = assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    return "";
+}
+
 bool PluginKingdomHeartsDays::refreshGameScene()
 {
     int newGameScene = detectGameScene();
@@ -1343,6 +1419,8 @@ bool PluginKingdomHeartsDays::refreshGameScene()
     bool updated = setGameScene(newGameScene);
 
     refreshCutscene();
+
+    refreshBackgroundMusic();
 
     return updated;
 }
@@ -1433,22 +1511,6 @@ void PluginKingdomHeartsDays::debugLogs(int gameScene)
     printf("Current map: %d\n", getCurrentMap());
     printf("Current main menu view: %d\n", getCurrentMainMenuView());
     printf("Is save loaded: %d\n", isSaveLoaded() ? 1 : 0);
-    printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);
-    printf("NDS->GPU.GPU3D.NumPolygons: %d\n",        nds->GPU.GPU3D.NumPolygons);
-    printf("NDS->GPU.GPU3D.RenderNumPolygons: %d\n",  nds->GPU.GPU3D.RenderNumPolygons);
-    printf("NDS->PowerControl9: %d\n",                nds->PowerControl9);
-    printf("NDS->GPU.GPU2D_A.BlendCnt: %d\n",         nds->GPU.GPU2D_A.BlendCnt);
-    printf("NDS->GPU.GPU2D_A.BlendAlpha: %d\n",       nds->GPU.GPU2D_A.BlendAlpha);
-    printf("NDS->GPU.GPU2D_A.EVA: %d\n",              nds->GPU.GPU2D_A.EVA);
-    printf("NDS->GPU.GPU2D_A.EVB: %d\n",              nds->GPU.GPU2D_A.EVB);
-    printf("NDS->GPU.GPU2D_A.EVY: %d\n",              nds->GPU.GPU2D_A.EVY);
-    printf("NDS->GPU.GPU2D_A.MasterBrightness: %d\n", nds->GPU.GPU2D_A.MasterBrightness);
-    printf("NDS->GPU.GPU2D_B.BlendCnt: %d\n",         nds->GPU.GPU2D_B.BlendCnt);
-    printf("NDS->GPU.GPU2D_B.BlendAlpha: %d\n",       nds->GPU.GPU2D_B.BlendAlpha);
-    printf("NDS->GPU.GPU2D_B.EVA: %d\n",              nds->GPU.GPU2D_B.EVA);
-    printf("NDS->GPU.GPU2D_B.EVB: %d\n",              nds->GPU.GPU2D_B.EVB);
-    printf("NDS->GPU.GPU2D_B.EVY: %d\n",              nds->GPU.GPU2D_B.EVY);
-    printf("NDS->GPU.GPU2D_B.MasterBrightness: %d\n", nds->GPU.GPU2D_B.MasterBrightness);
     printf("\n");
 }
 

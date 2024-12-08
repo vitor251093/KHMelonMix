@@ -55,6 +55,12 @@ public:
     void onReturnToGameAfterCutscene() {}
     void onReplacementCutsceneStarted() {}
     void onReplacementCutsceneEnd() {}
+    
+    bool ShouldStartReplacementBgmMusic() {return false;}
+    bool ShouldStopReplacementBgmMusic() {return false;}
+    u16 CurrentBackgroundMusic() {return 0;}
+    std::string BackgroundMusicFilePath(std::string name) {return "";}
+
     bool refreshGameScene() {
         return false;
     }

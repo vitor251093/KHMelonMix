@@ -2,6 +2,7 @@
 #define PLUGIN_H
 
 #define REPLACEMENT_CUTSCENES_ENABLED true
+#define REPLACEMENT_BGM_ENABLED true
 
 #define SHOW_GAME_SCENE false
 #define DEBUG_MODE_ENABLED false
@@ -129,6 +130,7 @@ public:
 
     virtual const char* gpuOpenGL_FS() { return nullptr; };
     virtual const char* gpu3DOpenGL_VS_Z() { return nullptr; };
+    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z) {};
 
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) { };
     virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) { };
@@ -159,6 +161,11 @@ public:
     virtual void onReturnToGameAfterCutscene() = 0;
     virtual void onReplacementCutsceneStarted() = 0;
     virtual void onReplacementCutsceneEnd() = 0;
+
+    virtual bool ShouldStartReplacementBgmMusic() = 0;
+    virtual bool ShouldStopReplacementBgmMusic()  = 0;
+    virtual u16 CurrentBackgroundMusic() = 0;
+    virtual std::string BackgroundMusicFilePath(std::string name) = 0;
 
     virtual const char* getGameSceneName() = 0;
 

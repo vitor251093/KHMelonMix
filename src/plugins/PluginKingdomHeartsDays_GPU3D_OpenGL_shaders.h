@@ -43,7 +43,7 @@ void main()
 
     if (HideAllHUD)
     {
-        // gameScene_InGameWithMap or gameScene_PauseMenu or gameScene_InGameWithCutscene
+        // gameScene_InGameWithMap or gameScene_PauseMenu or gameScene_InGameWithDouble3D
         if (GameScene == 5 || GameScene == 7 || GameScene == 9)
         {
             if (fpos.x >= -(1.00)*fpos.w && fpos.x <= +(1.00)*fpos.w &&
