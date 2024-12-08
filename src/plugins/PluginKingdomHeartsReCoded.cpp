@@ -315,15 +315,15 @@ const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
 const char* PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z() {
     return kRenderVS_Z_KhReCoded;
 };
+
 void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z) {
-    float topScreenAspectRatio = (((float)ScreenWidth)/ScreenHeight) / (4.f / 3.f);
+    float aspectRatio = AspectRatio / (4.f / 3.f);
     float commandMenuLeftMargin = 33.5;
     float commandMenuBottomMargin = 2.5;
-    float commandMenuWidth = ScreenWidth/(2.4*topScreenAspectRatio);
+    float commandMenuWidth = ScreenWidth/(2.4*aspectRatio);
     float commandMenuHeight = ScreenHeight/2.4;
 
-    int iuScale = 4;
-    float iuTexScale = (5.0)/iuScale;
+    float iuTexScale = (5.0)/UIScale;
 
     float _x = (float)(*x - ScreenWidth/2);
     float _y = (float)(*y - ScreenHeight/2);
