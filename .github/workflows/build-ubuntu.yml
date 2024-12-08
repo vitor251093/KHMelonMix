@@ -9,6 +9,12 @@ on:
     branches:
       - master
 
+env:
+  MELONDS_GIT_BRANCH: ${{ github.ref }}
+  MELONDS_GIT_HASH: ${{ github.sha }}
+  MELONDS_BUILD_PROVIDER: GitHub Actions
+  MELONDS_VERSION_SUFFIX: " RC"
+
 jobs:
   build-x86_64:
     name: x86_64
@@ -21,8 +27,8 @@ jobs:
       run: |
         sudo rm -f /etc/apt/sources.list.d/dotnetdev.list /etc/apt/sources.list.d/microsoft-prod.list
         sudo apt update
-        sudo apt install --allow-downgrades cmake ninja-build extra-cmake-modules libpcap0.8-dev libsdl2-dev \
-          qt6-{base,base-private,multimedia}-dev libarchive-dev libzstd-dev libfuse2
+        sudo apt install --allow-downgrades cmake ninja-build extra-cmake-modules libpcap0.8-dev libsdl2-dev libenet-dev \
+          qt6-{base,base-private,multimedia}-dev libqt6svg6-dev libarchive-dev libzstd-dev libfuse2
     - name: Install GStreamer dependencies
       run: |
         sudo apt-get install --allow-downgrades libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
@@ -30,7 +36,7 @@ jobs:
           gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl \
           gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
     - name: Configure
-      run: cmake -B build -G Ninja -DUSE_QT6=ON -DCMAKE_INSTALL_PREFIX=/usr
+      run: cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr -DMELONDS_EMBED_BUILD_INFO=ON
     - name: Build
       run: |
         cmake --build build
@@ -41,13 +47,11 @@ jobs:
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
-        mkdir -p ./dist/assets/days/cutscenes/cinematics
-        touch ./dist/assets/days/cutscenes/cinematics/DELETE_ME
+        cp -r ./assets ./dist/assets
+        rm -r ./dist/assets/days/2d_textures
         cp AppDir/usr/bin/MelonMix ./dist/MelonMix
-        echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > ./dist/MelonMix_KHDays.sh
-        echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > ./dist/MelonMix_KHReCoded.sh
-        chmod +x ./dist/MelonMix_KHDays.sh
-        chmod +x ./dist/MelonMix_KHReCoded.sh
+        cp ./res/scripts/MelonMix_KHDays.sh    ./dist/MelonMix_KHDays.sh
+        cp ./res/scripts/MelonMix_KHReCoded.sh ./dist/MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-ubuntu-x86_64
@@ -71,13 +75,11 @@ jobs:
         mkdir dist_appimage
         mkdir -p ./dist_appimage/roms
         touch ./dist_appimage/roms/DELETE_ME
-        mkdir -p ./dist_appimage/assets/days/cutscenes/cinematics
-        touch ./dist_appimage/assets/days/cutscenes/cinematics/DELETE_ME
+        cp -r ./assets ./dist_appimage/assets
+        rm -r ./dist_appimage/assets/days/2d_textures
         mv MelonMix*.AppImage ./dist_appimage/MelonMix.AppImage
-        echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/days.nds"    > ./dist_appimage/MelonMix_KHDays.sh
-        echo -ne "#!/bin/bash\n./MelonMix.AppImage -f roms/recoded.nds" > ./dist_appimage/MelonMix_KHReCoded.sh
-        chmod +x ./dist_appimage/MelonMix_KHDays.sh
-        chmod +x ./dist_appimage/MelonMix_KHReCoded.sh
+        cp ./res/scripts/MelonMix_KHDays_AppImage.sh    ./dist_appimage/MelonMix_KHDays.sh
+        cp ./res/scripts/MelonMix_KHReCoded_AppImage.sh ./dist_appimage/MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-appimage-x86_64
@@ -99,7 +101,7 @@ jobs:
           apt update
           apt -y full-upgrade
           apt -y install git {gcc-12,g++-12}-aarch64-linux-gnu cmake ninja-build extra-cmake-modules \
-            {libsdl2,qt6-{base,base-private,multimedia},libarchive,libzstd}-dev:arm64 \
+            {libsdl2,qt6-{base,base-private,multimedia},libqt6svg6,libarchive,libzstd,libenet}-dev:arm64 \
             pkg-config dpkg-dev
       - name: Check out source
         uses: actions/checkout@v4
@@ -110,7 +112,7 @@ jobs:
             -DPKG_CONFIG_EXECUTABLE=/usr/bin/aarch64-linux-gnu-pkg-config \
             -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc-12 \
             -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++-12 \
-            -DUSE_QT6=ON
+            -DMELONDS_EMBED_BUILD_INFO=ON
       - name: Build
         shell: bash
         run: |
@@ -118,13 +120,11 @@ jobs:
           mkdir dist
           mkdir -p ./dist/roms
           touch ./dist/roms/DELETE_ME
-          mkdir -p ./dist/assets/days/cutscenes/cinematics
-          touch ./dist/assets/days/cutscenes/cinematics/DELETE_ME
+          cp -r ./assets ./dist/assets
+          rm -r ./dist/assets/days/2d_textures
           mv build/melonDS dist/MelonMix
-          echo -ne "#!/bin/bash\n./MelonMix -f roms/days.nds"    > dist/MelonMix_KHDays.sh
-          echo -ne "#!/bin/bash\n./MelonMix -f roms/recoded.nds" > dist/MelonMix_KHReCoded.sh
-          chmod +x dist/MelonMix_KHDays.sh
-          chmod +x dist/MelonMix_KHReCoded.sh
+          cp ./res/scripts/MelonMix_KHDays.sh    ./dist/MelonMix_KHDays.sh
+          cp ./res/scripts/MelonMix_KHReCoded.sh ./dist/MelonMix_KHReCoded.sh
       - uses: actions/upload-artifact@v4
         with:
           name: MelonMix-ubuntu-aarch64

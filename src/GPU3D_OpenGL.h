@@ -22,6 +22,7 @@
 #include "GPU3D.h"
 #include "GPU_OpenGL.h"
 #include "OpenGLSupport.h"
+#include "plugins/Plugin.h"
 
 namespace melonDS
 {
@@ -50,7 +51,7 @@ public:
 
     void BindOutputTexture(int buffer) override;
 
-    static std::unique_ptr<GLRenderer> New() noexcept;
+    static std::unique_ptr<GLRenderer> New(Plugins::Plugin* plugin) noexcept;
 private:
     // Used by New()
     GLRenderer(GLCompositor&& compositor) noexcept;
@@ -160,6 +161,8 @@ private:
 
     GLuint MainFramebuffer {}, DownscaleFramebuffer {};
     u32 Framebuffer[256*192] {};
+
+    Plugins::Plugin* GamePlugin;
 };
 }
 #endif

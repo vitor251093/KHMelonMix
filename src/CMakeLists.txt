@@ -39,9 +39,6 @@ add_library(core STATIC
     GPU3D_Soft.cpp
     GPU3D_Texcache.cpp
     GPU3D_Texcache.h
-    PluginManager.cpp
-    PluginKingdomHeartsDays.cpp
-    PluginKingdomHeartsReCoded.cpp
     melonDLDI.h
     NDS.cpp
     NDSCart.cpp
@@ -67,6 +64,10 @@ add_library(core STATIC
     fatfs/ffunicode.c
     fatfs/ffconf.h
 
+    plugins/PluginManager.cpp
+    plugins/PluginKingdomHeartsDays.cpp
+    plugins/PluginKingdomHeartsReCoded.cpp
+
     sha1/sha1.c
     tiny-AES-c/aes.c
     xxhash/xxhash.c)
@@ -82,10 +83,11 @@ endif()
 
 if (ENABLE_OGLRENDERER)
     target_sources(core PRIVATE
+        plugins/PluginKingdomHeartsDays_GPU_OpenGL_shaders.h
+        plugins/PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h
+
         GPU_OpenGL.cpp
         GPU_OpenGL_shaders.h
-        PluginKingdomHeartsDays_GPU_OpenGL_shaders.h
-        PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h
         GPU3D_OpenGL.cpp
         GPU3D_Compute.cpp
         GPU3D_TexcacheOpenGL.cpp
@@ -104,8 +106,13 @@ if (ENABLE_JIT)
 
         ARMJIT.cpp
         ARMJIT_Memory.cpp
+        ARMJIT_Global.cpp
 
         dolphin/CommonFuncs.cpp)
+    
+    if (WIN32)
+        target_link_libraries(core PRIVATE onecore)
+    endif()
 
     if (ARCHITECTURE STREQUAL x86_64)
         target_sources(core PRIVATE
@@ -134,7 +141,20 @@ if (ENABLE_JIT)
     endif()
 endif()
 
+target_include_directories(core INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+
 set(MELONDS_VERSION_SUFFIX "$ENV{MELONDS_VERSION_SUFFIX}" CACHE STRING "Suffix to add to displayed melonDS version")
+option(MELONDS_EMBED_BUILD_INFO "Embed detailed build info into the binary" OFF)
+set(MELONDS_GIT_BRANCH "$ENV{MELONDS_GIT_BRANCH}" CACHE STRING "The Git branch used for this build")
+set(MELONDS_GIT_HASH "$ENV{MELONDS_GIT_HASH}" CACHE STRING "The hash of the Git commit")
+set(MELONDS_BUILD_PROVIDER "$ENV{MELONDS_BUILD_PROVIDER}" CACHE STRING "The name of the provider of this build")
+
+if (MELONDS_EMBED_BUILD_INFO)
+    target_compile_definitions(core PUBLIC MELONDS_EMBED_BUILD_INFO)
+    if (NOT MELONDS_GIT_BRANCH OR NOT MELONDS_GIT_HASH OR NOT MELONDS_BUILD_PROVIDER)
+        message(FATAL_ERROR "When embedding build information, all fields must be filled out. See src/CMakeLists.txt.")
+    endif()
+endif()
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/version.h")
 target_sources(core PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/version.h")
@@ -174,13 +194,14 @@ endif()
 
 if (WIN32)
     target_link_libraries(core PRIVATE ole32 comctl32 wsock32 ws2_32)
+    target_compile_definitions(core PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
 elseif(NOT APPLE AND NOT HAIKU)
     check_library_exists(rt shm_open "" NEED_LIBRT)
     if (NEED_LIBRT)
         target_link_libraries(core PRIVATE rt)
     endif()
 elseif(HAIKU)
-	target_link_libraries(core PRIVATE network)
+    target_link_libraries(core PRIVATE network)
 endif()
 
 if (ENABLE_JIT_PROFILING)

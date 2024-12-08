@@ -34,17 +34,15 @@ set(SOURCES_QT_SDL
     ROMInfoDialog.cpp
     RAMInfoDialog.cpp
     TitleManagerDialog.cpp
-    PacketDispatcher.cpp
-    Net.cpp
-    Net_PCap.cpp
-    Net_Slirp.cpp
-    LocalMP.cpp
     OSD_shaders.h
     font.h
     Platform.cpp
     QPathInput.h
     SaveManager.cpp
     CameraManager.cpp
+    AboutDialog.cpp
+    AboutDialog.h
+    AboutDialog.ui
 
     ArchiveUtil.h
     ArchiveUtil.cpp
@@ -56,23 +54,21 @@ set(SOURCES_QT_SDL
     ../duckstation/gl/context.cpp
 
     ${CMAKE_SOURCE_DIR}/res/melon.qrc
-    ${CMAKE_SOURCE_DIR}/res/images/images.qrc
 
     CLI.h
     CLI.cpp
+
+    LANDialog.cpp
+    NetplayDialog.cpp
 )
 
-if (APPLE)
-    option(USE_QT6 "Build using Qt 6 instead of 5" ON)
-else()
-    option(USE_QT6 "Build using Qt 6 instead of 5" OFF)
-endif()
+option(USE_QT6 "Use Qt 6 instead of Qt 5" ON)
 
 if (USE_QT6)
-    find_package(Qt6 COMPONENTS Core Gui Widgets Network Multimedia MultimediaWidgets OpenGL OpenGLWidgets REQUIRED)
+    find_package(Qt6 COMPONENTS Core Gui Widgets Network Multimedia MultimediaWidgets OpenGL OpenGLWidgets Svg REQUIRED)
     set(QT_LINK_LIBS Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Multimedia Qt6::MultimediaWidgets Qt6::OpenGL Qt6::OpenGLWidgets)
 else()
-    find_package(Qt5 COMPONENTS Core Gui Widgets Network Multimedia MultimediaWidgets REQUIRED)
+    find_package(Qt5 COMPONENTS Core Gui Widgets Network Multimedia MultimediaWidgets Svg REQUIRED)
     set(QT_LINK_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Network Qt5::Multimedia Qt5::MultimediaWidgets)
 endif()
 
@@ -97,16 +93,10 @@ add_compile_definitions(ARCHIVE_SUPPORT_ENABLED)
 
 add_executable(melonDS ${SOURCES_QT_SDL})
 
-option(USE_SYSTEM_LIBSLIRP "Use system libslirp instead of the bundled version" OFF)
-if (USE_SYSTEM_LIBSLIRP)
-    pkg_check_modules(Slirp REQUIRED IMPORTED_TARGET slirp)
-    target_link_libraries(melonDS PRIVATE PkgConfig::Slirp)
-else()
-    add_subdirectory("../libslirp"
-            "${CMAKE_BINARY_DIR}/libslirp"
-            EXCLUDE_FROM_ALL)
-    target_link_libraries(melonDS PRIVATE slirp)
-endif()
+add_subdirectory("../../net"
+    ${CMAKE_BINARY_DIR}/net)
+
+target_link_libraries(melonDS PRIVATE net-utils)
 
 if (WIN32)
     target_link_libraries(melonDS PUBLIC opengl32)
@@ -129,6 +119,10 @@ elseif (APPLE)
     target_link_libraries(melonDS PRIVATE ${OPENGL_LIB})
     target_sources(melonDS PRIVATE
         ../duckstation/gl/context_agl.mm
+    )
+    set_source_files_properties(
+        ../duckstation/gl/context_agl.mm
+        PROPERTIES COMPILE_OPTIONS "-Wno-deprecated-declarations"
     )
 else()
     find_package(X11 REQUIRED)
@@ -168,12 +162,21 @@ endif()
 
 if (BUILD_STATIC)
     qt_import_plugins(melonDS INCLUDE Qt::QSvgPlugin)
-    target_link_options(melonDS PRIVATE -static)
+    if (WIN32 AND USE_QT6)
+        qt_import_plugins(melonDS INCLUDE Qt::QModernWindowsStylePlugin)
+    endif()
+    if (USE_VCPKG AND UNIX AND NOT APPLE)
+        pkg_check_modules(ALSA REQUIRED IMPORTED_TARGET alsa)
+        target_link_libraries(melonDS PRIVATE PkgConfig::ALSA)
+    else()
+        target_link_options(melonDS PRIVATE -static)
+    endif()
 endif()
 
-target_include_directories(melonDS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-target_include_directories(melonDS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_include_directories(melonDS PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+target_include_directories(melonDS PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/..")
+
 if (USE_QT6)
     target_include_directories(melonDS PUBLIC ${Qt6Gui_PRIVATE_INCLUDE_DIRS})
 else()
@@ -192,6 +195,7 @@ if (WIN32)
         target_compile_definitions(melonDS PRIVATE WIN32_PORTABLE)
     endif()
 
+    string(REPLACE . , MELON_RC_VERSION ${melonDS_VERSION})
     configure_file("${CMAKE_SOURCE_DIR}/res/melon.rc.in" "${CMAKE_BINARY_DIR}/res/melon.rc")
     target_sources(melonDS PUBLIC "${CMAKE_BINARY_DIR}/res/melon.rc")
     target_include_directories(melonDS PRIVATE "${CMAKE_BINARY_DIR}/res")
@@ -214,12 +218,12 @@ if (APPLE)
     target_sources(melonDS PRIVATE sem_timedwait.cpp)
 
     # Copy icon into the bundle
-    set(RESOURCE_FILES "${CMAKE_SOURCE_DIR}/res/khDaysMM.icns")
+    set(RESOURCE_FILES "${CMAKE_SOURCE_DIR}/res/melon.icns")
     target_sources(melonDS PUBLIC "${RESOURCE_FILES}")
 
     set_target_properties(melonDS PROPERTIES
         MACOSX_BUNDLE true
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/khDaysMM.plist.in
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/melon.plist.in
         OUTPUT_NAME melonDS
         RESOURCE "${RESOURCE_FILES}")
 
@@ -239,9 +243,9 @@ endif()
 
 if (UNIX AND NOT APPLE)
     foreach(SIZE 16 32 48 64 128 256)
-        install(FILES ${CMAKE_SOURCE_DIR}/res/icon/khDaysMM_${SIZE}x${SIZE}.png
+        install(FILES ${CMAKE_SOURCE_DIR}/res/icon/melon_${SIZE}x${SIZE}.png
             DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/${SIZE}x${SIZE}/apps
-            RENAME com.vitormm.khDaysMM.png)
+            RENAME com.vitormm.melonMix.png)
     endforeach()
 
     install(FILES ${CMAKE_SOURCE_DIR}/res/com.vitormm.khDaysMM.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
@@ -252,4 +256,14 @@ if (UNIX AND NOT APPLE)
             INTERPROCEDURAL_OPTIMIZATION OFF
             INTERPROCEDURAL_OPTIMIZATION_RELEASE OFF)
     endif()
+elseif(APPLE)
+    install(TARGETS melonDS BUNDLE DESTINATION "${CMAKE_INSTALL_PREFIX}/Applications")
+endif()
+
+if (ENABLE_OGLRENDERER)
+    set(MELONDS_GL_HEADER \"frontend/glad/glad.h\" CACHE STRING "Path to a header that contains OpenGL function and type declarations.")
+
+    target_compile_definitions(melonDS PUBLIC OGLRENDERER_ENABLED)
+    target_compile_definitions(melonDS PUBLIC MELONDS_GL_HEADER=${MELONDS_GL_HEADER})
+    target_compile_definitions(core PUBLIC MELONDS_GL_HEADER=${MELONDS_GL_HEADER})
 endif()

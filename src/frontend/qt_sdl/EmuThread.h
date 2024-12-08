@@ -23,6 +23,7 @@
 #include <QMutex>
 #include <QSemaphore>
 #include <QQueue>
+#include <QVariant>
 
 #include <atomic>
 #include <variant>
@@ -31,11 +32,8 @@
 
 #include "NDSCart.h"
 #include "GBACart.h"
-#include "Plugin.h"
+#include "plugins/Plugin.h"
 
-using Keep = std::monostate;
-using UpdateConsoleNDSArgs = std::variant<Keep, std::unique_ptr<melonDS::NDSCart::CartCommon>>;
-using UpdateConsoleGBAArgs = std::variant<Keep, std::unique_ptr<melonDS::GBACart::CartCommon>>;
 namespace melonDS
 {
 class NDS;
@@ -69,15 +67,28 @@ public:
 
         msg_InitGL,
         msg_DeInitGL,
+
+        msg_BootROM,
+        msg_BootFirmware,
+        msg_InsertCart,
+        msg_EjectCart,
+        msg_InsertGBACart,
+        msg_InsertGBAAddon,
+        msg_EjectGBACart,
+
+        msg_LoadState,
+        msg_SaveState,
+        msg_UndoStateLoad,
+
+        msg_ImportSavefile,
+
+        msg_EnableCheats,
     };
 
     struct Message
     {
         MessageType type;
-        union
-        {
-            bool stopExternal;
-        };
+        QVariant param;
     };
 
     void sendMessage(Message msg);
@@ -93,23 +104,38 @@ public:
 
     // to be called from the UI thread
     void emuRun();
-    void emuPause();
-    void emuUnpause();
-    void emuTogglePause();
+    void emuPause(bool broadcast = true);
+    void emuUnpause(bool broadcast = true);
+    void emuTogglePause(bool broadcast = true);
     void emuStop(bool external);
     void emuExit();
     void emuFrameStep();
     void emuReset();
 
+    int bootROM(const QStringList& filename, QString& errorstr);
+    int bootFirmware(QString& errorstr);
+    int insertCart(const QStringList& filename, bool gba, QString& errorstr);
+    void ejectCart(bool gba);
+    int insertGBAAddon(int type, QString& errorstr);
+
+    int saveState(const QString& filename);
+    int loadState(const QString& filename);
+    int undoStateLoad();
+
+    int importSavefile(const QString& filename);
+
+    void enableCheats(bool enable);
+
     bool emuIsRunning();
     bool emuIsActive();
 
-    void initContext();
-    void deinitContext();
+    void initContext(int win);
+    void deinitContext(int win);
     void updateVideoSettings() { videoSettingsDirty = true; }
+    void updateVideoRenderer() { videoSettingsDirty = true; lastVideoRenderer = -1; }
 
-    int FrontBuffer = 0;
-    QMutex FrontBufferLock;
+    int frontBuffer = 0;
+    QMutex frontBufferLock;
 
 signals:
     void windowUpdate();
@@ -131,8 +157,13 @@ signals:
 
     void syncVolumeLevel();
 
+    void windowStartBgmMusic(QString videoFilePath);
+    void windowStopBgmMusic();
+
     void windowStartVideo(QString videoFilePath);
     void windowStopVideo();
+    void windowPauseVideo();
+    void windowUnpauseVideo();
 
 private:
     void handleMessages();
@@ -156,6 +187,9 @@ private:
     constexpr static int emuPauseStackPauseThreshold = 1;
     int emuPauseStack;
 
+    int msgResult = 0;
+    QString msgError;
+
     QMutex msgMutex;
     QSemaphore msgSemaphore;
     QQueue<Message> msgQueue;
@@ -164,9 +198,9 @@ private:
 
     int autoScreenSizing;
 
-    Plugins::Plugin* plugin;
-    void refreshGameScene();
-    void refreshCutsceneState();
+    bool pluginShouldFastForward();
+    void refreshPluginGameScene();
+    void refreshPluginCutsceneState();
 
     int lastVideoRenderer = -1;
 

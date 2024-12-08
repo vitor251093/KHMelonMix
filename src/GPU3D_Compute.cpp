@@ -182,13 +182,14 @@ void blah(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length
     printf("%s\n", message);
 }
 
-std::unique_ptr<ComputeRenderer> ComputeRenderer::New()
+std::unique_ptr<ComputeRenderer> ComputeRenderer::New(Plugins::Plugin* plugin)
 {
-    std::optional<GLCompositor> compositor =  GLCompositor::New();
+    std::optional<GLCompositor> compositor =  GLCompositor::New(plugin);
     if (!compositor)
         return nullptr;
 
     std::unique_ptr<ComputeRenderer> result = std::unique_ptr<ComputeRenderer>(new ComputeRenderer(std::move(*compositor)));
+    result->GamePlugin = plugin;
 
     //glDebugMessageCallback(blah, NULL);
     //glEnable(GL_DEBUG_OUTPUT);
@@ -733,6 +734,10 @@ void ComputeRenderer::RenderFrame(GPU& gpu)
                 scaledPositions[i][0] = polygon->Vertices[i]->FinalPosition[0] * ScaleFactor;
                 scaledPositions[i][1] = polygon->Vertices[i]->FinalPosition[1] * ScaleFactor;
             }
+
+            GamePlugin->gpu3DOpenGLCompute_applyChangesToPolygon(ScreenWidth, ScreenHeight,
+                &scaledPositions[i][0], &scaledPositions[i][1], polygon->Vertices[i]->Position[2]);
+
             ytop = std::min(scaledPositions[i][1], ytop);
             ybot = std::max(scaledPositions[i][1], ybot);
         }
