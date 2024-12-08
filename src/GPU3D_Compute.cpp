@@ -734,6 +734,10 @@ void ComputeRenderer::RenderFrame(GPU& gpu)
                 scaledPositions[i][0] = polygon->Vertices[i]->FinalPosition[0] * ScaleFactor;
                 scaledPositions[i][1] = polygon->Vertices[i]->FinalPosition[1] * ScaleFactor;
             }
+
+            GamePlugin->gpu3DOpenGLCompute_applyChangesToPolygon(ScreenWidth, ScreenHeight,
+                &scaledPositions[i][0], &scaledPositions[i][1], polygon->Vertices[i]->Position[2]);
+
             ytop = std::min(scaledPositions[i][1], ytop);
             ybot = std::max(scaledPositions[i][1], ybot);
         }

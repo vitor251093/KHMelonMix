@@ -247,7 +247,7 @@ void PluginKingdomHeartsReCoded::loadLocalization() {
 
         CloseFile(f);
     }
-    else {
+    else if (false) {
         int firstAddr = 0;
         int lastAddr = 0;
         bool validCharFound = false;
@@ -314,6 +314,30 @@ const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
 
 const char* PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z() {
     return kRenderVS_Z_KhReCoded;
+};
+void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z) {
+    float topScreenAspectRatio = (((float)ScreenWidth)/ScreenHeight) / (4.f / 3.f);
+    float commandMenuLeftMargin = 33.5;
+    float commandMenuBottomMargin = 2.5;
+    float commandMenuWidth = ScreenWidth/(2.4*topScreenAspectRatio);
+    float commandMenuHeight = ScreenHeight/2.4;
+
+    int iuScale = 4;
+    float iuTexScale = (5.0)/iuScale;
+
+    float _x = (float)(*x - ScreenWidth/2);
+    float _y = (float)(*y - ScreenHeight/2);
+    if (_x >= -(1.000)*(ScreenWidth/2)  && _x <= -(0.375)*(ScreenWidth/2) &&
+        _y >= -(0.250)*(ScreenHeight/2) && _y <= +(1.000)*(ScreenHeight/2) &&
+        z == (s32)(-(1.000)*(1 << 22)) /*&&
+        vColor.r < 200.0*/) {
+
+        _x = ((((_x/(ScreenWidth/2) + 1.0)*(commandMenuWidth/iuTexScale) + commandMenuLeftMargin/iuTexScale)/ScreenWidth)*2.0 - 1.0)*(ScreenWidth/2);
+        _y = (1.0 - (((1.0 - _y/(ScreenHeight/2))*(commandMenuHeight/iuTexScale) + commandMenuBottomMargin/iuTexScale)/ScreenHeight)*2.0)*(ScreenHeight/2);
+
+        *x = (s32)(_x + ScreenWidth/2);
+        *y = (s32)(_y + ScreenHeight/2);
+    }
 };
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {

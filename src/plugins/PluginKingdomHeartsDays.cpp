@@ -403,6 +403,9 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z() {
 
     return kRenderVS_Z_KhDays;
 };
+void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z) {
+
+};
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "PriorGameScene");
