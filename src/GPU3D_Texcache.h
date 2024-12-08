@@ -12,7 +12,7 @@
 #include <filesystem>
 #include <fstream>
 
-#include "plugins/PluginManager.h"
+#include "plugins/Plugin.h"
 
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash/xxhash.h"
