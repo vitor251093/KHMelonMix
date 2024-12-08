@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - compute-shader-renderer
   pull_request:
     branches:
       - master

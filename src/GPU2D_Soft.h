@@ -20,6 +20,8 @@
 
 #include "GPU2D.h"
 
+#include "plugins/Plugin.h"
+
 namespace melonDS
 {
 class GPU;
@@ -36,8 +38,12 @@ public:
     void DrawScanline(u32 line, Unit* unit) override;
     void DrawSprites(u32 line, Unit* unit) override;
     void VBlankEnd(Unit* unitA, Unit* unitB) override;
+
+    void setPlugin(Plugins::Plugin* _plugin) { plugin = _plugin; }
+
 private:
     melonDS::GPU& GPU;
+    Plugins::Plugin* plugin;
     alignas(8) u32 BGOBJLine[256*3];
     u32* _3DLine;
 
