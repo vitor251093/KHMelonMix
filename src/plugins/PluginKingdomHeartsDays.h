@@ -135,6 +135,7 @@ public:
     bool _ShouldStartReplacementBgmMusic;
     bool _ShouldStopReplacementBgmMusic;
     u16 _CurrentBackgroundMusic;
+    u16 _LastSoundtrackId;
     bool ShouldStartReplacementBgmMusic() {
         if (_ShouldStartReplacementBgmMusic) {
             _ShouldStartReplacementBgmMusic = false;

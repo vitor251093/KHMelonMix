@@ -205,6 +205,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _LastCutscene = nullptr;
 
     _CurrentBackgroundMusic = 0;
+    _LastSoundtrackId = 0;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -1423,11 +1424,16 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
 
     if (soundtrackId != _CurrentBackgroundMusic) {
         if (soundtrackId == 0x0000) {
-            soundtrackId = _CurrentBackgroundMusic;
+            _LastSoundtrackId = soundtrackId;
         }
         else if (soundtrackId == 0xFFFF) {
-            _ShouldStopReplacementBgmMusic = true;
-            printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
+            if (_LastSoundtrackId != 0) {
+                _ShouldStopReplacementBgmMusic = true;
+                printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
+    
+                _CurrentBackgroundMusic = soundtrackId;
+                _LastSoundtrackId = soundtrackId;
+            }
         }
         else {
             if (replacementAvailable) {
@@ -1438,14 +1444,18 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
             _ShouldStopReplacementBgmMusic = true;
             _ShouldStartReplacementBgmMusic = replacementAvailable;
             printf("Starting replacement song %d\n", soundtrackId);
+    
+            _CurrentBackgroundMusic = soundtrackId;
+            _LastSoundtrackId = soundtrackId;
         }
     }
     else {
         u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
         nds->ARM7Write16(address, 0);
-    }
     
-    _CurrentBackgroundMusic = soundtrackId;
+        _CurrentBackgroundMusic = soundtrackId;
+        _LastSoundtrackId = soundtrackId;
+    }
 }
 
 std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
