@@ -1427,7 +1427,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
             _LastSoundtrackId = soundtrackId;
         }
         else if (soundtrackId == 0xFFFF) {
-            if (_LastSoundtrackId != 0) {
+            if (_LastSoundtrackId != 0 && _CurrentBackgroundMusic != 0) {
                 _ShouldStopReplacementBgmMusic = true;
                 printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
     
@@ -1439,19 +1439,21 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
             if (replacementAvailable) {
                 u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
                 nds->ARM7Write16(address, 0);
-            }
 
-            _ShouldStopReplacementBgmMusic = true;
-            _ShouldStartReplacementBgmMusic = replacementAvailable;
-            printf("Starting replacement song %d\n", soundtrackId);
-    
-            _CurrentBackgroundMusic = soundtrackId;
-            _LastSoundtrackId = soundtrackId;
+                _ShouldStopReplacementBgmMusic = true;
+                _ShouldStartReplacementBgmMusic = replacementAvailable;
+                printf("Starting replacement song %d\n", soundtrackId);
+        
+                _CurrentBackgroundMusic = soundtrackId;
+                _LastSoundtrackId = soundtrackId;
+            }
         }
     }
     else {
-        u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-        nds->ARM7Write16(address, 0);
+        if (replacementAvailable) {
+            u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
+            nds->ARM7Write16(address, 0);
+        }
     
         _CurrentBackgroundMusic = soundtrackId;
         _LastSoundtrackId = soundtrackId;
