@@ -264,7 +264,7 @@ public:
         int oldWidth = width;
         int oldHeight = height;
         unsigned char* imageData = (unsigned char*)DecodingBuffer;
-        bool textureReplacementEnabled = GamePlugin->shouldExportTextures();
+        bool textureReplacementEnabled = true;
         if (textureReplacementEnabled) {
             std::ostringstream oss0;
             oss0 << "3d-";
@@ -339,9 +339,12 @@ public:
                         height = r_height;
                     }
                     else {
-                        printf("Saving texture %s\n", pathTmp);
                         imageData = (unsigned char*)DecodingBuffer;
-                        Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+
+                        if (GamePlugin->shouldExportTextures()) {
+                            printf("Saving texture %s\n", pathTmp);
+                            Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+                        }
                     }
                 }
             }
