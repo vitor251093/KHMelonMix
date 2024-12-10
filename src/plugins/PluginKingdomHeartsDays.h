@@ -32,7 +32,7 @@ public:
     std::string assetsRegionSubfolder();
 
     const char* gpuOpenGL_FS();
-    const char* gpu3DOpenGL_VS_Z();
+    const char* gpu3DOpenGLClassic_VS_Z();
     void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb);
 
     void gpuOpenGL_FS_initVariables(GLuint CompShader);
@@ -51,7 +51,6 @@ public:
     int _ReplayLimitCount;
     bool _CanSkipHdCutscene;
     bool _SkipDsCutscene;
-    bool _PlayingCutsceneBeforeCredits;
     bool _PlayingCredits;
     bool _ShouldTerminateIngameCutscene;
     bool _StoppedIngameCutscene;
@@ -132,12 +131,42 @@ public:
     void onReplacementCutsceneStarted();
     void onReplacementCutsceneEnd();
 
+    bool _StartedReplacementBgmMusic;
+    bool _RunningReplacementBgmMusic;
+    bool _PausedReplacementBgmMusic;
+    bool _ShouldPauseReplacementBgmMusic;
+    bool _ShouldUnpauseReplacementBgmMusic;
     bool _ShouldStartReplacementBgmMusic;
     bool _ShouldStopReplacementBgmMusic;
     u16 _CurrentBackgroundMusic;
+    u16 _LastSoundtrackId;
     bool ShouldStartReplacementBgmMusic() {
         if (_ShouldStartReplacementBgmMusic) {
             _ShouldStartReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    bool StartedReplacementBgmMusic() {
+        if (_StartedReplacementBgmMusic) {
+            _StartedReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    bool RunningReplacementBgmMusic() {return _RunningReplacementBgmMusic;}
+    bool ShouldPauseReplacementBgmMusic() {
+        if (_ShouldPauseReplacementBgmMusic) {
+            _ShouldPauseReplacementBgmMusic = false;
+            _PausedReplacementBgmMusic = true;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldUnpauseReplacementBgmMusic() {
+        if (_ShouldUnpauseReplacementBgmMusic) {
+            _ShouldUnpauseReplacementBgmMusic = false;
+            _PausedReplacementBgmMusic = false;
             return true;
         }
         return false;
@@ -151,6 +180,7 @@ public:
     }
     u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
     std::string BackgroundMusicFilePath(std::string name);
+    void onReplacementBackgroundMusicStarted();
 
     const char* getGameSceneName();
 

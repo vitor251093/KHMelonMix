@@ -205,6 +205,10 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _LastCutscene = nullptr;
 
     _CurrentBackgroundMusic = 0;
+    _LastSoundtrackId = 0;
+    _PausedReplacementBgmMusic = false;
+    _ShouldPauseReplacementBgmMusic = false;
+    _ShouldUnpauseReplacementBgmMusic = false;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -394,7 +398,7 @@ const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
     return kCompositorFS_KhDays;
 };
 
-const char* PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z() {
+const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     bool disable = getBoolByCart(KHDaysUSDisableEnhancedGraphics, KHDaysEUDisableEnhancedGraphics,
                                  KHDaysJPDisableEnhancedGraphics, KHDaysJPRev1DisableEnhancedGraphics);
     if (disable) {
@@ -536,6 +540,14 @@ bool PluginKingdomHeartsDays::togglePause()
             _ShouldPauseReplacementCutscene = true;
         }
         return true;
+    }
+    if (_RunningReplacementBgmMusic) {
+        if (_PausedReplacementBgmMusic) {
+            _ShouldUnpauseReplacementBgmMusic = true;
+        }
+        else {
+            _ShouldPauseReplacementBgmMusic = true;
+        }
     }
     return false;
 }
@@ -1423,29 +1435,48 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
 
     if (soundtrackId != _CurrentBackgroundMusic) {
         if (soundtrackId == 0x0000) {
-            soundtrackId = _CurrentBackgroundMusic;
+            _LastSoundtrackId = soundtrackId;
         }
         else if (soundtrackId == 0xFFFF) {
-            _ShouldStopReplacementBgmMusic = true;
-            printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
+            if (_LastSoundtrackId != 0 && _CurrentBackgroundMusic != 0) {
+                _ShouldStopReplacementBgmMusic = true;
+                printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
+    
+                _CurrentBackgroundMusic = soundtrackId;
+                _LastSoundtrackId = soundtrackId;
+            }
         }
         else {
+            _ShouldStopReplacementBgmMusic = true;
+
             if (replacementAvailable) {
                 u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
                 nds->ARM7Write16(address, 0);
-            }
 
-            _ShouldStopReplacementBgmMusic = true;
-            _ShouldStartReplacementBgmMusic = replacementAvailable;
-            printf("Starting replacement song %d\n", soundtrackId);
+                _ShouldStartReplacementBgmMusic = replacementAvailable;
+                printf("Starting replacement song %d\n", soundtrackId);
+        
+                _CurrentBackgroundMusic = soundtrackId;
+                _LastSoundtrackId = soundtrackId;
+            }
         }
     }
     else {
-        u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-        nds->ARM7Write16(address, 0);
-    }
+        if (replacementAvailable) {
+            u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
+            nds->ARM7Write16(address, 0);
+        }
     
-    _CurrentBackgroundMusic = soundtrackId;
+        _CurrentBackgroundMusic = soundtrackId;
+        _LastSoundtrackId = soundtrackId;
+    }
+}
+
+void PluginKingdomHeartsDays::onReplacementBackgroundMusicStarted() {
+    log("Background music started");
+    _ShouldStartReplacementBgmMusic = false;
+    _StartedReplacementBgmMusic = true;
+    _RunningReplacementBgmMusic = true;
 }
 
 std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {

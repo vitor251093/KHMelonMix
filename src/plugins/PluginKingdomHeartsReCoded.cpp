@@ -312,7 +312,7 @@ const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
     return kCompositorFS_KhReCoded;
 };
 
-const char* PluginKingdomHeartsReCoded::gpu3DOpenGL_VS_Z() {
+const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
     return kRenderVS_Z_KhReCoded;
 };
 
@@ -1148,6 +1148,13 @@ std::string PluginKingdomHeartsReCoded::BackgroundMusicFilePath(std::string name
     }
 
     return "";
+}
+
+void PluginKingdomHeartsReCoded::onReplacementBackgroundMusicStarted() {
+    log("Background music started");
+    _ShouldStartReplacementBgmMusic = false;
+    _StartedReplacementBgmMusic = true;
+    _RunningReplacementBgmMusic = true;
 }
 
 std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string language) {

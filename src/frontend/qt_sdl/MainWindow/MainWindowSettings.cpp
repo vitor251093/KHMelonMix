@@ -68,6 +68,9 @@ void MainWindowSettings::createBgmPlayer()
     connect(bgmPlayer, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         emuInstance->plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
 
+        if (status == QMediaPlayer::BufferingMedia || status == QMediaPlayer::BufferedMedia) {
+            emuInstance->plugin->onReplacementBackgroundMusicStarted();
+        }
         if (status == QMediaPlayer::InvalidMedia) {
             emuInstance->plugin->log(("======= Error: " + bgmPlayer->errorString().toStdString()).c_str());
         }
@@ -121,6 +124,26 @@ void MainWindowSettings::stopBgmMusic()
     if (isCutscenePlaying) {
         bgmPlayer->stop();
     }
+}
+
+void MainWindowSettings::asyncPauseBgmMusic()
+{
+    QMetaObject::invokeMethod(this, "pauseBgmMusic", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::pauseBgmMusic()
+{
+    bgmPlayer->pause();
+}
+
+void MainWindowSettings::asyncUnpauseBgmMusic()
+{
+    QMetaObject::invokeMethod(this, "unpauseBgmMusic", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::unpauseBgmMusic()
+{
+    bgmPlayer->play();
 }
 
 void MainWindowSettings::createVideoPlayer()

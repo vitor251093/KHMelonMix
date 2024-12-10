@@ -57,9 +57,14 @@ public:
     void onReplacementCutsceneEnd() {}
     
     bool ShouldStartReplacementBgmMusic() {return false;}
+    bool StartedReplacementBgmMusic() {return false;}
+    bool RunningReplacementBgmMusic() {return false;}
+    bool ShouldPauseReplacementBgmMusic() {return false;}
+    bool ShouldUnpauseReplacementBgmMusic() {return false;}
     bool ShouldStopReplacementBgmMusic() {return false;}
     u16 CurrentBackgroundMusic() {return 0;}
     std::string BackgroundMusicFilePath(std::string name) {return "";}
+    void onReplacementBackgroundMusicStarted() {}
 
     bool refreshGameScene() {
         return false;
