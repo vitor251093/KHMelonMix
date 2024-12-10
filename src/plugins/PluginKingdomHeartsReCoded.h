@@ -46,6 +46,10 @@ public:
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     bool applyTouchKeyMask(u32 TouchKeyMask);
 
+    bool shouldExportTextures() {
+        return KHReCodedExportTextures;
+    }
+
     int _FastForwardPressCount;
     int _StartPressCount;
     int _ReplayLimitCount;
@@ -191,7 +195,11 @@ public:
 
     void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
     {
-        KH_15_25_Remix_Location = getStringConfig("Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
+        std::string root = getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
+
+        KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
+
+        KHReCodedExportTextures = getBoolConfig(root + ".ExportTextures");
     }
 private:
     melonDS::NDS* nds;
@@ -227,11 +235,14 @@ private:
 
     std::array<CutsceneEntry, 15> Cutscenes;
     std::string KH_15_25_Remix_Location = "";
+    bool KHReCodedExportTextures = false;
 
     int detectGameScene();
     bool setGameScene(int newGameScene);
 
     u32 getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
+    std::string getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress);
+    bool getBoolByCart(bool usAddress, bool euAddress, bool jpAddress);
 
     u32 getCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* detectTopScreenCutscene();

@@ -46,6 +46,10 @@ public:
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     bool applyTouchKeyMask(u32 TouchKeyMask);
 
+    bool shouldExportTextures() {
+        return KHDaysExportTextures;
+    }
+
     int _FastForwardPressCount;
     int _StartPressCount;
     int _ReplayLimitCount;
@@ -192,17 +196,15 @@ public:
 
     void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
     {
-        KH_15_25_Remix_Location = getStringConfig("Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
+        std::string root = getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
 
-        KHDaysUSLanguage = getStringConfig("KHDays_US.Language");
-        KHDaysEULanguage = getStringConfig("KHDays_EU.Language");
-        KHDaysJPLanguage = getStringConfig("KHDays_JP.Language");
-        KHDaysJPRev1Language = getStringConfig("KHDays_JPRev1.Language");
+        KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
 
-        KHDaysUSDisableEnhancedGraphics = getBoolConfig("KHDays_US.DisableEnhancedGraphics");
-        KHDaysEUDisableEnhancedGraphics = getBoolConfig("KHDays_EU.DisableEnhancedGraphics");
-        KHDaysJPDisableEnhancedGraphics = getBoolConfig("KHDays_JP.DisableEnhancedGraphics");
-        KHDaysJPRev1DisableEnhancedGraphics = getBoolConfig("KHDays_JPRev1.DisableEnhancedGraphics");
+        KHDaysLanguage = getStringConfig(root + ".Language");
+
+        KHDaysDisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
+
+        KHDaysExportTextures = getBoolConfig(root + ".ExportTextures");
     }
 private:
     melonDS::NDS* nds;
@@ -246,14 +248,9 @@ private:
     std::array<CutsceneEntry, 46> Cutscenes;
 
     std::string KH_15_25_Remix_Location = "";
-    std::string KHDaysUSLanguage = "";
-    std::string KHDaysEULanguage = "";
-    std::string KHDaysJPLanguage = "";
-    std::string KHDaysJPRev1Language = "";
-    bool KHDaysUSDisableEnhancedGraphics = false;
-    bool KHDaysEUDisableEnhancedGraphics = false;
-    bool KHDaysJPDisableEnhancedGraphics = false;
-    bool KHDaysJPRev1DisableEnhancedGraphics = false;
+    std::string KHDaysLanguage = "";
+    bool KHDaysDisableEnhancedGraphics = false;
+    bool KHDaysExportTextures = false;
 
     int detectGameScene();
     bool setGameScene(int newGameScene);
