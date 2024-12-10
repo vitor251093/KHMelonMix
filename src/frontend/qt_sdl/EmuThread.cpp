@@ -89,6 +89,8 @@ void EmuThread::attachWindow(MainWindow* window)
 
     connect(this, SIGNAL(windowStartBgmMusic(QString)), window, SLOT(asyncStartBgmMusic(QString)));
     connect(this, SIGNAL(windowStopBgmMusic()), window, SLOT(asyncStopBgmMusic()));
+    connect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
+    connect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
     
     connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
@@ -772,6 +774,14 @@ void EmuThread::refreshPluginCutsceneState()
 
     if (emuInstance->plugin->StartedReplacementBgmMusic()) {
         emuStatus = emuStatus_Running;
+    }
+
+    if (emuInstance->plugin->ShouldPauseReplacementBgmMusic()) {
+        emit windowPauseBgmMusic();
+    }
+
+    if (emuInstance->plugin->ShouldUnpauseReplacementBgmMusic()) {
+        emit windowUnpauseBgmMusic();
     }
 
     if (emuInstance->plugin->ShouldStopReplacementCutscene()) {

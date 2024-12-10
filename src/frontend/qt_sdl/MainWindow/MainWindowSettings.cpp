@@ -126,6 +126,26 @@ void MainWindowSettings::stopBgmMusic()
     }
 }
 
+void MainWindowSettings::asyncPauseBgmMusic()
+{
+    QMetaObject::invokeMethod(this, "pauseBgmMusic", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::pauseBgmMusic()
+{
+    bgmPlayer->pause();
+}
+
+void MainWindowSettings::asyncUnpauseBgmMusic()
+{
+    QMetaObject::invokeMethod(this, "unpauseBgmMusic", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::unpauseBgmMusic()
+{
+    bgmPlayer->play();
+}
+
 void MainWindowSettings::createVideoPlayer()
 {
     playerWidget = new QVideoWidget(this);

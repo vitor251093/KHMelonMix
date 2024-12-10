@@ -159,6 +159,8 @@ signals:
 
     void windowStartBgmMusic(QString videoFilePath);
     void windowStopBgmMusic();
+    void windowPauseBgmMusic();
+    void windowUnpauseBgmMusic();
 
     void windowStartVideo(QString videoFilePath);
     void windowStopVideo();

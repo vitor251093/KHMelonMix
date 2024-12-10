@@ -51,7 +51,6 @@ public:
     int _ReplayLimitCount;
     bool _CanSkipHdCutscene;
     bool _SkipDsCutscene;
-    bool _PlayingCutsceneBeforeCredits;
     bool _PlayingCredits;
     bool _ShouldTerminateIngameCutscene;
     bool _StoppedIngameCutscene;
@@ -134,6 +133,9 @@ public:
 
     bool _StartedReplacementBgmMusic;
     bool _RunningReplacementBgmMusic;
+    bool _PausedReplacementBgmMusic;
+    bool _ShouldPauseReplacementBgmMusic;
+    bool _ShouldUnpauseReplacementBgmMusic;
     bool _ShouldStartReplacementBgmMusic;
     bool _ShouldStopReplacementBgmMusic;
     u16 _CurrentBackgroundMusic;
@@ -152,6 +154,22 @@ public:
         return false;
     }
     bool RunningReplacementBgmMusic() {return _RunningReplacementBgmMusic;}
+    bool ShouldPauseReplacementBgmMusic() {
+        if (_ShouldPauseReplacementBgmMusic) {
+            _ShouldPauseReplacementBgmMusic = false;
+            _PausedReplacementBgmMusic = true;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldUnpauseReplacementBgmMusic() {
+        if (_ShouldUnpauseReplacementBgmMusic) {
+            _ShouldUnpauseReplacementBgmMusic = false;
+            _PausedReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
     bool ShouldStopReplacementBgmMusic() {
         if (_ShouldStopReplacementBgmMusic) {
             _ShouldStopReplacementBgmMusic = false;

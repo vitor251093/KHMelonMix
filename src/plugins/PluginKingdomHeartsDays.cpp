@@ -206,6 +206,9 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     _CurrentBackgroundMusic = 0;
     _LastSoundtrackId = 0;
+    _PausedReplacementBgmMusic = false;
+    _ShouldPauseReplacementBgmMusic = false;
+    _ShouldUnpauseReplacementBgmMusic = false;
 
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
@@ -537,6 +540,14 @@ bool PluginKingdomHeartsDays::togglePause()
             _ShouldPauseReplacementCutscene = true;
         }
         return true;
+    }
+    if (_RunningReplacementBgmMusic) {
+        if (_PausedReplacementBgmMusic) {
+            _ShouldUnpauseReplacementBgmMusic = true;
+        }
+        else {
+            _ShouldPauseReplacementBgmMusic = true;
+        }
     }
     return false;
 }

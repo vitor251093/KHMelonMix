@@ -165,6 +165,8 @@ public:
     virtual bool ShouldStartReplacementBgmMusic() = 0;
     virtual bool StartedReplacementBgmMusic() = 0;
     virtual bool RunningReplacementBgmMusic() = 0;
+    virtual bool ShouldPauseReplacementBgmMusic() = 0;
+    virtual bool ShouldUnpauseReplacementBgmMusic() = 0;
     virtual bool ShouldStopReplacementBgmMusic()  = 0;
     virtual u16 CurrentBackgroundMusic() = 0;
     virtual std::string BackgroundMusicFilePath(std::string name) = 0;
