@@ -270,7 +270,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 void PluginKingdomHeartsDays::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
-    std::string language = getStringByCart(KHDaysUSLanguage, KHDaysEULanguage, KHDaysJPLanguage, KHDaysJPRev1Language);
+    std::string language = KHDaysLanguage;
     if (language == "") {
         language = "en-US";
     }
@@ -389,8 +389,7 @@ std::string PluginKingdomHeartsDays::assetsRegionSubfolder() {
 }
 
 const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
-    bool disable = getBoolByCart(KHDaysUSDisableEnhancedGraphics, KHDaysEUDisableEnhancedGraphics,
-                                 KHDaysJPDisableEnhancedGraphics, KHDaysJPRev1DisableEnhancedGraphics);
+    bool disable = KHDaysDisableEnhancedGraphics;
     if (disable) {
         return nullptr;
     }
@@ -399,8 +398,7 @@ const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
 };
 
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
-    bool disable = getBoolByCart(KHDaysUSDisableEnhancedGraphics, KHDaysEUDisableEnhancedGraphics,
-                                 KHDaysJPDisableEnhancedGraphics, KHDaysJPRev1DisableEnhancedGraphics);
+    bool disable = KHDaysDisableEnhancedGraphics;
     if (disable) {
         return nullptr;
     }

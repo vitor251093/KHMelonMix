@@ -918,6 +918,36 @@ u32 PluginKingdomHeartsReCoded::getU32ByCart(u32 usAddress, u32 euAddress, u32 j
     return cutsceneAddress;
 }
 
+std::string PluginKingdomHeartsReCoded::getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress)
+{
+    std::string cutsceneAddress = "";
+    if (isUsaCart()) {
+        cutsceneAddress = usAddress;
+    }
+    else if (isEuropeCart()) {
+        cutsceneAddress = euAddress;
+    }
+    else if (isJapanCart()) {
+        cutsceneAddress = jpAddress;
+    }
+    return cutsceneAddress;
+}
+
+bool PluginKingdomHeartsReCoded::getBoolByCart(bool usAddress, bool euAddress, bool jpAddress)
+{
+    bool cutsceneAddress = false;
+    if (isUsaCart()) {
+        cutsceneAddress = usAddress;
+    }
+    else if (isEuropeCart()) {
+        cutsceneAddress = euAddress;
+    }
+    else if (isJapanCart()) {
+        cutsceneAddress = jpAddress;
+    }
+    return cutsceneAddress;
+}
+
 CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
 {
     if (GameScene == -1)

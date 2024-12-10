@@ -34,6 +34,9 @@ public:
     const char* getGameSceneName() {
         return "";
     }
+
+    bool shouldExportTextures() {return false;}
+
     bool shouldRenderFrame() {
         return true;
     }

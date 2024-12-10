@@ -143,6 +143,8 @@ public:
     virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
     virtual bool applyTouchKeyMask(u32 TouchKeyMask) = 0;
 
+    virtual bool shouldExportTextures() = 0;
+
     virtual bool ShouldTerminateIngameCutscene() = 0;
     virtual bool StoppedIngameCutscene() = 0;
     virtual bool ShouldStartReplacementCutscene() = 0;

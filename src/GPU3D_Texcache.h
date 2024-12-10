@@ -264,7 +264,7 @@ public:
         int oldWidth = width;
         int oldHeight = height;
         unsigned char* imageData = (unsigned char*)DecodingBuffer;
-        bool textureReplacementEnabled = true;
+        bool textureReplacementEnabled = GamePlugin->shouldExportTextures();
         if (textureReplacementEnabled) {
             std::ostringstream oss0;
             oss0 << "3d-";
