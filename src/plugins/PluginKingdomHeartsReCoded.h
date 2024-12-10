@@ -132,6 +132,8 @@ public:
     void onReplacementCutsceneStarted();
     void onReplacementCutsceneEnd();
 
+    bool _StartedReplacementBgmMusic;
+    bool _RunningReplacementBgmMusic;
     bool _ShouldStartReplacementBgmMusic;
     bool _ShouldStopReplacementBgmMusic;
     u16 _CurrentBackgroundMusic;
@@ -142,6 +144,14 @@ public:
         }
         return false;
     }
+    bool StartedReplacementBgmMusic() {
+        if (_StartedReplacementBgmMusic) {
+            _StartedReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    bool RunningReplacementBgmMusic() {return _RunningReplacementBgmMusic;}
     bool ShouldStopReplacementBgmMusic() {
         if (_ShouldStopReplacementBgmMusic) {
             _ShouldStopReplacementBgmMusic = false;
@@ -151,6 +161,7 @@ public:
     }
     u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
     std::string BackgroundMusicFilePath(std::string name);
+    void onReplacementBackgroundMusicStarted();
 
     const char* getGameSceneName();
 

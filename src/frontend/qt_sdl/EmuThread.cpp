@@ -760,10 +760,18 @@ void EmuThread::refreshPluginCutsceneState()
         if (bgm != 0) {
             std::string path = emuInstance->plugin->BackgroundMusicFilePath("bgm" + std::to_string(bgm));
             if (path != "") {
+                // disabling fast-foward, otherwise it will affect the cutscenes
+                emuInstance->setVSyncGL(true);
+
+                emuStatus = emuStatus_Paused;
                 QString filePath = QString::fromUtf8(path.c_str());
                 emit windowStartBgmMusic(filePath);
             }
         }
+    }
+
+    if (emuInstance->plugin->StartedReplacementBgmMusic()) {
+        emuStatus = emuStatus_Running;
     }
 
     if (emuInstance->plugin->ShouldStopReplacementCutscene()) {

@@ -1436,11 +1436,12 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
             }
         }
         else {
+            _ShouldStopReplacementBgmMusic = true;
+
             if (replacementAvailable) {
                 u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
                 nds->ARM7Write16(address, 0);
 
-                _ShouldStopReplacementBgmMusic = true;
                 _ShouldStartReplacementBgmMusic = replacementAvailable;
                 printf("Starting replacement song %d\n", soundtrackId);
         
@@ -1458,6 +1459,13 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
         _CurrentBackgroundMusic = soundtrackId;
         _LastSoundtrackId = soundtrackId;
     }
+}
+
+void PluginKingdomHeartsDays::onReplacementBackgroundMusicStarted() {
+    log("Background music started");
+    _ShouldStartReplacementBgmMusic = false;
+    _StartedReplacementBgmMusic = true;
+    _RunningReplacementBgmMusic = true;
 }
 
 std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {

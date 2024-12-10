@@ -1150,6 +1150,13 @@ std::string PluginKingdomHeartsReCoded::BackgroundMusicFilePath(std::string name
     return "";
 }
 
+void PluginKingdomHeartsReCoded::onReplacementBackgroundMusicStarted() {
+    log("Background music started");
+    _ShouldStartReplacementBgmMusic = false;
+    _StartedReplacementBgmMusic = true;
+    _RunningReplacementBgmMusic = true;
+}
+
 std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::string assetsFolderName = assetsFolder();
