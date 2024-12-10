@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - master
-      - feature/fix-builds
-      - compute-shader-renderer
-      - compute-shader-renderer-2
       - ci/*
   pull_request:
     branches:

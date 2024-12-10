@@ -64,7 +64,6 @@
 #include "Net.h"
 
 #include "CLI.h"
-#include "GPU3D.h"
 
 #include "Net_PCap.h"
 #include "Net_Slirp.h"
