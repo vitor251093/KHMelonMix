@@ -1471,6 +1471,14 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     }
 }
 
+int PluginKingdomHeartsDays::DelayBeforeStartReplacementBgmMusic() {
+    u32 currentMission = getCurrentMission();
+    if (currentMission == 92 && _CurrentBackgroundMusic == 22) {
+        return 12500;
+    }
+    return 0;
+}
+
 void PluginKingdomHeartsDays::onReplacementBackgroundMusicStarted() {
     log("Background music started");
     _ShouldStartReplacementBgmMusic = false;

@@ -150,6 +150,7 @@ public:
         }
         return false;
     }
+    int DelayBeforeStartReplacementBgmMusic();
     bool StartedReplacementBgmMusic() {
         if (_StartedReplacementBgmMusic) {
             _StartedReplacementBgmMusic = false;

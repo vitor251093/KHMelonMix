@@ -60,6 +60,7 @@ public:
     void onReplacementCutsceneEnd() {}
     
     bool ShouldStartReplacementBgmMusic() {return false;}
+    int DelayBeforeStartReplacementBgmMusic() {return 0;}
     bool StartedReplacementBgmMusic() {return false;}
     bool RunningReplacementBgmMusic() {return false;}
     bool ShouldPauseReplacementBgmMusic() {return false;}

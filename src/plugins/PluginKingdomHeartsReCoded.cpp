@@ -1180,6 +1180,10 @@ std::string PluginKingdomHeartsReCoded::BackgroundMusicFilePath(std::string name
     return "";
 }
 
+int PluginKingdomHeartsReCoded::DelayBeforeStartReplacementBgmMusic() {
+    return 0;
+}
+
 void PluginKingdomHeartsReCoded::onReplacementBackgroundMusicStarted() {
     log("Background music started");
     _ShouldStartReplacementBgmMusic = false;

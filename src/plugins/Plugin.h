@@ -165,6 +165,7 @@ public:
     virtual void onReplacementCutsceneEnd() = 0;
 
     virtual bool ShouldStartReplacementBgmMusic() = 0;
+    virtual int DelayBeforeStartReplacementBgmMusic() = 0;
     virtual bool StartedReplacementBgmMusic() = 0;
     virtual bool RunningReplacementBgmMusic() = 0;
     virtual bool ShouldPauseReplacementBgmMusic() = 0;

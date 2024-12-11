@@ -764,14 +764,25 @@ void EmuThread::refreshPluginCutsceneState()
         if (bgm != 0) {
             std::string path = emuInstance->plugin->BackgroundMusicFilePath("bgm" + std::to_string(bgm));
             if (path != "") {
-                QTimer::singleShot((bgm == 22) ? 12000 : 0, mainWindow, [this, bgm, path]() {
+                int delay = emuInstance->plugin->DelayBeforeStartReplacementBgmMusic();
+                if (delay == 0) {
                     // disabling fast-foward, otherwise it will affect the cutscenes
                     emuInstance->setVSyncGL(true);
 
                     emuStatus = emuStatus_Paused;
                     QString filePath = QString::fromUtf8(path.c_str());
                     emit windowStartBgmMusic(filePath);
-                });
+                }
+                else {
+                    QTimer::singleShot(emuInstance->plugin->DelayBeforeStartReplacementBgmMusic(), mainWindow, [this, bgm, path]() {
+                        // disabling fast-foward, otherwise it will affect the cutscenes
+                        emuInstance->setVSyncGL(true);
+
+                        emuStatus = emuStatus_Paused;
+                        QString filePath = QString::fromUtf8(path.c_str());
+                        emit windowStartBgmMusic(filePath);
+                    });
+                }
             }
         }
     }
