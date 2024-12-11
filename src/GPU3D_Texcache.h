@@ -296,7 +296,7 @@ public:
             std::filesystem::path fullPath1 = assetsFolderPath / "textures" / filename1;
             std::filesystem::path fullPath2 = assetsFolderPath / "textures" / filename2;
             std::filesystem::path fullPath3 = assetsFolderPath / "textures" / filename3;
-            std::filesystem::path fullPathTmp = tmpFolderPath / filename2;
+            std::filesystem::path fullPathTmp = tmpFolderPath / filename1;
 #ifdef _WIN32
             const char* path1 = fullPath1.string().c_str();
             const char* path2 = fullPath2.string().c_str();
@@ -308,11 +308,12 @@ public:
             const char* path3 = fullPath3.c_str();
             const char* pathTmp = fullPathTmp.c_str();
 #endif
+            bool shouldExportTextures = GamePlugin->shouldExportTextures();
 
             if (!std::filesystem::exists(assetsFolderPath)) {
                 std::filesystem::create_directory(assetsFolderPath);
             }
-            if (!std::filesystem::exists(tmpFolderPath)) {
+            if (shouldExportTextures && !std::filesystem::exists(tmpFolderPath)) {
                 std::filesystem::create_directory(tmpFolderPath);
             }
 
@@ -341,7 +342,7 @@ public:
                     else {
                         imageData = (unsigned char*)DecodingBuffer;
 
-                        if (GamePlugin->shouldExportTextures()) {
+                        if (shouldExportTextures) {
                             printf("Saving texture %s\n", pathTmp);
                             Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
                         }
