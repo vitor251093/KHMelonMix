@@ -1432,11 +1432,11 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     bool replacementAvailable = (soundtrackPath != "");
 
     if (soundtrackId != _CurrentBackgroundMusic) {
-        if (soundtrackId == 0x0000) {
+        if (soundtrackId == 0x100) {
             _LastSoundtrackId = soundtrackId;
         }
         else if (soundtrackId == 0xFFFF) {
-            if (_LastSoundtrackId != 0 && _CurrentBackgroundMusic != 0) {
+            if (_LastSoundtrackId != 0x100 && _CurrentBackgroundMusic != 0) {
                 _ShouldStopReplacementBgmMusic = true;
                 printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
     
@@ -1449,7 +1449,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
 
             if (replacementAvailable) {
                 u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-                nds->ARM7Write16(address, 0);
+                nds->ARM7Write16(address, 0x100);
 
                 _ShouldStartReplacementBgmMusic = replacementAvailable;
                 printf("Starting replacement song %d\n", soundtrackId);
@@ -1462,7 +1462,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     else {
         if (replacementAvailable) {
             u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-            nds->ARM7Write16(address, 0);
+            nds->ARM7Write16(address, 0x100);
         }
     
         _CurrentBackgroundMusic = soundtrackId;
