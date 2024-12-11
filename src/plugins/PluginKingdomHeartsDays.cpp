@@ -526,6 +526,8 @@ void PluginKingdomHeartsDays::onLoadState()
     loadLocalization();
 
     GameScene = gameScene_InGameWithMap;
+
+    _CurrentBackgroundMusic = 0x101;
 }
 
 bool PluginKingdomHeartsDays::togglePause()
