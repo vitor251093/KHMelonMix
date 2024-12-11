@@ -168,6 +168,8 @@ signals:
     void windowUnpauseVideo();
 
 private:
+    MainWindow* mainWindow;
+
     void handleMessages();
 
     void updateRenderer();

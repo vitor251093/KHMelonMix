@@ -72,6 +72,8 @@ EmuThread::EmuThread(EmuInstance* inst, QObject* parent) : QThread(parent)
 
 void EmuThread::attachWindow(MainWindow* window)
 {
+    mainWindow = window;
+
     connect(this, SIGNAL(windowTitleChange(QString)), window, SLOT(onTitleUpdate(QString)));
     connect(this, SIGNAL(windowEmuStart()), window, SLOT(onEmuStart()));
     connect(this, SIGNAL(windowEmuStop()), window, SLOT(onEmuStop()));
@@ -762,12 +764,14 @@ void EmuThread::refreshPluginCutsceneState()
         if (bgm != 0) {
             std::string path = emuInstance->plugin->BackgroundMusicFilePath("bgm" + std::to_string(bgm));
             if (path != "") {
-                // disabling fast-foward, otherwise it will affect the cutscenes
-                emuInstance->setVSyncGL(true);
+                QTimer::singleShot((bgm == 22) ? 12000 : 0, mainWindow, [this, bgm, path]() {
+                    // disabling fast-foward, otherwise it will affect the cutscenes
+                    emuInstance->setVSyncGL(true);
 
-                emuStatus = emuStatus_Paused;
-                QString filePath = QString::fromUtf8(path.c_str());
-                emit windowStartBgmMusic(filePath);
+                    emuStatus = emuStatus_Paused;
+                    QString filePath = QString::fromUtf8(path.c_str());
+                    emit windowStartBgmMusic(filePath);
+                });
             }
         }
     }
