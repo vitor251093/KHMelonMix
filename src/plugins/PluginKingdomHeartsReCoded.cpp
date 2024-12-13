@@ -288,6 +288,10 @@ std::string PluginKingdomHeartsReCoded::assetsFolder() {
     return "recoded";
 }
 
+std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
+    return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
+}
+
 const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
     bool disable = DisableEnhancedGraphics;
     if (disable) {

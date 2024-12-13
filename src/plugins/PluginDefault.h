@@ -35,9 +35,6 @@ public:
         return true;
     }
 
-    bool shouldExportTextures() {return false;}
-    bool shouldStartInFullscreen() {return false;}
-
     const char* getGameSceneName() {
         return "";
     }

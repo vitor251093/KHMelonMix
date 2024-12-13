@@ -134,6 +134,7 @@ public:
     virtual void onLoadState() {};
 
     virtual std::string assetsFolder() = 0;
+    virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
 
     virtual const char* gpuOpenGL_FS() { return nullptr; };
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) {};
@@ -223,8 +224,12 @@ public:
     virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
     virtual bool applyTouchKeyMask(u32 TouchKeyMask) = 0;
 
-    virtual bool shouldExportTextures() = 0;
-    virtual bool shouldStartInFullscreen() = 0;
+    bool shouldExportTextures() {
+        return ExportTextures;
+    }
+    bool shouldStartInFullscreen() {
+        return FullscreenOnStartup;
+    }
 
     void initCutsceneVariables() {
         _StartPressCount = 0;
@@ -545,7 +550,17 @@ public:
 
     virtual void setAspectRatio(float aspectRatio) {}
 
-    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig) {}
+    void _superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+    {
+        std::string root = tomlUniqueIdentifier();
+        DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
+        ExportTextures = getBoolConfig(root + ".ExportTextures");
+        FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
+    }
+    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+    {
+        _superLoadConfigs(getBoolConfig, getStringConfig);
+    }
 
     virtual void hudToggle() {}
 
@@ -684,6 +699,9 @@ protected:
     int GameScene;
     int HUDState;
 
+    bool DisableEnhancedGraphics = false;
+    bool ExportTextures = false;
+    bool FullscreenOnStartup = false;
 
     int _FastForwardPressCount;
     int _StartPressCount;

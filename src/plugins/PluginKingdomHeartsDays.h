@@ -28,6 +28,7 @@ public:
 
     std::string assetsFolder();
     std::string assetsRegionSubfolder();
+    std::string tomlUniqueIdentifier();
 
     const char* gpuOpenGL_FS();
     void gpuOpenGL_FS_initVariables(GLuint CompShader);
@@ -41,13 +42,6 @@ public:
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     bool applyTouchKeyMask(u32 TouchKeyMask);
-
-    bool shouldExportTextures() {
-        return ExportTextures;
-    }
-    bool shouldStartInFullscreen() {
-        return FullscreenOnStartup;
-    }
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene);
     std::string LocalizationFilePath(std::string language);
@@ -65,13 +59,12 @@ public:
 
     void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
     {
-        std::string root = getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
+        _superLoadConfigs(getBoolConfig, getStringConfig);
+
+        std::string root = tomlUniqueIdentifier();
 
         KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
         KHDaysLanguage = getStringConfig(root + ".Language");
-        DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
-        ExportTextures = getBoolConfig(root + ".ExportTextures");
-        FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     }
 private:
     bool PausedInGame;
@@ -111,9 +104,6 @@ private:
 
     std::string KH_15_25_Remix_Location = "";
     std::string KHDaysLanguage = "";
-    bool DisableEnhancedGraphics = false;
-    bool ExportTextures = false;
-    bool FullscreenOnStartup = false;
 
     int detectGameScene();
 

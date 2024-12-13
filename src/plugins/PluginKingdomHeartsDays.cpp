@@ -374,6 +374,10 @@ std::string PluginKingdomHeartsDays::assetsRegionSubfolder() {
     return getStringByCart("us", "eu", "jp", "jp_rev1");
 }
 
+std::string PluginKingdomHeartsDays::tomlUniqueIdentifier() {
+    return getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
+}
+
 const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
