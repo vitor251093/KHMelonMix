@@ -252,7 +252,7 @@ void PluginKingdomHeartsDays::loadLocalization() {
         language = "en-US";
     }
 
-    std::string localizationFilePath = LocalizationFilePath("en-US");
+    std::string localizationFilePath = localizationFilePath("en-US");
     Platform::FileHandle* f = Platform::OpenLocalFile(localizationFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
         char linebuf[1024];
@@ -1303,7 +1303,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     }
 }
 
-int PluginKingdomHeartsDays::DelayBeforeStartReplacementBackgroundMusic() {
+int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
     u32 currentMission = getCurrentMission();
     if (currentMission == 92 && _CurrentBackgroundMusic == 22) {
         return 12500;
@@ -1311,7 +1311,7 @@ int PluginKingdomHeartsDays::DelayBeforeStartReplacementBackgroundMusic() {
     return 0;
 }
 
-std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
+std::string PluginKingdomHeartsDays::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::string assetsFolderName = assetsFolder();
     std::string assetsRegionSubfolderName = assetsRegionSubfolder();

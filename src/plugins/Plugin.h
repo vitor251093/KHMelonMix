@@ -364,7 +364,7 @@ public:
     }
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) = 0;
-    virtual std::string LocalizationFilePath(std::string language) = 0;
+    virtual std::string localizationFilePath(std::string language) = 0;
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
@@ -459,7 +459,7 @@ public:
         }
         return false;
     }
-    int DelayBeforeStartReplacementBackgroundMusic() {return 0;}
+    int delayBeforeStartReplacementBackgroundMusic() {return 0;}
     bool StartedReplacementBgmMusic() {
         if (_StartedReplacementBgmMusic) {
             _StartedReplacementBgmMusic = false;

@@ -46,7 +46,7 @@ public:
     void setAspectRatio(float aspectRatio) {}
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
-    std::string LocalizationFilePath(std::string language) {return "";}
+    std::string localizationFilePath(std::string language) {return "";}
     
     std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
 };

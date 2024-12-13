@@ -44,11 +44,11 @@ public:
     bool applyTouchKeyMask(u32 TouchKeyMask);
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene);
-    std::string LocalizationFilePath(std::string language);
+    std::string localizationFilePath(std::string language);
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene);
 
-    int DelayBeforeStartReplacementBackgroundMusic();
+    int delayBeforeStartReplacementBackgroundMusic();
     std::string replacementBackgroundMusicFilePath(std::string name);
 
     const char* getGameSceneName();

@@ -179,7 +179,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 void PluginKingdomHeartsReCoded::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
-    std::string localizationFilePath = LocalizationFilePath("en-US");
+    std::string localizationFilePath = localizationFilePath("en-US");
     Platform::FileHandle* f = Platform::OpenLocalFile(localizationFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
         char linebuf[1024];
@@ -1013,7 +1013,7 @@ std::string PluginKingdomHeartsReCoded::replacementBackgroundMusicFilePath(std::
     return "";
 }
 
-std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string language) {
+std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
