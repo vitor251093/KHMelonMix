@@ -101,7 +101,6 @@ private:
 
     u32 PriorHotkeyMask[PRIOR_HOTKEY_MASK_SIZE];
     u32 LastLockOnPress, LastSwitchTargetPress, LastScreenTogglePress;
-    bool SwitchTargetPressOnHold;
 
     std::array<CutsceneEntry, 15> Cutscenes;
     std::string KH_15_25_Remix_Location = "";

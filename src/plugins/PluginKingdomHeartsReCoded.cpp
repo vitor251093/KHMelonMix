@@ -129,6 +129,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     hudToggle();
 
     initCutsceneVariables();
+    initBgmVariables();
 
     PriorGameScene = -1;
     GameScene = -1;
@@ -137,10 +138,11 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     UIScale = 4;
     AspectRatio = 0;
 
-    ShowMap = true;
+    // game scene detection utils (extra: minimap coordinates)
     MinimapCenterX = 128;
     MinimapCenterY = 96;
 
+    // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;
     _muchOlderHad3DOnBottomScreen = false;
     _olderHad3DOnTopScreen = false;
@@ -148,13 +150,12 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
 
+    // apply hotkey to input mask utils
     for (int i = 0; i < PRIOR_HOTKEY_MASK_SIZE; i++) {
         PriorHotkeyMask[i] = 0;
     }
-
     LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
-    SwitchTargetPressOnHold = false;
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
         {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200, 2+1},

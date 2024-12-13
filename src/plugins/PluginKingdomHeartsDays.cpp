@@ -164,6 +164,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     hudToggle();
 
     initCutsceneVariables();
+    initBgmVariables();
 
     PriorGameScene = -1;
     GameScene = -1;
@@ -172,6 +173,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     UIScale = 4;
     AspectRatio = 0;
 
+    // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;
     _muchOlderHad3DOnBottomScreen = false;
     _olderHad3DOnTopScreen = false;
@@ -179,20 +181,15 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
 
+    // should render frame utils
     _hasVisible3DOnBottomScreen = false;
     _ignore3DOnBottomScreen = false;
     _priorIgnore3DOnBottomScreen = false;
     _priorPriorIgnore3DOnBottomScreen = false;
 
-    _CurrentBackgroundMusic = 0;
-    _LastSoundtrackId = 0;
-    _PausedReplacementBgmMusic = false;
-    _ShouldPauseReplacementBgmMusic = false;
-    _ShouldUnpauseReplacementBgmMusic = false;
-
+    // apply hotkey to input mask utils
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
-
     LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
     SwitchTargetPressOnHold = false;

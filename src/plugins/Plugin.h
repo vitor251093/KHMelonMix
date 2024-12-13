@@ -437,6 +437,13 @@ public:
     }
 
 
+    void initBgmVariables() {
+        _CurrentBackgroundMusic = 0;
+        _LastSoundtrackId = 0;
+        _PausedReplacementBgmMusic = false;
+        _ShouldPauseReplacementBgmMusic = false;
+        _ShouldUnpauseReplacementBgmMusic = false;
+    }
     bool ShouldStartReplacementBgmMusic() {
         if (_ShouldStartReplacementBgmMusic) {
             _ShouldStartReplacementBgmMusic = false;

@@ -18,6 +18,7 @@ public:
         hudToggle();
 
         initCutsceneVariables();
+        initBgmVariables();
     };
 
     u32 GameCode = 0;
