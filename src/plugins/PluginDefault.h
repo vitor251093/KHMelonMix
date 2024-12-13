@@ -30,7 +30,12 @@ public:
         return std::to_string(GameCode);
     }
 
-    void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {}
+    void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {
+        bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
+        if (!shouldContinue) {
+            return;
+        }
+    }
     bool applyTouchKeyMask(u32 TouchKeyMask) {
         nds->SetTouchKeyMask(TouchKeyMask, true);
         return true;
