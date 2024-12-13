@@ -24,7 +24,6 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
     bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROMLength() == 268435456; };
 
-    void setNds(melonDS::NDS* Nds) {nds = Nds;};
     void loadLocalization();
     void onLoadROM();
 
@@ -57,11 +56,6 @@ public:
     std::string LocalizationFilePath(std::string language);
     std::filesystem::path patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableCutscene(CutsceneEntry* cutscene);
-    void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
-    void onTerminateIngameCutscene();
-    void onReturnToGameAfterCutscene();
-    void onReplacementCutsceneStarted();
-    void onReplacementCutsceneEnd();
 
     int DelayBeforeStartReplacementBgmMusic();
     std::string BackgroundMusicFilePath(std::string name);
@@ -86,8 +80,6 @@ public:
         FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     }
 private:
-    melonDS::NDS* nds;
-
     bool PausedInGame;
     int HUDState;
 

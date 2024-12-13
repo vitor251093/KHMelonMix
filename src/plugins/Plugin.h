@@ -123,7 +123,7 @@ public:
     virtual u32 getGameCode() = 0;
     static bool isCart(u32 gameCode) {return true;};
 
-    virtual void setNds(melonDS::NDS* Nds) = 0;
+    void setNds(melonDS::NDS* Nds) {nds = Nds;};
     virtual void onLoadROM() = 0;
 
     virtual std::string assetsFolder() = 0;
@@ -207,11 +207,83 @@ public:
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual std::string LocalizationFilePath(std::string language) = 0;
     virtual bool isUnskippableCutscene(CutsceneEntry* cutscene) = 0;
-    virtual void onIngameCutsceneIdentified(CutsceneEntry* cutscene) = 0;
-    virtual void onTerminateIngameCutscene() = 0;
-    virtual void onReturnToGameAfterCutscene() = 0;
-    virtual void onReplacementCutsceneStarted() = 0;
-    virtual void onReplacementCutsceneEnd() = 0;
+
+    void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
+        if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
+            return;
+        }
+
+        std::string path = CutsceneFilePath(cutscene);
+        if (path == "") {
+            return;
+        }
+
+        if (_CurrentCutscene != nullptr) {
+            _NextCutscene = cutscene;
+            return;
+        }
+
+        printf("Preparing to load cutscene: %s\n", cutscene->Name);
+
+        _CanSkipHdCutscene = true;
+        _CurrentCutscene = cutscene;
+        _NextCutscene = nullptr;
+        _ShouldTerminateIngameCutscene = true;
+        _IsUnskippableCutscene = isUnskippableCutscene(cutscene);
+    }
+    void onTerminateIngameCutscene() {
+        if (_CurrentCutscene == nullptr) {
+            return;
+        }
+        printf("Ingame cutscene terminated\n");
+        _ShouldTerminateIngameCutscene = false;
+        _StoppedIngameCutscene = true;
+
+        if (_IsUnskippableCutscene) {
+            _StoppedIngameCutscene = false;
+        }
+    }
+    void onReplacementCutsceneStarted() {
+        printf("Cutscene started\n");
+        _ShouldStartReplacementCutscene = false;
+        _StartedReplacementCutscene = true;
+        _RunningReplacementCutscene = true;
+    }
+
+    void onReplacementCutsceneEnd() {
+        printf("Replacement cutscene ended\n");
+        _StartedReplacementCutscene = false;
+        _RunningReplacementCutscene = false;
+        _ShouldStopReplacementCutscene = false;
+        _ShouldReturnToGameAfterCutscene = true;
+        _ShouldHideScreenForTransitions = false;
+    }
+    void onReturnToGameAfterCutscene() {
+        printf("Returning to the game\n");
+        _StartPressCount = 0;
+        _IsUnskippableCutscene = false;
+        _ShouldStartReplacementCutscene = false;
+        _StartedReplacementCutscene = false;
+        _RunningReplacementCutscene = false;
+        _ShouldReturnToGameAfterCutscene = false;
+        _ShouldUnmuteAfterCutscene = true;
+
+        _LastCutscene = _CurrentCutscene;
+        _CurrentCutscene = nullptr;
+        _ReplayLimitCount = 30;
+
+        if (_NextCutscene == nullptr) {
+            u32 cutsceneAddress = detectTopScreenCutsceneAddress();
+            if (cutsceneAddress != 0) {
+                nds->ARM7Write32(cutsceneAddress, 0x0);
+            }
+
+            u32 cutsceneAddress2 = detectBottomScreenCutsceneAddress();
+            if (cutsceneAddress2 != 0) {
+                nds->ARM7Write32(cutsceneAddress2, 0x0);
+            }
+        }
+    }
 
 
     bool ShouldStartReplacementBgmMusic() {
@@ -395,6 +467,8 @@ public:
         }
     }
 protected:
+    melonDS::NDS* nds;
+
     int _FastForwardPressCount;
     int _StartPressCount;
     int _ReplayLimitCount;
