@@ -1323,6 +1323,10 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
     return "";
 }
 
+bool PluginKingdomHeartsDays::isUnskippableCutscene(CutsceneEntry* cutscene) {
+    return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
+}
+
 void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
         return;
@@ -1345,7 +1349,7 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene
     _CurrentCutscene = cutscene;
     _NextCutscene = nullptr;
     _ShouldTerminateIngameCutscene = true;
-    _IsUnskippableCutscene = isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
+    _IsUnskippableCutscene = isUnskippableCutscene(cutscene);
 }
 void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
     if (_CurrentCutscene == nullptr) {

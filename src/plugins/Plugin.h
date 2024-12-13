@@ -204,6 +204,7 @@ public:
 
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual std::string LocalizationFilePath(std::string language) = 0;
+    virtual bool isUnskippableCutscene(CutsceneEntry* cutscene) = 0;
     virtual void onIngameCutsceneIdentified(CutsceneEntry* cutscene) = 0;
     virtual void onTerminateIngameCutscene() = 0;
     virtual void onReturnToGameAfterCutscene() = 0;

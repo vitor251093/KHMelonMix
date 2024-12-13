@@ -1088,6 +1088,11 @@ std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene
     return "";
 }
 
+bool PluginKingdomHeartsReCoded::isUnskippableCutscene(CutsceneEntry* cutscene) {
+    return false;
+    // return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
+}
+
 void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
     if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
         return;
@@ -1110,7 +1115,7 @@ void PluginKingdomHeartsReCoded::onIngameCutsceneIdentified(CutsceneEntry* cutsc
     _CurrentCutscene = cutscene;
     _NextCutscene = nullptr;
     _ShouldTerminateIngameCutscene = true;
-    // _IsUnskippableCutscene = isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
+    _IsUnskippableCutscene = isUnskippableCutscene(cutscene);
 }
 void PluginKingdomHeartsReCoded::onTerminateIngameCutscene() {
     if (_CurrentCutscene == nullptr) {

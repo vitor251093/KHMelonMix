@@ -54,6 +54,7 @@ public:
     CutsceneEntry* CurrentCutscene() {return nullptr;}
     std::string CutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     std::string LocalizationFilePath(std::string language) {return "";}
+    bool isUnskippableCutscene(CutsceneEntry* cutscene) {return false;}
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {}
     void onTerminateIngameCutscene() {}
     void onReturnToGameAfterCutscene() {}

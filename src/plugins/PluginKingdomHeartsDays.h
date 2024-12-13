@@ -56,6 +56,7 @@ public:
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
     std::string LocalizationFilePath(std::string language);
     std::filesystem::path patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
+    bool isUnskippableCutscene(CutsceneEntry* cutscene);
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
     void onTerminateIngameCutscene();
     void onReturnToGameAfterCutscene();
