@@ -187,7 +187,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _ReplayLimitCount = 0;
     _CanSkipHdCutscene = false;
     _SkipDsCutscene = false;
-    _PlayingCredits = false;
+    _IsUnskippableCutscene = false;
     _StartedReplacementCutscene = false;
     _RunningReplacementCutscene = false;
     _PausedReplacementCutscene = false;
@@ -561,7 +561,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         return;
     }
 
-    if (_PlayingCredits)
+    if (_IsUnskippableCutscene)
     {
         *InputMask = 0xFFF;
         return;
@@ -1238,7 +1238,7 @@ void PluginKingdomHeartsDays::refreshCutscene()
             onTerminateIngameCutscene();
         }
 
-        if (_ShouldReturnToGameAfterCutscene && (cutsceneEnded || _PlayingCredits)) {
+        if (_ShouldReturnToGameAfterCutscene && (cutsceneEnded || _IsUnskippableCutscene)) {
             onReturnToGameAfterCutscene();
         }
     }
@@ -1345,7 +1345,7 @@ void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene
     _CurrentCutscene = cutscene;
     _NextCutscene = nullptr;
     _ShouldTerminateIngameCutscene = true;
-    _PlayingCredits = isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
+    _IsUnskippableCutscene = isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
     if (_CurrentCutscene == nullptr) {
@@ -1355,7 +1355,7 @@ void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
     _ShouldTerminateIngameCutscene = false;
     _StoppedIngameCutscene = true;
 
-    if (_PlayingCredits) {
+    if (_IsUnskippableCutscene) {
         _StoppedIngameCutscene = false;
     }
 }
@@ -1377,7 +1377,7 @@ void PluginKingdomHeartsDays::onReplacementCutsceneEnd() {
 void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     log("Returning to the game");
     _StartPressCount = 0;
-    _PlayingCredits = false;
+    _IsUnskippableCutscene = false;
     _ShouldStartReplacementCutscene = false;
     _StartedReplacementCutscene = false;
     _RunningReplacementCutscene = false;

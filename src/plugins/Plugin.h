@@ -397,7 +397,7 @@ protected:
     int _ReplayLimitCount;
     bool _CanSkipHdCutscene;
     bool _SkipDsCutscene;
-    bool _PlayingCredits;
+    bool _IsUnskippableCutscene;
     bool _ShouldTerminateIngameCutscene;
     bool _StoppedIngameCutscene;
     bool _ShouldStartReplacementCutscene;
