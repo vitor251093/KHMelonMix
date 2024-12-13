@@ -49,6 +49,9 @@ public:
     bool shouldExportTextures() {
         return KHReCodedExportTextures;
     }
+    bool shouldStartInFullscreen() {
+        return FullscreenOnStartup;
+    }
 
     int _FastForwardPressCount;
     int _StartPressCount;
@@ -199,8 +202,8 @@ public:
         std::string root = getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 
         KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
-
         KHReCodedExportTextures = getBoolConfig(root + ".ExportTextures");
+        FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     }
 private:
     melonDS::NDS* nds;
@@ -237,6 +240,7 @@ private:
     std::array<CutsceneEntry, 15> Cutscenes;
     std::string KH_15_25_Remix_Location = "";
     bool KHReCodedExportTextures = false;
+    bool FullscreenOnStartup = false;
 
     int detectGameScene();
     bool setGameScene(int newGameScene);

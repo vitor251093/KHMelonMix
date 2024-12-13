@@ -144,6 +144,7 @@ public:
     virtual bool applyTouchKeyMask(u32 TouchKeyMask) = 0;
 
     virtual bool shouldExportTextures() = 0;
+    virtual bool shouldStartInFullscreen() = 0;
 
     virtual bool ShouldTerminateIngameCutscene() = 0;
     virtual bool StoppedIngameCutscene() = 0;

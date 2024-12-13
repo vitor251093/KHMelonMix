@@ -202,6 +202,10 @@ void EmuThread::run()
                     return ref.GetString(path);
                 });
 
+                if (emuInstance->plugin->shouldStartInFullscreen()) {
+                    emit windowFullscreenToggle();
+                }
+
                 printf("Loading plugin %s for game code %u\n", typeid(*emuInstance->plugin).name(), gamecode);
             }
 

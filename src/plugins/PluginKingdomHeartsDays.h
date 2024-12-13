@@ -49,6 +49,9 @@ public:
     bool shouldExportTextures() {
         return KHDaysExportTextures;
     }
+    bool shouldStartInFullscreen() {
+        return FullscreenOnStartup;
+    }
 
     int _FastForwardPressCount;
     int _StartPressCount;
@@ -200,12 +203,10 @@ public:
         std::string root = getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
 
         KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
-
         KHDaysLanguage = getStringConfig(root + ".Language");
-
         KHDaysDisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
-
         KHDaysExportTextures = getBoolConfig(root + ".ExportTextures");
+        FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     }
 private:
     melonDS::NDS* nds;
@@ -252,6 +253,7 @@ private:
     std::string KHDaysLanguage = "";
     bool KHDaysDisableEnhancedGraphics = false;
     bool KHDaysExportTextures = false;
+    bool FullscreenOnStartup = false;
 
     int detectGameScene();
     bool setGameScene(int newGameScene);

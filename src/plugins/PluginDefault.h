@@ -36,6 +36,7 @@ public:
     }
 
     bool shouldExportTextures() {return false;}
+    bool shouldStartInFullscreen() {return false;}
 
     bool shouldRenderFrame() {
         return true;
