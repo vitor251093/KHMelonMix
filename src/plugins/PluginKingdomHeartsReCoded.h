@@ -15,11 +15,9 @@ class PluginKingdomHeartsReCoded : public Plugin
 public:
     PluginKingdomHeartsReCoded(u32 gameCode);
 
-    u32 GameCode;
     static u32 usGamecode;
     static u32 euGamecode;
     static u32 jpGamecode;
-    u32 getGameCode() { return GameCode; };
     static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
@@ -31,13 +29,14 @@ public:
     std::string assetsFolder();
 
     const char* gpuOpenGL_FS();
-    const char* gpu3DOpenGLClassic_VS_Z();
-    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb);
-
     void gpuOpenGL_FS_initVariables(GLuint CompShader);
     void gpuOpenGL_FS_updateVariables(GLuint CompShader);
-    void gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags);
-    void gpu3DOpenGL_VS_Z_updateVariables(u32 flags);
+
+    const char* gpu3DOpenGLClassic_VS_Z();
+    void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
+    void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags);
+
+    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb);
 
     void onLoadState();
 

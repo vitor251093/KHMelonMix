@@ -123,24 +123,27 @@ class Plugin
 public:
     virtual ~Plugin() { };
 
-    virtual u32 getGameCode() = 0;
+    u32 GameCode = 0;
+    u32 getGameCode() {
+        return GameCode;
+    };
     static bool isCart(u32 gameCode) {return true;};
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
-    virtual void onLoadROM() = 0;
+    virtual void onLoadROM() {};
+    virtual void onLoadState() {};
 
     virtual std::string assetsFolder() = 0;
 
     virtual const char* gpuOpenGL_FS() { return nullptr; };
+    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) {};
+    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) {};
+
     virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
+    virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
+    virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
+
     virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {};
-
-    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) { };
-    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) { };
-    virtual void gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags) { };
-    virtual void gpu3DOpenGL_VS_Z_updateVariables(u32 flags) { };
-
-    virtual void onLoadState() { };
 
     bool togglePause()
     {

@@ -23,38 +23,35 @@ public:
         initBgmVariables();
     };
 
-    u32 GameCode = 0;
-    u32 getGameCode() {
-        return GameCode;
-    };
     static bool isCart(u32 gameCode) {return true;};
-
-    void onLoadROM() {}
 
     std::string assetsFolder() {
         return std::to_string(GameCode);
     }
 
-    void onLoadState() {}
-
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {}
-    bool applyTouchKeyMask(u32 TouchKeyMask) { return false; }
-    const char* getGameSceneName() {
-        return "";
+    bool applyTouchKeyMask(u32 TouchKeyMask) {
+        nds->SetTouchKeyMask(TouchKeyMask, true);
+        return true;
     }
 
     bool shouldExportTextures() {return false;}
     bool shouldStartInFullscreen() {return false;}
 
+    const char* getGameSceneName() {
+        return "";
+    }
+
     bool shouldRenderFrame() {
         return _superShouldRenderFrame();
     }
+
+    void setAspectRatio(float aspectRatio) {}
+
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     std::string LocalizationFilePath(std::string language) {return "";}
     
     std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
-
-    void setAspectRatio(float aspectRatio) {}
 };
 }
 

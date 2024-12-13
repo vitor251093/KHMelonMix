@@ -357,6 +357,15 @@ void PluginKingdomHeartsDays::onLoadROM() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 }
 
+void PluginKingdomHeartsDays::onLoadState()
+{
+    loadLocalization();
+
+    GameScene = gameScene_InGameWithMap;
+
+    _CurrentBackgroundMusic = 0x101;
+}
+
 std::string PluginKingdomHeartsDays::assetsFolder() {
     return "days";
 }
@@ -374,6 +383,46 @@ const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
     return kCompositorFS_KhDays;
 };
 
+void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "GameScene");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "KHUIScale");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
+    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
+    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideAllHUD");
+    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
+    CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
+    CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
+}
+
+void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
+    CutsceneEntry* bsCutscene = detectBottomScreenMobiCutscene();
+    int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
+
+    bool isCredits = nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
+    if (isCredits) {
+        dsCutsceneState = 3;
+    }
+
+    glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
+    glUniform1i(CompGpuLoc[CompShader][1], GameScene);
+    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
+    glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
+    glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][5], ShowTarget ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][8], HideAllHUD ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][10], getCurrentMainMenuView());
+    glUniform1i(CompGpuLoc[CompShader][11], dsCutsceneState);
+}
+
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
@@ -382,6 +431,25 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
 
     return kRenderVS_Z_KhDays;
 };
+
+void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags)
+{
+    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
+    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
+    CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
+    CompGpu3DLoc[flags][4] = glGetUniformLocation(prog, "HideAllHUD");
+}
+
+void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
+    glUniform1i(CompGpu3DLoc[flags][1], GameScene);
+    glUniform1i(CompGpu3DLoc[flags][2], UIScale);
+    glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
+    glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
+}
 
 void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
     bool disable = DisableEnhancedGraphics;
@@ -443,74 +511,6 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
     *x = (s32)(_x + ScreenWidth/2);
     *y = (s32)(_y + ScreenHeight/2);
 };
-
-void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "PriorGameScene");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "GameScene");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "KHUIScale");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
-    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
-    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideAllHUD");
-    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
-    CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
-    CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
-}
-
-void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
-    CutsceneEntry* bsCutscene = detectBottomScreenMobiCutscene();
-    int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
-
-    bool isCredits = nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
-    if (isCredits) {
-        dsCutsceneState = 3;
-    }
-
-    glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
-    glUniform1i(CompGpuLoc[CompShader][1], GameScene);
-    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
-    glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
-    glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][5], ShowTarget ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][8], HideAllHUD ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][10], getCurrentMainMenuView());
-    glUniform1i(CompGpuLoc[CompShader][11], dsCutsceneState);
-}
-
-void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
-{
-    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
-    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
-    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
-    CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
-    CompGpu3DLoc[flags][4] = glGetUniformLocation(prog, "HideAllHUD");
-}
-
-void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
-{
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
-    glUniform1i(CompGpu3DLoc[flags][1], GameScene);
-    glUniform1i(CompGpu3DLoc[flags][2], UIScale);
-    glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
-    glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
-}
-
-void PluginKingdomHeartsDays::onLoadState()
-{
-    loadLocalization();
-
-    GameScene = gameScene_InGameWithMap;
-
-    _CurrentBackgroundMusic = 0x101;
-}
 
 void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
 {
