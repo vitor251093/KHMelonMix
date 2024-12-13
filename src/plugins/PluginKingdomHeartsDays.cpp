@@ -3,8 +3,6 @@
 #include "PluginKingdomHeartsDays_GPU_OpenGL_shaders.h"
 #include "PluginKingdomHeartsDays_GPU3D_OpenGL_shaders.h"
 
-#include <math.h>
-
 namespace Plugins
 {
 
