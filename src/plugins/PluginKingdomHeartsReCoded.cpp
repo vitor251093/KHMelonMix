@@ -611,7 +611,7 @@ bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
 
 bool PluginKingdomHeartsReCoded::shouldRenderFrame()
 {
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene)
+    if (!_superShouldRenderFrame())
     {
         return false;
     }

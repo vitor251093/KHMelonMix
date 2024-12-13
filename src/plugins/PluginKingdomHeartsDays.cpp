@@ -732,7 +732,7 @@ bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 
 bool PluginKingdomHeartsDays::shouldRenderFrame()
 {
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene)
+    if (!_superShouldRenderFrame())
     {
         return false;
     }

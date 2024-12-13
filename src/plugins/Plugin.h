@@ -357,7 +357,7 @@ public:
 
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual std::string LocalizationFilePath(std::string language) = 0;
-    virtual bool isUnskippableCutscene(CutsceneEntry* cutscene) = 0;
+    virtual bool isUnskippableCutscene(CutsceneEntry* cutscene) {return false;}
 
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
         if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
@@ -497,6 +497,15 @@ public:
 
     virtual const char* getGameSceneName() = 0;
 
+    bool _superShouldRenderFrame()
+    {
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene)
+        {
+            return false;
+        }
+
+        return true;
+    }
     virtual bool shouldRenderFrame() = 0;
 
     virtual bool refreshGameScene() = 0;

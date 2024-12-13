@@ -45,27 +45,10 @@ public:
     bool shouldStartInFullscreen() {return false;}
 
     bool shouldRenderFrame() {
-        return true;
+        return _superShouldRenderFrame();
     }
-    bool ShouldTerminateIngameCutscene() {return false;}
-    bool StoppedIngameCutscene() {return false;}
-    bool ShouldStartReplacementCutscene() {return false;}
-    bool StartedReplacementCutscene() {return false;}
-    bool RunningReplacementCutscene() {return false;}
-    bool ShouldPauseReplacementCutscene() {return false;}
-    bool ShouldUnpauseReplacementCutscene() {return false;}
-    bool ShouldStopReplacementCutscene() {return false;}
-    bool ShouldReturnToGameAfterCutscene() {return false;}
-    bool ShouldUnmuteAfterCutscene() {return false;}
-    CutsceneEntry* CurrentCutscene() {return nullptr;}
     std::string CutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     std::string LocalizationFilePath(std::string language) {return "";}
-    bool isUnskippableCutscene(CutsceneEntry* cutscene) {return false;}
-    void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {}
-    void onTerminateIngameCutscene() {}
-    void onReturnToGameAfterCutscene() {}
-    void onReplacementCutsceneStarted() {}
-    void onReplacementCutsceneEnd() {}
     
     std::string BackgroundMusicFilePath(std::string name) {return "";}
 
