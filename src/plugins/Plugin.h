@@ -94,6 +94,9 @@
 
 #endif
 
+#define CUTSCENE_SKIP_START_FRAMES_COUNT 40
+#define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
+
 #include <functional>
 
 #include "../NDS.h"
@@ -140,6 +143,59 @@ public:
     virtual void onLoadState() { };
     virtual bool togglePause() {return false;};
 
+    bool _superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
+    {
+        ramSearch(nds, *HotkeyPress);
+
+        if (_IsUnskippableCutscene)
+        {
+            *InputMask = 0xFFF;
+            return false;
+        }
+
+        if (_RunningReplacementCutscene && !_PausedReplacementCutscene && (_SkipDsCutscene || (~(*InputMask)) & (1 << 3)) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
+            _SkipDsCutscene = true;
+            if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
+                _SkipDsCutscene = false;
+                _CanSkipHdCutscene = false;
+                _ShouldStopReplacementCutscene = true;
+                *InputMask |= (1<<3);
+            }
+            else {
+                if (_StartPressCount == 0) {
+                    bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
+                    if (requiresDoubleStart) {
+                        _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT*2 + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT;
+                    }
+                    else {
+                        _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
+                    }
+                }
+            }
+        }
+
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
+            if (_StartPressCount > 0) {
+                _StartPressCount--;
+
+                bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
+                if (requiresDoubleStart) {
+                    if (_StartPressCount < CUTSCENE_SKIP_START_FRAMES_COUNT || _StartPressCount > CUTSCENE_SKIP_START_FRAMES_COUNT + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT) {
+                        *InputMask &= ~(1<<3); // Start (skip DS cutscene)
+                    }
+                }
+                else {
+                    *InputMask &= ~(1<<3); // Start (skip DS cutscene)
+                }
+            }
+        }
+
+        if ((*HotkeyPress) & (1 << 18)) { // HUD Toggle (HK_HUDToggle)
+            hudToggle();
+        }
+
+        return true;
+    }
     virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
     virtual bool applyTouchKeyMask(u32 TouchKeyMask) = 0;
 
@@ -398,6 +454,8 @@ public:
     virtual void setAspectRatio(float aspectRatio) {}
 
     virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig) {}
+
+    virtual void hudToggle() {}
 
     void log(const char* log) {
         printf("%s\n", log);

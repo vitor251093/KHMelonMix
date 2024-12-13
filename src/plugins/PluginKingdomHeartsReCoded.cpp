@@ -90,9 +90,6 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU 0x02198311 // TODO: KH
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP 0x02198311 // TODO: KH
 
-#define CUTSCENE_SKIP_START_FRAMES_COUNT 40
-#define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
-
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
@@ -421,62 +418,17 @@ bool PluginKingdomHeartsReCoded::togglePause()
 
 void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
 {
-    ramSearch(nds, *HotkeyPress);
-
-    if (GameScene == -1)
-    {
+    bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
+    if (!shouldContinue) {
         return;
     }
 
-    if (_IsUnskippableCutscene)
-    {
-        *InputMask = 0xFFF;
+    if (GameScene == -1) {
         return;
-    }
-
-    if (_RunningReplacementCutscene && !_PausedReplacementCutscene && (_SkipDsCutscene || (~(*InputMask)) & (1 << 3)) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
-        _SkipDsCutscene = true;
-        if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
-            _SkipDsCutscene = false;
-            _CanSkipHdCutscene = false;
-            _ShouldStopReplacementCutscene = true;
-            *InputMask |= (1<<3);
-        }
-        else {
-            if (_StartPressCount == 0) {
-                bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
-                if (requiresDoubleStart) {
-                    _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT*2 + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT;
-                }
-                else {
-                    _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
-                }
-            }
-        }
-    }
-
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
-        if (_StartPressCount > 0) {
-            _StartPressCount--;
-
-            bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
-            if (requiresDoubleStart) {
-                if (_StartPressCount < CUTSCENE_SKIP_START_FRAMES_COUNT || _StartPressCount > CUTSCENE_SKIP_START_FRAMES_COUNT + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT) {
-                    *InputMask &= ~(1<<3); // Start (skip DS cutscene)
-                }
-            }
-            else {
-                *InputMask &= ~(1<<3); // Start (skip DS cutscene)
-            }
-        }
     }
 
     if (GameScene == gameScene_LoadingScreen) {
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
-    }
-
-    if ((*HotkeyPress) & (1 << 18)) { // HUD Toggle (HK_HUDToggle)
-        hudToggle();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
