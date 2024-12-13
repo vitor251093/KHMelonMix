@@ -55,7 +55,7 @@ public:
 
     bool shouldRenderFrame();
 
-    void setAspectRatio(float aspectRatio);
+    u32 getAspectRatioAddress();
 
     void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
     {
@@ -71,7 +71,6 @@ private:
     u32 priorMap;
     u32 Map;
     int UIScale = 4;
-    float AspectRatio;
     bool ShowMap;
     int MinimapCenterX;
     int MinimapCenterY;

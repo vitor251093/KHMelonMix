@@ -14,6 +14,7 @@ public:
     PluginDefault(u32 gameCode) {
         GameCode = gameCode;
 
+        AspectRatio = 0;
         PriorGameScene = -1;
         GameScene = -1;
         HUDState = -1;
@@ -43,7 +44,7 @@ public:
         return _superShouldRenderFrame();
     }
 
-    void setAspectRatio(float aspectRatio) {}
+    u32 getAspectRatioAddress() {return 0;}
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     std::string localizationFilePath(std::string language) {return "";}

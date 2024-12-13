@@ -125,6 +125,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 {
     GameCode = gameCode;
 
+    AspectRatio = 0;
     PriorGameScene = -1;
     GameScene = -1;
     HUDState = -1;
@@ -136,7 +137,6 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     priorMap = -1;
     Map = 0;
     UIScale = 4;
-    AspectRatio = 0;
 
     // game scene detection utils (extra: minimap coordinates)
     MinimapCenterX = 128;
@@ -807,20 +807,9 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     return gameScene_InGameWithMap;
 }
 
-void PluginKingdomHeartsReCoded::setAspectRatio(float aspectRatio)
+u32 PluginKingdomHeartsReCoded::getAspectRatioAddress()
 {
-    if (GameScene != -1)
-    {
-        int aspectRatioKey = (int)round(0x1000 * aspectRatio);
-
-        u32 aspectRatioMenuAddress = getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
-
-        if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
-            nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
-        }
-    }
-
-    AspectRatio = aspectRatio;
+    return getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
 }
 
 u32 PluginKingdomHeartsReCoded::getMobiCutsceneAddress(CutsceneEntry* entry)

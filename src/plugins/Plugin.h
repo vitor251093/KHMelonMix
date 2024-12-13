@@ -98,6 +98,7 @@
 #define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
 
 #include <functional>
+#include <math.h>
 
 #include "../NDS.h"
 
@@ -548,7 +549,22 @@ public:
         return updated;
     }
 
-    virtual void setAspectRatio(float aspectRatio) {}
+    virtual u32 getAspectRatioAddress() {return 0;}
+    virtual void setAspectRatio(float aspectRatio)
+    {
+        if (GameScene != -1)
+        {
+            int aspectRatioKey = (int)round(0x1000 * aspectRatio);
+
+            u32 aspectRatioMenuAddress = getAspectRatioAddress();
+
+            if (nds->ARM7Read16(aspectRatioMenuAddress) == 0x00001555) {
+                nds->ARM7Write16(aspectRatioMenuAddress, aspectRatioKey);
+            }
+        }
+
+        AspectRatio = aspectRatio;
+    }
 
     void _superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
     {
@@ -695,6 +711,7 @@ public:
 protected:
     melonDS::NDS* nds;
 
+    float AspectRatio;
     int PriorGameScene;
     int GameScene;
     int HUDState;

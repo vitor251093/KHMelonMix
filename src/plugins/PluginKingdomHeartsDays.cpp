@@ -160,6 +160,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
 
+    AspectRatio = 0;
     PriorGameScene = -1;
     GameScene = -1;
     HUDState = -1;
@@ -171,7 +172,6 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     priorMap = -1;
     Map = 0;
     UIScale = 4;
-    AspectRatio = 0;
 
     // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;
@@ -984,20 +984,9 @@ int PluginKingdomHeartsDays::detectGameScene()
     return gameScene_InGameWithMap;
 }
 
-void PluginKingdomHeartsDays::setAspectRatio(float aspectRatio)
+u32 PluginKingdomHeartsDays::getAspectRatioAddress()
 {
-    if (GameScene != -1)
-    {
-        int aspectRatioKey = (int)round(0x1000 * aspectRatio);
-
-        u32 aspectRatioMenuAddress = getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
-
-        if (nds->ARM7Read16(aspectRatioMenuAddress) == 0x00001555) {
-            nds->ARM7Write16(aspectRatioMenuAddress, aspectRatioKey);
-        }
-    }
-
-    AspectRatio = aspectRatio;
+    return getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
 }
 
 u32 PluginKingdomHeartsDays::getMobiCutsceneAddress(CutsceneEntry* entry)
