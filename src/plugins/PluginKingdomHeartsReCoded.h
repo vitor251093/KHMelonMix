@@ -40,7 +40,6 @@ public:
     void gpu3DOpenGL_VS_Z_updateVariables(u32 flags);
 
     void onLoadState();
-    bool togglePause();
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     bool applyTouchKeyMask(u32 TouchKeyMask);
@@ -77,8 +76,6 @@ public:
         FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     }
 private:
-    int HUDState;
-
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
     int PriorGameScene;

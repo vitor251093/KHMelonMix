@@ -141,7 +141,28 @@ public:
     virtual void gpu3DOpenGL_VS_Z_updateVariables(u32 flags) { };
 
     virtual void onLoadState() { };
-    virtual bool togglePause() {return false;};
+
+    bool togglePause()
+    {
+        if (_RunningReplacementCutscene) {
+            if (_PausedReplacementCutscene) {
+                _ShouldUnpauseReplacementCutscene = true;
+            }
+            else {
+                _ShouldPauseReplacementCutscene = true;
+            }
+            return true;
+        }
+        if (_RunningReplacementBgmMusic) {
+            if (_PausedReplacementBgmMusic) {
+                _ShouldUnpauseReplacementBgmMusic = true;
+            }
+            else {
+                _ShouldPauseReplacementBgmMusic = true;
+            }
+        }
+        return false;
+    }
 
     bool _superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
     {
@@ -202,6 +223,28 @@ public:
     virtual bool shouldExportTextures() = 0;
     virtual bool shouldStartInFullscreen() = 0;
 
+    void initCutsceneVariables() {
+        _StartPressCount = 0;
+        _ReplayLimitCount = 0;
+        _CanSkipHdCutscene = false;
+        _SkipDsCutscene = false;
+        _IsUnskippableCutscene = false;
+        _StartedReplacementCutscene = false;
+        _RunningReplacementCutscene = false;
+        _PausedReplacementCutscene = false;
+        _ShouldTerminateIngameCutscene = false;
+        _StoppedIngameCutscene = false;
+        _ShouldStartReplacementCutscene = false;
+        _ShouldPauseReplacementCutscene = false;
+        _ShouldUnpauseReplacementCutscene = false;
+        _ShouldStopReplacementCutscene = false;
+        _ShouldReturnToGameAfterCutscene = false;
+        _ShouldUnmuteAfterCutscene = false;
+        _ShouldHideScreenForTransitions = false;
+        _CurrentCutscene = nullptr;
+        _NextCutscene = nullptr;
+        _LastCutscene = nullptr;
+    }
     bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
     bool StoppedIngameCutscene() {
         if (_StoppedIngameCutscene) {
@@ -585,6 +628,9 @@ public:
     }
 protected:
     melonDS::NDS* nds;
+
+    int HUDState;
+
 
     int _FastForwardPressCount;
     int _StartPressCount;

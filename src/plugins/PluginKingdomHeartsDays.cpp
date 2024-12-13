@@ -160,15 +160,17 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
 
+    HUDState = -1;
+    hudToggle();
+
+    initCutsceneVariables();
+
     PriorGameScene = -1;
     GameScene = -1;
     priorMap = -1;
     Map = 0;
     UIScale = 4;
     AspectRatio = 0;
-
-    HUDState = -1;
-    hudToggle();
 
     _muchOlderHad3DOnTopScreen = false;
     _muchOlderHad3DOnBottomScreen = false;
@@ -181,27 +183,6 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _ignore3DOnBottomScreen = false;
     _priorIgnore3DOnBottomScreen = false;
     _priorPriorIgnore3DOnBottomScreen = false;
-
-    _StartPressCount = 0;
-    _ReplayLimitCount = 0;
-    _CanSkipHdCutscene = false;
-    _SkipDsCutscene = false;
-    _IsUnskippableCutscene = false;
-    _StartedReplacementCutscene = false;
-    _RunningReplacementCutscene = false;
-    _PausedReplacementCutscene = false;
-    _ShouldTerminateIngameCutscene = false;
-    _StoppedIngameCutscene = false;
-    _ShouldStartReplacementCutscene = false;
-    _ShouldPauseReplacementCutscene = false;
-    _ShouldUnpauseReplacementCutscene = false;
-    _ShouldStopReplacementCutscene = false;
-    _ShouldReturnToGameAfterCutscene = false;
-    _ShouldUnmuteAfterCutscene = false;
-    _ShouldHideScreenForTransitions = false;
-    _CurrentCutscene = nullptr;
-    _NextCutscene = nullptr;
-    _LastCutscene = nullptr;
 
     _CurrentBackgroundMusic = 0;
     _LastSoundtrackId = 0;
@@ -532,28 +513,6 @@ void PluginKingdomHeartsDays::onLoadState()
     GameScene = gameScene_InGameWithMap;
 
     _CurrentBackgroundMusic = 0x101;
-}
-
-bool PluginKingdomHeartsDays::togglePause()
-{
-    if (_RunningReplacementCutscene) {
-        if (_PausedReplacementCutscene) {
-            _ShouldUnpauseReplacementCutscene = true;
-        }
-        else {
-            _ShouldPauseReplacementCutscene = true;
-        }
-        return true;
-    }
-    if (_RunningReplacementBgmMusic) {
-        if (_PausedReplacementBgmMusic) {
-            _ShouldUnpauseReplacementBgmMusic = true;
-        }
-        else {
-            _ShouldPauseReplacementBgmMusic = true;
-        }
-    }
-    return false;
 }
 
 void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)

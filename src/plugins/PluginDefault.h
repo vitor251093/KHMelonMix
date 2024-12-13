@@ -11,7 +11,14 @@ using namespace melonDS;
 class PluginDefault : public Plugin
 {
 public:
-    PluginDefault(u32 gameCode) {GameCode = gameCode;};
+    PluginDefault(u32 gameCode) {
+        GameCode = gameCode;
+
+        HUDState = -1;
+        hudToggle();
+
+        initCutsceneVariables();
+    };
 
     u32 GameCode = 0;
     u32 getGameCode() {
@@ -26,7 +33,6 @@ public:
     }
 
     void onLoadState() {}
-    bool togglePause() {return false;};
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {}
     bool applyTouchKeyMask(u32 TouchKeyMask) { return false; }

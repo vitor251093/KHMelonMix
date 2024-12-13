@@ -128,12 +128,15 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     HUDState = -1;
     hudToggle();
 
+    initCutsceneVariables();
+
     PriorGameScene = -1;
     GameScene = -1;
     priorMap = -1;
     Map = 0;
     UIScale = 4;
     AspectRatio = 0;
+
     ShowMap = true;
     MinimapCenterX = 128;
     MinimapCenterY = 96;
@@ -144,27 +147,6 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _olderHad3DOnBottomScreen = false;
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
-
-    _StartPressCount = 0;
-    _ReplayLimitCount = 0;
-    _CanSkipHdCutscene = false;
-    _SkipDsCutscene = false;
-    _IsUnskippableCutscene = false;
-    _StartedReplacementCutscene = false;
-    _RunningReplacementCutscene = false;
-    _PausedReplacementCutscene = false;
-    _ShouldTerminateIngameCutscene = false;
-    _StoppedIngameCutscene = false;
-    _ShouldStartReplacementCutscene = false;
-    _ShouldPauseReplacementCutscene = false;
-    _ShouldUnpauseReplacementCutscene = false;
-    _ShouldStopReplacementCutscene = false;
-    _ShouldReturnToGameAfterCutscene = false;
-    _ShouldUnmuteAfterCutscene = false;
-    _ShouldHideScreenForTransitions = false;
-    _CurrentCutscene = nullptr;
-    _NextCutscene = nullptr;
-    _LastCutscene = nullptr;
 
     for (int i = 0; i < PRIOR_HOTKEY_MASK_SIZE; i++) {
         PriorHotkeyMask[i] = 0;
@@ -400,20 +382,6 @@ void PluginKingdomHeartsReCoded::onLoadState()
     loadLocalization();
 
     GameScene = gameScene_InGameWithMap;
-}
-
-bool PluginKingdomHeartsReCoded::togglePause()
-{
-    if (_RunningReplacementCutscene) {
-        if (_PausedReplacementCutscene) {
-            _ShouldUnpauseReplacementCutscene = true;
-        }
-        else {
-            _ShouldPauseReplacementCutscene = true;
-        }
-        return true;
-    }
-    return false;
 }
 
 void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
