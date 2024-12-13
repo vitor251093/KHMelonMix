@@ -560,7 +560,7 @@ public:
 
             u32 aspectRatioMenuAddress = getAspectRatioAddress();
 
-            if (nds->ARM7Read16(aspectRatioMenuAddress) == 0x00001555) {
+            if (aspectRatioMenuAddress != 0 && nds->ARM7Read16(aspectRatioMenuAddress) == 0x00001555) {
                 nds->ARM7Write16(aspectRatioMenuAddress, aspectRatioKey);
             }
         }
