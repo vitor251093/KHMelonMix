@@ -1140,6 +1140,16 @@ bool PluginKingdomHeartsDays::getBoolByCart(bool usAddress, bool euAddress, bool
     return cutsceneAddress;
 }
 
+u32 PluginKingdomHeartsDays::detectTopScreenCutsceneAddress()
+{
+    return getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
+}
+
+u32 PluginKingdomHeartsDays::detectBottomScreenCutsceneAddress()
+{
+    return getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
+}
+
 CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
 {
     if (GameScene == -1)
@@ -1147,10 +1157,13 @@ CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
         return nullptr;
     }
 
-    u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
-    u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
-    if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
-        cutsceneAddressValue = 0;
+    u32 cutsceneAddressValue = 0;
+    u32 cutsceneAddress = detectTopScreenCutsceneAddress();
+    if (cutsceneAddress != 0) {
+        cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
+        if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
+            cutsceneAddressValue = 0;
+        }
     }
 
     CutsceneEntry* cutscene1 = nullptr;
@@ -1170,10 +1183,13 @@ CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
         return nullptr;
     }
 
-    u32 cutsceneAddress2 = getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
-    u32 cutsceneAddressValue2 = nds->ARM7Read32(cutsceneAddress2);
-    if (cutsceneAddressValue2 == 0 || (cutsceneAddressValue2 - (cutsceneAddressValue2 & 0xFF)) == 0xea000000) {
-        cutsceneAddressValue2 = 0;
+    u32 cutsceneAddressValue2 = 0;
+    u32 cutsceneAddress2 = detectBottomScreenCutsceneAddress();
+    if (cutsceneAddress2 != 0) {
+        cutsceneAddressValue2 = nds->ARM7Read32(cutsceneAddress2);
+        if (cutsceneAddressValue2 == 0 || (cutsceneAddressValue2 - (cutsceneAddressValue2 & 0xFF)) == 0xea000000) {
+            cutsceneAddressValue2 = 0;
+        }
     }
 
     CutsceneEntry* cutscene2 = nullptr;
@@ -1393,10 +1409,15 @@ void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
     _ReplayLimitCount = 30;
 
     if (_NextCutscene == nullptr) {
-        u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
-        u32 cutsceneAddress2 = getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
-        nds->ARM7Write32(cutsceneAddress, 0x0);
-        nds->ARM7Write32(cutsceneAddress2, 0x0);
+        u32 cutsceneAddress = detectTopScreenCutsceneAddress();
+        if (cutsceneAddress != 0) {
+            nds->ARM7Write32(cutsceneAddress, 0x0);
+        }
+
+        u32 cutsceneAddress2 = detectBottomScreenCutsceneAddress();
+        if (cutsceneAddress2 != 0) {
+            nds->ARM7Write32(cutsceneAddress2, 0x0);
+        }
     }
 }
 

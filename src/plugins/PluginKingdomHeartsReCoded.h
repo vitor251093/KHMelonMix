@@ -175,6 +175,7 @@ private:
     bool getBoolByCart(bool usAddress, bool euAddress, bool jpAddress);
 
     u32 getCutsceneAddress(CutsceneEntry* entry);
+    u32 detectTopScreenCutsceneAddress();
     CutsceneEntry* detectTopScreenCutscene();
     CutsceneEntry* detectBottomScreenCutscene();
     CutsceneEntry* detectCutscene();

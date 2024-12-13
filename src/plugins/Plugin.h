@@ -202,6 +202,8 @@ public:
     }
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
 
+    virtual u32 detectTopScreenCutsceneAddress() {return 0;};
+    virtual u32 detectBottomScreenCutsceneAddress() {return 0;};
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual std::string LocalizationFilePath(std::string language) = 0;
     virtual bool isUnskippableCutscene(CutsceneEntry* cutscene) = 0;

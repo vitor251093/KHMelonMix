@@ -140,6 +140,8 @@ private:
     bool getBoolByCart(bool usAddress, bool euAddress, bool jpAddress, bool jpRev1Address);
 
     u32 getCutsceneAddress(CutsceneEntry* entry);
+    u32 detectTopScreenCutsceneAddress();
+    u32 detectBottomScreenCutsceneAddress();
     CutsceneEntry* detectTopScreenCutscene();
     CutsceneEntry* detectBottomScreenCutscene();
     CutsceneEntry* detectCutscene();

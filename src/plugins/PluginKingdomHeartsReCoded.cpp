@@ -948,6 +948,11 @@ bool PluginKingdomHeartsReCoded::getBoolByCart(bool usAddress, bool euAddress, b
     return cutsceneAddress;
 }
 
+u32 PluginKingdomHeartsReCoded::detectTopScreenCutsceneAddress()
+{
+    return getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+}
+
 CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
 {
     if (GameScene == -1)
@@ -955,10 +960,13 @@ CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
         return nullptr;
     }
 
-    u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
-    u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
-    if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
-        cutsceneAddressValue = 0;
+    u32 cutsceneAddressValue = 0;
+    u32 cutsceneAddress = detectTopScreenCutsceneAddress();
+    if (cutsceneAddress != 0) {
+        cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
+        if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
+            cutsceneAddressValue = 0;
+        }
     }
 
     CutsceneEntry* cutscene1 = nullptr;
@@ -1159,9 +1167,12 @@ void PluginKingdomHeartsReCoded::onReturnToGameAfterCutscene() {
     _ReplayLimitCount = 30;
 
     if (_NextCutscene == nullptr) {
-        u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+        u32 cutsceneAddress = detectTopScreenCutsceneAddress();
+        if (cutsceneAddress != 0) {
+            nds->ARM7Write32(cutsceneAddress, 0x0);
+        }
+
         // u32 cutsceneAddress2 = getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP);
-        nds->ARM7Write32(cutsceneAddress, 0x0);
         // nds->ARM7Write32(cutsceneAddress2, 0x0);
     }
 }
