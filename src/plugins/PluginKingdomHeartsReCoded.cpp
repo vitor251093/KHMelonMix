@@ -994,21 +994,6 @@ CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
     return cutscene1;
 }
 
-CutsceneEntry* PluginKingdomHeartsReCoded::detectBottomScreenCutscene()
-{
-    return nullptr;
-}
-
-CutsceneEntry* PluginKingdomHeartsReCoded::detectCutscene()
-{
-    return detectTopScreenCutscene();
-}
-
-CutsceneEntry* PluginKingdomHeartsReCoded::detectSequenceCutscene()
-{
-    return nullptr;
-}
-
 void PluginKingdomHeartsReCoded::refreshCutscene()
 {
 #if !REPLACEMENT_CUTSCENES_ENABLED

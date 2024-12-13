@@ -1207,23 +1207,6 @@ CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
     return cutscene2;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectCutscene()
-{
-    CutsceneEntry* cutscene1 = detectTopScreenCutscene();
-    CutsceneEntry* cutscene2 = detectBottomScreenCutscene();
-
-    if (cutscene1 == nullptr && cutscene2 != nullptr) {
-        cutscene1 = cutscene2;
-    }
-
-    return cutscene1;
-}
-
-CutsceneEntry* PluginKingdomHeartsDays::detectSequenceCutscene()
-{
-    return nullptr;
-}
-
 void PluginKingdomHeartsDays::refreshCutscene()
 {
 #if !REPLACEMENT_CUTSCENES_ENABLED

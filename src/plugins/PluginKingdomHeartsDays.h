@@ -135,8 +135,6 @@ private:
     u32 detectBottomScreenCutsceneAddress();
     CutsceneEntry* detectTopScreenCutscene();
     CutsceneEntry* detectBottomScreenCutscene();
-    CutsceneEntry* detectCutscene();
-    CutsceneEntry* detectSequenceCutscene();
     void refreshCutscene();
 
     u16 detectBackgroundMusic();

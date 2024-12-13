@@ -122,9 +122,6 @@ private:
     u32 getCutsceneAddress(CutsceneEntry* entry);
     u32 detectTopScreenCutsceneAddress();
     CutsceneEntry* detectTopScreenCutscene();
-    CutsceneEntry* detectBottomScreenCutscene();
-    CutsceneEntry* detectCutscene();
-    CutsceneEntry* detectSequenceCutscene();
     void refreshCutscene();
 
     u32 getCurrentMission();
