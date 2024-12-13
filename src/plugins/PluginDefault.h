@@ -40,16 +40,7 @@ public:
         return "";
     }
 
-    bool shouldRenderFrame() {
-        return _superShouldRenderFrame();
-    }
-
     u32 getAspectRatioAddress() {return 0;}
-
-    std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
-    std::string localizationFilePath(std::string language) {return "";}
-    
-    std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
 };
 }
 

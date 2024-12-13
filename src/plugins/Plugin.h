@@ -364,8 +364,8 @@ public:
         }
     }
 
-    virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) = 0;
-    virtual std::string localizationFilePath(std::string language) = 0;
+    virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
+    virtual std::string localizationFilePath(std::string language) {return "";}
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
@@ -494,7 +494,7 @@ public:
     }
     u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
 
-    virtual std::string replacementBackgroundMusicFilePath(std::string name) = 0;
+    virtual std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
 
     void onReplacementBackgroundMusicStarted() {
         printf("Background music started\n");
@@ -517,7 +517,9 @@ public:
 
         return true;
     }
-    virtual bool shouldRenderFrame() = 0;
+    virtual bool shouldRenderFrame() {
+        return _superShouldRenderFrame();
+    }
 
     virtual int detectGameScene() {return -1;}
     bool setGameScene(int newGameScene)
