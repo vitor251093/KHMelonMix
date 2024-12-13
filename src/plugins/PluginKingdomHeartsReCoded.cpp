@@ -1022,19 +1022,6 @@ std::string PluginKingdomHeartsReCoded::LocalizationFilePath(std::string languag
     return "";
 }
 
-bool PluginKingdomHeartsReCoded::refreshGameScene()
-{
-    int newGameScene = detectGameScene();
-    
-    debugLogs(newGameScene);
-
-    bool updated = setGameScene(newGameScene);
-
-    refreshCutscene();
-
-    return updated;
-}
-
 u32 PluginKingdomHeartsReCoded::getCurrentMission()
 {
     return 0;

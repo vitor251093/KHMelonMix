@@ -54,9 +54,6 @@ public:
     
     std::string BackgroundMusicFilePath(std::string name) {return "";}
 
-    bool refreshGameScene() {
-        return false;
-    }
     void setAspectRatio(float aspectRatio) {}
 };
 }

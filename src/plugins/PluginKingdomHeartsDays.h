@@ -65,8 +65,6 @@ public:
 
     void setAspectRatio(float aspectRatio);
 
-    bool refreshGameScene();
-
     void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
     {
         std::string root = getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");

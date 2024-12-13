@@ -1321,21 +1321,6 @@ std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) 
     return "";
 }
 
-bool PluginKingdomHeartsDays::refreshGameScene()
-{
-    int newGameScene = detectGameScene();
-    
-    debugLogs(newGameScene);
-
-    bool updated = setGameScene(newGameScene);
-
-    refreshCutscene();
-
-    refreshBackgroundMusic();
-
-    return updated;
-}
-
 u32 PluginKingdomHeartsDays::getCurrentMission()
 {
     return nds->ARM7Read8(getU32ByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));

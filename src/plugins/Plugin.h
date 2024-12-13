@@ -494,6 +494,8 @@ public:
         _RunningReplacementBgmMusic = true;
     }
 
+    virtual void refreshBackgroundMusic() {}
+
 
     virtual const char* getGameSceneName() = 0;
 
@@ -523,7 +525,20 @@ public:
 
         return updated;
     }
-    virtual bool refreshGameScene() = 0;
+    bool refreshGameScene()
+    {
+        int newGameScene = detectGameScene();
+        
+        debugLogs(newGameScene);
+
+        bool updated = setGameScene(newGameScene);
+
+        refreshCutscene();
+
+        refreshBackgroundMusic();
+
+        return updated;
+    }
 
     virtual void setAspectRatio(float aspectRatio) {}
 
