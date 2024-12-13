@@ -994,6 +994,11 @@ CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
     return cutscene1;
 }
 
+bool PluginKingdomHeartsReCoded::isCutsceneGameScene()
+{
+    return GameScene == gameScene_Cutscene;
+}
+
 bool PluginKingdomHeartsReCoded::didIngameCutsceneEnded()
 {
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
@@ -1021,41 +1026,6 @@ bool PluginKingdomHeartsReCoded::canReturnToGameAfterReplacementCutscene()
     }
     
     return true;
-}
-
-void PluginKingdomHeartsReCoded::refreshCutscene()
-{
-#if !REPLACEMENT_CUTSCENES_ENABLED
-    return;
-#endif
-
-    bool isCutsceneScene = GameScene == gameScene_Cutscene;
-    CutsceneEntry* cutscene = detectCutscene();
-
-    if (_ReplayLimitCount > 0) {
-        _ReplayLimitCount--;
-        if (cutscene != nullptr && cutscene->usAddress == _LastCutscene->usAddress) {
-            cutscene = nullptr;
-        }
-    }
-
-    
-    if (cutscene != nullptr) {
-        onIngameCutsceneIdentified(cutscene);
-    }
-
-    // Natural progression for all cutscenes
-    if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
-        _ShouldStartReplacementCutscene = true;
-    }
-
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didIngameCutsceneEnded()) {
-        onTerminateIngameCutscene();
-    }
-
-    if (_ShouldReturnToGameAfterCutscene && canReturnToGameAfterReplacementCutscene()) {
-        onReturnToGameAfterCutscene();
-    }
 }
 
 std::filesystem::path PluginKingdomHeartsReCoded::patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {

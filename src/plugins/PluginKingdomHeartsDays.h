@@ -135,9 +135,9 @@ private:
     u32 detectBottomScreenCutsceneAddress();
     CutsceneEntry* detectTopScreenCutscene();
     CutsceneEntry* detectBottomScreenCutscene();
+    bool isCutsceneGameScene();
     bool didIngameCutsceneEnded();
     bool canReturnToGameAfterReplacementCutscene();
-    void refreshCutscene();
 
     u16 detectBackgroundMusic();
     void refreshBackgroundMusic();

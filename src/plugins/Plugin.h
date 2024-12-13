@@ -217,6 +217,44 @@ public:
 
         return cutscene1;
     }
+    virtual bool isCutsceneGameScene() {return false;};
+    virtual bool didIngameCutsceneEnded() {return !isCutsceneGameScene();};
+    virtual bool canReturnToGameAfterReplacementCutscene() {return true;};
+
+    void refreshCutscene()
+    {
+#if !REPLACEMENT_CUTSCENES_ENABLED
+        return;
+#endif
+
+        bool isCutsceneScene = isCutsceneGameScene();
+        CutsceneEntry* cutscene = detectCutscene();
+
+        if (_ReplayLimitCount > 0) {
+            _ReplayLimitCount--;
+            if (cutscene != nullptr && cutscene->usAddress == _LastCutscene->usAddress) {
+                cutscene = nullptr;
+            }
+        }
+
+        
+        if (cutscene != nullptr) {
+            onIngameCutsceneIdentified(cutscene);
+        }
+
+        // Natural progression for all cutscenes
+        if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
+            _ShouldStartReplacementCutscene = true;
+        }
+
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didIngameCutsceneEnded()) {
+            onTerminateIngameCutscene();
+        }
+
+        if (_ShouldReturnToGameAfterCutscene && canReturnToGameAfterReplacementCutscene()) {
+            onReturnToGameAfterCutscene();
+        }
+    }
 
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual std::string LocalizationFilePath(std::string language) = 0;

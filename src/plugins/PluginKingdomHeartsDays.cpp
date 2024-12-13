@@ -1207,10 +1207,14 @@ CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
     return cutscene2;
 }
 
+bool PluginKingdomHeartsDays::isCutsceneGameScene()
+{
+    return GameScene == gameScene_Cutscene;
+}
+
 bool PluginKingdomHeartsDays::didIngameCutsceneEnded()
 {
-    bool isCutsceneScene = GameScene == gameScene_Cutscene;
-    if (!isCutsceneScene) {
+    if (!isCutsceneGameScene()) {
         return true;
     }
 
@@ -1225,50 +1229,14 @@ bool PluginKingdomHeartsDays::didIngameCutsceneEnded()
 bool PluginKingdomHeartsDays::canReturnToGameAfterReplacementCutscene()
 {
     if (isSaveLoaded()) {
-        bool isCutsceneScene = GameScene == gameScene_Cutscene;
         // either:
         // 1. the cutscene is over
         // 2. the old cutscene ended, and a new cutscene started, so it needs to be skipped as well
         // 3. the cutscene is unskippable, so even if it didn't end, we need to return
-        return !isCutsceneScene || _NextCutscene != nullptr || _IsUnskippableCutscene;
+        return !isCutsceneGameScene() || _NextCutscene != nullptr || _IsUnskippableCutscene;
     }
     
     return true;
-}
-
-void PluginKingdomHeartsDays::refreshCutscene()
-{
-#if !REPLACEMENT_CUTSCENES_ENABLED
-    return;
-#endif
-
-    bool isCutsceneScene = GameScene == gameScene_Cutscene;
-    CutsceneEntry* cutscene = detectCutscene();
-
-    if (_ReplayLimitCount > 0) {
-        _ReplayLimitCount--;
-        if (cutscene != nullptr && cutscene->usAddress == _LastCutscene->usAddress) {
-            cutscene = nullptr;
-        }
-    }
-
-    
-    if (cutscene != nullptr) {
-        onIngameCutsceneIdentified(cutscene);
-    }
-
-    // Natural progression for all cutscenes
-    if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
-        _ShouldStartReplacementCutscene = true;
-    }
-
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didIngameCutsceneEnded()) {
-        onTerminateIngameCutscene();
-    }
-
-    if (_ShouldReturnToGameAfterCutscene && canReturnToGameAfterReplacementCutscene()) {
-        onReturnToGameAfterCutscene();
-    }
 }
 
 std::filesystem::path PluginKingdomHeartsDays::patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {

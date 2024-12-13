@@ -122,9 +122,9 @@ private:
     u32 getCutsceneAddress(CutsceneEntry* entry);
     u32 detectTopScreenCutsceneAddress();
     CutsceneEntry* detectTopScreenCutscene();
+    bool isCutsceneGameScene();
     bool didIngameCutsceneEnded();
     bool canReturnToGameAfterReplacementCutscene();
-    void refreshCutscene();
 
     u32 getCurrentMission();
     u32 getCurrentMap();
