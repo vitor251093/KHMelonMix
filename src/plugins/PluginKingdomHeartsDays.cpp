@@ -1226,6 +1226,10 @@ bool PluginKingdomHeartsDays::canReturnToGameAfterReplacementCutscene()
 {
     if (isSaveLoaded()) {
         bool isCutsceneScene = GameScene == gameScene_Cutscene;
+        // either:
+        // 1. the cutscene is over
+        // 2. the old cutscene ended, and a new cutscene started, so it needs to be skipped as well
+        // 3. the cutscene is unskippable, so even if it didn't end, we need to return
         return !isCutsceneScene || _NextCutscene != nullptr || _IsUnskippableCutscene;
     }
     
