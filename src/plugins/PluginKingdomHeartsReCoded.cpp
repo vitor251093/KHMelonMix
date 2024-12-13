@@ -309,14 +309,29 @@ std::string PluginKingdomHeartsReCoded::assetsFolder() {
 }
 
 const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
     return kCompositorFS_KhReCoded;
 };
 
 const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
     return kRenderVS_Z_KhReCoded;
 };
 
 void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return;
+    }
+
     float aspectRatio = AspectRatio / (4.f / 3.f);
     float commandMenuLeftMargin = 33.5;
     float commandMenuBottomMargin = 2.5;

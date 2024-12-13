@@ -46,7 +46,7 @@ public:
     bool applyTouchKeyMask(u32 TouchKeyMask);
 
     bool shouldExportTextures() {
-        return KHReCodedExportTextures;
+        return ExportTextures;
     }
     bool shouldStartInFullscreen() {
         return FullscreenOnStartup;
@@ -121,7 +121,8 @@ public:
         std::string root = getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 
         KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
-        KHReCodedExportTextures = getBoolConfig(root + ".ExportTextures");
+        DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
+        ExportTextures = getBoolConfig(root + ".ExportTextures");
         FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     }
 private:
@@ -156,7 +157,8 @@ private:
 
     std::array<CutsceneEntry, 15> Cutscenes;
     std::string KH_15_25_Remix_Location = "";
-    bool KHReCodedExportTextures = false;
+    bool DisableEnhancedGraphics = false;
+    bool ExportTextures = false;
     bool FullscreenOnStartup = false;
 
     int detectGameScene();

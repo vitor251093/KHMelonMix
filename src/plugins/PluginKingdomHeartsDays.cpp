@@ -407,6 +407,11 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
 };
 
 void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return;
+    }
+
     float aspectRatio = AspectRatio / (4.f / 3.f);
     float iuTexScale = (5.0)/UIScale;
 
