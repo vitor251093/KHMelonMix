@@ -146,17 +146,62 @@ public:
     virtual bool shouldExportTextures() = 0;
     virtual bool shouldStartInFullscreen() = 0;
 
-    virtual bool ShouldTerminateIngameCutscene() = 0;
-    virtual bool StoppedIngameCutscene() = 0;
-    virtual bool ShouldStartReplacementCutscene() = 0;
-    virtual bool StartedReplacementCutscene() = 0;
-    virtual bool RunningReplacementCutscene() = 0;
-    virtual bool ShouldPauseReplacementCutscene() = 0;
-    virtual bool ShouldUnpauseReplacementCutscene() = 0;
-    virtual bool ShouldStopReplacementCutscene() = 0;
-    virtual bool ShouldReturnToGameAfterCutscene() = 0;
-    virtual bool ShouldUnmuteAfterCutscene() = 0;
-    virtual CutsceneEntry* CurrentCutscene() = 0;
+    bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
+    bool StoppedIngameCutscene() {
+        if (_StoppedIngameCutscene) {
+            _StoppedIngameCutscene = false;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldStartReplacementCutscene() {
+        if (_ShouldStartReplacementCutscene) {
+            _ShouldStartReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
+    bool StartedReplacementCutscene() {
+        if (_StartedReplacementCutscene) {
+            _StartedReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
+    bool RunningReplacementCutscene() {return _RunningReplacementCutscene;}
+    bool ShouldPauseReplacementCutscene() {
+        if (_ShouldPauseReplacementCutscene) {
+            _ShouldPauseReplacementCutscene = false;
+            _PausedReplacementCutscene = true;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldUnpauseReplacementCutscene() {
+        if (_ShouldUnpauseReplacementCutscene) {
+            _ShouldUnpauseReplacementCutscene = false;
+            _PausedReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldStopReplacementCutscene() {
+        if (_ShouldStopReplacementCutscene) {
+            _ShouldStopReplacementCutscene = false;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
+    bool ShouldUnmuteAfterCutscene() {
+        if (_ShouldUnmuteAfterCutscene) {
+            _ShouldUnmuteAfterCutscene = false;
+            return true;
+        }
+        return false;
+    }
+    CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
+
     virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual std::string LocalizationFilePath(std::string language) = 0;
     virtual void onIngameCutsceneIdentified(CutsceneEntry* cutscene) = 0;
@@ -165,14 +210,48 @@ public:
     virtual void onReplacementCutsceneStarted() = 0;
     virtual void onReplacementCutsceneEnd() = 0;
 
-    virtual bool ShouldStartReplacementBgmMusic() = 0;
-    virtual int DelayBeforeStartReplacementBgmMusic() = 0;
-    virtual bool StartedReplacementBgmMusic() = 0;
-    virtual bool RunningReplacementBgmMusic() = 0;
-    virtual bool ShouldPauseReplacementBgmMusic() = 0;
-    virtual bool ShouldUnpauseReplacementBgmMusic() = 0;
-    virtual bool ShouldStopReplacementBgmMusic()  = 0;
-    virtual u16 CurrentBackgroundMusic() = 0;
+
+    bool ShouldStartReplacementBgmMusic() {
+        if (_ShouldStartReplacementBgmMusic) {
+            _ShouldStartReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    int DelayBeforeStartReplacementBgmMusic() {return 0;}
+    bool StartedReplacementBgmMusic() {
+        if (_StartedReplacementBgmMusic) {
+            _StartedReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    bool RunningReplacementBgmMusic() {return _RunningReplacementBgmMusic;}
+    bool ShouldPauseReplacementBgmMusic() {
+        if (_ShouldPauseReplacementBgmMusic) {
+            _ShouldPauseReplacementBgmMusic = false;
+            _PausedReplacementBgmMusic = true;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldUnpauseReplacementBgmMusic() {
+        if (_ShouldUnpauseReplacementBgmMusic) {
+            _ShouldUnpauseReplacementBgmMusic = false;
+            _PausedReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldStopReplacementBgmMusic() {
+        if (_ShouldStopReplacementBgmMusic) {
+            _ShouldStopReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
+
     virtual std::string BackgroundMusicFilePath(std::string name) = 0;
     virtual void onReplacementBackgroundMusicStarted() = 0;
 
@@ -312,6 +391,40 @@ public:
             }
         }
     }
+protected:
+    int _FastForwardPressCount;
+    int _StartPressCount;
+    int _ReplayLimitCount;
+    bool _CanSkipHdCutscene;
+    bool _SkipDsCutscene;
+    bool _PlayingCredits;
+    bool _ShouldTerminateIngameCutscene;
+    bool _StoppedIngameCutscene;
+    bool _ShouldStartReplacementCutscene;
+    bool _StartedReplacementCutscene;
+    bool _RunningReplacementCutscene;
+    bool _PausedReplacementCutscene;
+    bool _ShouldPauseReplacementCutscene;
+    bool _ShouldUnpauseReplacementCutscene;
+    bool _ShouldStopReplacementCutscene;
+    bool _ShouldReturnToGameAfterCutscene;
+    bool _ShouldUnmuteAfterCutscene;
+    bool _ShouldHideScreenForTransitions;
+    CutsceneEntry* _CurrentCutscene;
+    CutsceneEntry* _NextCutscene;
+    CutsceneEntry* _LastCutscene;
+
+
+    bool _StartedReplacementBgmMusic;
+    bool _RunningReplacementBgmMusic;
+    bool _PausedReplacementBgmMusic;
+    bool _ShouldPauseReplacementBgmMusic;
+    bool _ShouldUnpauseReplacementBgmMusic;
+    bool _ShouldStartReplacementBgmMusic;
+    bool _ShouldStopReplacementBgmMusic;
+    u16 _CurrentBackgroundMusic;
+    u16 _LastSoundtrackId;
+
 };
 }
 

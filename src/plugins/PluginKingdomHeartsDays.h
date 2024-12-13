@@ -47,88 +47,12 @@ public:
     bool applyTouchKeyMask(u32 TouchKeyMask);
 
     bool shouldExportTextures() {
-        return KHDaysExportTextures;
+        return ExportTextures;
     }
     bool shouldStartInFullscreen() {
         return FullscreenOnStartup;
     }
 
-    int _FastForwardPressCount;
-    int _StartPressCount;
-    int _ReplayLimitCount;
-    bool _CanSkipHdCutscene;
-    bool _SkipDsCutscene;
-    bool _PlayingCredits;
-    bool _ShouldTerminateIngameCutscene;
-    bool _StoppedIngameCutscene;
-    bool _ShouldStartReplacementCutscene;
-    bool _StartedReplacementCutscene;
-    bool _RunningReplacementCutscene;
-    bool _PausedReplacementCutscene;
-    bool _ShouldPauseReplacementCutscene;
-    bool _ShouldUnpauseReplacementCutscene;
-    bool _ShouldStopReplacementCutscene;
-    bool _ShouldReturnToGameAfterCutscene;
-    bool _ShouldUnmuteAfterCutscene;
-    bool _ShouldHideScreenForTransitions;
-    CutsceneEntry* _CurrentCutscene;
-    CutsceneEntry* _NextCutscene;
-    CutsceneEntry* _LastCutscene;
-    bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
-    bool StoppedIngameCutscene() {
-        if (_StoppedIngameCutscene) {
-            _StoppedIngameCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldStartReplacementCutscene() {
-        if (_ShouldStartReplacementCutscene) {
-            _ShouldStartReplacementCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool StartedReplacementCutscene() {
-        if (_StartedReplacementCutscene) {
-            _StartedReplacementCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool RunningReplacementCutscene() {return _RunningReplacementCutscene;}
-    bool ShouldPauseReplacementCutscene() {
-        if (_ShouldPauseReplacementCutscene) {
-            _ShouldPauseReplacementCutscene = false;
-            _PausedReplacementCutscene = true;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldUnpauseReplacementCutscene() {
-        if (_ShouldUnpauseReplacementCutscene) {
-            _ShouldUnpauseReplacementCutscene = false;
-            _PausedReplacementCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldStopReplacementCutscene() {
-        if (_ShouldStopReplacementCutscene) {
-            _ShouldStopReplacementCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
-    bool ShouldUnmuteAfterCutscene() {
-        if (_ShouldUnmuteAfterCutscene) {
-            _ShouldUnmuteAfterCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
     std::string CutsceneFilePath(CutsceneEntry* cutscene);
     std::string LocalizationFilePath(std::string language);
     std::filesystem::path patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
@@ -138,55 +62,7 @@ public:
     void onReplacementCutsceneStarted();
     void onReplacementCutsceneEnd();
 
-    bool _StartedReplacementBgmMusic;
-    bool _RunningReplacementBgmMusic;
-    bool _PausedReplacementBgmMusic;
-    bool _ShouldPauseReplacementBgmMusic;
-    bool _ShouldUnpauseReplacementBgmMusic;
-    bool _ShouldStartReplacementBgmMusic;
-    bool _ShouldStopReplacementBgmMusic;
-    u16 _CurrentBackgroundMusic;
-    u16 _LastSoundtrackId;
-    bool ShouldStartReplacementBgmMusic() {
-        if (_ShouldStartReplacementBgmMusic) {
-            _ShouldStartReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
     int DelayBeforeStartReplacementBgmMusic();
-    bool StartedReplacementBgmMusic() {
-        if (_StartedReplacementBgmMusic) {
-            _StartedReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    bool RunningReplacementBgmMusic() {return _RunningReplacementBgmMusic;}
-    bool ShouldPauseReplacementBgmMusic() {
-        if (_ShouldPauseReplacementBgmMusic) {
-            _ShouldPauseReplacementBgmMusic = false;
-            _PausedReplacementBgmMusic = true;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldUnpauseReplacementBgmMusic() {
-        if (_ShouldUnpauseReplacementBgmMusic) {
-            _ShouldUnpauseReplacementBgmMusic = false;
-            _PausedReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldStopReplacementBgmMusic() {
-        if (_ShouldStopReplacementBgmMusic) {
-            _ShouldStopReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
     std::string BackgroundMusicFilePath(std::string name);
     void onReplacementBackgroundMusicStarted();
 
@@ -204,8 +80,8 @@ public:
 
         KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
         KHDaysLanguage = getStringConfig(root + ".Language");
-        KHDaysDisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
-        KHDaysExportTextures = getBoolConfig(root + ".ExportTextures");
+        DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
+        ExportTextures = getBoolConfig(root + ".ExportTextures");
         FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     }
 private:
@@ -251,8 +127,8 @@ private:
 
     std::string KH_15_25_Remix_Location = "";
     std::string KHDaysLanguage = "";
-    bool KHDaysDisableEnhancedGraphics = false;
-    bool KHDaysExportTextures = false;
+    bool DisableEnhancedGraphics = false;
+    bool ExportTextures = false;
     bool FullscreenOnStartup = false;
 
     int detectGameScene();

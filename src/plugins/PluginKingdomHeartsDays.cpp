@@ -389,7 +389,7 @@ std::string PluginKingdomHeartsDays::assetsRegionSubfolder() {
 }
 
 const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
-    bool disable = KHDaysDisableEnhancedGraphics;
+    bool disable = DisableEnhancedGraphics;
     if (disable) {
         return nullptr;
     }
@@ -398,7 +398,7 @@ const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
 };
 
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
-    bool disable = KHDaysDisableEnhancedGraphics;
+    bool disable = DisableEnhancedGraphics;
     if (disable) {
         return nullptr;
     }
