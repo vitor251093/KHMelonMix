@@ -14,6 +14,8 @@ public:
     PluginDefault(u32 gameCode) {
         GameCode = gameCode;
 
+        PriorGameScene = -1;
+        GameScene = -1;
         HUDState = -1;
         hudToggle();
 

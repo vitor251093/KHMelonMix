@@ -82,8 +82,6 @@ private:
 
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
-    int PriorGameScene;
-    int GameScene;
     u32 priorMap;
     u32 Map;
     int UIScale = 4;
@@ -122,7 +120,6 @@ private:
     bool FullscreenOnStartup = false;
 
     int detectGameScene();
-    bool setGameScene(int newGameScene);
 
     u32 getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address);
     std::string getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress, std::string jpRev1Address);

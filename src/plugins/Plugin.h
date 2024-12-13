@@ -508,6 +508,21 @@ public:
     }
     virtual bool shouldRenderFrame() = 0;
 
+    virtual int detectGameScene() {return -1;}
+    bool setGameScene(int newGameScene)
+    {
+        bool updated = false;
+        if (GameScene != newGameScene) 
+        {
+            updated = true;
+
+            // Game scene
+            PriorGameScene = GameScene;
+            GameScene = newGameScene;
+        }
+
+        return updated;
+    }
     virtual bool refreshGameScene() = 0;
 
     virtual void setAspectRatio(float aspectRatio) {}
@@ -515,6 +530,8 @@ public:
     virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig) {}
 
     virtual void hudToggle() {}
+
+    virtual void debugLogs(int gameScene) {}
 
     void log(const char* log) {
         printf("%s\n", log);
@@ -645,6 +662,8 @@ public:
 protected:
     melonDS::NDS* nds;
 
+    int PriorGameScene;
+    int GameScene;
     int HUDState;
 
 

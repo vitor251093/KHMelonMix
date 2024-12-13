@@ -125,14 +125,14 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 {
     GameCode = gameCode;
 
+    PriorGameScene = -1;
+    GameScene = -1;
     HUDState = -1;
     hudToggle();
 
     initCutsceneVariables();
     initBgmVariables();
 
-    PriorGameScene = -1;
-    GameScene = -1;
     priorMap = -1;
     Map = 0;
     UIScale = 4;
@@ -817,21 +817,6 @@ void PluginKingdomHeartsReCoded::setAspectRatio(float aspectRatio)
     }
 
     AspectRatio = aspectRatio;
-}
-
-bool PluginKingdomHeartsReCoded::setGameScene(int newGameScene)
-{
-    bool updated = false;
-    if (GameScene != newGameScene) 
-    {
-        updated = true;
-
-        // Game scene
-        PriorGameScene = GameScene;
-        GameScene = newGameScene;
-    }
-
-    return updated;
 }
 
 u32 PluginKingdomHeartsReCoded::getCutsceneAddress(CutsceneEntry* entry)
