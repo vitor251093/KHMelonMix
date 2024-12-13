@@ -349,7 +349,7 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    CutsceneEntry* tsCutscene = detectTopScreenCutscene();
+    CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
     int dsCutsceneState = (tsCutscene == nullptr ? 0 : tsCutscene->dsScreensState);
 
     glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
@@ -819,7 +819,7 @@ void PluginKingdomHeartsReCoded::setAspectRatio(float aspectRatio)
     AspectRatio = aspectRatio;
 }
 
-u32 PluginKingdomHeartsReCoded::getCutsceneAddress(CutsceneEntry* entry)
+u32 PluginKingdomHeartsReCoded::getMobiCutsceneAddress(CutsceneEntry* entry)
 {
     return getU32ByCart(entry->usAddress, entry->euAddress, entry->jpAddress);
 }
@@ -869,12 +869,12 @@ bool PluginKingdomHeartsReCoded::getBoolByCart(bool usAddress, bool euAddress, b
     return cutsceneAddress;
 }
 
-u32 PluginKingdomHeartsReCoded::detectTopScreenCutsceneAddress()
+u32 PluginKingdomHeartsReCoded::detectTopScreenMobiCutsceneAddress()
 {
     return getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
 }
 
-CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
+CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenMobiCutscene()
 {
     if (GameScene == -1)
     {
@@ -882,7 +882,7 @@ CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
     }
 
     u32 cutsceneAddressValue = 0;
-    u32 cutsceneAddress = detectTopScreenCutsceneAddress();
+    u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
     if (cutsceneAddress != 0) {
         cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
         if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
@@ -892,7 +892,7 @@ CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
 
     CutsceneEntry* cutscene1 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
+        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {
             cutscene1 = entry;
         }
     }
@@ -905,7 +905,7 @@ bool PluginKingdomHeartsReCoded::isCutsceneGameScene()
     return GameScene == gameScene_Cutscene;
 }
 
-bool PluginKingdomHeartsReCoded::didIngameCutsceneEnded()
+bool PluginKingdomHeartsReCoded::didMobiCutsceneEnded()
 {
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
     if (!isCutsceneScene) {
@@ -934,7 +934,7 @@ bool PluginKingdomHeartsReCoded::canReturnToGameAfterReplacementCutscene()
     return true;
 }
 
-std::filesystem::path PluginKingdomHeartsReCoded::patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
+std::filesystem::path PluginKingdomHeartsReCoded::patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
     std::filesystem::path fullPath = folderPath / filename;
     if (!std::filesystem::exists(fullPath))
@@ -948,7 +948,7 @@ std::filesystem::path PluginKingdomHeartsReCoded::patchCutsceneIfNeeded(Cutscene
     return fullPath;
 }
 
-std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene) {
+std::string PluginKingdomHeartsReCoded::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
@@ -968,14 +968,14 @@ std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene
         std::filesystem::path collectionPath = KH_15_25_Remix_Location;
         std::filesystem::path newEpicFolderPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "ReCoded" / "en";
         if (std::filesystem::exists(newEpicFolderPath)) {
-            std::filesystem::path newEpicFullPath = patchCutsceneIfNeeded(cutscene, newEpicFolderPath);
+            std::filesystem::path newEpicFullPath = patchReplacementCutsceneIfNeeded(cutscene, newEpicFolderPath);
             if (newEpicFullPath != "") {
                 return newEpicFullPath.string();
             }
         }
         std::filesystem::path newSteamFolderPath = collectionPath / "STEAM" / "Mare" / "MOVIE" / "ReCoded" / "dt";
         if (std::filesystem::exists(newSteamFolderPath)) {
-            std::filesystem::path newSteamFullPath = patchCutsceneIfNeeded(cutscene, newSteamFolderPath);
+            std::filesystem::path newSteamFullPath = patchReplacementCutsceneIfNeeded(cutscene, newSteamFolderPath);
             if (newSteamFullPath != "") {
                 return newSteamFullPath.string();
             }
@@ -985,12 +985,12 @@ std::string PluginKingdomHeartsReCoded::CutsceneFilePath(CutsceneEntry* cutscene
     return "";
 }
 
-bool PluginKingdomHeartsReCoded::isUnskippableCutscene(CutsceneEntry* cutscene) {
+bool PluginKingdomHeartsReCoded::isUnskippableMobiCutscene(CutsceneEntry* cutscene) {
     return false;
     // return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 
-std::string PluginKingdomHeartsReCoded::BackgroundMusicFilePath(std::string name) {
+std::string PluginKingdomHeartsReCoded::replacementBackgroundMusicFilePath(std::string name) {
     std::string filename = name + ".wav";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();

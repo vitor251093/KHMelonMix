@@ -301,14 +301,14 @@ public:
     }
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
 
-    virtual u32 detectTopScreenCutsceneAddress() {return 0;};
-    virtual u32 detectBottomScreenCutsceneAddress() {return 0;};
-    virtual CutsceneEntry* detectTopScreenCutscene() {return nullptr;};
-    virtual CutsceneEntry* detectBottomScreenCutscene() {return nullptr;};
+    virtual u32 detectTopScreenMobiCutsceneAddress() {return 0;};
+    virtual u32 detectBottomScreenMobiCutsceneAddress() {return 0;};
+    virtual CutsceneEntry* detectTopScreenMobiCutscene() {return nullptr;};
+    virtual CutsceneEntry* detectBottomScreenMobiCutscene() {return nullptr;};
     CutsceneEntry* detectCutscene()
     {
-        CutsceneEntry* cutscene1 = detectTopScreenCutscene();
-        CutsceneEntry* cutscene2 = detectBottomScreenCutscene();
+        CutsceneEntry* cutscene1 = detectTopScreenMobiCutscene();
+        CutsceneEntry* cutscene2 = detectBottomScreenMobiCutscene();
 
         if (cutscene1 == nullptr && cutscene2 != nullptr) {
             cutscene1 = cutscene2;
@@ -317,7 +317,7 @@ public:
         return cutscene1;
     }
     virtual bool isCutsceneGameScene() {return false;};
-    virtual bool didIngameCutsceneEnded() {return !isCutsceneGameScene();};
+    virtual bool didMobiCutsceneEnded() {return !isCutsceneGameScene();};
     virtual bool canReturnToGameAfterReplacementCutscene() {return true;};
 
     void refreshCutscene()
@@ -346,7 +346,7 @@ public:
             _ShouldStartReplacementCutscene = true;
         }
 
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didIngameCutsceneEnded()) {
+        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didMobiCutsceneEnded()) {
             onTerminateIngameCutscene();
         }
 
@@ -355,16 +355,16 @@ public:
         }
     }
 
-    virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
+    virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) = 0;
     virtual std::string LocalizationFilePath(std::string language) = 0;
-    virtual bool isUnskippableCutscene(CutsceneEntry* cutscene) {return false;}
+    virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
         if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
             return;
         }
 
-        std::string path = CutsceneFilePath(cutscene);
+        std::string path = replacementCutsceneFilePath(cutscene);
         if (path == "") {
             return;
         }
@@ -380,7 +380,7 @@ public:
         _CurrentCutscene = cutscene;
         _NextCutscene = nullptr;
         _ShouldTerminateIngameCutscene = true;
-        _IsUnskippableCutscene = isUnskippableCutscene(cutscene);
+        _IsUnskippableCutscene = isUnskippableMobiCutscene(cutscene);
     }
     void onTerminateIngameCutscene() {
         if (_CurrentCutscene == nullptr) {
@@ -424,12 +424,12 @@ public:
         _ReplayLimitCount = 30;
 
         if (_NextCutscene == nullptr) {
-            u32 cutsceneAddress = detectTopScreenCutsceneAddress();
+            u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
             if (cutsceneAddress != 0) {
                 nds->ARM7Write32(cutsceneAddress, 0x0);
             }
 
-            u32 cutsceneAddress2 = detectBottomScreenCutsceneAddress();
+            u32 cutsceneAddress2 = detectBottomScreenMobiCutsceneAddress();
             if (cutsceneAddress2 != 0) {
                 nds->ARM7Write32(cutsceneAddress2, 0x0);
             }
@@ -451,7 +451,7 @@ public:
         }
         return false;
     }
-    int DelayBeforeStartReplacementBgmMusic() {return 0;}
+    int DelayBeforeStartReplacementBackgroundMusic() {return 0;}
     bool StartedReplacementBgmMusic() {
         if (_StartedReplacementBgmMusic) {
             _StartedReplacementBgmMusic = false;
@@ -485,7 +485,7 @@ public:
     }
     u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
 
-    virtual std::string BackgroundMusicFilePath(std::string name) = 0;
+    virtual std::string replacementBackgroundMusicFilePath(std::string name) = 0;
 
     void onReplacementBackgroundMusicStarted() {
         printf("Background music started\n");

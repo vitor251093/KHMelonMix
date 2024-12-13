@@ -766,9 +766,9 @@ void EmuThread::refreshPluginCutsceneState()
     if (emuInstance->plugin->ShouldStartReplacementBgmMusic()) {
         auto bgm = emuInstance->plugin->CurrentBackgroundMusic();
         if (bgm != 0) {
-            std::string path = emuInstance->plugin->BackgroundMusicFilePath("bgm" + std::to_string(bgm));
+            std::string path = emuInstance->plugin->replacementBackgroundMusicFilePath("bgm" + std::to_string(bgm));
             if (path != "") {
-                int delay = emuInstance->plugin->DelayBeforeStartReplacementBgmMusic();
+                int delay = emuInstance->plugin->DelayBeforeStartReplacementBackgroundMusic();
                 if (delay == 0) {
                     // disabling fast-foward, otherwise it will affect the cutscenes
                     emuInstance->setVSyncGL(true);
@@ -778,7 +778,7 @@ void EmuThread::refreshPluginCutsceneState()
                     emit windowStartBgmMusic(filePath);
                 }
                 else {
-                    QTimer::singleShot(emuInstance->plugin->DelayBeforeStartReplacementBgmMusic(), mainWindow, [this, bgm, path]() {
+                    QTimer::singleShot(emuInstance->plugin->DelayBeforeStartReplacementBackgroundMusic(), mainWindow, [this, bgm, path]() {
                         // disabling fast-foward, otherwise it will affect the cutscenes
                         emuInstance->setVSyncGL(true);
 
@@ -833,7 +833,7 @@ void EmuThread::refreshPluginCutsceneState()
     if (emuInstance->plugin->ShouldStartReplacementCutscene()) {
         auto cutscene = emuInstance->plugin->CurrentCutscene();
         if (cutscene != nullptr) {
-            std::string path = emuInstance->plugin->CutsceneFilePath(cutscene);
+            std::string path = emuInstance->plugin->replacementCutsceneFilePath(cutscene);
             if (path != "") {
                 // disabling fast-foward, otherwise it will affect the cutscenes
                 emuInstance->setVSyncGL(true);

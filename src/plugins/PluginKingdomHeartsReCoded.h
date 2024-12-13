@@ -51,12 +51,12 @@ public:
         return FullscreenOnStartup;
     }
 
-    std::string CutsceneFilePath(CutsceneEntry* cutscene);
+    std::string replacementCutsceneFilePath(CutsceneEntry* cutscene);
     std::string LocalizationFilePath(std::string language);
-    std::filesystem::path patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
-    bool isUnskippableCutscene(CutsceneEntry* cutscene);
+    std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
+    bool isUnskippableMobiCutscene(CutsceneEntry* cutscene);
 
-    std::string BackgroundMusicFilePath(std::string name);
+    std::string replacementBackgroundMusicFilePath(std::string name);
 
     const char* getGameSceneName();
 
@@ -110,11 +110,11 @@ private:
     std::string getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress);
     bool getBoolByCart(bool usAddress, bool euAddress, bool jpAddress);
 
-    u32 getCutsceneAddress(CutsceneEntry* entry);
-    u32 detectTopScreenCutsceneAddress();
-    CutsceneEntry* detectTopScreenCutscene();
+    u32 getMobiCutsceneAddress(CutsceneEntry* entry);
+    u32 detectTopScreenMobiCutsceneAddress();
+    CutsceneEntry* detectTopScreenMobiCutscene();
     bool isCutsceneGameScene();
-    bool didIngameCutsceneEnded();
+    bool didMobiCutsceneEnded();
     bool canReturnToGameAfterReplacementCutscene();
 
     u32 getCurrentMission();

@@ -461,8 +461,8 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    CutsceneEntry* tsCutscene = detectTopScreenCutscene();
-    CutsceneEntry* bsCutscene = detectBottomScreenCutscene();
+    CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
+    CutsceneEntry* bsCutscene = detectBottomScreenMobiCutscene();
     int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
 
     bool isCredits = nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
@@ -996,7 +996,7 @@ void PluginKingdomHeartsDays::setAspectRatio(float aspectRatio)
     AspectRatio = aspectRatio;
 }
 
-u32 PluginKingdomHeartsDays::getCutsceneAddress(CutsceneEntry* entry)
+u32 PluginKingdomHeartsDays::getMobiCutsceneAddress(CutsceneEntry* entry)
 {
     return getU32ByCart(entry->usAddress, entry->euAddress, entry->jpAddress, entry->jpAddress - 0x200);
 }
@@ -1055,17 +1055,17 @@ bool PluginKingdomHeartsDays::getBoolByCart(bool usAddress, bool euAddress, bool
     return value;
 }
 
-u32 PluginKingdomHeartsDays::detectTopScreenCutsceneAddress()
+u32 PluginKingdomHeartsDays::detectTopScreenMobiCutsceneAddress()
 {
     return getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
 }
 
-u32 PluginKingdomHeartsDays::detectBottomScreenCutsceneAddress()
+u32 PluginKingdomHeartsDays::detectBottomScreenMobiCutsceneAddress()
 {
     return getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
+CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenMobiCutscene()
 {
     if (GameScene == -1)
     {
@@ -1073,7 +1073,7 @@ CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
     }
 
     u32 cutsceneAddressValue = 0;
-    u32 cutsceneAddress = detectTopScreenCutsceneAddress();
+    u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
     if (cutsceneAddress != 0) {
         cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
         if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
@@ -1083,7 +1083,7 @@ CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
 
     CutsceneEntry* cutscene1 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
+        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {
             cutscene1 = entry;
         }
     }
@@ -1091,7 +1091,7 @@ CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
     return cutscene1;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
+CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenMobiCutscene()
 {
     if (GameScene == -1)
     {
@@ -1099,7 +1099,7 @@ CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
     }
 
     u32 cutsceneAddressValue2 = 0;
-    u32 cutsceneAddress2 = detectBottomScreenCutsceneAddress();
+    u32 cutsceneAddress2 = detectBottomScreenMobiCutsceneAddress();
     if (cutsceneAddress2 != 0) {
         cutsceneAddressValue2 = nds->ARM7Read32(cutsceneAddress2);
         if (cutsceneAddressValue2 == 0 || (cutsceneAddressValue2 - (cutsceneAddressValue2 & 0xFF)) == 0xea000000) {
@@ -1109,7 +1109,7 @@ CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
 
     CutsceneEntry* cutscene2 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getCutsceneAddress(entry) == cutsceneAddressValue2) {
+        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue2) {
             cutscene2 = entry;
         }
     }
@@ -1122,7 +1122,7 @@ bool PluginKingdomHeartsDays::isCutsceneGameScene()
     return GameScene == gameScene_Cutscene;
 }
 
-bool PluginKingdomHeartsDays::didIngameCutsceneEnded()
+bool PluginKingdomHeartsDays::didMobiCutsceneEnded()
 {
     if (!isCutsceneGameScene()) {
         return true;
@@ -1149,7 +1149,7 @@ bool PluginKingdomHeartsDays::canReturnToGameAfterReplacementCutscene()
     return true;
 }
 
-std::filesystem::path PluginKingdomHeartsDays::patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
+std::filesystem::path PluginKingdomHeartsDays::patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
     std::filesystem::path fullPath = folderPath / filename;
     if (!std::filesystem::exists(fullPath))
@@ -1181,7 +1181,7 @@ std::filesystem::path PluginKingdomHeartsDays::patchCutsceneIfNeeded(CutsceneEnt
     return fullPath;
 }
 
-std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
+std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
@@ -1201,14 +1201,14 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
         std::filesystem::path collectionPath = KH_15_25_Remix_Location;
         std::filesystem::path newEpicFolderPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "Days" / "en";
         if (std::filesystem::exists(newEpicFolderPath)) {
-            std::filesystem::path newEpicFullPath = patchCutsceneIfNeeded(cutscene, newEpicFolderPath);
+            std::filesystem::path newEpicFullPath = patchReplacementCutsceneIfNeeded(cutscene, newEpicFolderPath);
             if (newEpicFullPath != "") {
                 return newEpicFullPath.string();
             }
         }
         std::filesystem::path newSteamFolderPath = collectionPath / "STEAM" / "Mare" / "MOVIE" / "Days" / "dt";
         if (std::filesystem::exists(newSteamFolderPath)) {
-            std::filesystem::path newSteamFullPath = patchCutsceneIfNeeded(cutscene, newSteamFolderPath);
+            std::filesystem::path newSteamFullPath = patchReplacementCutsceneIfNeeded(cutscene, newSteamFolderPath);
             if (newSteamFullPath != "") {
                 return newSteamFullPath.string();
             }
@@ -1218,11 +1218,11 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
     return "";
 }
 
-bool PluginKingdomHeartsDays::isUnskippableCutscene(CutsceneEntry* cutscene) {
+bool PluginKingdomHeartsDays::isUnskippableMobiCutscene(CutsceneEntry* cutscene) {
     return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 
-u16 PluginKingdomHeartsDays::detectBackgroundMusic() {
+u16 PluginKingdomHeartsDays::detectMidiBackgroundMusic() {
     u16 soundtrack = nds->ARM7Read16(getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1));
     if (soundtrack > 0) {
         return soundtrack;
@@ -1230,7 +1230,7 @@ u16 PluginKingdomHeartsDays::detectBackgroundMusic() {
     return 0;
 }
 
-std::string PluginKingdomHeartsDays::BackgroundMusicFilePath(std::string name) {
+std::string PluginKingdomHeartsDays::replacementBackgroundMusicFilePath(std::string name) {
     std::string filename = name + ".wav";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
@@ -1255,9 +1255,9 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
 #endif
 
     u16 fakeSoundtrackId = 0x100;
-    u16 soundtrackId = detectBackgroundMusic();
+    u16 soundtrackId = detectMidiBackgroundMusic();
 
-    std::string soundtrackPath = BackgroundMusicFilePath("bgm" + std::to_string(soundtrackId));
+    std::string soundtrackPath = replacementBackgroundMusicFilePath("bgm" + std::to_string(soundtrackId));
     bool replacementAvailable = (soundtrackPath != "");
 
     if (soundtrackId != _CurrentBackgroundMusic) {
@@ -1299,7 +1299,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     }
 }
 
-int PluginKingdomHeartsDays::DelayBeforeStartReplacementBgmMusic() {
+int PluginKingdomHeartsDays::DelayBeforeStartReplacementBackgroundMusic() {
     u32 currentMission = getCurrentMission();
     if (currentMission == 92 && _CurrentBackgroundMusic == 22) {
         return 12500;
