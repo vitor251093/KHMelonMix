@@ -252,8 +252,8 @@ void PluginKingdomHeartsDays::loadLocalization() {
         language = "en-US";
     }
 
-    std::string localizationFilePath = localizationFilePath("en-US");
-    Platform::FileHandle* f = Platform::OpenLocalFile(localizationFilePath.c_str(), Platform::FileMode::ReadText);
+    std::string LocalizationFilePath = localizationFilePath("en-US");
+    Platform::FileHandle* f = Platform::OpenLocalFile(LocalizationFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
         char linebuf[1024];
         char entryname[32];
@@ -992,8 +992,8 @@ void PluginKingdomHeartsDays::setAspectRatio(float aspectRatio)
 
         u32 aspectRatioMenuAddress = getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
 
-        if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
-            nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
+        if (nds->ARM7Read16(aspectRatioMenuAddress) == 0x00001555) {
+            nds->ARM7Write16(aspectRatioMenuAddress, aspectRatioKey);
         }
     }
 
