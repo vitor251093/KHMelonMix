@@ -57,56 +57,7 @@ public:
     std::filesystem::path patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableCutscene(CutsceneEntry* cutscene);
 
-    bool _StartedReplacementBgmMusic;
-    bool _RunningReplacementBgmMusic;
-    bool _PausedReplacementBgmMusic;
-    bool _ShouldPauseReplacementBgmMusic;
-    bool _ShouldUnpauseReplacementBgmMusic;
-    bool _ShouldStartReplacementBgmMusic;
-    bool _ShouldStopReplacementBgmMusic;
-    u16 _CurrentBackgroundMusic;
-    bool ShouldStartReplacementBgmMusic() {
-        if (_ShouldStartReplacementBgmMusic) {
-            _ShouldStartReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    int DelayBeforeStartReplacementBgmMusic();
-    bool StartedReplacementBgmMusic() {
-        if (_StartedReplacementBgmMusic) {
-            _StartedReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    bool RunningReplacementBgmMusic() {return _RunningReplacementBgmMusic;}
-    bool ShouldPauseReplacementBgmMusic() {
-        if (_ShouldPauseReplacementBgmMusic) {
-            _ShouldPauseReplacementBgmMusic = false;
-            _PausedReplacementBgmMusic = true;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldUnpauseReplacementBgmMusic() {
-        if (_ShouldUnpauseReplacementBgmMusic) {
-            _ShouldUnpauseReplacementBgmMusic = false;
-            _PausedReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldStopReplacementBgmMusic() {
-        if (_ShouldStopReplacementBgmMusic) {
-            _ShouldStopReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
     std::string BackgroundMusicFilePath(std::string name);
-    void onReplacementBackgroundMusicStarted();
 
     const char* getGameSceneName();
 

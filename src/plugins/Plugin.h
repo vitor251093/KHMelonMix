@@ -328,7 +328,14 @@ public:
     u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
 
     virtual std::string BackgroundMusicFilePath(std::string name) = 0;
-    virtual void onReplacementBackgroundMusicStarted() = 0;
+
+    void onReplacementBackgroundMusicStarted() {
+        printf("Background music started\n");
+        _ShouldStartReplacementBgmMusic = false;
+        _StartedReplacementBgmMusic = true;
+        _RunningReplacementBgmMusic = true;
+    }
+
 
     virtual const char* getGameSceneName() = 0;
 

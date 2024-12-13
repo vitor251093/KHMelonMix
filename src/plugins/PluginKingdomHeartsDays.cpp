@@ -1433,13 +1433,6 @@ int PluginKingdomHeartsDays::DelayBeforeStartReplacementBgmMusic() {
     return 0;
 }
 
-void PluginKingdomHeartsDays::onReplacementBackgroundMusicStarted() {
-    log("Background music started");
-    _ShouldStartReplacementBgmMusic = false;
-    _StartedReplacementBgmMusic = true;
-    _RunningReplacementBgmMusic = true;
-}
-
 std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::string assetsFolderName = assetsFolder();

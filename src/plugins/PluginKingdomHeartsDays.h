@@ -59,7 +59,6 @@ public:
 
     int DelayBeforeStartReplacementBgmMusic();
     std::string BackgroundMusicFilePath(std::string name);
-    void onReplacementBackgroundMusicStarted();
 
     const char* getGameSceneName();
 
