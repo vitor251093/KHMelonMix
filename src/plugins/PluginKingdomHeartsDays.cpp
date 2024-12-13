@@ -1093,56 +1093,56 @@ u32 PluginKingdomHeartsDays::getCutsceneAddress(CutsceneEntry* entry)
 
 u32 PluginKingdomHeartsDays::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address)
 {
-    u32 cutsceneAddress = 0;
+    u32 value = 0;
     if (isUsaCart()) {
-        cutsceneAddress = usAddress;
+        value = usAddress;
     }
     else if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
+        value = euAddress;
     }
     else if (isJapanCartRev1()) {
-        cutsceneAddress = jpRev1Address;
+        value = jpRev1Address;
     }
     else if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
+        value = jpAddress;
     }
-    return cutsceneAddress;
+    return value;
 }
 
 std::string PluginKingdomHeartsDays::getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress, std::string jpRev1Address)
 {
-    std::string cutsceneAddress = "";
+    std::string value = "";
     if (isUsaCart()) {
-        cutsceneAddress = usAddress;
+        value = usAddress;
     }
     else if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
+        value = euAddress;
     }
     else if (isJapanCartRev1()) {
-        cutsceneAddress = jpRev1Address;
+        value = jpRev1Address;
     }
     else if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
+        value = jpAddress;
     }
-    return cutsceneAddress;
+    return value;
 }
 
 bool PluginKingdomHeartsDays::getBoolByCart(bool usAddress, bool euAddress, bool jpAddress, bool jpRev1Address)
 {
-    bool cutsceneAddress = false;
+    bool value = false;
     if (isUsaCart()) {
-        cutsceneAddress = usAddress;
+        value = usAddress;
     }
     else if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
+        value = euAddress;
     }
     else if (isJapanCartRev1()) {
-        cutsceneAddress = jpRev1Address;
+        value = jpRev1Address;
     }
     else if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
+        value = jpAddress;
     }
-    return cutsceneAddress;
+    return value;
 }
 
 u32 PluginKingdomHeartsDays::detectTopScreenCutsceneAddress()
@@ -1207,6 +1207,31 @@ CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
     return cutscene2;
 }
 
+bool PluginKingdomHeartsDays::didIngameCutsceneEnded()
+{
+    bool isCutsceneScene = GameScene == gameScene_Cutscene;
+    if (!isCutsceneScene) {
+        return true;
+    }
+
+    if (isSaveLoaded()) {
+        // the old cutscene ended, and a new cutscene started
+        return _NextCutscene != nullptr;
+    }
+
+    return false;
+}
+
+bool PluginKingdomHeartsDays::canReturnToGameAfterReplacementCutscene()
+{
+    if (isSaveLoaded()) {
+        bool isCutsceneScene = GameScene == gameScene_Cutscene;
+        return !isCutsceneScene || _NextCutscene != nullptr || _IsUnskippableCutscene;
+    }
+    
+    return true;
+}
+
 void PluginKingdomHeartsDays::refreshCutscene()
 {
 #if !REPLACEMENT_CUTSCENES_ENABLED
@@ -1215,7 +1240,6 @@ void PluginKingdomHeartsDays::refreshCutscene()
 
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
     CutsceneEntry* cutscene = detectCutscene();
-    bool wasSaveLoaded = isSaveLoaded();
 
     if (_ReplayLimitCount > 0) {
         _ReplayLimitCount--;
@@ -1229,32 +1253,17 @@ void PluginKingdomHeartsDays::refreshCutscene()
         onIngameCutsceneIdentified(cutscene);
     }
 
-    bool cutsceneEnded = !isCutsceneScene || _NextCutscene != nullptr;
-
     // Natural progression for all cutscenes
     if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
         _ShouldStartReplacementCutscene = true;
     }
 
-    if (wasSaveLoaded) { // In game cutscenes (starting from Day 7)
-        
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && cutsceneEnded) {
-            onTerminateIngameCutscene();
-        }
-
-        if (_ShouldReturnToGameAfterCutscene && (cutsceneEnded || _IsUnskippableCutscene)) {
-            onReturnToGameAfterCutscene();
-        }
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didIngameCutsceneEnded()) {
+        onTerminateIngameCutscene();
     }
-    else { // Intro when waiting on the title screen, theater, and cutscenes before Day 7
 
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && !isCutsceneScene) {
-            onTerminateIngameCutscene();
-        }
-
-        if (_ShouldReturnToGameAfterCutscene) {
-            onReturnToGameAfterCutscene();
-        }
+    if (_ShouldReturnToGameAfterCutscene && canReturnToGameAfterReplacementCutscene()) {
+        onReturnToGameAfterCutscene();
     }
 }
 

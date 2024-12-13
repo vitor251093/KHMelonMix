@@ -994,6 +994,31 @@ CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenCutscene()
     return cutscene1;
 }
 
+bool PluginKingdomHeartsReCoded::didIngameCutsceneEnded()
+{
+    bool isCutsceneScene = GameScene == gameScene_Cutscene;
+    if (!isCutsceneScene) {
+        return true;
+    }
+
+    if (isSaveLoaded()) {
+        // the old cutscene ended, and a new cutscene started
+        return _NextCutscene != nullptr;
+    }
+
+    return false;
+}
+
+bool PluginKingdomHeartsReCoded::canReturnToGameAfterReplacementCutscene()
+{
+    if (isSaveLoaded()) {
+        bool isCutsceneScene = GameScene == gameScene_Cutscene;
+        return !isCutsceneScene || _NextCutscene != nullptr || _IsUnskippableCutscene;
+    }
+    
+    return true;
+}
+
 void PluginKingdomHeartsReCoded::refreshCutscene()
 {
 #if !REPLACEMENT_CUTSCENES_ENABLED
@@ -1002,7 +1027,6 @@ void PluginKingdomHeartsReCoded::refreshCutscene()
 
     bool isCutsceneScene = GameScene == gameScene_Cutscene;
     CutsceneEntry* cutscene = detectCutscene();
-    bool wasSaveLoaded = isSaveLoaded();
 
     if (_ReplayLimitCount > 0) {
         _ReplayLimitCount--;
@@ -1016,32 +1040,17 @@ void PluginKingdomHeartsReCoded::refreshCutscene()
         onIngameCutsceneIdentified(cutscene);
     }
 
-    bool cutsceneEnded = !isCutsceneScene || _NextCutscene != nullptr;
-
     // Natural progression for all cutscenes
     if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
         _ShouldStartReplacementCutscene = true;
     }
 
-    if (wasSaveLoaded) { // In game cutscenes (starting from Day 7)
-        
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && cutsceneEnded) {
-            onTerminateIngameCutscene();
-        }
-
-        if (_ShouldReturnToGameAfterCutscene && (cutsceneEnded || _IsUnskippableCutscene)) {
-            onReturnToGameAfterCutscene();
-        }
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didIngameCutsceneEnded()) {
+        onTerminateIngameCutscene();
     }
-    else { // Intro when waiting on the title screen, theater, and cutscenes before Day 7
 
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && !isCutsceneScene) {
-            onTerminateIngameCutscene();
-        }
-
-        if (_ShouldReturnToGameAfterCutscene) {
-            onReturnToGameAfterCutscene();
-        }
+    if (_ShouldReturnToGameAfterCutscene && canReturnToGameAfterReplacementCutscene()) {
+        onReturnToGameAfterCutscene();
     }
 }
 
