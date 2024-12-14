@@ -42,7 +42,7 @@ public:
     void onLoadState();
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
-    bool applyTouchKeyMask(u32 TouchKeyMask);
+    void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching);
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene);
     std::string localizationFilePath(std::string language);

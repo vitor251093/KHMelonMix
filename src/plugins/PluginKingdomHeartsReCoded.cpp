@@ -523,15 +523,14 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
 }
 
-bool PluginKingdomHeartsReCoded::applyTouchKeyMask(u32 TouchKeyMask)
+void PluginKingdomHeartsReCoded::applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching)
 {
     if (GameScene == -1)
     {
-        return false;
+        return;
     }
 
-    nds->SetTouchKeyMask(TouchKeyMask, true);
-    return true;
+    _superApplyTouchKeyMask(TouchKeyMask, 3, true, touchX, touchY, isTouching);
 }
 
 void PluginKingdomHeartsReCoded::hudToggle()

@@ -182,7 +182,6 @@ void EmuThread::run()
 
         auto nds = emuInstance->getNDS();
         auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
-        bool wasTouchKeyMaskApplied = false;
         if (rom != nullptr) {
             u32 gamecode = rom->GetHeader().GameCodeAsU32();
             if (emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode)
@@ -209,7 +208,7 @@ void EmuThread::run()
                 printf("Loading plugin %s for game code %u\n", typeid(*emuInstance->plugin).name(), gamecode);
             }
 
-            wasTouchKeyMaskApplied = emuInstance->plugin->applyTouchKeyMask(emuInstance->touchInputMask);
+            emuInstance->plugin->applyTouchKeyMask(emuInstance->touchInputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching);
             emuInstance->plugin->applyHotkeyToInputMask(&emuInstance->inputMask, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
         }
 
@@ -309,13 +308,10 @@ void EmuThread::run()
 
             emuInstance->nds->SetKeyMask(emuInstance->inputMask);
 
-            if (!wasTouchKeyMaskApplied)
-            {
-                if (emuInstance->isTouching)
-                    emuInstance->nds->TouchScreen(emuInstance->touchX, emuInstance->touchY);
-                else
-                    emuInstance->nds->ReleaseScreen();
-            }
+            if (emuInstance->isTouching)
+                emuInstance->nds->TouchScreen(emuInstance->touchX, emuInstance->touchY);
+            else
+                emuInstance->nds->ReleaseScreen();
 
             if (emuInstance->hotkeyPressed(HK_Lid))
             {

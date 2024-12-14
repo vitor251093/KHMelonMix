@@ -41,7 +41,7 @@ public:
     void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb);
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
-    bool applyTouchKeyMask(u32 TouchKeyMask);
+    void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching);
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene);
     std::string localizationFilePath(std::string language);

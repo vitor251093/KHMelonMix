@@ -36,9 +36,8 @@ public:
             return;
         }
     }
-    bool applyTouchKeyMask(u32 TouchKeyMask) {
-        nds->SetTouchKeyMask(TouchKeyMask, true);
-        return true;
+    void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching) {
+        _superApplyTouchKeyMask(TouchKeyMask, 3, true, touchX, touchY, isTouching);
     }
 
     const char* getGameSceneName() {

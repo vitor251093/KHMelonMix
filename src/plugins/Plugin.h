@@ -223,7 +223,79 @@ public:
         return true;
     }
     virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
-    virtual bool applyTouchKeyMask(u32 TouchKeyMask) = 0;
+
+    void _superApplyTouchKeyMask(u32 TouchKeyMask, u16 strength, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching)
+    {
+        u16 rStrength = 4 - strength;
+        u16 right = ((~TouchKeyMask) & 0xF) >> rStrength;
+        u16 left  = (((~TouchKeyMask) >> 4)  & 0xF) >> rStrength;
+        u16 down  = (((~TouchKeyMask) >> 8)  & 0xF) >> rStrength;
+        u16 up    = (((~TouchKeyMask) >> 12) & 0xF) >> rStrength;
+
+        u16 TouchX = *touchX;
+        u16 TouchY = *touchY;
+        bool resetTouchScreen = left == 0 && right == 0 && up == 0 && down == 0;
+        if (*isTouching == false) {
+            TouchX = 256/2;
+            TouchY = 192/2;
+            *isTouching = true;
+        }
+
+        if (left)
+        {
+            if (TouchX <= left)
+            {
+                resetTouchScreen = resetOnEdge;
+            }
+            else
+            {
+                TouchX -= left;
+            }
+        }
+        if (right)
+        {
+            if (TouchX + right >= 255)
+            {
+                resetTouchScreen = resetOnEdge;
+            }
+            else
+            {
+                TouchX += right;
+            }
+        }
+        if (down)
+        {
+            if (TouchY <= down)
+            {
+                resetTouchScreen = resetOnEdge;
+            }
+            else
+            {
+                TouchY -= down;
+            }
+        }
+        if (up)
+        {
+            if (TouchY + up >= 191)
+            {
+                resetTouchScreen = resetOnEdge;
+            }
+            else
+            {
+                TouchY += up;
+            }
+        }
+
+        if (resetTouchScreen)
+        {
+            *isTouching = false;
+        }
+        else {
+            *touchX = TouchX;
+            *touchY = TouchY;
+        }
+    }
+    virtual void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching) = 0;
 
     bool shouldExportTextures() {
         return ExportTextures;
