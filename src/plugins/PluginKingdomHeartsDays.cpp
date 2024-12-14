@@ -991,6 +991,10 @@ u32 PluginKingdomHeartsDays::getMobiCutsceneAddress(CutsceneEntry* entry)
 
 CutsceneEntry* PluginKingdomHeartsDays::getMobiCutsceneByAddress(u32 cutsceneAddressValue)
 {
+    if (cutsceneAddressValue == 0) {
+        return nullptr;
+    }
+
     CutsceneEntry* cutscene1 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
         if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {

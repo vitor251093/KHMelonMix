@@ -816,6 +816,10 @@ u32 PluginKingdomHeartsReCoded::getMobiCutsceneAddress(CutsceneEntry* entry)
 
 CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutsceneAddressValue)
 {
+    if (cutsceneAddressValue == 0) {
+        return nullptr;
+    }
+
     CutsceneEntry* cutscene1 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
         if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {
