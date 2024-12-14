@@ -234,8 +234,22 @@ public:
 
         u16 TouchX = *touchX;
         u16 TouchY = *touchY;
-        bool resetTouchScreen = left == 0 && right == 0 && up == 0 && down == 0;
+        bool noMovement = left == 0 && right == 0 && up == 0 && down == 0;
+        if (noMovement) {
+            if (_LastTouchScreenMovementWasByPlugin) {
+                *isTouching = false;
+                _LastTouchScreenMovementWasByPlugin = false;
+                return;
+            }
+            return;
+        }
+
+        bool resetTouchScreen = false;
         if (*isTouching == false) {
+            if (noMovement) {
+                return;
+            }
+
             TouchX = 256/2;
             TouchY = 192/2;
             *isTouching = true;
@@ -294,6 +308,7 @@ public:
             *touchX = TouchX;
             *touchY = TouchY;
         }
+        _LastTouchScreenMovementWasByPlugin = true;
     }
     virtual void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching) = 0;
 
@@ -793,6 +808,8 @@ protected:
     bool DisableEnhancedGraphics = false;
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
+
+    bool _LastTouchScreenMovementWasByPlugin;
 
     int _FastForwardPressCount;
     int _StartPressCount;
