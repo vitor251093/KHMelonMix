@@ -601,9 +601,6 @@ struct Variant
 
 void ComputeRenderer::RenderFrame(GPU& gpu)
 {
-    // TODO: Update compute renderer aspect ratio
-    // glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
-
     assert(!NeedsShaderCompile());
     if (!Texcache.Update(gpu) && gpu.GPU3D.RenderFrameIdentical)
     {
