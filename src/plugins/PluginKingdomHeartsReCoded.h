@@ -99,8 +99,8 @@ private:
     bool getBoolByCart(bool usAddress, bool euAddress, bool jpAddress);
 
     u32 getMobiCutsceneAddress(CutsceneEntry* entry);
+    CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue);
     u32 detectTopScreenMobiCutsceneAddress();
-    CutsceneEntry* detectTopScreenMobiCutscene();
     bool isCutsceneGameScene();
     bool didMobiCutsceneEnded();
     bool canReturnToGameAfterReplacementCutscene();

@@ -814,6 +814,18 @@ u32 PluginKingdomHeartsReCoded::getMobiCutsceneAddress(CutsceneEntry* entry)
     return getU32ByCart(entry->usAddress, entry->euAddress, entry->jpAddress);
 }
 
+CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutsceneAddressValue)
+{
+    CutsceneEntry* cutscene1 = nullptr;
+    for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
+        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {
+            cutscene1 = entry;
+        }
+    }
+
+    return cutscene1;
+}
+
 u32 PluginKingdomHeartsReCoded::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress)
 {
     u32 cutsceneAddress = 0;
@@ -862,32 +874,6 @@ bool PluginKingdomHeartsReCoded::getBoolByCart(bool usAddress, bool euAddress, b
 u32 PluginKingdomHeartsReCoded::detectTopScreenMobiCutsceneAddress()
 {
     return getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
-}
-
-CutsceneEntry* PluginKingdomHeartsReCoded::detectTopScreenMobiCutscene()
-{
-    if (GameScene == -1)
-    {
-        return nullptr;
-    }
-
-    u32 cutsceneAddressValue = 0;
-    u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
-    if (cutsceneAddress != 0) {
-        cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
-        if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
-            cutsceneAddressValue = 0;
-        }
-    }
-
-    CutsceneEntry* cutscene1 = nullptr;
-    for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {
-            cutscene1 = entry;
-        }
-    }
-
-    return cutscene1;
 }
 
 bool PluginKingdomHeartsReCoded::isCutsceneGameScene()

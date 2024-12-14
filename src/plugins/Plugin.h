@@ -397,10 +397,46 @@ public:
     }
     CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
 
+    virtual CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
     virtual u32 detectTopScreenMobiCutsceneAddress() {return 0;};
     virtual u32 detectBottomScreenMobiCutsceneAddress() {return 0;};
-    virtual CutsceneEntry* detectTopScreenMobiCutscene() {return nullptr;};
-    virtual CutsceneEntry* detectBottomScreenMobiCutscene() {return nullptr;};
+    CutsceneEntry* detectTopScreenMobiCutscene()
+    {
+        if (GameScene == -1)
+        {
+            return nullptr;
+        }
+
+        u32 cutsceneAddressValue = 0;
+        u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
+        if (cutsceneAddress != 0) {
+            cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
+            if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
+                cutsceneAddressValue = 0;
+            }
+        }
+
+        return getMobiCutsceneByAddress(cutsceneAddressValue);
+    }
+
+    CutsceneEntry* detectBottomScreenMobiCutscene()
+    {
+        if (GameScene == -1)
+        {
+            return nullptr;
+        }
+
+        u32 cutsceneAddressValue2 = 0;
+        u32 cutsceneAddress2 = detectBottomScreenMobiCutsceneAddress();
+        if (cutsceneAddress2 != 0) {
+            cutsceneAddressValue2 = nds->ARM7Read32(cutsceneAddress2);
+            if (cutsceneAddressValue2 == 0 || (cutsceneAddressValue2 - (cutsceneAddressValue2 & 0xFF)) == 0xea000000) {
+                cutsceneAddressValue2 = 0;
+            }
+        }
+
+        return getMobiCutsceneByAddress(cutsceneAddressValue2);
+    }
     CutsceneEntry* detectCutscene()
     {
         CutsceneEntry* cutscene1 = detectTopScreenMobiCutscene();
