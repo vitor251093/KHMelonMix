@@ -224,9 +224,9 @@ public:
     }
     virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
 
-    void _superApplyTouchKeyMask(u32 TouchKeyMask, u16 strength, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching)
+    void _superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching)
     {
-        u16 rStrength = 4 - strength;
+        u16 rStrength = 4 - sensitivity;
         u16 right = ((~TouchKeyMask) & 0xF) >> rStrength;
         u16 left  = (((~TouchKeyMask) >> 4)  & 0xF) >> rStrength;
         u16 down  = (((~TouchKeyMask) >> 8)  & 0xF) >> rStrength;
