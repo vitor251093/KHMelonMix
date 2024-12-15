@@ -148,170 +148,13 @@ public:
 
     virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {};
 
-    bool togglePause()
-    {
-        if (_RunningReplacementCutscene) {
-            if (_PausedReplacementCutscene) {
-                _ShouldUnpauseReplacementCutscene = true;
-            }
-            else {
-                _ShouldPauseReplacementCutscene = true;
-            }
-            return true;
-        }
-        if (_RunningReplacementBgmMusic) {
-            if (_PausedReplacementBgmMusic) {
-                _ShouldUnpauseReplacementBgmMusic = true;
-            }
-            else {
-                _ShouldPauseReplacementBgmMusic = true;
-            }
-        }
-        return false;
-    }
+    bool togglePause();
 
-    bool _superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
-    {
-        ramSearch(nds, *HotkeyPress);
-
-        if (_IsUnskippableCutscene)
-        {
-            *InputMask = 0xFFF;
-            return false;
-        }
-
-        if (_RunningReplacementCutscene && !_PausedReplacementCutscene && (_SkipDsCutscene || (~(*InputMask)) & (1 << 3)) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
-            _SkipDsCutscene = true;
-            if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
-                _SkipDsCutscene = false;
-                _CanSkipHdCutscene = false;
-                _ShouldStopReplacementCutscene = true;
-                *InputMask |= (1<<3);
-            }
-            else {
-                if (_StartPressCount == 0) {
-                    bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
-                    if (requiresDoubleStart) {
-                        _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT*2 + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT;
-                    }
-                    else {
-                        _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
-                    }
-                }
-            }
-        }
-
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
-            if (_StartPressCount > 0) {
-                _StartPressCount--;
-
-                bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
-                if (requiresDoubleStart) {
-                    if (_StartPressCount < CUTSCENE_SKIP_START_FRAMES_COUNT || _StartPressCount > CUTSCENE_SKIP_START_FRAMES_COUNT + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT) {
-                        *InputMask &= ~(1<<3); // Start (skip DS cutscene)
-                    }
-                }
-                else {
-                    *InputMask &= ~(1<<3); // Start (skip DS cutscene)
-                }
-            }
-        }
-
-        if ((*HotkeyPress) & (1 << 18)) { // HUD Toggle (HK_HUDToggle)
-            hudToggle();
-        }
-
-        return true;
-    }
+    bool _superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
 
     virtual bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {return false;}
-    void _superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching)
-    {
-        u16 rStrength = 4 - sensitivity;
-        u16 right = ((~TouchKeyMask) & 0xF) >> rStrength;
-        u16 left  = (((~TouchKeyMask) >> 4)  & 0xF) >> rStrength;
-        u16 down  = (((~TouchKeyMask) >> 8)  & 0xF) >> rStrength;
-        u16 up    = (((~TouchKeyMask) >> 12) & 0xF) >> rStrength;
-
-        u16 TouchX = *touchX;
-        u16 TouchY = *touchY;
-        bool noMovement = left == 0 && right == 0 && up == 0 && down == 0;
-        if (noMovement) {
-            if (_LastTouchScreenMovementWasByPlugin) {
-                *isTouching = false;
-                _LastTouchScreenMovementWasByPlugin = false;
-                return;
-            }
-            return;
-        }
-
-        bool resetTouchScreen = false;
-        if (*isTouching == false) {
-            if (noMovement) {
-                return;
-            }
-
-            TouchX = 256/2;
-            TouchY = 192/2;
-            *isTouching = true;
-        }
-
-        if (left)
-        {
-            if (TouchX <= left)
-            {
-                resetTouchScreen = resetOnEdge;
-            }
-            else
-            {
-                TouchX -= left;
-            }
-        }
-        if (right)
-        {
-            if (TouchX + right >= 255)
-            {
-                resetTouchScreen = resetOnEdge;
-            }
-            else
-            {
-                TouchX += right;
-            }
-        }
-        if (down)
-        {
-            if (TouchY <= down)
-            {
-                resetTouchScreen = resetOnEdge;
-            }
-            else
-            {
-                TouchY -= down;
-            }
-        }
-        if (up)
-        {
-            if (TouchY + up >= 191)
-            {
-                resetTouchScreen = resetOnEdge;
-            }
-            else
-            {
-                TouchY += up;
-            }
-        }
-
-        if (resetTouchScreen)
-        {
-            *isTouching = false;
-        }
-        else {
-            *touchX = TouchX;
-            *touchY = TouchY;
-        }
-        _LastTouchScreenMovementWasByPlugin = true;
-    }
+    void _superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching);
     virtual void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching) = 0;
 
     bool shouldExportTextures() {
@@ -321,545 +164,93 @@ public:
         return FullscreenOnStartup;
     }
 
-    void initCutsceneVariables() {
-        _StartPressCount = 0;
-        _ReplayLimitCount = 0;
-        _CanSkipHdCutscene = false;
-        _SkipDsCutscene = false;
-        _IsUnskippableCutscene = false;
-        _StartedReplacementCutscene = false;
-        _RunningReplacementCutscene = false;
-        _PausedReplacementCutscene = false;
-        _ShouldTerminateIngameCutscene = false;
-        _StoppedIngameCutscene = false;
-        _ShouldStartReplacementCutscene = false;
-        _ShouldPauseReplacementCutscene = false;
-        _ShouldUnpauseReplacementCutscene = false;
-        _ShouldStopReplacementCutscene = false;
-        _ShouldReturnToGameAfterCutscene = false;
-        _ShouldUnmuteAfterCutscene = false;
-        _ShouldHideScreenForTransitions = false;
-        _CurrentCutscene = nullptr;
-        _NextCutscene = nullptr;
-        _LastCutscene = nullptr;
-    }
-    bool ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
-    bool StoppedIngameCutscene() {
-        if (_StoppedIngameCutscene) {
-            _StoppedIngameCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldStartReplacementCutscene() {
-        if (_ShouldStartReplacementCutscene) {
-            _ShouldStartReplacementCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool StartedReplacementCutscene() {
-        if (_StartedReplacementCutscene) {
-            _StartedReplacementCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool RunningReplacementCutscene() {return _RunningReplacementCutscene;}
-    bool ShouldPauseReplacementCutscene() {
-        if (_ShouldPauseReplacementCutscene) {
-            _ShouldPauseReplacementCutscene = false;
-            _PausedReplacementCutscene = true;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldUnpauseReplacementCutscene() {
-        if (_ShouldUnpauseReplacementCutscene) {
-            _ShouldUnpauseReplacementCutscene = false;
-            _PausedReplacementCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldStopReplacementCutscene() {
-        if (_ShouldStopReplacementCutscene) {
-            _ShouldStopReplacementCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
-    bool ShouldUnmuteAfterCutscene() {
-        if (_ShouldUnmuteAfterCutscene) {
-            _ShouldUnmuteAfterCutscene = false;
-            return true;
-        }
-        return false;
-    }
-    CutsceneEntry* CurrentCutscene() {return _CurrentCutscene;};
+    void initCutsceneVariables();
+    bool ShouldTerminateIngameCutscene();
+    bool StoppedIngameCutscene();
+    bool ShouldStartReplacementCutscene();
+    bool StartedReplacementCutscene();
+    bool RunningReplacementCutscene();
+    bool ShouldPauseReplacementCutscene();
+    bool ShouldUnpauseReplacementCutscene();
+    bool ShouldStopReplacementCutscene();
+    bool ShouldReturnToGameAfterCutscene();
+    bool ShouldUnmuteAfterCutscene();
+    CutsceneEntry* CurrentCutscene();
 
     virtual CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
     virtual u32 detectTopScreenMobiCutsceneAddress() {return 0;};
     virtual u32 detectBottomScreenMobiCutsceneAddress() {return 0;};
-    CutsceneEntry* detectTopScreenMobiCutscene()
-    {
-        if (GameScene == -1)
-        {
-            return nullptr;
-        }
-
-        u32 cutsceneAddressValue = 0;
-        u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
-        if (cutsceneAddress != 0) {
-            cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
-            if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
-                cutsceneAddressValue = 0;
-            }
-        }
-
-        return getMobiCutsceneByAddress(cutsceneAddressValue);
-    }
-
-    CutsceneEntry* detectBottomScreenMobiCutscene()
-    {
-        if (GameScene == -1)
-        {
-            return nullptr;
-        }
-
-        u32 cutsceneAddressValue2 = 0;
-        u32 cutsceneAddress2 = detectBottomScreenMobiCutsceneAddress();
-        if (cutsceneAddress2 != 0) {
-            cutsceneAddressValue2 = nds->ARM7Read32(cutsceneAddress2);
-            if (cutsceneAddressValue2 == 0 || (cutsceneAddressValue2 - (cutsceneAddressValue2 & 0xFF)) == 0xea000000) {
-                cutsceneAddressValue2 = 0;
-            }
-        }
-
-        return getMobiCutsceneByAddress(cutsceneAddressValue2);
-    }
-    CutsceneEntry* detectCutscene()
-    {
-        CutsceneEntry* cutscene1 = detectTopScreenMobiCutscene();
-        CutsceneEntry* cutscene2 = detectBottomScreenMobiCutscene();
-
-        if (cutscene1 == nullptr && cutscene2 != nullptr) {
-            cutscene1 = cutscene2;
-        }
-
-        return cutscene1;
-    }
+    CutsceneEntry* detectTopScreenMobiCutscene();
+    CutsceneEntry* detectBottomScreenMobiCutscene();
+    CutsceneEntry* detectCutscene();
     virtual bool isCutsceneGameScene() {return false;};
     virtual bool didMobiCutsceneEnded() {return !isCutsceneGameScene();};
     virtual bool canReturnToGameAfterReplacementCutscene() {return true;};
 
-    void refreshCutscene()
-    {
-#if !REPLACEMENT_CUTSCENES_ENABLED
-        return;
-#endif
-
-        bool isCutsceneScene = isCutsceneGameScene();
-        CutsceneEntry* cutscene = detectCutscene();
-
-        if (_ReplayLimitCount > 0) {
-            _ReplayLimitCount--;
-            if (cutscene != nullptr && cutscene->usAddress == _LastCutscene->usAddress) {
-                cutscene = nullptr;
-            }
-        }
-
-        
-        if (cutscene != nullptr) {
-            onIngameCutsceneIdentified(cutscene);
-        }
-
-        // Natural progression for all cutscenes
-        if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
-            _ShouldStartReplacementCutscene = true;
-        }
-
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didMobiCutsceneEnded()) {
-            onTerminateIngameCutscene();
-        }
-
-        if (_ShouldReturnToGameAfterCutscene && canReturnToGameAfterReplacementCutscene()) {
-            onReturnToGameAfterCutscene();
-        }
-    }
+    void refreshCutscene();
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     virtual std::string localizationFilePath(std::string language) {return "";}
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
-    void onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
-        if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
-            return;
-        }
-
-        std::string path = replacementCutsceneFilePath(cutscene);
-        if (path == "") {
-            return;
-        }
-
-        if (_CurrentCutscene != nullptr) {
-            _NextCutscene = cutscene;
-            return;
-        }
-
-        printf("Preparing to load cutscene: %s\n", cutscene->Name);
-
-        _CanSkipHdCutscene = true;
-        _CurrentCutscene = cutscene;
-        _NextCutscene = nullptr;
-        _ShouldTerminateIngameCutscene = true;
-        _IsUnskippableCutscene = isUnskippableMobiCutscene(cutscene);
-    }
-    void onTerminateIngameCutscene() {
-        if (_CurrentCutscene == nullptr) {
-            return;
-        }
-        printf("Ingame cutscene terminated\n");
-        _ShouldTerminateIngameCutscene = false;
-        _StoppedIngameCutscene = true;
-
-        if (_IsUnskippableCutscene) {
-            _StoppedIngameCutscene = false;
-        }
-    }
-    void onReplacementCutsceneStarted() {
-        printf("Cutscene started\n");
-        _ShouldStartReplacementCutscene = false;
-        _StartedReplacementCutscene = true;
-        _RunningReplacementCutscene = true;
-    }
-
-    void onReplacementCutsceneEnd() {
-        printf("Replacement cutscene ended\n");
-        _StartedReplacementCutscene = false;
-        _RunningReplacementCutscene = false;
-        _ShouldStopReplacementCutscene = false;
-        _ShouldReturnToGameAfterCutscene = true;
-        _ShouldHideScreenForTransitions = false;
-    }
-    void onReturnToGameAfterCutscene() {
-        printf("Returning to the game\n");
-        _StartPressCount = 0;
-        _IsUnskippableCutscene = false;
-        _ShouldStartReplacementCutscene = false;
-        _StartedReplacementCutscene = false;
-        _RunningReplacementCutscene = false;
-        _ShouldReturnToGameAfterCutscene = false;
-        _ShouldUnmuteAfterCutscene = true;
-
-        _LastCutscene = _CurrentCutscene;
-        _CurrentCutscene = nullptr;
-        _ReplayLimitCount = 30;
-
-        if (_NextCutscene == nullptr) {
-            u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
-            if (cutsceneAddress != 0) {
-                nds->ARM7Write32(cutsceneAddress, 0x0);
-            }
-
-            u32 cutsceneAddress2 = detectBottomScreenMobiCutsceneAddress();
-            if (cutsceneAddress2 != 0) {
-                nds->ARM7Write32(cutsceneAddress2, 0x0);
-            }
-        }
-    }
+    void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
+    void onTerminateIngameCutscene();
+    void onReplacementCutsceneStarted();
+    void onReplacementCutsceneEnd();
+    void onReturnToGameAfterCutscene();
 
 
-    void initBgmVariables() {
-        _CurrentBackgroundMusic = 0;
-        _LastSoundtrackId = 0;
-        _PausedReplacementBgmMusic = false;
-        _ShouldPauseReplacementBgmMusic = false;
-        _ShouldUnpauseReplacementBgmMusic = false;
-    }
-    bool ShouldStartReplacementBgmMusic() {
-        if (_ShouldStartReplacementBgmMusic) {
-            _ShouldStartReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    int delayBeforeStartReplacementBackgroundMusic() {return 0;}
-    bool StartedReplacementBgmMusic() {
-        if (_StartedReplacementBgmMusic) {
-            _StartedReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    bool RunningReplacementBgmMusic() {return _RunningReplacementBgmMusic;}
-    bool ShouldPauseReplacementBgmMusic() {
-        if (_ShouldPauseReplacementBgmMusic) {
-            _ShouldPauseReplacementBgmMusic = false;
-            _PausedReplacementBgmMusic = true;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldUnpauseReplacementBgmMusic() {
-        if (_ShouldUnpauseReplacementBgmMusic) {
-            _ShouldUnpauseReplacementBgmMusic = false;
-            _PausedReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldStopReplacementBgmMusic() {
-        if (_ShouldStopReplacementBgmMusic) {
-            _ShouldStopReplacementBgmMusic = false;
-            return true;
-        }
-        return false;
-    }
-    u16 CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
+    void initBgmVariables();
+    bool ShouldStartReplacementBgmMusic();
+    int delayBeforeStartReplacementBackgroundMusic();
+    bool StartedReplacementBgmMusic();
+    bool RunningReplacementBgmMusic();
+    bool ShouldPauseReplacementBgmMusic();
+    bool ShouldUnpauseReplacementBgmMusic();
+    bool ShouldStopReplacementBgmMusic();
+    u16 CurrentBackgroundMusic();
 
     virtual std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
 
-    void onReplacementBackgroundMusicStarted() {
-        printf("Background music started\n");
-        _ShouldStartReplacementBgmMusic = false;
-        _StartedReplacementBgmMusic = true;
-        _RunningReplacementBgmMusic = true;
-    }
+    void onReplacementBackgroundMusicStarted();
 
     virtual void refreshBackgroundMusic() {}
 
 
     virtual void refreshMouseStatus() {}
 
-    bool ShouldGrabMouseCursor() {
-        if (_ShouldGrabMouseCursor) {
-            _ShouldGrabMouseCursor = false;
-            _MouseCursorIsGrabbed = true;
-            return true;
-        }
-        return false;
-    }
-    bool ShouldReleaseMouseCursor() {
-        if (_ShouldReleaseMouseCursor) {
-            _ShouldReleaseMouseCursor = false;
-            _MouseCursorIsGrabbed = false;
-            return true;
-        }
-        return false;
-    }
-    bool isMouseCursorGrabbed() {
-        return _MouseCursorIsGrabbed;
-    }
+    bool ShouldGrabMouseCursor();
+    bool ShouldReleaseMouseCursor();
+    bool isMouseCursorGrabbed();
 
 
     virtual const char* getGameSceneName() = 0;
 
-    bool _superShouldRenderFrame()
-    {
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene)
-        {
-            return false;
-        }
-
-        return true;
-    }
+    bool _superShouldRenderFrame();
     virtual bool shouldRenderFrame() {
         return _superShouldRenderFrame();
     }
 
     virtual int detectGameScene() {return -1;}
-    bool setGameScene(int newGameScene)
-    {
-        bool updated = false;
-        if (GameScene != newGameScene) 
-        {
-            updated = true;
-
-            // Game scene
-            PriorGameScene = GameScene;
-            GameScene = newGameScene;
-        }
-
-        return updated;
-    }
-    bool refreshGameScene()
-    {
-        int newGameScene = detectGameScene();
-        
-        debugLogs(newGameScene);
-
-        bool updated = setGameScene(newGameScene);
-
-        refreshCutscene();
-
-        refreshBackgroundMusic();
-
-        refreshMouseStatus();
-
-        return updated;
-    }
+    bool setGameScene(int newGameScene);
+    bool refreshGameScene();
 
     virtual u32 getAspectRatioAddress() {return 0;}
-    virtual void setAspectRatio(float aspectRatio)
-    {
-        if (GameScene != -1)
-        {
-            int aspectRatioKey = (int)round(0x1000 * aspectRatio);
+    virtual void setAspectRatio(float aspectRatio);
 
-            u32 aspectRatioMenuAddress = getAspectRatioAddress();
-
-            if (aspectRatioMenuAddress != 0 && nds->ARM7Read16(aspectRatioMenuAddress) == 0x00001555) {
-                nds->ARM7Write16(aspectRatioMenuAddress, aspectRatioKey);
-            }
-        }
-
-        AspectRatio = aspectRatio;
-    }
-
-    void _superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
-    {
-        std::string root = tomlUniqueIdentifier();
-        DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
-        ExportTextures = getBoolConfig(root + ".ExportTextures");
-        FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
-    }
-    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
-    {
-        _superLoadConfigs(getBoolConfig, getStringConfig);
-    }
+    void _superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
+    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
 
     virtual void hudToggle() {}
 
     virtual void debugLogs(int gameScene) {}
 
-    void log(const char* log) {
-        printf("%s\n", log);
-
-        if (DEBUG_LOG_FILE_ENABLED) {
-            std::string fileName = std::string("debug.log");
-            Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::Append);
-            Platform::FileWrite(log, strlen(log), 1, logf);
-            Platform::FileWrite("\n", 1, 1, logf);
-            Platform::CloseFile(logf);
-        }
-    }
+    void log(const char* log);
 
     u32 LastMainRAM[0xFFFFFF];
     bool MainRAMState[0xFFFFFF];
 
-    void ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
-#if !RAM_SEARCH_ENABLED
-        return;
-#endif
-
-        int byteSize = RAM_SEARCH_SIZE/8;
-        u32 limitMin = RAM_SEARCH_LIMIT_MIN;
-        u32 limitMax = RAM_SEARCH_LIMIT_MAX;
-        if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
-            if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
-                printf("Resetting RAM search\n");
-            }
-            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                u32 addr = (0x02000000 | index);
-                u32 newVal = RAM_SEARCH_READ(nds, addr);
-                MainRAMState[index] = true;
-#ifdef RAM_SEARCH_EXACT_VALUE
-                MainRAMState[index] = RAM_SEARCH_EXACT_VALUE == newVal;
-#endif
-#ifdef RAM_SEARCH_EXACT_VALUE_MIN
-                if (newVal < RAM_SEARCH_EXACT_VALUE_MIN) {
-                    MainRAMState[index] = false;
-                }
-#endif
-#ifdef RAM_SEARCH_EXACT_VALUE_MAX
-                if (newVal > RAM_SEARCH_EXACT_VALUE_MAX) {
-                    MainRAMState[index] = false;
-                }
-#endif
-                LastMainRAM[index] = newVal;
-            }
-        }
-        if (HotkeyPress & (1 << 13)) { // HK_VolumeUp (filter RAM by equal values)
-            printf("Filtering RAM by equal values\n");
-            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                u32 addr = (0x02000000 | index);
-                u32 newVal = RAM_SEARCH_READ(nds, addr);
-                MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] == newVal);
-                LastMainRAM[index] = newVal;
-            }
-        }
-        if (HotkeyPress & (1 << 14)) { // HK_VolumeDown (filter RAM by different values)
-            printf("Filtering RAM by different values\n");
-            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                u32 addr = (0x02000000 | index);
-                u32 newVal = RAM_SEARCH_READ(nds, addr);
-                MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] != newVal);
-                LastMainRAM[index] = newVal;
-            }
-        }
-        if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
-            int total = 0;
-            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                if (MainRAMState[index]) {
-                    total += 1;
-                }
-            }
-            if (total > 0) {
-                if (total < 50*(4/byteSize)) {
-                    for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                        u32 addr = (0x02000000 | index);
-                        if (MainRAMState[index]) {
-                            printf("0x%08x: %d\n", addr, LastMainRAM[index]);
-                        }
-                    }
-                    printf("\n");
-                }
-                else {
-                    int validDistance = RAM_SEARCH_INTERVAL_MARGIN;
-                    u32 firstAddr = 0;
-                    u32 lastAddr = 0;
-                    for (u32 index = (limitMin == 0 ? byteSize : limitMin); index < limitMax; index += byteSize) {
-                        u32 addr = (0x02000000 | index);
-                        if (MainRAMState[index]) {
-                            if (firstAddr == 0) {
-                                firstAddr = addr;
-                                lastAddr = addr;
-                            }
-                            else {
-                                lastAddr = addr;
-                            }
-                        }
-                        else {
-                            if (firstAddr != 0 && lastAddr < (addr - byteSize*validDistance)) {
-                                if (firstAddr == lastAddr) {
-                                    printf("0x%08x\n", firstAddr);
-                                }
-                                else {
-                                    printf("0x%08x - 0x%08x\n", firstAddr, lastAddr);
-                                }
-                                firstAddr = 0;
-                                lastAddr = 0;
-                            }
-                        }
-                    }
-                    if (firstAddr != 0) {
-                        if (firstAddr == lastAddr) {
-                            printf("0x%08x\n", firstAddr);
-                        }
-                        else {
-                            printf("0x%08x - 0x%08x\n", firstAddr, lastAddr);
-                        }
-                    }
-                    printf("\n");
-                }
-            }
-            if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
-                printf("Addresses matching the search: %d\n", total);
-            }
-        }
-    }
+    void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
     melonDS::NDS* nds;
 

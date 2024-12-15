@@ -64,6 +64,7 @@ add_library(core STATIC
     fatfs/ffunicode.c
     fatfs/ffconf.h
 
+    plugins/Plugin.cpp
     plugins/PluginManager.cpp
     plugins/PluginKingdomHeartsDays.cpp
     plugins/PluginKingdomHeartsReCoded.cpp
