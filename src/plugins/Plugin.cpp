@@ -166,29 +166,6 @@ void Plugin::_superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool res
     _LastTouchScreenMovementWasByPlugin = true;
 }
 
-void Plugin::initCutsceneVariables() {
-    _StartPressCount = 0;
-    _ReplayLimitCount = 0;
-    _CanSkipHdCutscene = false;
-    _SkipDsCutscene = false;
-    _IsUnskippableCutscene = false;
-    _StartedReplacementCutscene = false;
-    _RunningReplacementCutscene = false;
-    _PausedReplacementCutscene = false;
-    _ShouldTerminateIngameCutscene = false;
-    _StoppedIngameCutscene = false;
-    _ShouldStartReplacementCutscene = false;
-    _ShouldPauseReplacementCutscene = false;
-    _ShouldUnpauseReplacementCutscene = false;
-    _ShouldStopReplacementCutscene = false;
-    _ShouldReturnToGameAfterCutscene = false;
-    _ShouldUnmuteAfterCutscene = false;
-    _ShouldHideScreenForTransitions = false;
-    _CurrentCutscene = nullptr;
-    _NextCutscene = nullptr;
-    _LastCutscene = nullptr;
-}
-
 bool Plugin::ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
 bool Plugin::StoppedIngameCutscene() {
     if (_StoppedIngameCutscene) {
@@ -406,13 +383,6 @@ void Plugin::onReturnToGameAfterCutscene() {
     }
 }
 
-void Plugin::initBgmVariables() {
-    _CurrentBackgroundMusic = 0;
-    _LastSoundtrackId = 0;
-    _PausedReplacementBgmMusic = false;
-    _ShouldPauseReplacementBgmMusic = false;
-    _ShouldUnpauseReplacementBgmMusic = false;
-}
 bool Plugin::ShouldStartReplacementBgmMusic() {
     if (_ShouldStartReplacementBgmMusic) {
         _ShouldStartReplacementBgmMusic = false;

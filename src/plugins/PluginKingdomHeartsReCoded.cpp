@@ -123,14 +123,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 {
     GameCode = gameCode;
 
-    AspectRatio = 0;
-    PriorGameScene = -1;
-    GameScene = -1;
-    HUDState = -1;
     hudToggle();
-
-    initCutsceneVariables();
-    initBgmVariables();
 
     priorMap = -1;
     Map = 0;

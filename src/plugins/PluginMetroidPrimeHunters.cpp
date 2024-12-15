@@ -16,13 +16,7 @@ PluginMetroidPrimeHunters::PluginMetroidPrimeHunters(u32 gameCode)
 {
     GameCode = gameCode;
 
-    PriorGameScene = -1;
-    GameScene = -1;
-    HUDState = -1;
     hudToggle();
-
-    initCutsceneVariables();
-    initBgmVariables();
 }
 
 void PluginMetroidPrimeHunters::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {

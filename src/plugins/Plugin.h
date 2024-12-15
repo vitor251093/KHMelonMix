@@ -164,7 +164,6 @@ public:
         return FullscreenOnStartup;
     }
 
-    void initCutsceneVariables();
     bool ShouldTerminateIngameCutscene();
     bool StoppedIngameCutscene();
     bool ShouldStartReplacementCutscene();
@@ -200,7 +199,6 @@ public:
     void onReturnToGameAfterCutscene();
 
 
-    void initBgmVariables();
     bool ShouldStartReplacementBgmMusic();
     int delayBeforeStartReplacementBackgroundMusic();
     bool StartedReplacementBgmMusic();
@@ -254,49 +252,48 @@ public:
 protected:
     melonDS::NDS* nds;
 
-    float AspectRatio;
-    int PriorGameScene;
-    int GameScene;
-    int HUDState;
+    float AspectRatio = 0;
+    int PriorGameScene = -1;
+    int GameScene = -1;
+    int HUDState = -1;
 
     bool DisableEnhancedGraphics = false;
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
 
-    bool _LastTouchScreenMovementWasByPlugin;
+    bool _LastTouchScreenMovementWasByPlugin = false;
 
-    int _FastForwardPressCount;
-    int _StartPressCount;
-    int _ReplayLimitCount;
-    bool _CanSkipHdCutscene;
-    bool _SkipDsCutscene;
-    bool _IsUnskippableCutscene;
-    bool _ShouldTerminateIngameCutscene;
-    bool _StoppedIngameCutscene;
-    bool _ShouldStartReplacementCutscene;
-    bool _StartedReplacementCutscene;
-    bool _RunningReplacementCutscene;
-    bool _PausedReplacementCutscene;
-    bool _ShouldPauseReplacementCutscene;
-    bool _ShouldUnpauseReplacementCutscene;
-    bool _ShouldStopReplacementCutscene;
-    bool _ShouldReturnToGameAfterCutscene;
-    bool _ShouldUnmuteAfterCutscene;
-    bool _ShouldHideScreenForTransitions;
-    CutsceneEntry* _CurrentCutscene;
-    CutsceneEntry* _NextCutscene;
-    CutsceneEntry* _LastCutscene;
+    int _StartPressCount = 0;
+    int _ReplayLimitCount = 0;
+    bool _CanSkipHdCutscene = false;
+    bool _SkipDsCutscene = false;
+    bool _IsUnskippableCutscene = false;
+    bool _ShouldTerminateIngameCutscene = false;
+    bool _StoppedIngameCutscene = false;
+    bool _ShouldStartReplacementCutscene = false;
+    bool _StartedReplacementCutscene = false;
+    bool _RunningReplacementCutscene = false;
+    bool _PausedReplacementCutscene = false;
+    bool _ShouldPauseReplacementCutscene = false;
+    bool _ShouldUnpauseReplacementCutscene = false;
+    bool _ShouldStopReplacementCutscene = false;
+    bool _ShouldReturnToGameAfterCutscene = false;
+    bool _ShouldUnmuteAfterCutscene = false;
+    bool _ShouldHideScreenForTransitions = false;
+    CutsceneEntry* _CurrentCutscene = nullptr;
+    CutsceneEntry* _NextCutscene = nullptr;
+    CutsceneEntry* _LastCutscene = nullptr;
 
 
-    bool _StartedReplacementBgmMusic;
-    bool _RunningReplacementBgmMusic;
-    bool _PausedReplacementBgmMusic;
-    bool _ShouldPauseReplacementBgmMusic;
-    bool _ShouldUnpauseReplacementBgmMusic;
-    bool _ShouldStartReplacementBgmMusic;
-    bool _ShouldStopReplacementBgmMusic;
-    u16 _CurrentBackgroundMusic;
-    u16 _LastSoundtrackId;
+    bool _StartedReplacementBgmMusic = false;
+    bool _RunningReplacementBgmMusic = false;
+    bool _PausedReplacementBgmMusic = false;
+    bool _ShouldPauseReplacementBgmMusic = false;
+    bool _ShouldUnpauseReplacementBgmMusic = false;
+    bool _ShouldStartReplacementBgmMusic = false;
+    bool _ShouldStopReplacementBgmMusic = false;
+    u16 _CurrentBackgroundMusic = 0;
+    u16 _LastSoundtrackId = 0;
 
 
     bool _ShouldGrabMouseCursor = false;
