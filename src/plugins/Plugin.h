@@ -224,6 +224,7 @@ public:
     }
     virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
 
+    virtual bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {return false;}
     void _superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching)
     {
         u16 rStrength = 4 - sensitivity;

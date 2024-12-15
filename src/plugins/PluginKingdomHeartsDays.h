@@ -41,6 +41,10 @@ public:
     void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb);
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
+
+    bool overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching);
+    bool overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching);
+    bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching);
     void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching);
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene);
