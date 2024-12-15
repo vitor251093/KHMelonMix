@@ -54,15 +54,7 @@ bool ComputeRenderer::CompileShader(GLuint& shader, const std::string& source, c
     shaderSource += ComputeRendererShaders::Common;
     shaderSource += source;
 
-    bool compiled = OpenGL::CompileComputeProgram(shader, shaderSource.c_str(), shaderName.c_str());
-    if (!compiled) return false;
-
-    // TODO: Get compute renderer aspect ratio location
-    // GLuint& shaderId = static_cast<GLuint&>(*shader);
-    GLint uni_id = glGetUniformLocation(shader, "TopScreenAspectRatio");
-    // RenderShaderAspectRatio[flags] = uni_id;
-
-    return compiled;
+    return OpenGL::CompileComputeProgram(shader, shaderSource.c_str(), shaderName.c_str());
 }
 
 void ComputeRenderer::ShaderCompileStep(int& current, int& count)
