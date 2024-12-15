@@ -3,6 +3,7 @@
 
 #define REPLACEMENT_CUTSCENES_ENABLED true
 #define REPLACEMENT_BGM_ENABLED true
+#define MOUSE_CURSOR_AS_CAMERA_ENABLED false
 
 #define SHOW_GAME_SCENE false
 #define DEBUG_MODE_ENABLED false
@@ -630,6 +631,29 @@ public:
     virtual void refreshBackgroundMusic() {}
 
 
+    virtual void refreshMouseStatus() {}
+
+    bool ShouldGrabMouseCursor() {
+        if (_ShouldGrabMouseCursor) {
+            _ShouldGrabMouseCursor = false;
+            _MouseCursorIsGrabbed = true;
+            return true;
+        }
+        return false;
+    }
+    bool ShouldReleaseMouseCursor() {
+        if (_ShouldReleaseMouseCursor) {
+            _ShouldReleaseMouseCursor = false;
+            _MouseCursorIsGrabbed = false;
+            return true;
+        }
+        return false;
+    }
+    bool isMouseCursorGrabbed() {
+        return _MouseCursorIsGrabbed;
+    }
+
+
     virtual const char* getGameSceneName() = 0;
 
     bool _superShouldRenderFrame()
@@ -671,6 +695,8 @@ public:
         refreshCutscene();
 
         refreshBackgroundMusic();
+
+        refreshMouseStatus();
 
         return updated;
     }
@@ -880,6 +906,11 @@ protected:
     bool _ShouldStopReplacementBgmMusic;
     u16 _CurrentBackgroundMusic;
     u16 _LastSoundtrackId;
+
+
+    bool _ShouldGrabMouseCursor = false;
+    bool _ShouldReleaseMouseCursor = false;
+    bool _MouseCursorIsGrabbed = false;
 
 };
 }

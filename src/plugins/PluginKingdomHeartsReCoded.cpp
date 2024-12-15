@@ -542,13 +542,11 @@ bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_singleScreen(int width
     }
 
     if (x < X0 || x > X1 || y < Y0 || y > Y1) {
-        touching = false;
         return true;
     }
 
     x = (255*(x - X0))/trueWidth;
     y = (192*(y - Y0))/trueHeight;
-    touching = true;
     return true;
 }
 bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching) {
@@ -588,11 +586,9 @@ bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_horizontalDualScreen(i
     x = (255*(x - X0))/trueWidth;
     y = (191*(y - Y0))/trueHeight;
     if (x < 0 || x > 255 || y < 0 || y > 191) {
-        touching = false;
         return true;
     }
 
-    touching = true;
     return true;
 }
 bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {

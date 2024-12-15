@@ -630,6 +630,30 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
 }
 
+bool PluginKingdomHeartsDays::overrideMouseTouchCoords_cameraControl(int width, int height, int& x, int& y, bool& touching) {
+    int centerX = width/2;
+    int centerY = height/2;
+    float sensitivity = 10.0;
+
+    if (abs(x - centerX) < 3) {
+        x = centerX;
+    }
+    if (abs(y - centerY) < 3) {
+        y = centerY;
+    }
+
+    if (x == centerX && y == centerY) {
+        touching = false;
+        x = 128;
+        y = 96;
+        return true;
+    }
+
+    touching = true;
+    x = 128 + (int)((x - centerX)*sensitivity);
+    y = 96 + (int)((y - centerY)*sensitivity);
+    return true;
+}
 bool PluginKingdomHeartsDays::overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching) {
     int X0 = 0;
     int Y0 = 0;
@@ -649,13 +673,11 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords_singleScreen(int width, i
     }
 
     if (x < X0 || x > X1 || y < Y0 || y > Y1) {
-        touching = false;
         return true;
     }
 
     x = (255*(x - X0))/trueWidth;
     y = (192*(y - Y0))/trueHeight;
-    touching = true;
     return true;
 }
 bool PluginKingdomHeartsDays::overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching) {
@@ -695,14 +717,17 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords_horizontalDualScreen(int 
     x = (255*(x - X0))/trueWidth;
     y = (191*(y - Y0))/trueHeight;
     if (x < 0 || x > 255 || y < 0 || y > 191) {
-        touching = false;
         return true;
     }
 
-    touching = true;
     return true;
 }
 bool PluginKingdomHeartsDays::overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {
+    if (GameScene == gameScene_InGameWithMap) {
+#if MOUSE_CURSOR_AS_CAMERA_ENABLED
+        return overrideMouseTouchCoords_cameraControl(width, height, x, y, touching);
+#endif
+    }
     if (GameScene == gameScene_InGameMenu) {
         u32 mainMenuView = getCurrentMainMenuView();
         if (mainMenuView != 6 && mainMenuView != 7) {
@@ -1339,6 +1364,18 @@ int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
         return 12500;
     }
     return 0;
+}
+
+void PluginKingdomHeartsDays::refreshMouseStatus() {
+#if !MOUSE_CURSOR_AS_CAMERA_ENABLED
+    return;
+#endif
+    if (GameScene == gameScene_InGameWithMap && !_MouseCursorIsGrabbed) {
+        _ShouldGrabMouseCursor = true;
+    }
+    if (PriorGameScene == gameScene_InGameWithMap && PriorGameScene != GameScene && _MouseCursorIsGrabbed) {
+        _ShouldReleaseMouseCursor = true;
+    }
 }
 
 std::string PluginKingdomHeartsDays::localizationFilePath(std::string language) {

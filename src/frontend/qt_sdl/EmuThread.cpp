@@ -431,7 +431,7 @@ void EmuThread::run()
             else if (!emuInstance->doLimitFPS) emuInstance->curFPS = 1000.0;
             else emuInstance->curFPS = emuInstance->targetFPS;
 
-            refreshPluginCutsceneState();
+            refreshPluginState();
 
             if (emuInstance->audioDSiVolumeSync && emuInstance->nds->ConsoleType == 1)
             {
@@ -522,7 +522,7 @@ void EmuThread::run()
             }
 
             if (emuInstance->plugin != nullptr) {
-                refreshPluginCutsceneState();
+                refreshPluginState();
             }
         }
 
@@ -750,7 +750,7 @@ void EmuThread::refreshPluginGameScene()
     }
 }
 
-void EmuThread::refreshPluginCutsceneState()
+void EmuThread::refreshPluginState()
 {
     bool enableInvisibleFastMode = false;
     bool disableInvisibleFastMode = false;
@@ -798,6 +798,22 @@ void EmuThread::refreshPluginCutsceneState()
     if (emuInstance->plugin->ShouldUnpauseReplacementBgmMusic()) {
         emit windowUnpauseBgmMusic();
     }
+
+
+    if (emuInstance->plugin->isMouseCursorGrabbed()) {
+        QPoint point = mainWindow->panel->mapToGlobal(mainWindow->panel->rect().center());
+        QCursor::setPos(point);
+    }
+    if (emuInstance->plugin->ShouldGrabMouseCursor()) {
+        mainWindow->panel->setMouseTracking(true);
+        mainWindow->panel->grabMouse();
+        mainWindow->panel->setCursor(Qt::BlankCursor);
+    }
+    if (emuInstance->plugin->ShouldReleaseMouseCursor()) {
+        mainWindow->panel->unsetCursor();
+        mainWindow->panel->releaseMouse();
+    }
+
 
     if (emuInstance->plugin->ShouldStopReplacementCutscene()) {
         emit windowStopVideo();

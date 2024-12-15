@@ -204,7 +204,7 @@ private:
 
     bool pluginShouldFastForward();
     void refreshPluginGameScene();
-    void refreshPluginCutsceneState();
+    void refreshPluginState();
 
     int lastVideoRenderer = -1;
 
