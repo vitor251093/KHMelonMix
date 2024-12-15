@@ -523,6 +523,85 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
 }
 
+bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching) {
+    int X0 = 0;
+    int Y0 = 0;
+    int X1 = width;
+    int Y1 = height;
+    int trueWidth = width;
+    int trueHeight = height;
+    if (AspectRatio * height < width) {
+        trueWidth = (int)(AspectRatio * height);
+        X0 = (width - trueWidth)/2;
+        X1 = X0 + trueWidth;
+    }
+    else if (width / AspectRatio < height) {
+        trueHeight = (int)(width / AspectRatio);
+        Y0 = (height - trueHeight)/2;
+        Y1 = Y0 + trueHeight;
+    }
+
+    if (x < X0 || x > X1 || y < Y0 || y > Y1) {
+        touching = false;
+        return true;
+    }
+
+    x = (255*(x - X0))/trueWidth;
+    y = (192*(y - Y0))/trueHeight;
+    touching = true;
+    return true;
+}
+bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching) {
+    int X0 = 0;
+    int Y0 = 0;
+    int X1 = width;
+    int Y1 = height;
+    int trueWidth = width;
+    int trueHeight = height;
+    if (AspectRatio * height < width) {
+        trueWidth = (int)(AspectRatio * height);
+        X0 = (width - trueWidth)/2;
+        X1 = X0 + trueWidth;
+    }
+    else if (width / AspectRatio < height) {
+        trueHeight = (int)(width / AspectRatio);
+        Y0 = (height - trueHeight)/2;
+        Y1 = Y0 + trueHeight;
+    }
+
+    width = trueWidth;
+    height = trueHeight;
+    trueWidth = trueWidth/2;
+    X0 = X0 + (invert ? 0 : trueWidth);
+    float innerAspectRatio = 4.0/3;
+    if (innerAspectRatio * trueHeight * 2 < width) {
+        trueWidth = (int)(innerAspectRatio * trueHeight);
+        X0 = X0 + (width - trueWidth*2)/2;
+        X1 = X0 + trueWidth;
+    }
+    else if (trueWidth / innerAspectRatio < height) {
+        trueHeight = (int)(trueWidth / innerAspectRatio);
+        Y0 = Y0 + (height - trueHeight)/2;
+        Y1 = Y0 + trueHeight;
+    }
+
+    x = (255*(x - X0))/trueWidth;
+    y = (191*(y - Y0))/trueHeight;
+    if (x < 0 || x > 255 || y < 0 || y > 191) {
+        touching = false;
+        return true;
+    }
+
+    touching = true;
+    return true;
+}
+bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {
+    if (GameScene == gameScene_InGameMenu) {
+        return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
+    }
+    return false;
+}
+
 void PluginKingdomHeartsReCoded::applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching)
 {
     if (GameScene == -1)
