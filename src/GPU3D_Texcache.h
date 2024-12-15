@@ -296,7 +296,7 @@ public:
             std::filesystem::path fullPath1 = assetsFolderPath / "textures" / filename1;
             std::filesystem::path fullPath2 = assetsFolderPath / "textures" / filename2;
             std::filesystem::path fullPath3 = assetsFolderPath / "textures" / filename3;
-            std::filesystem::path fullPathTmp = tmpFolderPath / filename1;
+            std::filesystem::path fullPathTmp = tmpFolderPath / filename2;
 #ifdef _WIN32
             const char* path1 = fullPath1.string().c_str();
             const char* path2 = fullPath2.string().c_str();
