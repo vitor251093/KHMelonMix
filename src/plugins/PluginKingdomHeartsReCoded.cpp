@@ -405,12 +405,12 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP);
-            u8 controlTypeOffset = getU8ByCart(INGAME_MENU_COMMAND_LIST_SETTING_VALUE_US,
-                                               INGAME_MENU_COMMAND_LIST_SETTING_VALUE_EU,
-                                               INGAME_MENU_COMMAND_LIST_SETTING_VALUE_JP);
+            u32 controlTypeOffset = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_VALUE_US,
+                                                 INGAME_MENU_COMMAND_LIST_SETTING_VALUE_EU,
+                                                 INGAME_MENU_COMMAND_LIST_SETTING_VALUE_JP);
 
-            if ((nds->ARM7Read8(dpadMenuAddress) & controlTypeOffset) == 0) {
-                nds->ARM7Write8(dpadMenuAddress, nds->ARM7Read8(dpadMenuAddress) | controlTypeOffset);
+            if ((nds->ARM7Read32(dpadMenuAddress) & controlTypeOffset) == 0) {
+                nds->ARM7Write32(dpadMenuAddress, nds->ARM7Read32(dpadMenuAddress) | controlTypeOffset);
             }
         }
 
