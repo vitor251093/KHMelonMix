@@ -474,8 +474,8 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
     {
         if (GameScene == gameScene_InGameWithMap)
         {
-            float effectLayer = -0.0007; // blue shine behind the heart counter and "CHAIN" label
-            float textLayer = -0.0009; // heart counter, timer, "BONUS" label and +X floating labels
+            float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
+            float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
 
             float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
             float heartWidth = (ScreenWidth*9)/20.0;
