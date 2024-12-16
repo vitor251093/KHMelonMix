@@ -331,7 +331,7 @@ public:
                     height = r_height;
                 }
                 else {
-                    GamePlugin->log("Failed to load texture %s: size must be a power of two\n", path1);
+                    GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path1);
                     imageData = nullptr;
                 }
             }
@@ -345,7 +345,7 @@ public:
                         height = r_height;
                     }
                     else {
-                        printf("Failed to load texture %s: size must be a power of two\n", path2);
+                        GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path2);
                         imageData = nullptr;
                     }
                 }
@@ -360,7 +360,7 @@ public:
                         height = r_height;
                     }
                     else {
-                        printf("Failed to load texture %s: size must be a power of two\n", path3);
+                        GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path3);
                         imageData = nullptr;
                     }
                 }

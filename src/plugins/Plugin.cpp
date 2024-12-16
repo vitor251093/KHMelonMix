@@ -528,7 +528,7 @@ void Plugin::loadConfigs(std::function<bool(std::string)> getBoolConfig, std::fu
     _superLoadConfigs(getBoolConfig, getStringConfig);
 }
 
-void Plugin::log(const char* format, ...) {
+void Plugin::errorLog(const char* format, ...) {
     va_list args;
     va_start(args, format);
 
@@ -550,8 +550,8 @@ void Plugin::log(const char* format, ...) {
     const char* log = result.c_str();
     printf("%s\n", log);
 
-    if (DEBUG_LOG_FILE_ENABLED) {
-        std::string fileName = std::string("debug.log");
+    if (ERROR_LOG_FILE_ENABLED) {
+        std::string fileName = std::string("error.log");
         Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::Append);
         Platform::FileWrite(log, strlen(log), 1, logf);
         Platform::FileWrite("\n", 1, 1, logf);

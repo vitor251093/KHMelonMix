@@ -7,7 +7,7 @@
 
 #define SHOW_GAME_SCENE false
 #define DEBUG_MODE_ENABLED false
-#define DEBUG_LOG_FILE_ENABLED false
+#define ERROR_LOG_FILE_ENABLED true
 
 #define RAM_SEARCH_ENABLED true
 #define RAM_SEARCH_SIZE 32
@@ -243,7 +243,7 @@ public:
 
     virtual void debugLogs(int gameScene) {}
 
-    void log(const char* format, ...);
+    void errorLog(const char* format, ...);
 
     u32 LastMainRAM[0xFFFFFF];
     bool MainRAMState[0xFFFFFF];

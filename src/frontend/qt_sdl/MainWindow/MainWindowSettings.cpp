@@ -66,23 +66,23 @@ void MainWindowSettings::createBgmPlayer()
     bgmPlayer = new QMediaPlayer(this);
 
     connect(bgmPlayer, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
-        emuInstance->plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
+        printf("======= MediaStatus: %d\n", status);
 
         if (status == QMediaPlayer::BufferingMedia || status == QMediaPlayer::BufferedMedia) {
             emuInstance->plugin->onReplacementBackgroundMusicStarted();
         }
         if (status == QMediaPlayer::InvalidMedia) {
-            emuInstance->plugin->log(("======= Error: " + bgmPlayer->errorString().toStdString()).c_str());
+            emuInstance->plugin->errorLog("======= Error: %s", bgmPlayer->errorString().toStdString().c_str());
         }
     });
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(bgmPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
-        emuInstance->plugin->log(("======= Error: " + bgmPlayer->errorString().toStdString()).c_str());
+        emuInstance->plugin->errorLog("======= Error: %s", bgmPlayer->errorString().toStdString().c_str());
     });
 #else
     connect(bgmPlayer, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
-        emuInstance->plugin->log(("======= Error: " + bgmPlayer->errorString().toStdString()).c_str());
+        emuInstance->plugin->errorLog("======= Error: %s", bgmPlayer->errorString().toStdString().c_str());
     });
 #endif
 
@@ -158,7 +158,7 @@ void MainWindowSettings::createVideoPlayer()
     centralWidget->addWidget(playerWidget);
 
     connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
-        emuInstance->plugin->log((std::string("======= MediaStatus: ") + std::to_string(status)).c_str());
+        printf("======= MediaStatus: %d\n", status);
 
         if (status == QMediaPlayer::BufferingMedia || status == QMediaPlayer::BufferedMedia) {
             emuInstance->plugin->onReplacementCutsceneStarted();
@@ -167,17 +167,17 @@ void MainWindowSettings::createVideoPlayer()
             asyncStopVideo();
         }
         if (status == QMediaPlayer::InvalidMedia) {
-            emuInstance->plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
+            emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
         }
     });
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
-        emuInstance->plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
+        emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
     });
 #else
     connect(player, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
-        emuInstance->plugin->log(("======= Error: " + player->errorString().toStdString()).c_str());
+        emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
     });
 #endif
 
