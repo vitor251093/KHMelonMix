@@ -85,8 +85,12 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define MINIMAP_4_CENTER_Y_ADDRESS_JP 0x023c6a98 // TODO: KH
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US 0x02198311
-#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU 0x02198311 // TODO: KH
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU 0x021991b0
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP 0x02198311 // TODO: KH
+
+#define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_US 0x002
+#define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_EU 0x200
+#define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_JP 0x002 // TODO: KH
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
@@ -399,11 +403,14 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         // Enabling L + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
-                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
-                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP);
+                                               INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
+                                               INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP);
+            u8 controlTypeOffset = getU8ByCart(INGAME_MENU_COMMAND_LIST_SETTING_VALUE_US,
+                                               INGAME_MENU_COMMAND_LIST_SETTING_VALUE_EU,
+                                               INGAME_MENU_COMMAND_LIST_SETTING_VALUE_JP);
 
-            if ((nds->ARM7Read8(dpadMenuAddress) & 0x02) == 0) {
-                nds->ARM7Write8(dpadMenuAddress, nds->ARM7Read8(dpadMenuAddress) + 0x02);
+            if ((nds->ARM7Read8(dpadMenuAddress) & controlTypeOffset) == 0) {
+                nds->ARM7Write8(dpadMenuAddress, nds->ARM7Read8(dpadMenuAddress) | controlTypeOffset);
             }
         }
 
@@ -896,6 +903,21 @@ CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutscene
     }
 
     return cutscene1;
+}
+
+u8 PluginKingdomHeartsReCoded::getU8ByCart(u8 usAddress, u8 euAddress, u8 jpAddress)
+{
+    u8 cutsceneAddress = 0;
+    if (isUsaCart()) {
+        cutsceneAddress = usAddress;
+    }
+    if (isEuropeCart()) {
+        cutsceneAddress = euAddress;
+    }
+    if (isJapanCart()) {
+        cutsceneAddress = jpAddress;
+    }
+    return cutsceneAddress;
 }
 
 u32 PluginKingdomHeartsReCoded::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress)

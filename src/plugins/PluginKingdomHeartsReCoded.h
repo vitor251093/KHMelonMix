@@ -98,6 +98,7 @@ private:
 
     int detectGameScene();
 
+    u8 getU8ByCart(u8 usAddress, u8 euAddress, u8 jpAddress);
     u32 getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
     std::string getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress);
     bool getBoolByCart(bool usAddress, bool euAddress, bool jpAddress);
