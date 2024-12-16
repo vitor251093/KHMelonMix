@@ -153,6 +153,10 @@ public:
         return c;
     }
 
+    bool isValidWidthOrHeight(u32 widthOrHeight) {
+        return widthOrHeight == (1 << RightmostBit(widthOrHeight));
+    }
+
     void GetTexture(GPU& gpu, u32 texParam, u32& width, u32& height, u32 palBase, TexHandleT& textureHandle, u32& layer, u32*& helper)
     {
         // remove sampling and texcoord gen params
@@ -321,32 +325,53 @@ public:
             int r_width, r_height, r_channels;
             imageData = Texreplace::LoadTextureFromFile(path1, &r_width, &r_height, &r_channels);
             if (imageData != nullptr) {
-                printf("Loading texture %s\n", path1);
-                width = r_width;
-                height = r_height;
-            }
-            else {
-                imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
-                if (imageData != nullptr) {
-                    printf("Loading texture %s\n", path2);
+                if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
+                    printf("Loading texture %s\n", path1);
                     width = r_width;
                     height = r_height;
                 }
                 else {
-                    imageData = Texreplace::LoadTextureFromFile(path3, &r_width, &r_height, &r_channels);
-                    if (imageData != nullptr) {
+                    printf("Failed to load texture %s: size must be a power of two\n", path1);
+                    imageData = nullptr;
+                }
+            }
+
+            if (imageData == nullptr) {
+                imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
+                if (imageData != nullptr) {
+                    if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
+                        printf("Loading texture %s\n", path2);
+                        width = r_width;
+                        height = r_height;
+                    }
+                    else {
+                        printf("Failed to load texture %s: size must be a power of two\n", path2);
+                        imageData = nullptr;
+                    }
+                }
+            }
+
+            if (imageData == nullptr) {
+                imageData = Texreplace::LoadTextureFromFile(path3, &r_width, &r_height, &r_channels);
+                if (imageData != nullptr) {
+                    if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
                         printf("Loading texture %s\n", path3);
                         width = r_width;
                         height = r_height;
                     }
                     else {
-                        imageData = (unsigned char*)DecodingBuffer;
-
-                        if (shouldExportTextures) {
-                            printf("Saving texture %s\n", pathTmp);
-                            Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
-                        }
+                        printf("Failed to load texture %s: size must be a power of two\n", path3);
+                        imageData = nullptr;
                     }
+                }
+            }
+
+            if (imageData == nullptr) {
+                imageData = (unsigned char*)DecodingBuffer;
+
+                if (shouldExportTextures) {
+                    printf("Saving texture %s\n", pathTmp);
+                    Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
                 }
             }
 
