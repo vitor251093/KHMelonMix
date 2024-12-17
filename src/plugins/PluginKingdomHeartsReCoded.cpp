@@ -364,7 +364,9 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
     u32 attr = polygon->Attr;
     u32 aimAttr1 = 1058996416;
     u32 aimAttr2 = 1042219200;
-    if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2)) {
+    u32 greenAimSmallSquare = 1025441984;
+    u32 greenAimBigSquare = 2033856;
+    if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2 || attr == greenAimSmallSquare || attr == greenAimBigSquare)) {
         s32 z = polygon->Vertices[0]->Position[2];
         float _z = ((float)z)/(1 << 22);
         if (_z < 0) {
