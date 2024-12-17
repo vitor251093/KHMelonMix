@@ -69,7 +69,7 @@ public:
         std::string root = tomlUniqueIdentifier();
 
         KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
-        KHDaysLanguage = getStringConfig(root + ".Language");
+        TextLanguage = getStringConfig(root + ".Language");
     }
 private:
     bool PausedInGame;
@@ -107,7 +107,7 @@ private:
     std::array<CutsceneEntry, 46> Cutscenes;
 
     std::string KH_15_25_Remix_Location = "";
-    std::string KHDaysLanguage = "";
+    std::string TextLanguage = "";
 
     int detectGameScene();
 

@@ -238,12 +238,12 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 void PluginKingdomHeartsDays::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
-    std::string language = KHDaysLanguage;
+    std::string language = TextLanguage;
     if (language == "") {
         language = "en-US";
     }
 
-    std::string LocalizationFilePath = localizationFilePath("en-US");
+    std::string LocalizationFilePath = localizationFilePath(language);
     Platform::FileHandle* f = Platform::OpenLocalFile(LocalizationFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
         char linebuf[1024];
