@@ -453,20 +453,20 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
     }
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    float iuTexScale = (5.0)/UIScale;
+    float iuTexScale = (12.0)/UIScale;
 
-    float _x = (float)(*x - ScreenWidth/2);
-    float _y = (float)(*y - ScreenHeight/2);
+    float _x = (float)(*x);
+    float _y = (float)(*y);
     float _z = ((float)z)/(1 << 22);
     if (HideAllHUD)
     {
         if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D)
         {
-            if (_x >= -(1.00)*(ScreenWidth/2)  && _x <= +(1.00)*(ScreenWidth/2) &&
-                _y >= -(1.00)*(ScreenHeight/2) && _y <= +(1.00)*(ScreenHeight/2) &&
+            if (_x >= 0 && _x <= ScreenWidth &&
+                _y >= 0 && _y <= ScreenHeight &&
                 _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
-                _x = (0 - 1.0)*(ScreenWidth/2);
-                _y = (0 - 1.0)*(ScreenHeight/2);
+                _x = 0;
+                _y = 0;
             }
         }
     }
@@ -478,33 +478,31 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
             float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
 
             float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
-            float heartWidth = (ScreenWidth*9)/20.0;
-            float heartHeight = ScreenHeight/2.5;
-            if ((_x >= -(1.000)*(ScreenWidth/2)  && _x <= -(0.000)*(ScreenWidth/2) &&
-                 _y >= -(1.000)*(ScreenHeight/2) && _y <= -(0.200)*(ScreenHeight/2) &&
+            if ((_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
+                 _y >= 0 && _y <= (2.0/5)*(ScreenHeight) &&
                 (abs(_z - effectLayer) < 0.0001))
                 ||
-                (_x >= -(1.000)*(ScreenWidth/2) && _x <= -(0.200)*(ScreenWidth/2) &&
-                 _y >= -(1.000)*(ScreenHeight/2) && _y <= -(0.500)*(ScreenHeight/2) &&
+                (_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
+                 _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
                 (abs(_z - textLayer) < 0.0001))) {
-                _x = ((((_x/(ScreenWidth/2)  + 1.0)*(heartWidth/iuTexScale))/ScreenWidth)*2.0/aspectRatio - 1.0)*(ScreenWidth/2);
-                _y = ((((_y/(ScreenHeight/2) + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/ScreenHeight)*2.0 - 1.0)*(ScreenHeight/2);
+                _x = (iuTexScale*_x)/((ScreenWidth/256.0)*aspectRatio);
+                _y = (iuTexScale*_y)/((ScreenHeight/192.0)) + heartTopMargin;
             }
         }
 
         if (GameScene == gameScene_PauseMenu)
         {
-            if (_x >= -(1.00)*(ScreenWidth/2)  && _x <= -(0.000)*(ScreenWidth/2) &&
-                _y >= -(1.00)*(ScreenHeight/2) && _y <= -(0.500)*(ScreenHeight/2) &&
+            if (_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
+                _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
                 _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
-                _x = (0 - 1.0)*(ScreenWidth/2);
-                _y = (0 - 1.0)*(ScreenHeight/2);
+                _x = 0;
+                _y = 0;
             }
         }
     }
 
-    *x = (s32)(_x + ScreenWidth/2);
-    *y = (s32)(_y + ScreenHeight/2);
+    *x = (s32)(_x);
+    *y = (s32)(_y);
 };
 
 void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
