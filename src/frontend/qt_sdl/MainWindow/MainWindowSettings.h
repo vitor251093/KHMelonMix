@@ -45,9 +45,13 @@ public:
 public slots:
     void asyncStartBgmMusic(QString bgmMusicFilePath);
     void asyncStopBgmMusic();
+    void asyncPauseBgmMusic();
+    void asyncUnpauseBgmMusic();
 
     void startBgmMusic(QString bgmMusicFilePath);
     void stopBgmMusic();
+    void pauseBgmMusic();
+    void unpauseBgmMusic();
 
 
     void asyncStartVideo(QString videoFilePath);

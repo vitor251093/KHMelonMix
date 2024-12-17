@@ -3,8 +3,6 @@
 #include "PluginKingdomHeartsDays_GPU_OpenGL_shaders.h"
 #include "PluginKingdomHeartsDays_GPU3D_OpenGL_shaders.h"
 
-#include <math.h>
-
 namespace Plugins
 {
 
@@ -131,7 +129,6 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
-#define CUTSCENE_SKIP_START_FRAMES_COUNT  40
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
@@ -161,15 +158,11 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
 
-    PriorGameScene = -1;
-    GameScene = -1;
+    hudToggle();
+
     priorMap = -1;
     Map = 0;
     UIScale = 4;
-    AspectRatio = 0;
-
-    HUDState = -1;
-    hudToggle();
 
     cameraPositionX = 0x10000;
     cameraPositionY = 0x10000;
@@ -177,6 +170,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     cameraAngleX = 0x10000;
     cameraAngleY = 0x10000;
 
+    // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;
     _muchOlderHad3DOnBottomScreen = false;
     _olderHad3DOnTopScreen = false;
@@ -184,37 +178,15 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
 
+    // should render frame utils
     _hasVisible3DOnBottomScreen = false;
     _ignore3DOnBottomScreen = false;
     _priorIgnore3DOnBottomScreen = false;
     _priorPriorIgnore3DOnBottomScreen = false;
 
-    _StartPressCount = 0;
-    _ReplayLimitCount = 0;
-    _CanSkipHdCutscene = false;
-    _SkipDsCutscene = false;
-    _PlayingCredits = false;
-    _StartedReplacementCutscene = false;
-    _RunningReplacementCutscene = false;
-    _PausedReplacementCutscene = false;
-    _ShouldTerminateIngameCutscene = false;
-    _StoppedIngameCutscene = false;
-    _ShouldStartReplacementCutscene = false;
-    _ShouldPauseReplacementCutscene = false;
-    _ShouldUnpauseReplacementCutscene = false;
-    _ShouldStopReplacementCutscene = false;
-    _ShouldReturnToGameAfterCutscene = false;
-    _ShouldUnmuteAfterCutscene = false;
-    _ShouldHideScreenForTransitions = false;
-    _CurrentCutscene = nullptr;
-    _NextCutscene = nullptr;
-    _LastCutscene = nullptr;
-
-    _CurrentBackgroundMusic = 0;
-
+    // apply hotkey to input mask utils
     PriorHotkeyMask = 0;
     PriorPriorHotkeyMask = 0;
-
     LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
     SwitchTargetPressOnHold = false;
@@ -272,13 +244,13 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 void PluginKingdomHeartsDays::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
-    std::string language = getStringByCart(KHDaysUSLanguage, KHDaysEULanguage, KHDaysJPLanguage, KHDaysJPRev1Language);
+    std::string language = TextLanguage;
     if (language == "") {
         language = "en-US";
     }
 
-    std::string localizationFilePath = LocalizationFilePath("en-US");
-    Platform::FileHandle* f = Platform::OpenLocalFile(localizationFilePath.c_str(), Platform::FileMode::ReadText);
+    std::string LocalizationFilePath = localizationFilePath(language);
+    Platform::FileHandle* f = Platform::OpenLocalFile(LocalizationFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
         char linebuf[1024];
         char entryname[32];
@@ -382,6 +354,15 @@ void PluginKingdomHeartsDays::onLoadROM() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 }
 
+void PluginKingdomHeartsDays::onLoadState()
+{
+    loadLocalization();
+
+    GameScene = gameScene_InGameWithMap;
+
+    _CurrentBackgroundMusic = 0x101;
+}
+
 std::string PluginKingdomHeartsDays::assetsFolder() {
     return "days";
 }
@@ -390,9 +371,12 @@ std::string PluginKingdomHeartsDays::assetsRegionSubfolder() {
     return getStringByCart("us", "eu", "jp", "jp_rev1");
 }
 
+std::string PluginKingdomHeartsDays::tomlUniqueIdentifier() {
+    return getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
+}
+
 const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
-    bool disable = getBoolByCart(KHDaysUSDisableEnhancedGraphics, KHDaysEUDisableEnhancedGraphics,
-                                 KHDaysJPDisableEnhancedGraphics, KHDaysJPRev1DisableEnhancedGraphics);
+    bool disable = DisableEnhancedGraphics;
     if (disable) {
         return nullptr;
     }
@@ -400,9 +384,48 @@ const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
     return kCompositorFS_KhDays;
 };
 
+void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "GameScene");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "KHUIScale");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
+    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
+    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideAllHUD");
+    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
+    CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
+    CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
+}
+
+void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
+    CutsceneEntry* bsCutscene = detectBottomScreenMobiCutscene();
+    int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
+
+    bool isCredits = nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
+    if (isCredits) {
+        dsCutsceneState = 3;
+    }
+
+    glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
+    glUniform1i(CompGpuLoc[CompShader][1], GameScene);
+    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
+    glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
+    glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][5], ShowTarget ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][8], HideAllHUD ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][10], getCurrentMainMenuView());
+    glUniform1i(CompGpuLoc[CompShader][11], dsCutsceneState);
+}
+
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
-    bool disable = getBoolByCart(KHDaysUSDisableEnhancedGraphics, KHDaysEUDisableEnhancedGraphics,
-                                 KHDaysJPDisableEnhancedGraphics, KHDaysJPRev1DisableEnhancedGraphics);
+    bool disable = DisableEnhancedGraphics;
     if (disable) {
         return nullptr;
     }
@@ -410,7 +433,31 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     return kRenderVS_Z_KhDays;
 };
 
+void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags)
+{
+    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
+    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
+    CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
+    CompGpu3DLoc[flags][4] = glGetUniformLocation(prog, "HideAllHUD");
+}
+
+void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
+    glUniform1i(CompGpu3DLoc[flags][1], GameScene);
+    glUniform1i(CompGpu3DLoc[flags][2], UIScale);
+    glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
+    glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
+}
+
 void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return;
+    }
+
     float aspectRatio = AspectRatio / (4.f / 3.f);
     float iuTexScale = (5.0)/UIScale;
 
@@ -433,8 +480,8 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
     {
         if (GameScene == gameScene_InGameWithMap)
         {
-            float effectLayer = -0.0007; // blue shine behind the heart counter and "CHAIN" label
-            float textLayer = -0.0009; // heart counter, timer, "BONUS" label and +X floating labels
+            float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
+            float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
 
             float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
             float heartWidth = (ScreenWidth*9)/20.0;
@@ -465,86 +512,6 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
     *x = (s32)(_x + ScreenWidth/2);
     *y = (s32)(_y + ScreenHeight/2);
 };
-
-void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "PriorGameScene");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "GameScene");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "KHUIScale");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
-    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
-    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideAllHUD");
-    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
-    CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
-    CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
-}
-
-void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    CutsceneEntry* tsCutscene = detectTopScreenCutscene();
-    CutsceneEntry* bsCutscene = detectBottomScreenCutscene();
-    int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
-
-    bool isCredits = nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
-    if (isCredits) {
-        dsCutsceneState = 3;
-    }
-
-    glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
-    glUniform1i(CompGpuLoc[CompShader][1], GameScene);
-    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
-    glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
-    glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][5], ShowTarget ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][8], HideAllHUD ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][10], getCurrentMainMenuView());
-    glUniform1i(CompGpuLoc[CompShader][11], dsCutsceneState);
-}
-
-void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags)
-{
-    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
-    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
-    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
-    CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
-    CompGpu3DLoc[flags][4] = glGetUniformLocation(prog, "HideAllHUD");
-}
-
-void PluginKingdomHeartsDays::gpu3DOpenGL_VS_Z_updateVariables(u32 flags)
-{
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
-    glUniform1i(CompGpu3DLoc[flags][1], GameScene);
-    glUniform1i(CompGpu3DLoc[flags][2], UIScale);
-    glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
-    glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
-}
-
-void PluginKingdomHeartsDays::onLoadState()
-{
-    loadLocalization();
-
-    GameScene = gameScene_InGameWithMap;
-}
-
-bool PluginKingdomHeartsDays::togglePause()
-{
-    if (_RunningReplacementCutscene) {
-        if (_PausedReplacementCutscene) {
-            _ShouldUnpauseReplacementCutscene = true;
-        }
-        else {
-            _ShouldPauseReplacementCutscene = true;
-        }
-        return true;
-    }
-    return false;
-}
 
 bool PluginKingdomHeartsDays::doesAddressValuesMatch(u32 addr, u32* values, u32 len)
 {
@@ -582,47 +549,17 @@ u32 PluginKingdomHeartsDays::getCameraBaseAddress()
 
 void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
 {
-    ramSearch(nds, *HotkeyPress);
-
-    if (GameScene == -1)
-    {
+    bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
+    if (!shouldContinue) {
         return;
     }
 
-    if (_PlayingCredits)
-    {
-        *InputMask = 0xFFF;
+    if (GameScene == -1) {
         return;
-    }
-
-    if (_RunningReplacementCutscene && !_PausedReplacementCutscene && (_SkipDsCutscene || (~(*InputMask)) & (1 << 3)) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
-        _SkipDsCutscene = true;
-        if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
-            _SkipDsCutscene = false;
-            _CanSkipHdCutscene = false;
-            _ShouldStopReplacementCutscene = true;
-            *InputMask |= (1<<3);
-        }
-        else {
-            if (_StartPressCount == 0) {
-                _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
-            }
-        }
-    }
-
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
-        if (_StartPressCount > 0) {
-            _StartPressCount--;
-            *InputMask &= ~(1<<3); // Start (skip DS cutscene)
-        }
     }
 
     if (GameScene == gameScene_LoadingScreen) {
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
-    }
-
-    if (*HotkeyPress & (1 << 18)) { // HUD Toggle (HK_HUDToggle)
-        hudToggle();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D || GameScene == gameScene_MultiplayerMissionReview) {
@@ -873,14 +810,118 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
 }
 
-bool PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask)
-{
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
-        nds->SetTouchKeyMask(TouchKeyMask, false);
+bool PluginKingdomHeartsDays::overrideMouseTouchCoords_cameraControl(int width, int height, int& x, int& y, bool& touching) {
+    int centerX = width/2;
+    int centerY = height/2;
+    float sensitivity = 10.0;
+
+    if (abs(x - centerX) < 3) {
+        x = centerX;
+    }
+    if (abs(y - centerY) < 3) {
+        y = centerY;
+    }
+
+    if (x == centerX && y == centerY) {
+        touching = false;
+        x = 128;
+        y = 96;
         return true;
     }
 
+    touching = true;
+    x = 128 + (int)((x - centerX)*sensitivity);
+    y = 96 + (int)((y - centerY)*sensitivity);
+    return true;
+}
+bool PluginKingdomHeartsDays::overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching) {
+    int X0 = 0;
+    int Y0 = 0;
+    int X1 = width;
+    int Y1 = height;
+    int trueWidth = width;
+    int trueHeight = height;
+    if (AspectRatio * height < width) {
+        trueWidth = (int)(AspectRatio * height);
+        X0 = (width - trueWidth)/2;
+        X1 = X0 + trueWidth;
+    }
+    else if (width / AspectRatio < height) {
+        trueHeight = (int)(width / AspectRatio);
+        Y0 = (height - trueHeight)/2;
+        Y1 = Y0 + trueHeight;
+    }
+
+    if (x < X0 || x > X1 || y < Y0 || y > Y1) {
+        return true;
+    }
+
+    x = (255*(x - X0))/trueWidth;
+    y = (192*(y - Y0))/trueHeight;
+    return true;
+}
+bool PluginKingdomHeartsDays::overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching) {
+    int X0 = 0;
+    int Y0 = 0;
+    int X1 = width;
+    int Y1 = height;
+    int trueWidth = width;
+    int trueHeight = height;
+    if (AspectRatio * height < width) {
+        trueWidth = (int)(AspectRatio * height);
+        X0 = (width - trueWidth)/2;
+        X1 = X0 + trueWidth;
+    }
+    else if (width / AspectRatio < height) {
+        trueHeight = (int)(width / AspectRatio);
+        Y0 = (height - trueHeight)/2;
+        Y1 = Y0 + trueHeight;
+    }
+
+    width = trueWidth;
+    height = trueHeight;
+    trueWidth = trueWidth/2;
+    X0 = X0 + (invert ? 0 : trueWidth);
+    float innerAspectRatio = 4.0/3;
+    if (innerAspectRatio * trueHeight * 2 < width) {
+        trueWidth = (int)(innerAspectRatio * trueHeight);
+        X0 = X0 + (width - trueWidth*2)/2;
+        X1 = X0 + trueWidth;
+    }
+    else if (trueWidth / innerAspectRatio < height) {
+        trueHeight = (int)(trueWidth / innerAspectRatio);
+        Y0 = Y0 + (height - trueHeight)/2;
+        Y1 = Y0 + trueHeight;
+    }
+
+    x = (255*(x - X0))/trueWidth;
+    y = (191*(y - Y0))/trueHeight;
+    if (x < 0 || x > 255 || y < 0 || y > 191) {
+        return true;
+    }
+
+    return true;
+}
+bool PluginKingdomHeartsDays::overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {
+    if (GameScene == gameScene_InGameWithMap) {
+#if MOUSE_CURSOR_AS_CAMERA_ENABLED
+        return overrideMouseTouchCoords_cameraControl(width, height, x, y, touching);
+#endif
+    }
+    if (GameScene == gameScene_InGameMenu) {
+        u32 mainMenuView = getCurrentMainMenuView();
+        if (mainMenuView != 6 && mainMenuView != 7) {
+            return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
+        }
+    }
     return false;
+}
+
+void PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching)
+{
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
+        _superApplyTouchKeyMask(TouchKeyMask, 3, false, touchX, touchY, isTouching);
+    }
 }
 
 void PluginKingdomHeartsDays::hudToggle()
@@ -977,7 +1018,7 @@ bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 
 bool PluginKingdomHeartsDays::shouldRenderFrame()
 {
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene)
+    if (!_superShouldRenderFrame())
     {
         return false;
     }
@@ -1225,112 +1266,25 @@ int PluginKingdomHeartsDays::detectGameScene()
     return gameScene_InGameWithMap;
 }
 
-void PluginKingdomHeartsDays::setAspectRatio(float aspectRatio)
+u32 PluginKingdomHeartsDays::getAspectRatioAddress()
 {
-    if (GameScene != -1)
-    {
-        int aspectRatioKey = (int)round(0x1000 * aspectRatio);
-
-        u32 aspectRatioMenuAddress = getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
-
-        if (nds->ARM7Read32(aspectRatioMenuAddress) == 0x00001555) {
-            nds->ARM7Write32(aspectRatioMenuAddress, aspectRatioKey);
-        }
-    }
-
-    AspectRatio = aspectRatio;
+    return getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
 }
 
-bool PluginKingdomHeartsDays::setGameScene(int newGameScene)
-{
-    bool updated = false;
-    if (GameScene != newGameScene) 
-    {
-        updated = true;
-
-        // Game scene
-        PriorGameScene = GameScene;
-        GameScene = newGameScene;
-    }
-
-    return updated;
-}
-
-u32 PluginKingdomHeartsDays::getCutsceneAddress(CutsceneEntry* entry)
+u32 PluginKingdomHeartsDays::getMobiCutsceneAddress(CutsceneEntry* entry)
 {
     return getU32ByCart(entry->usAddress, entry->euAddress, entry->jpAddress, entry->jpAddress - 0x200);
 }
 
-u32 PluginKingdomHeartsDays::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address)
+CutsceneEntry* PluginKingdomHeartsDays::getMobiCutsceneByAddress(u32 cutsceneAddressValue)
 {
-    u32 cutsceneAddress = 0;
-    if (isUsaCart()) {
-        cutsceneAddress = usAddress;
-    }
-    else if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
-    }
-    else if (isJapanCartRev1()) {
-        cutsceneAddress = jpRev1Address;
-    }
-    else if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
-    }
-    return cutsceneAddress;
-}
-
-std::string PluginKingdomHeartsDays::getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress, std::string jpRev1Address)
-{
-    std::string cutsceneAddress = "";
-    if (isUsaCart()) {
-        cutsceneAddress = usAddress;
-    }
-    else if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
-    }
-    else if (isJapanCartRev1()) {
-        cutsceneAddress = jpRev1Address;
-    }
-    else if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
-    }
-    return cutsceneAddress;
-}
-
-bool PluginKingdomHeartsDays::getBoolByCart(bool usAddress, bool euAddress, bool jpAddress, bool jpRev1Address)
-{
-    bool cutsceneAddress = false;
-    if (isUsaCart()) {
-        cutsceneAddress = usAddress;
-    }
-    else if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
-    }
-    else if (isJapanCartRev1()) {
-        cutsceneAddress = jpRev1Address;
-    }
-    else if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
-    }
-    return cutsceneAddress;
-}
-
-CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
-{
-    if (GameScene == -1)
-    {
+    if (cutsceneAddressValue == 0) {
         return nullptr;
-    }
-
-    u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
-    u32 cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
-    if (cutsceneAddressValue == 0 || (cutsceneAddressValue - (cutsceneAddressValue & 0xFF)) == 0xea000000) {
-        cutsceneAddressValue = 0;
     }
 
     CutsceneEntry* cutscene1 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
+        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {
             cutscene1 = entry;
         }
     }
@@ -1338,98 +1292,103 @@ CutsceneEntry* PluginKingdomHeartsDays::detectTopScreenCutscene()
     return cutscene1;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectBottomScreenCutscene()
+u32 PluginKingdomHeartsDays::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address)
 {
-    if (GameScene == -1)
-    {
-        return nullptr;
+    u32 value = 0;
+    if (isUsaCart()) {
+        value = usAddress;
     }
-
-    u32 cutsceneAddress2 = getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
-    u32 cutsceneAddressValue2 = nds->ARM7Read32(cutsceneAddress2);
-    if (cutsceneAddressValue2 == 0 || (cutsceneAddressValue2 - (cutsceneAddressValue2 & 0xFF)) == 0xea000000) {
-        cutsceneAddressValue2 = 0;
+    else if (isEuropeCart()) {
+        value = euAddress;
     }
-
-    CutsceneEntry* cutscene2 = nullptr;
-    for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getCutsceneAddress(entry) == cutsceneAddressValue2) {
-            cutscene2 = entry;
-        }
+    else if (isJapanCartRev1()) {
+        value = jpRev1Address;
     }
-
-    return cutscene2;
+    else if (isJapanCart()) {
+        value = jpAddress;
+    }
+    return value;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectCutscene()
+std::string PluginKingdomHeartsDays::getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress, std::string jpRev1Address)
 {
-    CutsceneEntry* cutscene1 = detectTopScreenCutscene();
-    CutsceneEntry* cutscene2 = detectBottomScreenCutscene();
-
-    if (cutscene1 == nullptr && cutscene2 != nullptr) {
-        cutscene1 = cutscene2;
+    std::string value = "";
+    if (isUsaCart()) {
+        value = usAddress;
     }
-
-    return cutscene1;
+    else if (isEuropeCart()) {
+        value = euAddress;
+    }
+    else if (isJapanCartRev1()) {
+        value = jpRev1Address;
+    }
+    else if (isJapanCart()) {
+        value = jpAddress;
+    }
+    return value;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::detectSequenceCutscene()
+bool PluginKingdomHeartsDays::getBoolByCart(bool usAddress, bool euAddress, bool jpAddress, bool jpRev1Address)
 {
-    return nullptr;
+    bool value = false;
+    if (isUsaCart()) {
+        value = usAddress;
+    }
+    else if (isEuropeCart()) {
+        value = euAddress;
+    }
+    else if (isJapanCartRev1()) {
+        value = jpRev1Address;
+    }
+    else if (isJapanCart()) {
+        value = jpAddress;
+    }
+    return value;
 }
 
-void PluginKingdomHeartsDays::refreshCutscene()
+u32 PluginKingdomHeartsDays::detectTopScreenMobiCutsceneAddress()
 {
-#if !REPLACEMENT_CUTSCENES_ENABLED
-    return;
-#endif
+    return getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
+}
 
-    bool isCutsceneScene = GameScene == gameScene_Cutscene;
-    CutsceneEntry* cutscene = detectCutscene();
-    bool wasSaveLoaded = isSaveLoaded();
+u32 PluginKingdomHeartsDays::detectBottomScreenMobiCutsceneAddress()
+{
+    return getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
+}
 
-    if (_ReplayLimitCount > 0) {
-        _ReplayLimitCount--;
-        if (cutscene != nullptr && cutscene->usAddress == _LastCutscene->usAddress) {
-            cutscene = nullptr;
-        }
+bool PluginKingdomHeartsDays::isCutsceneGameScene()
+{
+    return GameScene == gameScene_Cutscene;
+}
+
+bool PluginKingdomHeartsDays::didMobiCutsceneEnded()
+{
+    if (!isCutsceneGameScene()) {
+        return true;
     }
 
+    if (isSaveLoaded()) {
+        // the old cutscene ended, and a new cutscene started
+        return _NextCutscene != nullptr;
+    }
+
+    return false;
+}
+
+bool PluginKingdomHeartsDays::canReturnToGameAfterReplacementCutscene()
+{
+    if (isSaveLoaded()) {
+        // either:
+        // 1. the cutscene is over
+        // 2. the old cutscene ended, and a new cutscene started, so it needs to be skipped as well
+        // 3. the cutscene is unskippable, so even if it didn't end, we need to return
+        return !isCutsceneGameScene() || _NextCutscene != nullptr || _IsUnskippableCutscene;
+    }
     
-    if (cutscene != nullptr) {
-        onIngameCutsceneIdentified(cutscene);
-    }
-
-    bool cutsceneEnded = !isCutsceneScene || _NextCutscene != nullptr;
-
-    // Natural progression for all cutscenes
-    if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
-        _ShouldStartReplacementCutscene = true;
-    }
-
-    if (wasSaveLoaded) { // In game cutscenes (starting from Day 7)
-        
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && cutsceneEnded) {
-            onTerminateIngameCutscene();
-        }
-
-        if (_ShouldReturnToGameAfterCutscene && (cutsceneEnded || _PlayingCredits)) {
-            onReturnToGameAfterCutscene();
-        }
-    }
-    else { // Intro when waiting on the title screen, theater, and cutscenes before Day 7
-
-        if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && !isCutsceneScene) {
-            onTerminateIngameCutscene();
-        }
-
-        if (_ShouldReturnToGameAfterCutscene) {
-            onReturnToGameAfterCutscene();
-        }
-    }
+    return true;
 }
 
-std::filesystem::path PluginKingdomHeartsDays::patchCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
+std::filesystem::path PluginKingdomHeartsDays::patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
     std::filesystem::path fullPath = folderPath / filename;
     if (!std::filesystem::exists(fullPath))
@@ -1461,7 +1420,7 @@ std::filesystem::path PluginKingdomHeartsDays::patchCutsceneIfNeeded(CutsceneEnt
     return fullPath;
 }
 
-std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
+std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
@@ -1481,14 +1440,14 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
         std::filesystem::path collectionPath = KH_15_25_Remix_Location;
         std::filesystem::path newEpicFolderPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "Days" / "en";
         if (std::filesystem::exists(newEpicFolderPath)) {
-            std::filesystem::path newEpicFullPath = patchCutsceneIfNeeded(cutscene, newEpicFolderPath);
+            std::filesystem::path newEpicFullPath = patchReplacementCutsceneIfNeeded(cutscene, newEpicFolderPath);
             if (newEpicFullPath != "") {
                 return newEpicFullPath.string();
             }
         }
         std::filesystem::path newSteamFolderPath = collectionPath / "STEAM" / "Mare" / "MOVIE" / "Days" / "dt";
         if (std::filesystem::exists(newSteamFolderPath)) {
-            std::filesystem::path newSteamFullPath = patchCutsceneIfNeeded(cutscene, newSteamFolderPath);
+            std::filesystem::path newSteamFullPath = patchReplacementCutsceneIfNeeded(cutscene, newSteamFolderPath);
             if (newSteamFullPath != "") {
                 return newSteamFullPath.string();
             }
@@ -1498,80 +1457,11 @@ std::string PluginKingdomHeartsDays::CutsceneFilePath(CutsceneEntry* cutscene) {
     return "";
 }
 
-void PluginKingdomHeartsDays::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
-    if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
-        return;
-    }
-
-    std::string path = CutsceneFilePath(cutscene);
-    if (path == "") {
-        return;
-    }
-
-    if (_CurrentCutscene != nullptr) {
-        _NextCutscene = cutscene;
-        return;
-    }
-
-    printf("Preparing to load cutscene: %s\n", cutscene->Name);
-    log("Cutscene detected");
-
-    _CanSkipHdCutscene = true;
-    _CurrentCutscene = cutscene;
-    _NextCutscene = nullptr;
-    _ShouldTerminateIngameCutscene = true;
-    _PlayingCredits = isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
-}
-void PluginKingdomHeartsDays::onTerminateIngameCutscene() {
-    if (_CurrentCutscene == nullptr) {
-        return;
-    }
-    log("Ingame cutscene terminated");
-    _ShouldTerminateIngameCutscene = false;
-    _StoppedIngameCutscene = true;
-
-    if (_PlayingCredits) {
-        _StoppedIngameCutscene = false;
-    }
-}
-void PluginKingdomHeartsDays::onReplacementCutsceneStarted() {
-    log("Cutscene started");
-    _ShouldStartReplacementCutscene = false;
-    _StartedReplacementCutscene = true;
-    _RunningReplacementCutscene = true;
+bool PluginKingdomHeartsDays::isUnskippableMobiCutscene(CutsceneEntry* cutscene) {
+    return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 
-void PluginKingdomHeartsDays::onReplacementCutsceneEnd() {
-    log("Replacement cutscene ended");
-    _StartedReplacementCutscene = false;
-    _RunningReplacementCutscene = false;
-    _ShouldStopReplacementCutscene = false;
-    _ShouldReturnToGameAfterCutscene = true;
-    _ShouldHideScreenForTransitions = false;
-}
-void PluginKingdomHeartsDays::onReturnToGameAfterCutscene() {
-    log("Returning to the game");
-    _StartPressCount = 0;
-    _PlayingCredits = false;
-    _ShouldStartReplacementCutscene = false;
-    _StartedReplacementCutscene = false;
-    _RunningReplacementCutscene = false;
-    _ShouldReturnToGameAfterCutscene = false;
-    _ShouldUnmuteAfterCutscene = true;
-
-    _LastCutscene = _CurrentCutscene;
-    _CurrentCutscene = nullptr;
-    _ReplayLimitCount = 30;
-
-    if (_NextCutscene == nullptr) {
-        u32 cutsceneAddress = getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
-        u32 cutsceneAddress2 = getU32ByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
-        nds->ARM7Write32(cutsceneAddress, 0x0);
-        nds->ARM7Write32(cutsceneAddress2, 0x0);
-    }
-}
-
-u16 PluginKingdomHeartsDays::detectBackgroundMusic() {
+u16 PluginKingdomHeartsDays::detectMidiBackgroundMusic() {
     u16 soundtrack = nds->ARM7Read16(getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1));
     if (soundtrack > 0) {
         return soundtrack;
@@ -1579,7 +1469,7 @@ u16 PluginKingdomHeartsDays::detectBackgroundMusic() {
     return 0;
 }
 
-std::string PluginKingdomHeartsDays::BackgroundMusicFilePath(std::string name) {
+std::string PluginKingdomHeartsDays::replacementBackgroundMusicFilePath(std::string name) {
     std::string filename = name + ".wav";
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
@@ -1603,39 +1493,72 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     return;
 #endif
 
-    u16 soundtrackId = detectBackgroundMusic();
+    u16 fakeSoundtrackId = 0x100;
+    u16 soundtrackId = detectMidiBackgroundMusic();
 
-    std::string soundtrackPath = BackgroundMusicFilePath("bgm" + std::to_string(soundtrackId));
+    std::string soundtrackPath = replacementBackgroundMusicFilePath("bgm" + std::to_string(soundtrackId));
     bool replacementAvailable = (soundtrackPath != "");
 
     if (soundtrackId != _CurrentBackgroundMusic) {
-        if (soundtrackId == 0x0000) {
-            soundtrackId = _CurrentBackgroundMusic;
+        if (soundtrackId == fakeSoundtrackId) {
+            _LastSoundtrackId = soundtrackId;
         }
         else if (soundtrackId == 0xFFFF) {
-            _ShouldStopReplacementBgmMusic = true;
-            printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
+            if (_LastSoundtrackId != fakeSoundtrackId && _CurrentBackgroundMusic != 0) {
+                _ShouldStopReplacementBgmMusic = true;
+                printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
+    
+                _CurrentBackgroundMusic = soundtrackId;
+                _LastSoundtrackId = soundtrackId;
+            }
         }
         else {
+            _ShouldStopReplacementBgmMusic = true;
+
             if (replacementAvailable) {
                 u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-                nds->ARM7Write16(address, 0);
-            }
+                nds->ARM7Write16(address, fakeSoundtrackId);
 
-            _ShouldStopReplacementBgmMusic = true;
-            _ShouldStartReplacementBgmMusic = replacementAvailable;
-            printf("Starting replacement song %d\n", soundtrackId);
+                _ShouldStartReplacementBgmMusic = replacementAvailable;
+                printf("Starting replacement song %d\n", soundtrackId);
+        
+                _CurrentBackgroundMusic = soundtrackId;
+                _LastSoundtrackId = soundtrackId;
+            }
         }
     }
     else {
-        u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-        nds->ARM7Write16(address, 0);
-    }
+        if (replacementAvailable) {
+            u32 address = getU32ByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
+            nds->ARM7Write16(address, fakeSoundtrackId);
+        }
     
-    _CurrentBackgroundMusic = soundtrackId;
+        _CurrentBackgroundMusic = soundtrackId;
+        _LastSoundtrackId = soundtrackId;
+    }
 }
 
-std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) {
+int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
+    u32 currentMission = getCurrentMission();
+    if (currentMission == 92 && _CurrentBackgroundMusic == 22) {
+        return 12500;
+    }
+    return 0;
+}
+
+void PluginKingdomHeartsDays::refreshMouseStatus() {
+#if !MOUSE_CURSOR_AS_CAMERA_ENABLED
+    return;
+#endif
+    if (GameScene == gameScene_InGameWithMap && !_MouseCursorIsGrabbed) {
+        _ShouldGrabMouseCursor = true;
+    }
+    if (PriorGameScene == gameScene_InGameWithMap && PriorGameScene != GameScene && _MouseCursorIsGrabbed) {
+        _ShouldReleaseMouseCursor = true;
+    }
+}
+
+std::string PluginKingdomHeartsDays::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::string assetsFolderName = assetsFolder();
     std::string assetsRegionSubfolderName = assetsRegionSubfolder();
@@ -1647,21 +1570,6 @@ std::string PluginKingdomHeartsDays::LocalizationFilePath(std::string language) 
     }
 
     return "";
-}
-
-bool PluginKingdomHeartsDays::refreshGameScene()
-{
-    int newGameScene = detectGameScene();
-    
-    debugLogs(newGameScene);
-
-    bool updated = setGameScene(newGameScene);
-
-    refreshCutscene();
-
-    refreshBackgroundMusic();
-
-    return updated;
 }
 
 u32 PluginKingdomHeartsDays::getCurrentMission()

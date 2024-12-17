@@ -72,6 +72,8 @@ EmuThread::EmuThread(EmuInstance* inst, QObject* parent) : QThread(parent)
 
 void EmuThread::attachWindow(MainWindow* window)
 {
+    mainWindow = window;
+
     connect(this, SIGNAL(windowTitleChange(QString)), window, SLOT(onTitleUpdate(QString)));
     connect(this, SIGNAL(windowEmuStart()), window, SLOT(onEmuStart()));
     connect(this, SIGNAL(windowEmuStop()), window, SLOT(onEmuStop()));
@@ -89,6 +91,8 @@ void EmuThread::attachWindow(MainWindow* window)
 
     connect(this, SIGNAL(windowStartBgmMusic(QString)), window, SLOT(asyncStartBgmMusic(QString)));
     connect(this, SIGNAL(windowStopBgmMusic()), window, SLOT(asyncStopBgmMusic()));
+    connect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
+    connect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
     
     connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
@@ -178,7 +182,6 @@ void EmuThread::run()
 
         auto nds = emuInstance->getNDS();
         auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
-        bool wasTouchKeyMaskApplied = false;
         if (rom != nullptr) {
             u32 gamecode = rom->GetHeader().GameCodeAsU32();
             if (emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode)
@@ -198,10 +201,14 @@ void EmuThread::run()
                     return ref.GetString(path);
                 });
 
+                if (emuInstance->plugin->shouldStartInFullscreen()) {
+                    emit windowFullscreenToggle();
+                }
+
                 printf("Loading plugin %s for game code %u\n", typeid(*emuInstance->plugin).name(), gamecode);
             }
 
-            wasTouchKeyMaskApplied = emuInstance->plugin->applyTouchKeyMask(emuInstance->touchInputMask);
+            emuInstance->plugin->applyTouchKeyMask(emuInstance->touchInputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching);
             emuInstance->plugin->applyHotkeyToInputMask(&emuInstance->inputMask, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
         }
 
@@ -301,13 +308,10 @@ void EmuThread::run()
 
             emuInstance->nds->SetKeyMask(emuInstance->inputMask);
 
-            if (!wasTouchKeyMaskApplied)
-            {
-                if (emuInstance->isTouching)
-                    emuInstance->nds->TouchScreen(emuInstance->touchX, emuInstance->touchY);
-                else
-                    emuInstance->nds->ReleaseScreen();
-            }
+            if (emuInstance->isTouching)
+                emuInstance->nds->TouchScreen(emuInstance->touchX, emuInstance->touchY);
+            else
+                emuInstance->nds->ReleaseScreen();
 
             if (emuInstance->hotkeyPressed(HK_Lid))
             {
@@ -427,7 +431,7 @@ void EmuThread::run()
             else if (!emuInstance->doLimitFPS) emuInstance->curFPS = 1000.0;
             else emuInstance->curFPS = emuInstance->targetFPS;
 
-            refreshPluginCutsceneState();
+            refreshPluginState();
 
             if (emuInstance->audioDSiVolumeSync && emuInstance->nds->ConsoleType == 1)
             {
@@ -518,7 +522,7 @@ void EmuThread::run()
             }
 
             if (emuInstance->plugin != nullptr) {
-                refreshPluginCutsceneState();
+                refreshPluginState();
             }
         }
 
@@ -746,7 +750,7 @@ void EmuThread::refreshPluginGameScene()
     }
 }
 
-void EmuThread::refreshPluginCutsceneState()
+void EmuThread::refreshPluginState()
 {
     bool enableInvisibleFastMode = false;
     bool disableInvisibleFastMode = false;
@@ -758,13 +762,58 @@ void EmuThread::refreshPluginCutsceneState()
     if (emuInstance->plugin->ShouldStartReplacementBgmMusic()) {
         auto bgm = emuInstance->plugin->CurrentBackgroundMusic();
         if (bgm != 0) {
-            std::string path = emuInstance->plugin->BackgroundMusicFilePath("bgm" + std::to_string(bgm));
+            std::string path = emuInstance->plugin->replacementBackgroundMusicFilePath("bgm" + std::to_string(bgm));
             if (path != "") {
-                QString filePath = QString::fromUtf8(path.c_str());
-                emit windowStartBgmMusic(filePath);
+                int delay = emuInstance->plugin->delayBeforeStartReplacementBackgroundMusic();
+                if (delay == 0) {
+                    // disabling fast-foward, otherwise it will affect the cutscenes
+                    emuInstance->setVSyncGL(true);
+
+                    emuStatus = emuStatus_Paused;
+                    QString filePath = QString::fromUtf8(path.c_str());
+                    emit windowStartBgmMusic(filePath);
+                }
+                else {
+                    QTimer::singleShot(emuInstance->plugin->delayBeforeStartReplacementBackgroundMusic(), mainWindow, [this, bgm, path]() {
+                        // disabling fast-foward, otherwise it will affect the cutscenes
+                        emuInstance->setVSyncGL(true);
+
+                        emuStatus = emuStatus_Paused;
+                        QString filePath = QString::fromUtf8(path.c_str());
+                        emit windowStartBgmMusic(filePath);
+                    });
+                }
             }
         }
     }
+
+    if (emuInstance->plugin->StartedReplacementBgmMusic()) {
+        emuStatus = emuStatus_Running;
+    }
+
+    if (emuInstance->plugin->ShouldPauseReplacementBgmMusic()) {
+        emit windowPauseBgmMusic();
+    }
+
+    if (emuInstance->plugin->ShouldUnpauseReplacementBgmMusic()) {
+        emit windowUnpauseBgmMusic();
+    }
+
+
+    if (emuInstance->plugin->isMouseCursorGrabbed()) {
+        QPoint point = mainWindow->panel->mapToGlobal(mainWindow->panel->rect().center());
+        QCursor::setPos(point);
+    }
+    if (emuInstance->plugin->ShouldGrabMouseCursor()) {
+        mainWindow->panel->setMouseTracking(true);
+        mainWindow->panel->grabMouse();
+        mainWindow->panel->setCursor(Qt::BlankCursor);
+    }
+    if (emuInstance->plugin->ShouldReleaseMouseCursor()) {
+        mainWindow->panel->unsetCursor();
+        mainWindow->panel->releaseMouse();
+    }
+
 
     if (emuInstance->plugin->ShouldStopReplacementCutscene()) {
         emit windowStopVideo();
@@ -796,7 +845,7 @@ void EmuThread::refreshPluginCutsceneState()
     if (emuInstance->plugin->ShouldStartReplacementCutscene()) {
         auto cutscene = emuInstance->plugin->CurrentCutscene();
         if (cutscene != nullptr) {
-            std::string path = emuInstance->plugin->CutsceneFilePath(cutscene);
+            std::string path = emuInstance->plugin->replacementCutsceneFilePath(cutscene);
             if (path != "") {
                 // disabling fast-foward, otherwise it will affect the cutscenes
                 emuInstance->setVSyncGL(true);

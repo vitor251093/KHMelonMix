@@ -2,11 +2,12 @@
 #define PLUGIN_H
 
 #define REPLACEMENT_CUTSCENES_ENABLED true
-#define REPLACEMENT_BGM_ENABLED false
+#define REPLACEMENT_BGM_ENABLED true
+#define MOUSE_CURSOR_AS_CAMERA_ENABLED false
 
 #define SHOW_GAME_SCENE false
 #define DEBUG_MODE_ENABLED false
-#define DEBUG_LOG_FILE_ENABLED false
+#define ERROR_LOG_FILE_ENABLED true
 
 #define RAM_SEARCH_ENABLED true
 #define RAM_SEARCH_SIZE 32
@@ -94,7 +95,11 @@
 
 #endif
 
+#define CUTSCENE_SKIP_START_FRAMES_COUNT 40
+#define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
+
 #include <functional>
+#include <math.h>
 
 #include "../NDS.h"
 
@@ -120,189 +125,181 @@ class Plugin
 public:
     virtual ~Plugin() { };
 
-    virtual u32 getGameCode() = 0;
+    u32 GameCode = 0;
+    u32 getGameCode() {
+        return GameCode;
+    };
     static bool isCart(u32 gameCode) {return true;};
 
-    virtual void setNds(melonDS::NDS* Nds) = 0;
-    virtual void onLoadROM() = 0;
+    void setNds(melonDS::NDS* Nds) {nds = Nds;};
+    virtual void onLoadROM() {};
+    virtual void onLoadState() {};
 
     virtual std::string assetsFolder() = 0;
+    virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
 
     virtual const char* gpuOpenGL_FS() { return nullptr; };
+    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) {};
+    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) {};
+
     virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
+    virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
+    virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
+
     virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {};
 
-    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) { };
-    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) { };
-    virtual void gpu3DOpenGL_VS_Z_initVariables(GLuint prog, u32 flags) { };
-    virtual void gpu3DOpenGL_VS_Z_updateVariables(u32 flags) { };
+    bool togglePause();
 
-    virtual void onLoadState() { };
-    virtual bool togglePause() {return false;};
-
+    bool _superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
-    virtual bool applyTouchKeyMask(u32 TouchKeyMask) = 0;
 
-    virtual bool ShouldTerminateIngameCutscene() = 0;
-    virtual bool StoppedIngameCutscene() = 0;
-    virtual bool ShouldStartReplacementCutscene() = 0;
-    virtual bool StartedReplacementCutscene() = 0;
-    virtual bool RunningReplacementCutscene() = 0;
-    virtual bool ShouldPauseReplacementCutscene() = 0;
-    virtual bool ShouldUnpauseReplacementCutscene() = 0;
-    virtual bool ShouldStopReplacementCutscene() = 0;
-    virtual bool ShouldReturnToGameAfterCutscene() = 0;
-    virtual bool ShouldUnmuteAfterCutscene() = 0;
-    virtual CutsceneEntry* CurrentCutscene() = 0;
-    virtual std::string CutsceneFilePath(CutsceneEntry* cutscene) = 0;
-    virtual std::string LocalizationFilePath(std::string language) = 0;
-    virtual void onIngameCutsceneIdentified(CutsceneEntry* cutscene) = 0;
-    virtual void onTerminateIngameCutscene() = 0;
-    virtual void onReturnToGameAfterCutscene() = 0;
-    virtual void onReplacementCutsceneStarted() = 0;
-    virtual void onReplacementCutsceneEnd() = 0;
+    virtual bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {return false;}
+    void _superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching);
+    virtual void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching) = 0;
 
-    virtual bool ShouldStartReplacementBgmMusic() = 0;
-    virtual bool ShouldStopReplacementBgmMusic()  = 0;
-    virtual u16 CurrentBackgroundMusic() = 0;
-    virtual std::string BackgroundMusicFilePath(std::string name) = 0;
+    bool shouldExportTextures() {
+        return ExportTextures;
+    }
+    bool shouldStartInFullscreen() {
+        return FullscreenOnStartup;
+    }
+
+    bool ShouldTerminateIngameCutscene();
+    bool StoppedIngameCutscene();
+    bool ShouldStartReplacementCutscene();
+    bool StartedReplacementCutscene();
+    bool RunningReplacementCutscene();
+    bool ShouldPauseReplacementCutscene();
+    bool ShouldUnpauseReplacementCutscene();
+    bool ShouldStopReplacementCutscene();
+    bool ShouldReturnToGameAfterCutscene();
+    bool ShouldUnmuteAfterCutscene();
+    CutsceneEntry* CurrentCutscene();
+
+    virtual CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
+    virtual u32 detectTopScreenMobiCutsceneAddress() {return 0;};
+    virtual u32 detectBottomScreenMobiCutsceneAddress() {return 0;};
+    CutsceneEntry* detectTopScreenMobiCutscene();
+    CutsceneEntry* detectBottomScreenMobiCutscene();
+    CutsceneEntry* detectCutscene();
+    virtual bool isCutsceneGameScene() {return false;};
+    virtual bool didMobiCutsceneEnded() {return !isCutsceneGameScene();};
+    virtual bool canReturnToGameAfterReplacementCutscene() {return true;};
+
+    void refreshCutscene();
+
+    virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
+    virtual std::string localizationFilePath(std::string language) {return "";}
+    virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
+
+    void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
+    void onTerminateIngameCutscene();
+    void onReplacementCutsceneStarted();
+    void onReplacementCutsceneEnd();
+    void onReturnToGameAfterCutscene();
+
+
+    bool ShouldStartReplacementBgmMusic();
+    int delayBeforeStartReplacementBackgroundMusic();
+    bool StartedReplacementBgmMusic();
+    bool RunningReplacementBgmMusic();
+    bool ShouldPauseReplacementBgmMusic();
+    bool ShouldUnpauseReplacementBgmMusic();
+    bool ShouldStopReplacementBgmMusic();
+    u16 CurrentBackgroundMusic();
+
+    virtual std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
+
+    void onReplacementBackgroundMusicStarted();
+
+    virtual void refreshBackgroundMusic() {}
+
+
+    virtual void refreshMouseStatus() {}
+
+    bool ShouldGrabMouseCursor();
+    bool ShouldReleaseMouseCursor();
+    bool isMouseCursorGrabbed();
+
 
     virtual const char* getGameSceneName() = 0;
 
-    virtual bool shouldRenderFrame() = 0;
-
-    virtual bool refreshGameScene() = 0;
-
-    virtual void setAspectRatio(float aspectRatio) {}
-
-    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig) {}
-
-    void log(const char* log) {
-        printf("%s\n", log);
-
-        if (DEBUG_LOG_FILE_ENABLED) {
-            std::string fileName = std::string("debug.log");
-            Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::Append);
-            Platform::FileWrite(log, strlen(log), 1, logf);
-            Platform::FileWrite("\n", 1, 1, logf);
-            Platform::CloseFile(logf);
-        }
+    bool _superShouldRenderFrame();
+    virtual bool shouldRenderFrame() {
+        return _superShouldRenderFrame();
     }
+
+    virtual int detectGameScene() {return -1;}
+    bool setGameScene(int newGameScene);
+    bool refreshGameScene();
+
+    virtual u32 getAspectRatioAddress() {return 0;}
+    virtual void setAspectRatio(float aspectRatio);
+
+    void _superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
+    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
+
+    virtual void hudToggle() {}
+
+    virtual void debugLogs(int gameScene) {}
+
+    void errorLog(const char* format, ...);
 
     u32 LastMainRAM[0xFFFFFF];
     bool MainRAMState[0xFFFFFF];
 
-    void ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
-#if !RAM_SEARCH_ENABLED
-        return;
-#endif
+    void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
+protected:
+    melonDS::NDS* nds;
 
-        int byteSize = RAM_SEARCH_SIZE/8;
-        u32 limitMin = RAM_SEARCH_LIMIT_MIN;
-        u32 limitMax = RAM_SEARCH_LIMIT_MAX;
-        if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
-            if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
-                printf("Resetting RAM search\n");
-            }
-            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                u32 addr = (0x02000000 | index);
-                u32 newVal = RAM_SEARCH_READ(nds, addr);
-                MainRAMState[index] = true;
-#ifdef RAM_SEARCH_EXACT_VALUE
-                MainRAMState[index] = RAM_SEARCH_EXACT_VALUE == newVal;
-#endif
-#ifdef RAM_SEARCH_EXACT_VALUE_MIN
-                if (newVal < RAM_SEARCH_EXACT_VALUE_MIN) {
-                    MainRAMState[index] = false;
-                }
-#endif
-#ifdef RAM_SEARCH_EXACT_VALUE_MAX
-                if (newVal > RAM_SEARCH_EXACT_VALUE_MAX) {
-                    MainRAMState[index] = false;
-                }
-#endif
-                LastMainRAM[index] = newVal;
-            }
-        }
-        if (HotkeyPress & (1 << 13)) { // HK_VolumeUp (filter RAM by equal values)
-            printf("Filtering RAM by equal values\n");
-            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                u32 addr = (0x02000000 | index);
-                u32 newVal = RAM_SEARCH_READ(nds, addr);
-                MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] == newVal);
-                LastMainRAM[index] = newVal;
-            }
-        }
-        if (HotkeyPress & (1 << 14)) { // HK_VolumeDown (filter RAM by different values)
-            printf("Filtering RAM by different values\n");
-            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                u32 addr = (0x02000000 | index);
-                u32 newVal = RAM_SEARCH_READ(nds, addr);
-                MainRAMState[index] = MainRAMState[index] && (LastMainRAM[index] != newVal);
-                LastMainRAM[index] = newVal;
-            }
-        }
-        if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12) || HotkeyPress & (1 << 13) || HotkeyPress & (1 << 14)) {
-            int total = 0;
-            for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                if (MainRAMState[index]) {
-                    total += 1;
-                }
-            }
-            if (total > 0) {
-                if (total < 200*(4/byteSize)) {
-                    for (u32 index = limitMin; index < limitMax; index+=byteSize) {
-                        u32 addr = (0x02000000 | index);
-                        if (MainRAMState[index]) {
-                            printf("0x%08x: %d\n", addr, LastMainRAM[index]);
-                        }
-                    }
-                    printf("\n");
-                }
-                else {
-                    int validDistance = RAM_SEARCH_INTERVAL_MARGIN;
-                    u32 firstAddr = 0;
-                    u32 lastAddr = 0;
-                    for (u32 index = (limitMin == 0 ? byteSize : limitMin); index < limitMax; index += byteSize) {
-                        u32 addr = (0x02000000 | index);
-                        if (MainRAMState[index]) {
-                            if (firstAddr == 0) {
-                                firstAddr = addr;
-                                lastAddr = addr;
-                            }
-                            else {
-                                lastAddr = addr;
-                            }
-                        }
-                        else {
-                            if (firstAddr != 0 && lastAddr < (addr - byteSize*validDistance)) {
-                                if (firstAddr == lastAddr) {
-                                    printf("0x%08x\n", firstAddr);
-                                }
-                                else {
-                                    printf("0x%08x - 0x%08x\n", firstAddr, lastAddr);
-                                }
-                                firstAddr = 0;
-                                lastAddr = 0;
-                            }
-                        }
-                    }
-                    if (firstAddr != 0) {
-                        if (firstAddr == lastAddr) {
-                            printf("0x%08x\n", firstAddr);
-                        }
-                        else {
-                            printf("0x%08x - 0x%08x\n", firstAddr, lastAddr);
-                        }
-                    }
-                    printf("\n");
-                }
-            }
-            if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
-                printf("Addresses matching the search: %d\n", total);
-            }
-        }
-    }
+    float AspectRatio = 0;
+    int PriorGameScene = -1;
+    int GameScene = -1;
+    int HUDState = -1;
+
+    bool DisableEnhancedGraphics = false;
+    bool ExportTextures = false;
+    bool FullscreenOnStartup = false;
+
+    bool _LastTouchScreenMovementWasByPlugin = false;
+
+    int _StartPressCount = 0;
+    int _ReplayLimitCount = 0;
+    bool _CanSkipHdCutscene = false;
+    bool _SkipDsCutscene = false;
+    bool _IsUnskippableCutscene = false;
+    bool _ShouldTerminateIngameCutscene = false;
+    bool _StoppedIngameCutscene = false;
+    bool _ShouldStartReplacementCutscene = false;
+    bool _StartedReplacementCutscene = false;
+    bool _RunningReplacementCutscene = false;
+    bool _PausedReplacementCutscene = false;
+    bool _ShouldPauseReplacementCutscene = false;
+    bool _ShouldUnpauseReplacementCutscene = false;
+    bool _ShouldStopReplacementCutscene = false;
+    bool _ShouldReturnToGameAfterCutscene = false;
+    bool _ShouldUnmuteAfterCutscene = false;
+    bool _ShouldHideScreenForTransitions = false;
+    CutsceneEntry* _CurrentCutscene = nullptr;
+    CutsceneEntry* _NextCutscene = nullptr;
+    CutsceneEntry* _LastCutscene = nullptr;
+
+
+    bool _StartedReplacementBgmMusic = false;
+    bool _RunningReplacementBgmMusic = false;
+    bool _PausedReplacementBgmMusic = false;
+    bool _ShouldPauseReplacementBgmMusic = false;
+    bool _ShouldUnpauseReplacementBgmMusic = false;
+    bool _ShouldStartReplacementBgmMusic = false;
+    bool _ShouldStopReplacementBgmMusic = false;
+    u16 _CurrentBackgroundMusic = 0;
+    u16 _LastSoundtrackId = 0;
+
+
+    bool _ShouldGrabMouseCursor = false;
+    bool _ShouldReleaseMouseCursor = false;
+    bool _MouseCursorIsGrabbed = false;
+
 };
 }
 

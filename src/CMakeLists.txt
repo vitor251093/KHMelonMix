@@ -31,6 +31,8 @@ add_library(core STATIC
     FIFO.h
     GBACart.cpp
     GPU.cpp
+    GPU_Texreplace.cpp
+    GPU_Texreplace.h
     GPU2D.cpp
     GPU2D_Soft.cpp
     GPU3D.cpp
@@ -62,9 +64,11 @@ add_library(core STATIC
     fatfs/ffunicode.c
     fatfs/ffconf.h
 
+    plugins/Plugin.cpp
     plugins/PluginManager.cpp
     plugins/PluginKingdomHeartsDays.cpp
     plugins/PluginKingdomHeartsReCoded.cpp
+    plugins/PluginMetroidPrimeHunters.cpp
 
     sha1/sha1.c
     tiny-AES-c/aes.c

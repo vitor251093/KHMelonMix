@@ -280,6 +280,13 @@ void ScreenPanel::mousePressEvent(QMouseEvent* event)
     int x = event->pos().x();
     int y = event->pos().y();
 
+    if (emuInstance->plugin->overrideMouseTouchCoords(width(), height(), x, y, touching))
+    {
+        touching = true;
+        emuInstance->touchScreen(x, y);
+        return;
+    }
+
     if (layout.GetTouchCoords(x, y, false))
     {
         touching = true;
@@ -308,10 +315,22 @@ void ScreenPanel::mouseMoveEvent(QMouseEvent* event)
 
     if (!emuInstance->emuIsActive()) return;
     //if (!(event->buttons() & Qt::LeftButton)) return;
-    if (!touching) return;
 
     int x = event->pos().x();
     int y = event->pos().y();
+
+    if (emuInstance->plugin->overrideMouseTouchCoords(width(), height(), x, y, touching))
+    {
+        emuInstance->touchScreen(x, y);
+
+        if (!touching) {
+            emuInstance->releaseScreen();
+        }
+
+        return;
+    }
+
+    if (!touching) return;
 
     if (layout.GetTouchCoords(x, y, true))
     {
@@ -336,6 +355,13 @@ void ScreenPanel::tabletEvent(QTabletEvent* event)
             int x = event->x();
             int y = event->y();
 #endif
+
+            if (emuInstance->plugin->overrideMouseTouchCoords(width(), height(), x, y, touching))
+            {
+                touching = true;
+                emuInstance->touchScreen(x, y);
+                return;
+            }
 
             if (layout.GetTouchCoords(x, y, event->type()==QEvent::TabletMove))
             {
@@ -381,6 +407,13 @@ void ScreenPanel::touchEvent(QTouchEvent* event)
 #endif
             int x = (int)lastPosition.x();
             int y = (int)lastPosition.y();
+
+            if (emuInstance->plugin->overrideMouseTouchCoords(width(), height(), x, y, touching))
+            {
+                touching = true;
+                emuInstance->touchScreen(x, y);
+                return;
+            }
 
             if (layout.GetTouchCoords(x, y, event->type()==QEvent::TouchUpdate))
             {

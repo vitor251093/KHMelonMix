@@ -159,6 +159,8 @@ signals:
 
     void windowStartBgmMusic(QString videoFilePath);
     void windowStopBgmMusic();
+    void windowPauseBgmMusic();
+    void windowUnpauseBgmMusic();
 
     void windowStartVideo(QString videoFilePath);
     void windowStopVideo();
@@ -166,6 +168,8 @@ signals:
     void windowUnpauseVideo();
 
 private:
+    MainWindow* mainWindow;
+
     void handleMessages();
 
     void updateRenderer();
@@ -200,7 +204,7 @@ private:
 
     bool pluginShouldFastForward();
     void refreshPluginGameScene();
-    void refreshPluginCutsceneState();
+    void refreshPluginState();
 
     int lastVideoRenderer = -1;
 

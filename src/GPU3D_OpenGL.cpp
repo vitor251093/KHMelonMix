@@ -65,7 +65,7 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     glUniform1i(uni_id, 1);
 
     if (GamePlugin != nullptr) {
-        GamePlugin->gpu3DOpenGL_VS_Z_initVariables(prog, flags);
+        GamePlugin->gpu3DOpenGLClassic_VS_Z_initVariables(prog, flags);
     }
 
     RenderShader[flags] = prog;
@@ -80,7 +80,7 @@ void GLRenderer::UseRenderShader(u32 flags)
     CurShaderID = flags;
 
     if (GamePlugin != nullptr) {
-        GamePlugin->gpu3DOpenGL_VS_Z_updateVariables(flags);
+        GamePlugin->gpu3DOpenGLClassic_VS_Z_updateVariables(flags);
     }
 }
 

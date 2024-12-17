@@ -54,15 +54,7 @@ bool ComputeRenderer::CompileShader(GLuint& shader, const std::string& source, c
     shaderSource += ComputeRendererShaders::Common;
     shaderSource += source;
 
-    bool compiled = OpenGL::CompileComputeProgram(shader, shaderSource.c_str(), shaderName.c_str());
-    if (!compiled) return false;
-
-    // TODO: Get compute renderer aspect ratio location
-    // GLuint& shaderId = static_cast<GLuint&>(*shader);
-    GLint uni_id = glGetUniformLocation(shader, "TopScreenAspectRatio");
-    // RenderShaderAspectRatio[flags] = uni_id;
-
-    return compiled;
+    return OpenGL::CompileComputeProgram(shader, shaderSource.c_str(), shaderName.c_str());
 }
 
 void ComputeRenderer::ShaderCompileStep(int& current, int& count)
@@ -190,6 +182,7 @@ std::unique_ptr<ComputeRenderer> ComputeRenderer::New(Plugins::Plugin* plugin)
 
     std::unique_ptr<ComputeRenderer> result = std::unique_ptr<ComputeRenderer>(new ComputeRenderer(std::move(*compositor)));
     result->GamePlugin = plugin;
+    result->Texcache.GamePlugin = plugin;
 
     //glDebugMessageCallback(blah, NULL);
     //glEnable(GL_DEBUG_OUTPUT);
@@ -600,9 +593,6 @@ struct Variant
 
 void ComputeRenderer::RenderFrame(GPU& gpu)
 {
-    // TODO: Update compute renderer aspect ratio
-    // glUniform1f(RenderShaderAspectRatio[flags], aspectRatio);
-
     assert(!NeedsShaderCompile());
     if (!Texcache.Update(gpu) && gpu.GPU3D.RenderFrameIdentical)
     {
@@ -664,7 +654,7 @@ void ComputeRenderer::RenderFrame(GPU& gpu)
             // we always need to look up the texture to get the layer of the array texture
             if (enableTextureMaps && (polygon->TexParam >> 26) & 0x7)
             {
-                Texcache.GetTexture(gpu, polygon->TexParam, polygon->TexPalette, variant.Texture, prevTexLayer, textureLastVariant);
+                Texcache.GetTexture(gpu, polygon->TexParam, polygon->Width, polygon->Height, polygon->TexPalette, variant.Texture, prevTexLayer, textureLastVariant);
                 bool wrapS = (polygon->TexParam >> 16) & 1;
                 bool wrapT = (polygon->TexParam >> 17) & 1;
                 bool mirrorS = (polygon->TexParam >> 18) & 1;
@@ -692,8 +682,8 @@ void ComputeRenderer::RenderFrame(GPU& gpu)
 
                 prevVariant = numVariants;
                 variants[numVariants] = variant;
-                variants[numVariants].Width = TextureWidth(polygon->TexParam);
-                variants[numVariants].Height = TextureHeight(polygon->TexParam);
+                variants[numVariants].Width  = polygon->Width;
+                variants[numVariants].Height = polygon->Height;
                 numVariants++;
                 assert(numVariants <= MaxVariants);
             foundVariant:;
