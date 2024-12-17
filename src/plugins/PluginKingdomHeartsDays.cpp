@@ -453,22 +453,24 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
     }
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
-
     u32 attr = polygon->Attr;
-    u32 aimAttr1 = 1058996416;
-    u32 aimAttr2 = 1042219200;
-    if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2)) {
-        s32 z = polygon->Vertices[0]->Position[2];
-        float _z = ((float)z)/(1 << 22);
-        if (_z < 0) {
-            u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-            u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-            float xCenter = (x0 + x1)/2.0;
 
-            scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
-            scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
-            scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
-            scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D) {
+        u32 aimAttr1 = 1058996416;
+        u32 aimAttr2 = 1042219200;
+        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2)) {
+            s32 z = polygon->Vertices[0]->Position[2];
+            float _z = ((float)z)/(1 << 22);
+            if (_z < 0) {
+                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                float xCenter = (x0 + x1)/2.0;
+
+                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
+                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
+                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
+                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
+            }
         }
     }
 

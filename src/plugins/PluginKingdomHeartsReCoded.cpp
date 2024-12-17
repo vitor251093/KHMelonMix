@@ -360,24 +360,26 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
     }
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
-
     u32 attr = polygon->Attr;
-    u32 aimAttr1 = 1058996416;
-    u32 aimAttr2 = 1042219200;
-    u32 greenAimSmallSquare = 1025441984;
-    u32 greenAimBigSquare = 2033856;
-    if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2 || attr == greenAimSmallSquare || attr == greenAimBigSquare)) {
-        s32 z = polygon->Vertices[0]->Position[2];
-        float _z = ((float)z)/(1 << 22);
-        if (_z < 0) {
-            u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-            u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-            float xCenter = (x0 + x1)/2.0;
 
-            scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
-            scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
-            scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
-            scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu) {
+        u32 aimAttr1 = 1058996416;
+        u32 aimAttr2 = 1042219200;
+        u32 greenAimSmallSquare = 1025441984;
+        u32 greenAimBigSquare = 2033856;
+        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2 || attr == greenAimSmallSquare || attr == greenAimBigSquare)) {
+            s32 z = polygon->Vertices[0]->Position[2];
+            float _z = ((float)z)/(1 << 22);
+            if (_z < 0) {
+                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                float xCenter = (x0 + x1)/2.0;
+
+                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
+                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
+                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
+                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
+            }
         }
     }
 
@@ -397,13 +399,32 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
         float _x = (float)(*x);
         float _y = (float)(*y);
         float _z = ((float)z)/(1 << 22);
-        if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
-            _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
-            _z == (s32)(-1.000) &&
-            rgb[0] < 200) {
 
-            _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
-            _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
+        if (HideAllHUD)
+        {
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu)
+            {
+                if (_x >= 0 && _x <= ScreenWidth &&
+                    _y >= 0 && _y <= ScreenHeight &&
+                    _z < 0) {
+                    _x = 0;
+                    _y = 0;
+                }
+            }
+        }
+        else
+        {
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu)
+            {
+                if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
+                    _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
+                    _z == (s32)(-1.000) &&
+                    rgb[0] < 200) {
+
+                    _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
+                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
+                }
+            }
         }
 
         *x = (s32)(_x);
