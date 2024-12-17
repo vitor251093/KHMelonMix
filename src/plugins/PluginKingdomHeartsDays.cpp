@@ -446,77 +446,82 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
     glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
 }
 
-void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, melonDS::Polygon* polygon, int vertexIndex) {
+void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return;
     }
 
-    s32 z = polygon->Vertices[vertexIndex]->Position[2];
-    u32 attr = polygon->Attr;
-
-    int resolutionScale = ScreenWidth/256;
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    float iuTexScale = (6.0)/UIScale;
-
-    float _x = (float)(*x);
-    float _y = (float)(*y);
-    float _z = ((float)z)/(1 << 22);
-    if (HideAllHUD)
+    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
     {
-        if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D)
+        s32* x = &scaledPositions[vertexIndex][0];
+        s32* y = &scaledPositions[vertexIndex][1];
+        s32 z = polygon->Vertices[vertexIndex]->Position[2];
+        u32 attr = polygon->Attr;
+
+        int resolutionScale = ScreenWidth/256;
+        float aspectRatio = AspectRatio / (4.f / 3.f);
+        float iuTexScale = (6.0)/UIScale;
+
+        float _x = (float)(*x);
+        float _y = (float)(*y);
+        float _z = ((float)z)/(1 << 22);
+        if (HideAllHUD)
         {
-            if (_x >= 0 && _x <= ScreenWidth &&
-                _y >= 0 && _y <= ScreenHeight &&
-                _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
-                _x = 0;
-                _y = 0;
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D)
+            {
+                if (_x >= 0 && _x <= ScreenWidth &&
+                    _y >= 0 && _y <= ScreenHeight &&
+                    _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
+                    _x = 0;
+                    _y = 0;
+                }
             }
         }
+        else
+        {
+            if (GameScene == gameScene_InGameWithMap)
+            {
+                float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
+
+                float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
+                if ((_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (2.0/5)*(ScreenHeight) &&
+                    (abs(_z - effectLayer) < 0.0001))) {
+                    _x = (_x)/(iuTexScale*aspectRatio);
+                    _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
+                }
+
+                float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
+                if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
+                    (abs(_z - textLayer) < 0.0001) &&
+                    attr != 34144384 && attr != 34799744 /* rain */)) {
+                    _x = (_x)/(iuTexScale*aspectRatio);
+                    _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
+                }
+
+                u32 aimAttr1 = 1058996416;
+                u32 aimAttr2 = 1042219200;
+                if (_z <= 0 && (attr == aimAttr1 || attr == aimAttr2)) {
+                    // TODO: KH resize aims
+                }
+            }
+
+            if (GameScene == gameScene_PauseMenu)
+            {
+                if (_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
+                    _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
+                    _x = 0;
+                    _y = 0;
+                }
+            }
+        }
+
+        *x = (s32)(_x);
+        *y = (s32)(_y);
     }
-    else
-    {
-        if (GameScene == gameScene_InGameWithMap)
-        {
-            float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
-
-            float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
-            if ((_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
-                 _y >= 0 && _y <= (2.0/5)*(ScreenHeight) &&
-                (abs(_z - effectLayer) < 0.0001))) {
-                _x = (_x)/(iuTexScale*aspectRatio);
-                _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
-            }
-
-            float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
-            if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
-                 _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
-                (abs(_z - textLayer) < 0.0001) &&
-                attr != 34144384 && attr != 34799744 /* rain */)) {
-                _x = (_x)/(iuTexScale*aspectRatio);
-                _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
-            }
-
-            u32 aimAttr1 = 1058996416;
-            u32 aimAttr2 = 1042219200;
-            if (_z <= 0 && (attr == aimAttr1 || attr == aimAttr2)) {
-                // TODO: KH resize aims
-            }
-        }
-
-        if (GameScene == gameScene_PauseMenu)
-        {
-            if (_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
-                _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
-                _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
-                _x = 0;
-                _y = 0;
-            }
-        }
-    }
-
-    *x = (s32)(_x);
-    *y = (s32)(_y);
 };
 
 void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)

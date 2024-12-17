@@ -37,7 +37,7 @@ public:
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
     void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags);
 
-    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, melonDS::Polygon* polygon, int vertexIndex);
+    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
 
     void onLoadState();
 

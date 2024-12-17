@@ -353,36 +353,41 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 fla
     glUniform1i(CompGpu3DLoc[flags][2], UIScale);
 }
 
-void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, melonDS::Polygon* polygon, int vertexIndex) {
+void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return;
     }
 
-    s32 z = polygon->Vertices[vertexIndex]->Position[2];
-    s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
+    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
+    {
+        s32* x = &scaledPositions[vertexIndex][0];
+        s32* y = &scaledPositions[vertexIndex][1];
+        s32 z = polygon->Vertices[vertexIndex]->Position[2];
+        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
 
-    int resolutionScale = ScreenWidth/256;
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    float commandMenuLeftMargin = 6.7;
-    float commandMenuBottomMargin = 0.5;
+        int resolutionScale = ScreenWidth/256;
+        float aspectRatio = AspectRatio / (4.f / 3.f);
+        float commandMenuLeftMargin = 6.7;
+        float commandMenuBottomMargin = 0.5;
 
-    float iuTexScale = (6.0)/UIScale;
+        float iuTexScale = (6.0)/UIScale;
 
-    float _x = (float)(*x);
-    float _y = (float)(*y);
-    float _z = ((float)z)/(1 << 22);
-    if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
-        _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
-        _z == (s32)(-1.000) &&
-        rgb[0] < 200) {
+        float _x = (float)(*x);
+        float _y = (float)(*y);
+        float _z = ((float)z)/(1 << 22);
+        if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
+            _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
+            _z == (s32)(-1.000) &&
+            rgb[0] < 200) {
 
-        _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
-        _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
+            _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
+            _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
+        }
+
+        *x = (s32)(_x);
+        *y = (s32)(_y);
     }
-
-    *x = (s32)(_x);
-    *y = (s32)(_y);
 };
 
 void PluginKingdomHeartsReCoded::onLoadState()
