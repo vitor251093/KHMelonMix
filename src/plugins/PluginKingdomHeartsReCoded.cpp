@@ -359,27 +359,27 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
         return;
     }
 
+    int resolutionScale = ScreenWidth/256;
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    float commandMenuLeftMargin = 33.5;
-    float commandMenuBottomMargin = 2.5;
-    float commandMenuWidth = ScreenWidth/(2.4*aspectRatio);
-    float commandMenuHeight = ScreenHeight/2.4;
+    float commandMenuLeftMargin = 6.7;
+    float commandMenuBottomMargin = 0.5;
 
-    float iuTexScale = (5.0)/UIScale;
+    float iuTexScale = (6.0)/UIScale;
 
-    float _x = (float)(*x - ScreenWidth/2);
-    float _y = (float)(*y - ScreenHeight/2);
-    if (_x >= -(1.000)*(ScreenWidth/2)  && _x <= -(0.375)*(ScreenWidth/2) &&
-        _y >= -(0.250)*(ScreenHeight/2) && _y <= +(1.000)*(ScreenHeight/2) &&
-        z == (s32)(-(1.000)*(1 << 22)) &&
+    float _x = (float)(*x);
+    float _y = (float)(*y);
+    float _z = ((float)z)/(1 << 22);
+    if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
+        _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
+        _z == (s32)(-1.000) &&
         rgb[0] < 200) {
 
-        _x = ((((_x/(ScreenWidth/2) + 1.0)*(commandMenuWidth/iuTexScale) + commandMenuLeftMargin/iuTexScale)/ScreenWidth)*2.0 - 1.0)*(ScreenWidth/2);
-        _y = (1.0 - (((1.0 - _y/(ScreenHeight/2))*(commandMenuHeight/iuTexScale) + commandMenuBottomMargin/iuTexScale)/ScreenHeight)*2.0)*(ScreenHeight/2);
-
-        *x = (s32)(_x + ScreenWidth/2);
-        *y = (s32)(_y + ScreenHeight/2);
+        _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
+        _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
     }
+
+    *x = (s32)(_x);
+    *y = (s32)(_y);
 };
 
 void PluginKingdomHeartsReCoded::onLoadState()
