@@ -323,45 +323,24 @@ public:
 
             int channels = 4;
             int r_width, r_height, r_channels;
-            imageData = Texreplace::LoadTextureFromFile(path1, &r_width, &r_height, &r_channels);
-            if (imageData != nullptr) {
-                if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
-                    printf("Loading texture %s\n", path1);
-                    width = r_width;
-                    height = r_height;
-                }
-                else {
-                    GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path1);
-                    imageData = nullptr;
-                }
-            }
+            imageData = nullptr;
 
-            if (imageData == nullptr) {
-                imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
-                if (imageData != nullptr) {
-                    if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
-                        printf("Loading texture %s\n", path2);
-                        width = r_width;
-                        height = r_height;
-                    }
-                    else {
-                        GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path2);
-                        imageData = nullptr;
-                    }
-                }
-            }
-
-            if (imageData == nullptr) {
-                imageData = Texreplace::LoadTextureFromFile(path3, &r_width, &r_height, &r_channels);
-                if (imageData != nullptr) {
-                    if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
-                        printf("Loading texture %s\n", path3);
-                        width = r_width;
-                        height = r_height;
-                    }
-                    else {
-                        GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path3);
-                        imageData = nullptr;
+            const char* paths[] = {path1, path2, path3};
+            for (int i = 0; i < sizeof(paths) / sizeof(paths[0]); ++i) {
+                const char* path = paths[i];
+                if (imageData == nullptr) {
+                    imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+                    if (imageData != nullptr) {
+                        if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
+                            printf("Loading texture %s\n", path);
+                            width = r_width;
+                            height = r_height;
+                            break;
+                        }
+                        else {
+                            GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path);
+                            imageData = nullptr;
+                        }
                     }
                 }
             }
