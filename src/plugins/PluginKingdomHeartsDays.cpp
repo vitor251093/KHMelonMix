@@ -478,10 +478,9 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
     {
         if (GameScene == gameScene_InGameWithMap)
         {
-            float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
-            float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
-
             float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
+
+            float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
             if ((_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
                  _y >= 0 && _y <= (2.0/5)*(ScreenHeight) &&
                 (abs(_z - effectLayer) < 0.0001))) {
@@ -489,12 +488,19 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
                 _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
             }
 
+            float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
             if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
                  _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
                 (abs(_z - textLayer) < 0.0001) &&
                 attr != 34144384 && attr != 34799744 /* rain */)) {
                 _x = (_x)/(iuTexScale*aspectRatio);
                 _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
+            }
+
+            u32 aimAttr1 = 1058996416;
+            u32 aimAttr2 = 1042219200;
+            if (_z <= 0 && (attr == aimAttr1 || attr == aimAttr2)) {
+                // TODO: KH resize aims
             }
         }
 
