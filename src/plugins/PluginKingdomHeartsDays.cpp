@@ -446,7 +446,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
     glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
 }
 
-void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, Polygon* polygon, int vertexIndex) {
+void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, melonDS::Polygon* polygon, int vertexIndex) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return;

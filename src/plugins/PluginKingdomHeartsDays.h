@@ -38,7 +38,7 @@ public:
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
     void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags);
 
-    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, Polygon* polygon, int vertexIndex);
+    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, melonDS::Polygon* polygon, int vertexIndex);
 
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
 
