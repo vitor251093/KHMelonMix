@@ -452,8 +452,9 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
         return;
     }
 
+    int resolutionScale = ScreenWidth/256;
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    float iuTexScale = (12.0)/UIScale;
+    float iuTexScale = (6.0)/UIScale;
 
     float _x = (float)(*x);
     float _y = (float)(*y);
@@ -485,8 +486,8 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
                 (_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
                  _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
                 (abs(_z - textLayer) < 0.0001))) {
-                _x = (iuTexScale*_x)/((ScreenWidth/256.0)*aspectRatio);
-                _y = (iuTexScale*_y)/((ScreenHeight/192.0)) + heartTopMargin;
+                _x = (_x)/(iuTexScale*aspectRatio);
+                _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
             }
         }
 
