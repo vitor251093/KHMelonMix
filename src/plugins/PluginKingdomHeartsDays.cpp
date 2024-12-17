@@ -446,11 +446,14 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
     glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
 }
 
-void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
+void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, Polygon* polygon, int vertexIndex) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return;
     }
+
+    s32 z = polygon->Vertices[vertexIndex]->Position[2];
+    u32 attr = polygon->Attr;
 
     int resolutionScale = ScreenWidth/256;
     float aspectRatio = AspectRatio / (4.f / 3.f);
@@ -481,11 +484,15 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
             float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
             if ((_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
                  _y >= 0 && _y <= (2.0/5)*(ScreenHeight) &&
-                (abs(_z - effectLayer) < 0.0001))
-                ||
-                (_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
+                (abs(_z - effectLayer) < 0.0001))) {
+                _x = (_x)/(iuTexScale*aspectRatio);
+                _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
+            }
+
+            if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
                  _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
-                (abs(_z - textLayer) < 0.0001))) {
+                (abs(_z - textLayer) < 0.0001) &&
+                attr != 34144384 && attr != 34799744 /* rain */)) {
                 _x = (_x)/(iuTexScale*aspectRatio);
                 _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
             }

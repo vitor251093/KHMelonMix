@@ -353,11 +353,14 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 fla
     glUniform1i(CompGpu3DLoc[flags][2], UIScale);
 }
 
-void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
+void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, Polygon* polygon, int vertexIndex) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return;
     }
+
+    s32 z = polygon->Vertices[vertexIndex]->Position[2];
+    s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
 
     int resolutionScale = ScreenWidth/256;
     float aspectRatio = AspectRatio / (4.f / 3.f);

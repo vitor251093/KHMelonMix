@@ -101,6 +101,7 @@
 #include <functional>
 #include <math.h>
 
+#include "../GPU3D.h"
 #include "../NDS.h"
 
 #include "../OpenGLSupport.h"
@@ -146,7 +147,7 @@ public:
     virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
     virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
 
-    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {};
+    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, Polygon* polygon, int vertexIndex) {};
 
     bool togglePause();
 
