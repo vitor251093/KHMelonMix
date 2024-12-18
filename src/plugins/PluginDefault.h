@@ -19,10 +19,6 @@ public:
 
     static bool isCart(u32 gameCode) {return true;};
 
-    std::string assetsFolder() {
-        return std::to_string(GameCode);
-    }
-
     void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {
         bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
         if (!shouldContinue) {

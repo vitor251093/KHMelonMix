@@ -1169,6 +1169,26 @@ std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string languag
     return "";
 }
 
+std::string PluginKingdomHeartsReCoded::textureFilePath(std::string texture) {
+    std::string filename = "index.ini";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
+
+    if (!std::filesystem::exists(assetsFolderPath)) {
+        std::filesystem::create_directory(assetsFolderPath);
+    }
+
+    std::filesystem::path fullPath = texturesFolder / (texture + ".png");
+
+    if (!std::filesystem::exists(fullPath)) {
+        return "";
+    }
+
+    return fullPath.string();
+}
+
 u32 PluginKingdomHeartsReCoded::getCurrentMission()
 {
     return 0;

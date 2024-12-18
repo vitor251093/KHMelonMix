@@ -136,7 +136,7 @@ public:
     virtual void onLoadROM() {};
     virtual void onLoadState() {};
 
-    virtual std::string assetsFolder() = 0;
+    virtual std::string assetsFolder() {return std::to_string(GameCode);}
     virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
 
     virtual const char* gpuOpenGL_FS() { return nullptr; };
@@ -191,6 +191,20 @@ public:
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     virtual std::string localizationFilePath(std::string language) {return "";}
+    virtual std::string textureFilePath(std::string texture) {return "";}
+    virtual std::string tmpTextureFilePath(std::string texture) {
+        std::string assetsFolderName = assetsFolder();
+        std::filesystem::path currentPath = std::filesystem::current_path();
+        std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+        std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";
+
+        if (shouldExportTextures() && !std::filesystem::exists(tmpFolderPath)) {
+            std::filesystem::create_directory(tmpFolderPath);
+        }
+
+        std::filesystem::path fullPathTmp = tmpFolderPath / (texture + ".png");
+        return fullPathTmp.string();
+    }
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);

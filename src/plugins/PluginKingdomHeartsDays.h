@@ -50,6 +50,7 @@ public:
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene);
     std::string localizationFilePath(std::string language);
+    std::string textureFilePath(std::string texture);
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene);
 
