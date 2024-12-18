@@ -367,7 +367,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
     float aspectRatio = AspectRatio / (4.f / 3.f);
     u32 attr = polygon->Attr;
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu) {
         u32 aimAttr1 = 1058996416;
         u32 aimAttr2 = 1042219200;
         u32 greenAimSmallSquare = 1025441984;
@@ -428,6 +428,16 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
 
                     _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
                     _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
+                }
+            }
+
+            if (GameScene == gameScene_InGameOlympusBattle)
+            {
+                if (_x >= (ScreenWidth/2)        && _x <= (ScreenWidth)  &&
+                    _y >= (2.0/3)*(ScreenHeight) && _y <= (ScreenHeight)) {
+
+                    _x = ScreenWidth - ((ScreenWidth - _x)/(iuTexScale*aspectRatio));
+                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale));
                 }
             }
         }
