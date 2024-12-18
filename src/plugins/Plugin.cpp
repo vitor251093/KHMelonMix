@@ -196,7 +196,7 @@ std::string Plugin::textureIndexFilePath() {
         return "";
     }
 
-    return fullPath;
+    return fullPath.string();
 }
 std::map<std::string, std::string> Plugin::getTexturesIndex() {
     if (!texturesIndex.empty()) {
