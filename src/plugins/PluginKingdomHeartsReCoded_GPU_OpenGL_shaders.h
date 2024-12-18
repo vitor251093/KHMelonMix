@@ -440,24 +440,43 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 
     if (_isHealthVisible)
     {
-        // player health
-        float sourcePlayerHealthHeight = 78.0;
-        float sourcePlayerHealthWidth = 92.0;
-        float playerHealthHeight = sourcePlayerHealthHeight;
-        float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
-        float playerHealthRightMargin = 8.0;
-        float playerHealthBottomMargin = 3.0;
-        if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
-            texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
-            texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
-            texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
-
-            vec2 finalPos = vec2((playerHealthWidth + playerHealthRightMargin) - (256.0*iuTexScale - texPosition3d.x),
-                                 (playerHealthHeight + playerHealthBottomMargin) - (192.0*iuTexScale - texPosition3d.y));
-            if (finalPos.x*1.7 + finalPos.y > 64.0) {
+        if (GameScene == 16) { // gameScene_InGameOlympusBattle
+            // player health
+            float sourcePlayerHealthHeight = 78.0;
+            float sourcePlayerHealthWidth = 122.0;
+            float playerHealthHeight = sourcePlayerHealthHeight;
+            float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
+            float playerHealthRightMargin = 0.0;
+            float playerHealthBottomMargin = 0.0;
+            if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
+                texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
+                texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
+                texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
                 return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin,
                                                         192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
                     vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
+            }
+        }
+        else {
+            // player health
+            float sourcePlayerHealthHeight = 78.0;
+            float sourcePlayerHealthWidth = 92.0;
+            float playerHealthHeight = sourcePlayerHealthHeight;
+            float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
+            float playerHealthRightMargin = 8.0;
+            float playerHealthBottomMargin = 3.0;
+            if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
+                texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
+                texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
+                texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
+
+                vec2 finalPos = vec2((playerHealthWidth + playerHealthRightMargin) - (256.0*iuTexScale - texPosition3d.x),
+                                    (playerHealthHeight + playerHealthBottomMargin) - (192.0*iuTexScale - texPosition3d.y));
+                if (finalPos.x*1.7 + finalPos.y > 64.0) {
+                    return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin,
+                                                            192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
+                        vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
+                }
             }
         }
     }
@@ -479,24 +498,26 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                 vec2(0, 192.0 - sourceCommandMenuHeight);
         }
 
-        // next area name
-        float sourceNextAreaNameHeight = 32.0;
-        float sourceNextAreaNameWidth = 80.0;
-        float nextAreaNameHeight = sourceNextAreaNameHeight;
-        float nextAreaNameWidth = sourceNextAreaNameWidth*heightScale;
-        float nextAreaNameRightMargin = 0.5;
-        float nextAreaNameBottomMargin = 0.0;
-        if (texPosition3d.x >= (128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2) &&
-            texPosition3d.x <= (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2) &&
-            texPosition3d.y >= (192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin) &&
-            texPosition3d.y < (192.0*iuTexScale - nextAreaNameBottomMargin)) {
+        if (GameScene != 16) { // gameScene_InGameOlympusBattle
+            // next area name
+            float sourceNextAreaNameHeight = 32.0;
+            float sourceNextAreaNameWidth = 80.0;
+            float nextAreaNameHeight = sourceNextAreaNameHeight;
+            float nextAreaNameWidth = sourceNextAreaNameWidth*heightScale;
+            float nextAreaNameRightMargin = 0.5;
+            float nextAreaNameBottomMargin = 0.0;
+            if (texPosition3d.x >= (128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2) &&
+                texPosition3d.x <= (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2) &&
+                texPosition3d.y >= (192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin) &&
+                texPosition3d.y < (192.0*iuTexScale - nextAreaNameBottomMargin)) {
 
-            vec2 finalPos = vec2((sourceNextAreaNameWidth*heightScale) - (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2 - texPosition3d.x),
-                                 (nextAreaNameHeight + nextAreaNameBottomMargin) - (192.0*iuTexScale - texPosition3d.y));
-            if (finalPos.x + finalPos.y < 74.0) {
-                return fixStretch*(texPosition3d - vec2(128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2 + nextAreaNameRightMargin,
-                                                        192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin)) +
-                    vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
+                vec2 finalPos = vec2((sourceNextAreaNameWidth*heightScale) - (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2 - texPosition3d.x),
+                                    (nextAreaNameHeight + nextAreaNameBottomMargin) - (192.0*iuTexScale - texPosition3d.y));
+                if (finalPos.x + finalPos.y < 74.0) {
+                    return fixStretch*(texPosition3d - vec2(128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2 + nextAreaNameRightMargin,
+                                                            192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin)) +
+                        vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
+                }
             }
         }
     }
@@ -674,7 +695,10 @@ ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
     if (GameScene == 15) { // gameScene_InGameDialog
         return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
     }
-    if (GameScene == 16) { // gameScene_Other2D
+    if (GameScene == 16) { // gameScene_InGameOlympusBattle
+        return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
+    }
+    if (GameScene == 17) { // gameScene_Other2D
         return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
     }
     return ivec2(fTexcoord);
@@ -839,7 +863,7 @@ ivec4 getTopScreen3DColor()
     if (GameScene == 14) { // gameScene_WorldSelection
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
-    if (GameScene == 16) { // gameScene_Other2D
+    if (GameScene == 17) { // gameScene_Other2D
         return getHorizontalDualScreen3DColor(xpos, ypos);
     }
 
@@ -958,7 +982,10 @@ ivec4 brightness()
     if (GameScene == 15) { // gameScene_InGameDialog
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
-    if (GameScene == 16) { // gameScene_Other2D
+    if (GameScene == 16) { // gameScene_InGameOlympusBattle
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+    }
+    if (GameScene == 17) { // gameScene_Other2D
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
     }
 

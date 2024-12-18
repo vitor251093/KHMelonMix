@@ -48,6 +48,10 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0
 #define IS_PLAYABLE_AREA_JP 0x0205a6e0
 
+#define TYPE_OF_BATTLE_ADDRESS_US 0x020b5608 // or 0x020b5620
+#define TYPE_OF_BATTLE_ADDRESS_EU 0x020b5608 // TODO: KH
+#define TYPE_OF_BATTLE_ADDRESS_JP 0x020b5608 // TODO: KH
+
 #define CUTSCENE_ADDRESS_US 0x020b7db8
 #define CUTSCENE_ADDRESS_EU 0x020b7e08
 #define CUTSCENE_ADDRESS_JP 0x020b7858
@@ -119,8 +123,9 @@ enum
     gameScene_CutsceneWithStaticImages, // 13
     gameScene_WorldSelection,           // 14
     gameScene_InGameDialog,             // 15
-    gameScene_Other2D,                  // 16
-    gameScene_Other                     // 17
+    gameScene_InGameOlympusBattle,      // 16
+    gameScene_Other2D,                  // 17
+    gameScene_Other                     // 18
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -362,7 +367,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
     float aspectRatio = AspectRatio / (4.f / 3.f);
     u32 attr = polygon->Attr;
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle) {
         u32 aimAttr1 = 1058996416;
         u32 aimAttr2 = 1042219200;
         u32 greenAimSmallSquare = 1025441984;
@@ -402,7 +407,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
 
         if (HideAllHUD)
         {
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu)
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
             {
                 if (_x >= 0 && _x <= ScreenWidth &&
                     _y >= 0 && _y <= ScreenHeight &&
@@ -414,7 +419,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
         }
         else
         {
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu)
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
             {
                 if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
                     _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
@@ -454,7 +459,7 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
     }
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D || GameScene == gameScene_InGameOlympusBattle) {
         // Enabling L + D-Pad
         if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
@@ -699,6 +704,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
         case gameScene_WorldSelection: return "Game scene: World selection";
         case gameScene_InGameDialog: return "Game scene: Ingame dialog";
+        case gameScene_InGameOlympusBattle: return "Game scene: Ingame (Olympus battle)";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         case gameScene_Other: return "Game scene: Unknown (3D)";
         default: return "Game scene: Unknown";
@@ -928,6 +934,12 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     if (isInGameDialog)
     {
         return gameScene_InGameDialog;
+    }
+
+    u32 typeOfBattleAddr = getU32ByCart(TYPE_OF_BATTLE_ADDRESS_US, TYPE_OF_BATTLE_ADDRESS_EU, TYPE_OF_BATTLE_ADDRESS_JP);
+    u32 typeOfBattle = nds->ARM7Read32(typeOfBattleAddr);
+    if (typeOfBattle == 0) {
+        return gameScene_InGameOlympusBattle;
     }
 
     // Regular gameplay
