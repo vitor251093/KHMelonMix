@@ -1416,26 +1416,6 @@ std::string PluginKingdomHeartsDays::localizationFilePath(std::string language) 
     return "";
 }
 
-std::string PluginKingdomHeartsDays::textureFilePath(std::string texture) {
-    std::string filename = "index.ini";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
-
-    if (!std::filesystem::exists(assetsFolderPath)) {
-        std::filesystem::create_directory(assetsFolderPath);
-    }
-
-    std::filesystem::path fullPath = texturesFolder / (texture + ".png");
-
-    if (!std::filesystem::exists(fullPath)) {
-        return "";
-    }
-
-    return fullPath.string();
-}
-
 u32 PluginKingdomHeartsDays::getCurrentMission()
 {
     return nds->ARM7Read8(getU32ByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));

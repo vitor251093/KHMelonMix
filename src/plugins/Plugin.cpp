@@ -171,6 +171,109 @@ void Plugin::_superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool res
     _LastTouchScreenMovementWasByPlugin = true;
 }
 
+std::string trim(const std::string& str) {
+    // Find the first non-whitespace character from the beginning
+    size_t start = str.find_first_not_of(" \t\n\r\f\v");
+    if (start == std::string::npos) {
+        return ""; // Return empty string if no non-whitespace character is found
+    }
+
+    // Find the first non-whitespace character from the end
+    size_t end = str.find_last_not_of(" \t\n\r\f\v");
+
+    // Return the substring that excludes leading and trailing whitespace
+    return str.substr(start, end - start + 1);
+}
+std::string Plugin::textureIndexFilePath() {
+    std::string filename = "index.ini";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
+    std::filesystem::path fullPath = texturesFolder / filename;
+
+    if (!std::filesystem::exists(fullPath)) {
+        return "";
+    }
+
+    return fullPath;
+}
+std::map<std::string, std::string> Plugin::getTexturesIndex() {
+    if (!texturesIndex.empty()) {
+        return texturesIndex;
+    }
+
+    std::map<std::string, std::string> _texturesIndex;
+    std::string indexFilePath = textureIndexFilePath();
+    if (indexFilePath.empty()) {
+        return texturesIndex;
+    }
+
+    Platform::FileHandle* f = Platform::OpenLocalFile(indexFilePath.c_str(), Platform::FileMode::ReadText);
+    if (f) {
+        char linebuf[1024];
+        char entryname[32];
+        char entryval[1024];
+        while (!Platform::IsEndOfFile(f))
+        {
+            if (!Platform::FileReadLine(linebuf, 1024, f))
+                break;
+
+            int ret = sscanf(linebuf, "%31[A-Za-z_0-9\\-]=%[^\t\r\n]", entryname, entryval);
+            entryname[31] = '\0';
+            if (ret < 2) continue;
+
+            std::string entrynameStr = trim(std::string(entryname));
+            std::string entryvalStr = trim(std::string(entryval));
+            if (!entrynameStr.empty() && entrynameStr.compare(0, 1, ";") != 0 && entrynameStr.compare(0, 1, "[") != 0) {
+                _texturesIndex[entrynameStr] = entryvalStr;
+            }
+        }
+    }
+    texturesIndex = _texturesIndex;
+    return texturesIndex;
+}
+std::string Plugin::textureFilePath(std::string texture) {
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
+    if (!std::filesystem::exists(assetsFolderPath)) {
+        std::filesystem::create_directory(assetsFolderPath);
+    }
+
+    std::map<std::string, std::string> texturesIndex = getTexturesIndex();
+    if (texturesIndex.count(texture)) {
+        std::filesystem::path fullPath = texturesFolder / texturesIndex[texture];
+        if (!std::filesystem::exists(fullPath)) {
+            return "";
+        }
+
+        return fullPath.string();
+    }
+
+    std::filesystem::path fullPath = texturesFolder / (texture + ".png");
+    if (!std::filesystem::exists(fullPath)) {
+        return "";
+    }
+
+    texturesIndex[texture] = texture + ".png";
+    return fullPath.string();
+}
+std::string Plugin::tmpTextureFilePath(std::string texture) {
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";
+
+    if (shouldExportTextures() && !std::filesystem::exists(tmpFolderPath)) {
+        std::filesystem::create_directory(tmpFolderPath);
+    }
+
+    std::filesystem::path fullPathTmp = tmpFolderPath / (texture + ".png");
+    return fullPathTmp.string();
+}
+
 bool Plugin::ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
 bool Plugin::StoppedIngameCutscene() {
     if (_StoppedIngameCutscene) {

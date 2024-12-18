@@ -165,6 +165,15 @@ public:
         return FullscreenOnStartup;
     }
 
+    virtual std::string localizationFilePath(std::string language) {return "";}
+
+    virtual std::string textureIndexFilePath();
+    virtual std::map<std::string, std::string> getTexturesIndex();
+    virtual std::string textureFilePath(std::string texture);
+    virtual std::string tmpTextureFilePath(std::string texture);
+
+    virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
+
     bool ShouldTerminateIngameCutscene();
     bool StoppedIngameCutscene();
     bool ShouldStartReplacementCutscene();
@@ -189,22 +198,6 @@ public:
 
     void refreshCutscene();
 
-    virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
-    virtual std::string localizationFilePath(std::string language) {return "";}
-    virtual std::string textureFilePath(std::string texture) {return "";}
-    virtual std::string tmpTextureFilePath(std::string texture) {
-        std::string assetsFolderName = assetsFolder();
-        std::filesystem::path currentPath = std::filesystem::current_path();
-        std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-        std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";
-
-        if (shouldExportTextures() && !std::filesystem::exists(tmpFolderPath)) {
-            std::filesystem::create_directory(tmpFolderPath);
-        }
-
-        std::filesystem::path fullPathTmp = tmpFolderPath / (texture + ".png");
-        return fullPathTmp.string();
-    }
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
@@ -277,6 +270,8 @@ protected:
     bool FullscreenOnStartup = false;
 
     bool _LastTouchScreenMovementWasByPlugin = false;
+
+    std::map<std::string, std::string> texturesIndex;
 
     int _StartPressCount = 0;
     int _ReplayLimitCount = 0;
