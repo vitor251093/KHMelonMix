@@ -350,6 +350,8 @@ void PluginKingdomHeartsDays::onLoadROM() {
 
 void PluginKingdomHeartsDays::onLoadState()
 {
+    texturesIndex.clear();
+
     loadLocalization();
 
     GameScene = gameScene_InGameWithMap;

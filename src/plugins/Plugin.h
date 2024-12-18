@@ -134,7 +134,9 @@ public:
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
     virtual void onLoadROM() {};
-    virtual void onLoadState() {};
+    virtual void onLoadState() {
+        texturesIndex.clear();
+    };
 
     virtual std::string assetsFolder() {return std::to_string(GameCode);}
     virtual std::string tomlUniqueIdentifier() {return assetsFolder();};

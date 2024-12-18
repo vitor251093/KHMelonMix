@@ -449,6 +449,8 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
 
 void PluginKingdomHeartsReCoded::onLoadState()
 {
+    texturesIndex.clear();
+
     loadLocalization();
 
     GameScene = gameScene_InGameWithMap;
