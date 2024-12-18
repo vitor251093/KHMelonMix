@@ -246,6 +246,7 @@ std::string Plugin::textureFilePath(std::string texture) {
     if (texturesIndex.count(texture)) {
         std::filesystem::path fullPath = texturesFolder / texturesIndex[texture];
         if (!std::filesystem::exists(fullPath)) {
+            errorLog("Texture %s was supposed to be replaced by %s, but it doesn't exist", texture.c_str(), fullPath.string().c_str());
             return "";
         }
 
