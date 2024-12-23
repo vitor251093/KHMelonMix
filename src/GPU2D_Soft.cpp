@@ -1977,23 +1977,33 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     
     std::string filename = "2d-" + uniqueIdentifier;
     std::filesystem::path fullPath = plugin->textureFilePath(filename);
+    std::filesystem::path fullPath2 = plugin->tmpTextureFilePath(filename + "-FINAL");
     std::filesystem::path fullPathTmp = plugin->tmpTextureFilePath(filename);
 #ifdef _WIN32
     const char* path = fullPath.string().c_str();
+    const char* path2 = fullPath2.string().c_str();
     const char* pathTmp = fullPathTmp.string().c_str();
 #else
     const char* path = fullPath.c_str();
+    const char* path2 = fullPath2.c_str();
     const char* pathTmp = fullPathTmp.c_str();
 #endif
 
     int channels = 4;
     int r_width, r_height, r_channels;
-    unsigned char* imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+    unsigned char* imageData = nullptr;
     bool hasFinalImage = false;
-    if (imageData != nullptr) // load 2D image from elsewhere
+    if (strlen(path) > 0) // load complete 2D image
+    {
+        imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+    }
+    if (imageData == nullptr && strlen(path2) > 0) // load complete 2D image
+    {
+        imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
+    }
+    if (imageData != nullptr)
     {
         hasFinalImage = true;
-        imageData = Texreplace::LoadTextureFromFile(pathTmp, &r_width, &r_height, &r_channels);
         // TODO: For now, let's export the texture only
 
         // u32 alpha = attrib[2] >> 12;
@@ -2286,7 +2296,7 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         if (newLine)
         {
             if (ypos + 1 == height) {
-                Texreplace::ExportTextureAsFile(imageData, path, width, height, channels);
+                Texreplace::ExportTextureAsFile(imageData, path2, width, height, channels);
             }
             else {
                 Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
