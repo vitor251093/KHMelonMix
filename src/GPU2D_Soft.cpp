@@ -1995,13 +1995,17 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     bool hasFinalImage = false;
     if (strlen(path) > 0) // load complete 2D image
     {
-        imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+        imageData = Texreplace::LoadRawTextureFromFile(path, &r_width, &r_height, &r_channels);
     }
     if (imageData == nullptr && strlen(path2) > 0) // load complete 2D image
     {
-        imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
+        imageData = Texreplace::LoadRawTextureFromFile(path2, &r_width, &r_height, &r_channels);
     }
-    if (imageData != nullptr)
+    if (imageData == nullptr)
+    {
+        imageData = Texreplace::LoadTextureFromFile(pathTmp, &r_width, &r_height, &r_channels);
+    }
+    else
     {
         hasFinalImage = true;
         // TODO: For now, let's export the texture only
@@ -2248,14 +2252,19 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
 
         if (imageData == nullptr)
         {
-            imageData = (unsigned char*)malloc(height * width * channels * sizeof(unsigned char[4]));
+            imageData = (unsigned char*)malloc(height * width * channels * sizeof(unsigned char));
         }
         
         xoff = orig_xoff;
         xpos = orig_xpos;
 
-        bool newLine = false;
         int y = ypos;
+
+        if (num == 0) {
+            printf("SoftRenderer::DrawSprite_Normal(%d, %d, %d, %d, %d)\n", num, width, height, xpos, ypos);
+            printf("- xpos: %d - xoff: %d - xend: %d\n", xpos, xoff, xend);
+        }
+
         for (; xoff < xend;)
         {
             u32 og_pixel = objLine[xpos];
@@ -2277,13 +2286,10 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
             u8 g = ((color & 0x03E0) >> 4) << 2;
             u8 b = ((color & 0x7C00) >> 9) << 2;
                     
-            unsigned char* pixel = imageData + (y * width + xpos) * (channels);
-            
-            if (pixel[3] != 255)
-            {
-                newLine = true;
-            }
+            if (num == 0) printf("- X: %d - Y: %d - RGB: #%02x%02x%02x\n", (xpos % width), y, r, g, b);
 
+            unsigned char* pixel = imageData + (y * width + (xpos % width)) * (channels);
+            
             pixel[0] = r;
             pixel[1] = g;
             pixel[2] = b;
@@ -2293,14 +2299,10 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
             xpos++;
         }
 
-        if (newLine)
-        {
-            if (ypos + 1 == height) {
-                Texreplace::ExportTextureAsFile(imageData, path2, width, height, channels);
-            }
-            else {
-                Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
-            }
+        Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+        
+        if (ypos + 1 == height) {
+            Texreplace::ExportTextureAsFile(imageData, path2, width, height, channels);
         }
     }
 }

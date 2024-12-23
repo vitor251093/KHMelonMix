@@ -307,7 +307,7 @@ public:
             for (int i = 0; i < sizeof(paths) / sizeof(paths[0]); ++i) {
                 const char* path = paths[i];
                 if (imageData == nullptr && strlen(path) > 0) {
-                    imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+                    imageData = Texreplace::LoadRawTextureFromFile(path, &r_width, &r_height, &r_channels);
                     if (imageData != nullptr) {
                         if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
                             printf("Loading texture %s\n", path);
@@ -328,7 +328,7 @@ public:
 
                 if (GamePlugin->shouldExportTextures()) {
                     printf("Saving texture %s\n", pathTmp);
-                    Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+                    Texreplace::ExportRawTextureAsFile(imageData, pathTmp, width, height, channels);
                 }
             }
 
