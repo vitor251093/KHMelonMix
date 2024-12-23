@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -33,6 +33,7 @@
 #include <QMutex>
 
 #include "types.h"
+#include "Config.h"
 
 class CameraManager;
 
@@ -80,6 +81,8 @@ public:
     CameraManager(int num, int width, int height, bool yuv);
     ~CameraManager();
 
+    Config::Table& getConfig() { return config; }
+
     void init();
     void deInit();
 
@@ -89,11 +92,11 @@ public:
 
     void setXFlip(bool flip);
 
-    void captureFrame(u32* frame, int width, int height, bool yuv);
+    void captureFrame(melonDS::u32* frame, int width, int height, bool yuv);
 
-    void feedFrame(u32* frame, int width, int height, bool yuv);
-    void feedFrame_UYVY(u32* frame, int width, int height);
-    void feedFrame_NV12(u8* planeY, u8* planeUV, int width, int height);
+    void feedFrame(melonDS::u32* frame, int width, int height, bool yuv);
+    void feedFrame_UYVY(melonDS::u32* frame, int width, int height);
+    void feedFrame_NV12(melonDS::u8* planeY, melonDS::u8* planeUV, int width, int height);
 
 signals:
     void camStartSignal();
@@ -105,6 +108,8 @@ private slots:
 
 private:
     int num;
+
+    Config::Table config;
 
     int startNum;
 
@@ -120,15 +125,15 @@ private:
 
     int frameWidth, frameHeight;
     bool frameFormatYUV;
-    u32* frameBuffer;
-    u32* tempFrameBuffer;
+    melonDS::u32* frameBuffer;
+    melonDS::u32* tempFrameBuffer;
     QMutex frameMutex;
 
     bool xFlip;
 
-    void copyFrame_Straight(u32* src, int swidth, int sheight, u32* dst, int dwidth, int dheight, bool xflip, bool yuv);
-    void copyFrame_RGBtoYUV(u32* src, int swidth, int sheight, u32* dst, int dwidth, int dheight, bool xflip);
-    void copyFrame_YUVtoRGB(u32* src, int swidth, int sheight, u32* dst, int dwidth, int dheight, bool xflip);
+    void copyFrame_Straight(melonDS::u32* src, int swidth, int sheight, melonDS::u32* dst, int dwidth, int dheight, bool xflip, bool yuv);
+    void copyFrame_RGBtoYUV(melonDS::u32* src, int swidth, int sheight, melonDS::u32* dst, int dwidth, int dheight, bool xflip);
+    void copyFrame_YUVtoRGB(melonDS::u32* src, int swidth, int sheight, melonDS::u32* dst, int dwidth, int dheight, bool xflip);
 };
 
 #endif // CAMERAMANAGER_H

@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2021 Arisotura
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -32,6 +32,7 @@ namespace Ui { class RAMInfoDialog; }
 class RAMInfoDialog;
 class RAMSearchThread;
 class RAMUpdateThread;
+class EmuInstance;
 
 enum ramInfo_ByteType
 {
@@ -53,22 +54,22 @@ enum
     ramInfo_Previous
 };
 
-s32 GetMainRAMValue(const u32& addr, const ramInfo_ByteType& byteType);
+melonDS::s32 GetMainRAMValue(melonDS::NDS& nds, const melonDS::u32& addr, const ramInfo_ByteType& byteType);
 
 struct ramInfo_RowData
 {
-    u32 Address;
-    s32 Value;
-    s32 Previous;
+    melonDS::u32 Address;
+    melonDS::s32 Value;
+    melonDS::s32 Previous;
 
-    void Update(const ramInfo_ByteType& byteType)
+    void Update(melonDS::NDS& nds, const ramInfo_ByteType& byteType)
     {
-        Value = GetMainRAMValue(Address, byteType);
+        Value = GetMainRAMValue(nds, Address, byteType);
     }
 
-    void SetValue(const s32& value)
+    void SetValue(melonDS::NDS& nds, const melonDS::s32& value)
     {
-        NDS::MainRAM[Address&NDS::MainRAMMask] = (u32)value;
+        nds.MainRAM[Address&nds.MainRAMMask] = (melonDS::u32)value;
         Value = value;
     }
 };
@@ -99,7 +100,7 @@ public:
         currentDlg = nullptr;
     }
 
-    s32 SearchValue = 0;
+    melonDS::s32 SearchValue = 0;
 
     void ClearTableContents();
 
@@ -115,13 +116,16 @@ private slots:
 
     void OnSearchFinished();
     void ShowRowsInTable();
-    void SetProgressbarValue(const u32& value);
+    void SetProgressbarValue(const melonDS::u32& value);
 
 private:
     Ui::RAMInfoDialog* ui;
+    EmuInstance* emuInstance;
     
     RAMSearchThread* SearchThread;
     QTimer* TableUpdater;
+
+    friend class RAMSearchThread;
 };
 
 class RAMSearchThread : public QThread
@@ -132,7 +136,7 @@ public:
     explicit RAMSearchThread(RAMInfoDialog* dialog);
     ~RAMSearchThread() override;
 
-    void Start(const s32& searchValue, const ramInfoSTh_SearchMode& searchMode = ramInfoSTh_Default);
+    void Start(const melonDS::s32& searchValue, const ramInfoSTh_SearchMode& searchMode = ramInfoSTh_Default);
     void Start(const ramInfoSTh_SearchMode& searchMode);
     
     void SetSearchByteType(const ramInfo_ByteType& bytetype);
@@ -142,20 +146,20 @@ public:
     void Stop();
 
 private:
-    void run();
+    virtual void run() override;
 
     RAMInfoDialog* Dialog;
     bool SearchRunning = false;
 
     ramInfoSTh_SearchMode SearchMode;
-    s32 SearchValue;
+    melonDS::s32 SearchValue;
     ramInfo_ByteType SearchByteType = ramInfo_OneByte;
     std::vector<ramInfo_RowData>* RowDataVector = nullptr;
 
     void ClearTableContents();
 
 signals:
-    void SetProgressbarValue(const u32& value);
+    void SetProgressbarValue(const melonDS::u32& value);
 };
 
 #endif // RAMINFODIALOG_H

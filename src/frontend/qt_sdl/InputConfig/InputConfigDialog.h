@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -24,21 +24,37 @@
 #include <initializer_list>
 
 #include "Config.h"
+#include "EmuInstance.h"
 
 static constexpr int keypad_num = 12;
 static constexpr int touchscreen_num = 4;
-static constexpr int cmdmenu_num = 4;
 
 static constexpr std::initializer_list<int> hk_addons =
 {
     HK_SolarSensorIncrease,
     HK_SolarSensorDecrease,
+    HK_HUDToggle,
+    HK_RLockOn,
+    HK_LSwitchTarget,
+    HK_RSwitchTarget,
+    HK_CommandMenuLeft,
+    HK_CommandMenuRight,
+    HK_CommandMenuUp,
+    HK_CommandMenuDown,
 };
 
 static constexpr std::initializer_list<const char*> hk_addons_labels =
 {
     "[Boktai] Sunlight + ",
     "[Boktai] Sunlight - ",
+    "[KH] HUD Toggle",
+    "[KH] (R1) R / Lock On",
+    "[KH] (L2) Switch Target",
+    "[KH] (R2) Switch Target",
+    "[KH] Command Menu - Left",
+    "[KH] Command Menu - Right",
+    "[KH] Command Menu - Up",
+    "[KH] Command Menu - Down",
 };
 
 static_assert(hk_addons.size() == hk_addons_labels.size());
@@ -50,6 +66,9 @@ static constexpr std::initializer_list<int> hk_general =
     HK_FrameStep,
     HK_FastForward,
     HK_FastForwardToggle,
+    HK_SlowMo,
+    HK_SlowMoToggle,
+    HK_FrameLimitToggle,
     HK_FullscreenToggle,
     HK_Lid,
     HK_Mic,
@@ -66,6 +85,9 @@ static constexpr std::initializer_list<const char*> hk_general_labels =
     "Reset",
     "Frame step",
     "Fast forward",
+    "Toggle fast forward",
+    "Slow mo",
+    "Toggle slow mo",
     "Toggle FPS limit",
     "Toggle fullscreen",
     "Close/open lid",
@@ -79,22 +101,13 @@ static constexpr std::initializer_list<const char*> hk_general_labels =
 
 static_assert(hk_general.size() == hk_general_labels.size());
 
-static constexpr std::initializer_list<const char*> cmd_menu_labels =
-{
-    "Command Menu Left",
-    "Command Menu Right",
-    "Command Menu Up",
-    "Command Menu Down",
-};
-
 static constexpr std::initializer_list<const char*> ds_touch_key_labels =
 {
-    "Left",
-    "Right",
-    "Up",
-    "Down"
+    "Touch Left",
+    "Touch Right",
+    "Touch Up",
+    "Touch Down"
 };
-
 
 namespace Ui { class InputConfigDialog; }
 class InputConfigDialog;
@@ -106,6 +119,8 @@ class InputConfigDialog : public QDialog
 public:
     explicit InputConfigDialog(QWidget* parent);
     ~InputConfigDialog();
+
+    SDL_Joystick* getJoystick();
 
     static InputConfigDialog* currentDlg;
     static InputConfigDialog* openDlg(QWidget* parent)
@@ -132,6 +147,7 @@ private slots:
     void on_btnKeyMapSwitch_clicked();
     void on_btnJoyMapSwitch_clicked();
     void on_cbxJoystick_currentIndexChanged(int id);
+    void on_btnJoystickAuto_clicked();
 
 private:
     void populatePage(QWidget* page,
@@ -139,15 +155,16 @@ private:
         int* keymap, int* joymap);
     void setupKeypadPage();
     void setupTouchScreenPage();
-    void setupCommandMenuPage();
 
     Ui::InputConfigDialog* ui;
+
+    EmuInstance* emuInstance;
 
     int keypadKeyMap[12], keypadJoyMap[12];
     int addonsKeyMap[hk_addons.size()], addonsJoyMap[hk_addons.size()];
     int hkGeneralKeyMap[hk_general.size()], hkGeneralJoyMap[hk_general.size()];
     int touchScreenKeyMap[4], touchScreenJoyMap[4];
-    int cmdMenuKeyMap[4], cmdMenuJoyMap[4];
+    int joystickID;
 };
 
 

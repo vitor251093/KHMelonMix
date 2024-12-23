@@ -15,6 +15,7 @@ add_library(core STATIC
     CRC32.cpp
     DMA.cpp
     DMA_Timings.h
+    DMA_Timings.cpp
     DSi.cpp
     DSi_AES.cpp
     DSi_Camera.cpp
@@ -25,6 +26,7 @@ add_library(core STATIC
     DSi_NWifi.cpp
     DSi_SD.cpp
     DSi_SPI_TSC.cpp
+    FATIO.cpp
     FATStorage.cpp
     FIFO.h
     GBACart.cpp
@@ -40,30 +42,52 @@ add_library(core STATIC
     melonDLDI.h
     NDS.cpp
     NDSCart.cpp
+    NDSCartR4.cpp
     Platform.h
     ROMList.h
+    ROMList.cpp
     FreeBIOS.h
+    FreeBIOS.cpp
     RTC.cpp
     Savestate.cpp
     SPI.cpp
+    SPI_Firmware.cpp
     SPU.cpp
     types.h
-    version.h
+    Utils.cpp
+    Utils.h
     Wifi.cpp
     WifiAP.cpp
 
-    fatfs/diskio.c
     fatfs/ff.c
     fatfs/ffsystem.c
     fatfs/ffunicode.c
     fatfs/ffconf.h
 
+    plugins/Plugin.cpp
+    plugins/PluginManager.cpp
+    plugins/PluginKingdomHeartsDays.cpp
+    plugins/PluginKingdomHeartsReCoded.cpp
+    plugins/PluginMetroidPrimeHunters.cpp
+
     sha1/sha1.c
     tiny-AES-c/aes.c
     xxhash/xxhash.c)
 
+if (ENABLE_GDBSTUB)
+    message(NOTICE "Enabling GDB stub")
+    target_sources(core PRIVATE
+        debug/GdbStub.cpp
+        debug/GdbProto.cpp
+        debug/GdbCmds.cpp
+    )
+endif()
+
 if (ENABLE_OGLRENDERER)
     target_sources(core PRIVATE
+        plugins/PluginKingdomHeartsDays_GPU_OpenGL_shaders.h
+        plugins/PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h
+
         GPU_OpenGL.cpp
         GPU_OpenGL_shaders.h
         GPU3D_OpenGL.cpp
@@ -84,8 +108,13 @@ if (ENABLE_JIT)
 
         ARMJIT.cpp
         ARMJIT_Memory.cpp
+        ARMJIT_Global.cpp
 
         dolphin/CommonFuncs.cpp)
+    
+    if (WIN32)
+        target_link_libraries(core PRIVATE onecore)
+    endif()
 
     if (ARCHITECTURE STREQUAL x86_64)
         target_sources(core PRIVATE
@@ -114,10 +143,41 @@ if (ENABLE_JIT)
     endif()
 endif()
 
+target_include_directories(core INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
+
+set(MELONDS_VERSION_SUFFIX "$ENV{MELONDS_VERSION_SUFFIX}" CACHE STRING "Suffix to add to displayed melonDS version")
+option(MELONDS_EMBED_BUILD_INFO "Embed detailed build info into the binary" OFF)
+set(MELONDS_GIT_BRANCH "$ENV{MELONDS_GIT_BRANCH}" CACHE STRING "The Git branch used for this build")
+set(MELONDS_GIT_HASH "$ENV{MELONDS_GIT_HASH}" CACHE STRING "The hash of the Git commit")
+set(MELONDS_BUILD_PROVIDER "$ENV{MELONDS_BUILD_PROVIDER}" CACHE STRING "The name of the provider of this build")
+
+if (MELONDS_EMBED_BUILD_INFO)
+    target_compile_definitions(core PUBLIC MELONDS_EMBED_BUILD_INFO)
+    if (NOT MELONDS_GIT_BRANCH OR NOT MELONDS_GIT_HASH OR NOT MELONDS_BUILD_PROVIDER)
+        message(FATAL_ERROR "When embedding build information, all fields must be filled out. See src/CMakeLists.txt.")
+    endif()
+endif()
+
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/version.h")
+target_sources(core PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/version.h")
+target_include_directories(core PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
+
+set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(teakra EXCLUDE_FROM_ALL)
 # Workaround for building teakra with -O0 on Windows either failing or hanging forever
 target_compile_options(teakra PRIVATE "$<$<CONFIG:DEBUG>:-Og>")
 target_link_libraries(core PRIVATE teakra)
+
+if (NOT MSVC)
+    # MSVC has its own compiler flag syntax; if we ever support it,
+    # be sure to add equivalent flags here.
+
+    target_compile_options(core PUBLIC -fwrapv)
+
+    target_compile_options(core PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:-Wno-invalid-offsetof>")
+    # These warnings are excessive, and are only triggered in the ARMJIT code
+    # (which is fundamentally non-portable, so this is fine)
+endif()
 
 find_library(m MATH_LIBRARY)
 
@@ -135,12 +195,29 @@ if (ENABLE_JIT)
 endif()
 
 if (WIN32)
-    target_link_libraries(core PRIVATE ole32 comctl32 ws2_32)
-elseif(NOT APPLE)
-    target_link_libraries(core PRIVATE rt)
+    target_link_libraries(core PRIVATE ole32 comctl32 wsock32 ws2_32)
+    target_compile_definitions(core PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
+elseif(NOT APPLE AND NOT HAIKU)
+    check_library_exists(rt shm_open "" NEED_LIBRT)
+    if (NEED_LIBRT)
+        target_link_libraries(core PRIVATE rt)
+    endif()
+elseif(HAIKU)
+    target_link_libraries(core PRIVATE network)
 endif()
 
 if (ENABLE_JIT_PROFILING)
     target_include_directories(core PRIVATE "${VTUNE_INCLUDE_DIR}")
     target_link_libraries(core PRIVATE "${VTUNE_LIBRARY}")
 endif()
+
+#if(CMAKE_BUILD_TYPE MATCHES "Debug")
+#  set(
+#    CMAKE_C_FLAGS
+#    "${CMAKE_C_FLAGS} -fsanitize=undefined -fsanitize=address"
+#  )
+#  target_link_options(core
+#    BEFORE PUBLIC -fsanitize=undefined PUBLIC -fsanitize=address
+#  )
+#endif()
+

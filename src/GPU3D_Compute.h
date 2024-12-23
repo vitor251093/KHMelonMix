@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -19,38 +19,53 @@
 #ifndef GPU3D_COMPUTE
 #define GPU3D_COMPUTE
 
+#include <memory>
+
+#include "types.h"
+
 #include "GPU3D.h"
 
 #include "OpenGLSupport.h"
+#include "GPU_OpenGL.h"
 
 #include "GPU3D_TexcacheOpenGL.h"
 
 #include "NonStupidBitfield.h"
 
-namespace GPU3D
+#include "plugins/Plugin.h"
+
+namespace melonDS
 {
 
 class ComputeRenderer : public Renderer3D
 {
 public:
-    ComputeRenderer();
+    static std::unique_ptr<ComputeRenderer> New(Plugins::Plugin* plugin);
     ~ComputeRenderer() override;
 
-    bool Init() override;
-    void DeInit() override;
-    void Reset() override;
+    void Reset(GPU& gpu) override;
 
-    void SetRenderSettings(GPU::RenderSettings& settings) override;
+    void SetRenderSettings(int scale, bool highResolutionCoordinates);
 
-    void VCount144() override;
+    void VCount144(GPU& gpu) override;
 
-    void RenderFrame() override;
-    void RestartFrame() override;
+    void RenderFrame(GPU& gpu) override;
+    void RestartFrame(GPU& gpu) override;
     u32* GetLine(int line) override;
 
     void SetupAccelFrame() override;
     void PrepareCaptureFrame() override;
+
+    void BindOutputTexture(int buffer) override;
+
+    void Blit(const GPU& gpu) override;
+    void Stop(const GPU& gpu) override;
+
+    bool NeedsShaderCompile() override { return ShaderStepIdx != 33; }
+    void ShaderCompileStep(int& current, int& count) override;
 private:
+    ComputeRenderer(GLCompositor&& compositor);
+
     GLuint ShaderInterpXSpans[2];
     GLuint ShaderBinCombined;
     GLuint ShaderDepthBlend[2];
@@ -211,6 +226,10 @@ private:
     int MaxWorkTiles;
     bool HiresCoordinates;
 
+    GLCompositor CurGLCompositor;
+
+    int ShaderStepIdx = 0;
+
     void DeleteShaders();
 
     void SetupAttrs(SpanSetupY* span, Polygon* poly, int from, int to);
@@ -218,6 +237,8 @@ private:
     void SetupYSpanDummy(RenderPolygon* rp, SpanSetupY* span, Polygon* poly, int vertex, int side, s32 positions[10][2]);
 
     bool CompileShader(GLuint& shader, const std::string& source, const std::initializer_list<const char*>& defines);
+
+    Plugins::Plugin* GamePlugin;
 };
 
 }

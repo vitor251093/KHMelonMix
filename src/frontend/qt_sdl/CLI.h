@@ -1,5 +1,5 @@
 /*
-    Copyright 2021-2022 melonDS team
+    Copyright 2021-2023 melonDS team
 
     This file is part of melonDS.
 
@@ -28,8 +28,6 @@ namespace CLI {
 
 struct CommandLineOptions
 {
-    QStringList errorsToDisplay = {};
-
     std::optional<QString> dsRomPath;
     std::optional<QString> dsRomArchivePath;
     std::optional<QString> gbaRomPath;

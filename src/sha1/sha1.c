@@ -27,6 +27,9 @@ A million repetitions of "a"
 #if defined(__sun)
 #include "solarisfixes.h"
 #endif
+#if defined(__HAIKU__)
+#include <ByteOrder.h>
+#endif
 #include "sha1.h"
 
 #ifndef BYTE_ORDER
@@ -104,7 +107,7 @@ A million repetitions of "a"
 
 /* Hash a single 512-bit block. This is the core of the algorithm. */
 
-void SHA1Transform(uint32_t state[5], const unsigned char buffer[64])
+void SHA1Transform(uint32_t state[5], const unsigned char* buffer)
 {
 uint32_t a, b, c, d, e;
 typedef union {
@@ -193,7 +196,7 @@ uint32_t j;
         memcpy(&context->buffer[j], data, (i = 64-j));
         SHA1Transform(context->state, context->buffer);
         for ( ; i + 63 < len; i += 64) {
-            SHA1Transform(context->state, &data[i]);
+            SHA1Transform(context->state, data + i);
         }
         j = 0;
     }

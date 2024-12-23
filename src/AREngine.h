@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -19,20 +19,25 @@
 #ifndef ARENGINE_H
 #define ARENGINE_H
 
+#include <vector>
 #include "ARCodeFile.h"
 
-namespace AREngine
+namespace melonDS
 {
+class NDS;
+class AREngine
+{
+public:
+    AREngine(melonDS::NDS& nds);
 
-bool Init();
-void DeInit();
-void Reset();
+    std::vector<ARCode> Cheats {};
+private:
+    friend class ARM;
+    void RunCheats();
+    void RunCheat(const ARCode& arcode);
 
-ARCodeFile* GetCodeFile();
-void SetCodeFile(ARCodeFile* file);
-
-void RunCheats();
+    melonDS::NDS& NDS;
+};
 
 }
-
 #endif // ARENGINE_H

@@ -1,43 +1,59 @@
-name: CMake Build (Windows x86-64)
+name: Windows
 
 on:
   push:
     branches:
       - master
+      - ci/*
   pull_request:
     branches:
       - master
 
 env:
-  BUILD_TYPE: Release
+  MELONDS_GIT_BRANCH: ${{ github.ref }}
+  MELONDS_GIT_HASH: ${{ github.sha }}
+  MELONDS_BUILD_PROVIDER: GitHub Actions
+  MELONDS_VERSION_SUFFIX: " RC"
 
 jobs:
   build:
-
     runs-on: windows-latest
-    
     defaults:
       run:
         shell: msys2 {0}
     steps:
-    - uses: actions/checkout@v1
-    - uses: msys2/setup-msys2@v2
+    - name: Check out sources
+      uses: actions/checkout@v3
+    - name: Set up MSYS2
+      uses: msys2/setup-msys2@v2
       with:
-          msystem: MINGW64
-          update: true
-
-    - name: Install dependencies
-      run: pacman -Sq --noconfirm git pkgconf mingw-w64-x86_64-{cmake,SDL2,qt5-static,libslirp,libarchive,toolchain}
-
+        msystem: ucrt64
+        update: true
+        pacboy: gcc:p cmake:p ninja:p make:p
+    - name: Set up vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: 10b7a178346f3f0abef60cecd5130e295afd8da4
     - name: Configure
-      working-directory: ${{runner.workspace}}
-      run: cmake -B build $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_STATIC=ON -DCMAKE_PREFIX_PATH=C:/tools/msys64/mingw64/qt5-static
+      run: cmake --preset=release-mingw-x86_64 -DMELONDS_EMBED_BUILD_INFO=ON
+    - name: Build
+      run: cmake --build --preset=release-mingw-x86_64
+    - name: Preparing artifacts
+      working-directory: ${{runner.workspace}}\KHMelonMix\build
+      run: |
+        mkdir dist
+        mkdir -p ./dist/roms
+        touch ./dist/roms/DELETE_ME
+        cp -r ../assets ./dist/assets
+        rm -r ./dist/assets/days/2d_textures
+        mv ./release-mingw-x86_64/melonDS.exe ./dist/MelonMix.exe
+        cp ../res/khDaysMM.ico   ./dist/MelonMix_KHDays.ico
+        cp ../res/khCodedMM.ico  ./dist/MelonMix_KHReCoded.ico
+        cp ../res/scripts/MelonMix_KHDays.bat       ./dist/MelonMix_KHDays.bat
+        cp ../res/scripts/MelonMix_KHReCoded.bat    ./dist/MelonMix_KHReCoded.bat
+        cp ../res/scripts/MelonMix_GameSelector.bat ./dist/MelonMix_GameSelector.bat
 
-    - name: Make
-      working-directory: ${{runner.workspace}}/build
-      run: cmake --build .
-
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v4
       with:
-        name: khDaysMM-windows-x86_64
-        path: ${{runner.workspace}}\build\khDaysMM.exe
+        name: MelonMix-windows-x86_64
+        path: ${{runner.workspace}}\KHMelonMix\build\dist

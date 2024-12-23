@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -16,9 +16,14 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
+#include <QEventLoop>
+
 #include "CameraManager.h"
 #include "Config.h"
 
+using namespace melonDS;
+
+const char* kCamConfigPath[] = {"DSi.Camera0", "DSi.Camera1"};
 
 #if QT_VERSION >= 0x060000
 
@@ -113,10 +118,11 @@ QList<QVideoFrame::PixelFormat> CameraFrameDumper::supportedPixelFormats(QAbstra
 #endif
 
 
-CameraManager::CameraManager(int num, int width, int height, bool yuv) : QObject()
+CameraManager::CameraManager(int num, int width, int height, bool yuv)
+    : QObject(),
+    num(num),
+    config(Config::GetGlobalTable().GetTable(kCamConfigPath[num]))
 {
-    this->num = num;
-
     startNum = 0;
 
     // QCamera needs to be controlled from the UI thread, hence this
@@ -133,7 +139,7 @@ CameraManager::CameraManager(int num, int width, int height, bool yuv) : QObject
     tempFrameBuffer = new u32[fbsize];
 
     inputType = -1;
-    xFlip = false;
+    xFlip = config.GetBool("XFlip");
     init();
 }
 
@@ -144,6 +150,7 @@ CameraManager::~CameraManager()
     // save settings here?
 
     delete[] frameBuffer;
+    delete[] tempFrameBuffer;
 }
 
 void CameraManager::init()
@@ -153,9 +160,9 @@ void CameraManager::init()
 
     startNum = 0;
 
-    inputType = Config::Camera[num].InputType;
-    imagePath = QString::fromStdString(Config::Camera[num].ImagePath);
-    camDeviceName = QString::fromStdString(Config::Camera[num].CamDeviceName);
+    inputType = config.GetInt("InputType");
+    imagePath = config.GetQString("ImagePath");
+    camDeviceName = config.GetQString("DeviceName");
 
     camDevice = nullptr;
 
@@ -256,6 +263,12 @@ void CameraManager::init()
         if (camDevice)
         {
             camDevice->load();
+            if (camDevice->status() == QCamera::LoadingStatus)
+            {
+                QEventLoop loop;
+                connect(camDevice, &QCamera::statusChanged, &loop, &QEventLoop::quit);
+                loop.exec();
+            }
 
             const QList<QCameraViewfinderSettings> supported = camDevice->supportedViewfinderSettings();
             bool good = false;

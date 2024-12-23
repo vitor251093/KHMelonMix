@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -17,10 +17,12 @@
 */
 
 #include "ARMJIT_Compiler.h"
+#include "../ARM.h"
+#include "../NDS.h"
 
 using namespace Gen;
 
-namespace ARMJIT
+namespace melonDS
 {
 
 template <typename T>
@@ -119,7 +121,7 @@ void Compiler::Comp_JumpTo(u32 addr, bool forceNonConstantCycles)
             u32 compileTimePC = CurCPU->R[15];
             CurCPU->R[15] = newPC;
 
-            cycles += NDS::ARM7MemTimings[codeCycles][0] + NDS::ARM7MemTimings[codeCycles][1];
+            cycles += NDS.ARM7MemTimings[codeCycles][0] + NDS.ARM7MemTimings[codeCycles][1];
 
             CurCPU->R[15] = compileTimePC;
         }
@@ -131,7 +133,7 @@ void Compiler::Comp_JumpTo(u32 addr, bool forceNonConstantCycles)
             u32 compileTimePC = CurCPU->R[15];
             CurCPU->R[15] = newPC;
 
-            cycles += NDS::ARM7MemTimings[codeCycles][2] + NDS::ARM7MemTimings[codeCycles][3];
+            cycles += NDS.ARM7MemTimings[codeCycles][2] + NDS.ARM7MemTimings[codeCycles][3];
 
             CurCPU->R[15] = compileTimePC;
         }
@@ -174,9 +176,9 @@ void Compiler::Comp_JumpTo(Gen::X64Reg addr, bool restoreCPSR)
     else
         MOV(32, R(ABI_PARAM3), Imm32(true)); // what a waste
     if (Num == 0)
-        CALL((void*)&ARMv5JumpToTrampoline);
+        ABI_CallFunction(ARMv5JumpToTrampoline);
     else
-        CALL((void*)&ARMv4JumpToTrampoline);
+        ABI_CallFunction(ARMv4JumpToTrampoline);
 
     PopRegs(restoreCPSR, true);
 

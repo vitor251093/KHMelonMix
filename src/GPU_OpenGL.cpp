@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -18,6 +18,7 @@
 
 #include "GPU_OpenGL.h"
 
+#include <assert.h>
 #include <cstdio>
 #include <cstring>
 
@@ -27,35 +28,43 @@
 #include "OpenGLSupport.h"
 #include "GPU_OpenGL_shaders.h"
 
-namespace GPU
+namespace melonDS
 {
 
 using namespace OpenGL;
 
-bool GLCompositor::Init()
+std::optional<GLCompositor> GLCompositor::New(Plugins::Plugin* plugin) noexcept
 {
-    if (!OpenGL::CompileVertexFragmentProgram(CompShader[0],
-            kCompositorVS, kCompositorFS_Nearest, 
+    assert(glBindAttribLocation != nullptr);
+    GLuint CompShader {};
+
+    const char* kCompositorFS_Custom = plugin == nullptr ? nullptr : plugin->gpuOpenGL_FS();
+    const char* compositorFS = kCompositorFS_Custom == nullptr ? kCompositorFS_Nearest : kCompositorFS_Custom;
+    if (!OpenGL::CompileVertexFragmentProgram(CompShader,
+            kCompositorVS, compositorFS,
             "CompositorShader",
             {{"vPosition", 0}, {"vTexcoord", 1}},
             {{"oColor", 0}}))
-    //if (!OpenGL::BuildShaderProgram(kCompositorVS, kCompositorFS_Linear, CompShader[0], "CompositorShader"))
-    //if (!OpenGL::BuildShaderProgram(kCompositorVS_xBRZ, kCompositorFS_xBRZ, CompShader[0], "CompositorShader"))
-        return false;
+        return std::nullopt;
 
-    for (int i = 0; i < 1; i++)
-    {
-        GLint uni_id;
+    return { GLCompositor(CompShader, plugin) };
+}
 
-        CompScaleLoc[i] = glGetUniformLocation(CompShader[i], "u3DScale");
-        Comp3DXPosLoc[i] = glGetUniformLocation(CompShader[i], "u3DXPos");
+GLCompositor::GLCompositor(GLuint compShader, Plugins::Plugin* plugin) noexcept : CompShader(compShader)
+{
+    CompScaleLoc = glGetUniformLocation(CompShader, "u3DScale");
 
-        glUseProgram(CompShader[i]);
-        uni_id = glGetUniformLocation(CompShader[i], "ScreenTex");
-        glUniform1i(uni_id, 0);
-        uni_id = glGetUniformLocation(CompShader[i], "_3DTex");
-        glUniform1i(uni_id, 1);
+    GamePlugin = plugin;
+
+    if (GamePlugin != nullptr) {
+        GamePlugin->gpuOpenGL_FS_initVariables(CompShader);
     }
+
+    glUseProgram(CompShader);
+    GLuint screenTextureUniform = glGetUniformLocation(CompShader, "ScreenTex");
+    glUniform1i(screenTextureUniform, 0);
+    GLuint _3dTextureUniform = glGetUniformLocation(CompShader, "_3DTex");
+    glUniform1i(_3dTextureUniform, 1);
 
     // all this mess is to prevent bleeding
 #define SETVERTEX(i, x, y, offset) \
@@ -85,7 +94,7 @@ bool GLCompositor::Init()
 
     glGenBuffers(1, &CompVertexBufferID);
     glBindBuffer(GL_ARRAY_BUFFER, CompVertexBufferID);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(CompVertices), CompVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(CompVertices), &CompVertices[0], GL_STATIC_DRAW);
 
     glGenVertexArrays(1, &CompVertexArrayID);
     glBindVertexArray(CompVertexArrayID);
@@ -94,7 +103,7 @@ bool GLCompositor::Init()
     glEnableVertexAttribArray(1); // texcoord
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(CompVertex), (void*)(offsetof(CompVertex, Texcoord)));
 
-    glGenFramebuffers(2, CompScreenOutputFB);
+    glGenFramebuffers(CompScreenOutputFB.size(), &CompScreenOutputFB[0]);
 
     glGenTextures(1, &CompScreenInputTex);
     glActiveTexture(GL_TEXTURE0);
@@ -105,10 +114,10 @@ bool GLCompositor::Init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8UI, 256*3 + 1, 192*2, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, NULL);
 
-    glGenTextures(2, CompScreenOutputTex);
-    for (int i = 0; i < 2; i++)
+    glGenTextures(CompScreenOutputTex.size(), &CompScreenOutputTex[0]);
+    for (GLuint i : CompScreenOutputTex)
     {
-        glBindTexture(GL_TEXTURE_2D, CompScreenOutputTex[i]);
+        glBindTexture(GL_TEXTURE_2D, i);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -116,31 +125,90 @@ bool GLCompositor::Init()
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    return true;
 }
 
-void GLCompositor::DeInit()
+GLCompositor::~GLCompositor()
 {
-    glDeleteFramebuffers(2, CompScreenOutputFB);
+    assert(glDeleteFramebuffers != nullptr);
+
+    glDeleteFramebuffers(CompScreenOutputFB.size(), &CompScreenOutputFB[0]);
     glDeleteTextures(1, &CompScreenInputTex);
-    glDeleteTextures(2, CompScreenOutputTex);
+    glDeleteTextures(CompScreenOutputTex.size(), &CompScreenOutputTex[0]);
 
     glDeleteVertexArrays(1, &CompVertexArrayID);
     glDeleteBuffers(1, &CompVertexBufferID);
 
-    for (int i = 0; i < 1; i++)
-        glDeleteProgram(CompShader[i]);
-}
-
-void GLCompositor::Reset()
-{
+    glDeleteProgram(CompShader);
 }
 
 
-void GLCompositor::SetRenderSettings(RenderSettings& settings)
+GLCompositor::GLCompositor(GLCompositor&& other) noexcept :
+    Scale(other.Scale),
+    ScreenH(other.ScreenH),
+    ScreenW(other.ScreenW),
+    CompScaleLoc(other.CompScaleLoc),
+    CompVertices(other.CompVertices),
+    CompShader(other.CompShader),
+    CompVertexBufferID(other.CompVertexBufferID),
+    CompVertexArrayID(other.CompVertexArrayID),
+    CompScreenInputTex(other.CompScreenInputTex),
+    CompScreenOutputTex(other.CompScreenOutputTex),
+    CompScreenOutputFB(other.CompScreenOutputFB),
+    GamePlugin(other.GamePlugin)
 {
-    int scale = settings.GL_ScaleFactor;
+    other.CompScreenOutputFB = {};
+    other.CompScreenInputTex = {};
+    other.CompScreenOutputTex = {};
+    other.CompVertexArrayID = {};
+    other.CompVertexBufferID = {};
+    other.CompShader = {};
+}
+
+GLCompositor& GLCompositor::operator=(GLCompositor&& other) noexcept
+{
+    if (this != &other)
+    {
+        Scale = other.Scale;
+        ScreenH = other.ScreenH;
+        ScreenW = other.ScreenW;
+        CompScaleLoc = other.CompScaleLoc;
+        CompVertices = other.CompVertices;
+
+        // Clean up these resources before overwriting them
+        glDeleteProgram(CompShader);
+        CompShader = other.CompShader;
+
+        glDeleteBuffers(1, &CompVertexBufferID);
+        CompVertexBufferID = other.CompVertexBufferID;
+
+        glDeleteVertexArrays(1, &CompVertexArrayID);
+        CompVertexArrayID = other.CompVertexArrayID;
+
+        glDeleteTextures(1, &CompScreenInputTex);
+        CompScreenInputTex = other.CompScreenInputTex;
+
+        glDeleteTextures(CompScreenOutputTex.size(), &CompScreenOutputTex[0]);
+        CompScreenOutputTex = other.CompScreenOutputTex;
+
+        glDeleteFramebuffers(CompScreenOutputFB.size(), &CompScreenOutputFB[0]);
+        CompScreenOutputFB = other.CompScreenOutputFB;
+
+        other.CompScreenOutputFB = {};
+        other.CompScreenInputTex = {};
+        other.CompScreenOutputTex = {};
+        other.CompVertexArrayID = {};
+        other.CompVertexBufferID = {};
+        other.CompShader = {};
+    }
+
+    return *this;
+}
+
+
+void GLCompositor::SetScaleFactor(int scale) noexcept
+{
+    if (scale == Scale)
+        return;
 
     Scale = scale;
     ScreenW = 256 * scale;
@@ -164,13 +232,12 @@ void GLCompositor::SetRenderSettings(RenderSettings& settings)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GLCompositor::Stop()
+void GLCompositor::Stop(const GPU& gpu) noexcept
 {
     for (int i = 0; i < 2; i++)
     {
-        int frontbuf = GPU::FrontBuffer;
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, CompScreenOutputFB[frontbuf]);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, CompScreenOutputFB[gpu.FrontBuffer]);
 
         glClear(GL_COLOR_BUFFER_BIT);
     }
@@ -178,9 +245,9 @@ void GLCompositor::Stop()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void GLCompositor::RenderFrame()
+void GLCompositor::RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept
 {
-    int backbuf = GPU::FrontBuffer ^ 1;
+    int backbuf = gpu.FrontBuffer ^ 1;
     glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, CompScreenOutputFB[backbuf]);
 
@@ -194,25 +261,26 @@ void GLCompositor::RenderFrame()
     glClear(GL_COLOR_BUFFER_BIT);
 
     // TODO: select more shaders (filtering, etc)
-    glUseProgram(CompShader[0]);
-    glUniform1ui(CompScaleLoc[0], Scale);
+    glUseProgram(CompShader);
+    glUniform1ui(CompScaleLoc, Scale);
 
-    // TODO: support setting this midframe, if ever needed
-    glUniform1i(Comp3DXPosLoc[0], ((int)GPU3D::RenderXPos << 23) >> 23);
+    if (GamePlugin != nullptr) {
+        GamePlugin->gpuOpenGL_FS_updateVariables(CompShader);
+    }
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, CompScreenInputTex);
 
-    if (GPU::Framebuffer[backbuf][0] && GPU::Framebuffer[backbuf][1])
+    if (gpu.Framebuffer[backbuf][0] && gpu.Framebuffer[backbuf][1])
     {
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256*3 + 1, 192, GL_RGBA_INTEGER,
-                        GL_UNSIGNED_BYTE, GPU::Framebuffer[backbuf][0]);
+                        GL_UNSIGNED_BYTE, gpu.Framebuffer[backbuf][0].get());
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192, 256*3 + 1, 192, GL_RGBA_INTEGER,
-                        GL_UNSIGNED_BYTE, GPU::Framebuffer[backbuf][1]);
+                        GL_UNSIGNED_BYTE, gpu.Framebuffer[backbuf][1].get());
     }
 
     glActiveTexture(GL_TEXTURE1);
-    GPU3D::CurrentRenderer->SetupAccelFrame();
+    renderer.SetupAccelFrame();
 
     glBindBuffer(GL_ARRAY_BUFFER, CompVertexBufferID);
     glBindVertexArray(CompVertexArrayID);

@@ -1,37 +1,47 @@
-rom/*.nds
-rom/*.sav
-rom/*.ml1
-rom/*.ml2
-rom/*.ml3
-rom/*.ml4
-rom/*.ml5
-rom/*.ml6
-rom/*.ml7
-rom/*.ml8
-rom/*.ml9
+# Assets
+assets/days/cutscenes/cinematics/*.mp4
+assets/days/textures/*.png
+assets/days/textures_tmp/*.png
+assets/days/2d_textures/*.png
+assets/days/2d_textures_tmp/*.png
 
+assets/recoded/cutscenes/cinematics/*.mp4
+assets/recoded/textures/*.png
+assets/recoded/textures_tmp/*.png
+assets/recoded/2d_textures/*.png
+assets/recoded/2d_textures_tmp/*.png
+
+# ROMs
+roms/*
+!roms/.keep
+
+# Build and run artifacts
+debug.log
+error.log
 build
+build*/
 bin
 obj
 *.depend
 *.layout
 *.o
-khDaysMM_grc.c
-khDaysMM_grc.h
-khDaysMM.rc
-cmake-build
+melon_grc.c
+melon_grc.h
+melon.rc
+cmake-build*
 cmake-build-debug
 compile_commands.json
-.idea
-.cache
-
 *.exe
-
-.DS_Store
-
-.vs
-.vscode
 CMakeFiles
 CMakeCache.txt
 
-textures_tmp/*.png
+# ???
+.idea
+.cache
+
+# macOS artifacts
+.DS_Store
+
+# Visual Studio artifacts
+.vs
+.vscode

@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team, RSDuck
+    Copyright 2016-2024 melonDS team, RSDuck
 
     This file is part of melonDS.
 
@@ -94,3 +94,8 @@ ARM_RestoreContext:
     mov sp, x17
 
     br x18
+
+#if !defined(__APPLE__) && !defined(__WIN32__)
+.section .note.GNU-stack,"",@progbits
+#endif
+

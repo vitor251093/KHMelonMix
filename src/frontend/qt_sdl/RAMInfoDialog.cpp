@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2021 Arisotura
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -21,18 +21,18 @@
 
 #include "main.h"
 
-extern EmuThread* emuThread;
+using namespace melonDS;
 
-s32 GetMainRAMValue(const u32& addr, const ramInfo_ByteType& byteType)
+s32 GetMainRAMValue(NDS& nds, const u32& addr, const ramInfo_ByteType& byteType)
 {
     switch (byteType)
     {
     case ramInfo_OneByte:
-        return *(s8*)(NDS::MainRAM + (addr&NDS::MainRAMMask));
+        return *(s8*)(nds.MainRAM + (addr&nds.MainRAMMask));
     case ramInfo_TwoBytes:
-        return *(s16*)(NDS::MainRAM + (addr&NDS::MainRAMMask));
+        return *(s16*)(nds.MainRAM + (addr&nds.MainRAMMask));
     case ramInfo_FourBytes:
-        return *(s32*)(NDS::MainRAM + (addr&NDS::MainRAMMask));
+        return *(s32*)(nds.MainRAM + (addr&nds.MainRAMMask));
     default:
         return 0;
     }
@@ -44,6 +44,8 @@ RAMInfoDialog::RAMInfoDialog(QWidget* parent) : QDialog(parent), ui(new Ui::RAMI
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose);
+
+    emuInstance = ((MainWindow*)parent)->getEmuInstance();
 
     qRegisterMetaType<QVector<int>>("QVector<int>");
     qRegisterMetaType<u32>("u32");
@@ -90,7 +92,7 @@ void RAMInfoDialog::ShowRowsInTable()
     for (u32 row = scrollValue; row < std::min<u32>(scrollValue+25, RowDataVector->size()); row++)
     {
         ramInfo_RowData& rowData = RowDataVector->at(row);
-        rowData.Update(SearchThread->GetSearchByteType());
+        rowData.Update(*emuInstance->getNDS(), SearchThread->GetSearchByteType());
 
         if (ui->ramTable->item(row, ramInfo_Address) == nullptr)
         {
@@ -185,7 +187,7 @@ void RAMInfoDialog::on_ramTable_itemChanged(QTableWidgetItem *item)
     s32 itemValue = item->text().toInt();
 
     if (rowData.Value != itemValue)
-        rowData.SetValue(itemValue);
+        rowData.SetValue(*emuInstance->getNDS(), itemValue);
 }
 
 /**
@@ -234,20 +236,20 @@ void RAMSearchThread::run()
     u32 progress = 0;
 
     // Pause game running
-    emuThread->emuPause();
+    Dialog->emuInstance->getEmuThread()->emuPause();
 
     // For following search modes below, RowDataVector must be filled.
     if (SearchMode == ramInfoSTh_SearchAll || RowDataVector->size() == 0)
     {
         // First search mode
-        for (u32 addr = 0x02000000; SearchRunning && addr < 0x02000000+NDS::MainRAMMaxSize; addr += SearchByteType)
+        for (u32 addr = 0x02000000; SearchRunning && addr < 0x02000000+MainRAMMaxSize; addr += SearchByteType)
         {
-            const s32& value = GetMainRAMValue(addr, SearchByteType);
+            const s32& value = GetMainRAMValue(*Dialog->emuInstance->getNDS(), addr, SearchByteType);
 
             RowDataVector->push_back({ addr, value, value });
 
             // A solution to prevent to call too many slot.
-            u32 newProgress = (int)((addr-0x02000000) / (NDS::MainRAMMaxSize-1.0f) * 100);
+            u32 newProgress = (int)((addr-0x02000000) / (MainRAMMaxSize-1.0f) * 100);
             if (progress < newProgress)
             {
                 progress = newProgress;
@@ -263,7 +265,7 @@ void RAMSearchThread::run()
         for (u32 row = 0; SearchRunning && row < RowDataVector->size(); row++)
         {
             const u32& addr = RowDataVector->at(row).Address;
-            const s32& value = GetMainRAMValue(addr, SearchByteType);
+            const s32& value = GetMainRAMValue(*Dialog->emuInstance->getNDS(), addr, SearchByteType);
 
             if (SearchValue == value)
                 newRowDataVector->push_back({ addr, value, value });
@@ -281,7 +283,7 @@ void RAMSearchThread::run()
     }
 
     // Unpause game running
-    emuThread->emuUnpause();
+    Dialog->emuInstance->getEmuThread()->emuUnpause();
 
     SearchRunning = false;
 }

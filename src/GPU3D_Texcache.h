@@ -7,25 +7,18 @@
 
 #include <assert.h>
 #include <unordered_map>
+#include <vector>
 
 #include <filesystem>
 #include <fstream>
 
+#include "plugins/PluginManager.h"
+
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash/xxhash.h"
 
-namespace GPU3D
+namespace melonDS
 {
-
-inline u32 TextureWidth(u32 texparam)
-{
-    return 8 << ((texparam >> 20) & 0x7);
-}
-
-inline u32 TextureHeight(u32 texparam)
-{
-    return 8 << ((texparam >> 23) & 0x7);
-}
 
 enum
 {
@@ -35,13 +28,13 @@ enum
 };
 
 template <int outputFmt>
-void ConvertBitmapTexture(u32 width, u32 height, u32* output, u8* texData);
+void ConvertBitmapTexture(u32 width, u32 height, u32* output, u32 addr, GPU& gpu);
 template <int outputFmt>
-void ConvertCompressedTexture(u32 width, u32 height, u32* output, u8* texData, u8* texAuxData, u16* palData);
+void ConvertCompressedTexture(u32 width, u32 height, u32* output, u32 addr, u32 addrAux, u32 palAddr, GPU& gpu);
 template <int outputFmt, int X, int Y>
-void ConvertAXIYTexture(u32 width, u32 height, u32* output, u8* texData, u16* palData);
+void ConvertAXIYTexture(u32 width, u32 height, u32* output, u32 addr, u32 palAddr, GPU& gpu);
 template <int outputFmt, int colorBits>
-void ConvertNColorsTexture(u32 width, u32 height, u32* output, u8* texData, u16* palData, bool color0Transparent);
+void ConvertNColorsTexture(u32 width, u32 height, u32* output, u32 addr, u32 palAddr, bool color0Transparent, GPU& gpu);
 
 template <typename TexLoaderT, typename TexHandleT>
 class Texcache
@@ -51,13 +44,59 @@ public:
         : TexLoader(texloader) // probably better if this would be a move constructor???
     {}
 
-    bool Update()
-    {
-        auto textureDirty = GPU::VRAMDirty_Texture.DeriveState(GPU::VRAMMap_Texture);
-        auto texPalDirty = GPU::VRAMDirty_TexPal.DeriveState(GPU::VRAMMap_TexPal);
+    Plugins::Plugin* GamePlugin;
 
-        bool textureChanged = GPU::MakeVRAMFlat_TextureCoherent(textureDirty);
-        bool texPalChanged = GPU::MakeVRAMFlat_TexPalCoherent(texPalDirty);
+    u64 MaskedHash(u8* vram, u32 vramSize, u32 addr, u32 size)
+    {
+        u64 hash = 0;
+
+        while (size > 0)
+        {
+            u32 pieceSize;
+            if (addr + size > vramSize)
+                // wraps around, only do the part inside
+                pieceSize = vramSize - addr;
+            else
+                // fits completely inside
+                pieceSize = size;
+
+            hash = XXH64(&vram[addr], pieceSize, hash);
+
+            addr += pieceSize;
+            addr &= (vramSize - 1);
+            assert(size >= pieceSize);
+            size -= pieceSize;
+        }
+
+        return hash;
+    }
+
+    bool CheckInvalid(u32 start, u32 size, u64 oldHash, u64* dirty, u8* vram, u32 vramSize)
+    {
+        u32 startBit = start / VRAMDirtyGranularity;
+        u32 bitsCount = ((start + size + VRAMDirtyGranularity - 1) / VRAMDirtyGranularity) - startBit;
+    
+        u32 startEntry = startBit >> 6;
+        u64 entriesCount = ((startBit + bitsCount + 0x3F) >> 6) - startEntry;
+        for (u32 j = startEntry; j < startEntry + entriesCount; j++)
+        {
+            if (GetRangedBitMask(j, startBit, bitsCount) & dirty[j & ((vramSize / VRAMDirtyGranularity)-1)])
+            {
+                if (MaskedHash(vram, vramSize, start, size) != oldHash)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool Update(GPU& gpu)
+    {
+        auto textureDirty = gpu.VRAMDirty_Texture.DeriveState(gpu.VRAMMap_Texture, gpu);
+        auto texPalDirty = gpu.VRAMDirty_TexPal.DeriveState(gpu.VRAMMap_TexPal, gpu);
+
+        bool textureChanged = gpu.MakeVRAMFlat_TextureCoherent(textureDirty);
+        bool texPalChanged = gpu.MakeVRAMFlat_TexPalCoherent(texPalDirty);
 
         if (textureChanged || texPalChanged)
         {
@@ -69,40 +108,21 @@ public:
                 {
                     for (u32 i = 0; i < 2; i++)
                     {
-                        u32 startBit = entry.TextureRAMStart[i] / GPU::VRAMDirtyGranularity;
-                        u32 bitsCount = ((entry.TextureRAMStart[i] + entry.TextureRAMSize[i] + GPU::VRAMDirtyGranularity - 1) / GPU::VRAMDirtyGranularity) - startBit;
-
-                        u32 startEntry = startBit >> 6;
-                        u64 entriesCount = ((startBit + bitsCount + 0x3F) >> 6) - startEntry;
-                        for (u32 j = startEntry; j < startEntry + entriesCount; j++)
-                        {
-                            if (GetRangedBitMask(j, startBit, bitsCount) & textureDirty.Data[j])
-                            {
-                                u64 newTexHash = XXH3_64bits(&GPU::VRAMFlat_Texture[entry.TextureRAMStart[i]], entry.TextureRAMSize[i]);
-
-                                if (newTexHash != entry.TextureHash[i])
-                                    goto invalidate;
-                            }
-                        }
+                        if (CheckInvalid(entry.TextureRAMStart[i], entry.TextureRAMSize[i],
+                                entry.TextureHash[i],
+                                textureDirty.Data,
+                                gpu.VRAMFlat_Texture, sizeof(gpu.VRAMFlat_Texture)))
+                            goto invalidate;
                     }
                 }
 
                 if (texPalChanged && entry.TexPalSize > 0)
                 {
-                    u32 startBit = entry.TexPalStart / GPU::VRAMDirtyGranularity;
-                    u32 bitsCount = ((entry.TexPalStart + entry.TexPalSize + GPU::VRAMDirtyGranularity - 1) / GPU::VRAMDirtyGranularity) - startBit;
-
-                    u32 startEntry = startBit >> 6;
-                    u64 entriesCount = ((startBit + bitsCount + 0x3F) >> 6) - startEntry;
-                    for (u32 j = startEntry; j < startEntry + entriesCount; j++)
-                    {
-                        if (GetRangedBitMask(j, startBit, bitsCount) & texPalDirty.Data[j])
-                        {
-                            u64 newPalHash = XXH3_64bits(&GPU::VRAMFlat_TexPal[entry.TexPalStart], entry.TexPalSize);
-                            if (newPalHash != entry.TexPalHash)
-                                goto invalidate;
-                        }
-                    }
+                    if (CheckInvalid(entry.TexPalStart, entry.TexPalSize,
+                            entry.TexPalHash,
+                            texPalDirty.Data,
+                            gpu.VRAMFlat_TexPal, sizeof(gpu.VRAMFlat_TexPal)))
+                        goto invalidate;
                 }
 
                 it++;
@@ -110,7 +130,7 @@ public:
             invalidate:
                 FreeTextures[entry.WidthLog2][entry.HeightLog2].push_back(entry.Texture);
 
-                // printf("invalidating texture %u\n", it->first);
+                //printf("invalidating texture %d\n", entry.ImageDescriptor);
 
                 it = Cache.erase(it);
             }
@@ -133,7 +153,11 @@ public:
         return c;
     }
 
-    void GetTexture(u32 texParam, u32 palBase, TexHandleT& textureHandle, u32& layer, u32*& helper)
+    bool isValidWidthOrHeight(u32 widthOrHeight) {
+        return widthOrHeight == (1 << RightmostBit(widthOrHeight));
+    }
+
+    void GetTexture(GPU& gpu, u32 texParam, u32& width, u32& height, u32 palBase, TexHandleT& textureHandle, u32& layer, u32*& helper)
     {
         // remove sampling and texcoord gen params
         texParam &= ~0xC00F0000;
@@ -156,14 +180,16 @@ public:
         {
             textureHandle = it->second.Texture.TextureID;
             layer = it->second.Texture.Layer;
+            width = it->second.Texture.Width;
+            height = it->second.Texture.Height;
             helper = &it->second.LastVariant;
             return;
         }
 
         u32 widthLog2 = (texParam >> 20) & 0x7;
         u32 heightLog2 = (texParam >> 23) & 0x7;
-        u32 width = 8 << widthLog2;
-        u32 height = 8 << heightLog2;
+        width = 8 << widthLog2;
+        height = 8 << heightLog2;
 
         u32 addr = (texParam & 0xFFFF) * 8;
 
@@ -178,17 +204,13 @@ public:
         {
             entry.TextureRAMSize[0] = width*height*2;
 
-            ConvertBitmapTexture<outputFmt_RGB6A5>(width, height, DecodingBuffer, &GPU::VRAMFlat_Texture[addr]);
+            ConvertBitmapTexture<outputFmt_RGB6A5>(width, height, DecodingBuffer, addr, gpu);
         }
         else if (fmt == 5)
         {
-            u8* texData = &GPU::VRAMFlat_Texture[addr];
             u32 slot1addr = 0x20000 + ((addr & 0x1FFFC) >> 1);
             if (addr >= 0x40000)
                 slot1addr += 0x10000;
-            u8* texAuxData = &GPU::VRAMFlat_Texture[slot1addr];
-
-            u16* palData = (u16*)(GPU::VRAMFlat_TexPal + palBase*16);
 
             entry.TextureRAMSize[0] = width*height/16*4;
             entry.TextureRAMStart[1] = slot1addr;
@@ -196,7 +218,7 @@ public:
             entry.TexPalStart = palBase*16;
             entry.TexPalSize = 0x10000;
 
-            ConvertCompressedTexture<outputFmt_RGB6A5>(width, height, DecodingBuffer, texData, texAuxData, palData);
+            ConvertCompressedTexture<outputFmt_RGB6A5>(width, height, DecodingBuffer, addr, slot1addr, entry.TexPalStart, gpu);
         }
         else
         {
@@ -219,101 +241,102 @@ public:
             entry.TexPalStart = palAddr;
             entry.TexPalSize = numPalEntries*2;
 
-            u8* texData = &GPU::VRAMFlat_Texture[addr];
-            u16* palData = (u16*)(GPU::VRAMFlat_TexPal + palAddr);
-
             //assert(entry.TexPalStart+entry.TexPalSize <= 128*1024*1024);
 
             bool color0Transparent = texParam & (1 << 29);
 
             switch (fmt)
             {
-            case 1: ConvertAXIYTexture<outputFmt_RGB6A5, 3, 5>(width, height, DecodingBuffer, texData, palData); break;
-            case 6: ConvertAXIYTexture<outputFmt_RGB6A5, 5, 3>(width, height, DecodingBuffer, texData, palData); break;
-            case 2: ConvertNColorsTexture<outputFmt_RGB6A5, 2>(width, height, DecodingBuffer, texData, palData, color0Transparent); break;
-            case 3: ConvertNColorsTexture<outputFmt_RGB6A5, 4>(width, height, DecodingBuffer, texData, palData, color0Transparent); break;
-            case 4: ConvertNColorsTexture<outputFmt_RGB6A5, 8>(width, height, DecodingBuffer, texData, palData, color0Transparent); break;
+            case 1: ConvertAXIYTexture<outputFmt_RGB6A5, 3, 5>(width, height, DecodingBuffer, addr, palAddr, gpu); break;
+            case 6: ConvertAXIYTexture<outputFmt_RGB6A5, 5, 3>(width, height, DecodingBuffer, addr, palAddr, gpu); break;
+            case 2: ConvertNColorsTexture<outputFmt_RGB6A5, 2>(width, height, DecodingBuffer, addr, palAddr, color0Transparent, gpu); break;
+            case 3: ConvertNColorsTexture<outputFmt_RGB6A5, 4>(width, height, DecodingBuffer, addr, palAddr, color0Transparent, gpu); break;
+            case 4: ConvertNColorsTexture<outputFmt_RGB6A5, 8>(width, height, DecodingBuffer, addr, palAddr, color0Transparent, gpu); break;
             }
         }
 
         for (int i = 0; i < 2; i++)
         {
             if (entry.TextureRAMSize[i])
-                entry.TextureHash[i] = XXH3_64bits(&GPU::VRAMFlat_Texture[entry.TextureRAMStart[i]], entry.TextureRAMSize[i]);
+                entry.TextureHash[i] = MaskedHash(gpu.VRAMFlat_Texture, sizeof(gpu.VRAMFlat_Texture),
+                    entry.TextureRAMStart[i], entry.TextureRAMSize[i]);
         }
         if (entry.TexPalSize)
-            entry.TexPalHash = XXH3_64bits(&GPU::VRAMFlat_TexPal[entry.TexPalStart], entry.TexPalSize);
+            entry.TexPalHash = MaskedHash(gpu.VRAMFlat_TexPal, sizeof(gpu.VRAMFlat_TexPal),
+                entry.TexPalStart, entry.TexPalSize);
 
-        std::ostringstream oss;
-        for (int i = 0; i < 2; i++)
-        {
-            if (entry.TextureRAMSize[i])
-                oss << static_cast<char32_t>(entry.TextureHash[i]);
-        }
-        std::string uniqueIdentifier = oss.str();
-        
-        std::filesystem::path currentPath = std::filesystem::current_path();
-        std::string filename = uniqueIdentifier + ".png";
-        std::filesystem::path fullPath = currentPath / "textures" / filename;
-        std::filesystem::path fullPathTmp = currentPath / "textures_tmp" / filename;
-#ifdef _WIN32
-        const char* path = fullPath.string().c_str();
-        const char* pathTmp = fullPathTmp.string().c_str();
-#else
-        const char* path = fullPath.c_str();
-        const char* pathTmp = fullPathTmp.c_str();
-#endif
+        int oldWidth = width;
+        int oldHeight = height;
+        unsigned char* imageData = (unsigned char*)DecodingBuffer;
+        bool textureReplacementEnabled = true;
+        if (textureReplacementEnabled) {
+            std::ostringstream oss0;
+            oss0 << "3d-";
+            for (int i = 0; i < 2; i++)
+            {
+                if (entry.TextureRAMSize[i])
+                    oss0 << static_cast<char32_t>(entry.TextureHash[i]);
+            }
+            std::string uniqueIdentifier1 = oss0.str();
+            std::ostringstream oss;
+            for (int i = 0; i < 2; i++)
+            {
+                if (entry.TextureRAMSize[i])
+                    oss << static_cast<char32_t>(XXH3_64bits(&gpu.VRAMFlat_Texture[entry.TextureRAMStart[i]], entry.TextureRAMSize[i]));
+            }
+            std::string uniqueIdentifier2 = oss.str();
+            oss << "-";
+            oss << palBase;
+            std::string uniqueIdentifier3 = oss.str();
 
-        int channels = 4;
-        int r_width, r_height, r_channels;
-        unsigned char* imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
-        if (imageData != nullptr) {
-            // printf("Loading texture %s (key: %u)\n", path, key);
+            std::string fullPath1 = GamePlugin->textureFilePath(uniqueIdentifier1);
+            std::string fullPath2 = GamePlugin->textureFilePath(uniqueIdentifier3);
+            std::string fullPath3 = GamePlugin->textureFilePath(uniqueIdentifier2);
+            std::string fullPathTmp = GamePlugin->tmpTextureFilePath(uniqueIdentifier3);
 
-            if (r_channels == 3) {
-                unsigned char* newImageData = (unsigned char*)malloc(r_height * r_width * channels * sizeof(unsigned char[4]));
-                for (int y = 0; y < r_height; ++y) {
-                    for (int x = 0; x < r_width; ++x) {
-                        unsigned char* old_pixel = imageData + (y * r_width + x) * (r_channels);
-                        unsigned char* new_pixel = newImageData + (y * r_width + x) * channels;
-                        new_pixel[0] = old_pixel[0];
-                        new_pixel[1] = old_pixel[1];
-                        new_pixel[2] = old_pixel[2];
-                        new_pixel[3] = 255;
+            const char* path1 = fullPath1.c_str();
+            const char* path2 = fullPath2.c_str();
+            const char* path3 = fullPath3.c_str();
+            const char* pathTmp = fullPathTmp.c_str();
+
+            int channels = 4;
+            int r_width, r_height, r_channels;
+            imageData = nullptr;
+
+            const char* paths[] = {path1, path2, path3};
+            for (int i = 0; i < sizeof(paths) / sizeof(paths[0]); ++i) {
+                const char* path = paths[i];
+                if (imageData == nullptr && strlen(path) > 0) {
+                    imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+                    if (imageData != nullptr) {
+                        if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
+                            printf("Loading texture %s\n", path);
+                            width = r_width;
+                            height = r_height;
+                            break;
+                        }
+                        else {
+                            GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path);
+                            imageData = nullptr;
+                        }
                     }
                 }
-                imageData = newImageData;
-                r_channels = channels;
             }
-            for (int y = 0; y < r_height; ++y) {
-                for (int x = 0; x < r_width; ++x) {
-                    unsigned char* pixel = imageData + (y * r_width + x) * (r_channels);
-                    unsigned char r = pixel[0];
-                    unsigned char g = pixel[1];
-                    unsigned char b = pixel[2];
-                    unsigned char alpha = pixel[3];
-                    r = (r >> 2);
-                    g = (g >> 2);
-                    b = (b >> 2);
-                    alpha = (alpha >> 3);
-                    pixel[0] = r;
-                    pixel[1] = g;
-                    pixel[2] = b;
-                    pixel[3] = alpha;
+
+            if (imageData == nullptr) {
+                imageData = (unsigned char*)DecodingBuffer;
+
+                if (GamePlugin->shouldExportTextures()) {
+                    printf("Saving texture %s\n", pathTmp);
+                    Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
                 }
             }
-            width = r_width;
-            height = r_height;
-        }
-        else {
-            imageData = (unsigned char*)DecodingBuffer;
-            Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
-        }
 
-        widthLog2 = RightmostBit(width) - 3;
-        heightLog2 = RightmostBit(height) - 3;
-        entry.WidthLog2 = widthLog2;
-        entry.HeightLog2 = heightLog2;
+            widthLog2 = RightmostBit(width) - 3;
+            heightLog2 = RightmostBit(height) - 3;
+            entry.WidthLog2 = widthLog2;
+            entry.HeightLog2 = heightLog2;
+        }
 
         auto& texArrays = TexArrays[widthLog2][heightLog2];
         auto& freeTextures = FreeTextures[widthLog2][heightLog2];
@@ -321,9 +344,9 @@ public:
         if (freeTextures.size() == 0)
         {
             texArrays.resize(texArrays.size()+1);
-            GLuint& array = texArrays[texArrays.size()-1];
+            TexHandleT& array = texArrays[texArrays.size()-1];
 
-            u32 layers = std::min<u32>((8*1024*1024) / (width*height*4), 64);
+            u32 layers = 1;
 
             // allocate new array texture
             //printf("allocating new layer set for %d %d %d %d\n", width, height, texArrays.size()-1, array.ImageDescriptor);
@@ -331,13 +354,15 @@ public:
 
             for (u32 i = 0; i < layers; i++)
             {
-                freeTextures.push_back(TexArrayEntry{array, i});
+                freeTextures.push_back(TexArrayEntry{array, i, width, height});
             }
         }
 
         TexArrayEntry storagePlace = freeTextures[freeTextures.size()-1];
         freeTextures.pop_back();
 
+        storagePlace.Width = oldWidth;
+        storagePlace.Height = oldHeight;
         entry.Texture = storagePlace;
 
         TexLoader.UploadTexture(storagePlace.TextureID, width, height, storagePlace.Layer, imageData);
@@ -367,6 +392,8 @@ private:
     {
         TexHandleT TextureID;
         u32 Layer;
+        u32 Width;
+        u32 Height;
     };
 
     struct TexCacheEntry

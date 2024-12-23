@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2022 melonDS team
+    Copyright 2016-2024 melonDS team
 
     This file is part of melonDS.
 
@@ -19,6 +19,7 @@
 #ifndef TITLEMANAGERDIALOG_H
 #define TITLEMANAGERDIALOG_H
 
+#include <memory>
 #include <QDialog>
 #include <QMessageBox>
 #include <QListWidget>
@@ -29,6 +30,9 @@
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
 
+#include "DSi_TMD.h"
+#include "DSi_NAND.h"
+
 namespace Ui
 {
     class TitleManagerDialog;
@@ -37,15 +41,17 @@ namespace Ui
 class TitleManagerDialog;
 class TitleImportDialog;
 
+class EmuInstance;
+
 class TitleManagerDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit TitleManagerDialog(QWidget* parent);
+    explicit TitleManagerDialog(QWidget* parent, melonDS::DSi_NAND::NANDImage& image);
     ~TitleManagerDialog();
 
-    static bool NANDInited;
+    static std::unique_ptr<melonDS::DSi_NAND::NANDImage> nand;
     static bool openNAND();
     static void closeNAND();
 
@@ -61,12 +67,15 @@ public:
         if (!openNAND())
         {
             QMessageBox::critical(parent,
-                                  "DSi title manager - khDaysMM",
+                                  "DSi title manager - melonDS",
                                   "Failed to mount the DSi NAND. Check that your NAND dump is accessible and valid.");
             return nullptr;
         }
 
-        currentDlg = new TitleManagerDialog(parent);
+        assert(nand != nullptr);
+        assert(*nand);
+
+        currentDlg = new TitleManagerDialog(parent, *nand);
         currentDlg->open();
         return currentDlg;
     }
@@ -87,16 +96,19 @@ private slots:
     void onExportTitleData();
 
 private:
+    EmuInstance* emuInstance;
+
+    melonDS::DSi_NAND::NANDMount nandmount;
     Ui::TitleManagerDialog* ui;
 
     QString importAppPath;
-    u8 importTmdData[0x208];
+    melonDS::DSi_TMD::TitleMetadata importTmdData;
     bool importReadOnly;
 
     QAction* actImportTitleData[3];
     QAction* actExportTitleData[3];
 
-    void createTitleItem(u32 category, u32 titleid);
+    void createTitleItem(melonDS::u32 category, melonDS::u32 titleid);
 };
 
 class TitleImportDialog : public QDialog
@@ -104,7 +116,7 @@ class TitleImportDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit TitleImportDialog(QWidget* parent, QString& apppath, u8* tmd, bool& readonly);
+    explicit TitleImportDialog(QWidget* parent, QString& apppath, const melonDS::DSi_TMD::TitleMetadata* tmd, bool& readonly, melonDS::DSi_NAND::NANDMount& nand);
     ~TitleImportDialog();
 
 private slots:
@@ -117,6 +129,7 @@ private slots:
 
 private:
     Ui::TitleImportDialog* ui;
+    melonDS::DSi_NAND::NANDMount& nandmount;
 
     QButtonGroup* grpTmdSource;
 
@@ -124,10 +137,10 @@ private:
     QNetworkReply* netreply;
 
     QString& appPath;
-    u8* tmdData;
+    const melonDS::DSi_TMD::TitleMetadata* tmdData;
     bool& readOnly;
 
-    u32 titleid[2];
+    melonDS::u32 titleid[2];
 };
 
 #endif // TITLEMANAGERDIALOG_H
