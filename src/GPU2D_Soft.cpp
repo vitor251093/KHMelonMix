@@ -1992,7 +1992,6 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     int channels = 4;
     int r_width, r_height, r_channels;
     unsigned char* imageData = nullptr;
-    bool hasFinalImage = false;
     if (strlen(path) > 0) // load complete 2D image
     {
         imageData = Texreplace::LoadRawTextureFromFile(path, &r_width, &r_height, &r_channels);
@@ -2007,35 +2006,61 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     }
     else
     {
-        hasFinalImage = true;
-        // TODO: For now, let's export the texture only
+        // TODO: KH Still a bit broken
 
-        // u32 alpha = attrib[2] >> 12;
-        // if (!alpha) return;
-        // alpha++;
+        if (spritemode == 3)
+        {
+            u32 alpha = attrib[2] >> 12;
+            if (!alpha) return;
+            alpha++;
 
-        // pixelattr |= (0xC0000000 | (alpha << 24));
+            pixelattr |= (0xC0000000 | (alpha << 24));
+        }
+        else {
+            if (spritemode == 1) pixelattr |= 0x80000000;
+            else                 pixelattr |= 0x10000000;
 
-        // for (; xoff < xend;) {
-        //     color = *(u16*)&objvram[pixelsaddr & objvrammask];
+            if (attrib[0] & 0x2000)
+            {
+                // 256-color
+                if (!window)
+                {
+                    if (!(CurUnit->DispCnt & 0x80000000))
+                        pixelattr |= 0x1000;
+                    else
+                        pixelattr |= ((attrib[2] & 0xF000) >> 4);
+                }
+            }
+            else
+            {
+                // 16-color
+                if (!window)
+                {
+                    pixelattr |= 0x1000;
+                    pixelattr |= ((attrib[2] & 0xF000) >> 8);
+                }
+            }
+        }
 
-        //     if (color)
-        //     {
-        //         if (window) objWindow[xpos] = 1;
-        //         else      { objLine[xpos] = color | pixelattr; objIndex[xpos] = num; }
-        //     }
-        //     else if (!window)
-        //     {
-        //         if (objLine[xpos] == 0)
-        //         {
-        //             objLine[xpos] = pixelattr & 0x180000;
-        //             objIndex[xpos] = num;
-        //         }
-        //     }
+        for (; xoff < xend;) {
+            unsigned char* pixel = imageData + (ypos * width + (xpos % width)) * (channels);
+            color = (pixel[0] >> 3) | ((pixel[1] >> 3) << 5) | ((pixel[2] >> 3) << 10);
 
-        //     xoff++;
-        //     xpos++;
-        // }
+            if (color)
+            {
+                if (window) objWindow[xpos] = 1;
+                else        objLine[xpos] = color | pixelattr;
+            }
+            else if (!window)
+            {
+                if (objLine[xpos] == 0)
+                    objLine[xpos] = pixelattr & 0x180000;
+            }
+
+            xoff++;
+            xpos++;
+        }
+        return;
     }
 
     if (spritemode == 3)
@@ -2245,11 +2270,6 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
 
     if (plugin->shouldExportTextures())
     {
-        if (hasFinalImage)
-        {
-            return;
-        }
-
         if (imageData == nullptr)
         {
             imageData = (unsigned char*)malloc(height * width * channels * sizeof(unsigned char));
