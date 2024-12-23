@@ -50,6 +50,7 @@
 #include "RTC.h"
 #include "DSi.h"
 #include "DSi_I2C.h"
+#include "GPU2D_Soft.h"
 #include "GPU3D_Soft.h"
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
@@ -1091,6 +1092,8 @@ void EmuThread::updateRenderer()
 {
     if (videoRenderer != lastVideoRenderer)
     {
+        static_cast<GPU2D::SoftRenderer&>(emuInstance->nds->GPU.GetRenderer2D()).setPlugin(emuInstance->plugin);
+
         switch (videoRenderer)
         {
             case renderer3D_Software:

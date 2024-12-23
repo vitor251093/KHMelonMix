@@ -19,6 +19,9 @@
 #include "GPU2D_Soft.h"
 #include "GPU.h"
 #include "GPU3D.h"
+#include "GPU_Texreplace.h"
+
+#include <filesystem>
 
 namespace melonDS
 {
@@ -1963,8 +1966,102 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         xoff = -xpos;
         xpos = 0;
     }
+    s32 orig_xoff = xoff;
+    s32 orig_xpos = xpos;
 
     u16 color = 0; // transparent in all cases
+
+    std::ostringstream oss;
+    oss << tilenum;
+    std::string uniqueIdentifier = oss.str();
+    
+    std::string filename = "2d-" + uniqueIdentifier;
+    std::filesystem::path fullPath = plugin->textureFilePath(filename);
+    std::filesystem::path fullPath2 = plugin->tmpTextureFilePath(filename + "-FINAL");
+    std::filesystem::path fullPathTmp = plugin->tmpTextureFilePath(filename);
+#ifdef _WIN32
+    const char* path = fullPath.string().c_str();
+    const char* path2 = fullPath2.string().c_str();
+    const char* pathTmp = fullPathTmp.string().c_str();
+#else
+    const char* path = fullPath.c_str();
+    const char* path2 = fullPath2.c_str();
+    const char* pathTmp = fullPathTmp.c_str();
+#endif
+
+    int channels = 4;
+    int r_width, r_height, r_channels;
+    unsigned char* imageData = nullptr;
+    if (strlen(path) > 0) // load complete 2D image
+    {
+        imageData = Texreplace::LoadRawTextureFromFile(path, &r_width, &r_height, &r_channels);
+    }
+    if (imageData == nullptr && strlen(path2) > 0) // load complete 2D image
+    {
+        imageData = Texreplace::LoadRawTextureFromFile(path2, &r_width, &r_height, &r_channels);
+    }
+    if (imageData == nullptr)
+    {
+        imageData = Texreplace::LoadTextureFromFile(pathTmp, &r_width, &r_height, &r_channels);
+    }
+    else
+    {
+        // TODO: KH Still a bit broken
+
+        if (spritemode == 3)
+        {
+            u32 alpha = attrib[2] >> 12;
+            if (!alpha) return;
+            alpha++;
+
+            pixelattr |= (0xC0000000 | (alpha << 24));
+        }
+        else {
+            if (spritemode == 1) pixelattr |= 0x80000000;
+            else                 pixelattr |= 0x10000000;
+
+            if (attrib[0] & 0x2000)
+            {
+                // 256-color
+                if (!window)
+                {
+                    if (!(CurUnit->DispCnt & 0x80000000))
+                        pixelattr |= 0x1000;
+                    else
+                        pixelattr |= ((attrib[2] & 0xF000) >> 4);
+                }
+            }
+            else
+            {
+                // 16-color
+                if (!window)
+                {
+                    pixelattr |= 0x1000;
+                    pixelattr |= ((attrib[2] & 0xF000) >> 8);
+                }
+            }
+        }
+
+        for (; xoff < xend;) {
+            unsigned char* pixel = imageData + (ypos * width + (xpos % width)) * (channels);
+            color = (pixel[0] >> 3) | ((pixel[1] >> 3) << 5) | ((pixel[2] >> 3) << 10);
+
+            if (color)
+            {
+                if (window) objWindow[xpos] = 1;
+                else        objLine[xpos] = color | pixelattr;
+            }
+            else if (!window)
+            {
+                if (objLine[xpos] == 0)
+                    objLine[xpos] = pixelattr & 0x180000;
+            }
+
+            xoff++;
+            xpos++;
+        }
+        return;
+    }
 
     if (spritemode == 3)
     {
@@ -2168,6 +2265,64 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
                 xpos++;
                 if (!(xoff & 0x7)) pixelsaddr += ((attrib[1] & 0x1000) ? -28 : 28);
             }
+        }
+    }
+
+    if (plugin->shouldExportTextures())
+    {
+        if (imageData == nullptr)
+        {
+            imageData = (unsigned char*)malloc(height * width * channels * sizeof(unsigned char));
+        }
+        
+        xoff = orig_xoff;
+        xpos = orig_xpos;
+
+        int y = ypos;
+
+        if (num == 0) {
+            printf("SoftRenderer::DrawSprite_Normal(%d, %d, %d, %d, %d)\n", num, width, height, xpos, ypos);
+            printf("- xpos: %d - xoff: %d - xend: %d\n", xpos, xoff, xend);
+        }
+
+        for (; xoff < xend;)
+        {
+            u32 og_pixel = objLine[xpos];
+
+            u16 color = 0;
+            if (og_pixel & 0x8000) {
+                color = og_pixel & 0x7FFF;
+            }
+            else if (og_pixel & 0x1000) {
+                u16* pal = (u16*)&GPU.Palette[CurUnit->Num ? 0x600 : 0x200];
+                color = pal[og_pixel & 0xFF];
+            }
+            else {
+                u16* extpal = CurUnit->GetOBJExtPal();
+                color = extpal[og_pixel & 0xFFF];
+            }
+            
+            u8 r = ((color & 0x001F) << 1) << 2;
+            u8 g = ((color & 0x03E0) >> 4) << 2;
+            u8 b = ((color & 0x7C00) >> 9) << 2;
+                    
+            if (num == 0) printf("- X: %d - Y: %d - RGB: #%02x%02x%02x\n", (xpos % width), y, r, g, b);
+
+            unsigned char* pixel = imageData + (y * width + (xpos % width)) * (channels);
+            
+            pixel[0] = r;
+            pixel[1] = g;
+            pixel[2] = b;
+            pixel[3] = 255;
+
+            xoff++;
+            xpos++;
+        }
+
+        Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+        
+        if (ypos + 1 == height) {
+            Texreplace::ExportTextureAsFile(imageData, path2, width, height, channels);
         }
     }
 }

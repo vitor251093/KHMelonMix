@@ -9,7 +9,7 @@
 namespace Texreplace
 {
 
-unsigned char* LoadTextureFromFile(const char* path, int* width, int* height, int* channels)
+unsigned char* LoadRawTextureFromFile(const char* path, int* width, int* height, int* channels)
 {
     unsigned char* imageData = stbi_load(path, width, height, channels, 0);
     if (imageData == nullptr) {
@@ -52,7 +52,12 @@ unsigned char* LoadTextureFromFile(const char* path, int* width, int* height, in
     return imageData;
 }
 
-void ExportTextureAsFile(unsigned char* data, const char* path, u32 width, u32 height, u32 channels)
+unsigned char* LoadTextureFromFile(const char* path, int* width, int* height, int* channels)
+{
+    return stbi_load(path, width, height, channels, 0);
+}
+
+void ExportRawTextureAsFile(unsigned char* data, const char* path, u32 width, u32 height, u32 channels)
 {
     unsigned char* newImageData = (unsigned char*)malloc((height) * (width) * (channels) * sizeof(unsigned char[4]));
 
@@ -77,5 +82,10 @@ void ExportTextureAsFile(unsigned char* data, const char* path, u32 width, u32 h
     }
 
     stbi_write_png(path, width, height, channels, newImageData, width * channels);
+}
+
+void ExportTextureAsFile(unsigned char* data, const char* path, u32 width, u32 height, u32 channels)
+{
+    stbi_write_png(path, width, height, channels, data, width * channels);
 }
 }
