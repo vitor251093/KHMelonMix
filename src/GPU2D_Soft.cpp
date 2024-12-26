@@ -1994,11 +1994,11 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     unsigned char* imageData = nullptr;
     if (strlen(path) > 0) // load complete 2D image
     {
-        imageData = Texreplace::LoadRawTextureFromFile(path, &r_width, &r_height, &r_channels);
+        imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
     }
     if (imageData == nullptr && strlen(path2) > 0) // load complete 2D image
     {
-        imageData = Texreplace::LoadRawTextureFromFile(path2, &r_width, &r_height, &r_channels);
+        imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
     }
     if (imageData == nullptr)
     {
@@ -2007,22 +2007,26 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     else
     {
         // TODO: KH Still a bit broken
-
-        if (spritemode == 3)
+        bool isBitmapSprite = spritemode == 3;
+        if (isBitmapSprite)
         {
+            // bitmap sprite
+
             u32 alpha = attrib[2] >> 12;
             if (!alpha) return;
             alpha++;
 
             pixelattr |= (0xC0000000 | (alpha << 24));
         }
-        else {
+        else
+        {
             if (spritemode == 1) pixelattr |= 0x80000000;
             else                 pixelattr |= 0x10000000;
 
             if (attrib[0] & 0x2000)
             {
                 // 256-color
+
                 if (!window)
                 {
                     if (!(CurUnit->DispCnt & 0x80000000))
@@ -2030,6 +2034,7 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
                     else
                         pixelattr |= ((attrib[2] & 0xF000) >> 4);
                 }
+
             }
             else
             {
@@ -2039,14 +2044,18 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
                     pixelattr |= 0x1000;
                     pixelattr |= ((attrib[2] & 0xF000) >> 8);
                 }
+
             }
         }
 
-        for (; xoff < xend;) {
+        for (; xoff < xend;)
+        {
             unsigned char* pixel = imageData + (ypos * width + (xpos % width)) * (channels);
-            color = (pixel[0] >> 3) | ((pixel[1] >> 3) << 5) | ((pixel[2] >> 3) << 10);
+            color = (pixel[0] >> 3) | ((pixel[1] >> 3) << 0x5) | ((pixel[2] >> 3) << 0xA);
+            bool visible = pixel[3] == 0xFF;
+            if (visible) color |= 0x8000;
 
-            if (color)
+            if (isBitmapSprite ? (color & 0x8000) : color)
             {
                 if (window) objWindow[xpos] = 1;
                 else        objLine[xpos] = color | pixelattr;
@@ -2268,7 +2277,7 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         }
     }
 
-    if (plugin->shouldExportTextures())
+    if (plugin->shouldExportTextures() || true)
     {
         if (imageData == nullptr)
         {
@@ -2279,11 +2288,6 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         xpos = orig_xpos;
 
         int y = ypos;
-
-        if (num == 0) {
-            printf("SoftRenderer::DrawSprite_Normal(%d, %d, %d, %d, %d)\n", num, width, height, xpos, ypos);
-            printf("- xpos: %d - xoff: %d - xend: %d\n", xpos, xoff, xend);
-        }
 
         for (; xoff < xend;)
         {
@@ -2305,15 +2309,13 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
             u8 r = ((color & 0x001F) << 1) << 2;
             u8 g = ((color & 0x03E0) >> 4) << 2;
             u8 b = ((color & 0x7C00) >> 9) << 2;
-                    
-            if (num == 0) printf("- X: %d - Y: %d - RGB: #%02x%02x%02x\n", (xpos % width), y, r, g, b);
 
             unsigned char* pixel = imageData + (y * width + (xpos % width)) * (channels);
             
             pixel[0] = r;
             pixel[1] = g;
             pixel[2] = b;
-            pixel[3] = 255;
+            pixel[3] = (spritemode == 3 && (color & 0x8000) == 0) ? 0 : 255;
 
             xoff++;
             xpos++;
