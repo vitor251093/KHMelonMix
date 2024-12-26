@@ -292,7 +292,7 @@ public:
             std::string fullPath1 = GamePlugin->textureFilePath(uniqueIdentifier1);
             std::string fullPath2 = GamePlugin->textureFilePath(uniqueIdentifier3);
             std::string fullPath3 = GamePlugin->textureFilePath(uniqueIdentifier2);
-            std::string fullPathTmp = GamePlugin->tmpTextureFilePath(uniqueIdentifier3);
+            std::string fullPathTmp = GamePlugin->tmpTextureFilePath(uniqueIdentifier3, false);
 
             const char* path1 = fullPath1.c_str();
             const char* path2 = fullPath2.c_str();

@@ -1977,8 +1977,8 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     
     std::string filename = "2d-" + uniqueIdentifier;
     std::filesystem::path fullPath = plugin->textureFilePath(filename);
-    std::filesystem::path fullPath2 = plugin->tmpTextureFilePath(filename + "-FINAL");
-    std::filesystem::path fullPathTmp = plugin->tmpTextureFilePath(filename);
+    std::filesystem::path fullPath2 = plugin->tmpTextureFilePath(filename, false);
+    std::filesystem::path fullPathTmp = plugin->tmpTextureFilePath(filename, true);
 #ifdef _WIN32
     const char* path = fullPath.string().c_str();
     const char* path2 = fullPath2.string().c_str();
@@ -2277,7 +2277,7 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         }
     }
 
-    if (plugin->shouldExportTextures() || true)
+    if (plugin->shouldExportTextures())
     {
         if (imageData == nullptr)
         {
@@ -2325,6 +2325,7 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         
         if (ypos + 1 == height) {
             Texreplace::ExportTextureAsFile(imageData, path2, width, height, channels);
+            std::filesystem::remove(pathTmp);
         }
     }
 }

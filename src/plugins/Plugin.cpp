@@ -261,7 +261,7 @@ std::string Plugin::textureFilePath(std::string texture) {
     texturesIndex[texture] = texture + ".png";
     return fullPath.string();
 }
-std::string Plugin::tmpTextureFilePath(std::string texture) {
+std::string Plugin::tmpTextureFilePath(std::string texture, bool partial) {
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
@@ -271,7 +271,7 @@ std::string Plugin::tmpTextureFilePath(std::string texture) {
         std::filesystem::create_directory(tmpFolderPath);
     }
 
-    std::filesystem::path fullPathTmp = tmpFolderPath / (texture + ".png");
+    std::filesystem::path fullPathTmp = tmpFolderPath / (texture + (partial ? ".png.part" : ".png"));
     return fullPathTmp.string();
 }
 
