@@ -921,6 +921,7 @@ void SoftRenderer::DrawBG_Text(u32 line, u32 bgnum)
     asm volatile ("" : : : "memory");
 
     u16 bgcnt = CurUnit->BGCnt[bgnum];
+    // printf("bgcnt: %d\n", bgcnt);
 
     u32 tilesetaddr, tilemapaddr;
     u16* pal;
@@ -1972,7 +1973,11 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     u16 color = 0; // transparent in all cases
 
     std::ostringstream oss;
-    oss << tilenum;
+    oss << attrib[0];
+    oss << "-";
+    oss << attrib[1];
+    oss << "-";
+    oss << attrib[2];
     std::string uniqueIdentifier = oss.str();
     
     std::string filename = "2d-" + uniqueIdentifier;
