@@ -257,6 +257,14 @@ std::map<std::string, TextureEntry> Plugin::getTexturesIndex() {
     texturesIndex = _texturesIndex;
     return texturesIndex;
 }
+
+TextureEntry* Plugin::textureFileConfig(std::string texture) {
+    textureFilePath(texture);
+    if (texturesIndex.count(texture)) {
+        return &texturesIndex[texture];
+    }
+    return nullptr;
+}
 std::string Plugin::textureFilePath(std::string texture) {
     std::string assetsFolderName = assetsFolder();
     std::filesystem::path currentPath = std::filesystem::current_path();

@@ -1981,6 +1981,7 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     std::string uniqueIdentifier = oss.str();
     
     std::string filename = "2d-" + uniqueIdentifier;
+    Plugins::TextureEntry* textureConfig = plugin->textureFileConfig(filename);
     std::filesystem::path fullPath = plugin->textureFilePath(filename);
     std::filesystem::path fullPath2 = plugin->tmpTextureFilePath(filename, false);
     std::filesystem::path fullPathTmp = plugin->tmpTextureFilePath(filename, true);
@@ -2000,10 +2001,6 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     if (strlen(path) > 0) // load complete 2D image
     {
         imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
-    }
-    if (imageData == nullptr && strlen(path2) > 0) // load complete 2D image
-    {
-        imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
     }
     if (imageData == nullptr)
     {
@@ -2055,7 +2052,9 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
 
         for (; xoff < xend;)
         {
-            unsigned char* pixel = imageData + (ypos * width + ((xpos - orig_xpos) % width)) * (channels);
+            u8 posX = textureConfig == nullptr ? 0 : textureConfig->posX;
+            u8 posY = textureConfig == nullptr ? 0 : textureConfig->posY;
+            unsigned char* pixel = imageData + ((ypos + posY) * r_width + posX + ((xpos - orig_xpos) % width)) * (channels);
             color = (pixel[0] >> 3) | ((pixel[1] >> 3) << 0x5) | ((pixel[2] >> 3) << 0xA);
             bool visible = pixel[3] == 0xFF;
             if (visible) color |= 0x8000;

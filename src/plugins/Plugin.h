@@ -180,6 +180,7 @@ public:
 
     virtual std::string textureIndexFilePath();
     virtual std::map<std::string, TextureEntry> getTexturesIndex();
+    virtual TextureEntry* textureFileConfig(std::string texture);
     virtual std::string textureFilePath(std::string texture);
     virtual std::string tmpTextureFilePath(std::string texture, bool partial);
 
