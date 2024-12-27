@@ -243,10 +243,10 @@ std::map<std::string, TextureEntry> Plugin::getTexturesIndex() {
 
                     if (tokens.size() == 3) {
                         textureObj.filename = tokens[0];
-                        textureObj.posX = (u8)std::stoi(tokens[1].substr(0, tokens[1].find(delimiter2)));
-                        textureObj.posY = (u8)std::stoi(tokens[1].substr(tokens[1].find(delimiter2) + 1));
-                        textureObj.sizeX = (u8)std::stoi(tokens[2].substr(0, tokens[2].find(delimiter2)));
-                        textureObj.sizeY = (u8)std::stoi(tokens[2].substr(tokens[2].find(delimiter2) + 1));
+                        textureObj.posY = (u16)std::stoi(tokens[1].substr(0, tokens[1].find(delimiter2)));
+                        textureObj.posX = (u16)std::stoi(tokens[1].substr(tokens[1].find(delimiter2) + 1));
+                        textureObj.sizeX = (u16)std::stoi(tokens[2].substr(0, tokens[2].find(delimiter2)));
+                        textureObj.sizeY = (u16)std::stoi(tokens[2].substr(tokens[2].find(delimiter2) + 1));
                     }
                 }
 

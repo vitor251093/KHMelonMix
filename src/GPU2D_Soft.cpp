@@ -2073,8 +2073,8 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
 
         for (; xoff < xend;)
         {
-            u8 posX = textureConfig == nullptr ? 0 : textureConfig->posX;
-            u8 posY = textureConfig == nullptr ? 0 : textureConfig->posY;
+            u16 posX = textureConfig == nullptr ? 0 : textureConfig->posX;
+            u16 posY = textureConfig == nullptr ? 0 : textureConfig->posY;
             unsigned char* pixel = imageData + ((ypos + posY) * r_width + posX + ((xpos - orig_xpos) % width)) * (channels);
             color = (pixel[0] >> 3) | ((pixel[1] >> 3) << 0x5) | ((pixel[2] >> 3) << 0xA);
             bool visible = pixel[3] == 0xFF;

@@ -124,10 +124,10 @@ struct CutsceneEntry
 struct TextureEntry
 {
     std::string filename;
-    u8 posX;
-    u8 posY;
-    u8 sizeX;
-    u8 sizeY;
+    u16 posX;
+    u16 posY;
+    u16 sizeX;
+    u16 sizeY;
 };
 
 class Plugin
