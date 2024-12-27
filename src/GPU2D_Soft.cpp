@@ -1973,6 +1973,7 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     u16 color = 0; // transparent in all cases
 
     std::ostringstream oss;
+    oss << "2d-";
     oss << attrib[0];
     oss << "-";
     oss << attrib[1];
@@ -1980,11 +1981,9 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     oss << attrib[2];
     std::string uniqueIdentifier = oss.str();
     
-    std::string filename = "2d-" + uniqueIdentifier;
-    Plugins::TextureEntry* textureConfig = plugin->textureFileConfig(filename);
-    std::string fullPath = plugin->textureFilePath(filename);
-    std::string fullPath2 = plugin->tmpTextureFilePath(filename, false);
-    std::string fullPathTmp = plugin->tmpTextureFilePath(filename, true);
+    std::string fullPath = plugin->textureFilePath(uniqueIdentifier);
+    std::string fullPath2 = plugin->tmpTextureFilePath(uniqueIdentifier, false);
+    std::string fullPathTmp = plugin->tmpTextureFilePath(uniqueIdentifier, true);
 
     const char* path = fullPath.c_str();
     const char* path2 = fullPath2.c_str();
@@ -2048,6 +2047,8 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
 
             }
         }
+
+        Plugins::TextureEntry* textureConfig = plugin->textureFileConfig(uniqueIdentifier);
 
         for (; xoff < xend;)
         {
