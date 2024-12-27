@@ -28,7 +28,7 @@ namespace melonDS
 namespace GPU2D
 {
 SoftRenderer::SoftRenderer(melonDS::GPU& gpu)
-    : Renderer2D(), GPU(gpu)
+    : Renderer2D(), GPU(gpu), Texcache(Texcache2D())
 {
     // mosaic table is initialized at compile-time
 }
@@ -1993,110 +1993,6 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
 
     u16 color = 0; // transparent in all cases
 
-    std::ostringstream oss;
-    oss << "2d-";
-    oss << attrib[0];
-    oss << "-";
-    oss << attrib[1];
-    oss << "-";
-    oss << attrib[2];
-    std::string uniqueIdentifier = oss.str();
-    
-    std::string fullPath = plugin->textureFilePath(uniqueIdentifier);
-    std::string fullPath2 = plugin->tmpTextureFilePath(uniqueIdentifier, false);
-    std::string fullPathTmp = plugin->tmpTextureFilePath(uniqueIdentifier, true);
-
-    const char* path = fullPath.c_str();
-    const char* path2 = fullPath2.c_str();
-    const char* pathTmp = fullPathTmp.c_str();
-
-    int channels = 4;
-    int r_width, r_height, r_channels;
-    unsigned char* imageData = nullptr;
-    if (strlen(path) > 0) // load complete 2D image
-    {
-        imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
-    }
-    if (imageData == nullptr && strlen(path2) > 0) // load complete 2D image
-    {
-        imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
-    }
-    if (imageData == nullptr)
-    {
-        imageData = Texreplace::LoadTextureFromFile(pathTmp, &r_width, &r_height, &r_channels);
-    }
-    else
-    {
-        // TODO: KH Still a bit broken
-        bool isBitmapSprite = spritemode == 3;
-        if (isBitmapSprite)
-        {
-            // bitmap sprite
-
-            u32 alpha = attrib[2] >> 12;
-            if (!alpha) return;
-            alpha++;
-
-            pixelattr |= (0xC0000000 | (alpha << 24));
-        }
-        else
-        {
-            if (spritemode == 1) pixelattr |= 0x80000000;
-            else                 pixelattr |= 0x10000000;
-
-            if (attrib[0] & 0x2000)
-            {
-                // 256-color
-
-                if (!window)
-                {
-                    if (!(CurUnit->DispCnt & 0x80000000))
-                        pixelattr |= 0x1000;
-                    else
-                        pixelattr |= ((attrib[2] & 0xF000) >> 4);
-                }
-
-            }
-            else
-            {
-                // 16-color
-                if (!window)
-                {
-                    pixelattr |= 0x1000;
-                    pixelattr |= ((attrib[2] & 0xF000) >> 8);
-                }
-
-            }
-        }
-
-        Plugins::TextureEntry* textureConfig = plugin->textureFileConfig(uniqueIdentifier);
-
-        for (; xoff < xend;)
-        {
-            u16 posX = textureConfig == nullptr ? 0 : textureConfig->posX;
-            u16 posY = textureConfig == nullptr ? 0 : textureConfig->posY;
-            unsigned char* pixel = imageData + ((ypos + posY) * r_width + posX + ((xpos - orig_xpos) % width)) * (channels);
-            color = (pixel[0] >> 3) | ((pixel[1] >> 3) << 0x5) | ((pixel[2] >> 3) << 0xA);
-            bool visible = pixel[3] == 0xFF;
-            if (visible) color |= 0x8000;
-
-            if (isBitmapSprite ? (color & 0x8000) : color)
-            {
-                if (window) objWindow[xpos] = 1;
-                else        objLine[xpos] = color | pixelattr;
-            }
-            else if (!window)
-            {
-                if (objLine[xpos] == 0)
-                    objLine[xpos] = pixelattr & 0x180000;
-            }
-
-            xoff++;
-            xpos++;
-        }
-        return;
-    }
-
     if (spritemode == 3)
     {
         // bitmap sprite
@@ -2302,71 +2198,7 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         }
     }
 
-    if (plugin->shouldExportTextures())
-    {
-        if (imageData == nullptr)
-        {
-            imageData = (unsigned char*)malloc(height * width * channels * sizeof(unsigned char));
-        }
-        
-        xoff = orig_xoff;
-        xpos = orig_xpos;
-
-        int y = ypos;
-
-        for (; xoff < xend;)
-        {
-            u32 og_pixel = objLine[xpos];
-
-            u16 alpha = 255;
-
-            if (spritemode == 3 || (!window && ((attrib[0] & 0x2000) ? (CurUnit->DispCnt & 0x80000000) : true)))
-            {
-                u32 tmpAlpha = (attrib[2] & 0xF000) >> 12;
-                alpha = tmpAlpha == 0 ? 0 : ((tmpAlpha + 1) << 4) - 1;
-            }
-
-            u16 color = 0;
-            if (og_pixel & 0x8000) {
-                color = og_pixel & 0x7FFF;
-            }
-            else if (og_pixel & 0x1000) {
-                u16* pal = (u16*)&GPU.Palette[CurUnit->Num ? 0x600 : 0x200];
-                color = pal[og_pixel & 0xFF];
-            }
-            else {
-                u16* extpal = CurUnit->GetOBJExtPal();
-                color = extpal[og_pixel & 0xFFF];
-            }
-            if (spritemode == 3 && (color & 0x8000) == 0) {
-                alpha = 0;
-            }
-            if (og_pixel == 0x80000) {
-                alpha = 0;
-            }
-
-            u8 r = ((color & 0x001F) << 1) << 2;
-            u8 g = ((color & 0x03E0) >> 4) << 2;
-            u8 b = ((color & 0x7C00) >> 9) << 2;
-
-            unsigned char* pixel = imageData + (y * width + ((xpos - orig_xpos) % width)) * (channels);
-            
-            pixel[0] = r;
-            pixel[1] = g;
-            pixel[2] = b;
-            pixel[3] = alpha;
-
-            xoff++;
-            xpos++;
-        }
-
-        Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
-        
-        if (ypos + 1 == height) {
-            Texreplace::ExportTextureAsFile(imageData, path2, width, height, channels);
-            std::filesystem::remove(pathTmp);
-        }
-    }
+    Texcache.GetTexture(GPU, width, height, orig_xoff, xend, orig_xpos, ypos, CurUnit, window, spritemode, pixelattr, attrib, objWindow, objLine);
 }
 
 }

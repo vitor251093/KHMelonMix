@@ -20,6 +20,8 @@
 
 #include "GPU2D.h"
 
+#include "GPU2D_Texcache.h"
+
 #include "plugins/Plugin.h"
 
 namespace melonDS
@@ -39,11 +41,17 @@ public:
     void DrawSprites(u32 line, Unit* unit) override;
     void VBlankEnd(Unit* unitA, Unit* unitB) override;
 
-    void setPlugin(Plugins::Plugin* _plugin) { plugin = _plugin; }
+    void setPlugin(Plugins::Plugin* _plugin) {
+        plugin = _plugin;
+        Texcache.GamePlugin = _plugin;
+    }
 
 private:
     melonDS::GPU& GPU;
+
     Plugins::Plugin* plugin;
+    Texcache2D Texcache;
+
     alignas(8) u32 BGOBJLine[256*3];
     u32* _3DLine;
 
