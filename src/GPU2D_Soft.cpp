@@ -2002,6 +2002,10 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     {
         imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
     }
+    if (imageData == nullptr && strlen(path2) > 0) // load complete 2D image
+    {
+        imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
+    }
     if (imageData == nullptr)
     {
         imageData = Texreplace::LoadTextureFromFile(pathTmp, &r_width, &r_height, &r_channels);
