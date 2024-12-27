@@ -15,7 +15,7 @@ namespace melonDS
 {
 
 void Texcache2D::ApplyTextureToMemory(TexArrayEntry entry, u32& width, u32& height, s32 orig_xoff, u32 xend, s32 orig_xpos, s32 ypos,
-                                      bool window, u32 spritemode, u32 pixelattr, u16* attrib, u8* objWindow, u32* objLine, Plugins::TextureEntry* textureConfig)
+                                      bool window, u32 spritemode, u32 pixelattr, u16* attrib, u8* objWindow, u32* objLine)
 {
     // TODO: KH Still a bit broken
     unsigned char* imageData = entry.Data;
@@ -35,10 +35,8 @@ void Texcache2D::ApplyTextureToMemory(TexArrayEntry entry, u32& width, u32& heig
 
     for (; xoff < xend;)
     {
-        u16 posX = textureConfig == nullptr ? 0 : textureConfig->posX;
-        u16 posY = textureConfig == nullptr ? 0 : textureConfig->posY;
         int channels = 4;
-        unsigned char* pixel = imageData + ((ypos + posY) * entry.FullWidth + posX + ((xpos - orig_xpos) % width)) * (channels);
+        unsigned char* pixel = imageData + ((ypos + entry.Y) * entry.FullWidth + entry.X + ((xpos - orig_xpos) % width)) * (channels);
         u16 color = (pixel[0] >> 3) | ((pixel[1] >> 3) << 0x5) | ((pixel[2] >> 3) << 0xA);
         bool visible = pixel[3] == 0xFF;
         if (visible) color |= 0x8000;
@@ -139,13 +137,12 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
             // width = it->second.Width;
             // height = it->second.Height;
 
-            Plugins::TextureEntry* textureConfig = GamePlugin->textureFileConfig(uniqueIdentifier);
-            ApplyTextureToMemory(it->second, width, height, orig_xoff, xend, orig_xpos, ypos, window, spritemode, pixelattr, attrib, objWindow, objLine, textureConfig);
+            ApplyTextureToMemory(it->second, width, height, orig_xoff, xend, orig_xpos, ypos, window, spritemode, pixelattr, attrib, objWindow, objLine);
         }
         return;
     }
 
-    TexArrayEntry entry = {false};
+    TexArrayEntry entry = {false, 0, 0, width, height};
     if (existingEntry)
     {
         entry = it->second;
@@ -161,6 +158,12 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
         Plugins::TextureEntry* textureConfig = GamePlugin->textureFileConfig(uniqueIdentifier);
         std::string fullPath = GamePlugin->textureFilePath(uniqueIdentifier);
         std::string fullPath2 = GamePlugin->tmpTextureFilePath(uniqueIdentifier, false);
+        if (textureConfig != nullptr) {
+            entry.X = textureConfig->posX;
+            entry.Y = textureConfig->posY;
+            entry.Width = textureConfig->sizeX;
+            entry.Height = textureConfig->sizeY;
+        }
 
         const char* path = fullPath.c_str();
         const char* path2 = fullPath2.c_str();
@@ -198,7 +201,7 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
         else
         {
             entry.Data = imageData;
-            ApplyTextureToMemory(entry, width, height, orig_xoff, xend, orig_xpos, ypos, window, spritemode, pixelattr, attrib, objWindow, objLine, textureConfig);
+            ApplyTextureToMemory(entry, width, height, orig_xoff, xend, orig_xpos, ypos, window, spritemode, pixelattr, attrib, objWindow, objLine);
             loaded = true;
         }
     }
@@ -207,8 +210,6 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
     }
 
     entry.Loaded = loaded;
-    entry.Width = width;
-    entry.Height = height;
 
     if (!existingEntry)
     {
