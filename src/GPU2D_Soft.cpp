@@ -1982,18 +1982,13 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
     
     std::string filename = "2d-" + uniqueIdentifier;
     Plugins::TextureEntry* textureConfig = plugin->textureFileConfig(filename);
-    std::filesystem::path fullPath = plugin->textureFilePath(filename);
-    std::filesystem::path fullPath2 = plugin->tmpTextureFilePath(filename, false);
-    std::filesystem::path fullPathTmp = plugin->tmpTextureFilePath(filename, true);
-#ifdef _WIN32
-    const char* path = fullPath.string().c_str();
-    const char* path2 = fullPath2.string().c_str();
-    const char* pathTmp = fullPathTmp.string().c_str();
-#else
+    std::string fullPath = plugin->textureFilePath(filename);
+    std::string fullPath2 = plugin->tmpTextureFilePath(filename, false);
+    std::string fullPathTmp = plugin->tmpTextureFilePath(filename, true);
+
     const char* path = fullPath.c_str();
     const char* path2 = fullPath2.c_str();
     const char* pathTmp = fullPathTmp.c_str();
-#endif
 
     int channels = 4;
     int r_width, r_height, r_channels;
