@@ -1080,6 +1080,27 @@ void SoftRenderer::DrawBG_Text(u32 line, u32 bgnum)
             xoff++;
         }
     }
+
+    /*if (plugin->shouldExportTextures())
+    {
+        unsigned char* imageData = nullptr;
+
+        for (int i = 0; i < 256; i++)
+        {
+            u32 trueColor = BGOBJLine[i];
+            *dst = r | (g << 8) | (b << 16)
+            u8 r = (u8)((trueColor & 0x3F) << 2);
+            u8 g = (u8)(((trueColor >>  8) & 0x3F) << 2);
+            u8 b = (u8)(((trueColor >> 16) & 0x3F) << 2);
+
+            unsigned char* pixel = imageData + ((yoff & 0x7) * 8 + (xpos & 0x7)) * (channels);
+
+            pixel[0] = r;
+            pixel[1] = g;
+            pixel[2] = b;
+            pixel[3] = 255;
+        }
+    }*/
 }
 
 template<bool mosaic, SoftRenderer::DrawPixel drawPixel>
