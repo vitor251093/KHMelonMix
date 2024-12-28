@@ -173,17 +173,13 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
         {
             imageData = Texreplace::LoadTextureFromFile(path, &entry.FullWidth, &entry.FullHeight, &r_channels);
         }
-        if (imageData == nullptr && strlen(path2) > 0) // load complete 2D image
-        {
-            imageData = Texreplace::LoadTextureFromFile(path2, &entry.FullWidth, &entry.FullHeight, &r_channels);
-        }
         if (imageData == nullptr)
         {
-            imageData = entry.Data;
-            if (imageData == nullptr)
+            if (entry.Data == nullptr)
             {
-                imageData = (unsigned char*)malloc(height * width * channels * sizeof(unsigned char));
+                entry.Data = (unsigned char*)malloc(height * width * channels * sizeof(unsigned char));
             }
+            imageData = entry.Data;
 
             RetrieveTextureRowFromMemory(gpu, imageData, width, height, orig_xoff, xend, orig_xpos, ypos, CurUnit, window, spritemode, attrib, objLine);
 
