@@ -30,16 +30,16 @@ private:
         u16 Y;
         u32 Width;
         u32 Height;
-        unsigned char* Data;
         s32 FullWidth;
         s32 FullHeight;
+        unsigned char* Data;
     };
 
     std::unordered_map<u64, TexArrayEntry> Cache;
 
-    void ApplyTextureToMemory(TexArrayEntry entry, u32& width, u32& height, s32 orig_xoff, u32 xend, s32 orig_xpos, s32 ypos, bool window,
+    void ApplyTextureToMemory(TexArrayEntry* entry, s32 orig_xoff, u32 xend, s32 orig_xpos, s32 ypos, bool window,
                               u32 spritemode, u32 pixelattr, u16* attrib, u8* objWindow, u32* objLine);
-    void RetrieveTextureRowFromMemory(GPU& gpu, unsigned char*& imageData, u32& width, u32& height, s32 orig_xoff, u32 xend,
+    void RetrieveTextureRowFromMemory(GPU& gpu, unsigned char*& imageData, TexArrayEntry* entry, s32 orig_xoff, u32 xend,
                              s32 orig_xpos, s32 ypos, GPU2D::Unit* CurUnit, bool window, u32 spritemode, u16* attrib, u32* objLine);
 
 };
