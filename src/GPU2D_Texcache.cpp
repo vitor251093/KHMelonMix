@@ -100,7 +100,7 @@ void Texcache2D::RetrieveTextureRowFromMemory(GPU& gpu, unsigned char*& imageDat
         u8 g = ((color & 0x03E0) >> 4) << 2;
         u8 b = ((color & 0x7C00) >> 9) << 2;
 
-        unsigned char* pixel = imageData + ((ypos + entry->Y) * entry->FullWidth + entry->X + ((xpos - orig_xpos) % entry->Width)) * (channels);
+        unsigned char* pixel = imageData + ((ypos + entry->Y) * entry->Width + entry->X + ((xpos - orig_xpos) % entry->Width)) * (channels);
         
         pixel[0] = r;
         pixel[1] = g;
