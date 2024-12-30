@@ -174,7 +174,7 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
     int r_channels;
     if (strlen(path) > 0) // load complete 2D image
     {
-        imageData = Texreplace::LoadTextureFromFile(path, &entry->FullWidth, &entry->FullHeight, &r_channels);
+        imageData = Texreplace::LoadRGB8TextureFromFile(path, &entry->FullWidth, &entry->FullHeight, &r_channels);
 
         if (imageData != nullptr)
         {
@@ -196,7 +196,7 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
     entry->Loaded = ypos + 1 == entry->Height;
     if (entry->Loaded && GamePlugin->shouldExportTextures()) {
         printf("Saving texture %s\n", path2);
-        Texreplace::ExportTextureAsFile(imageData, path2, entry->Width, entry->Height, channels);
+        Texreplace::ExportRGB8TextureAsFile(imageData, path2, entry->Width, entry->Height, channels);
     }
 }
 
