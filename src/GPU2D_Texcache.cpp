@@ -133,7 +133,7 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
         entry = &it->second;
     }
     else {
-        TexArrayEntry newEntry = {false, 0, 0, width, height, width, height};
+        TexArrayEntry newEntry = {false, 0, 0, width, height, (s32)width, (s32)height};
         Cache.emplace(key, newEntry);
         entry = &Cache[key];
     }
