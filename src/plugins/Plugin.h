@@ -182,7 +182,7 @@ public:
     virtual std::map<std::string, TextureEntry> getTexturesIndex();
     virtual TextureEntry* textureFileConfig(std::string texture);
     virtual std::string textureFilePath(std::string texture);
-    virtual std::string tmpTextureFilePath(std::string texture, bool partial);
+    virtual std::string tmpTextureFilePath(std::string texture);
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
 

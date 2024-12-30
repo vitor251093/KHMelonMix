@@ -158,7 +158,7 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
 
     Plugins::TextureEntry* textureConfig = GamePlugin->textureFileConfig(uniqueIdentifier);
     std::string fullPath = GamePlugin->textureFilePath(uniqueIdentifier);
-    std::string fullPath2 = GamePlugin->tmpTextureFilePath(uniqueIdentifier, false);
+    std::string fullPath2 = GamePlugin->tmpTextureFilePath(uniqueIdentifier);
     if (textureConfig != nullptr) {
         entry->X = textureConfig->posX;
         entry->Y = textureConfig->posY;
