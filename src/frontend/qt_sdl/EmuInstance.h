@@ -339,8 +339,8 @@ private:
     int joyMapping[12];
     int hkKeyMapping[HK_MAX];
     int hkJoyMapping[HK_MAX];
-    int pluginKeyMapping[PLUGIN_ARRAY_SIZE_LIMIT];
-    int pluginJoyMapping[PLUGIN_ARRAY_SIZE_LIMIT];
+    int pluginKeyMapping[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT];
+    int pluginJoyMapping[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT];
     int touchKeyMapping[4];
     int touchJoyMapping[4];
 

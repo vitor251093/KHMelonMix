@@ -366,7 +366,7 @@ void EmuInstance::onKeyPress(QKeyEvent* event)
         if (keyHK == hkKeyMapping[i])
             keyHotkeyMask |= (1<<i);
     
-    for (int i = 0; i < PLUGIN_ARRAY_SIZE_LIMIT; i++)
+    for (int i = 0; i < PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT; i++)
         if (keyHK == pluginKeyMapping[i])
             keyPluginMask |= (1<<i);
     
@@ -390,7 +390,7 @@ void EmuInstance::onKeyRelease(QKeyEvent* event)
         if (keyHK == hkKeyMapping[i])
             keyHotkeyMask &= ~(1<<i);
 
-    for (int i = 0; i < PLUGIN_ARRAY_SIZE_LIMIT; i++)
+    for (int i = 0; i < PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT; i++)
         if (keyKP == pluginKeyMapping[i])
             keyPluginMask &= ~(1<<i);
 
@@ -499,7 +499,7 @@ void EmuInstance::inputProcess()
     joyPluginMask = 0;
     if (joystick)
     {
-        for (int i = 0; i < PLUGIN_ARRAY_SIZE_LIMIT; i++)
+        for (int i = 0; i < PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT; i++)
             if (joystickButtonDown(pluginJoyMapping[i]))
                 joyPluginMask |= (1 << i);
     }

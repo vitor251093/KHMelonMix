@@ -148,7 +148,7 @@ private:
     int keypadKeyMap[12], keypadJoyMap[12];
     int addonsKeyMap[hk_addons.size()], addonsJoyMap[hk_addons.size()];
     int hkGeneralKeyMap[hk_general.size()], hkGeneralJoyMap[hk_general.size()];
-    int pluginKeyMap[PLUGIN_ARRAY_SIZE_LIMIT], pluginJoyMap[PLUGIN_ARRAY_SIZE_LIMIT];
+    int pluginKeyMap[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT], pluginJoyMap[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT];
     int touchScreenKeyMap[4], touchScreenJoyMap[4];
     int joystickID;
 };
