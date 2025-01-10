@@ -84,7 +84,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
     return true;
 }
 
-void Plugin::_superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching)
+void Plugin::_superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge)
 {
     u16 rStrength = 4 - sensitivity;
     u16 right = ((~TouchKeyMask) & 0xF) >> rStrength;

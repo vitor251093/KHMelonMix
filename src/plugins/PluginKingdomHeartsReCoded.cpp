@@ -456,7 +456,7 @@ void PluginKingdomHeartsReCoded::onLoadState()
     GameScene = gameScene_InGameWithMap;
 }
 
-void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
+void PluginKingdomHeartsReCoded::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
 {
     bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
     if (!shouldContinue) {
@@ -670,14 +670,14 @@ bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords(int width, int height,
     return false;
 }
 
-void PluginKingdomHeartsReCoded::applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching)
+void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask)
 {
     if (GameScene == -1)
     {
         return;
     }
 
-    _superApplyTouchKeyMask(TouchKeyMask, 3, true, touchX, touchY, isTouching);
+    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, true);
 }
 
 void PluginKingdomHeartsReCoded::hudToggle()

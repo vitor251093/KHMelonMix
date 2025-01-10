@@ -19,14 +19,14 @@ PluginMetroidPrimeHunters::PluginMetroidPrimeHunters(u32 gameCode)
     hudToggle();
 }
 
-void PluginMetroidPrimeHunters::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {
+void PluginMetroidPrimeHunters::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {
     bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
     if (!shouldContinue) {
         return;
     }
 }
-void PluginMetroidPrimeHunters::applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching) {
-    _superApplyTouchKeyMask(TouchKeyMask, 1, true, touchX, touchY, isTouching);
+void PluginMetroidPrimeHunters::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) {
+    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 1, true);
 }
 
 u32 PluginMetroidPrimeHunters::getAspectRatioAddress() {
