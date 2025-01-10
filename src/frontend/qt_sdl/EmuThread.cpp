@@ -211,7 +211,7 @@ void EmuThread::run()
 
             emuInstance->plugin->applyTouchKeyMaskToTouchControls(&emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, emuInstance->touchInputMask);
             emuInstance->plugin->applyHotkeyToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
-            emuInstance->plugin->applyCustomKeysToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->pluginMask, &emuInstance->pluginPress);
+            emuInstance->plugin->applyAddonKeysToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->pluginMask, &emuInstance->pluginPress);
         }
 
         if (emuInstance->hotkeyPressed(HK_FrameLimitToggle)) emit windowLimitFPSChange();

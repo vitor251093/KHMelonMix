@@ -505,7 +505,7 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMaskOrTouchControls(u32* Inpu
     }
 }
 
-void PluginKingdomHeartsReCoded::applyCustomKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
+void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
 {
     if (GameScene == -1) {
         return;

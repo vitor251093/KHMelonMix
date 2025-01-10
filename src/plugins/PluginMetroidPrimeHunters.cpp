@@ -19,7 +19,7 @@ PluginMetroidPrimeHunters::PluginMetroidPrimeHunters(u32 gameCode)
     hudToggle();
 }
 
-void PluginMetroidPrimeHunters::applyCustomKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {
+void PluginMetroidPrimeHunters::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {
     
 }
 void PluginMetroidPrimeHunters::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) {
