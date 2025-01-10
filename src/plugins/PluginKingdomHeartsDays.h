@@ -41,6 +41,7 @@ public:
     void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
 
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
+    void applyCustomKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
 
     bool overrideMouseTouchCoords_cameraControl(int width, int height, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching);

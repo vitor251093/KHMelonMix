@@ -157,6 +157,27 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
 
+    customKeyMappingNames = {
+        "HK_HUDToggle",
+        "HK_RLockOn",
+        "HK_LSwitchTarget",
+        "HK_RSwitchTarget",
+        "HK_CommandMenuLeft",
+        "HK_CommandMenuRight",
+        "HK_CommandMenuUp",
+        "HK_CommandMenuDown"
+    };
+    customKeyMappingLabels = {
+        "[KH] HUD Toggle",
+        "[KH] (R1) R / Lock On",
+        "[KH] (L2) Switch Target",
+        "[KH] (R2) Switch Target",
+        "[KH] Command Menu - Left",
+        "[KH] Command Menu - Right",
+        "[KH] Command Menu - Up",
+        "[KH] Command Menu - Down"
+    };
+
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
         {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200, 2+1},
         {"Secret", "593",         "593_",                       0x05e9b400, 0x05f03800, 0x05db0200, 2},
@@ -470,10 +491,22 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMaskOrTouchControls(u32* Inpu
     if (GameScene == gameScene_LoadingScreen) {
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
     }
+}
+
+void PluginKingdomHeartsReCoded::applyCustomKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
+{
+    if (GameScene == -1) {
+        return;
+    }
+
+    if ((*HotkeyPress) & (1 << 0)) { // HUD Toggle (HK_HUDToggle)
+        hudToggle();
+    }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D || GameScene == gameScene_InGameOlympusBattle) {
         // Enabling L + D-Pad
-        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*HotkeyMask) & ((1 << 4) | (1 << 5) | (1 << 6) | (1 << 7))) // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        {
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP);
@@ -487,7 +520,7 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMaskOrTouchControls(u32* Inpu
         }
 
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) // (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*HotkeyMask) & ((1 << 4) | (1 << 5) | (1 << 6) | (1 << 7))) // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
         {
             *InputMask &= ~(1<<9); // L
             *InputMask |= (1<<5); // left
@@ -506,7 +539,7 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMaskOrTouchControls(u32* Inpu
 
         // R / Lock On
         {
-            if ((*HotkeyMask) & (1 << 19)) { // (HK_RLockOn)
+            if ((*HotkeyMask) & (1 << 1)) { // (HK_RLockOn)
                 *InputMask &= ~(1<<8); // R
                 *InputMask &= ~(1<<9); // L
             }
@@ -514,13 +547,13 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMaskOrTouchControls(u32* Inpu
 
         // Switch Target
         {
-            if ((*HotkeyMask) & (1 << 20)) { // (HK_LSwitchTarget)
+            if ((*HotkeyMask) & (1 << 2)) { // (HK_LSwitchTarget)
                 *InputMask &= ~(1<<5); // left
                 *InputMask &= ~(1<<8); // R
                 *InputMask &= ~(1<<9); // L
             }
 
-            if ((*HotkeyMask) & (1 << 21)) { // (HK_RSwitchTarget)
+            if ((*HotkeyMask) & (1 << 3)) { // (HK_RSwitchTarget)
                 *InputMask &= ~(1<<4); // right
                 *InputMask &= ~(1<<8); // R
                 *InputMask &= ~(1<<9); // L
@@ -529,20 +562,20 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMaskOrTouchControls(u32* Inpu
     }
     else {
         // So the arrow keys can be used as directionals
-        if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
+        if ((*HotkeyMask) & (1 << 4)) { // D-pad left (HK_CommandMenuLeft)
             *InputMask &= ~(1<<5); // left
         }
-        if ((*HotkeyMask) & (1 << 23)) { // D-pad right (HK_CommandMenuRight)
+        if ((*HotkeyMask) & (1 << 5)) { // D-pad right (HK_CommandMenuRight)
             *InputMask &= ~(1<<4); // right
         }
-        if ((*HotkeyMask) & (1 << 24)) { // D-pad up (HK_CommandMenuUp)
+        if ((*HotkeyMask) & (1 << 6)) { // D-pad up (HK_CommandMenuUp)
             *InputMask &= ~(1<<6); // up
         }
-        if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
+        if ((*HotkeyMask) & (1 << 7)) { // D-pad down (HK_CommandMenuDown)
             *InputMask &= ~(1<<7); // down
         }
 
-        if ((*HotkeyMask) & (1 << 19)) { // R / Lock On (HK_RLockOn)
+        if ((*HotkeyMask) & (1 << 1)) { // R / Lock On (HK_RLockOn)
             *InputMask &= ~(1<<8); // R
         }
     }
@@ -553,33 +586,33 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMaskOrTouchControls(u32* Inpu
             bool clear = false;
             for (int i = PRIOR_HOTKEY_MASK_SIZE - 1; i >= 0; i--) {
                 if (clear) {
-                    PriorHotkeyMask[i] = PriorHotkeyMask[i] & ~((1<<20) | (1<<21));
+                    PriorHotkeyMask[i] = PriorHotkeyMask[i] & ~((1<<2) | (1<<3));
                 }
-                if (PriorHotkeyMask[i] & (1 << 20) || PriorHotkeyMask[i] & (1 << 21)) {
+                if (PriorHotkeyMask[i] & (1 << 2) || PriorHotkeyMask[i] & (1 << 3)) {
                     clear = true;
                 }
             }
 
             { // (HK_LSwitchTarget)
-                if (PriorHotkeyMask[10] & (1 << 20) || PriorHotkeyMask[9] & (1 << 20) || PriorHotkeyMask[8] & (1 << 20)) {
+                if (PriorHotkeyMask[10] & (1 << 2) || PriorHotkeyMask[9] & (1 << 2) || PriorHotkeyMask[8] & (1 << 2)) {
                     *InputMask &= ~(1<<10); // X
                 }
-                else if (PriorHotkeyMask[6] & (1 << 20) || PriorHotkeyMask[5] & (1 << 20) || PriorHotkeyMask[4] & (1 << 20)) {
+                else if (PriorHotkeyMask[6] & (1 << 2) || PriorHotkeyMask[5] & (1 << 2) || PriorHotkeyMask[4] & (1 << 2)) {
                     *InputMask &= ~(1<<9); // L
                 }
-                else if (PriorHotkeyMask[2] & (1 << 20) || PriorHotkeyMask[1] & (1 << 20) || PriorHotkeyMask[0] & (1 << 20)) {
+                else if (PriorHotkeyMask[2] & (1 << 2) || PriorHotkeyMask[1] & (1 << 2) || PriorHotkeyMask[0] & (1 << 2)) {
                     *InputMask &= ~(1<<10); // X
                 }
             }
 
             { // (HK_RSwitchTarget)
-                if (PriorHotkeyMask[10] & (1 << 21) || PriorHotkeyMask[9] & (1 << 21) || PriorHotkeyMask[8] & (1 << 21)) {
+                if (PriorHotkeyMask[10] & (1 << 3) || PriorHotkeyMask[9] & (1 << 3) || PriorHotkeyMask[8] & (1 << 3)) {
                     *InputMask &= ~(1<<10); // X
                 }
-                else if (PriorHotkeyMask[6] & (1 << 21) || PriorHotkeyMask[5] & (1 << 21) || PriorHotkeyMask[4] & (1 << 21)) {
+                else if (PriorHotkeyMask[6] & (1 << 3) || PriorHotkeyMask[5] & (1 << 3) || PriorHotkeyMask[4] & (1 << 3)) {
                     *InputMask &= ~(1<<8); // R
                 }
-                else if (PriorHotkeyMask[2] & (1 << 21) || PriorHotkeyMask[1] & (1 << 21) || PriorHotkeyMask[0] & (1 << 21)) {
+                else if (PriorHotkeyMask[2] & (1 << 3) || PriorHotkeyMask[1] & (1 << 3) || PriorHotkeyMask[0] & (1 << 3)) {
                     *InputMask &= ~(1<<10); // X
                 }
             }

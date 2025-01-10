@@ -77,11 +77,14 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         }
     }
 
-    if ((*HotkeyPress) & (1 << 18)) { // HUD Toggle (HK_HUDToggle)
-        hudToggle();
-    }
-
     return true;
+}
+
+void Plugin::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {
+    bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
+    if (!shouldContinue) {
+        return;
+    }
 }
 
 void Plugin::_superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge)
@@ -169,6 +172,10 @@ void Plugin::_superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bo
         *touchY = TouchY;
     }
     _LastTouchScreenMovementWasByPlugin = true;
+}
+
+void Plugin::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) {
+    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, true);
 }
 
 std::string trim(const std::string& str) {
