@@ -84,8 +84,7 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
         touchScreenJoyMap[i] = joycfg.GetInt(btn);
     }
 
-    populatePage(ui->tabAddons, hk_addons_labels, addonsKeyMap, addonsJoyMap);
-    populatePage(ui->tabHotkeysGeneral, hk_general_labels, hkGeneralKeyMap, hkGeneralJoyMap);
+    populatePage(ui->tabHotkeysGeneral, std::vector<const char*>(hk_general_labels), hkGeneralKeyMap, hkGeneralJoyMap);
 
     joystickID = instcfg.GetInt("JoystickID");
 
@@ -106,6 +105,7 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
     }
 
     setupKeypadPage();
+    setupAddonsPage();
     setupTouchScreenPage();
 
     int inst = emuInstance->getInstanceID();
@@ -143,19 +143,44 @@ void InputConfigDialog::setupKeypadPage()
     }
 }
 
+void InputConfigDialog::setupAddonsPage()
+{
+    Config::Table& instcfg = emuInstance->getLocalConfig();
+    Config::Table keycfg = instcfg.GetTable("Keyboard");
+    Config::Table joycfg = instcfg.GetTable("Joystick");
+
+    auto plugin = emuInstance->plugin;
+    if (plugin != nullptr) {
+        for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
+        {
+            const char* btn = plugin->customKeyMappingNames[i];
+            pluginKeyMap[i] = keycfg.GetInt(btn);
+            pluginJoyMap[i] = joycfg.GetInt(btn);
+        }
+    }
+
+    if (plugin != nullptr && plugin->customKeyMappingNames.size() > 0) {
+        auto labels = plugin->customKeyMappingLabels;
+        populatePage(ui->tabAddons, labels, pluginKeyMap, pluginJoyMap);
+    }
+    else {
+        populatePage(ui->tabAddons, std::vector<const char*>(hk_addons_labels), addonsKeyMap, addonsJoyMap);
+    }
+}
+
 void InputConfigDialog::setupTouchScreenPage()
 {
     QVBoxLayout* main_layout = new QVBoxLayout();
 
     QWidget* touch_widget = new QWidget();
-    populatePage(touch_widget, ds_touch_key_labels, touchScreenKeyMap, touchScreenJoyMap);
+    populatePage(touch_widget, std::vector<const char*>(ds_touch_key_labels), touchScreenKeyMap, touchScreenJoyMap);
     main_layout->addWidget(touch_widget);
 
     ui->tabTouchScreen->setLayout(main_layout);
 }
 
 void InputConfigDialog::populatePage(QWidget* page,
-    const std::initializer_list<const char*>& labels,
+    std::vector<const char*> labels,
     int* keymap, int* joymap)
 {
     // kind of a hack
@@ -234,6 +259,16 @@ void InputConfigDialog::on_InputConfigDialog_accepted()
         keycfg.SetInt(btn, hkGeneralKeyMap[i]);
         joycfg.SetInt(btn, hkGeneralJoyMap[i]);
         i++;
+    }
+
+    auto plugin = emuInstance->plugin;
+    if (plugin != nullptr) {
+        for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
+        {
+            const char* btn = plugin->customKeyMappingNames[i];
+            keycfg.SetInt(btn, pluginKeyMap[i]);
+            joycfg.SetInt(btn, pluginJoyMap[i]);
+        }
     }
 
     for (int i = 0; i < touchscreen_num; i++)

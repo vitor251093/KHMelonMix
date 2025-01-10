@@ -185,6 +185,27 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
     SwitchTargetPressOnHold = false;
 
+    customKeyMappingNames = {
+        "HK_HUDToggle",
+        "HK_RLockOn",
+        "HK_LSwitchTarget",
+        "HK_RSwitchTarget",
+        "HK_CommandMenuLeft",
+        "HK_CommandMenuRight",
+        "HK_CommandMenuUp",
+        "HK_CommandMenuDown"
+    };
+    customKeyMappingLabels = {
+        "[KH] HUD Toggle",
+        "[KH] (R1) R / Lock On",
+        "[KH] (L2) Switch Target",
+        "[KH] (R2) Switch Target",
+        "[KH] Command Menu - Left",
+        "[KH] Command Menu - Right",
+        "[KH] Command Menu - Up",
+        "[KH] Command Menu - Down"
+    };
+
     Cutscenes = std::array<Plugins::CutsceneEntry, 46> {{
         {"802",    "802_mm", "802_opening",                       0x088b2e00, 0x08b3d400, 0x0876e800, 0},
         {"803",    "803",    "803_meet_xion",                     0x0987ec00, 0x09b09200, 0x097c8800, 0},
@@ -554,10 +575,22 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMa
     if (GameScene == gameScene_LoadingScreen) {
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
     }
+}
+
+void PluginKingdomHeartsDays::applyCustomKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
+{
+    if (GameScene == -1) {
+        return;
+    }
+
+    if ((*HotkeyPress) & (1 << 0)) { // HUD Toggle (HK_HUDToggle)
+        hudToggle();
+    }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
         // Enabling X + D-Pad
-        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*HotkeyMask) & ((1 << 4) | (1 << 5) | (1 << 6) | (1 << 7))) // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        {
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP,
@@ -569,25 +602,26 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMa
         }
 
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { //  (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*HotkeyMask) & ((1 << 4) | (1 << 5) | (1 << 6) | (1 << 7))) // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        {
             *InputMask &= ~(1<<10); // X
             *InputMask |= (1<<5); // left
             *InputMask |= (1<<4); // right
             *InputMask |= (1<<6); // up
             *InputMask |= (1<<7); // down
-            if (PriorPriorHotkeyMask & (1 << 22)) // Old D-pad left (HK_CommandMenuLeft)
+            if (PriorPriorHotkeyMask & (1 << 4)) // Old D-pad left (HK_CommandMenuLeft)
                 *InputMask &= ~(1<<5); // left
-            if (PriorPriorHotkeyMask & (1 << 23)) // Old D-pad right (HK_CommandMenuRight)
+            if (PriorPriorHotkeyMask & (1 << 5)) // Old D-pad right (HK_CommandMenuRight)
                 *InputMask &= ~(1<<4); // right
-            if (PriorPriorHotkeyMask & (1 << 24)) // Old D-pad up (HK_CommandMenuUp)
+            if (PriorPriorHotkeyMask & (1 << 6)) // Old D-pad up (HK_CommandMenuUp)
                 *InputMask &= ~(1<<6); // up
-            if (PriorPriorHotkeyMask & (1 << 25)) // Old D-pad down (HK_CommandMenuDown)
+            if (PriorPriorHotkeyMask & (1 << 7)) // Old D-pad down (HK_CommandMenuDown)
                 *InputMask &= ~(1<<7); // down
         }
 
         // R / Lock On
         {
-            if ((*HotkeyMask) & (1 << 19)) { // (HK_RLockOn)
+            if ((*HotkeyMask) & (1 << 1)) { // (HK_RLockOn)
                 if (LastLockOnPress == 1) {
                     LastLockOnPress = 0;
                 }
@@ -605,7 +639,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMa
 
         // Switch Target
         {
-            if ((*HotkeyMask) & (1 << 20) || (*HotkeyMask) & (1 << 21)) { // (HK_LSwitchTarget, HK_RSwitchTarget)
+            if ((*HotkeyMask) & (1 << 2) || (*HotkeyMask) & (1 << 3)) { // (HK_LSwitchTarget, HK_RSwitchTarget)
                 if (LastSwitchTargetPress == 1) {
                     LastSwitchTargetPress = 0;
                 }
@@ -631,20 +665,20 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMa
     }
     else {
         // So the arrow keys can be used as directionals
-        if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
+        if ((*HotkeyMask) & (1 << 4)) { // D-pad left (HK_CommandMenuLeft)
             *InputMask &= ~(1<<5); // left
         }
-        if ((*HotkeyMask) & (1 << 23)) { // D-pad right (HK_CommandMenuRight)
+        if ((*HotkeyMask) & (1 << 5)) { // D-pad right (HK_CommandMenuRight)
             *InputMask &= ~(1<<4); // right
         }
-        if ((*HotkeyMask) & (1 << 24)) { // D-pad up (HK_CommandMenuUp)
+        if ((*HotkeyMask) & (1 << 6)) { // D-pad up (HK_CommandMenuUp)
             *InputMask &= ~(1<<6); // up
         }
-        if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
+        if ((*HotkeyMask) & (1 << 7)) { // D-pad down (HK_CommandMenuDown)
             *InputMask &= ~(1<<7); // down
         }
 
-        if ((*HotkeyMask) & (1 << 19)) { // R / Lock On (HK_RLockOn)
+        if ((*HotkeyMask) & (1 << 1)) { // R / Lock On (HK_RLockOn)
             *InputMask &= ~(1<<8); // R
         }
     }
