@@ -4,7 +4,7 @@
 #include "Plugin.h"
 #include "../NDS.h"
 
-#define PRIOR_HOTKEY_MASK_SIZE 15
+#define PRIOR_ADDON_MASK_SIZE 15
 
 namespace Plugins
 {
@@ -92,7 +92,7 @@ private:
     bool _had3DOnTopScreen;
     bool _had3DOnBottomScreen;
 
-    u32 PriorHotkeyMask[PRIOR_HOTKEY_MASK_SIZE];
+    u32 PriorAddonMask[PRIOR_ADDON_MASK_SIZE];
     u32 LastLockOnPress, LastSwitchTargetPress, LastScreenTogglePress;
 
     std::array<CutsceneEntry, 15> Cutscenes;
