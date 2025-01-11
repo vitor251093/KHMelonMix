@@ -44,12 +44,17 @@ void Texcache2D::ApplyTextureToMemory(TexArrayEntry* entry, s32 orig_xoff, u32 x
         if (isBitmapSprite ? (color & 0x8000) : color)
         {
             if (window) objWindow[xpos] = 1;
-            else        objLine[xpos] = color | pixelattr;
+            else {
+                for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                    objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = color | pixelattr;
+            }
         }
         else if (!window)
         {
-            if (objLine[xpos] == 0)
-                objLine[xpos] = pixelattr & 0x180000;
+            if (objLine[xpos] == 0) {
+                for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                    objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = pixelattr & 0x180000;
+            }
         }
 
         xoff++;
@@ -67,7 +72,7 @@ void Texcache2D::RetrieveTextureRowFromMemory(GPU& gpu, unsigned char*& imageDat
 
     for (; xoff < xend;)
     {
-        u32 og_pixel = objLine[xpos];
+        u32 og_pixel = objLine[xpos*MODIFIER_2D_TEXTURE_SCALE];
 
         u16 alpha = 255;
 

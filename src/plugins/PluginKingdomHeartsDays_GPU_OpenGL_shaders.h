@@ -44,6 +44,16 @@ smooth in vec2 fTexcoord;
 
 out vec4 oColor;
 
+int MODIFIER_2D_TEXTURE_SCALE = 4;
+
+ivec4 fetch2DTexture(vec2 coord) {
+    return ivec4(texelFetch(ScreenTex, ivec2(coord*MODIFIER_2D_TEXTURE_SCALE), 0));
+}
+
+ivec4 fetch2DTexture(ivec2 coord) {
+    return ivec4(texelFetch(ScreenTex, coord*MODIFIER_2D_TEXTURE_SCALE, 0));
+}
+
 ivec4 fixTransparencyLayer(ivec4 layer) {
     layer.g = layer.g << 2;
     layer.b = layer.b << 2;
@@ -106,23 +116,23 @@ ivec4 combineLayers(ivec4 _3dpix, ivec4 val1, ivec4 val2, ivec4 val3)
 
 bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
 {
-    ivec4 val1 = ivec4(texelFetch(ScreenTex, texcoord, 0));
-    ivec4 val2 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(256,0), 0));
-    ivec4 val3 = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, texcoord + ivec2(512,0), 0)));
+    ivec4 val1 = fetch2DTexture(texcoord);
+    ivec4 val2 = fetch2DTexture(texcoord + ivec2(256,0));
+    ivec4 val3 = fixTransparencyLayer(fetch2DTexture(texcoord + ivec2(512,0)));
     ivec4 pixel = combineLayers(diffColor, val1, val2, val3);
     return !(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
 }
 
 bool isMissionInformationVisibleOnTopScreen()
 {
-    return ((ivec4(texelFetch(ScreenTex, ivec2(0, 0) + ivec2(512,0), 0))).a & 0xF) == 1 ||
-           ((ivec4(texelFetch(ScreenTex, ivec2(0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1 ||
-           ((ivec4(texelFetch(ScreenTex, ivec2(255.0 - 1.0, 192*0.078) + ivec2(512,0), 0))).a & 0xF) == 1;
+    return ((fetch2DTexture(ivec2(0, 0) + ivec2(512,0))).a & 0xF) == 1 ||
+           ((fetch2DTexture(vec2(0, 192*0.078) + vec2(512,0))).a & 0xF) == 1 ||
+           ((fetch2DTexture(vec2(256.0 - 1.0, 192*0.078) + vec2(512,0))).a & 0xF) == 1;
 }
 
 bool isMissionInformationVisibleOnBottomScreen()
 {
-    ivec4 infoPixel = ivec4(texelFetch(ScreenTex, ivec2(5, 192 + 4), 0));
+    ivec4 infoPixel = fetch2DTexture(ivec2(5, 192 + 4));
     return (infoPixel.r >= 15 && infoPixel.g >= 15 && infoPixel.b >= 15);
 }
 
@@ -134,7 +144,7 @@ bool isCutsceneFromChallengeMissionVisible()
 bool isDialogVisible()
 {
     for (int y = 161; y >= 141; y--) {
-        ivec4 val3 = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, ivec2(512 + 256/2, y), 0)));
+        ivec4 val3 = fixTransparencyLayer(fetch2DTexture(ivec2(512 + 256/2, y)));
         if (val3.b >= 12) {
             return true;
         }
@@ -144,7 +154,7 @@ bool isDialogVisible()
 
 bool isMinimapVisible()
 {
-    ivec4 minimapSecurityPixel = ivec4(texelFetch(ScreenTex, ivec2(99, 53) + ivec2(0,192), 0));
+    ivec4 minimapSecurityPixel = fetch2DTexture(ivec2(99, 53) + ivec2(0,192));
     return minimapSecurityPixel.r > 60 && minimapSecurityPixel.g > 60 && minimapSecurityPixel.b > 60;
 }
 
@@ -159,9 +169,9 @@ ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
             * vec4(63,63,63,31));
 
     vec2 texcoord = vec2(xpos, ypos);
-    ivec4 val1 = ivec4(texelFetch(ScreenTex, ivec2(texcoord), 0));
-    ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(256,0), 0));
-    ivec4 val3 = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, ivec2(texcoord) + ivec2(512,0), 0)));
+    ivec4 val1 = fetch2DTexture(vec2(texcoord));
+    ivec4 val2 = fetch2DTexture(vec2(texcoord) + vec2(256,0));
+    ivec4 val3 = fixTransparencyLayer(fetch2DTexture(vec2(texcoord) + vec2(512,0)));
     return combineLayers(_3dpix, val1, val2, val3);
 }
 bool isScreenBlack(int index)
@@ -323,7 +333,7 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
     float dialogY1 = 192.0*iuTexScale*(97.0/100.0) - dialogHeight;
     float dialogY2 = dialogY1 + dialogHeight;
 
-    if (isColorBlack(ivec4(texelFetch(ScreenTex, ivec2(250, 183), 0)))) {
+    if (isColorBlack(fetch2DTexture(ivec2(250, 183)))) {
         // portrait label
         float sourceWidth = 78.0;
         float sourceHeight = 14.0;
@@ -413,7 +423,7 @@ vec2 getMissionInformationCoordinates(vec2 texPosition3d, bool showMissionInform
     if (showMissionInformationTopScreen) {
         float step = 0.25;
         // TODO: KH Not accurate enough; possibly receiving false positives
-        while (missionInfoHeight >= (step - missionInfoTopMargin) && ((ivec4(texelFetch(ScreenTex, ivec2(640, missionInfoHeight + missionInfoTopMargin), 0))).a & 0xF) != 1) {
+        while (missionInfoHeight >= (step - missionInfoTopMargin) && ((fetch2DTexture(vec2(640, missionInfoHeight + missionInfoTopMargin))).a & 0xF) != 1) {
             missionInfoTopMargin -= step;
         }
         missionInfoY1 = missionInfoTopMargin;
@@ -757,7 +767,7 @@ ivec2 getCutsceneTextureCoordinates(float xpos, float ypos)
 
 ivec2 getOther2DTextureCoordinates(float xpos, float ypos)
 {
-    ivec4 center = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, ivec2(512 + 256/2, 192/2), 0)));
+    ivec4 center = fixTransparencyLayer(fetch2DTexture(ivec2(512 + 256/2, 192/2)));
     bool nothingInTheCenter = center.b < 12;
     if (nothingInTheCenter && isDialogVisible()) {
         return ivec2(getIngameDialogTextureCoordinates(xpos, ypos));
@@ -897,7 +907,7 @@ ivec4 getSingleSquaredScreen3DColor(float xpos, float ypos)
 
 ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
 {
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    ivec4 mbright = fetch2DTexture(ivec2(256*3, int(fTexcoord.y)));
     float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
 
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
@@ -946,7 +956,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
 
 ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 {
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    ivec4 mbright = fetch2DTexture(ivec2(256*3, int(fTexcoord.y)));
     float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
 
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
@@ -996,7 +1006,7 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 
 ivec4 getTopScreen3DColor()
 {
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    ivec4 mbright = fetch2DTexture(ivec2(256*3, int(fTexcoord.y)));
     float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
 
     float xpos = fTexcoord.x + _3dxpos;
@@ -1038,7 +1048,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
     ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
-    ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+    ivec4 color = fetch2DTexture(coordinates);
     if (index == 2) {
         color = fixTransparencyLayer(color);
     }
@@ -1130,7 +1140,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 }
                 if (index == 2)
                 {
-                    ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                    ivec4 colorZero = fetch2DTexture(textureBeginning);
                     int blur = int((63 - colorZero.r)*2);
                     color = ivec4(color.r, blur, 64 - blur, 0x01);
                 }
@@ -1157,7 +1167,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 }
                 if (index == 2)
                 {
-                    ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                    ivec4 colorZero = fetch2DTexture(textureBeginning);
                     int blur = int((63 - colorZero.r)*2);
                     color = ivec4(color.r, blur, 64 - blur, 0x01);
                 }
@@ -1197,7 +1207,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     bool hasTexture = showMissionInformationBottomScreen;
                     if (showMissionInformationTopScreen)
                     {
-                        hasTexture = ((ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0))).a & 0xF) == 1;
+                        hasTexture = ((fetch2DTexture(textureBeginning + ivec2(512,0))).a & 0xF) == 1;
                     }
 
                     if (hasTexture && index == 2)
@@ -1224,9 +1234,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 ivec4 horizontalBrightness()
 {
     if (fTexcoord.x < 128) {
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 96), 0));
+        return fetch2DTexture(ivec2(256*3, 96));
     }
-    return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192 + 96), 0));
+    return fetch2DTexture(ivec2(256*3, 192 + 96));
 }
 
 ivec4 brightness()
@@ -1243,27 +1253,27 @@ ivec4 brightness()
         GameScene == 13 || // gameScene_RoxasThoughts
         GameScene == 14 || // gameScene_DeathScreen
         GameScene == 16) { // gameScene_Other
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 0), 0));
+        return fetch2DTexture(ivec2(256*3, 0));
     }
     if (GameScene == 8  || // gameScene_Tutorial
         GameScene == 12) { // gameScene_LoadingScreen
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+        return fetch2DTexture(ivec2(256*3, 192));
     }
     if (GameScene == 11) { // gameScene_Shop
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+        return fetch2DTexture(ivec2(256*3, int(fTexcoord.y)));
     }
 
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+    ivec4 mbright = fetch2DTexture(ivec2(256*3, 192));
     int brightmode = mbright.g >> 6;
     if ((mbright.b & 0x3) != 0 && brightmode == 2) {
         return mbright;
     }
-    return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    return fetch2DTexture(ivec2(256*3, int(fTexcoord.y)));
 }
 
 void main()
 {
-    ivec4 pixel = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord), 0));
+    ivec4 pixel = fetch2DTexture(fTexcoord);
 
     ivec4 mbright = brightness();
     int dispmode = mbright.b & 0x3;

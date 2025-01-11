@@ -19,6 +19,8 @@
 #ifndef GPU2D_H
 #define GPU2D_H
 
+#define MODIFIER_2D_TEXTURE_SCALE 4
+
 #include "types.h"
 #include "Savestate.h"
 

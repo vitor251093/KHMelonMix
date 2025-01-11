@@ -52,12 +52,12 @@ private:
     Plugins::Plugin* plugin = nullptr;
     Texcache2D Texcache;
 
-    alignas(8) u32 BGOBJLine[256*3];
+    alignas(8) u32 BGOBJLine[256*3*MODIFIER_2D_TEXTURE_SCALE];
     u32* _3DLine;
 
     alignas(8) u8 WindowMask[256];
 
-    alignas(8) u32 OBJLine[2][256];
+    alignas(8) u32 OBJLine[2][256*MODIFIER_2D_TEXTURE_SCALE];
     alignas(8) u8 OBJWindow[2][256];
 
     u32 NumSprites[2];
