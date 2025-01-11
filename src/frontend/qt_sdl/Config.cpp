@@ -142,9 +142,7 @@ DefaultList<std::string> DefaultStrings =
 {
     {"DLDI.ImagePath",                  "dldi.bin"},
     {"DSi.SD.ImagePath",                "dsisd.bin"},
-    {"Instance*.Firmware.Username",     "melonDS"},
-    {"LastROMFolder",                   "rom"},
-    {"RecentROM[0]",                    "rom/game.nds"}
+    {"Instance*.Firmware.Username",     "melonDS"}
 };
 
 DefaultList<double> DefaultDoubles =
@@ -198,18 +196,6 @@ LegacyEntry LegacyFile[] =
     {"HKKey_VolumeUp",            0, "Keyboard.HK_VolumeUp", true},
     {"HKKey_VolumeDown",          0, "Keyboard.HK_VolumeDown", true},
 
-    {"HKKey_HUDToggle",           0, "Keyboard.HK_HUDToggle", true},
-    {"HKKey_LockOn",              0, "Keyboard.HK_RLockOn", true},
-    {"HKKey_RSwitchTarget",       0, "Keyboard.HK_RSwitchTarget", true},
-    {"Key_CmdMenuLeft",           0, "Keyboard.HK_CmdMenuLeft", true},
-    {"Key_CmdMenuRight",          0, "Keyboard.HK_CmdMenuRight", true},
-    {"Key_CmdMenuUp",             0, "Keyboard.HK_CmdMenuUp", true},
-    {"Key_CmdMenuDown",           0, "Keyboard.HK_CmdMenuDown", true},
-    {"Key_TouchRight",            0, "Keyboard.HK_CameraRight", true},
-    {"Key_TouchLeft",             0, "Keyboard.HK_CameraLeft", true},
-    {"Key_TouchUp",               0, "Keyboard.HK_CameraUp", true},
-    {"Key_TouchDown",             0, "Keyboard.HK_CameraDown", true},
-
     {"HKJoy_Lid",                 0, "Joystick.HK_Lid", true},
     {"HKJoy_Mic",                 0, "Joystick.HK_Mic", true},
     {"HKJoy_Pause",               0, "Joystick.HK_Pause", true},
@@ -225,18 +211,6 @@ LegacyEntry LegacyFile[] =
     {"HKJoy_PowerButton",         0, "Joystick.HK_PowerButton", true},
     {"HKJoy_VolumeUp",            0, "Joystick.HK_VolumeUp", true},
     {"HKJoy_VolumeDown",          0, "Joystick.HK_VolumeDown", true},
-
-    {"HKJoy_HUDToggle",           0, "Joystick.HK_HUDToggle", true},
-    {"HKJoy_LockOn",              0, "Joystick.HK_RLockOn", true},
-    {"HKJoy_RSwitchTarget",       0, "Joystick.HK_RSwitchTarget", true},
-    {"Joy_CmdMenuLeft",           0, "Joystick.HK_CmdMenuLeft", true},
-    {"Joy_CmdMenuRight",          0, "Joystick.HK_CmdMenuRight", true},
-    {"Joy_CmdMenuUp",             0, "Joystick.HK_CmdMenuUp", true},
-    {"Joy_CmdMenuDown",           0, "Joystick.HK_CmdMenuDown", true},
-    {"Joy_TouchRight",            0, "Joystick.HK_CameraRight", true},
-    {"Joy_TouchLeft",             0, "Joystick.HK_CameraLeft", true},
-    {"Joy_TouchUp",               0, "Joystick.HK_CameraUp", true},
-    {"Joy_TouchDown",             0, "Joystick.HK_CameraDown", true},
 
     {"JoystickID", 0, "JoystickID", true},
 

@@ -49,7 +49,7 @@ public:
 private:
     melonDS::GPU& GPU;
 
-    Plugins::Plugin* plugin;
+    Plugins::Plugin* plugin = nullptr;
     Texcache2D Texcache;
 
     alignas(8) u32 BGOBJLine[256*3];

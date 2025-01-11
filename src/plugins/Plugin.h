@@ -1,6 +1,8 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#define PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT 100
+
 #define REPLACEMENT_CUTSCENES_ENABLED true
 #define REPLACEMENT_BGM_ENABLED true
 #define MOUSE_CURSOR_AS_CAMERA_ENABLED false
@@ -132,6 +134,9 @@ struct TextureEntry
 
 class Plugin
 {
+protected:
+    melonDS::NDS* nds = nullptr;
+
 public:
     virtual ~Plugin() { };
 
@@ -162,12 +167,16 @@ public:
 
     bool togglePause();
 
+    std::vector<const char*> customKeyMappingNames = {};
+    std::vector<const char*> customKeyMappingLabels = {};
+
     bool _superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
-    virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
+    virtual void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
+    virtual void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* AddonMask, u32* AddonPress) {};
 
     virtual bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {return false;}
-    void _superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching);
-    virtual void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching) = 0;
+    void _superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge);
+    virtual void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask);
 
     bool shouldExportTextures() {
         return ExportTextures;
@@ -270,8 +279,6 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
-    melonDS::NDS* nds;
-
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
@@ -322,6 +329,8 @@ protected:
     bool _ShouldReleaseMouseCursor = false;
     bool _MouseCursorIsGrabbed = false;
 
+public:
+    bool isReady() { return GameCode != 0 && nds != nullptr; };
 };
 }
 

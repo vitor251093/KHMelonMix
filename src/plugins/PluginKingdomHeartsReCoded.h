@@ -4,7 +4,7 @@
 #include "Plugin.h"
 #include "../NDS.h"
 
-#define PRIOR_HOTKEY_MASK_SIZE 15
+#define PRIOR_ADDON_MASK_SIZE 15
 
 namespace Plugins
 {
@@ -41,12 +41,13 @@ public:
 
     void onLoadState();
 
-    void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
+    void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
+    void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
     
     bool overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching);
-    void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching);
+    void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask);
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene);
     std::string localizationFilePath(std::string language);
@@ -91,7 +92,7 @@ private:
     bool _had3DOnTopScreen;
     bool _had3DOnBottomScreen;
 
-    u32 PriorHotkeyMask[PRIOR_HOTKEY_MASK_SIZE];
+    u32 PriorAddonMask[PRIOR_ADDON_MASK_SIZE];
     u32 LastLockOnPress, LastSwitchTargetPress, LastScreenTogglePress;
 
     std::array<CutsceneEntry, 15> Cutscenes;

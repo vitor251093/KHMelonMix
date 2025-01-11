@@ -19,16 +19,6 @@ public:
 
     static bool isCart(u32 gameCode) {return true;};
 
-    void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) {
-        bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
-        if (!shouldContinue) {
-            return;
-        }
-    }
-    void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching) {
-        _superApplyTouchKeyMask(TouchKeyMask, 3, true, touchX, touchY, isTouching);
-    }
-
     const char* getGameSceneName() {
         return "";
     }

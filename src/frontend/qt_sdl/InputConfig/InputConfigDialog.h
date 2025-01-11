@@ -33,28 +33,12 @@ static constexpr std::initializer_list<int> hk_addons =
 {
     HK_SolarSensorIncrease,
     HK_SolarSensorDecrease,
-    HK_HUDToggle,
-    HK_RLockOn,
-    HK_LSwitchTarget,
-    HK_RSwitchTarget,
-    HK_CommandMenuLeft,
-    HK_CommandMenuRight,
-    HK_CommandMenuUp,
-    HK_CommandMenuDown,
 };
 
 static constexpr std::initializer_list<const char*> hk_addons_labels =
 {
     "[Boktai] Sunlight + ",
     "[Boktai] Sunlight - ",
-    "[KH] HUD Toggle",
-    "[KH] (R1) R / Lock On",
-    "[KH] (L2) Switch Target",
-    "[KH] (R2) Switch Target",
-    "[KH] Command Menu - Left",
-    "[KH] Command Menu - Right",
-    "[KH] Command Menu - Up",
-    "[KH] Command Menu - Down",
 };
 
 static_assert(hk_addons.size() == hk_addons_labels.size());
@@ -151,9 +135,10 @@ private slots:
 
 private:
     void populatePage(QWidget* page,
-        const std::initializer_list<const char*>& labels,
+        std::vector<const char*> labels,
         int* keymap, int* joymap);
     void setupKeypadPage();
+    void setupAddonsPage();
     void setupTouchScreenPage();
 
     Ui::InputConfigDialog* ui;
@@ -163,6 +148,7 @@ private:
     int keypadKeyMap[12], keypadJoyMap[12];
     int addonsKeyMap[hk_addons.size()], addonsJoyMap[hk_addons.size()];
     int hkGeneralKeyMap[hk_general.size()], hkGeneralJoyMap[hk_general.size()];
+    int pluginKeyMap[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT], pluginJoyMap[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT];
     int touchScreenKeyMap[4], touchScreenJoyMap[4];
     int joystickID;
 };

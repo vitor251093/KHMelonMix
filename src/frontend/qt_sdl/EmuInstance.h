@@ -52,14 +52,6 @@ enum
     HK_SlowMo,
     HK_FastForwardToggle,
     HK_SlowMoToggle,
-    HK_HUDToggle,
-    HK_RLockOn,
-    HK_LSwitchTarget,
-    HK_RSwitchTarget,
-    HK_CommandMenuLeft,
-    HK_CommandMenuRight,
-    HK_CommandMenuUp,
-    HK_CommandMenuDown,
     HK_MAX
 };
 
@@ -159,7 +151,7 @@ public:
     SDL_Joystick* getJoystick() { return joystick; }
     void autoMapJoystick();
 
-    Plugins::Plugin* plugin;
+    Plugins::Plugin* plugin = nullptr;
 
     void touchScreen(int x, int y);
     void releaseScreen();
@@ -347,6 +339,8 @@ private:
     int joyMapping[12];
     int hkKeyMapping[HK_MAX];
     int hkJoyMapping[HK_MAX];
+    int pluginKeyMapping[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT];
+    int pluginJoyMapping[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT];
     int touchKeyMapping[4];
     int touchJoyMapping[4];
 
@@ -360,10 +354,15 @@ private:
     melonDS::u32 keyHotkeyMask, joyHotkeyMask;
     melonDS::u32 hotkeyMask, lastHotkeyMask;
     melonDS::u32 hotkeyPress, hotkeyRelease;
+
+    melonDS::u32 keyPluginMask, joyPluginMask;
+    melonDS::u32 pluginMask, lastPluginMask;
+    melonDS::u32 pluginPress, pluginRelease;
     melonDS::u32 keyTouchInputMask, joyTouchInputMask;
 
     melonDS::u32 inputMask;
     melonDS::u32 touchInputMask;
+    melonDS::u32 pluginInputMask;
 
     bool isTouching;
     melonDS::u16 touchX, touchY;

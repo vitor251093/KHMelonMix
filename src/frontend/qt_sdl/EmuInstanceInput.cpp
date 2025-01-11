@@ -59,15 +59,7 @@ const char* EmuInstance::hotkeyNames[HK_MAX] =
     "HK_VolumeDown",
     "HK_SlowMo",
     "HK_FastForwardToggle",
-    "HK_SlowMoToggle",
-    "HK_HUDToggle",
-    "HK_RLockOn",
-    "HK_LSwitchTarget",
-    "HK_RSwitchTarget",
-    "HK_CommandMenuLeft",
-    "HK_CommandMenuRight",
-    "HK_CommandMenuUp",
-    "HK_CommandMenuDown"
+    "HK_SlowMoToggle"
 };
 
 const char* EmuInstance::touchButtonNames[4] =
@@ -94,6 +86,11 @@ void EmuInstance::inputInit()
     hotkeyMask = 0;
     lastHotkeyMask = 0;
 
+    keyPluginMask = 0;
+    joyPluginMask = 0;
+    pluginMask = 0;
+    lastPluginMask = 0;
+
     isTouching = false;
     touchX = 0;
     touchY = 0;
@@ -112,8 +109,8 @@ void EmuInstance::inputDeInit()
 
 void EmuInstance::inputLoadConfig()
 {
-    auto keycfg = localCfg.GetTable("Keyboard");
-    auto joycfg = localCfg.GetTable("Joystick");
+    Config::Table keycfg = localCfg.GetTable("Keyboard");
+    Config::Table joycfg = localCfg.GetTable("Joystick");
 
     for (int i = 0; i < 12; i++)
     {
@@ -121,16 +118,26 @@ void EmuInstance::inputLoadConfig()
         joyMapping[i] = joycfg.GetInt(buttonNames[i]);
     }
 
-    for (int i = 0; i < 4; i++)
-    {
-        touchKeyMapping[i] = keycfg.GetInt(touchButtonNames[i]);
-        touchJoyMapping[i] = joycfg.GetInt(touchButtonNames[i]);
-    }
-
     for (int i = 0; i < HK_MAX; i++)
     {
         hkKeyMapping[i] = keycfg.GetInt(hotkeyNames[i]);
         hkJoyMapping[i] = joycfg.GetInt(hotkeyNames[i]);
+    }
+
+    if (plugin != nullptr && plugin->isReady())
+    {
+        for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
+        {
+            const char* name = plugin->customKeyMappingNames[i];
+            pluginKeyMapping[i] = keycfg.GetInt(name);
+            pluginJoyMapping[i] = joycfg.GetInt(name);
+        }
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        touchKeyMapping[i] = keycfg.GetInt(touchButtonNames[i]);
+        touchJoyMapping[i] = joycfg.GetInt(touchButtonNames[i]);
     }
 
     setJoystick(localCfg.GetInt("JoystickID"));
@@ -208,14 +215,14 @@ void EmuInstance::setAutoJoystickConfig(int a, int b, int select, int start, int
     hkJoyMapping[HK_VolumeUp] = -1;
     hkJoyMapping[HK_VolumeDown] = -1;
 
-    hkJoyMapping[HK_HUDToggle] = -1;
-    hkJoyMapping[HK_RLockOn] = -1;
-    hkJoyMapping[HK_LSwitchTarget] = -1;
-    hkJoyMapping[HK_RSwitchTarget] = -1;
-    hkJoyMapping[HK_CommandMenuLeft] = cmdLeft;
-    hkJoyMapping[HK_CommandMenuRight] = cmdRight;
-    hkJoyMapping[HK_CommandMenuUp] = cmdUp;
-    hkJoyMapping[HK_CommandMenuDown] = cmdDown;
+    // hkJoyMapping[HK_HUDToggle] = -1;
+    // hkJoyMapping[HK_RLockOn] = -1;
+    // hkJoyMapping[HK_LSwitchTarget] = -1;
+    // hkJoyMapping[HK_RSwitchTarget] = -1;
+    // hkJoyMapping[HK_CommandMenuLeft] = cmdLeft;
+    // hkJoyMapping[HK_CommandMenuRight] = cmdRight;
+    // hkJoyMapping[HK_CommandMenuUp] = cmdUp;
+    // hkJoyMapping[HK_CommandMenuDown] = cmdDown;
 }
 
 void EmuInstance::autoMapJoystick()
@@ -359,6 +366,10 @@ void EmuInstance::onKeyPress(QKeyEvent* event)
         if (keyHK == hkKeyMapping[i])
             keyHotkeyMask |= (1<<i);
     
+    for (int i = 0; i < PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT; i++)
+        if (keyHK == pluginKeyMapping[i])
+            keyPluginMask |= (1<<i);
+    
     for (int i = 0; i < 4; i++)
         if (keyKP == touchKeyMapping[i])
             keyTouchInputMask &= ~(0xF << (i*4));
@@ -379,6 +390,10 @@ void EmuInstance::onKeyRelease(QKeyEvent* event)
         if (keyHK == hkKeyMapping[i])
             keyHotkeyMask &= ~(1<<i);
 
+    for (int i = 0; i < PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT; i++)
+        if (keyKP == pluginKeyMapping[i])
+            keyPluginMask &= ~(1<<i);
+
     for (int i = 0; i < 4; i++)
         if (keyKP == touchKeyMapping[i])
             keyTouchInputMask |= (0xF << (i*4));
@@ -388,6 +403,7 @@ void EmuInstance::keyReleaseAll()
 {
     keyInputMask = 0xFFF;
     keyHotkeyMask = 0;
+    keyPluginMask = 0;
 }
 
 Sint16 EmuInstance::joystickButtonDown(int val)
@@ -479,6 +495,19 @@ void EmuInstance::inputProcess()
 
     inputMask = keyInputMask & joyInputMask;
     touchInputMask = keyTouchInputMask & joyTouchInputMask;
+
+    joyPluginMask = 0;
+    if (joystick)
+    {
+        for (int i = 0; i < PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT; i++)
+            if (joystickButtonDown(pluginJoyMapping[i]))
+                joyPluginMask |= (1 << i);
+    }
+
+    pluginMask = keyPluginMask | joyPluginMask;
+    pluginPress = pluginMask & ~lastPluginMask;
+    pluginRelease = lastPluginMask & ~pluginMask;
+    lastPluginMask = pluginMask;
 
     joyHotkeyMask = 0;
     if (joystick)
