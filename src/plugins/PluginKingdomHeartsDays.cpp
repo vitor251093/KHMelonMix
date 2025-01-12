@@ -21,6 +21,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_MAIN_MENU_JP      0x0204288d
 #define IS_MAIN_MENU_JP_REV1 0x0204284d
 
+// 0x00 => cannot control (ingame cutscenes, or not ingame at all); 0x01 => can control
+#define IS_CHARACTER_CONTROLLABLE_US      0x02042460
+#define IS_CHARACTER_CONTROLLABLE_EU      0x02042460 // TODO: KH
+#define IS_CHARACTER_CONTROLLABLE_JP      0x02042460 // TODO: KH
+#define IS_CHARACTER_CONTROLLABLE_JP_REV1 0x02042460 // TODO: KH
+
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US      0x02044640
 #define IS_CUTSCENE_EU      0x02044660
@@ -426,6 +432,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
     CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
     CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
+    CompGpuLoc[CompShader][12] = glGetUniformLocation(CompShader, "IsCharacterControllable");
 }
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
@@ -451,6 +458,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     glUniform1i(CompGpuLoc[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][10], getCurrentMainMenuView());
     glUniform1i(CompGpuLoc[CompShader][11], dsCutsceneState);
+    glUniform1i(CompGpuLoc[CompShader][12], isCharacterControllable ? 1 : 0);
 }
 
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
@@ -997,6 +1005,8 @@ int PluginKingdomHeartsDays::detectGameScene()
     bool isTutorial = nds->ARM7Read32(getU32ByCart(TUTORIAL_ADDRESS_US, TUTORIAL_ADDRESS_EU, TUTORIAL_ADDRESS_JP, TUTORIAL_ADDRESS_JP_REV1)) != 0;
     bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP, PAUSE_SCREEN_ADDRESS_JP_REV1)) != 0;
     bool isTheEnd = nds->ARM7Read8(getU32ByCart(THE_END_SCREEN_ADDRESS_US, THE_END_SCREEN_ADDRESS_EU, THE_END_SCREEN_ADDRESS_JP, THE_END_SCREEN_ADDRESS_JP_REV1)) == 0x60;
+
+    isCharacterControllable = nds->ARM7Read8(getU32ByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
 
     if (isCredits)
     {

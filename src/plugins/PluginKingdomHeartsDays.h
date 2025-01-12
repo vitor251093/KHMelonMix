@@ -73,7 +73,8 @@ public:
         TextLanguage = getStringConfig(root + ".Language");
     }
 private:
-    bool PausedInGame;
+    bool PausedInGame = false;
+    bool isCharacterControllable = false;
 
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
@@ -86,7 +87,7 @@ private:
     bool ShowMissionInfo;
     bool HideAllHUD;
 
-    std::map<GLuint, GLuint[11]> CompGpuLoc{};
+    std::map<GLuint, GLuint[20]> CompGpuLoc{};
     std::map<u32, GLuint[4]> CompGpu3DLoc{};
 
     bool _muchOlderHad3DOnTopScreen;
