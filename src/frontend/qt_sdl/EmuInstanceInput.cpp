@@ -366,9 +366,12 @@ void EmuInstance::onKeyPress(QKeyEvent* event)
         if (keyHK == hkKeyMapping[i])
             keyHotkeyMask |= (1<<i);
     
-    for (int i = 0; i < PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT; i++)
-        if (keyHK == pluginKeyMapping[i])
-            keyPluginMask |= (1<<i);
+    if (plugin != nullptr && plugin->isReady())
+    {
+        for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
+            if (keyHK == pluginKeyMapping[i])
+                keyPluginMask |= (1<<i);
+    }
     
     for (int i = 0; i < 4; i++)
         if (keyKP == touchKeyMapping[i])
