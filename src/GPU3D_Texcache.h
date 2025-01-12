@@ -288,80 +288,37 @@ public:
             oss << "-";
             oss << palBase;
             std::string uniqueIdentifier3 = oss.str();
-            
-            std::string filename1 = uniqueIdentifier1 + ".png";
-            std::string filename2 = uniqueIdentifier3 + ".png";
-            std::string filename3 = uniqueIdentifier2 + ".png";
 
-            std::string assetsFolder = GamePlugin->assetsFolder();
-            std::filesystem::path currentPath = std::filesystem::current_path();
-            std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolder;
-            std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";
-            std::filesystem::path fullPath1 = assetsFolderPath / "textures" / filename1;
-            std::filesystem::path fullPath2 = assetsFolderPath / "textures" / filename2;
-            std::filesystem::path fullPath3 = assetsFolderPath / "textures" / filename3;
-            std::filesystem::path fullPathTmp = tmpFolderPath / filename2;
-#ifdef _WIN32
-            const char* path1 = fullPath1.string().c_str();
-            const char* path2 = fullPath2.string().c_str();
-            const char* path3 = fullPath3.string().c_str();
-            const char* pathTmp = fullPathTmp.string().c_str();
-#else
+            std::string fullPath1 = GamePlugin->textureFilePath(uniqueIdentifier1);
+            std::string fullPath2 = GamePlugin->textureFilePath(uniqueIdentifier3);
+            std::string fullPath3 = GamePlugin->textureFilePath(uniqueIdentifier2);
+            std::string fullPathTmp = GamePlugin->tmpTextureFilePath(uniqueIdentifier3);
+
             const char* path1 = fullPath1.c_str();
             const char* path2 = fullPath2.c_str();
             const char* path3 = fullPath3.c_str();
             const char* pathTmp = fullPathTmp.c_str();
-#endif
-            bool shouldExportTextures = GamePlugin->shouldExportTextures();
-
-            if (!std::filesystem::exists(assetsFolderPath)) {
-                std::filesystem::create_directory(assetsFolderPath);
-            }
-            if (shouldExportTextures && !std::filesystem::exists(tmpFolderPath)) {
-                std::filesystem::create_directory(tmpFolderPath);
-            }
 
             int channels = 4;
             int r_width, r_height, r_channels;
-            imageData = Texreplace::LoadTextureFromFile(path1, &r_width, &r_height, &r_channels);
-            if (imageData != nullptr) {
-                if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
-                    printf("Loading texture %s\n", path1);
-                    width = r_width;
-                    height = r_height;
-                }
-                else {
-                    GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path1);
-                    imageData = nullptr;
-                }
-            }
+            imageData = nullptr;
 
-            if (imageData == nullptr) {
-                imageData = Texreplace::LoadTextureFromFile(path2, &r_width, &r_height, &r_channels);
-                if (imageData != nullptr) {
-                    if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
-                        printf("Loading texture %s\n", path2);
-                        width = r_width;
-                        height = r_height;
-                    }
-                    else {
-                        GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path2);
-                        imageData = nullptr;
-                    }
-                }
-            }
-
-            if (imageData == nullptr) {
-                imageData = Texreplace::LoadTextureFromFile(path3, &r_width, &r_height, &r_channels);
-                if (imageData != nullptr) {
-                    if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
-                        printf("Loading texture %s\n", path3);
-                        width = r_width;
-                        height = r_height;
-                    }
-                    else {
-                        GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path3);
-                        imageData = nullptr;
+            const char* paths[] = {path1, path2, path3};
+            for (int i = 0; i < sizeof(paths) / sizeof(paths[0]); ++i) {
+                const char* path = paths[i];
+                if (imageData == nullptr && strlen(path) > 0) {
+                    imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+                    if (imageData != nullptr) {
+                        if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
+                            printf("Loading texture %s\n", path);
+                            width = r_width;
+                            height = r_height;
+                            break;
+                        }
+                        else {
+                            GamePlugin->errorLog("Failed to load texture %s: size must be a power of two", path);
+                            imageData = nullptr;
+                        }
                     }
                 }
             }
@@ -369,7 +326,7 @@ public:
             if (imageData == nullptr) {
                 imageData = (unsigned char*)DecodingBuffer;
 
-                if (shouldExportTextures) {
+                if (GamePlugin->shouldExportTextures()) {
                     printf("Saving texture %s\n", pathTmp);
                     Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
                 }

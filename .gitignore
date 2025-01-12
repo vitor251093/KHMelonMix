@@ -1,11 +1,15 @@
 # Assets
 assets/days/cutscenes/cinematics/*.mp4
-assets/days/textures_tmp
-assets/days/2d_textures_tmp
+assets/days/textures/*.png
+assets/days/textures_tmp/*.png
+assets/days/2d_textures/*.png
+assets/days/2d_textures_tmp/*.png
 
 assets/recoded/cutscenes/cinematics/*.mp4
-assets/recoded/textures_tmp
-assets/recoded/2d_textures_tmp
+assets/recoded/textures/*.png
+assets/recoded/textures_tmp/*.png
+assets/recoded/2d_textures/*.png
+assets/recoded/2d_textures_tmp/*.png
 
 # ROMs
 roms/*
@@ -13,6 +17,7 @@ roms/*
 
 # Build and run artifacts
 debug.log
+error.log
 build
 build*/
 bin

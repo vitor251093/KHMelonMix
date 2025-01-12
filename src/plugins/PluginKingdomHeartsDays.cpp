@@ -21,6 +21,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_MAIN_MENU_JP      0x0204288d
 #define IS_MAIN_MENU_JP_REV1 0x0204284d
 
+// 0x00 => cannot control (ingame cutscenes, or not ingame at all); 0x01 => can control
+#define IS_CHARACTER_CONTROLLABLE_US      0x02042460
+#define IS_CHARACTER_CONTROLLABLE_EU      0x02042480 // TODO: KH Unconfirmed (calculated)
+#define IS_CHARACTER_CONTROLLABLE_JP      0x020428C0 // TODO: KH Unconfirmed (calculated)
+#define IS_CHARACTER_CONTROLLABLE_JP_REV1 0x02042880 // TODO: KH Unconfirmed (calculated)
+
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US      0x02044640
 #define IS_CUTSCENE_EU      0x02044660
@@ -154,6 +160,18 @@ enum
     gameScene_Other                     // 16
 };
 
+enum
+{
+    HK_HUDToggle,
+    HK_RLockOn,
+    HK_LSwitchTarget,
+    HK_RSwitchTarget,
+    HK_CommandMenuLeft,
+    HK_CommandMenuRight,
+    HK_CommandMenuUp,
+    HK_CommandMenuDown
+};
+
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
@@ -184,12 +202,33 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     _priorIgnore3DOnBottomScreen = false;
     _priorPriorIgnore3DOnBottomScreen = false;
 
-    // apply hotkey to input mask utils
-    PriorHotkeyMask = 0;
-    PriorPriorHotkeyMask = 0;
+    // apply addon to input mask utils
+    PriorAddonMask = 0;
+    PriorPriorAddonMask = 0;
     LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
     SwitchTargetPressOnHold = false;
+
+    customKeyMappingNames = {
+        "HK_HUDToggle",
+        "HK_RLockOn",
+        "HK_LSwitchTarget",
+        "HK_RSwitchTarget",
+        "HK_CommandMenuLeft",
+        "HK_CommandMenuRight",
+        "HK_CommandMenuUp",
+        "HK_CommandMenuDown"
+    };
+    customKeyMappingLabels = {
+        "[KH] HUD Toggle",
+        "[KH] (R1) R / Lock On",
+        "[KH] (L2) Switch Target",
+        "[KH] (R2) Switch Target",
+        "[KH] Command Menu - Left",
+        "[KH] Command Menu - Right",
+        "[KH] Command Menu - Up",
+        "[KH] Command Menu - Down"
+    };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 46> {{
         {"802",    "802_mm", "802_opening",                       0x088b2e00, 0x08b3d400, 0x0876e800, 0},
@@ -356,6 +395,8 @@ void PluginKingdomHeartsDays::onLoadROM() {
 
 void PluginKingdomHeartsDays::onLoadState()
 {
+    texturesIndex.clear();
+
     loadLocalization();
 
     GameScene = gameScene_InGameWithMap;
@@ -397,6 +438,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
     CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
     CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
+    CompGpuLoc[CompShader][12] = glGetUniformLocation(CompShader, "IsCharacterControllable");
 }
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
@@ -422,6 +464,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     glUniform1i(CompGpuLoc[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][10], getCurrentMainMenuView());
     glUniform1i(CompGpuLoc[CompShader][11], dsCutsceneState);
+    glUniform1i(CompGpuLoc[CompShader][12], isCharacterControllable ? 1 : 0);
 }
 
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
@@ -452,65 +495,96 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
     glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
 }
 
-void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
+void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return;
     }
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    float iuTexScale = (5.0)/UIScale;
+    u32 attr = polygon->Attr;
 
-    float _x = (float)(*x - ScreenWidth/2);
-    float _y = (float)(*y - ScreenHeight/2);
-    float _z = ((float)z)/(1 << 22);
-    if (HideAllHUD)
-    {
-        if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D)
-        {
-            if (_x >= -(1.00)*(ScreenWidth/2)  && _x <= +(1.00)*(ScreenWidth/2) &&
-                _y >= -(1.00)*(ScreenHeight/2) && _y <= +(1.00)*(ScreenHeight/2) &&
-                _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
-                _x = (0 - 1.0)*(ScreenWidth/2);
-                _y = (0 - 1.0)*(ScreenHeight/2);
-            }
-        }
-    }
-    else
-    {
-        if (GameScene == gameScene_InGameWithMap)
-        {
-            float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
-            float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D) {
+        u32 aimAttr1 = 1058996416;
+        u32 aimAttr2 = 1042219200;
+        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2)) {
+            s32 z = polygon->Vertices[0]->Position[2];
+            float _z = ((float)z)/(1 << 22);
+            if (_z < 0) {
+                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                float xCenter = (x0 + x1)/2.0;
 
-            float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
-            float heartWidth = (ScreenWidth*9)/20.0;
-            float heartHeight = ScreenHeight/2.5;
-            if ((_x >= -(1.000)*(ScreenWidth/2)  && _x <= -(0.000)*(ScreenWidth/2) &&
-                 _y >= -(1.000)*(ScreenHeight/2) && _y <= -(0.200)*(ScreenHeight/2) &&
-                (abs(_z - effectLayer) < 0.0001))
-                ||
-                (_x >= -(1.000)*(ScreenWidth/2) && _x <= -(0.200)*(ScreenWidth/2) &&
-                 _y >= -(1.000)*(ScreenHeight/2) && _y <= -(0.500)*(ScreenHeight/2) &&
-                (abs(_z - textLayer) < 0.0001))) {
-                _x = ((((_x/(ScreenWidth/2)  + 1.0)*(heartWidth/iuTexScale))/ScreenWidth)*2.0/aspectRatio - 1.0)*(ScreenWidth/2);
-                _y = ((((_y/(ScreenHeight/2) + 1.0)*(heartHeight/iuTexScale) + heartTopMargin/iuTexScale)/ScreenHeight)*2.0 - 1.0)*(ScreenHeight/2);
-            }
-        }
-
-        if (GameScene == gameScene_PauseMenu)
-        {
-            if (_x >= -(1.00)*(ScreenWidth/2)  && _x <= -(0.000)*(ScreenWidth/2) &&
-                _y >= -(1.00)*(ScreenHeight/2) && _y <= -(0.500)*(ScreenHeight/2) &&
-                _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
-                _x = (0 - 1.0)*(ScreenWidth/2);
-                _y = (0 - 1.0)*(ScreenHeight/2);
+                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
+                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
+                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
+                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
             }
         }
     }
 
-    *x = (s32)(_x + ScreenWidth/2);
-    *y = (s32)(_y + ScreenHeight/2);
+    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
+    {
+        s32* x = &scaledPositions[vertexIndex][0];
+        s32* y = &scaledPositions[vertexIndex][1];
+        s32 z = polygon->Vertices[vertexIndex]->Position[2];
+
+        int resolutionScale = ScreenWidth/256;
+        float iuTexScale = (6.0)/UIScale;
+
+        float _x = (float)(*x);
+        float _y = (float)(*y);
+        float _z = ((float)z)/(1 << 22);
+        if (HideAllHUD)
+        {
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D)
+            {
+                if (_x >= 0 && _x <= ScreenWidth &&
+                    _y >= 0 && _y <= ScreenHeight &&
+                    _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
+                    _x = 0;
+                    _y = 0;
+                }
+            }
+        }
+        else
+        {
+            if (GameScene == gameScene_InGameWithMap)
+            {
+                float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
+
+                float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
+                if ((_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (2.0/5)*(ScreenHeight) &&
+                    (abs(_z - effectLayer) < 0.0001))) {
+                    _x = (_x)/(iuTexScale*aspectRatio);
+                    _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
+                }
+
+                float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
+                if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
+                    (abs(_z - textLayer) < 0.0001) &&
+                    attr != 34144384 && attr != 34799744 /* rain */)) {
+                    _x = (_x)/(iuTexScale*aspectRatio);
+                    _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
+                }
+            }
+
+            if (GameScene == gameScene_PauseMenu)
+            {
+                if (_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
+                    _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
+                    _x = 0;
+                    _y = 0;
+                }
+            }
+        }
+
+        *x = (s32)(_x);
+        *y = (s32)(_y);
+    }
 };
 
 bool PluginKingdomHeartsDays::doesAddressValuesMatch(u32 addr, u32* values, u32 len)
@@ -547,7 +621,7 @@ u32 PluginKingdomHeartsDays::getCameraBaseAddress()
     return lastCameraBaseAddress;
 }
 
-void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
+void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
 {
     bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
     if (!shouldContinue) {
@@ -560,6 +634,17 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
 
     if (GameScene == gameScene_LoadingScreen) {
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
+    }
+}
+
+void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* AddonMask, u32* AddonPress)
+{
+    if (GameScene == -1) {
+        return;
+    }
+
+    if ((*AddonPress) & (1 << HK_HUDToggle)) {
+        hudToggle();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D || GameScene == gameScene_MultiplayerMissionReview) {
@@ -591,20 +676,20 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
             }
             
             u32 cameraAngleMovement = 0x200;
-            if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
-                *HotkeyMask &= ~(1<<22); // left
+            if ((*AddonMask) & (1 << HK_CommandMenuLeft)) { // D-pad left
+                *AddonMask &= ~(1<<HK_CommandMenuLeft); // left
                 cameraAngleX -= cameraAngleMovement;
             }
-            if ((*HotkeyMask) & (1 << 23)) { // D-pad right (HK_CommandMenuRight)
-                *HotkeyMask &= ~(1<<23); // right
+            if ((*AddonMask) & (1 << HK_CommandMenuRight)) { // D-pad right
+                *AddonMask &= ~(1<<HK_CommandMenuRight); // right
                 cameraAngleX += cameraAngleMovement;
             }
-            if ((*HotkeyMask) & (1 << 24)) { // D-pad up (HK_CommandMenuUp)
-                *HotkeyMask &= ~(1<<24); // up
+            if ((*AddonMask) & (1 << HK_CommandMenuUp)) { // D-pad up
+                *AddonMask &= ~(1<<HK_CommandMenuUp); // up
                 cameraAngleY += cameraAngleMovement;
             }
-            if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
-                *HotkeyMask &= ~(1<<25); // down
+            if ((*AddonMask) & (1 << HK_CommandMenuDown)) { // D-pad down
+                *AddonMask &= ~(1<<HK_CommandMenuDown); // down
                 cameraAngleY -= cameraAngleMovement;
             }
 
@@ -711,7 +796,8 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         }
 
         // Enabling X + D-Pad
-        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
+        {
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                    INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP,
@@ -723,25 +809,26 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
         }
 
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { //  (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
+        {
             *InputMask &= ~(1<<10); // X
             *InputMask |= (1<<5); // left
             *InputMask |= (1<<4); // right
             *InputMask |= (1<<6); // up
             *InputMask |= (1<<7); // down
-            if (PriorPriorHotkeyMask & (1 << 22)) // Old D-pad left (HK_CommandMenuLeft)
+            if (PriorPriorAddonMask & (1 << HK_CommandMenuLeft)) // Old D-pad left
                 *InputMask &= ~(1<<5); // left
-            if (PriorPriorHotkeyMask & (1 << 23)) // Old D-pad right (HK_CommandMenuRight)
+            if (PriorPriorAddonMask & (1 << HK_CommandMenuRight)) // Old D-pad right
                 *InputMask &= ~(1<<4); // right
-            if (PriorPriorHotkeyMask & (1 << 24)) // Old D-pad up (HK_CommandMenuUp)
+            if (PriorPriorAddonMask & (1 << HK_CommandMenuUp)) // Old D-pad up
                 *InputMask &= ~(1<<6); // up
-            if (PriorPriorHotkeyMask & (1 << 25)) // Old D-pad down (HK_CommandMenuDown)
+            if (PriorPriorAddonMask & (1 << HK_CommandMenuDown)) // Old D-pad down
                 *InputMask &= ~(1<<7); // down
         }
 
         // R / Lock On
         {
-            if ((*HotkeyMask) & (1 << 19)) { // (HK_RLockOn)
+            if ((*AddonMask) & (1 << HK_RLockOn)) {
                 if (LastLockOnPress == 1) {
                     LastLockOnPress = 0;
                 }
@@ -759,7 +846,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
 
         // Switch Target
         {
-            if ((*HotkeyMask) & (1 << 20) || (*HotkeyMask) & (1 << 21)) { // (HK_LSwitchTarget, HK_RSwitchTarget)
+            if ((*AddonMask) & (1 << HK_LSwitchTarget) || (*AddonMask) & (1 << HK_RSwitchTarget)) {
                 if (LastSwitchTargetPress == 1) {
                     LastSwitchTargetPress = 0;
                 }
@@ -785,26 +872,26 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMask(u32* InputMask, u32* Hotkey
     }
     else {
         // So the arrow keys can be used as directionals
-        if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
+        if ((*AddonMask) & (1 << HK_CommandMenuLeft)) { // D-pad left
             *InputMask &= ~(1<<5); // left
         }
-        if ((*HotkeyMask) & (1 << 23)) { // D-pad right (HK_CommandMenuRight)
+        if ((*AddonMask) & (1 << HK_CommandMenuRight)) { // D-pad right
             *InputMask &= ~(1<<4); // right
         }
-        if ((*HotkeyMask) & (1 << 24)) { // D-pad up (HK_CommandMenuUp)
+        if ((*AddonMask) & (1 << HK_CommandMenuUp)) { // D-pad up
             *InputMask &= ~(1<<6); // up
         }
-        if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
+        if ((*AddonMask) & (1 << HK_CommandMenuDown)) { // D-pad down
             *InputMask &= ~(1<<7); // down
         }
 
-        if ((*HotkeyMask) & (1 << 19)) { // R / Lock On (HK_RLockOn)
+        if ((*AddonMask) & (1 << HK_RLockOn)) {
             *InputMask &= ~(1<<8); // R
         }
     }
 
-    PriorPriorHotkeyMask = PriorHotkeyMask;
-    PriorHotkeyMask = (*HotkeyMask);
+    PriorPriorAddonMask = PriorAddonMask;
+    PriorAddonMask = (*AddonMask);
 
     if (LastSwitchTargetPress < SWITCH_TARGET_PRESS_FRAME_LIMIT) LastSwitchTargetPress++;
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
@@ -917,10 +1004,10 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords(int width, int height, in
     return false;
 }
 
-void PluginKingdomHeartsDays::applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching)
+void PluginKingdomHeartsDays::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
-        _superApplyTouchKeyMask(TouchKeyMask, 3, false, touchX, touchY, isTouching);
+        _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, false);
     }
 }
 
@@ -1105,6 +1192,8 @@ int PluginKingdomHeartsDays::detectGameScene()
     bool isTutorial = nds->ARM7Read32(getU32ByCart(TUTORIAL_ADDRESS_US, TUTORIAL_ADDRESS_EU, TUTORIAL_ADDRESS_JP, TUTORIAL_ADDRESS_JP_REV1)) != 0;
     bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP, PAUSE_SCREEN_ADDRESS_JP_REV1)) != 0;
     bool isTheEnd = nds->ARM7Read8(getU32ByCart(THE_END_SCREEN_ADDRESS_US, THE_END_SCREEN_ADDRESS_EU, THE_END_SCREEN_ADDRESS_JP, THE_END_SCREEN_ADDRESS_JP_REV1)) == 0x60;
+
+    isCharacterControllable = nds->ARM7Read8(getU32ByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
 
     if (isCredits)
     {

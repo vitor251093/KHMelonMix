@@ -48,6 +48,10 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0
 #define IS_PLAYABLE_AREA_JP 0x0205a6e0
 
+#define TYPE_OF_BATTLE_ADDRESS_US 0x020b5608 // or 0x020b5620
+#define TYPE_OF_BATTLE_ADDRESS_EU 0x020b5608 // TODO: KH
+#define TYPE_OF_BATTLE_ADDRESS_JP 0x020b5608 // TODO: KH
+
 #define CUTSCENE_ADDRESS_US 0x020b7db8
 #define CUTSCENE_ADDRESS_EU 0x020b7e08
 #define CUTSCENE_ADDRESS_JP 0x020b7858
@@ -84,11 +88,11 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define MINIMAP_4_CENTER_Y_ADDRESS_EU 0x023c6a98 // TODO: KH
 #define MINIMAP_4_CENTER_Y_ADDRESS_JP 0x023c6a98 // TODO: KH
 
-#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US 0x02198311
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US 0x02198310
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU 0x021991b0
-#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP 0x02198311 // TODO: KH
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP 0x02198310 // TODO: KH
 
-#define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_US 0x002
+#define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_US 0x200
 #define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_EU 0x200
 #define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_JP 0x002 // TODO: KH
 
@@ -119,8 +123,21 @@ enum
     gameScene_CutsceneWithStaticImages, // 13
     gameScene_WorldSelection,           // 14
     gameScene_InGameDialog,             // 15
-    gameScene_Other2D,                  // 16
-    gameScene_Other                     // 17
+    gameScene_InGameOlympusBattle,      // 16
+    gameScene_Other2D,                  // 17
+    gameScene_Other                     // 18
+};
+
+enum
+{
+    HK_HUDToggle,
+    HK_RLockOn,
+    HK_LSwitchTarget,
+    HK_RSwitchTarget,
+    HK_CommandMenuLeft,
+    HK_CommandMenuRight,
+    HK_CommandMenuUp,
+    HK_CommandMenuDown
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -145,12 +162,33 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     _had3DOnTopScreen = false;
     _had3DOnBottomScreen = false;
 
-    // apply hotkey to input mask utils
-    for (int i = 0; i < PRIOR_HOTKEY_MASK_SIZE; i++) {
-        PriorHotkeyMask[i] = 0;
+    // apply addon to input mask utils
+    for (int i = 0; i < PRIOR_ADDON_MASK_SIZE; i++) {
+        PriorAddonMask[i] = 0;
     }
     LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
+
+    customKeyMappingNames = {
+        "HK_HUDToggle",
+        "HK_RLockOn",
+        "HK_LSwitchTarget",
+        "HK_RSwitchTarget",
+        "HK_CommandMenuLeft",
+        "HK_CommandMenuRight",
+        "HK_CommandMenuUp",
+        "HK_CommandMenuDown"
+    };
+    customKeyMappingLabels = {
+        "[KH] HUD Toggle",
+        "[KH] (R1) R / Lock On",
+        "[KH] (L2) Switch Target",
+        "[KH] (R2) Switch Target",
+        "[KH] Command Menu - Left",
+        "[KH] Command Menu - Right",
+        "[KH] Command Menu - Up",
+        "[KH] Command Menu - Down"
+    };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
         {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200, 2+1},
@@ -353,43 +391,105 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 fla
     glUniform1i(CompGpu3DLoc[flags][2], UIScale);
 }
 
-void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {
+void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return;
     }
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    float commandMenuLeftMargin = 33.5;
-    float commandMenuBottomMargin = 2.5;
-    float commandMenuWidth = ScreenWidth/(2.4*aspectRatio);
-    float commandMenuHeight = ScreenHeight/2.4;
+    u32 attr = polygon->Attr;
 
-    float iuTexScale = (5.0)/UIScale;
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu) {
+        u32 aimAttr1 = 1058996416;
+        u32 aimAttr2 = 1042219200;
+        u32 greenAimSmallSquare = 1025441984;
+        u32 greenAimBigSquare = 2033856;
+        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2 || attr == greenAimSmallSquare || attr == greenAimBigSquare)) {
+            s32 z = polygon->Vertices[0]->Position[2];
+            float _z = ((float)z)/(1 << 22);
+            if (_z < 0) {
+                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                float xCenter = (x0 + x1)/2.0;
 
-    float _x = (float)(*x - ScreenWidth/2);
-    float _y = (float)(*y - ScreenHeight/2);
-    if (_x >= -(1.000)*(ScreenWidth/2)  && _x <= -(0.375)*(ScreenWidth/2) &&
-        _y >= -(0.250)*(ScreenHeight/2) && _y <= +(1.000)*(ScreenHeight/2) &&
-        z == (s32)(-(1.000)*(1 << 22)) &&
-        rgb[0] < 200) {
+                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
+                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
+                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
+                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
+            }
+        }
+    }
 
-        _x = ((((_x/(ScreenWidth/2) + 1.0)*(commandMenuWidth/iuTexScale) + commandMenuLeftMargin/iuTexScale)/ScreenWidth)*2.0 - 1.0)*(ScreenWidth/2);
-        _y = (1.0 - (((1.0 - _y/(ScreenHeight/2))*(commandMenuHeight/iuTexScale) + commandMenuBottomMargin/iuTexScale)/ScreenHeight)*2.0)*(ScreenHeight/2);
+    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
+    {
+        s32* x = &scaledPositions[vertexIndex][0];
+        s32* y = &scaledPositions[vertexIndex][1];
+        s32 z = polygon->Vertices[vertexIndex]->Position[2];
+        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
 
-        *x = (s32)(_x + ScreenWidth/2);
-        *y = (s32)(_y + ScreenHeight/2);
+        int resolutionScale = ScreenWidth/256;
+        float commandMenuLeftMargin = 6.7;
+        float commandMenuBottomMargin = 0.5;
+
+        float iuTexScale = (6.0)/UIScale;
+
+        float _x = (float)(*x);
+        float _y = (float)(*y);
+        float _z = ((float)z)/(1 << 22);
+
+        if (HideAllHUD)
+        {
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
+            {
+                if (_x >= 0 && _x <= ScreenWidth &&
+                    _y >= 0 && _y <= ScreenHeight &&
+                    _z < 0) {
+                    _x = 0;
+                    _y = 0;
+                }
+            }
+        }
+        else
+        {
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
+            {
+                if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
+                    _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
+                    _z == (s32)(-1.000) &&
+                    rgb[0] < 200) {
+
+                    _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
+                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
+                }
+            }
+
+            if (GameScene == gameScene_InGameOlympusBattle)
+            {
+                if (_x >= (ScreenWidth/2)        && _x <= (ScreenWidth)  &&
+                    _y >= (2.0/3)*(ScreenHeight) && _y <= (ScreenHeight)) {
+
+                    _x = ScreenWidth - ((ScreenWidth - _x)/(iuTexScale*aspectRatio));
+                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale));
+                }
+            }
+        }
+
+        *x = (s32)(_x);
+        *y = (s32)(_y);
     }
 };
 
 void PluginKingdomHeartsReCoded::onLoadState()
 {
+    texturesIndex.clear();
+
     loadLocalization();
 
     GameScene = gameScene_InGameWithMap;
 }
 
-void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress)
+void PluginKingdomHeartsReCoded::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
 {
     bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
     if (!shouldContinue) {
@@ -403,10 +503,22 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
     if (GameScene == gameScene_LoadingScreen) {
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
     }
+}
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
+void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* AddonMask, u32* AddonPress)
+{
+    if (GameScene == -1) {
+        return;
+    }
+
+    if ((*AddonPress) & (1 << HK_HUDToggle)) {
+        hudToggle();
+    }
+
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D || GameScene == gameScene_InGameOlympusBattle) {
         // Enabling L + D-Pad
-        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) { // D-pad (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
+        {
             u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP);
@@ -420,26 +532,26 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         }
 
         // So the arrow keys can be used to control the command menu
-        if ((*HotkeyMask) & ((1 << 22) | (1 << 23) | (1 << 24) | (1 << 25))) // (HK_CommandMenuLeft, HK_CommandMenuRight, HK_CommandMenuUp, HK_CommandMenuDown)
+        if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
         {
             *InputMask &= ~(1<<9); // L
             *InputMask |= (1<<5); // left
             *InputMask |= (1<<4); // right
             *InputMask |= (1<<6); // up
             *InputMask |= (1<<7); // down
-            if (PriorHotkeyMask[1] & (1 << 22)) // Old D-pad left (HK_CommandMenuLeft)
+            if (PriorAddonMask[1] & (1 << HK_CommandMenuLeft)) // Old D-pad left
                 *InputMask &= ~(1<<5); // left
-            if (PriorHotkeyMask[1] & (1 << 23)) // Old D-pad right (HK_CommandMenuRight)
+            if (PriorAddonMask[1] & (1 << HK_CommandMenuRight)) // Old D-pad right
                 *InputMask &= ~(1<<4); // right
-            if (PriorHotkeyMask[1] & (1 << 24)) // Old D-pad up (HK_CommandMenuUp)
+            if (PriorAddonMask[1] & (1 << HK_CommandMenuUp)) // Old D-pad up
                 *InputMask &= ~(1<<6); // up
-            if (PriorHotkeyMask[1] & (1 << 25)) // Old D-pad down (HK_CommandMenuDown)
+            if (PriorAddonMask[1] & (1 << HK_CommandMenuDown)) // Old D-pad down
                 *InputMask &= ~(1<<7); // down
         }
 
         // R / Lock On
         {
-            if ((*HotkeyMask) & (1 << 19)) { // (HK_RLockOn)
+            if ((*AddonMask) & (1 << HK_RLockOn)) {
                 *InputMask &= ~(1<<8); // R
                 *InputMask &= ~(1<<9); // L
             }
@@ -447,13 +559,13 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
 
         // Switch Target
         {
-            if ((*HotkeyMask) & (1 << 20)) { // (HK_LSwitchTarget)
+            if ((*AddonMask) & (1 << HK_LSwitchTarget)) {
                 *InputMask &= ~(1<<5); // left
                 *InputMask &= ~(1<<8); // R
                 *InputMask &= ~(1<<9); // L
             }
 
-            if ((*HotkeyMask) & (1 << 21)) { // (HK_RSwitchTarget)
+            if ((*AddonMask) & (1 << HK_RSwitchTarget)) {
                 *InputMask &= ~(1<<4); // right
                 *InputMask &= ~(1<<8); // R
                 *InputMask &= ~(1<<9); // L
@@ -462,20 +574,20 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
     }
     else {
         // So the arrow keys can be used as directionals
-        if ((*HotkeyMask) & (1 << 22)) { // D-pad left (HK_CommandMenuLeft)
+        if ((*AddonMask) & (1 << HK_CommandMenuLeft)) {
             *InputMask &= ~(1<<5); // left
         }
-        if ((*HotkeyMask) & (1 << 23)) { // D-pad right (HK_CommandMenuRight)
+        if ((*AddonMask) & (1 << HK_CommandMenuRight)) {
             *InputMask &= ~(1<<4); // right
         }
-        if ((*HotkeyMask) & (1 << 24)) { // D-pad up (HK_CommandMenuUp)
+        if ((*AddonMask) & (1 << HK_CommandMenuUp)) {
             *InputMask &= ~(1<<6); // up
         }
-        if ((*HotkeyMask) & (1 << 25)) { // D-pad down (HK_CommandMenuDown)
+        if ((*AddonMask) & (1 << HK_CommandMenuDown)) {
             *InputMask &= ~(1<<7); // down
         }
 
-        if ((*HotkeyMask) & (1 << 19)) { // R / Lock On (HK_RLockOn)
+        if ((*AddonMask) & (1 << HK_RLockOn)) {
             *InputMask &= ~(1<<8); // R
         }
     }
@@ -484,45 +596,45 @@ void PluginKingdomHeartsReCoded::applyHotkeyToInputMask(u32* InputMask, u32* Hot
         // Toggle screens
         {
             bool clear = false;
-            for (int i = PRIOR_HOTKEY_MASK_SIZE - 1; i >= 0; i--) {
+            for (int i = PRIOR_ADDON_MASK_SIZE - 1; i >= 0; i--) {
                 if (clear) {
-                    PriorHotkeyMask[i] = PriorHotkeyMask[i] & ~((1<<20) | (1<<21));
+                    PriorAddonMask[i] = PriorAddonMask[i] & ~((1<<2) | (1<<3));
                 }
-                if (PriorHotkeyMask[i] & (1 << 20) || PriorHotkeyMask[i] & (1 << 21)) {
+                if (PriorAddonMask[i] & (1 << 2) || PriorAddonMask[i] & (1 << 3)) {
                     clear = true;
                 }
             }
 
-            { // (HK_LSwitchTarget)
-                if (PriorHotkeyMask[10] & (1 << 20) || PriorHotkeyMask[9] & (1 << 20) || PriorHotkeyMask[8] & (1 << 20)) {
+            {
+                if (PriorAddonMask[10] & (1 << HK_LSwitchTarget) || PriorAddonMask[9] & (1 << HK_LSwitchTarget) || PriorAddonMask[8] & (1 << HK_LSwitchTarget)) {
                     *InputMask &= ~(1<<10); // X
                 }
-                else if (PriorHotkeyMask[6] & (1 << 20) || PriorHotkeyMask[5] & (1 << 20) || PriorHotkeyMask[4] & (1 << 20)) {
+                else if (PriorAddonMask[6] & (1 << HK_LSwitchTarget) || PriorAddonMask[5] & (1 << HK_LSwitchTarget) || PriorAddonMask[4] & (1 << HK_LSwitchTarget)) {
                     *InputMask &= ~(1<<9); // L
                 }
-                else if (PriorHotkeyMask[2] & (1 << 20) || PriorHotkeyMask[1] & (1 << 20) || PriorHotkeyMask[0] & (1 << 20)) {
+                else if (PriorAddonMask[2] & (1 << HK_LSwitchTarget) || PriorAddonMask[1] & (1 << HK_LSwitchTarget) || PriorAddonMask[0] & (1 << HK_LSwitchTarget)) {
                     *InputMask &= ~(1<<10); // X
                 }
             }
 
-            { // (HK_RSwitchTarget)
-                if (PriorHotkeyMask[10] & (1 << 21) || PriorHotkeyMask[9] & (1 << 21) || PriorHotkeyMask[8] & (1 << 21)) {
+            {
+                if (PriorAddonMask[10] & (1 << HK_RSwitchTarget) || PriorAddonMask[9] & (1 << HK_RSwitchTarget) || PriorAddonMask[8] & (1 << HK_RSwitchTarget)) {
                     *InputMask &= ~(1<<10); // X
                 }
-                else if (PriorHotkeyMask[6] & (1 << 21) || PriorHotkeyMask[5] & (1 << 21) || PriorHotkeyMask[4] & (1 << 21)) {
+                else if (PriorAddonMask[6] & (1 << HK_RSwitchTarget) || PriorAddonMask[5] & (1 << HK_RSwitchTarget) || PriorAddonMask[4] & (1 << HK_RSwitchTarget)) {
                     *InputMask &= ~(1<<8); // R
                 }
-                else if (PriorHotkeyMask[2] & (1 << 21) || PriorHotkeyMask[1] & (1 << 21) || PriorHotkeyMask[0] & (1 << 21)) {
+                else if (PriorAddonMask[2] & (1 << HK_RSwitchTarget) || PriorAddonMask[1] & (1 << HK_RSwitchTarget) || PriorAddonMask[0] & (1 << HK_RSwitchTarget)) {
                     *InputMask &= ~(1<<10); // X
                 }
             }
         }
     }
 
-    for (int i = PRIOR_HOTKEY_MASK_SIZE - 1; i > 0; i--) {
-        PriorHotkeyMask[i] = PriorHotkeyMask[i - 1];
+    for (int i = PRIOR_ADDON_MASK_SIZE - 1; i > 0; i--) {
+        PriorAddonMask[i] = PriorAddonMask[i - 1];
     }
-    PriorHotkeyMask[0] = (*HotkeyMask);
+    PriorAddonMask[0] = (*AddonMask);
 
     if (LastSwitchTargetPress < SWITCH_TARGET_PRESS_FRAME_LIMIT) LastSwitchTargetPress++;
     if (LastLockOnPress < LOCK_ON_PRESS_FRAME_LIMIT) LastLockOnPress++;
@@ -603,14 +715,14 @@ bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords(int width, int height,
     return false;
 }
 
-void PluginKingdomHeartsReCoded::applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching)
+void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask)
 {
     if (GameScene == -1)
     {
         return;
     }
 
-    _superApplyTouchKeyMask(TouchKeyMask, 3, true, touchX, touchY, isTouching);
+    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, true);
 }
 
 void PluginKingdomHeartsReCoded::hudToggle()
@@ -649,6 +761,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
         case gameScene_WorldSelection: return "Game scene: World selection";
         case gameScene_InGameDialog: return "Game scene: Ingame dialog";
+        case gameScene_InGameOlympusBattle: return "Game scene: Ingame (Olympus battle)";
         case gameScene_Other2D: return "Game scene: Unknown (2D)";
         case gameScene_Other: return "Game scene: Unknown (3D)";
         default: return "Game scene: Unknown";
@@ -878,6 +991,12 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     if (isInGameDialog)
     {
         return gameScene_InGameDialog;
+    }
+
+    u32 typeOfBattleAddr = getU32ByCart(TYPE_OF_BATTLE_ADDRESS_US, TYPE_OF_BATTLE_ADDRESS_EU, TYPE_OF_BATTLE_ADDRESS_JP);
+    u32 typeOfBattle = nds->ARM7Read32(typeOfBattleAddr);
+    if (typeOfBattle == 0) {
+        return gameScene_InGameOlympusBattle;
     }
 
     // Regular gameplay
@@ -1147,22 +1266,6 @@ void PluginKingdomHeartsReCoded::debugLogs(int gameScene)
     printf("Game scene: %d\n", gameScene);
     printf("Current map: %d\n", getCurrentMap());
     printf("Is save loaded: %d\n", isSaveLoaded() ? 1 : 0);
-    printf("NDS->GPU.GPU3D.NumVertices: %d\n",        nds->GPU.GPU3D.NumVertices);
-    printf("NDS->GPU.GPU3D.NumPolygons: %d\n",        nds->GPU.GPU3D.NumPolygons);
-    printf("NDS->GPU.GPU3D.RenderNumPolygons: %d\n",  nds->GPU.GPU3D.RenderNumPolygons);
-    printf("NDS->PowerControl9: %d\n",                nds->PowerControl9);
-    printf("NDS->GPU.GPU2D_A.BlendCnt: %d\n",         nds->GPU.GPU2D_A.BlendCnt);
-    printf("NDS->GPU.GPU2D_A.BlendAlpha: %d\n",       nds->GPU.GPU2D_A.BlendAlpha);
-    printf("NDS->GPU.GPU2D_A.EVA: %d\n",              nds->GPU.GPU2D_A.EVA);
-    printf("NDS->GPU.GPU2D_A.EVB: %d\n",              nds->GPU.GPU2D_A.EVB);
-    printf("NDS->GPU.GPU2D_A.EVY: %d\n",              nds->GPU.GPU2D_A.EVY);
-    printf("NDS->GPU.GPU2D_A.MasterBrightness: %d\n", nds->GPU.GPU2D_A.MasterBrightness);
-    printf("NDS->GPU.GPU2D_B.BlendCnt: %d\n",         nds->GPU.GPU2D_B.BlendCnt);
-    printf("NDS->GPU.GPU2D_B.BlendAlpha: %d\n",       nds->GPU.GPU2D_B.BlendAlpha);
-    printf("NDS->GPU.GPU2D_B.EVA: %d\n",              nds->GPU.GPU2D_B.EVA);
-    printf("NDS->GPU.GPU2D_B.EVB: %d\n",              nds->GPU.GPU2D_B.EVB);
-    printf("NDS->GPU.GPU2D_B.EVY: %d\n",              nds->GPU.GPU2D_B.EVY);
-    printf("NDS->GPU.GPU2D_B.MasterBrightness: %d\n", nds->GPU.GPU2D_B.MasterBrightness);
     printf("\n");
 }
 

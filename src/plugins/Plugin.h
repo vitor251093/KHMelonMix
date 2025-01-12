@@ -1,6 +1,8 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#define PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT 100
+
 #define REPLACEMENT_CUTSCENES_ENABLED true
 #define REPLACEMENT_BGM_ENABLED true
 #define MOUSE_CURSOR_AS_CAMERA_ENABLED false
@@ -8,33 +10,6 @@
 #define SHOW_GAME_SCENE false
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
-
-#define RAM_SEARCH_ENABLED true
-#define RAM_SEARCH_SIZE 32
-#define RAM_SEARCH_LIMIT_MIN 0
-#define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
-#define RAM_SEARCH_INTERVAL_MARGIN 0x050
-
-// #define RAM_SEARCH_EXACT_VALUE     0x05B07E00
-// #define RAM_SEARCH_EXACT_VALUE_MIN 0x05B07E00
-// #define RAM_SEARCH_EXACT_VALUE_MAX 0x05BEE334
-
-
-// #define RAM_SEARCH_LIMIT_MIN 0x04f6c5 - 0x1F00
-// #define RAM_SEARCH_LIMIT_MAX 0x04f6c5 + 0x1F00
-// #define RAM_SEARCH_LIMIT_MAX 0x19FFFF
-
-// WARNING: THE MACRO BELOW CAN ONLY BE USED ALONGSIDE RAM_SEARCH_EXACT_VALUE* MACROS,
-// OTHERWISE IT WILL DO NOTHING BUT MAKE SEARCH IMPOSSIBLE, AND DECREASE THE FRAMERATE
-#define RAM_SEARCH_EVERY_SINGLE_FRAME false
-
-#if RAM_SEARCH_SIZE == 32
-#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read32(addr)
-#elif RAM_SEARCH_SIZE == 16
-#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read16(addr)
-#else
-#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read8(addr)
-#endif
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
@@ -101,6 +76,7 @@
 #include <functional>
 #include <math.h>
 
+#include "../GPU3D.h"
 #include "../NDS.h"
 
 #include "../OpenGLSupport.h"
@@ -122,6 +98,9 @@ struct CutsceneEntry
 
 class Plugin
 {
+protected:
+    melonDS::NDS* nds = nullptr;
+
 public:
     virtual ~Plugin() { };
 
@@ -133,9 +112,11 @@ public:
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
     virtual void onLoadROM() {};
-    virtual void onLoadState() {};
+    virtual void onLoadState() {
+        texturesIndex.clear();
+    };
 
-    virtual std::string assetsFolder() = 0;
+    virtual std::string assetsFolder() {return std::to_string(GameCode);}
     virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
 
     virtual const char* gpuOpenGL_FS() { return nullptr; };
@@ -146,16 +127,20 @@ public:
     virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
     virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
 
-    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32* x, s32* y, s32 z, s32* rgb) {};
+    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {};
 
     bool togglePause();
 
+    std::vector<const char*> customKeyMappingNames = {};
+    std::vector<const char*> customKeyMappingLabels = {};
+
     bool _superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
-    virtual void applyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress) = 0;
+    virtual void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
+    virtual void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* AddonMask, u32* AddonPress) {};
 
     virtual bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {return false;}
-    void _superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching);
-    virtual void applyTouchKeyMask(u32 TouchKeyMask, u16* touchX, u16* touchY, bool* isTouching) = 0;
+    void _superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge);
+    virtual void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask);
 
     bool shouldExportTextures() {
         return ExportTextures;
@@ -163,6 +148,15 @@ public:
     bool shouldStartInFullscreen() {
         return FullscreenOnStartup;
     }
+
+    virtual std::string localizationFilePath(std::string language) {return "";}
+
+    virtual std::string textureIndexFilePath();
+    virtual std::map<std::string, std::string> getTexturesIndex();
+    virtual std::string textureFilePath(std::string texture);
+    virtual std::string tmpTextureFilePath(std::string texture);
+
+    virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
 
     bool ShouldTerminateIngameCutscene();
     bool StoppedIngameCutscene();
@@ -188,8 +182,6 @@ public:
 
     void refreshCutscene();
 
-    virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
-    virtual std::string localizationFilePath(std::string language) {return "";}
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
     void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
@@ -250,8 +242,6 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
-    melonDS::NDS* nds;
-
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
@@ -262,6 +252,8 @@ protected:
     bool FullscreenOnStartup = false;
 
     bool _LastTouchScreenMovementWasByPlugin = false;
+
+    std::map<std::string, std::string> texturesIndex;
 
     int _StartPressCount = 0;
     int _ReplayLimitCount = 0;
@@ -300,6 +292,8 @@ protected:
     bool _ShouldReleaseMouseCursor = false;
     bool _MouseCursorIsGrabbed = false;
 
+public:
+    bool isReady() { return GameCode != 0 && nds != nullptr && nds->NDSCartSlot.GetCart() != nullptr; };
 };
 }
 

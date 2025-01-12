@@ -204,12 +204,14 @@ void EmuThread::run()
                 if (emuInstance->plugin->shouldStartInFullscreen()) {
                     emit windowFullscreenToggle();
                 }
+                emuInstance->inputLoadConfig();
 
                 printf("Loading plugin %s for game code %u\n", typeid(*emuInstance->plugin).name(), gamecode);
             }
 
-            emuInstance->plugin->applyTouchKeyMask(emuInstance->touchInputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching);
-            emuInstance->plugin->applyHotkeyToInputMask(&emuInstance->inputMask, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
+            emuInstance->plugin->applyTouchKeyMaskToTouchControls(&emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, emuInstance->touchInputMask);
+            emuInstance->plugin->applyHotkeyToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
+            emuInstance->plugin->applyAddonKeysToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->pluginMask, &emuInstance->pluginPress);
         }
 
         if (emuInstance->hotkeyPressed(HK_FrameLimitToggle)) emit windowLimitFPSChange();
@@ -368,6 +370,8 @@ void EmuThread::run()
                 nlines = emuInstance->nds->RunFrame();
             }
 
+            refreshPluginState();
+
             if (emuInstance->ndsSave)
                 emuInstance->ndsSave->CheckFlush();
 
@@ -430,8 +434,6 @@ void EmuThread::run()
             else if (fastforward) emuInstance->curFPS = emuInstance->fastForwardFPS;
             else if (!emuInstance->doLimitFPS) emuInstance->curFPS = 1000.0;
             else emuInstance->curFPS = emuInstance->targetFPS;
-
-            refreshPluginState();
 
             if (emuInstance->audioDSiVolumeSync && emuInstance->nds->ConsoleType == 1)
             {
@@ -920,12 +922,8 @@ void EmuThread::emuRun()
 
 void EmuThread::emuPause(bool broadcast)
 {
-    auto nds = emuInstance->getNDS();
-    if (nds != nullptr) {
-        auto rom = nds->NDSCartSlot.GetCart();
-        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-            return;
-        }
+    if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady() && emuInstance->plugin->togglePause()) {
+        return;
     }
 
     sendMessage(msg_EmuPause);
@@ -937,12 +935,8 @@ void EmuThread::emuPause(bool broadcast)
 
 void EmuThread::emuUnpause(bool broadcast)
 {
-    auto nds = emuInstance->getNDS();
-    if (nds != nullptr) {
-        auto rom = nds->NDSCartSlot.GetCart();
-        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-            return;
-        }
+    if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady() && emuInstance->plugin->togglePause()) {
+        return;
     }
 
     sendMessage(msg_EmuUnpause);

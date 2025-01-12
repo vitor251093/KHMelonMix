@@ -5,6 +5,29 @@
 #include <cstdarg>
 #include <cstdio>
 
+#define RAM_SEARCH_ENABLED true
+#define RAM_SEARCH_SIZE 32
+#define RAM_SEARCH_LIMIT_MIN 0
+#define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
+// #define RAM_SEARCH_LIMIT_MAX 0x19FFFF
+#define RAM_SEARCH_INTERVAL_MARGIN 0x050
+
+// #define RAM_SEARCH_EXACT_VALUE     0x05B07E00
+// #define RAM_SEARCH_EXACT_VALUE_MIN 0x05B07E00
+// #define RAM_SEARCH_EXACT_VALUE_MAX 0x05BEE334
+
+// WARNING: THE MACRO BELOW CAN ONLY BE USED ALONGSIDE RAM_SEARCH_EXACT_VALUE* MACROS,
+// OTHERWISE IT WILL DO NOTHING BUT MAKE SEARCH IMPOSSIBLE, AND DECREASE THE FRAMERATE
+#define RAM_SEARCH_EVERY_SINGLE_FRAME false
+
+#if RAM_SEARCH_SIZE == 32
+#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read32(addr)
+#elif RAM_SEARCH_SIZE == 16
+#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read16(addr)
+#else
+#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read8(addr)
+#endif
+
 namespace Plugins
 {
 
@@ -77,14 +100,17 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         }
     }
 
-    if ((*HotkeyPress) & (1 << 18)) { // HUD Toggle (HK_HUDToggle)
-        hudToggle();
-    }
-
     return true;
 }
 
-void Plugin::_superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge, u16* touchX, u16* touchY, bool* isTouching)
+void Plugin::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {
+    bool shouldContinue = _superApplyHotkeyToInputMask(InputMask, HotkeyMask, HotkeyPress);
+    if (!shouldContinue) {
+        return;
+    }
+}
+
+void Plugin::_superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge)
 {
     u16 rStrength = 4 - sensitivity;
     u16 right = ((~TouchKeyMask) & 0xF) >> rStrength;
@@ -169,6 +195,114 @@ void Plugin::_superApplyTouchKeyMask(u32 TouchKeyMask, u16 sensitivity, bool res
         *touchY = TouchY;
     }
     _LastTouchScreenMovementWasByPlugin = true;
+}
+
+void Plugin::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) {
+    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, true);
+}
+
+std::string trim(const std::string& str) {
+    // Find the first non-whitespace character from the beginning
+    size_t start = str.find_first_not_of(" \t\n\r\f\v");
+    if (start == std::string::npos) {
+        return ""; // Return empty string if no non-whitespace character is found
+    }
+
+    // Find the first non-whitespace character from the end
+    size_t end = str.find_last_not_of(" \t\n\r\f\v");
+
+    // Return the substring that excludes leading and trailing whitespace
+    return str.substr(start, end - start + 1);
+}
+std::string Plugin::textureIndexFilePath() {
+    std::string filename = "index.ini";
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
+    std::filesystem::path fullPath = texturesFolder / filename;
+
+    if (!std::filesystem::exists(fullPath)) {
+        return "";
+    }
+
+    return fullPath.string();
+}
+std::map<std::string, std::string> Plugin::getTexturesIndex() {
+    if (!texturesIndex.empty()) {
+        return texturesIndex;
+    }
+
+    std::map<std::string, std::string> _texturesIndex;
+    std::string indexFilePath = textureIndexFilePath();
+    if (indexFilePath.empty()) {
+        return texturesIndex;
+    }
+
+    Platform::FileHandle* f = Platform::OpenLocalFile(indexFilePath.c_str(), Platform::FileMode::ReadText);
+    if (f) {
+        char linebuf[1024];
+        char entryname[32];
+        char entryval[1024];
+        while (!Platform::IsEndOfFile(f))
+        {
+            if (!Platform::FileReadLine(linebuf, 1024, f))
+                break;
+
+            int ret = sscanf(linebuf, "%31[A-Za-z_0-9\\-]=%[^\t\r\n]", entryname, entryval);
+            entryname[31] = '\0';
+            if (ret < 2) continue;
+
+            std::string entrynameStr = trim(std::string(entryname));
+            std::string entryvalStr = trim(std::string(entryval));
+            if (!entrynameStr.empty() && entrynameStr.compare(0, 1, ";") != 0 && entrynameStr.compare(0, 1, "[") != 0) {
+                _texturesIndex[entrynameStr] = entryvalStr;
+            }
+        }
+    }
+    texturesIndex = _texturesIndex;
+    return texturesIndex;
+}
+std::string Plugin::textureFilePath(std::string texture) {
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
+    if (!std::filesystem::exists(assetsFolderPath)) {
+        std::filesystem::create_directory(assetsFolderPath);
+    }
+
+    std::map<std::string, std::string> texturesIndex = getTexturesIndex();
+    if (texturesIndex.count(texture)) {
+        std::filesystem::path fullPath = texturesFolder / texturesIndex[texture];
+        if (!std::filesystem::exists(fullPath)) {
+            errorLog("Texture %s was supposed to be replaced by %s, but it doesn't exist", texture.c_str(), fullPath.string().c_str());
+            return "";
+        }
+
+        return fullPath.string();
+    }
+
+    std::filesystem::path fullPath = texturesFolder / (texture + ".png");
+    if (!std::filesystem::exists(fullPath)) {
+        return "";
+    }
+
+    texturesIndex[texture] = texture + ".png";
+    return fullPath.string();
+}
+std::string Plugin::tmpTextureFilePath(std::string texture) {
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
+    std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";
+
+    if (shouldExportTextures() && !std::filesystem::exists(tmpFolderPath)) {
+        std::filesystem::create_directory(tmpFolderPath);
+    }
+
+    std::filesystem::path fullPathTmp = tmpFolderPath / (texture + ".png");
+    return fullPathTmp.string();
 }
 
 bool Plugin::ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
