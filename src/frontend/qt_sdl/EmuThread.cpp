@@ -370,6 +370,8 @@ void EmuThread::run()
                 nlines = emuInstance->nds->RunFrame();
             }
 
+            refreshPluginState();
+
             if (emuInstance->ndsSave)
                 emuInstance->ndsSave->CheckFlush();
 
@@ -432,8 +434,6 @@ void EmuThread::run()
             else if (fastforward) emuInstance->curFPS = emuInstance->fastForwardFPS;
             else if (!emuInstance->doLimitFPS) emuInstance->curFPS = 1000.0;
             else emuInstance->curFPS = emuInstance->targetFPS;
-
-            refreshPluginState();
 
             if (emuInstance->audioDSiVolumeSync && emuInstance->nds->ConsoleType == 1)
             {
