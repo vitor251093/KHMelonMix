@@ -619,9 +619,10 @@ std::vector<u32> PluginKingdomHeartsDays::getCameraBaseAddresses()
         }
     }
 
-    lastCameraBaseAddresses = {};
+    lastCameraBaseAddresses.clear();
 
-    for (u32 addr = 0x02000000; addr < 0x02500000; addr+=4) {
+    for (u32 addr = 0x01000000; addr < 0x03000000; addr+=4) {
+    // for (u32 addr = 0x02000000; addr < 0x02500000; addr+=4) {
         if (isCameraBaseAddress(addr)) {
             lastCameraBaseAddresses.push_back(addr);
         }
@@ -656,8 +657,57 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
         hudToggle();
     }
 
+    auto addresses = getCameraBaseAddresses();
+    // printf("addresses count: %d\n", addresses.size());
+    // for (u32 lastCameraBaseAddress : addresses) {
+    //     printf("-- 0x%08x\n", lastCameraBaseAddress);
+    // }
+    if (GameScene == gameScene_InGameWithDouble3D) {
+        // Examples:
+        // -- 0x022ed20c
+        // -- 0x026ed20c
+        // -- 0x02aed20c
+        // -- 0x02eed20c
+        if (addresses.size() == 4) {
+            u32 cameraBase1 = addresses[0];
+            u32 cameraBase2 = addresses[2];
+            u32 maxAddressOffset = 0x1000;
+
+            for (u32 addressOffset = 0; addressOffset <= maxAddressOffset; addressOffset += 4) {
+                nds->ARM7Write32(cameraBase2 + addressOffset, nds->ARM7Read32(cameraBase1 + addressOffset));
+            }
+
+            u32 cameraBase3 = addresses[1];
+            u32 cameraBase4 = addresses[3];
+
+            for (u32 addressOffset = 0; addressOffset <= maxAddressOffset; addressOffset += 4) {
+                nds->ARM7Write32(cameraBase4 + addressOffset, nds->ARM7Read32(cameraBase3 + addressOffset));
+            }
+        }
+    }
+    if (GameScene == gameScene_MultiplayerMissionReview) {
+        // Examples:
+        // -- 0x02294bc4
+        // -- 0x022e61ac
+        // -- 0x02694bc4
+        // -- 0x026e61ac
+        // -- 0x02a94bc4
+        // -- 0x02ae61ac
+        // -- 0x02e94bc4
+        // -- 0x02ee61ac
+        if (addresses.size() == 8) {
+            u32 cameraBase1 = addresses[0];
+            u32 cameraBase2 = addresses[1];
+            u32 maxAddressOffset = 0x1000;
+
+            for (u32 addressOffset = 0; addressOffset <= maxAddressOffset; addressOffset += 4) {
+                nds->ARM7Write32(cameraBase2 + addressOffset, nds->ARM7Read32(cameraBase1 + addressOffset));
+            }
+        }
+    }
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D || GameScene == gameScene_MultiplayerMissionReview) {
-        u32 cameraBase = getCameraBaseAddresses().back() + 0x14;
+        auto addresses = getCameraBaseAddresses();
+        u32 cameraBase = addresses.empty() ? 0 : (addresses.front() + 0x14);
     
         if (HUDState == 3) {
             u32 cameraFocusXAddr = cameraBase + 0x00;
