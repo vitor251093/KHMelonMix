@@ -505,9 +505,12 @@ void EmuInstance::inputProcess()
     joyPluginMask = 0;
     if (joystick)
     {
-        for (int i = 0; i < PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT; i++)
-            if (joystickButtonDown(pluginJoyMapping[i]))
-                joyPluginMask |= (1 << i);
+        if (plugin != nullptr && plugin->isReady())
+        {
+            for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
+                if (joystickButtonDown(pluginJoyMapping[i]))
+                    joyPluginMask |= (1 << i);
+        }
     }
 
     pluginMask = keyPluginMask | joyPluginMask;
