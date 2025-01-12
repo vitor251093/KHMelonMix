@@ -604,21 +604,30 @@ bool PluginKingdomHeartsDays::isCameraBaseAddress(u32 addr)
     return doesAddressValuesMatch(addr, pattern, 5);
 }
 
-u32 PluginKingdomHeartsDays::getCameraBaseAddress()
+std::vector<u32> PluginKingdomHeartsDays::getCameraBaseAddresses()
 {
-    if (lastCameraBaseAddress != 0 && isCameraBaseAddress(lastCameraBaseAddress)) {
-        return lastCameraBaseAddress;
-    }
-
-    lastCameraBaseAddress = 0;
-
-    for (u32 addr = 0x02000000; addr < 0x02500000; addr+=4) {
-        if (isCameraBaseAddress(addr)) {
-            lastCameraBaseAddress = addr;
+    if (!lastCameraBaseAddresses.empty()) {
+        bool allValid = true;
+        for (u32 lastCameraBaseAddress : lastCameraBaseAddresses) {
+            if (!isCameraBaseAddress(lastCameraBaseAddress)) {
+                allValid = false;
+                break;
+            }
+        }
+        if (allValid) {
+            return lastCameraBaseAddresses;
         }
     }
 
-    return lastCameraBaseAddress;
+    lastCameraBaseAddresses = {};
+
+    for (u32 addr = 0x02000000; addr < 0x02500000; addr+=4) {
+        if (isCameraBaseAddress(addr)) {
+            lastCameraBaseAddresses.push_back(addr);
+        }
+    }
+
+    return lastCameraBaseAddresses;
 }
 
 void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
@@ -648,7 +657,7 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D || GameScene == gameScene_MultiplayerMissionReview) {
-        u32 cameraBase = getCameraBaseAddress() + 0x14;
+        u32 cameraBase = getCameraBaseAddresses().back() + 0x14;
     
         if (HUDState == 3) {
             u32 cameraFocusXAddr = cameraBase + 0x00;
@@ -1741,7 +1750,7 @@ void PluginKingdomHeartsDays::debugLogs(int gameScene)
         // }
     // }
 
-    u32 base = getCameraBaseAddress() + 0x14;
+    u32 base = getCameraBaseAddresses().back() + 0x14;
     if (base != 0x14) {
         // printf("0x%08x\n", base);
 

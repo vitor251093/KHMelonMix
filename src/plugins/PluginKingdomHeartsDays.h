@@ -42,9 +42,9 @@ public:
 
     bool doesAddressValuesMatch(u32 addr, u32* values, u32 len);
 
-    u32 lastCameraBaseAddress = 0;
+    std::vector<u32> lastCameraBaseAddresses = {};
     bool isCameraBaseAddress(u32 addr);
-    u32 getCameraBaseAddress();
+    std::vector<u32> getCameraBaseAddresses();
 
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
