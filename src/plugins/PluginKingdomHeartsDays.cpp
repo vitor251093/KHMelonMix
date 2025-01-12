@@ -23,9 +23,9 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 // 0x00 => cannot control (ingame cutscenes, or not ingame at all); 0x01 => can control
 #define IS_CHARACTER_CONTROLLABLE_US      0x02042460
-#define IS_CHARACTER_CONTROLLABLE_EU      0x02042460 // TODO: KH
-#define IS_CHARACTER_CONTROLLABLE_JP      0x02042460 // TODO: KH
-#define IS_CHARACTER_CONTROLLABLE_JP_REV1 0x02042460 // TODO: KH
+#define IS_CHARACTER_CONTROLLABLE_EU      0x02042480 // TODO: KH Unconfirmed (calculated)
+#define IS_CHARACTER_CONTROLLABLE_JP      0x020428C0 // TODO: KH Unconfirmed (calculated)
+#define IS_CHARACTER_CONTROLLABLE_JP_REV1 0x02042880 // TODO: KH Unconfirmed (calculated)
 
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US      0x02044640
