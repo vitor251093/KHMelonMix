@@ -293,7 +293,7 @@ protected:
     bool _MouseCursorIsGrabbed = false;
 
 public:
-    bool isReady() { return GameCode != 0 && nds != nullptr; };
+    bool isReady() { return GameCode != 0 && nds != nullptr && nds->NDSCartSlot.GetCart() != nullptr; };
 };
 }
 

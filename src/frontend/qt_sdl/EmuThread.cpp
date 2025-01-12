@@ -922,12 +922,8 @@ void EmuThread::emuRun()
 
 void EmuThread::emuPause(bool broadcast)
 {
-    auto nds = emuInstance->getNDS();
-    if (nds != nullptr) {
-        auto rom = nds->NDSCartSlot.GetCart();
-        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-            return;
-        }
+    if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady() && emuInstance->plugin->togglePause()) {
+        return;
     }
 
     sendMessage(msg_EmuPause);
@@ -939,12 +935,8 @@ void EmuThread::emuPause(bool broadcast)
 
 void EmuThread::emuUnpause(bool broadcast)
 {
-    auto nds = emuInstance->getNDS();
-    if (nds != nullptr) {
-        auto rom = nds->NDSCartSlot.GetCart();
-        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-            return;
-        }
+    if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady() && emuInstance->plugin->togglePause()) {
+        return;
     }
 
     sendMessage(msg_EmuUnpause);
