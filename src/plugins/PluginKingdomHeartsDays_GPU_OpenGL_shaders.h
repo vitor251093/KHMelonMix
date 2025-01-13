@@ -478,7 +478,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    if (GameScene == 5 && !IsCharacterControllable) { // gameScene_InGameWithMap
+    if (GameScene == 5 && (!IsCharacterControllable || isDialogVisible())) { // gameScene_InGameWithMap
         return getIngameDialogTextureCoordinates(xpos, ypos);
     }
     if (GameScene == 9 && isDialogVisible()) { // gameScene_InGameWithDouble3D
@@ -1040,6 +1040,7 @@ ivec4 getTopScreen3DColor()
 
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
+    bool _isDialogVisible = isDialogVisible();
     ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
@@ -1049,7 +1050,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (IsCharacterControllable && !isMissionInformationVisibleOnTopScreen())
+        if (IsCharacterControllable && !_isDialogVisible && !isMissionInformationVisibleOnTopScreen())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
@@ -1105,7 +1106,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (IsCharacterControllable && !isMissionInformationVisibleOnTopScreen())
+        if (IsCharacterControllable && !_isDialogVisible && !isMissionInformationVisibleOnTopScreen())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
@@ -1169,7 +1170,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         }
     }
 
-    if ((GameScene == 5 && IsCharacterControllable) || (GameScene == 7 && !isDialogVisible())) // gameScene_InGameWithMap or gameScene_PauseMenu
+    if ((GameScene == 5 && IsCharacterControllable && !_isDialogVisible) || (GameScene == 7 && !_isDialogVisible)) // gameScene_InGameWithMap or gameScene_PauseMenu
     {
         bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
         bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && (ShowMissionInfo || GameScene == 10) && isMissionInformationVisibleOnBottomScreen();
