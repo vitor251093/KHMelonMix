@@ -263,11 +263,8 @@ void ScreenPanel::refreshAspectRatio()
         aspectTop = ((float)((QWidget*)this)->width()) / ((QWidget*)this)->height();
     }
 
-    if (emuInstance->getNDS() != nullptr) {
-        auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
-        if (rom != nullptr && emuInstance->plugin != nullptr) {
-            emuInstance->plugin->setAspectRatio(aspectTop);
-        }
+    if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady()) {
+        emuInstance->plugin->setAspectRatio(aspectTop);
     }
 }
 
