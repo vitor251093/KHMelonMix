@@ -111,7 +111,7 @@ bool is2DGraphicDifferentFromColor(ivec4 diffColor, ivec2 texcoord)
     ivec4 val2 = ivec4(texelFetch(ScreenTex, texcoord + ivec2(256,0), 0));
     ivec4 val3 = fixTransparencyLayer(ivec4(texelFetch(ScreenTex, texcoord + ivec2(512,0), 0)));
     ivec4 pixel = combineLayers(diffColor, val1, val2, val3);
-    return !(pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
+    return any(notEqual(pixel.rgb, diffColor.rgb));
 }
 
 bool isMissionInformationVisibleOnTopScreen()
@@ -124,7 +124,7 @@ bool isMissionInformationVisibleOnTopScreen()
 bool isMissionInformationVisibleOnBottomScreen()
 {
     ivec4 infoPixel = ivec4(texelFetch(ScreenTex, ivec2(5, 192 + 4), 0));
-    return (infoPixel.r >= 15 && infoPixel.g >= 15 && infoPixel.b >= 15);
+    return all(greaterThanEqual(infoPixel.rgb, ivec3(15)));
 }
 
 bool isCutsceneFromChallengeMissionVisible()
@@ -146,12 +146,12 @@ bool isDialogVisible()
 bool isMinimapVisible()
 {
     ivec4 minimapSecurityPixel = ivec4(texelFetch(ScreenTex, ivec2(99, 53) + ivec2(0,192), 0));
-    return minimapSecurityPixel.r > 60 && minimapSecurityPixel.g > 60 && minimapSecurityPixel.b > 60;
+    return all(greaterThan(minimapSecurityPixel.rgb, ivec3(60)));
 }
 
 bool isColorBlack(ivec4 pixel)
 {
-    return pixel.r < 5 && pixel.g < 5 && pixel.b < 5;
+    return all(lessThan(pixel.rgb, ivec3(5)));
 }
 ivec4 getSimpleColorAtCoordinate(float xpos, float ypos)
 {
@@ -803,72 +803,68 @@ ivec2 getLoadingScreenTextureCoordinates(float xpos, float ypos)
 
 ivec2 getTopScreenTextureCoordinates(float xpos, float ypos)
 {
-    if (GameScene == 0 ||  // gameScene_Intro
-        GameScene == 1) {  // gameScene_MainMenu
-        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 0)));
-    }
-    
-    if (GameScene == 2) { // gameScene_IntroLoadMenu
-        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(255, 191)));
-    }
-
-    if (GameScene == 3  || // gameScene_DayCounter
-        GameScene == 13) { // gameScene_RoxasThoughts
-        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
-    }
-
-    if (GameScene == 4) { // gameScene_Cutscene
-        return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
-    }
-
-    if (GameScene == 5) { // gameScene_InGameWithMap
-        return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
+    switch (GameScene) {
+        case 0: // gameScene_Intro
+        case 1: // gameScene_MainMenu
+            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 0)));
+        
+        case 2: // gameScene_IntroLoadMenu
+            return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(255, 191)));
+        
+        case 3: // gameScene_DayCounter
+        case 13: // gameScene_RoxasThoughts
+            return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0)));
+        
+        case 4: // gameScene_Cutscene
+            return ivec2(getCutsceneTextureCoordinates(xpos, ypos));
+        
+        case 5: // gameScene_InGameWithMap
+            return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
+        
+        case 7: // gameScene_PauseMenu
+            return ivec2(getPauseHudTextureCoordinates(xpos, ypos));
+        
+        case 8: // gameScene_Tutorial
+            return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
+        
+        case 10: // gameScene_MultiplayerMissionReview
+            return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
+        
+        case 11: // gameScene_Shop
+            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
+        
+        case 12: // gameScene_LoadingScreen
+            return ivec2(getLoadingScreenTextureCoordinates(xpos, ypos));
+        
+        case 15: // gameScene_TheEnd
+            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
+        
+        case 16: // gameScene_Other
+            return ivec2(getOther2DTextureCoordinates(xpos, ypos));
     }
 
     if (GameScene == 6) { // gameScene_InGameMenu
-        if (MainMenuView == 3) { // holo-mission / challenges
-            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
+        switch (MainMenuView) {
+            case 3: // holo-mission / challenges
+            case 4: // roxas's diary / enemy profile
+                return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
+            
+            case 6: // config
+            case 7: // save
+                return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(255, 191)));
+            
+            default:
+                return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 191)));
         }
-        if (MainMenuView == 4) { // roxas's diary / enemy profile
-            return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(255, 191)));
-        }
-        if (MainMenuView == 6) { // config
-            return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(255, 191)));
-        }
-        if (MainMenuView == 7) { // save
-            return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(255, 191)));
-        }
-        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 191)));
     }
 
-    if (GameScene == 7) { // gameScene_PauseMenu
-        return ivec2(getPauseHudTextureCoordinates(xpos, ypos));
-    }
-
-    if (GameScene == 8) { // gameScene_Tutorial
-        return ivec2(getSingleSquaredScreenTextureCoordinates(xpos, ypos, 2, vec2(0, 0)));
-    }
     if (GameScene == 9) { // gameScene_InGameWithDouble3D
-        if (!is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(130, 190))) {
+        if (!is2DGraphicDifferentFromColor(ivec4(0, 63, 0, 31), ivec2(130, 190))) {
             return ivec2(getIngameHudTextureCoordinates(xpos, ypos));
         }
         return ivec2(-1, -1);
     }
-    if (GameScene == 10) { // gameScene_MultiplayerMissionReview
-        return ivec2(getVerticalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
-    }
-    if (GameScene == 11) { // gameScene_Shop
-        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(128, 190)));
-    }
-    if (GameScene == 12) { // gameScene_LoadingScreen
-        return ivec2(getLoadingScreenTextureCoordinates(xpos, ypos));
-    }
-    if (GameScene == 15) { // gameScene_TheEnd
-        return ivec2(getHorizontalDualScreenTextureCoordinates(xpos, ypos, vec2(-1, -1)));
-    }
-    if (GameScene == 16) { // gameScene_Other
-        return ivec2(getOther2DTextureCoordinates(xpos, ypos));
-    }
+
     return ivec2(fTexcoord);
 }
 
@@ -1000,39 +996,39 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 
 ivec4 getTopScreen3DColor()
 {
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, int(fTexcoord.y)), 0));
     float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
 
     float xpos = fTexcoord.x + _3dxpos;
     float ypos = mod(fTexcoord.y, 192);
 
-    ivec2 position3d = ivec2(vec2(xpos, ypos)*u3DScale);
-    ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra
-                * vec4(63,63,63,31));
+    ivec2 position3d = ivec2(vec2(xpos, ypos) * u3DScale);
 
-    if (GameScene == 1) { // gameScene_MainMenu
-        return getHorizontalDualScreen3DColor(xpos, ypos);
-    }
-    if (GameScene == 3) { // gameScene_DayCounter
-        return getSingleSquaredScreen3DColor(xpos, ypos);
-    }
-    if (GameScene == 6) { // gameScene_InGameMenu
-        if (MainMenuView == 3) { // holo-mission / challenges
+    ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra * vec4(63, 63, 63, 31));
+
+    switch (GameScene) {
+        case 1: // gameScene_MainMenu
             return getHorizontalDualScreen3DColor(xpos, ypos);
-        }
-        if (MainMenuView == 4) { // roxas's diary / enemy profile
-            return getHorizontalDualScreen3DColor(xpos, ypos);
-        }
-        if (MainMenuView == 7) { // save
+
+        case 3: // gameScene_DayCounter
             return getSingleSquaredScreen3DColor(xpos, ypos);
-        }
-        return getHorizontalDualScreen3DColor(xpos, ypos);
-    }
-    if (GameScene == 10) { // gameScene_MultiplayerMissionReview
-        return getVerticalDualScreen3DColor(xpos, ypos);
-    }
-    if (GameScene == 11) { // gameScene_Shop
-        return getHorizontalDualScreen3DColor(xpos, ypos);
+
+        case 6: // gameScene_InGameMenu
+            switch (MainMenuView) {
+                case 3: // holo-mission / challenges
+                case 4: // roxas's diary / enemy profile
+                    return getHorizontalDualScreen3DColor(xpos, ypos);
+                case 7: // save
+                    return getSingleSquaredScreen3DColor(xpos, ypos);
+                default:
+                    return getHorizontalDualScreen3DColor(xpos, ypos);
+            }
+
+        case 10: // gameScene_MultiplayerMissionReview
+            return getVerticalDualScreen3DColor(xpos, ypos);
+
+        case 11: // gameScene_Shop
+            return getHorizontalDualScreen3DColor(xpos, ypos);
     }
 
     return _3dpix;
@@ -1225,10 +1221,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
 ivec4 horizontalBrightness()
 {
-    if (fTexcoord.x < 128) {
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 96), 0));
-    }
-    return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192 + 96), 0));
+    int yOffset = (fTexcoord.x < 128) ? 96 : (192 + 96);
+    return ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset), 0));
 }
 
 ivec4 brightness()
