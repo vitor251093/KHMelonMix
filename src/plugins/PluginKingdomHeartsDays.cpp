@@ -504,11 +504,11 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
     float aspectRatio = AspectRatio / (4.f / 3.f);
     
     bool updated = false;
-    UPDATE_GPU_VAR(CompGpu3DLoc[flags][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpu3DLoc[flags][1], GameScene, updated);
-    UPDATE_GPU_VAR(CompGpu3DLoc[flags][2], UIScale, updated);
-    UPDATE_GPU_VAR(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][1], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][2], UIScale, updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][3], ShowMissionInfo ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][4], HideAllHUD ? 1 : 0, updated);
 
     if (updated) {
         glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
