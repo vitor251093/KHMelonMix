@@ -1037,6 +1037,7 @@ ivec4 getTopScreen3DColor()
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
     bool _isDialogVisible = isDialogVisible();
+    bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
     ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
@@ -1046,7 +1047,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (IsCharacterControllable && !_isDialogVisible && !isMissionInformationVisibleOnTopScreen())
+        if (IsCharacterControllable && !_isDialogVisible && !showMissionInformationTopScreen)
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
@@ -1068,9 +1069,12 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 texPosition3d.y <= minimapHeight + minimapTopMargin && 
                 texPosition3d.y >= minimapTopMargin) {
 
-                bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
-                if (isShadeOfGray) {
-                    color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+                if (index == 0)
+                {
+                    bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+                    if (isShadeOfGray) {
+                        color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+                    }
                 }
 
                 if (index == 2)
@@ -1098,7 +1102,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (ShowTarget && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
-        if (IsCharacterControllable && !_isDialogVisible && !isMissionInformationVisibleOnTopScreen())
+        if (IsCharacterControllable && !_isDialogVisible && !showMissionInformationTopScreen)
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
@@ -1164,7 +1168,6 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if ((GameScene == 5 && IsCharacterControllable && !_isDialogVisible) || (GameScene == 7 && !_isDialogVisible)) // gameScene_InGameWithMap or gameScene_PauseMenu
     {
-        bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
         bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && (ShowMissionInfo || GameScene == 10) && isMissionInformationVisibleOnBottomScreen();
 
         bool hasTexture = showMissionInformationBottomScreen ||
