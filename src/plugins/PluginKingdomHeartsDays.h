@@ -90,6 +90,7 @@ private:
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
     std::map<GLuint, int[20]> CompGpuLastValues{};
     std::map<u32, GLuint[4]> CompGpu3DLoc{};
+    std::map<u32, int[4]> CompGpu3DLastValues{};
 
     bool _muchOlderHad3DOnTopScreen;
     bool _muchOlderHad3DOnBottomScreen;

@@ -477,8 +477,6 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     }
 }
 
-#undef UPDATE_GPU_VAR
-
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
@@ -495,17 +493,32 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog,
     CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
     CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
     CompGpu3DLoc[flags][4] = glGetUniformLocation(prog, "HideAllHUD");
+
+    for (int index = 0; index <= 4; index ++) {
+        CompGpu3DLastValues[flags][index] = -1;
+    }
 }
 
 void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
 {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
-    glUniform1i(CompGpu3DLoc[flags][1], GameScene);
-    glUniform1i(CompGpu3DLoc[flags][2], UIScale);
-    glUniform1i(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0);
-    glUniform1i(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0);
+    
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][1], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][2], UIScale, updated);
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][3], ShowMissionInfo ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][4], HideAllHUD ? 1 : 0, updated);
+
+    if (updated) {
+        glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
+        for (int index = 1; index <= 4; index ++) {
+            glUniform1i(CompGpu3DLoc[flags][index], CompGpu3DLastValues[flags][index]);
+        }
+    }
 }
+
+#undef UPDATE_GPU_VAR
 
 void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
