@@ -1075,25 +1075,21 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                 if (index == 2)
                 {
-                    int xBlur = 16;
-                    if (texPosition3d.x - minimapLeftMargin <= (blurBorder*heightScale)) {
-                        xBlur = int(((texPosition3d.x - minimapLeftMargin)*16.0)/(blurBorder*heightScale));
-                    }
-                    if ((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x <= (blurBorder*heightScale)) {
-                        xBlur = int((((256.0*iuTexScale - minimapRightMargin) - texPosition3d.x)*16.0)/(blurBorder*heightScale));
-                    }
+                    float leftDiff = texPosition3d.x - minimapLeftMargin;
+                    float rightDiff = (256.0 * iuTexScale - minimapRightMargin) - texPosition3d.x;
+                    float topDiff = texPosition3d.y - minimapTopMargin;
+                    float bottomDiff = (minimapHeight + minimapTopMargin) - texPosition3d.y;
 
-                    int yBlur = 16;
-                    if (texPosition3d.y - minimapTopMargin <= blurBorder) {
-                        yBlur = int(((texPosition3d.y - minimapTopMargin)*16.0)/blurBorder);
-                    }
-                    if ((minimapHeight + minimapTopMargin) - texPosition3d.y <= blurBorder) {
-                        yBlur = int((((minimapHeight + minimapTopMargin) - texPosition3d.y)*16.0)/blurBorder);
-                    }
+                    float leftBlurFactor = clamp(leftDiff / (blurBorder * heightScale), 0.0, 1.0);
+                    float rightBlurFactor = clamp(rightDiff / (blurBorder * heightScale), 0.0, 1.0);
+                    float topBlurFactor = clamp(topDiff / blurBorder, 0.0, 1.0);
+                    float bottomBlurFactor = clamp(bottomDiff / blurBorder, 0.0, 1.0);
 
-                    float transparency = 63.0/16;
-                    int blur = int((xBlur * yBlur * transparency)/16);
-                    color = ivec4(color.r, blur, 64 - blur, 0x01);
+                    float xBlur = min(leftBlurFactor, rightBlurFactor) * 16.0;
+                    float yBlur = min(topBlurFactor, bottomBlurFactor) * 16.0;
+
+                    float blur = (xBlur * yBlur * (63.0 / 16.0)) / 16.0;
+                    color = ivec4(color.r, int(blur), 64 - int(blur), 0x01);
                 }
             }
         }
