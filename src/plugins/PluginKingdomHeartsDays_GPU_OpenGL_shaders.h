@@ -301,9 +301,9 @@ vec2 getVerticalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearV
 vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
 {
     int iuScale = KHUIScale;
-    float iuTexScale = (4.5)/iuScale;
-    vec2 texPosition3d = vec2(vec2(xpos, ypos)*iuTexScale);
-    float heightScale = 1.0/TopScreenAspectRatio;
+    float iuTexScale = 4.5 / iuScale;
+    vec2 texPosition3d = vec2(xpos, ypos) * iuTexScale;
+    float heightScale = 1.0 / TopScreenAspectRatio;
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
@@ -312,82 +312,79 @@ vec2 getIngameDialogTextureCoordinates(float xpos, float ypos)
         if (isCutsceneFromChallengeMissionVisible()) {
             return vec2(fTexcoord);
         }
-
         return vec2(128, 60);
     }
 
-    // dialog (part 1)
+    // Precompute dialog dimensions
     float dialogHeight = 192.0;
-    float dialogWidth = 256.0*heightScale;
-    float dialogX1 = (256.0*iuTexScale - dialogWidth)/2;
+    float dialogWidth = 256.0 * heightScale;
+    float dialogX1 = (256.0 * iuTexScale - dialogWidth) * 0.5;
     float dialogX2 = dialogX1 + dialogWidth;
-    float dialogY1 = 192.0*iuTexScale*(97.0/100.0) - dialogHeight;
+    float dialogY1 = 192.0 * iuTexScale * 0.97 - dialogHeight;
     float dialogY2 = dialogY1 + dialogHeight;
 
-    if (isColorBlack(ivec4(texelFetch(ScreenTex, ivec2(250, 183), 0)))) {
-        // portrait label
+    if (isColorBlack(ivec4(texelFetch(ScreenTex, ivec2(250, 183), 0))))
+    {
+        // Portrait label
         float sourceWidth = 78.0;
         float sourceHeight = 14.0;
         float sourceXCenter = 223.0;
         float sourceMarginTop = 170.0;
-        float width = sourceWidth*heightScale;
-        float centerX = sourceXCenter*heightScale;
-        float x1 = dialogX1 + centerX - width/2;
+        float width = sourceWidth * heightScale;
+        float centerX = sourceXCenter * heightScale;
+        float x1 = dialogX1 + centerX - width * 0.5;
         float x2 = x1 + width;
         float y1 = dialogY1 + sourceMarginTop;
         float y2 = y1 + sourceHeight;
-        if (texPosition3d.x >= x1 + 70.0*heightScale && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
+
+        if (texPosition3d.x >= x1 + 70.0 * heightScale && texPosition3d.x < x2 &&
+            texPosition3d.y >= y1 && texPosition3d.y < y2)
         {
-            vec2 pos = fixStretch*(texPosition3d - vec2(x1, y1));
-            vec2 finalPos = vec2(sourceWidth - pos.x, pos.y) + vec2(sourceXCenter - sourceWidth/2, sourceMarginTop);
+            vec2 pos = fixStretch * (texPosition3d - vec2(x1, y1));
+            vec2 finalPos = vec2(sourceWidth - pos.x, pos.y) + vec2(sourceXCenter - sourceWidth * 0.5, sourceMarginTop);
             if (finalPos.x + finalPos.y > 360.0 && finalPos.y - finalPos.x < -6.0) {
                 return finalPos;
             }
         }
     }
 
-    // dialog (part 2)
-    if (texPosition3d.x >= dialogX1 && texPosition3d.x < dialogX2 && texPosition3d.y >= dialogY1 && texPosition3d.y < dialogY2)
+    // Dialog box area
+    if (texPosition3d.x >= dialogX1 && texPosition3d.x < dialogX2 &&
+        texPosition3d.y >= dialogY1 && texPosition3d.y < dialogY2)
     {
-        return fixStretch*(texPosition3d - vec2(dialogX1, dialogY1));
+        return fixStretch * (texPosition3d - vec2(dialogX1, dialogY1));
     }
 
     float dialogMarginY1 = dialogY1 + 128.0;
     float dialogMarginY2 = dialogMarginY1 + 56.0;
     for (int y = 90; y <= 130; y++) {
         // dialogs with selectable options are positioned in a different way
-        if (is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(256/2, y))) {
+        if (is2DGraphicDifferentFromColor(ivec4(0,0,0,31), ivec2(128, y))) {
             dialogMarginY1 = dialogY1 + y;
             break;
         }
     }
 
+    float marginWidth = 9.0;
+    
+    // Dialog left side
+    float x1 = dialogX1 - marginWidth * heightScale;
+    float x2 = dialogX1;
+    if (texPosition3d.x >= x1 && texPosition3d.x < x2 &&
+        texPosition3d.y >= dialogMarginY1 && texPosition3d.y < dialogMarginY2)
     {
-        // dialog left side
-        float marginWidth = 9.0;
-        float x1 = dialogX1 - marginWidth*heightScale;
-        float x2 = dialogX1;
-        float y1 = dialogMarginY1;
-        float y2 = dialogMarginY2;
-        if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
-        {
-            vec2 pos = vec2((x2 - x1) - (texPosition3d.x - x1), texPosition3d.y - y1);
-            return vec2(pos.y, 181.0 + pos.x/heightScale);
-        }
+        vec2 pos = vec2((x2 - x1) - (texPosition3d.x - x1), texPosition3d.y - dialogMarginY1);
+        return vec2(pos.y, 181.0 + pos.x / heightScale);
     }
 
+    // Dialog right side
+    x1 = dialogX2;
+    x2 = dialogX2 + marginWidth * heightScale;
+    if (texPosition3d.x >= x1 && texPosition3d.x < x2 &&
+        texPosition3d.y >= dialogMarginY1 && texPosition3d.y < dialogMarginY2)
     {
-        // dialog right side
-        float marginWidth = 9.0;
-        float x1 = dialogX2;
-        float x2 = dialogX2 + marginWidth*heightScale;
-        float y1 = dialogMarginY1;
-        float y2 = dialogMarginY2;
-        if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
-        {
-            vec2 pos = (texPosition3d - vec2(x1, y1));
-            return vec2(pos.y, 181.0 + pos.x/heightScale);
-        }
+        vec2 pos = texPosition3d - vec2(x1, dialogMarginY1);
+        return vec2(pos.y, 181.0 + pos.x / heightScale);
     }
 
     // nothing (clear screen)
