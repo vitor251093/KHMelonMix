@@ -1042,6 +1042,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     if (index == 2) {
         color = fixTransparencyLayer(color);
     }
+    if (HideAllHUD) {
+        return color;
+    }
 
     bool _isDialogVisible = isDialogVisible();
     bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
