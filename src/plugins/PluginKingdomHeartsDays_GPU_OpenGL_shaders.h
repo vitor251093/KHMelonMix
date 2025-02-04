@@ -1036,14 +1036,18 @@ ivec4 getTopScreen3DColor()
 
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
-    bool _isDialogVisible = isDialogVisible();
-    bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
     ivec2 textureBeginning = getTopScreenTextureCoordinates(xpos, ypos);
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+    if (index == 1) {
+        return color;
+    }
     if (index == 2) {
         color = fixTransparencyLayer(color);
     }
+
+    bool _isDialogVisible = isDialogVisible();
+    bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
 
     if (ShowMap && GameScene == 5 && isMinimapVisible()) // gameScene_InGameWithMap
     {
@@ -1089,10 +1093,10 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     float topBlurFactor = clamp(topDiff / blurBorder, 0.0, 1.0);
                     float bottomBlurFactor = clamp(bottomDiff / blurBorder, 0.0, 1.0);
 
-                    float xBlur = min(leftBlurFactor, rightBlurFactor) * 16.0;
-                    float yBlur = min(topBlurFactor, bottomBlurFactor) * 16.0;
+                    float xBlur = min(leftBlurFactor, rightBlurFactor);
+                    float yBlur = min(topBlurFactor, bottomBlurFactor);
 
-                    float blur = (xBlur * yBlur * (63.0 / 16.0)) / 16.0;
+                    float blur = xBlur * yBlur * 63.0;
                     color = ivec4(color.r, int(blur), 64 - int(blur), 0x01);
                 }
             }
