@@ -1199,9 +1199,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 texPosition3d.y >= missionInfoY1 &&
                 texPosition3d.y <  missionInfoY2) {
 
-                int xBlur = int(64.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
-                float transparency = 63.0/64;
-                int blur = int((64.0 - xBlur) * transparency);
+                float xBlur = (texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder;
+                int blur = int((1.0 - xBlur) * 63.0);
 
                 if (GameScene == 5) { // gameScene_InGameWithMap
                     color = ivec4(color.r, blur, 64 - blur, 0x01);
