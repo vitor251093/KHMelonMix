@@ -88,6 +88,7 @@ private:
     bool HideAllHUD;
 
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
+    std::map<GLuint, int[20]> CompGpuLastValues{};
     std::map<u32, GLuint[4]> CompGpu3DLoc{};
 
     bool _muchOlderHad3DOnTopScreen;

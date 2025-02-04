@@ -420,10 +420,10 @@ const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
 };
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "PriorGameScene");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "GameScene");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "KHUIScale");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "GameScene");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "KHUIScale");
     CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
     CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
@@ -433,9 +433,17 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
     CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
     CompGpuLoc[CompShader][12] = glGetUniformLocation(CompShader, "IsCharacterControllable");
+
+    for (int index = 0; index <= 12; index ++) {
+        CompGpuLastValues[CompShader][index] = -1;
+    }
 }
 
+#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
+
 void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
+    u32 currentMainMenuView = getCurrentMainMenuView();
+
     float aspectRatio = AspectRatio / (4.f / 3.f);
     CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
     CutsceneEntry* bsCutscene = detectBottomScreenMobiCutscene();
@@ -446,20 +454,30 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         dsCutsceneState = 3;
     }
 
-    glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
-    glUniform1i(CompGpuLoc[CompShader][1], GameScene);
-    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
-    glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
-    glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][5], ShowTarget ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][6], ShowMissionGauge ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][7], ShowMissionInfo ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][8], HideAllHUD ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][10], getCurrentMainMenuView());
-    glUniform1i(CompGpuLoc[CompShader][11], dsCutsceneState);
-    glUniform1i(CompGpuLoc[CompShader][12], isCharacterControllable ? 1 : 0);
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], PriorGameScene, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], UIScale, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], ShowMap ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], ShowTarget ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][6], ShowMissionGauge ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], ShowMissionInfo ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][8], HideAllHUD ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][10], currentMainMenuView, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][11], dsCutsceneState, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][12], isCharacterControllable ? 1 : 0, updated);
+
+    if (updated) {
+        glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
+        for (int index = 1; index <= 12; index ++) {
+            glUniform1i(CompGpuLoc[CompShader][index], CompGpuLastValues[CompShader][index]);
+        }
+    }
 }
+
+#undef UPDATE_GPU_VAR
 
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     bool disable = DisableEnhancedGraphics;
