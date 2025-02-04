@@ -1167,7 +1167,10 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
         bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && (ShowMissionInfo || GameScene == 10) && isMissionInformationVisibleOnBottomScreen();
 
-        if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
+        bool hasTexture = showMissionInformationBottomScreen ||
+            (showMissionInformationTopScreen && (((ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0))).a & 0xF) == 1));
+
+        if (hasTexture && index == 2) {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
             vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
@@ -1189,24 +1192,15 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 texPosition3d.y >= missionInfoY1 &&
                 texPosition3d.y <  missionInfoY2) {
 
-                bool hasTexture = showMissionInformationBottomScreen;
-                if (showMissionInformationTopScreen)
-                {
-                    hasTexture = ((ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0))).a & 0xF) == 1;
+                int xBlur = int(64.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
+                float transparency = 63.0/64;
+                int blur = int((64.0 - xBlur) * transparency);
+
+                if (GameScene == 5) { // gameScene_InGameWithMap
+                    color = ivec4(color.r, blur, 64 - blur, 0x01);
                 }
-
-                if (hasTexture && index == 2)
-                {
-                    int xBlur = int(64.0*(texPosition3d.x - (missionInfoLeftMargin + missionInfoWidth - blurBorder))/blurBorder);
-                    float transparency = 63.0/64;
-                    int blur = int((64.0 - xBlur) * transparency);
-
-                    if (GameScene == 5) { // gameScene_InGameWithMap
-                        color = ivec4(color.r, blur, 64 - blur, 0x01);
-                    }
-                    else { // gameScene_PauseMenu
-                        color = ivec4(color.r, blur, 32 - blur/2, 0x01);
-                    }
+                else { // gameScene_PauseMenu
+                    color = ivec4(color.r, blur, 32 - blur/2, 0x01);
                 }
             }
         }
