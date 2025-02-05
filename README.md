@@ -11,7 +11,9 @@ melonDS, sorta
 
 This project aims to turn the Kingdom Hearts DS games into playable PC games with a single screen and controls suited for a regular controller.
 
-This is a version of melonDS with some modifications made specifically to improve those specific games experience. Any issues you have with KH Melon Mix should be reported in this same repository, and not in melonDS repository.
+This is a version of [melonDS](https://github.com/melonDS-emu/melonDS) with some modifications made specifically to improve the experience of those specific games. Any issues you have with KH Melon Mix should be reported in this same repository, and not in melonDS repository.
+
+The project has an internal plugin system, so different enhancements can be applied to different games. So if you also want to improve the experience of a different game, fell free to fork this project and introduce a new plugin to the list.
 
 Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the latest updates and/or to help with the project.
 
