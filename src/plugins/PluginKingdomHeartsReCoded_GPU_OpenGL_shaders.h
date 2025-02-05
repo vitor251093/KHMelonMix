@@ -965,6 +965,68 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     color = ivec4(color.r, blur, 16 - blur, 0x01);
                 }
             }
+
+            if (IsBugSector)
+            {
+                // floor label
+                float bottomLabelWidth = 50.0;
+                float bottomLabelHeight = 15.0;
+                float increaseLabelSize = 1.8;
+                float labelWidth = (bottomLabelWidth/increaseLabelSize)*heightScale;
+                float labelHeight = (bottomLabelHeight/increaseLabelSize);
+                float labelRightMargin = 12.0;
+                float labelTopMargin = 90.0;
+                float labelLeftMargin = 256.0*iuTexScale - labelWidth - labelRightMargin;
+                if (texPosition3d.x >= labelLeftMargin &&
+                    texPosition3d.x < (256.0*iuTexScale - labelRightMargin) && 
+                    texPosition3d.y <= labelHeight + labelTopMargin && 
+                    texPosition3d.y >= labelTopMargin) {
+
+                    if (index == 0)
+                    {
+                        if (color.b != color.r) {
+                            color = ivec4(0, 0, 0, 31);
+                        }
+                    }
+                    if (index == 2)
+                    {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.b != colorZero.r) {
+                            color = ivec4(color.r, 48, 16, 0x01);
+                        }
+                    }
+                }
+
+                // floor value
+                float bottomFloorWidth = 82.0;
+                float bottomFloorHeight = 15.0;
+                float increaseFloorSize = 1.8;
+                float floorWidth = (bottomFloorWidth/increaseFloorSize)*heightScale;
+                float floorHeight = (bottomFloorHeight/increaseFloorSize);
+                float floorRightMargin = 12.0;
+                float floorTopMargin = 98.0;
+                float floorLeftMargin = 256.0*iuTexScale - floorWidth - floorRightMargin;
+                float bottomFloorLeftMargin = 50.0;
+                if (texPosition3d.x >= floorLeftMargin &&
+                    texPosition3d.x < (256.0*iuTexScale - floorRightMargin) && 
+                    texPosition3d.y <= floorHeight + floorTopMargin && 
+                    texPosition3d.y >= floorTopMargin) {
+                    
+                    if (index == 0)
+                    {
+                        if (color.b != color.r) {
+                            color = ivec4(0, 0, 0, 31);
+                        }
+                    }
+                    if (index == 2)
+                    {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.b != colorZero.r) {
+                            color = ivec4(color.r, 48, 16, 0x01);
+                        }
+                    }
+                }
+            }
         }
     }
 
