@@ -436,6 +436,40 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             return increaseMapSize*fixStretch*(texPosition3d - vec2(minimapLeftMargin, minimapTopMargin)) +
                 vec2(0, 192.0) + vec2(bottomMinimapLeftMargin + finalMinimapCenterX - 128, bottomMinimapTopMargin + finalMinimapCenterY - 96);
         }
+
+        // floor label
+        float bottomLabelWidth = 50.0;
+        float bottomLabelHeight = 15.0;
+        float increaseLabelSize = 1.8;
+        float labelWidth = (bottomLabelWidth/increaseLabelSize)*heightScale;
+        float labelHeight = (bottomLabelHeight/increaseLabelSize);
+        float labelRightMargin = 12.0;
+        float labelTopMargin = 90.0;
+        float labelLeftMargin = 256.0*iuTexScale - labelWidth - labelRightMargin;
+        if (texPosition3d.x >= labelLeftMargin &&
+            texPosition3d.x < (256.0*iuTexScale - labelRightMargin) && 
+            texPosition3d.y <= labelHeight + labelTopMargin && 
+            texPosition3d.y >= labelTopMargin) {
+            return increaseLabelSize*fixStretch*(texPosition3d - vec2(labelLeftMargin, labelTopMargin)) + vec2(0, 192.0);
+        }
+
+        // floor value
+        float bottomFloorWidth = 82.0;
+        float bottomFloorHeight = 15.0;
+        float increaseFloorSize = 1.8;
+        float floorWidth = (bottomFloorWidth/increaseFloorSize)*heightScale;
+        float floorHeight = (bottomFloorHeight/increaseFloorSize);
+        float floorRightMargin = 12.0;
+        float floorTopMargin = 98.0;
+        float floorLeftMargin = 256.0*iuTexScale - floorWidth - floorRightMargin;
+        float bottomFloorLeftMargin = 50.0;
+        if (texPosition3d.x >= floorLeftMargin &&
+            texPosition3d.x < (256.0*iuTexScale - floorRightMargin) && 
+            texPosition3d.y <= floorHeight + floorTopMargin && 
+            texPosition3d.y >= floorTopMargin) {
+            return increaseFloorSize*fixStretch*(texPosition3d - vec2(floorLeftMargin, floorTopMargin)) +
+                vec2(0, 192.0) + vec2(bottomFloorLeftMargin, 0);
+        }
     }
 
     if (_isHealthVisible)
