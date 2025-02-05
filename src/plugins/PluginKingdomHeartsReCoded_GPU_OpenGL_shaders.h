@@ -473,6 +473,41 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                 return increaseFloorSize*fixStretch*(texPosition3d - vec2(floorLeftMargin, floorTopMargin)) +
                     vec2(0, 192.0) + vec2(bottomFloorLeftMargin, 0);
             }
+
+            // enemies counter
+            float bottomEnemiesWidth = 123.0;
+            float bottomEnemiesHeight = 15.0;
+            float bottomEnemies2Width = 23.0;
+            float bottomEnemies2Height = 15.0;
+            float bottomEnemiesLeftMargin = 133.0;
+            float increaseEnemiesSize = 1.4;
+            float enemiesBottomMargin = 12.0;
+            float enemiesWidth = (bottomEnemiesWidth/increaseEnemiesSize)*heightScale;
+            float enemies2Width = (bottomEnemies2Width/increaseEnemiesSize)*heightScale;
+            float enemiesHeight = (bottomEnemiesHeight/increaseEnemiesSize);
+            float enemies2Height = (bottomEnemies2Height/increaseEnemiesSize);
+
+            // enemies counter (part 1)
+            float enemiesLeftMargin = (256.0*iuTexScale - enemiesWidth - enemies2Width)/2;
+            if (texPosition3d.x >= enemiesLeftMargin &&
+                texPosition3d.x < enemiesLeftMargin + enemiesWidth && 
+                texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
+                texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                return increaseEnemiesSize*fixStretch*(texPosition3d -
+                        vec2(enemiesLeftMargin, 192.0*iuTexScale - enemiesHeight - enemiesBottomMargin)) +
+                    vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
+            }
+
+            // enemies counter (part 2)
+            float enemies2LeftMargin = enemiesLeftMargin + enemiesWidth;
+            if (texPosition3d.x >= enemies2LeftMargin &&
+                texPosition3d.x < enemies2LeftMargin + enemies2Width && 
+                texPosition3d.y >= (192.0*iuTexScale - enemies2Height - enemiesBottomMargin) &&
+                texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                return vec2(bottomEnemies2Width, bottomEnemies2Height) - (increaseEnemiesSize*fixStretch*(texPosition3d -
+                        vec2(enemies2LeftMargin, 192.0*iuTexScale - enemies2Height - enemiesBottomMargin))) +
+                    vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
+            }
         }
     }
 
