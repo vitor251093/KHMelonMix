@@ -113,6 +113,7 @@ private:
     bool didMobiCutsceneEnded();
     bool canReturnToGameAfterReplacementCutscene();
 
+    u8 getFloorLevel();
     u32 getCurrentMission();
     u32 getCurrentMap();
     bool isSaveLoaded();

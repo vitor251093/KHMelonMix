@@ -47,6 +47,10 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0
 #define IS_PLAYABLE_AREA_JP 0x0205a6e0
 
+#define FLOOR_LEVEL_ADDRESS_US 0x02060867
+#define FLOOR_LEVEL_ADDRESS_EU 0x02060867 // TODO: KH
+#define FLOOR_LEVEL_ADDRESS_JP 0x02060687 // TODO: KH
+
 #define TYPE_OF_BATTLE_ADDRESS_US 0x020b5608 // or 0x020b5620
 #define TYPE_OF_BATTLE_ADDRESS_EU 0x020b5608 // TODO: KH
 #define TYPE_OF_BATTLE_ADDRESS_JP 0x020b5608 // TODO: KH
@@ -348,6 +352,7 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "MinimapCenterY");
     CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "HideAllHUD");
     CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "DSCutsceneState");
+    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "IsBugSector");
 }
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
@@ -364,6 +369,7 @@ void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader)
     glUniform1i(CompGpuLoc[CompShader][6], MinimapCenterY);
     glUniform1i(CompGpuLoc[CompShader][7], HideAllHUD ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][8], dsCutsceneState);
+    glUniform1i(CompGpuLoc[CompShader][9], getFloorLevel() == 0 ? false : true);
 }
 
 const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
@@ -1213,6 +1219,11 @@ std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string languag
     }
 
     return "";
+}
+
+u8 PluginKingdomHeartsReCoded::getFloorLevel()
+{
+    return nds->ARM7Read8(getU32ByCart(FLOOR_LEVEL_ADDRESS_US, FLOOR_LEVEL_ADDRESS_EU, FLOOR_LEVEL_ADDRESS_JP));
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMission()
