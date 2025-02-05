@@ -1061,6 +1061,64 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                         }
                     }
                 }
+
+                // enemies counter
+                float bottomEnemiesWidth = 148.0;
+                float bottomEnemiesHeight = 15.0;
+                float bottomEnemiesXMargin = 24.0;
+                float increaseEnemiesSize = 1.4;
+                float enemiesBottomMargin = 12.0;
+                float enemiesWidth = (bottomEnemiesWidth/increaseEnemiesSize)*heightScale;
+                float enemiesHeight = (bottomEnemiesHeight/increaseEnemiesSize);
+                float enemiesXMargin = (bottomEnemiesXMargin/increaseEnemiesSize)*heightScale;
+                float enemiesLeftMargin = (256.0*iuTexScale - enemiesWidth)/2;
+
+                // enemies counter (part 1)
+                if (texPosition3d.x >= enemiesLeftMargin &&
+                    texPosition3d.x < enemiesLeftMargin + bottomEnemiesXMargin && 
+                    texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
+                    texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                    
+                    if (index == 0)
+                    {
+                        if (color.b != color.r && color.b > color.r) {
+                            color = ivec4(0, 0, 0, 31);
+                        }
+                    }
+                    if (index == 2)
+                    {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.b != colorZero.r && colorZero.b > colorZero.r) {
+                            color = ivec4(color.r, 48, 16, 0x01);
+                        }
+                    }
+                }
+
+                // enemies counter (part 2)
+                if (texPosition3d.x >= enemiesLeftMargin + enemiesWidth - bottomEnemiesXMargin/1.5 &&
+                    texPosition3d.x < enemiesLeftMargin + enemiesWidth && 
+                    texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
+                    texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                    
+                    if (index == 0)
+                    {
+                        bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+                        if (isShadeOfGray) {
+                            color = ivec4(0, 0, 0, color.a);
+                        }
+
+                        if (color.b != color.r && color.b > color.r) {
+                            color = ivec4(0, 0, 0, 31);
+                        }
+                    }
+                    if (index == 2)
+                    {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.b != colorZero.r && colorZero.b > colorZero.r) {
+                            color = ivec4(color.r, 48, 16, 0x01);
+                        }
+                    }
+                }
             }
         }
     }
