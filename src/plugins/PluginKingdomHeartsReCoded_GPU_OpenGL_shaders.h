@@ -113,15 +113,10 @@ bool is2DGraphicEqualToColor(ivec4 diffColor, ivec2 texcoord)
     return (pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
 }
 
-bool isMissionInformationVisibleOnTopScreen()
+bool isMissionInformationVisible()
 {
     return is2DGraphicDifferentFromColor(ivec4(63,0,0,31), ivec2(256/2, 0)) ||
            is2DGraphicDifferentFromColor(ivec4(63,0,0,31), ivec2(256/2, 10));
-}
-
-bool isMissionInformationVisible()
-{
-    return isMissionInformationVisibleOnTopScreen();
 }
 
 bool isDialogVisible()
@@ -347,31 +342,6 @@ vec2 getVerticalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearV
     return clearVect;
 }
 
-vec2 getMissionInformationCoordinates(vec2 texPosition3d)
-{
-    float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = TopScreenAspectRatio;
-    vec2 fixStretch = vec2(widthScale, 1.0);
-
-    // mission information
-    float sourceMissionInfoHeight = 40.0;
-    float sourceMissionInfoWidth = 256.0;
-    float missionInfoHeight = sourceMissionInfoHeight;
-    float missionInfoWidth = sourceMissionInfoWidth*heightScale;
-    float missionInfoY1 = 0;
-    float missionInfoY2 = missionInfoHeight;
-    float missionInfoDetailsLeftMargin = -5.4*heightScale;
-
-    if (texPosition3d.x >= 0 &&
-        texPosition3d.x <  missionInfoWidth &&
-        texPosition3d.y >= 0 &&
-        texPosition3d.y <  missionInfoY2) {
-        return fixStretch*(texPosition3d);
-    }
-
-    return vec2(-1, -1);
-}
-
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     bool _isHealthVisible = isHealthVisible();
@@ -390,16 +360,23 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
+    bool _isMissionInformationVisible = isMissionInformationVisible();
 
-    if (isMissionInformationVisible()) {
-        vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d);
-        if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
-            return missionInfoCoords;
-        }
+    if (_isMissionInformationVisible) {
+        // mission information
+        float sourceMissionInfoHeight = 40.0;
+        float sourceMissionInfoWidth = 256.0;
+        float missionInfoHeight = sourceMissionInfoHeight;
+        float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+        float missionInfoY1 = 0;
+        float missionInfoY2 = missionInfoHeight;
+        float missionInfoDetailsLeftMargin = -5.4*heightScale;
 
-        if (texPosition3d.y <= (192*iuTexScale)/3) {
-            // nothing (clear screen)
-            return vec2(-1, -1);
+        if (texPosition3d.x >= 0 &&
+            texPosition3d.x <  missionInfoWidth &&
+            texPosition3d.y >= 0 &&
+            texPosition3d.y <  missionInfoY2) {
+            return fixStretch*(texPosition3d);
         }
     }
 
@@ -592,6 +569,18 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                         vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
                 }
             }
+        }
+    }
+
+    if (_isMissionInformationVisible) {
+        // mission information
+        float sourceMissionInfoHeight = 40.0;
+        float missionInfoHeight = sourceMissionInfoHeight;
+        float missionInfoY2 = missionInfoHeight;
+
+        if (texPosition3d.y <  missionInfoY2) {
+            // nothing (clear screen)
+            return vec2(-1, -1);
         }
     }
 
@@ -955,7 +944,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             return color;
         }
 
-        if (!isDialogVisible() && !isMissionInformationVisible())
+        if (!isDialogVisible())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
