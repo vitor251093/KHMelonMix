@@ -443,11 +443,11 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             // floor label
             float bottomLabelWidth = 50.0;
             float bottomLabelHeight = 15.0;
-            float increaseLabelSize = 1.8;
+            float increaseLabelSize = 1.4;
             float labelWidth = (bottomLabelWidth/increaseLabelSize)*heightScale;
             float labelHeight = (bottomLabelHeight/increaseLabelSize);
-            float labelRightMargin = 12.0;
-            float labelTopMargin = 90.0;
+            float labelRightMargin = 11.0;
+            float labelTopMargin = 88.0;
             float labelLeftMargin = 256.0*iuTexScale - labelWidth - labelRightMargin;
             if (texPosition3d.x >= labelLeftMargin &&
                 texPosition3d.x < (256.0*iuTexScale - labelRightMargin) && 
@@ -459,7 +459,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             // floor value
             float bottomFloorWidth = 82.0;
             float bottomFloorHeight = 15.0;
-            float increaseFloorSize = 1.8;
+            float increaseFloorSize = 1.4;
             float floorWidth = (bottomFloorWidth/increaseFloorSize)*heightScale;
             float floorHeight = (bottomFloorHeight/increaseFloorSize);
             float floorRightMargin = 12.0;
@@ -971,11 +971,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 // floor label
                 float bottomLabelWidth = 50.0;
                 float bottomLabelHeight = 15.0;
-                float increaseLabelSize = 1.8;
+                float increaseLabelSize = 1.4;
                 float labelWidth = (bottomLabelWidth/increaseLabelSize)*heightScale;
                 float labelHeight = (bottomLabelHeight/increaseLabelSize);
-                float labelRightMargin = 12.0;
-                float labelTopMargin = 90.0;
+                float labelRightMargin = 11.0;
+                float labelTopMargin = 88.0;
                 float labelLeftMargin = 256.0*iuTexScale - labelWidth - labelRightMargin;
                 if (texPosition3d.x >= labelLeftMargin &&
                     texPosition3d.x < (256.0*iuTexScale - labelRightMargin) && 
@@ -1000,7 +1000,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 // floor value
                 float bottomFloorWidth = 82.0;
                 float bottomFloorHeight = 15.0;
-                float increaseFloorSize = 1.8;
+                float increaseFloorSize = 1.4;
                 float floorWidth = (bottomFloorWidth/increaseFloorSize)*heightScale;
                 float floorHeight = (bottomFloorHeight/increaseFloorSize);
                 float floorRightMargin = 12.0;
