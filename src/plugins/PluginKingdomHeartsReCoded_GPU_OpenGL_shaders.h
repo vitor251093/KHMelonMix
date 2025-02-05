@@ -1075,7 +1075,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                 // enemies counter (part 1)
                 if (texPosition3d.x >= enemiesLeftMargin &&
-                    texPosition3d.x < enemiesLeftMargin + bottomEnemiesXMargin && 
+                    texPosition3d.x < enemiesLeftMargin + enemiesXMargin && 
                     texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
                     texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
                     
@@ -1095,7 +1095,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 }
 
                 // enemies counter (part 2)
-                if (texPosition3d.x >= enemiesLeftMargin + enemiesWidth - bottomEnemiesXMargin/1.5 &&
+                if (texPosition3d.x >= enemiesLeftMargin + enemiesWidth - enemiesXMargin &&
                     texPosition3d.x < enemiesLeftMargin + enemiesWidth && 
                     texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
                     texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
