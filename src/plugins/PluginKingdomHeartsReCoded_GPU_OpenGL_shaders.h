@@ -480,7 +480,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             float bottomEnemies2Width = 23.0;
             float bottomEnemies2Height = 15.0;
             float bottomEnemiesLeftMargin = 133.0;
-            float increaseEnemiesSize = 1.4;
+            float increaseEnemiesSize = 1.0;
             float enemiesBottomMargin = 12.0;
             float enemiesWidth = (bottomEnemiesWidth/increaseEnemiesSize)*heightScale;
             float enemies2Width = (bottomEnemies2Width/increaseEnemiesSize)*heightScale;
@@ -1066,7 +1066,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 float bottomEnemiesWidth = 148.0;
                 float bottomEnemiesHeight = 15.0;
                 float bottomEnemiesXMargin = 24.0;
-                float increaseEnemiesSize = 1.4;
+                float increaseEnemiesSize = 1.0;
                 float enemiesBottomMargin = 12.0;
                 float enemiesWidth = (bottomEnemiesWidth/increaseEnemiesSize)*heightScale;
                 float enemiesHeight = (bottomEnemiesHeight/increaseEnemiesSize);
