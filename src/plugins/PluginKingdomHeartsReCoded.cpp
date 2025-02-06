@@ -47,6 +47,14 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0
 #define IS_PLAYABLE_AREA_JP 0x0205a6e0
 
+#define BUG_SECTOR_IDENTIFIER_ADDRESS_US 0x0206083d
+#define BUG_SECTOR_IDENTIFIER_ADDRESS_EU 0x0206083d // TODO: KH
+#define BUG_SECTOR_IDENTIFIER_ADDRESS_JP 0x0206065d // TODO: KH
+
+#define BUG_SECTOR_IDENTIFIER_VALUE_US 0x48
+#define BUG_SECTOR_IDENTIFIER_VALUE_EU 0x48 // TODO: KH
+#define BUG_SECTOR_IDENTIFIER_VALUE_JP 0x48 // TODO: KH
+
 #define FLOOR_LEVEL_ADDRESS_US 0x02060867
 #define FLOOR_LEVEL_ADDRESS_EU 0x02060867 // TODO: KH
 #define FLOOR_LEVEL_ADDRESS_JP 0x02060687 // TODO: KH
@@ -1237,7 +1245,13 @@ std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string languag
 
 u8 PluginKingdomHeartsReCoded::getFloorLevel()
 {
-    return nds->ARM7Read8(getU32ByCart(FLOOR_LEVEL_ADDRESS_US, FLOOR_LEVEL_ADDRESS_EU, FLOOR_LEVEL_ADDRESS_JP));
+    u32 placeIdentAddr = getU32ByCart(BUG_SECTOR_IDENTIFIER_ADDRESS_US, BUG_SECTOR_IDENTIFIER_ADDRESS_EU, BUG_SECTOR_IDENTIFIER_ADDRESS_JP);
+    u8 placeIdentValue = getU8ByCart(BUG_SECTOR_IDENTIFIER_VALUE_US, BUG_SECTOR_IDENTIFIER_VALUE_EU, BUG_SECTOR_IDENTIFIER_VALUE_JP);
+    if (nds->ARM7Read8(placeIdentAddr) == placeIdentValue) {
+        u32 floorLevelAddr = getU32ByCart(FLOOR_LEVEL_ADDRESS_US, FLOOR_LEVEL_ADDRESS_EU, FLOOR_LEVEL_ADDRESS_JP);
+        return nds->ARM7Read8(floorLevelAddr);
+    }
+    return 0;
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMission()
