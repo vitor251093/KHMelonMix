@@ -525,7 +525,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         }
         else {
             // player health
-            float sourcePlayerHealthHeight = 88.0;
+            float sourcePlayerHealthHeight = 58.0;
             float sourcePlayerHealthWidth = 92.0;
             float playerHealthHeight = sourcePlayerHealthHeight;
             float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
@@ -543,6 +543,22 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                                                             192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
                         vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
                 }
+            }
+
+            // player allies health
+            float sourceAlliesHealthHeight = 118.0;
+            float sourceAlliesHealthWidth = 36.0;
+            float alliesHealthHeight = sourceAlliesHealthHeight;
+            float alliesHealthWidth = sourceAlliesHealthWidth*heightScale;
+            float alliesHealthRightMargin = 8.0;
+            float alliesHealthBottomMargin = 3.0;
+            if (texPosition3d.x >= (256.0*iuTexScale - alliesHealthWidth - alliesHealthRightMargin) &&
+                texPosition3d.x <= (256.0*iuTexScale - alliesHealthRightMargin) &&
+                texPosition3d.y >= (192.0*iuTexScale - alliesHealthHeight - alliesHealthBottomMargin) &&
+                texPosition3d.y < (192.0*iuTexScale - alliesHealthBottomMargin)) {
+                return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - alliesHealthWidth - alliesHealthRightMargin,
+                                                        192.0*iuTexScale - alliesHealthHeight - alliesHealthBottomMargin)) +
+                    vec2(256.0 - sourceAlliesHealthWidth, 192.0 - sourceAlliesHealthHeight);
             }
         }
     }
