@@ -445,7 +445,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
 
         if (HideAllHUD)
         {
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
             {
                 if (_x >= 0 && _x <= ScreenWidth &&
                     _y >= 0 && _y <= ScreenHeight &&
@@ -457,7 +457,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
         }
         else
         {
-            if (GameScene == gameScene_InGameWithMap)
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog)
             {
                 // Bug sector SP score
                 float bugSectorSpScoreTopMargin = 18.0;
@@ -471,7 +471,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
                 }
             }
 
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
             {
                 if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
                     _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
