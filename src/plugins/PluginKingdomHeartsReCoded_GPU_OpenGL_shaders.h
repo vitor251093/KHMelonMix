@@ -368,9 +368,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         float sourceMissionInfoWidth = 256.0;
         float missionInfoHeight = sourceMissionInfoHeight;
         float missionInfoWidth = sourceMissionInfoWidth*heightScale;
-        float missionInfoY1 = 0;
         float missionInfoY2 = missionInfoHeight;
-        float missionInfoDetailsLeftMargin = -5.4*heightScale;
 
         if (texPosition3d.x >= 0 &&
             texPosition3d.x <  missionInfoWidth &&
@@ -484,6 +482,24 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                 return vec2(bottomEnemies2Width, bottomEnemies2Height) - (increaseEnemiesSize*fixStretch*(texPosition3d -
                         vec2(enemies2LeftMargin, 192.0*iuTexScale - enemies2Height - enemiesBottomMargin))) +
                     vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
+            }
+
+            // mission information
+            float sourceMissionInfoHeight = 26.0;
+            float sourceMissionInfoWidth = 247.0;
+            float sourceMissionInfoLeftMargin = 5.0;
+            float sourceMissionInfoTopMargin = 166.0;
+            float missionInfoHeight = sourceMissionInfoHeight;
+            float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+            float missionInfoLeftMargin = 3.0;
+            float missionInfoTopMargin = 6.0;
+
+            if (texPosition3d.x >= missionInfoLeftMargin &&
+                texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
+                texPosition3d.y >= missionInfoTopMargin &&
+                texPosition3d.y <  missionInfoTopMargin + missionInfoHeight) {
+                return fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoTopMargin)) +
+                    vec2(0, 192.0) + vec2(sourceMissionInfoLeftMargin, sourceMissionInfoTopMargin);
             }
         }
     }

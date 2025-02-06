@@ -457,6 +457,20 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
         }
         else
         {
+            if (GameScene == gameScene_InGameWithMap)
+            {
+                // Bug sector SP score
+                float bugSectorSpScoreTopMargin = 18.0;
+                float bugSectorSpScoreScale = (4.0)/UIScale;
+
+                if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
+                    _z < 0)) {
+                    _x = (_x)/(bugSectorSpScoreScale*aspectRatio);
+                    _y = (_y)/(bugSectorSpScoreScale) + bugSectorSpScoreTopMargin*resolutionScale;
+                }
+            }
+
             if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
             {
                 if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
