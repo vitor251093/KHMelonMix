@@ -351,33 +351,48 @@ const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
 };
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "PriorGameScene");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "GameScene");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "KHUIScale");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "PriorGameScene");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "GameScene");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "KHUIScale");
     CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
     CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "MinimapCenterX");
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "MinimapCenterY");
     CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "HideAllHUD");
     CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "DSCutsceneState");
     CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "IsBugSector");
+
+    for (int index = 0; index <= 9; index ++) {
+        CompGpuLastValues[CompShader][index] = -1;
+    }
 }
+
+#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
 
 void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
     int dsCutsceneState = (tsCutscene == nullptr ? 0 : tsCutscene->dsScreensState);
+    bool isBugSector = getFloorLevel() == 0 ? false : true;
 
-    glUniform1i(CompGpuLoc[CompShader][0], PriorGameScene);
-    glUniform1i(CompGpuLoc[CompShader][1], GameScene);
-    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
-    glUniform1f(CompGpuLoc[CompShader][3], aspectRatio);
-    glUniform1i(CompGpuLoc[CompShader][4], ShowMap ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][5], MinimapCenterX);
-    glUniform1i(CompGpuLoc[CompShader][6], MinimapCenterY);
-    glUniform1i(CompGpuLoc[CompShader][7], HideAllHUD ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][8], dsCutsceneState);
-    glUniform1i(CompGpuLoc[CompShader][9], getFloorLevel() == 0 ? false : true);
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], PriorGameScene, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], UIScale, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], ShowMap ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], MinimapCenterX, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][6], MinimapCenterY, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], HideAllHUD ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][8], dsCutsceneState, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][9], isBugSector, updated);
+
+    if (updated) {
+        glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
+        for (int index = 1; index <= 9; index ++) {
+            glUniform1i(CompGpuLoc[CompShader][index], CompGpuLastValues[CompShader][index]);
+        }
+    }
 }
 
 const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
@@ -394,15 +409,30 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint pr
     CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
     CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
     CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
+
+    for (int index = 0; index <= 2; index ++) {
+        CompGpu3DLastValues[flags][index] = -1;
+    }
 }
 
 void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
 {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
-    glUniform1i(CompGpu3DLoc[flags][1], GameScene);
-    glUniform1i(CompGpu3DLoc[flags][2], UIScale);
+
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][1], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][2], UIScale, updated);
+
+    if (updated) {
+        glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
+        for (int index = 1; index <= 2; index ++) {
+            glUniform1i(CompGpu3DLoc[flags][index], CompGpu3DLastValues[flags][index]);
+        }
+    }
 }
+
+#undef UPDATE_GPU_VAR
 
 void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
