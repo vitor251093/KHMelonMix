@@ -931,7 +931,7 @@ bool ScreenPanelGL::createContext()
     if (ourwin->getWindowID() != 0)
     {
         if (windowinfo.has_value())
-            if (glContext = parentwin->getOGLContext()->CreateSharedContext(*windowinfo))
+            if ((glContext = parentwin->getOGLContext()->CreateSharedContext(*windowinfo)))
                 glContext->DoneCurrent();
     }
     else
@@ -940,7 +940,7 @@ bool ScreenPanelGL::createContext()
                 GL::Context::Version{GL::Context::Profile::Core, 4, 3},
                 GL::Context::Version{GL::Context::Profile::Core, 3, 2}};
         if (windowinfo.has_value())
-            if (glContext = GL::Context::Create(*windowinfo, versionsToTry))
+            if ((glContext = GL::Context::Create(*windowinfo, versionsToTry)))
                 glContext->DoneCurrent();
     }
 
