@@ -735,13 +735,13 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     // pause menu
     float height = 192.0;
     float width = 256.0;
-    float x1 = (256.0*iuTexScale)/2 - width/2;
-    float x2 = (256.0*iuTexScale)/2 + width/2;
+    float x1 = (256.0*iuTexScale)/2 - width*heightScale/2;
+    float x2 = (256.0*iuTexScale)/2 + width*heightScale/2;
     float y1 = (192.0*iuTexScale)/2 - height/2;
     float y2 = (192.0*iuTexScale)/2 + height/2;
     if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
     {
-        return texPosition3d - vec2(x1, y1);
+        return fixStretch*(texPosition3d - vec2(x1, y1));
     }
 
     // nothing (clear screen)
