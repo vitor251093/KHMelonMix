@@ -137,7 +137,7 @@ bool isCommandMenuVisible()
 
 bool isHealthVisible()
 {
-    return is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(225, 170));
+    return is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(235, 175));
 }
 
 bool isColorBlack(ivec4 pixel)
@@ -525,7 +525,7 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
         }
         else {
             // player health
-            float sourcePlayerHealthHeight = 58.0;
+            float sourcePlayerHealthHeight = 78.0;
             float sourcePlayerHealthWidth = 92.0;
             float playerHealthHeight = sourcePlayerHealthHeight;
             float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
