@@ -45,12 +45,6 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_PLAYABLE_AREA_JP      0x02044b26
 #define IS_PLAYABLE_AREA_JP_REV1 0x02044ae6
 
-// 0x00 => don't rumble; 0x01 => rumble
-#define SHOULD_RUMBLE_ADDRESS_US      0x0204a65c
-#define SHOULD_RUMBLE_ADDRESS_EU      0x0204a67c // TODO: KH Unconfirmed (calculated)
-#define SHOULD_RUMBLE_ADDRESS_JP      0x0204aabc // TODO: KH Unconfirmed (calculated)
-#define SHOULD_RUMBLE_ADDRESS_JP_REV1 0x0204aa7c // TODO: KH Unconfirmed (calculated)
-
 #define PAUSE_SCREEN_ADDRESS_US      0x0204bd64
 #define PAUSE_SCREEN_ADDRESS_EU      0x0204bd84
 #define PAUSE_SCREEN_ADDRESS_JP      0x0204c1c4
@@ -862,7 +856,7 @@ void PluginKingdomHeartsDays::applyTouchKeyMaskToTouchControls(u16* touchX, u16*
 }
 
 bool PluginKingdomHeartsDays::shouldRumble() {
-    return nds->ARM7Read8(getU32ByCart(SHOULD_RUMBLE_ADDRESS_US, SHOULD_RUMBLE_ADDRESS_EU, SHOULD_RUMBLE_ADDRESS_JP, SHOULD_RUMBLE_ADDRESS_JP_REV1)) == 0x01;
+    return false;
 }
 
 void PluginKingdomHeartsDays::hudToggle()
