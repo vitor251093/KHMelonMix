@@ -82,6 +82,7 @@ jobs:
         ./linuxdeploy-${{ matrix.arch.name }}.AppImage --appdir AppDir --plugin qt
         ./linuxdeploy-${{ matrix.arch.name }}.AppImage --appdir AppDir --plugin gstreamer --output appimage
     - name: Preparing artifacts (appimage-x86_64)
+      if: matrix.arch.name != 'aarch64'
       run: |
         mkdir dist_appimage
         mkdir -p ./dist_appimage/roms
