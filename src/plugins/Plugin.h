@@ -141,6 +141,7 @@ public:
     virtual bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {return false;}
     void _superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge);
     virtual void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask);
+    virtual bool shouldRumble() {return false;}
 
     bool shouldExportTextures() {
         return ExportTextures;

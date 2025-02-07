@@ -861,6 +861,10 @@ void PluginKingdomHeartsDays::applyTouchKeyMaskToTouchControls(u16* touchX, u16*
     }
 }
 
+bool PluginKingdomHeartsDays::shouldRumble() {
+    return nds->ARM7Read8(getU32ByCart(SHOULD_RUMBLE_ADDRESS_US, SHOULD_RUMBLE_ADDRESS_EU, SHOULD_RUMBLE_ADDRESS_JP, SHOULD_RUMBLE_ADDRESS_JP_REV1)) == 0x01;
+}
+
 void PluginKingdomHeartsDays::hudToggle()
 {
     HUDState = (HUDState + 1) % 4;
