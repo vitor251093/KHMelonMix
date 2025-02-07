@@ -1,4 +1,6 @@
-![Kingdom Hearts - Melon Mix](logo.png)
+<div style="text-align: center;">
+  <img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/logo.png" alt="Kingdom Hearts - Melon Mix" width="50%" />
+</div>
 <h4 align="center"><i>Logo by JackSilverson</i></h4>
 
 <p align="center">
@@ -16,6 +18,8 @@ This is a version of [melonDS](https://github.com/melonDS-emu/melonDS) with some
 The project has an internal plugin system, so different enhancements can be applied to different games. So if you also want to improve the experience of a different game, fell free to fork this project and introduce a new plugin to the list.
 
 Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the latest updates and/or to help with the project.
+
+<hr>
 
 <h2 align="center"><a href="https://github.com/vitor251093/KHMelonMix/blob/master/HOW_TO_PLAY.md">HOW TO PLAY</a></h2>
 
@@ -40,13 +44,13 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 - In-engine cutscene with HD cutscene replacement
 - Menus adapted to a single screen
 - Camera controls (mouse/touchpad)
-- Add pause functionality to HD cutscenes
+- Pause functionality to HD cutscenes
 
 ## Which other features are being considered?
 - Lua support
-- Replace 3D models (do not expect modern games quality on that one, it still needs to run on the DS CPU)
-- Add Rumble
-- RetroAchievements support
+- 3D models replacement (do not expect modern games quality on that one, it still needs to run on the DS CPU)
+- Rumble to joystick controllers
+- Support to RetroAchievements
 - Command Menu should reflect the mission world (toggleable feature)
 
 <hr>
