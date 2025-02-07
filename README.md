@@ -17,7 +17,9 @@ The project has an internal plugin system, so different enhancements can be appl
 
 Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the latest updates and/or to help with the project.
 
-<h2 align="center"><a href="https://github.com/vitor251093/KHMelonMix/blob/master/HOW_TO_PLAY.md">HOW TO PLAY</a> - <a href="https://github.com/vitor251093/KHMelonMix/blob/master/BUILD.md">BUILD FROM SCRATCH</a></h2>
+<h2 align="center"><a href="https://github.com/vitor251093/KHMelonMix/blob/master/HOW_TO_PLAY.md">HOW TO PLAY</a></h2>
+
+<h2 align="center"><a href="https://github.com/vitor251093/KHMelonMix/blob/master/BUILD.md">HOW TO BUILD FROM SCRATCH</a></h2>
 
 <hr>
 
