@@ -1,5 +1,5 @@
-<div style="text-align: center;">
-  <img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/logo.png" alt="Kingdom Hearts - Melon Mix" width="50%" />
+<div align="center">
+  <img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/logo.png" alt="Kingdom Hearts - Melon Mix" width="70%" />
 </div>
 <h4 align="center"><i>Logo by JackSilverson</i></h4>
 
