@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/logo.png" alt="Kingdom Hearts - Melon Mix" width="70%" />
+  <img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/logo.png" alt="KH Melon Mix" width="70%" />
 </div>
 <h4 align="center"><i>Logo by JackSilverson</i></h4>
 
@@ -11,7 +11,7 @@
 </p>
 melonDS, sorta
 
-This project aims to turn the Kingdom Hearts DS games into playable PC games with a single screen and controls suited for a regular controller.
+This project aims to turn the KH DS games into playable PC games with a single screen and controls suited for a regular controller.
 
 This is a version of [melonDS](https://github.com/melonDS-emu/melonDS) with some modifications made specifically to improve the experience of those specific games. Any issues you have with KH Melon Mix should be reported in this same repository, and not in melonDS repository.
 
@@ -56,7 +56,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 <hr>
 
 <p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/screenshot.png"></p>
-<p align="center"><i>Kingdom Hearts 358/2 Days - Melon Mix v0.2.2</i></p>
+<p align="center"><i>KH Melon Mix v0.2.2</i></p>
 
 ## Credits
 
