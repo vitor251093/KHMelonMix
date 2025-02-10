@@ -83,7 +83,9 @@ private:
     bool HideAllHUD;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
+    std::map<GLuint, int[10]> CompGpuLastValues{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};
+    std::map<u32, int[3]> CompGpu3DLastValues{};
 
     bool _muchOlderHad3DOnTopScreen;
     bool _muchOlderHad3DOnBottomScreen;
@@ -113,6 +115,7 @@ private:
     bool didMobiCutsceneEnded();
     bool canReturnToGameAfterReplacementCutscene();
 
+    u8 getFloorLevel();
     u32 getCurrentMission();
     u32 getCurrentMap();
     bool isSaveLoaded();

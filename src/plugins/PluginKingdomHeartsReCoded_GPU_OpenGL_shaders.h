@@ -32,6 +32,7 @@ uniform int MinimapCenterX;
 uniform int MinimapCenterY;
 uniform bool HideAllHUD;
 uniform int DSCutsceneState;
+uniform bool IsBugSector;
 
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
@@ -112,15 +113,10 @@ bool is2DGraphicEqualToColor(ivec4 diffColor, ivec2 texcoord)
     return (pixel.r == diffColor.r && pixel.g == diffColor.g && pixel.b == diffColor.b);
 }
 
-bool isMissionInformationVisibleOnTopScreen()
+bool isMissionInformationVisible()
 {
     return is2DGraphicDifferentFromColor(ivec4(63,0,0,31), ivec2(256/2, 0)) ||
            is2DGraphicDifferentFromColor(ivec4(63,0,0,31), ivec2(256/2, 10));
-}
-
-bool isMissionInformationVisible()
-{
-    return isMissionInformationVisibleOnTopScreen();
 }
 
 bool isDialogVisible()
@@ -141,7 +137,7 @@ bool isCommandMenuVisible()
 
 bool isHealthVisible()
 {
-    return is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(225, 170));
+    return is2DGraphicDifferentFromColor(ivec4(0,63,0,31), ivec2(235, 175));
 }
 
 bool isColorBlack(ivec4 pixel)
@@ -346,31 +342,6 @@ vec2 getVerticalDualScreenTextureCoordinates(float xpos, float ypos, vec2 clearV
     return clearVect;
 }
 
-vec2 getMissionInformationCoordinates(vec2 texPosition3d)
-{
-    float heightScale = 1.0/TopScreenAspectRatio;
-    float widthScale = TopScreenAspectRatio;
-    vec2 fixStretch = vec2(widthScale, 1.0);
-
-    // mission information
-    float sourceMissionInfoHeight = 40.0;
-    float sourceMissionInfoWidth = 256.0;
-    float missionInfoHeight = sourceMissionInfoHeight;
-    float missionInfoWidth = sourceMissionInfoWidth*heightScale;
-    float missionInfoY1 = 0;
-    float missionInfoY2 = missionInfoHeight;
-    float missionInfoDetailsLeftMargin = -5.4*heightScale;
-
-    if (texPosition3d.x >= 0 &&
-        texPosition3d.x <  missionInfoWidth &&
-        texPosition3d.y >= 0 &&
-        texPosition3d.y <  missionInfoY2) {
-        return fixStretch*(texPosition3d);
-    }
-
-    return vec2(-1, -1);
-}
-
 vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
 {
     bool _isHealthVisible = isHealthVisible();
@@ -389,16 +360,21 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
     float heightScale = 1.0/TopScreenAspectRatio;
     float widthScale = TopScreenAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
+    bool _isMissionInformationVisible = isMissionInformationVisible();
 
-    if (isMissionInformationVisible()) {
-        vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d);
-        if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
-            return missionInfoCoords;
-        }
+    if (_isMissionInformationVisible) {
+        // mission information
+        float sourceMissionInfoHeight = 40.0;
+        float sourceMissionInfoWidth = 256.0;
+        float missionInfoHeight = sourceMissionInfoHeight;
+        float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+        float missionInfoY2 = missionInfoHeight;
 
-        if (texPosition3d.y <= (192*iuTexScale)/3) {
-            // nothing (clear screen)
-            return vec2(-1, -1);
+        if (texPosition3d.x >= 0 &&
+            texPosition3d.x <  missionInfoWidth &&
+            texPosition3d.y >= 0 &&
+            texPosition3d.y <  missionInfoY2) {
+            return fixStretch*(texPosition3d);
         }
     }
 
@@ -435,6 +411,96 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
             int finalMinimapCenterY = (MinimapCenterY > 105) ? 105 : ((MinimapCenterY < 87) ? 87 : MinimapCenterY);
             return increaseMapSize*fixStretch*(texPosition3d - vec2(minimapLeftMargin, minimapTopMargin)) +
                 vec2(0, 192.0) + vec2(bottomMinimapLeftMargin + finalMinimapCenterX - 128, bottomMinimapTopMargin + finalMinimapCenterY - 96);
+        }
+
+        if (IsBugSector)
+        {
+            // floor label
+            float bottomLabelWidth = 50.0;
+            float bottomLabelHeight = 15.0;
+            float increaseLabelSize = 1.4;
+            float labelWidth = (bottomLabelWidth/increaseLabelSize)*heightScale;
+            float labelHeight = (bottomLabelHeight/increaseLabelSize);
+            float labelRightMargin = 11.0;
+            float labelTopMargin = 88.0;
+            float labelLeftMargin = 256.0*iuTexScale - labelWidth - labelRightMargin;
+            if (texPosition3d.x >= labelLeftMargin &&
+                texPosition3d.x < (256.0*iuTexScale - labelRightMargin) && 
+                texPosition3d.y <= labelHeight + labelTopMargin && 
+                texPosition3d.y >= labelTopMargin) {
+                return increaseLabelSize*fixStretch*(texPosition3d - vec2(labelLeftMargin, labelTopMargin)) + vec2(0, 192.0);
+            }
+
+            // floor value
+            float bottomFloorWidth = 82.0;
+            float bottomFloorHeight = 15.0;
+            float increaseFloorSize = 1.4;
+            float floorWidth = (bottomFloorWidth/increaseFloorSize)*heightScale;
+            float floorHeight = (bottomFloorHeight/increaseFloorSize);
+            float floorRightMargin = 12.0;
+            float floorTopMargin = 98.0;
+            float floorLeftMargin = 256.0*iuTexScale - floorWidth - floorRightMargin;
+            float bottomFloorLeftMargin = 50.0;
+            if (texPosition3d.x >= floorLeftMargin &&
+                texPosition3d.x < (256.0*iuTexScale - floorRightMargin) && 
+                texPosition3d.y <= floorHeight + floorTopMargin && 
+                texPosition3d.y >= floorTopMargin) {
+                return increaseFloorSize*fixStretch*(texPosition3d - vec2(floorLeftMargin, floorTopMargin)) +
+                    vec2(0, 192.0) + vec2(bottomFloorLeftMargin, 0);
+            }
+
+            // enemies counter
+            float bottomEnemiesWidth = 123.0;
+            float bottomEnemiesHeight = 15.0;
+            float bottomEnemies2Width = 23.0;
+            float bottomEnemies2Height = 15.0;
+            float bottomEnemiesLeftMargin = 133.0;
+            float increaseEnemiesSize = 1.0;
+            float enemiesBottomMargin = 12.0;
+            float enemiesWidth = (bottomEnemiesWidth/increaseEnemiesSize)*heightScale;
+            float enemies2Width = (bottomEnemies2Width/increaseEnemiesSize)*heightScale;
+            float enemiesHeight = (bottomEnemiesHeight/increaseEnemiesSize);
+            float enemies2Height = (bottomEnemies2Height/increaseEnemiesSize);
+
+            // enemies counter (part 1)
+            float enemiesLeftMargin = (256.0*iuTexScale - enemiesWidth - enemies2Width)/2;
+            if (texPosition3d.x >= enemiesLeftMargin &&
+                texPosition3d.x < enemiesLeftMargin + enemiesWidth && 
+                texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
+                texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                return increaseEnemiesSize*fixStretch*(texPosition3d -
+                        vec2(enemiesLeftMargin, 192.0*iuTexScale - enemiesHeight - enemiesBottomMargin)) +
+                    vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
+            }
+
+            // enemies counter (part 2)
+            float enemies2LeftMargin = enemiesLeftMargin + enemiesWidth;
+            if (texPosition3d.x >= enemies2LeftMargin &&
+                texPosition3d.x < enemies2LeftMargin + enemies2Width && 
+                texPosition3d.y >= (192.0*iuTexScale - enemies2Height - enemiesBottomMargin) &&
+                texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                return vec2(bottomEnemies2Width, bottomEnemies2Height) - (increaseEnemiesSize*fixStretch*(texPosition3d -
+                        vec2(enemies2LeftMargin, 192.0*iuTexScale - enemies2Height - enemiesBottomMargin))) +
+                    vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
+            }
+
+            // mission information
+            float sourceMissionInfoHeight = 26.0;
+            float sourceMissionInfoWidth = 247.0;
+            float sourceMissionInfoLeftMargin = 5.0;
+            float sourceMissionInfoTopMargin = 166.0;
+            float missionInfoHeight = sourceMissionInfoHeight;
+            float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+            float missionInfoLeftMargin = 3.0;
+            float missionInfoTopMargin = 6.0;
+
+            if (texPosition3d.x >= missionInfoLeftMargin &&
+                texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
+                texPosition3d.y >= missionInfoTopMargin &&
+                texPosition3d.y <  missionInfoTopMargin + missionInfoHeight) {
+                return fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoTopMargin)) +
+                    vec2(0, 192.0) + vec2(sourceMissionInfoLeftMargin, sourceMissionInfoTopMargin);
+            }
         }
     }
 
@@ -478,6 +544,22 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                         vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
                 }
             }
+
+            // player allies health
+            float sourceAlliesHealthHeight = 118.0;
+            float sourceAlliesHealthWidth = 36.0;
+            float alliesHealthHeight = sourceAlliesHealthHeight;
+            float alliesHealthWidth = sourceAlliesHealthWidth*heightScale;
+            float alliesHealthRightMargin = 8.0;
+            float alliesHealthBottomMargin = 3.0;
+            if (texPosition3d.x >= (256.0*iuTexScale - alliesHealthWidth - alliesHealthRightMargin) &&
+                texPosition3d.x <= (256.0*iuTexScale - alliesHealthRightMargin) &&
+                texPosition3d.y >= (192.0*iuTexScale - alliesHealthHeight - alliesHealthBottomMargin) &&
+                texPosition3d.y < (192.0*iuTexScale - alliesHealthBottomMargin)) {
+                return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - alliesHealthWidth - alliesHealthRightMargin,
+                                                        192.0*iuTexScale - alliesHealthHeight - alliesHealthBottomMargin)) +
+                    vec2(256.0 - sourceAlliesHealthWidth, 192.0 - sourceAlliesHealthHeight);
+            }
         }
     }
 
@@ -519,6 +601,18 @@ vec2 getIngameHudTextureCoordinates(float xpos, float ypos)
                         vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
                 }
             }
+        }
+    }
+
+    if (_isMissionInformationVisible) {
+        // mission information
+        float sourceMissionInfoHeight = 40.0;
+        float missionInfoHeight = sourceMissionInfoHeight;
+        float missionInfoY2 = missionInfoHeight;
+
+        if (texPosition3d.y <  missionInfoY2) {
+            // nothing (clear screen)
+            return vec2(-1, -1);
         }
     }
 
@@ -627,13 +721,13 @@ vec2 getPauseHudTextureCoordinates(float xpos, float ypos)
     // pause menu
     float height = 192.0;
     float width = 256.0;
-    float x1 = (256.0*iuTexScale)/2 - width/2;
-    float x2 = (256.0*iuTexScale)/2 + width/2;
+    float x1 = (256.0*iuTexScale)/2 - width*heightScale/2;
+    float x2 = (256.0*iuTexScale)/2 + width*heightScale/2;
     float y1 = (192.0*iuTexScale)/2 - height/2;
     float y2 = (192.0*iuTexScale)/2 + height/2;
     if (texPosition3d.x >= x1 && texPosition3d.x < x2 && texPosition3d.y >= y1 && texPosition3d.y < y2)
     {
-        return texPosition3d - vec2(x1, y1);
+        return fixStretch*(texPosition3d - vec2(x1, y1));
     }
 
     // nothing (clear screen)
@@ -882,7 +976,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             return color;
         }
 
-        if (!isDialogVisible() && !isMissionInformationVisible())
+        if (!isDialogVisible())
         {
             int iuScale = KHUIScale;
             float iuTexScale = (6.0)/iuScale;
@@ -925,6 +1019,126 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     float transparency = 15.0/16;
                     int blur = int((xBlur * yBlur * transparency)/16);
                     color = ivec4(color.r, blur, 16 - blur, 0x01);
+                }
+            }
+
+            if (IsBugSector)
+            {
+                // floor label
+                float bottomLabelWidth = 50.0;
+                float bottomLabelHeight = 15.0;
+                float increaseLabelSize = 1.4;
+                float labelWidth = (bottomLabelWidth/increaseLabelSize)*heightScale;
+                float labelHeight = (bottomLabelHeight/increaseLabelSize);
+                float labelRightMargin = 11.0;
+                float labelTopMargin = 88.0;
+                float labelLeftMargin = 256.0*iuTexScale - labelWidth - labelRightMargin;
+                if (texPosition3d.x >= labelLeftMargin &&
+                    texPosition3d.x < (256.0*iuTexScale - labelRightMargin) && 
+                    texPosition3d.y <= labelHeight + labelTopMargin && 
+                    texPosition3d.y >= labelTopMargin) {
+
+                    if (index == 0)
+                    {
+                        if (color.b != color.r) {
+                            color = ivec4(0, 0, 0, 31);
+                        }
+                    }
+                    if (index == 2)
+                    {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.b != colorZero.r) {
+                            color = ivec4(color.r, 48, 16, 0x01);
+                        }
+                    }
+                }
+
+                // floor value
+                float bottomFloorWidth = 82.0;
+                float bottomFloorHeight = 15.0;
+                float increaseFloorSize = 1.4;
+                float floorWidth = (bottomFloorWidth/increaseFloorSize)*heightScale;
+                float floorHeight = (bottomFloorHeight/increaseFloorSize);
+                float floorRightMargin = 12.0;
+                float floorTopMargin = 98.0;
+                float floorLeftMargin = 256.0*iuTexScale - floorWidth - floorRightMargin;
+                float bottomFloorLeftMargin = 50.0;
+                if (texPosition3d.x >= floorLeftMargin &&
+                    texPosition3d.x < (256.0*iuTexScale - floorRightMargin) && 
+                    texPosition3d.y <= floorHeight + floorTopMargin && 
+                    texPosition3d.y >= floorTopMargin) {
+                    
+                    if (index == 0)
+                    {
+                        if (color.b != color.r) {
+                            color = ivec4(0, 0, 0, 31);
+                        }
+                    }
+                    if (index == 2)
+                    {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.b != colorZero.r) {
+                            color = ivec4(color.r, 48, 16, 0x01);
+                        }
+                    }
+                }
+
+                // enemies counter
+                float bottomEnemiesWidth = 148.0;
+                float bottomEnemiesHeight = 15.0;
+                float bottomEnemiesXMargin = 24.0;
+                float increaseEnemiesSize = 1.0;
+                float enemiesBottomMargin = 12.0;
+                float enemiesWidth = (bottomEnemiesWidth/increaseEnemiesSize)*heightScale;
+                float enemiesHeight = (bottomEnemiesHeight/increaseEnemiesSize);
+                float enemiesXMargin = (bottomEnemiesXMargin/increaseEnemiesSize)*heightScale;
+                float enemiesLeftMargin = (256.0*iuTexScale - enemiesWidth)/2;
+
+                // enemies counter (part 1)
+                if (texPosition3d.x >= enemiesLeftMargin &&
+                    texPosition3d.x < enemiesLeftMargin + enemiesXMargin && 
+                    texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
+                    texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                    
+                    if (index == 0)
+                    {
+                        if (color.b != color.r && color.b > color.r) {
+                            color = ivec4(0, 0, 0, 31);
+                        }
+                    }
+                    if (index == 2)
+                    {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.b != colorZero.r && colorZero.b > colorZero.r) {
+                            color = ivec4(color.r, 48, 16, 0x01);
+                        }
+                    }
+                }
+
+                // enemies counter (part 2)
+                if (texPosition3d.x >= enemiesLeftMargin + enemiesWidth - enemiesXMargin &&
+                    texPosition3d.x < enemiesLeftMargin + enemiesWidth && 
+                    texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
+                    texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                    
+                    if (index == 0)
+                    {
+                        bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+                        if (isShadeOfGray) {
+                            color = ivec4(0, 0, 0, color.a);
+                        }
+
+                        if (color.b != color.r && color.b > color.r) {
+                            color = ivec4(0, 0, 0, 31);
+                        }
+                    }
+                    if (index == 2)
+                    {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.b != colorZero.r && colorZero.b > colorZero.r) {
+                            color = ivec4(color.r, 48, 16, 0x01);
+                        }
+                    }
                 }
             }
         }

@@ -48,6 +48,7 @@ public:
 
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
+    bool shouldRumble();
 
     bool overrideMouseTouchCoords_cameraControl(int width, int height, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching);
@@ -100,7 +101,9 @@ private:
     u32 cameraAngleY;
 
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
-    std::map<u32, GLuint[4]> CompGpu3DLoc{};
+    std::map<GLuint, int[20]> CompGpuLastValues{};
+    std::map<u32, GLuint[5]> CompGpu3DLoc{};
+    std::map<u32, int[5]> CompGpu3DLastValues{};
 
     bool _muchOlderHad3DOnTopScreen;
     bool _muchOlderHad3DOnBottomScreen;
