@@ -67,6 +67,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
  * All the members from our Discord server that helped testing and developing the Melon Mix!
  * Michael Lipinski, for the [documentation](https://pdfs.semanticscholar.org/657d/adf4888f6302701095055b0d7a066e42b36f.pdf) regarding the way a NDS works
  * Datel Design & Development Ltd, for the [documentation](https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf) regarding how to write AR Codes
+ * DanielSant0s, for the [original PS2 port of melonDS](https://github.com/DanielSant0s/melonDS-PS2)
 
 ## Licenses
 
