@@ -99,9 +99,18 @@ if (ENABLE_GDBSTUB)
 endif()
 
 option(BUILD_QT_SDL "Build Qt/SDL frontend" ON)
+option(BUILD_PS2 "Build for PS2" OFF)
+if (BUILD_PS2)
+    set(BUILD_QT_SDL OFF)
+    set(ENABLE_JIT OFF)
+    set(ENABLE_OGLRENDERER OFF)
+endif()
 
 add_subdirectory(src)
 
 if (BUILD_QT_SDL)
     add_subdirectory(src/frontend/qt_sdl)
+endif()
+if (BUILD_PS2)
+    add_subdirectory(src/frontend/ps2)
 endif()
