@@ -478,6 +478,8 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     auto shapes = std::vector<ShapeData>();
 
+    
+
     return shapes;
 }
 
