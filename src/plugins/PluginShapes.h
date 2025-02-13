@@ -1,6 +1,9 @@
 #ifndef PLUGIN_SHAPES_H
 #define PLUGIN_SHAPES_H
 
+namespace Plugins
+{
+
 struct ivec2 {
     int x, y;
 };
@@ -35,5 +38,79 @@ struct ShapeData {
 
     int _pad1; // 4 bytes padding to ensure struct size is multiple of 16 bytes
 };
+
+enum
+{
+    corner_Center,
+    corner_TopLeft,
+    corner_Top,
+    corner_TopRight,
+    corner_Right,
+    corner_BottomRight,
+    corner_Bottom,
+    corner_BottomLeft,
+    corner_Left
+};
+
+class ShapeBuilder
+{
+public:
+    static ShapeBuilder square() {
+        auto shapeBuilder = ShapeBuilder();
+        shapeBuilder.shapeData.enabled = 1;
+        shapeBuilder.shapeData.shape = 0;
+        shapeBuilder.shapeData.scale = 1.0;
+        return shapeBuilder;
+    }
+
+    ShapeBuilder& corner(int _corner) {
+        shapeData.corner = _corner;
+        return *this;
+    }
+    ShapeBuilder& scale(float _scale) {
+        shapeData.scale = _scale;
+        return *this;
+    }
+    ShapeBuilder& position(int x, int y) {
+        if (shapeData.shape == 0) {
+            shapeData.square.x = x;
+            shapeData.square.y = y;
+        }
+        return *this;
+    }
+    ShapeBuilder& size(int width, int height) {
+        if (shapeData.shape == 0) {
+            shapeData.square.z = width;
+            shapeData.square.w = height;
+        }
+        return *this;
+    }
+    ShapeBuilder& margin(float left, float top, float right, float bottom) {
+        shapeData.margin.x = left;
+        shapeData.margin.y = top;
+        shapeData.margin.z = right;
+        shapeData.margin.w = bottom;
+        return *this;
+    }
+    ShapeBuilder& fadeBorderSize(float left, float top, float right, float bottom) {
+        shapeData.fadeBorderSize.x = left;
+        shapeData.fadeBorderSize.y = top;
+        shapeData.fadeBorderSize.z = right;
+        shapeData.fadeBorderSize.w = bottom;
+        return *this;
+    }
+    ShapeBuilder& invertGrayScaleColors() {
+        shapeData.invertGrayScaleColors = 1;
+        return *this;
+    }
+
+    ShapeData build() {
+        return shapeData;
+    }
+private:
+    ShapeData shapeData;
+};
+
+}
 
 #endif

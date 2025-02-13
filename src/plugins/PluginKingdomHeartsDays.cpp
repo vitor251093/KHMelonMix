@@ -478,7 +478,17 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     auto shapes = std::vector<ShapeData>();
 
-    
+    if (GameScene == gameScene_InGameWithMap) {
+        // minimap
+        shapes.push_back(ShapeBuilder::square()
+            .corner(corner_TopRight)
+            .scale(0.8333)
+            .position(128, 30).size(72, 72)
+            .margin(0.0, 30.0, 9.0, 0.0)
+            .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+            .invertGrayScaleColors()
+            .build());
+    }
 
     return shapes;
 }
