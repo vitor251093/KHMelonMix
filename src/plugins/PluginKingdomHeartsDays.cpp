@@ -410,31 +410,24 @@ std::string PluginKingdomHeartsDays::tomlUniqueIdentifier() {
     return getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
 }
 
-const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
+/*const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return nullptr;
     }
 
     return kCompositorFS_KhDays;
-};
+};*/
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "PriorGameScene");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "GameScene");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "KHUIScale");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
-    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
-    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideAllHUD");
-    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
-    CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
-    CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
-    CompGpuLoc[CompShader][12] = glGetUniformLocation(CompShader, "IsCharacterControllable");
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "uiScale");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
 
-    for (int index = 0; index <= 12; index ++) {
+    for (int index = 0; index <= 5; index ++) {
         CompGpuLastValues[CompShader][index] = -1;
     }
 }
@@ -456,25 +449,30 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 
     bool updated = false;
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], PriorGameScene, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(aspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], UIScale, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], ShowMap ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], ShowTarget ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][6], ShowMissionGauge ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], ShowMissionInfo ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][8], HideAllHUD ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][10], currentMainMenuView, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][11], dsCutsceneState, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][12], isCharacterControllable ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][8], HideAllHUD ? 0 : 1, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], 0, updated);
 
     if (updated) {
         glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
-        for (int index = 1; index <= 12; index ++) {
+        glUniform1f(CompGpuLoc[CompShader][1], aspectRatio);
+        for (int index = 2; index <= 5; index ++) {
             glUniform1i(CompGpuLoc[CompShader][index], CompGpuLastValues[CompShader][index]);
         }
+
+        std::vector<ShapeData> shapes = gpuOpenGL_FS_shapes();
+        glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, shapes.size() * sizeof(ShapeData), shapes.data());
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
+}
+
+std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
+    auto shapes = std::vector<ShapeData>(100);
+
+    return shapes;
 }
 
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {

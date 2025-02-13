@@ -23,38 +23,38 @@ namespace Plugins
 {
 const char* kCompositorFS_Plugin = R"(#version 140
 
+struct ShapeData {
+    int enabled;
+
+    int shape; // 0 = SQUARE, 1 = FREEFORM
+    int corner; // 0 = center, 1-8 = corners
+    float scale;
+
+    ivec4 square;      // X, Y, Width, Height (only valid if shape == 0)
+    ivec2 freeForm[4]; // Four (X, Y) points (only valid if shape == 1)
+    vec4 margin;       // left, top, right, down
+
+    // effects
+    vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
+    bool invertGrayScaleColors;
+    ivec3 colorToAlpha;
+
+    int _pad1; // Padding for std140 alignment
+};
+
 layout(std140) uniform ShapeBlock {
-    struct ShapeData {
-        int enabled;
-
-        int shape; // 0 = SQUARE, 1 = FREEFORM
-        int corner; // 0 = center, 1-8 = corners
-        float scale;
-
-        ivec4 square;      // X, Y, Width, Height (only valid if shape == 0)
-        ivec2 freeForm[4]; // Four (X, Y) points (only valid if shape == 1)
-        vec4 margin;       // left, top, right, down
-
-        // effects
-        vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
-        bool invertGrayScaleColors;
-        ivec3 colorToAlpha;
-
-        int _pad1; // Padding for std140 alignment
-    };
-
     ShapeData shapes[100];
 };
 
-uniform uint u3DScale;
-uniform int uiScale;
-
-uniform bool showOriginalHud;
-uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
-uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = no brightness
 uniform float currentAspectRatio;
 uniform float forcedAspectRatio;
 
+uniform int uiScale;
+uniform bool showOriginalHud;
+uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
+uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = no brightness
+
+uniform uint u3DScale;
 uniform usampler2D ScreenTex;
 uniform sampler2D _3DTex;
 
@@ -225,10 +225,8 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
     float iuTexScale = (6.0)/uiScale;
     float heightScale = 1.0/currentAspectRatio;
 
-    int squareFinalHeight = shapeData.square[3]*shapeData.scale;
-    int squareFinalWidth = shapeData.square[2]*shapeData.scale*heightScale;
-    int squareTopMargin = shapeData.square[1];
-    int squareLeftMargin = shapeData.square[0];
+    float squareFinalHeight = shapeData.square[3]*shapeData.scale;
+    float squareFinalWidth = shapeData.square[2]*shapeData.scale*heightScale;
 
     float squareFinalX1 = 0.0;
     float squareFinalY1 = 0.0;
@@ -242,7 +240,7 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
         squareFinalY1 = shapeData.margin[1];
     }
     if (shapeData.corner == 2) { // square at top
-        squareFinalX1 = (256.0*iuTexScale - countdownWidth)/2;
+        squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
         squareFinalY1 = shapeData.margin[1];
     }
     if (shapeData.corner == 3) { // square at top right corner
@@ -286,7 +284,7 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
 
     int shapesLength = 0;
 
-    for (int shapeIndex = 0; y < 100; shapeIndex++) {
+    for (int shapeIndex = 0; shapeIndex < 100; shapeIndex++) {
         ShapeData shapeData = shapes[shapeIndex];
     
         if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
@@ -297,14 +295,16 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
                 texPosition3d.x <= shape3DCoords[2] && 
                 texPosition3d.y >= shape3DCoords[1] && 
                 texPosition3d.y <= shape3DCoords[3]) {
-                return (1.0/shapeData.scale)*fixStretch*(texPosition3d - vec2(squareFinalX1, squareFinalY1)) +
-                    vec2(squareLeftMargin, squareTopMargin);
+                int squareTopMargin = shapeData.square[1];
+                int squareLeftMargin = shapeData.square[0];
+                return ivec2((1.0/shapeData.scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]))) +
+                    ivec2(squareLeftMargin, squareTopMargin);
             }
         }
     }
 
     if (shapesLength == 0 && showOriginalHud) {
-        return vec2(fTexcoord);
+        return ivec2(fTexcoord);
     }
 
     // nothing (clear screen)
@@ -479,13 +479,13 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     if (textureBeginning.x == -1 && textureBeginning.y == -1) {
         if (index == 1)
         {
-            return ivec4(0, 0, 0, 31);
+            return ivec4(0, 0, 0, 0);
         }
         if (index == 2)
         {
-            color = ivec4(color.r, 0, 63, 0x01);
+            return ivec4(0, 0, 63, 0x01);
         }
-        return ivec4(0, 0, 0, 31);
+        return ivec4(0, 0, 0, 0);
     }
 
     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
@@ -497,7 +497,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         color = fixTransparencyLayer(color);
     }
 
-    for (int shapeIndex = 0; y < 100; shapeIndex++) {
+    float iuTexScale = (6.0)/uiScale;
+    vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+    for (int shapeIndex = 0; shapeIndex < 100; shapeIndex++) {
         ShapeData shapeData = shapes[shapeIndex];
     
         if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
