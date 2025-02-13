@@ -51,6 +51,7 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
 
 void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     std::vector<ShapeData> shapes = gpuOpenGL_FS_shapes();
+    shapes.resize(100);
     glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, shapes.size() * sizeof(ShapeData), shapes.data());
     glBindBuffer(GL_UNIFORM_BUFFER, 0);

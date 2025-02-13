@@ -157,7 +157,7 @@ public:
     virtual const char* gpuOpenGL_FS();
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
     virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
-    virtual std::vector<ShapeData> gpuOpenGL_FS_shapes() { return std::vector<ShapeData>(100); };
+    virtual std::vector<ShapeData> gpuOpenGL_FS_shapes() { return std::vector<ShapeData>(); };
 
     virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
     virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};

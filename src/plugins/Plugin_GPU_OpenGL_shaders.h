@@ -23,6 +23,8 @@ namespace Plugins
 {
 const char* kCompositorFS_Plugin = R"(#version 140
 
+#define MAX_SHAPES 100
+
 struct ShapeData {
     int enabled;
 
@@ -43,7 +45,7 @@ struct ShapeData {
 };
 
 layout(std140) uniform ShapeBlock {
-    ShapeData shapes[100];
+    ShapeData shapes[MAX_SHAPES];
 };
 
 uniform float currentAspectRatio;
@@ -53,6 +55,8 @@ uniform int uiScale;
 uniform bool showOriginalHud;
 uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
 uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = no brightness
+
+uniform int shapeCount;
 
 uniform uint u3DScale;
 uniform usampler2D ScreenTex;
@@ -276,6 +280,10 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
 
 ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
 {
+    if (showOriginalHud) {
+        return ivec2(fTexcoord);
+    }
+
     float iuTexScale = (6.0)/uiScale;
     vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
     float heightScale = 1.0/currentAspectRatio;
@@ -284,7 +292,7 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
 
     int shapesLength = 0;
 
-    for (int shapeIndex = 0; shapeIndex < 100; shapeIndex++) {
+    for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
         ShapeData shapeData = shapes[shapeIndex];
     
         if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
@@ -301,10 +309,6 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
                     ivec2(squareLeftMargin, squareTopMargin);
             }
         }
-    }
-
-    if (shapesLength == 0 && showOriginalHud) {
-        return ivec2(fTexcoord);
     }
 
     // nothing (clear screen)
@@ -499,7 +503,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     float iuTexScale = (6.0)/uiScale;
     vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-    for (int shapeIndex = 0; shapeIndex < 100; shapeIndex++) {
+    for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
         ShapeData shapeData = shapes[shapeIndex];
     
         if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
