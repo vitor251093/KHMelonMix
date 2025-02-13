@@ -85,6 +85,7 @@ endif()
 
 if (ENABLE_OGLRENDERER)
     target_sources(core PRIVATE
+        plugins/Plugin_GPU_OpenGL_shaders.h
         plugins/PluginKingdomHeartsDays_GPU_OpenGL_shaders.h
         plugins/PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h
 

@@ -1,5 +1,7 @@
 #include "Plugin.h"
 
+#include "Plugin_GPU_OpenGL_shaders.h"
+
 #include <iostream>
 #include <string>
 #include <cstdarg>
@@ -33,6 +35,26 @@
 
 namespace Plugins
 {
+
+const char* Plugin::gpuOpenGL_FS()
+{
+    return kCompositorFS_Plugin;
+}
+
+void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
+    glGenBuffers(1, &CompUboLoc[CompShader]);
+    glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData) * 100, nullptr, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, CompUboLoc[CompShader]);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
+    std::vector<ShapeData> shapes = gpuOpenGL_FS_shapes();
+    glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, shapes.size() * sizeof(ShapeData), shapes.data());
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
 
 bool Plugin::togglePause()
 {

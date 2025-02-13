@@ -96,6 +96,41 @@ struct CutsceneEntry
     int dsScreensState;
 };
 
+struct ivec2 {
+    int x, y;
+};
+
+struct ivec3 {
+    int x, y, z;
+};
+
+struct ivec4 {
+    int x, y, z, w;
+};
+
+struct vec4 {
+    float x, y, z, w;
+};
+
+// UBO-compatible struct with proper padding
+struct ShapeData {
+    int enabled;      // 4 bytes (bool is not std140-safe, so we use int)
+    int shape;        // 4 bytes
+    int corner;       // 4 bytes
+    float scale;      // 4 bytes
+
+    ivec4 square;   // 16 bytes (X, Y, Width, Height)
+    ivec2 freeForm[4]; // 4 * 8 bytes = 32 bytes
+
+    vec4 margin;        // 16 bytes (left, top, right, down)
+    vec4 fadeBorderSize; // 16 bytes (left fade, top fade, right fade, down fade)
+
+    int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
+    ivec3 colorToAlpha;   // 12 bytes (RGB)
+
+    int _pad1; // 4 bytes padding to ensure struct size is multiple of 16 bytes
+};
+
 class Plugin
 {
 protected:
@@ -119,9 +154,10 @@ public:
     virtual std::string assetsFolder() {return std::to_string(GameCode);}
     virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
 
-    virtual const char* gpuOpenGL_FS() { return nullptr; };
-    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) {};
-    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) {};
+    virtual const char* gpuOpenGL_FS();
+    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
+    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
+    virtual std::vector<ShapeData> gpuOpenGL_FS_shapes() { return std::vector<ShapeData>(100); };
 
     virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
     virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
@@ -243,6 +279,8 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
+    std::map<GLuint, GLuint> CompUboLoc{};
+
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
