@@ -33,15 +33,15 @@ struct ShapeData {
     float scale;
 
     ivec4 square;      // X, Y, Width, Height (only valid if shape == 0)
-    ivec2 freeForm[4]; // Four (X, Y) points (only valid if shape == 1)
+    ivec4 freeForm[4]; // Four (X, Y) points (only valid if shape == 1)
     vec4 margin;       // left, top, right, down
 
     // effects
     vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
-    bool invertGrayScaleColors;
-    ivec3 colorToAlpha;
+    int invertGrayScaleColors;
+    int _pad0, _pad1, _pad2;  // Padding to align the struct to 16 bytes
 
-    int _pad1; // Padding for std140 alignment
+    ivec4 colorToAlpha;
 };
 
 layout(std140) uniform ShapeBlock {
@@ -57,6 +57,7 @@ uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertica
 uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = no brightness
 
 uniform int shapeCount;
+
 
 uniform uint u3DScale;
 uniform usampler2D ScreenTex;
@@ -272,7 +273,7 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
         squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
     }
 
-    float squareFinalX2 = squareFinalWidth + squareFinalX1;
+    float squareFinalX2 = squareFinalX1 + squareFinalWidth;
     float squareFinalY2 = squareFinalY1 + squareFinalHeight;
 
     return vec4(squareFinalX1, squareFinalY1, squareFinalX2, squareFinalY2);
@@ -290,23 +291,20 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    int shapesLength = 0;
-
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
         ShapeData shapeData = shapes[shapeIndex];
     
         if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
-            shapesLength += 1;
             vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
 
             if (texPosition3d.x >= shape3DCoords[0] &&
                 texPosition3d.x <= shape3DCoords[2] && 
                 texPosition3d.y >= shape3DCoords[1] && 
                 texPosition3d.y <= shape3DCoords[3]) {
-                int squareTopMargin = shapeData.square[1];
-                int squareLeftMargin = shapeData.square[0];
+                int squarePosY = shapeData.square[1];
+                int squarePosX = shapeData.square[0];
                 return ivec2((1.0/shapeData.scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]))) +
-                    ivec2(squareLeftMargin, squareTopMargin);
+                    ivec2(squarePosX, squarePosY);
             }
         }
     }
@@ -507,7 +505,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         ShapeData shapeData = shapes[shapeIndex];
     
         if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
-            if (index == 0 && shapeData.invertGrayScaleColors) {
+            if (index == 0 && shapeData.invertGrayScaleColors == 1) {
                 vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
 
                 if (texPosition3d.x >= shape3DCoords[0] &&

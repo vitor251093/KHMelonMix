@@ -420,6 +420,18 @@ std::string PluginKingdomHeartsDays::tomlUniqueIdentifier() {
 };*/
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
+    GLint uni_id = glGetUniformBlockIndex(CompShader, "ShapeBlock");
+    glUniformBlockBinding(CompShader, uni_id, 0);
+
+    GLuint uboBuffer;
+    glGenBuffers(1, &uboBuffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData) * 100, nullptr, GL_STATIC_DRAW); // GL_DYNAMIC_DRAW
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboBuffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    printf("uboBuffer: %d\n", uboBuffer);
+    CompUboLoc[CompShader] = uboBuffer;
+
     CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
     CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
     CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "uiScale");
@@ -469,9 +481,19 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
             glUniform1i(CompGpuLoc[CompShader][index], CompGpuLastValues[CompShader][index]);
         }
 
+        printf("UBO ID: %d\n", CompUboLoc[CompShader]);
+
+        auto shadersData = shapes.data();
         glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, shapes.size() * sizeof(ShapeData), shapes.data());
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData) * shapes.size());
+        glUnmapBuffer(GL_UNIFORM_BUFFER);
+
+        GLuint err = glGetError();
+        if (err != GL_NO_ERROR) {
+            printf("OpenGL Error: %d\n", err);
+        }
+
     }
 }
 
@@ -481,10 +503,12 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     if (GameScene == gameScene_InGameWithMap) {
         // minimap
         shapes.push_back(ShapeBuilder::square()
-            .corner(corner_TopRight)
+            .fromBottomScreen()
+            .fromPosition(128, 30)
+            .withSize(72, 72)
+            .placeAtCorner(corner_TopRight)
+            .withMargin(0.0, 30.0, 9.0, 0.0)
             .scale(0.8333)
-            .position(128, 30).size(72, 72)
-            .margin(0.0, 30.0, 9.0, 0.0)
             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
             .invertGrayScaleColors()
             .build());

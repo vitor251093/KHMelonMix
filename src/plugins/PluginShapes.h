@@ -21,22 +21,22 @@ struct vec4 {
 };
 
 // UBO-compatible struct with proper padding
-struct ShapeData {
+struct alignas(16) ShapeData {
     int enabled;      // 4 bytes (bool is not std140-safe, so we use int)
+
     int shape;        // 4 bytes
     int corner;       // 4 bytes
     float scale;      // 4 bytes
 
     ivec4 square;   // 16 bytes (X, Y, Width, Height)
-    ivec2 freeForm[4]; // 4 * 8 bytes = 32 bytes
-
+    ivec4 freeForm[4]; // 4 * 8 bytes = 32 bytes
     vec4 margin;        // 16 bytes (left, top, right, down)
+
     vec4 fadeBorderSize; // 16 bytes (left fade, top fade, right fade, down fade)
-
     int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
-    ivec3 colorToAlpha;   // 12 bytes (RGB)
+    int _pad0, _pad1, _pad2;  // Padding to align the struct to 16 bytes
 
-    int _pad1; // 4 bytes padding to ensure struct size is multiple of 16 bytes
+    ivec4 colorToAlpha;   // 16 bytes (RGBA, just ignore the A)
 };
 
 enum
@@ -60,10 +60,15 @@ public:
         shapeBuilder.shapeData.enabled = 1;
         shapeBuilder.shapeData.shape = 0;
         shapeBuilder.shapeData.scale = 1.0;
+        shapeBuilder._fromBottomScreen = false;
         return shapeBuilder;
     }
 
-    ShapeBuilder& corner(int _corner) {
+    ShapeBuilder& fromBottomScreen() {
+        _fromBottomScreen = true;
+        return *this;
+    }
+    ShapeBuilder& placeAtCorner(int _corner) {
         shapeData.corner = _corner;
         return *this;
     }
@@ -71,21 +76,21 @@ public:
         shapeData.scale = _scale;
         return *this;
     }
-    ShapeBuilder& position(int x, int y) {
+    ShapeBuilder& fromPosition(int x, int y) {
         if (shapeData.shape == 0) {
             shapeData.square.x = x;
             shapeData.square.y = y;
         }
         return *this;
     }
-    ShapeBuilder& size(int width, int height) {
+    ShapeBuilder& withSize(int width, int height) {
         if (shapeData.shape == 0) {
             shapeData.square.z = width;
             shapeData.square.w = height;
         }
         return *this;
     }
-    ShapeBuilder& margin(float left, float top, float right, float bottom) {
+    ShapeBuilder& withMargin(float left, float top, float right, float bottom) {
         shapeData.margin.x = left;
         shapeData.margin.y = top;
         shapeData.margin.z = right;
@@ -105,10 +110,14 @@ public:
     }
 
     ShapeData build() {
+        if (_fromBottomScreen) {
+            shapeData.square.y += 192;
+        }
         return shapeData;
     }
 private:
     ShapeData shapeData;
+    bool _fromBottomScreen;
 };
 
 }
