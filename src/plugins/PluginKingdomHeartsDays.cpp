@@ -507,6 +507,20 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .build());
     }
 
+    if (GameScene == gameScene_Cutscene) {
+        if (detectTopScreenMobiCutscene() == nullptr) {
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .preserveDsScale()
+                .build());
+        }
+        else if (detectBottomScreenMobiCutscene() == nullptr) {
+            shapes.push_back(ShapeBuilder::square()
+                .preserveDsScale()
+                .build());
+        }
+    }
+
     // TODO: KH also happens at
     // if (GameScene == 9 && !is2DGraphicDifferentFromColor(ivec4(0, 63, 0, 31), ivec2(130, 190))) { // gameScene_InGameWithDouble3D
     if (GameScene == gameScene_InGameWithMap) {
@@ -634,6 +648,58 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             .build());
     }
 
+    if (GameScene == gameScene_PauseMenu) {
+        if (PriorGameScene != gameScene_InGameWithDouble3D) // and !isScreenBlack(1)
+        {
+            // TODO: KH
+            // if (isMissionInformationVisibleOnBottomScreen()) {
+            //     vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, false, true);
+            //     if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
+            //         return missionInfoCoords;
+            //     }
+            // }
+
+            // mission gauge
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(5, 152)
+                .withSize(246, 40)
+                .placeAtCorner(corner_Bottom)
+                .build());
+            // TODO: KH needs to crop the corners somehow
+        }
+
+        // pause menu
+        shapes.push_back(ShapeBuilder::square()
+            .fromPosition(0, 0)
+            .withSize(256, 192)
+            .placeAtCorner(corner_Center)
+            .build());
+    }
+    
+    // TODO: KH
+
+    // case gameScene_Tutorial:
+    //     return screenLayout_Bottom;
+    
+    // case gameScene_InGameWithDouble3D:
+    //     return screenLayout_Top;
+    
+    // case gameScene_MultiplayerMissionReview:
+    //     return screenLayout_BothVertical;
+    
+    // case gameScene_Shop:
+    //     return screenLayout_BothHorizontal;
+    
+    // case gameScene_LoadingScreen:
+    //     return screenLayout_Bottom;
+    
+    // case gameScene_DeathScreen:
+    //     return screenLayout_Top;
+    
+    // case gameScene_TheEnd:
+    //     return screenLayout_BothHorizontal;
+
     return shapes;
 }
 
@@ -687,7 +753,7 @@ int PluginKingdomHeartsDays::gpuOpenGL_FS_screenLayout() {
             return screenLayout_Top;
     }
 
-    if (GameScene == 6) { // gameScene_InGameMenu
+    if (GameScene == gameScene_InGameMenu) {
         u32 mainMenuView = getCurrentMainMenuView();
         switch (mainMenuView) {
             case 3: // holo-mission / challenges

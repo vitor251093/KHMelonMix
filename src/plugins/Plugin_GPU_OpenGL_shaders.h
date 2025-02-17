@@ -242,8 +242,8 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
     float squareFinalY1 = 0.0;
 
     if (shapeData.corner == 0) { // square at center
-        squareFinalX1 = (256.0 - squareFinalWidth)/2;
-        squareFinalY1 = (192.0 - squareFinalHeight)/2;
+        squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
+        squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
     }
     if (shapeData.corner == 1) { // square at top left corner
         squareFinalX1 = shapeData.margin[0];
