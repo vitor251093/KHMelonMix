@@ -181,6 +181,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     priorMap = -1;
     Map = 0;
     UIScale = 4;
+    ShouldRefreshShapes = true;
 
     // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;
@@ -458,13 +459,14 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         dsCutsceneState = 3;
     }
 
-    bool updated = false;
+    bool updated = ShouldRefreshShapes;
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(aspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], UIScale, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], 0, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], 0, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], 0, updated);
+    ShouldRefreshShapes = false;
 
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], GameScene, updated);
 
@@ -490,17 +492,105 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     auto shapes = std::vector<ShapeData>();
 
+    if (HideAllHUD) {
+        return shapes;
+    }
+
+    // also happens at
+    // if (GameScene == 9 && !is2DGraphicDifferentFromColor(ivec4(0, 63, 0, 31), ivec2(130, 190))) { // gameScene_InGameWithDouble3D
     if (GameScene == gameScene_InGameWithMap) {
-        // minimap
+        // if (GameScene == 5 && (!IsCharacterControllable || isDialogVisible())) { // gameScene_InGameWithMap
+        //     return getIngameDialogTextureCoordinates(xpos, ypos);
+        // }
+        // if (GameScene == 9 && isDialogVisible()) { // gameScene_InGameWithDouble3D
+        //     return getIngameDialogTextureCoordinates(xpos, ypos);
+        // }
+
+        // bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
+        // bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo && isMissionInformationVisibleOnBottomScreen();
+
+        // if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
+        //     vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, showMissionInformationTopScreen, showMissionInformationBottomScreen);
+        //     if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
+        //         return missionInfoCoords;
+        //     }
+
+        //     if (showMissionInformationTopScreen) {
+        //         // nothing (clear screen)
+        //         return vec2(255, 191);
+        //     }
+        // }
+
+        // if (isCutsceneFromChallengeMissionVisible()) {
+        //     return vec2(fTexcoord);
+        // }
+
+        // item notification
         shapes.push_back(ShapeBuilder::square()
-            .fromBottomScreen()
-            .fromPosition(128, 60)
-            .withSize(72, 72)
+            .fromPosition(0, 35)
+            .withSize(108, 86)
+            .placeAtCorner(corner_TopLeft)
+            .build());
+
+        // countdown and locked on
+        shapes.push_back(ShapeBuilder::square()
+            .fromPosition(93, 0)
+            .withSize(70, 20)
+            .placeAtCorner(corner_Top)
+            .build());
+        
+        if (ShowMap && GameScene == gameScene_InGameWithMap) { // also isMinimapVisible()
+            // minimap
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(128, 60)
+                .withSize(72, 72)
+                .placeAtCorner(corner_TopRight)
+                .withMargin(0.0, 30.0, 9.0, 0.0)
+                .scale(0.8333)
+                .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                .invertGrayScaleColors()
+                .build());
+        }
+
+        if (ShowTarget && GameScene == gameScene_InGameWithMap) { // also isMinimapVisible()
+            // target label
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(33, 51)
+                .withSize(62, 9)
+                .placeAtCorner(corner_TopRight)
+                .withMargin(0.0, 30.0, 9.0, 0.0)
+                .scale(0.666)
+                .build());
+
+            // target
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(32, 64)
+                .withSize(64, 76)
+                .placeAtCorner(corner_TopRight)
+                .withMargin(0.0, 38.0, 9.0, 0.0)
+                .scale(0.666)
+                .build());
+        }
+
+        if (ShowMissionGauge && GameScene == gameScene_InGameWithMap) { // also isMinimapVisible()
+            // mission gauge
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(5, 152)
+                .withSize(246, 40)
+                .placeAtCorner(corner_Bottom)
+                .build());
+        }
+
+        // enemy health
+        shapes.push_back(ShapeBuilder::square()
+            .fromPosition(163, 0)
+            .withSize(93, 22)
             .placeAtCorner(corner_TopRight)
-            .withMargin(0.0, 30.0, 9.0, 0.0)
-            .scale(0.8333)
-            .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
-            .invertGrayScaleColors()
+            .withMargin(0.0, 7.5, 9.0, 0.0)
             .build());
     }
 
@@ -891,6 +981,7 @@ bool PluginKingdomHeartsDays::shouldRumble() {
 
 void PluginKingdomHeartsDays::hudToggle()
 {
+    ShouldRefreshShapes = true;
     HUDState = (HUDState + 1) % 4;
     if (HUDState == 0) { // exploration mode
         ShowMap = true;

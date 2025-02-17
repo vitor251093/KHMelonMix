@@ -60,6 +60,10 @@ public:
         shapeBuilder.shapeData.enabled = 1;
         shapeBuilder.shapeData.shape = 0;
         shapeBuilder.shapeData.scale = 1.0;
+        shapeBuilder.shapeData.margin.x = 0;
+        shapeBuilder.shapeData.margin.y = 0;
+        shapeBuilder.shapeData.margin.z = 0;
+        shapeBuilder.shapeData.margin.w = 0;
         shapeBuilder.shapeData.colorToAlpha.x = -1;
         shapeBuilder._fromBottomScreen = false;
         return shapeBuilder;

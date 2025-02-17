@@ -82,7 +82,10 @@ private:
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
+
     int UIScale = 4;
+    bool ShouldRefreshShapes;
+
     bool ShowMap;
     bool ShowTarget;
     bool ShowMissionGauge;
