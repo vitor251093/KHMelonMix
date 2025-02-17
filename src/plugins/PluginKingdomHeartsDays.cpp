@@ -1415,7 +1415,7 @@ int PluginKingdomHeartsDays::detectGameScene()
             return gameScene_DayCounter;
         }
 
-        if (nds->GPU.GPU2D_B.MasterBrightness == 32784) // TODO: Replace with memory detection
+        if (nds->GPU.GPU2D_B.MasterBrightness == 32784) // TODO: KH Replace with memory detection
         {
             return gameScene_RoxasThoughts;
         }
