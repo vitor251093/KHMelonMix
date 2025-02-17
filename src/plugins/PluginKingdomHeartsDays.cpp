@@ -426,7 +426,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     GLuint uboBuffer;
     glGenBuffers(1, &uboBuffer);
     glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData) * 100, nullptr, GL_STATIC_DRAW); // GL_DYNAMIC_DRAW
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData) * 100, nullptr, GL_STATIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
     CompUboLoc[CompShader] = uboBuffer;
 
