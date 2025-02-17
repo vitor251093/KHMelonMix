@@ -342,7 +342,7 @@ ivec2 getScreen2DTextureCoordinates(float xpos, float ypos)
 ivec4 getForcedAspectRatioScreen3DColor(float xpos, float ypos)
 {
     vec2 texPosition3d = vec2(xpos, ypos);
-    float heightScale = ((4.0/3.0)/forcedAspectRatio)/currentAspectRatio;
+    float heightScale = (1.0/forcedAspectRatio)/currentAspectRatio;
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 

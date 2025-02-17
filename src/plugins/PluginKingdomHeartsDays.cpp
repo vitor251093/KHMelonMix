@@ -450,13 +450,14 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     u32 currentMainMenuView = getCurrentMainMenuView();
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
+    float forcedAspectRatio = (GameScene == gameScene_DayCounter) ? 1.0 : aspectRatio;
     bool showOriginalHud = false;
     int screenLayout = gpuOpenGL_FS_screenLayout();
     int brightnessMode = gpuOpenGL_FS_brightnessMode();
 
     bool updated = ShouldRefreshShapes;
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(forcedAspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], UIScale, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], showOriginalHud ? 1 : 0, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], screenLayout, updated);
@@ -469,7 +470,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         std::vector<ShapeData> shapes = gpuOpenGL_FS_shapes();
 
         glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
-        glUniform1f(CompGpuLoc[CompShader][1], aspectRatio);
+        glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
         glUniform1i(CompGpuLoc[CompShader][2], CompGpuLastValues[CompShader][2]);
         glUniform1i(CompGpuLoc[CompShader][3], CompGpuLastValues[CompShader][3]);
         glUniform1i(CompGpuLoc[CompShader][4], CompGpuLastValues[CompShader][4]);
