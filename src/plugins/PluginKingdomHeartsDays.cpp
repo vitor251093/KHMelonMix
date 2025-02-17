@@ -450,7 +450,7 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     u32 currentMainMenuView = getCurrentMainMenuView();
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    bool showOriginalHud = GameScene == gameScene_IntroLoadMenu;
+    bool showOriginalHud = false;
     int screenLayout = gpuOpenGL_FS_screenLayout();
     int brightnessMode = gpuOpenGL_FS_brightnessMode();
 
@@ -492,13 +492,17 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
         return shapes;
     }
 
-    if (GameScene == gameScene_DayCounter || GameScene == gameScene_RoxasThoughts) {
+    if (GameScene == gameScene_IntroLoadMenu) {
         shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
-                .fromPosition(0, 192)
-                .withSize(256, 192)
-                .placeAtCorner(corner_Center)
-                .scale(0.0)
+                .preserveDsScale()
+                .build());
+    }
+
+    if (GameScene == gameScene_DayCounter ||
+        GameScene == gameScene_RoxasThoughts) {
+        shapes.push_back(ShapeBuilder::square()
+                .preserveDsScale()
                 .build());
     }
 

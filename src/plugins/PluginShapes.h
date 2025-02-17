@@ -75,7 +75,12 @@ public:
         auto shapeBuilder = ShapeBuilder();
         shapeBuilder.shapeData.enabled = 1;
         shapeBuilder.shapeData.shape = 0;
+        shapeBuilder.shapeData.corner = corner_Center;
         shapeBuilder.shapeData.scale = 1.0;
+        shapeBuilder.shapeData.square.x = 0;
+        shapeBuilder.shapeData.square.y = 0;
+        shapeBuilder.shapeData.square.z = 256;
+        shapeBuilder.shapeData.square.w = 192;
         shapeBuilder.shapeData.margin.x = 0;
         shapeBuilder.shapeData.margin.y = 0;
         shapeBuilder.shapeData.margin.z = 0;
@@ -95,6 +100,10 @@ public:
     }
     ShapeBuilder& scale(float _scale) {
         shapeData.scale = _scale;
+        return *this;
+    }
+    ShapeBuilder& preserveDsScale() {
+        shapeData.scale = 0.0;
         return *this;
     }
     ShapeBuilder& fromPosition(int x, int y) {
