@@ -81,6 +81,7 @@ private:
 
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
+    bool IsMinimapVisible = false;
     u32 priorMap;
     u32 Map;
 
@@ -139,8 +140,11 @@ private:
     bool isSaveLoaded();
 
     bool isBufferBlack(unsigned int* buffer);
-    bool isTopScreen2DTextureBlack();
+    u32* topScreen2DTexture();
+    u32* bottomScreen2DTexture();
+    u32 getPixel(u32* buffer, int x, int y, int layer);
     bool isBottomScreen2DTextureBlack();
+    bool isMinimapVisible();
     void hudToggle();
     void debugLogs(int gameScene);
 };

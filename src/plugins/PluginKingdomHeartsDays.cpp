@@ -417,10 +417,6 @@ float PluginKingdomHeartsDays::gpuOpenGL_FS_forcedAspectRatio()
 std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     auto shapes = std::vector<ShapeData>();
 
-    if (HideAllHUD) {
-        return shapes;
-    }
-
     if (GameScene == gameScene_IntroLoadMenu) {
         shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
@@ -452,6 +448,10 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     // TODO: KH also happens at
     // if (GameScene == 9 && !is2DGraphicDifferentFromColor(ivec4(0, 63, 0, 31), ivec2(130, 190))) { // gameScene_InGameWithDouble3D
     if (GameScene == gameScene_InGameWithMap) {
+        if (HideAllHUD) {
+            return shapes;
+        }
+
         // TODO: KH still needs to implement everything that is commented right here
 
         // if (GameScene == 5 && (!IsCharacterControllable || isDialogVisible())) { // gameScene_InGameWithMap
@@ -494,7 +494,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             .placeAtCorner(corner_Top)
             .build());
         
-        if (ShowMap && GameScene == gameScene_InGameWithMap) { // also isMinimapVisible()
+        if (ShowMap && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
             // minimap
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
@@ -508,7 +508,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .build());
         }
 
-        if (ShowTarget && GameScene == gameScene_InGameWithMap) { // TODO: KH also isMinimapVisible()
+        if (ShowTarget && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
             // target label
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
@@ -532,7 +532,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             // TODO: KH also needs color to alpha (with negative mask)
         }
 
-        if (ShowMissionGauge && GameScene == gameScene_InGameWithMap) { // also isMinimapVisible()
+        if (ShowMissionGauge && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
             // mission gauge
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
@@ -1164,18 +1164,30 @@ bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
-bool PluginKingdomHeartsDays::isTopScreen2DTextureBlack()
+u32* PluginKingdomHeartsDays::topScreen2DTexture()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
-    return isBufferBlack(topBuffer);
+    return nds->GPU.Framebuffer[FrontBuffer][0].get();
+}
+
+u32* PluginKingdomHeartsDays::bottomScreen2DTexture()
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    return nds->GPU.Framebuffer[FrontBuffer][1].get();
+}
+
+u32 PluginKingdomHeartsDays::getPixel(u32* buffer, int x, int y, int layer) {
+    return buffer[(256*3 + 1)*y + x + 256*layer];
 }
 
 bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
-    return isBufferBlack(bottomBuffer);
+    return isBufferBlack(bottomScreen2DTexture());
+}
+
+bool PluginKingdomHeartsDays::isMinimapVisible() {
+    u32 pixel = getPixel(bottomScreen2DTexture(), 99, 53, 0);
+    return ((pixel >> 0) & 0x3F) > 0x3C && ((pixel >> 8) & 0x3F) > 0x3C && ((pixel >> 16) & 0x3F) > 0x3C;
 }
 
 bool PluginKingdomHeartsDays::shouldRenderFrame()
@@ -1233,6 +1245,14 @@ int PluginKingdomHeartsDays::detectGameScene()
     if (nds == nullptr)
     {
         return GameScene;
+    }
+
+    if (GameScene == gameScene_InGameWithMap) {
+        bool _isMinimapVisible = isMinimapVisible();
+        if (IsMinimapVisible != _isMinimapVisible) {
+            IsMinimapVisible = _isMinimapVisible;
+            ShouldRefreshShapes = true;
+        }
     }
 
     bool wasSaveLoaded = isSaveLoaded();
