@@ -420,16 +420,14 @@ std::string PluginKingdomHeartsDays::tomlUniqueIdentifier() {
 };*/
 
 void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    GLint uni_id = glGetUniformBlockIndex(CompShader, "ShapeBlock");
-    glUniformBlockBinding(CompShader, uni_id, 0);
+    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock");
+    glUniformBlockBinding(CompShader, blockIndex, 1);
 
     GLuint uboBuffer;
     glGenBuffers(1, &uboBuffer);
     glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData) * 100, nullptr, GL_STATIC_DRAW); // GL_DYNAMIC_DRAW
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboBuffer);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-    printf("uboBuffer: %d\n", uboBuffer);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
     CompUboLoc[CompShader] = uboBuffer;
 
     CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
