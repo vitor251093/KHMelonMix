@@ -323,10 +323,8 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
             }
             vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
 
-            if (texPosition3d.x >= shape3DCoords[0] &&
-                texPosition3d.x <= shape3DCoords[2] && 
-                texPosition3d.y >= shape3DCoords[1] && 
-                texPosition3d.y <= shape3DCoords[3]) {
+            if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
+                   all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
 
                 vec2 finalPos = (1.0/scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
                 if (dot(shapeData.cropSquareCorners, shapeData.cropSquareCorners) == 0.0) {
@@ -545,10 +543,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             if (index == 0 && shapeData.invertGrayScaleColors == 1) {
                 vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
 
-                if (texPosition3d.x >= shape3DCoords[0] &&
-                    texPosition3d.x <= shape3DCoords[2] && 
-                    texPosition3d.y >= shape3DCoords[1] && 
-                    texPosition3d.y <= shape3DCoords[3]) {
+                if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
+                       all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
                     
                     bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
                     if (isShadeOfGray) {
@@ -560,10 +556,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                                shapeData.fadeBorderSize[2] > 0 || shapeData.fadeBorderSize[3] > 0)) {
                 vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
 
-                if (texPosition3d.x >= shape3DCoords[0] &&
-                    texPosition3d.x <= shape3DCoords[2] && 
-                    texPosition3d.y >= shape3DCoords[1] && 
-                    texPosition3d.y <= shape3DCoords[3]) {
+                if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
+                       all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
                 
                     float leftDiff = texPosition3d.x - shape3DCoords[0];
                     float rightDiff = shape3DCoords[2] - texPosition3d.x;
@@ -586,10 +580,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             if (index == 2 && shapeData.colorToAlpha.r != -1) {
                 vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
 
-                if (texPosition3d.x >= shape3DCoords[0] &&
-                    texPosition3d.x <= shape3DCoords[2] && 
-                    texPosition3d.y >= shape3DCoords[1] && 
-                    texPosition3d.y <= shape3DCoords[3]) {
+                if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
+                       all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
                     
                     ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
                     int blur = ((abs(shapeData.colorToAlpha.r - colorZero.r) +
