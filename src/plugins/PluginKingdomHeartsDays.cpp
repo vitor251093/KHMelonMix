@@ -479,19 +479,11 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
             glUniform1i(CompGpuLoc[CompShader][index], CompGpuLastValues[CompShader][index]);
         }
 
-        printf("UBO ID: %d\n", CompUboLoc[CompShader]);
-
         auto shadersData = shapes.data();
         glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
         if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData) * shapes.size());
         glUnmapBuffer(GL_UNIFORM_BUFFER);
-
-        GLuint err = glGetError();
-        if (err != GL_NO_ERROR) {
-            printf("OpenGL Error: %d\n", err);
-        }
-
     }
 }
 
@@ -502,7 +494,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
         // minimap
         shapes.push_back(ShapeBuilder::square()
             .fromBottomScreen()
-            .fromPosition(128, 30)
+            .fromPosition(128, 60)
             .withSize(72, 72)
             .placeAtCorner(corner_TopRight)
             .withMargin(0.0, 30.0, 9.0, 0.0)
