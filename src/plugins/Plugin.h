@@ -127,6 +127,8 @@ public:
     virtual std::vector<ShapeData> gpuOpenGL_FS_shapes() { return std::vector<ShapeData>(); };
     virtual int gpuOpenGL_FS_screenLayout() { return 0; };
     virtual int gpuOpenGL_FS_brightnessMode() { return 0; };
+    virtual float gpuOpenGL_FS_forcedAspectRatio() {return AspectRatio;};
+    virtual bool gpuOpenGL_FS_showOriginalHud() { return true; };
 
     virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
     virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
@@ -248,12 +250,16 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
+    std::map<GLuint, GLuint[20]> CompGpuLoc{};
+    std::map<GLuint, int[20]> CompGpuLastValues{};
     std::map<GLuint, GLuint> CompUboLoc{};
+    bool ShouldRefreshShapes = true;
 
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
     int HUDState = -1;
+    int UIScale = 4;
 
     bool DisableEnhancedGraphics = false;
     bool ExportTextures = false;

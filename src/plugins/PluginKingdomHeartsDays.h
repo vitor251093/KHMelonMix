@@ -30,12 +30,11 @@ public:
     std::string assetsRegionSubfolder();
     std::string tomlUniqueIdentifier();
 
-    //const char* gpuOpenGL_FS();
-    void gpuOpenGL_FS_initVariables(GLuint CompShader);
-    void gpuOpenGL_FS_updateVariables(GLuint CompShader);
     std::vector<ShapeData> gpuOpenGL_FS_shapes();
     int gpuOpenGL_FS_screenLayout();
     int gpuOpenGL_FS_brightnessMode();
+    float gpuOpenGL_FS_forcedAspectRatio();
+    bool gpuOpenGL_FS_showOriginalHud();
 
     const char* gpu3DOpenGLClassic_VS_Z();
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
@@ -85,17 +84,12 @@ private:
     u32 priorMap;
     u32 Map;
 
-    int UIScale = 4;
-    bool ShouldRefreshShapes;
-
     bool ShowMap;
     bool ShowTarget;
     bool ShowMissionGauge;
     bool ShowMissionInfo;
     bool HideAllHUD;
 
-    std::map<GLuint, GLuint[20]> CompGpuLoc{};
-    std::map<GLuint, int[20]> CompGpuLastValues{};
     std::map<u32, GLuint[5]> CompGpu3DLoc{};
     std::map<u32, int[5]> CompGpu3DLastValues{};
 

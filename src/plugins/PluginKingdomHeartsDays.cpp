@@ -180,8 +180,6 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     priorMap = -1;
     Map = 0;
-    UIScale = 4;
-    ShouldRefreshShapes = true;
 
     // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;
@@ -411,80 +409,10 @@ std::string PluginKingdomHeartsDays::tomlUniqueIdentifier() {
     return getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
 }
 
-/*const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return nullptr;
-    }
-
-    return kCompositorFS_KhDays;
-};*/
-
-void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock");
-    glUniformBlockBinding(CompShader, blockIndex, 1);
-
-    GLuint uboBuffer;
-    glGenBuffers(1, &uboBuffer);
-    glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData) * 100, nullptr, GL_STATIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
-    CompUboLoc[CompShader] = uboBuffer;
-
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "uiScale");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
-
-    for (int index = 0; index <= 6; index ++) {
-        CompGpuLastValues[CompShader][index] = -1;
-    }
-}
-
-#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
-
-void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
-    u32 currentMainMenuView = getCurrentMainMenuView();
-
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    float forcedAspectRatio = (GameScene == gameScene_DayCounter) ? 1.0 : aspectRatio;
-    bool showOriginalHud = false;
-    int screenLayout = gpuOpenGL_FS_screenLayout();
-    int brightnessMode = gpuOpenGL_FS_brightnessMode();
-
-    bool updated = ShouldRefreshShapes;
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(forcedAspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], UIScale, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], showOriginalHud ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], screenLayout, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], brightnessMode, updated);
-    ShouldRefreshShapes = false;
-
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], GameScene, updated);
-
-    if (updated) {
-        std::vector<ShapeData> shapes = gpuOpenGL_FS_shapes();
-
-        glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
-        glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
-        glUniform1i(CompGpuLoc[CompShader][2], CompGpuLastValues[CompShader][2]);
-        glUniform1i(CompGpuLoc[CompShader][3], CompGpuLastValues[CompShader][3]);
-        glUniform1i(CompGpuLoc[CompShader][4], CompGpuLastValues[CompShader][4]);
-        glUniform1i(CompGpuLoc[CompShader][5], CompGpuLastValues[CompShader][5]);
-        glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
-
-        shapes.resize(100);
-        auto shadersData = shapes.data();
-        glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
-        void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData) * shapes.size());
-        glUnmapBuffer(GL_UNIFORM_BUFFER);
-    }
-}
+float PluginKingdomHeartsDays::gpuOpenGL_FS_forcedAspectRatio()
+{
+    return (GameScene == gameScene_DayCounter) ? (4.0/3) : AspectRatio;
+};
 
 std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     auto shapes = std::vector<ShapeData>();
@@ -787,6 +715,11 @@ int PluginKingdomHeartsDays::gpuOpenGL_FS_brightnessMode() {
     return brightnessMode_Default;
 }
 
+
+bool PluginKingdomHeartsDays::gpuOpenGL_FS_showOriginalHud() {
+    return false;
+}
+
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
@@ -808,6 +741,8 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog,
         CompGpu3DLastValues[flags][index] = -1;
     }
 }
+
+#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
 
 void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
 {
