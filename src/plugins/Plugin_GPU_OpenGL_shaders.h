@@ -230,8 +230,13 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
     float iuTexScale = (6.0)/uiScale;
     float heightScale = 1.0/currentAspectRatio;
 
-    float squareFinalHeight = shapeData.square[3]*shapeData.scale;
-    float squareFinalWidth = shapeData.square[2]*shapeData.scale*heightScale;
+    float scale = shapeData.scale;
+    if (scale == 0) {
+        iuTexScale = 1.0;
+        scale = 1.0;
+    }
+    float squareFinalHeight = shapeData.square[3]*scale;
+    float squareFinalWidth = shapeData.square[2]*scale*heightScale;
 
     float squareFinalX1 = 0.0;
     float squareFinalY1 = 0.0;
@@ -285,8 +290,6 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
         return ivec2(fTexcoord);
     }
 
-    float iuTexScale = (6.0)/uiScale;
-    vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
     float heightScale = 1.0/currentAspectRatio;
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
@@ -297,13 +300,21 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
         if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
             vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
 
+            float iuTexScale = (6.0)/uiScale;
+            float scale = shapeData.scale;
+            if (scale == 0) {
+                iuTexScale = 1.0;
+                scale = 1.0;
+            }
+            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+
             if (texPosition3d.x >= shape3DCoords[0] &&
                 texPosition3d.x <= shape3DCoords[2] && 
                 texPosition3d.y >= shape3DCoords[1] && 
                 texPosition3d.y <= shape3DCoords[3]) {
                 int squarePosY = shapeData.square[1];
                 int squarePosX = shapeData.square[0];
-                return ivec2((1.0/shapeData.scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]))) +
+                return ivec2((1.0/scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]))) +
                     ivec2(squarePosX, squarePosY);
             }
         }

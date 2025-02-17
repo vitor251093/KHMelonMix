@@ -52,6 +52,14 @@ enum
     corner_Left
 };
 
+enum
+{
+    screenLayout_Top,
+    screenLayout_Bottom,
+    screenLayout_BothVertical,
+    screenLayout_BothHorizontal
+};
+
 class ShapeBuilder
 {
 public:

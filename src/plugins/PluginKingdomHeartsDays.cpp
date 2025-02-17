@@ -450,21 +450,14 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     u32 currentMainMenuView = getCurrentMainMenuView();
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
-    CutsceneEntry* bsCutscene = detectBottomScreenMobiCutscene();
-    int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
-
-    bool isCredits = nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
-    if (isCredits) {
-        dsCutsceneState = 3;
-    }
+    int screenLayout = gpuOpenGL_FS_screenLayout();
 
     bool updated = ShouldRefreshShapes;
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(aspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], UIScale, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], screenLayout, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], 0, updated);
     ShouldRefreshShapes = false;
 
@@ -494,6 +487,16 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
 
     if (HideAllHUD) {
         return shapes;
+    }
+
+    if (GameScene == gameScene_DayCounter || GameScene == gameScene_RoxasThoughts) {
+        shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(0, 192)
+                .withSize(256, 192)
+                .placeAtCorner(corner_Center)
+                .scale(0.0)
+                .build());
     }
 
     // TODO: KH also happens at
@@ -625,6 +628,75 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
 
     return shapes;
 }
+
+int PluginKingdomHeartsDays::gpuOpenGL_FS_screenLayout() {
+    switch (GameScene) {
+        case gameScene_Intro:
+        case gameScene_MainMenu:
+            return screenLayout_BothHorizontal;
+        
+        case gameScene_IntroLoadMenu:
+            return screenLayout_Bottom;
+        
+        case gameScene_DayCounter:
+        case gameScene_RoxasThoughts:
+            return screenLayout_Top;
+        
+        case gameScene_Cutscene:
+            if (nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10) {
+                return screenLayout_BothHorizontal;
+            }
+            return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
+        
+        case gameScene_InGameWithMap:
+            return screenLayout_Top;
+        
+        case gameScene_PauseMenu:
+            return screenLayout_Top;
+        
+        case gameScene_Tutorial:
+            return screenLayout_Bottom;
+        
+        case gameScene_InGameWithDouble3D:
+            return screenLayout_Top;
+        
+        case gameScene_MultiplayerMissionReview:
+            return screenLayout_BothVertical;
+        
+        case gameScene_Shop:
+            return screenLayout_BothHorizontal;
+        
+        case gameScene_LoadingScreen:
+            return screenLayout_Bottom;
+        
+        case gameScene_DeathScreen:
+            return screenLayout_Top;
+        
+        case gameScene_TheEnd:
+            return screenLayout_BothHorizontal;
+        
+        case gameScene_Other:
+            return screenLayout_Top;
+    }
+
+    if (GameScene == 6) { // gameScene_InGameMenu
+        u32 mainMenuView = getCurrentMainMenuView();
+        switch (mainMenuView) {
+            case 3: // holo-mission / challenges
+            case 4: // roxas's diary / enemy profile
+                return screenLayout_BothHorizontal;
+            
+            case 6: // config
+            case 7: // save
+                return screenLayout_Top;
+            
+            default:
+                return screenLayout_BothHorizontal;
+        }
+    }
+
+    return screenLayout_Top;
+};
 
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     bool disable = DisableEnhancedGraphics;
