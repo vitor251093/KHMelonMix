@@ -689,10 +689,10 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             .build());
     }
     
-    // TODO: KH
-
-    // case gameScene_DeathScreen:
-    //     return screenLayout_Top;
+    if (GameScene == gameScene_DeathScreen) {
+        shapes.push_back(ShapeBuilder::square()
+            .build());
+    }
     
     return shapes;
 }
