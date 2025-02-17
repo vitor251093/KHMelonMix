@@ -671,35 +671,29 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
 
         // pause menu
         shapes.push_back(ShapeBuilder::square()
-            .fromPosition(0, 0)
-            .withSize(256, 192)
             .placeAtCorner(corner_Center)
+            .build());
+    }
+    
+    if (GameScene == gameScene_Tutorial) {
+        shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .preserveDsScale()
+                .build());
+    }
+    
+    if (GameScene == gameScene_LoadingScreen) {
+        shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .placeAtCorner(corner_BottomRight)
             .build());
     }
     
     // TODO: KH
 
-    // case gameScene_Tutorial:
-    //     return screenLayout_Bottom;
-    
-    // case gameScene_InGameWithDouble3D:
-    //     return screenLayout_Top;
-    
-    // case gameScene_MultiplayerMissionReview:
-    //     return screenLayout_BothVertical;
-    
-    // case gameScene_Shop:
-    //     return screenLayout_BothHorizontal;
-    
-    // case gameScene_LoadingScreen:
-    //     return screenLayout_Bottom;
-    
     // case gameScene_DeathScreen:
     //     return screenLayout_Top;
     
-    // case gameScene_TheEnd:
-    //     return screenLayout_BothHorizontal;
-
     return shapes;
 }
 
