@@ -241,41 +241,51 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
     float squareFinalX1 = 0.0;
     float squareFinalY1 = 0.0;
 
-    if (shapeData.corner == 0) { // square at center
-        squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-        squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
-    }
-    if (shapeData.corner == 1) { // square at top left corner
-        squareFinalX1 = shapeData.margin[0];
-        squareFinalY1 = shapeData.margin[1];
-    }
-    if (shapeData.corner == 2) { // square at top
-        squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-        squareFinalY1 = shapeData.margin[1];
-    }
-    if (shapeData.corner == 3) { // square at top right corner
-        squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2];
-        squareFinalY1 = shapeData.margin[1];
-    }
-    if (shapeData.corner == 4) { // square at right
-        squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2];
-        squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
-    }
-    if (shapeData.corner == 5) { // square at bottom right corner
-        squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2];
-        squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
-    }
-    if (shapeData.corner == 6) { // square at bottom
-        squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-        squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
-    }
-    if (shapeData.corner == 7) { // square at left bottom corner
-        squareFinalX1 = shapeData.margin[0];
-        squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
-    }
-    if (shapeData.corner == 8) { // square at left
-        squareFinalX1 = shapeData.margin[0];
-        squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+    switch (shapeData.corner)
+    {
+        case 0: // square at center
+            squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
+            squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+            break;
+        
+        case 1: // square at top left corner
+            squareFinalX1 = shapeData.margin[0];
+            squareFinalY1 = shapeData.margin[1];
+            break;
+        
+        case 2: // square at top
+            squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
+            squareFinalY1 = shapeData.margin[1];
+            break;
+
+        case 3: // square at top right corner
+            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2];
+            squareFinalY1 = shapeData.margin[1];
+            break;
+
+        case 4: // square at right
+            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2];
+            squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+            break;
+
+        case 5: // square at bottom right corner
+            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2];
+            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
+            break;
+
+        case 6: // square at bottom
+            squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
+            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
+            break;
+
+        case 7: // square at left bottom corner
+            squareFinalX1 = shapeData.margin[0];
+            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
+            break;
+
+        case 8: // square at left
+            squareFinalX1 = shapeData.margin[0];
+            squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
     }
 
     float squareFinalX2 = squareFinalX1 + squareFinalWidth;
