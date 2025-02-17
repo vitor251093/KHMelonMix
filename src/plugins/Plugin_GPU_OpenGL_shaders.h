@@ -41,6 +41,8 @@ struct ShapeData {
     int invertGrayScaleColors;
     int _pad0, _pad1, _pad2;  // Padding to align the struct to 16 bytes
 
+    vec4 cropSquareCorners;
+
     ivec4 colorToAlpha;
 };
 
@@ -325,10 +327,15 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
                 texPosition3d.x <= shape3DCoords[2] && 
                 texPosition3d.y >= shape3DCoords[1] && 
                 texPosition3d.y <= shape3DCoords[3]) {
-                int squarePosY = shapeData.square[1];
-                int squarePosX = shapeData.square[0];
-                return ivec2((1.0/scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]))) +
-                    ivec2(squarePosX, squarePosY);
+
+                vec2 finalPos = (1.0/scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
+                if (dot(shapeData.cropSquareCorners, shapeData.cropSquareCorners) == 0.0) {
+                    return ivec2(finalPos) + ivec2(shapeData.square[0], shapeData.square[1]);
+                }
+                else if ((finalPos.x + finalPos.y >= shapeData.cropSquareCorners[0]) &&
+                         (finalPos.y - finalPos.x + shapeData.square[2] >= shapeData.cropSquareCorners[1])) {
+                    return ivec2(finalPos) + ivec2(shapeData.square[0], shapeData.square[1]);
+                }
             }
         }
     }

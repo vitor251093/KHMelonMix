@@ -518,7 +518,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withMargin(0.0, 30.0, 9.0, 0.0)
                 .scale(0.666)
                 .build());
-            // TODO: KH also needs color to alpha
+            // TODO: KH also needs color to alpha (with negative mask)
 
             // target
             shapes.push_back(ShapeBuilder::square()
@@ -529,7 +529,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withMargin(0.0, 38.0, 9.0, 0.0)
                 .scale(0.666)
                 .build());
-            // TODO: KH also needs color to alpha
+            // TODO: KH also needs color to alpha (with negative mask)
         }
 
         if (ShowMissionGauge && GameScene == gameScene_InGameWithMap) { // also isMinimapVisible()
@@ -539,8 +539,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .fromPosition(5, 152)
                 .withSize(246, 40)
                 .placeAtCorner(corner_Bottom)
+                .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
                 .build());
-            // TODO: KH needs to crop the corners somehow
         }
 
         // enemy health
@@ -593,8 +593,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .fromPosition(5, 152)
                 .withSize(246, 40)
                 .placeAtCorner(corner_Bottom)
+                .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
                 .build());
-            // TODO: KH needs to crop the corners somehow
         }
 
         // pause menu
@@ -627,52 +627,34 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
 
 int PluginKingdomHeartsDays::gpuOpenGL_FS_screenLayout() {
     switch (GameScene) {
-        case gameScene_Intro:
-        case gameScene_MainMenu:
-            return screenLayout_BothHorizontal;
-        
-        case gameScene_IntroLoadMenu:
-            return screenLayout_Bottom;
-        
         case gameScene_DayCounter:
         case gameScene_RoxasThoughts:
+        case gameScene_InGameWithMap:
+        case gameScene_PauseMenu:
+        case gameScene_InGameWithDouble3D:
+        case gameScene_DeathScreen:
+        case gameScene_Other:
             return screenLayout_Top;
+        
+        case gameScene_IntroLoadMenu:
+        case gameScene_Tutorial:
+        case gameScene_LoadingScreen:
+            return screenLayout_Bottom;
+        
+        case gameScene_MultiplayerMissionReview:
+            return screenLayout_BothVertical;
+        
+        case gameScene_Intro:
+        case gameScene_MainMenu:
+        case gameScene_Shop:
+        case gameScene_TheEnd:
+            return screenLayout_BothHorizontal;
         
         case gameScene_Cutscene:
             if (nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10) {
                 return screenLayout_BothHorizontal;
             }
             return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
-        
-        case gameScene_InGameWithMap:
-            return screenLayout_Top;
-        
-        case gameScene_PauseMenu:
-            return screenLayout_Top;
-        
-        case gameScene_Tutorial:
-            return screenLayout_Bottom;
-        
-        case gameScene_InGameWithDouble3D:
-            return screenLayout_Top;
-        
-        case gameScene_MultiplayerMissionReview:
-            return screenLayout_BothVertical;
-        
-        case gameScene_Shop:
-            return screenLayout_BothHorizontal;
-        
-        case gameScene_LoadingScreen:
-            return screenLayout_Bottom;
-        
-        case gameScene_DeathScreen:
-            return screenLayout_Top;
-        
-        case gameScene_TheEnd:
-            return screenLayout_BothHorizontal;
-        
-        case gameScene_Other:
-            return screenLayout_Top;
     }
 
     if (GameScene == gameScene_InGameMenu) {
@@ -714,7 +696,6 @@ int PluginKingdomHeartsDays::gpuOpenGL_FS_brightnessMode() {
     }
     return brightnessMode_Default;
 }
-
 
 bool PluginKingdomHeartsDays::gpuOpenGL_FS_showOriginalHud() {
     return false;

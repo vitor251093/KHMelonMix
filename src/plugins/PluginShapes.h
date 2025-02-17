@@ -36,6 +36,8 @@ struct alignas(16) ShapeData {
     int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
     int _pad0, _pad1, _pad2;  // Padding to align the struct to 16 bytes
 
+    vec4 cropSquareCorners;
+
     ivec4 colorToAlpha;   // 16 bytes (RGBA, just ignore the A)
 };
 
@@ -136,6 +138,13 @@ public:
     }
     ShapeBuilder& invertGrayScaleColors() {
         shapeData.invertGrayScaleColors = 1;
+        return *this;
+    }
+    ShapeBuilder& cropSquareCorners(float topLeft, float topRight, float bottomLeft, float bottomRight) {
+        shapeData.cropSquareCorners.x = topLeft;
+        shapeData.cropSquareCorners.y = topRight;
+        shapeData.cropSquareCorners.z = bottomLeft;
+        shapeData.cropSquareCorners.w = bottomRight;
         return *this;
     }
 
