@@ -496,9 +496,11 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
         return shapes;
     }
 
-    // also happens at
+    // TODO: KH also happens at
     // if (GameScene == 9 && !is2DGraphicDifferentFromColor(ivec4(0, 63, 0, 31), ivec2(130, 190))) { // gameScene_InGameWithDouble3D
     if (GameScene == gameScene_InGameWithMap) {
+        // TODO: KH still needs to implement everything that is commented right here
+
         // if (GameScene == 5 && (!IsCharacterControllable || isDialogVisible())) { // gameScene_InGameWithMap
         //     return getIngameDialogTextureCoordinates(xpos, ypos);
         // }
@@ -553,7 +555,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .build());
         }
 
-        if (ShowTarget && GameScene == gameScene_InGameWithMap) { // also isMinimapVisible()
+        if (ShowTarget && GameScene == gameScene_InGameWithMap) { // TODO: KH also isMinimapVisible()
             // target label
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
@@ -563,6 +565,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withMargin(0.0, 30.0, 9.0, 0.0)
                 .scale(0.666)
                 .build());
+            // TODO: KH also needs color to alpha
 
             // target
             shapes.push_back(ShapeBuilder::square()
@@ -573,6 +576,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withMargin(0.0, 38.0, 9.0, 0.0)
                 .scale(0.666)
                 .build());
+            // TODO: KH also needs color to alpha
         }
 
         if (ShowMissionGauge && GameScene == gameScene_InGameWithMap) { // also isMinimapVisible()
@@ -583,6 +587,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withSize(246, 40)
                 .placeAtCorner(corner_Bottom)
                 .build());
+            // TODO: KH needs to crop the corners somehow
         }
 
         // enemy health
@@ -591,6 +596,30 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             .withSize(93, 22)
             .placeAtCorner(corner_TopRight)
             .withMargin(0.0, 7.5, 9.0, 0.0)
+            .build());
+
+        // sigils and death counter
+        shapes.push_back(ShapeBuilder::square()
+            .fromPosition(163, 25)
+            .withSize(93, 30)
+            .placeAtCorner(corner_TopRight)
+            .withMargin(0.0, 92.5, 12.0, 0.0)
+            .build());
+
+        // command menu
+        shapes.push_back(ShapeBuilder::square()
+            .fromPosition(0, 86)
+            .withSize(108, 106)
+            .placeAtCorner(corner_BottomLeft)
+            .withMargin(10.0, 0.0, 0.0, 0.0)
+            .build());
+
+        // player health
+        shapes.push_back(ShapeBuilder::square()
+            .fromPosition(128, 84)
+            .withSize(128, 108)
+            .placeAtCorner(corner_BottomRight)
+            .withMargin(0.0, 0.0, 8.0, 3.0)
             .build());
     }
 
