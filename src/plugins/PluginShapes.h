@@ -60,6 +60,14 @@ enum
     screenLayout_BothHorizontal
 };
 
+enum
+{
+    brightnessMode_Default,
+    brightnessMode_TopScreen,
+    brightnessMode_BottomScreen,
+    brightnessMode_Off
+};
+
 class ShapeBuilder
 {
 public:

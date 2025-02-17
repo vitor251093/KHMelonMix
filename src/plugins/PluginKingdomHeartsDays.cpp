@@ -450,30 +450,33 @@ void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     u32 currentMainMenuView = getCurrentMainMenuView();
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
+    bool showOriginalHud = GameScene == gameScene_IntroLoadMenu;
     int screenLayout = gpuOpenGL_FS_screenLayout();
+    int brightnessMode = gpuOpenGL_FS_brightnessMode();
 
     bool updated = ShouldRefreshShapes;
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(aspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], UIScale, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], showOriginalHud ? 1 : 0, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], screenLayout, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], brightnessMode, updated);
     ShouldRefreshShapes = false;
 
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], GameScene, updated);
 
     if (updated) {
         std::vector<ShapeData> shapes = gpuOpenGL_FS_shapes();
-        CompGpuLastValues[CompShader][6] = shapes.size();
-        shapes.resize(100);
 
         glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
         glUniform1f(CompGpuLoc[CompShader][1], aspectRatio);
-        for (int index = 2; index <= 6; index ++) {
-            glUniform1i(CompGpuLoc[CompShader][index], CompGpuLastValues[CompShader][index]);
-        }
+        glUniform1i(CompGpuLoc[CompShader][2], CompGpuLastValues[CompShader][2]);
+        glUniform1i(CompGpuLoc[CompShader][3], CompGpuLastValues[CompShader][3]);
+        glUniform1i(CompGpuLoc[CompShader][4], CompGpuLastValues[CompShader][4]);
+        glUniform1i(CompGpuLoc[CompShader][5], CompGpuLastValues[CompShader][5]);
+        glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
 
+        shapes.resize(100);
         auto shadersData = shapes.data();
         glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
@@ -697,6 +700,27 @@ int PluginKingdomHeartsDays::gpuOpenGL_FS_screenLayout() {
 
     return screenLayout_Top;
 };
+
+int PluginKingdomHeartsDays::gpuOpenGL_FS_brightnessMode() {
+    if (_ShouldHideScreenForTransitions) {
+        return brightnessMode_Off;
+    }
+    if (GameScene == gameScene_PauseMenu                ||
+        GameScene == gameScene_InGameWithDouble3D       ||
+        GameScene == gameScene_MultiplayerMissionReview ||
+        GameScene == gameScene_Shop                     ||
+        GameScene == gameScene_RoxasThoughts            ||
+        GameScene == gameScene_DeathScreen              ||
+        GameScene == gameScene_Other) {
+        return brightnessMode_TopScreen;
+    }
+    if (GameScene == gameScene_IntroLoadMenu ||
+        GameScene == gameScene_Tutorial      ||
+        GameScene == gameScene_LoadingScreen) {
+        return brightnessMode_BottomScreen;
+    }
+    return brightnessMode_Default;
+}
 
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     bool disable = DisableEnhancedGraphics;

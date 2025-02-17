@@ -287,6 +287,9 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
 ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
 {
     if (showOriginalHud) {
+        if (screenLayout == 1) { // bottom
+            return ivec2(fTexcoord) + ivec2(0, 192);
+        }
         return ivec2(fTexcoord);
     }
 
@@ -464,7 +467,13 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 
 ivec4 getTopScreen3DColor()
 {
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, int(fTexcoord.y)), 0));
+    int yCoord = int(fTexcoord.y);
+
+    if (screenLayout == 1) { // bottom
+        yCoord = int(mod(yCoord + 192, 192*2));
+    }
+
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yCoord), 0));
     float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
 
     float xpos = fTexcoord.x + _3dxpos;

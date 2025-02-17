@@ -35,6 +35,7 @@ public:
     void gpuOpenGL_FS_updateVariables(GLuint CompShader);
     std::vector<ShapeData> gpuOpenGL_FS_shapes();
     int gpuOpenGL_FS_screenLayout();
+    int gpuOpenGL_FS_brightnessMode();
 
     const char* gpu3DOpenGLClassic_VS_Z();
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
