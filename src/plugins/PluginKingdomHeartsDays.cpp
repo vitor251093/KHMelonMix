@@ -446,20 +446,26 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     }
 
     // TODO: KH also happens at
-    // if (GameScene == 9 && !is2DGraphicDifferentFromColor(ivec4(0, 63, 0, 31), ivec2(130, 190))) { // gameScene_InGameWithDouble3D
+    // if (GameScene == gameScene_InGameWithDouble3D && !is2DGraphicDifferentFromColor(ivec4(0, 63, 0, 31), ivec2(130, 190))) {
     if (GameScene == gameScene_InGameWithMap) {
         if (HideAllHUD) {
             return shapes;
         }
 
-        // TODO: KH still needs to implement everything that is commented right here
+        if ((GameScene == gameScene_InGameWithMap && (!isCharacterControllable || IsDialogVisible)) ||
+            (GameScene == gameScene_InGameWithDouble3D && IsDialogVisible))
+        {
+            // TODO: KH
+            // return getIngameDialogTextureCoordinates(xpos, ypos);
 
-        // if (GameScene == 5 && (!IsCharacterControllable || isDialogVisible())) { // gameScene_InGameWithMap
-        //     return getIngameDialogTextureCoordinates(xpos, ypos);
-        // }
-        // if (GameScene == 9 && isDialogVisible()) { // gameScene_InGameWithDouble3D
-        //     return getIngameDialogTextureCoordinates(xpos, ypos);
-        // }
+            // Temporary code, just to make the dialog visible
+            shapes.push_back(ShapeBuilder::square()
+                .preserveDsScale()
+                .build());
+            return shapes;
+        }
+
+        // TODO: KH still needs to implement everything that is commented right here
 
         // bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
         // bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo && isMissionInformationVisibleOnBottomScreen();
@@ -1176,13 +1182,23 @@ u32* PluginKingdomHeartsDays::bottomScreen2DTexture()
     return nds->GPU.Framebuffer[FrontBuffer][1].get();
 }
 
-u32 PluginKingdomHeartsDays::getPixel(u32* buffer, int x, int y, int layer) {
-    return buffer[(256*3 + 1)*y + x + 256*layer];
-}
+#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*y + x + 256*layer]
 
 bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 {
     return isBufferBlack(bottomScreen2DTexture());
+}
+
+bool PluginKingdomHeartsDays::isDialogVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    for (int y = 161; y >= 141; y--) {
+        u32 pixel = getPixel(buffer, 128, y, 2);
+        if (pixel & 0x3F >= 3) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool PluginKingdomHeartsDays::isMinimapVisible() {
@@ -1251,6 +1267,11 @@ int PluginKingdomHeartsDays::detectGameScene()
         bool _isMinimapVisible = isMinimapVisible();
         if (IsMinimapVisible != _isMinimapVisible) {
             IsMinimapVisible = _isMinimapVisible;
+            ShouldRefreshShapes = true;
+        }
+        bool _isDialogVisible = isDialogVisible();
+        if (IsDialogVisible != _isDialogVisible) {
+            IsDialogVisible = _isDialogVisible;
             ShouldRefreshShapes = true;
         }
     }
