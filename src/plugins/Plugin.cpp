@@ -45,9 +45,15 @@ std::filesystem::path Plugin::assetsFolderPath()
 {
     std::string assetsFolderName = assetsFolder();
 #ifdef __APPLE__
-    id bundle = ((id(*)(Class, SEL))objc_msgSend)((id)objc_getClass("NSBundle"), sel_registerName("mainBundle"));
-    id bundlePath = ((id(*)(id, SEL))objc_msgSend)(bundle, sel_registerName("bundlePath"));
-    const char* pathCString = ((const char* (*)(id, SEL))objc_msgSend)(bundlePath, sel_registerName("UTF8String"));
+    Class nsBundleClass = (Class)objc_getClass("NSBundle");
+    SEL mainBundleSel = sel_registerName("mainBundle");
+    SEL bundlePathSel = sel_registerName("bundlePath");
+    SEL utf8StringSel = sel_registerName("UTF8String");
+
+    id bundle = ((id(*)(Class, SEL))objc_msgSend)(nsBundleClass, mainBundleSel);
+    id bundlePath = ((id(*)(id, SEL))objc_msgSend)(bundle, bundlePathSel);
+    const char* pathCString = ((const char* (*)(id, SEL))objc_msgSend)(bundlePath, utf8StringSel);
+    
     std::filesystem::path currentPath = std::filesystem::path(pathCString) / "Contents";
 #else
     std::filesystem::path currentPath = std::filesystem::current_path();
