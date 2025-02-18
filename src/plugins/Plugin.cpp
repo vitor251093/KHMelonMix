@@ -36,6 +36,13 @@
 namespace Plugins
 {
 
+std::filesystem::path Plugin::assetsFolderPath()
+{
+    std::string assetsFolderName = assetsFolder();
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    return currentPath / "assets" / assetsFolderName;
+}
+
 const char* Plugin::gpuOpenGL_FS()
 {
     return kCompositorFS_Plugin;
@@ -292,10 +299,8 @@ std::string trim(const std::string& str) {
 }
 std::string Plugin::textureIndexFilePath() {
     std::string filename = "index.ini";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
     std::filesystem::path fullPath = texturesFolder / filename;
 
     if (!std::filesystem::exists(fullPath)) {
@@ -340,12 +345,10 @@ std::map<std::string, std::string> Plugin::getTexturesIndex() {
     return texturesIndex;
 }
 std::string Plugin::textureFilePath(std::string texture) {
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
-    if (!std::filesystem::exists(assetsFolderPath)) {
-        std::filesystem::create_directory(assetsFolderPath);
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
+    if (!std::filesystem::exists(_assetsFolderPath)) {
+        std::filesystem::create_directory(_assetsFolderPath);
     }
 
     std::map<std::string, std::string> texturesIndex = getTexturesIndex();
@@ -368,10 +371,8 @@ std::string Plugin::textureFilePath(std::string texture) {
     return fullPath.string();
 }
 std::string Plugin::tmpTextureFilePath(std::string texture) {
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path tmpFolderPath = _assetsFolderPath / "textures_tmp";
 
     if (shouldExportTextures() && !std::filesystem::exists(tmpFolderPath)) {
         std::filesystem::create_directory(tmpFolderPath);

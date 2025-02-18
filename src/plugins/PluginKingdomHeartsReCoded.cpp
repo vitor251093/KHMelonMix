@@ -1201,16 +1201,14 @@ std::filesystem::path PluginKingdomHeartsReCoded::patchReplacementCutsceneIfNeed
 
 std::string PluginKingdomHeartsReCoded::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
 
     filename = "hd" + std::string(cutscene->DsName) + ".mp4";
-    fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
@@ -1243,16 +1241,14 @@ bool PluginKingdomHeartsReCoded::isUnskippableMobiCutscene(CutsceneEntry* cutsce
 
 std::string PluginKingdomHeartsReCoded::replacementBackgroundMusicFilePath(std::string name) {
     std::string filename = name + ".wav";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "audio" / filename;
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
 
     filename = name + ".mp3";
-    fullPath = assetsFolderPath / "audio" / filename;
+    fullPath = _assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
@@ -1262,10 +1258,8 @@ std::string PluginKingdomHeartsReCoded::replacementBackgroundMusicFilePath(std::
 
 std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "localization" / filename;
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "localization" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
