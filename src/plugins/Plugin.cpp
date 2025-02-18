@@ -9,6 +9,7 @@
 #include <objc/objc.h>
 #include <objc/NSObject.h>
 #include <objc/message.h>
+#include <objc/runtime.h>
 #endif
 
 #define RAM_SEARCH_ENABLED true
@@ -44,8 +45,8 @@ std::filesystem::path Plugin::assetsFolderPath()
 {
     std::string assetsFolderName = assetsFolder();
 #ifdef __APPLE__
-    id bundle = objc_msgSend((id)objc_getClass("NSBundle"), sel_registerName("mainBundle"));
-    id bundlePath = objc_msgSend(bundle, sel_registerName("bundlePath"));
+    id bundle = ((id(*)(Class, SEL))objc_msgSend)((id)objc_getClass("NSBundle"), sel_registerName("mainBundle"));
+    id bundlePath = ((id(*)(id, SEL))objc_msgSend)(bundle, sel_registerName("bundlePath"));
     const char* pathCString = ((const char* (*)(id, SEL))objc_msgSend)(bundlePath, sel_registerName("UTF8String"));
     std::filesystem::path currentPath = std::filesystem::path(pathCString) / "Contents";
 #else
