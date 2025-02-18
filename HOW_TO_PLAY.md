@@ -6,8 +6,11 @@
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Dump an original copy of "358/2 Days" and copy the NDS file to your computer;
 4. Rename that NDS file to "days.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
-5. Replace the assets folder with [this assets folder](https://mega.nz/folder/lpgykK5Y#HPJuOSceHSzncDjQh0DUtw) (this step is only required if you want to replace the DS cutscenes with HD cutscenes);
-6. Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat" (or MelonMix_KHDays.sh if you are not on Windows).
+5. (Windows/Linux) Replace the assets folder with [this assets folder](https://mega.nz/folder/lpgykK5Y#HPJuOSceHSzncDjQh0DUtw) (this step is only required if you want to replace the DS cutscenes with HD cutscenes);
+6. (macOS) Place [this assets folder](https://mega.nz/folder/lpgykK5Y#HPJuOSceHSzncDjQh0DUtw) inside the bundle's Contents folder (this step is only required if you want to replace the DS cutscenes with HD cutscenes);
+7. (Windows) Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat"
+8. (Linux) Now you just need to launch the Melon Mix using "MelonMix_KHDays.sh"
+9. (macOS) Now you just need to launch the Melon Mix bundle, and open the NDS file with it
 
 ## How to play "Re:Coded"
 
@@ -15,7 +18,9 @@
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Dump an original copy of "Re:Coded" and copy the NDS file to your computer;
 4. Rename that NDS file to "recoded.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
-5. Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.bat" (or MelonMix_KHReCoded.sh if you are not on Windows).
+5. (Windows) Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.bat"
+6. (Linux) Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.sh"
+7. (macOS) Now you just need to launch the Melon Mix bundle, and open the NDS file with it
 
 ### Recommended Controller Binds
 * (DS Keypad tab) Map the DS D-Pad to your controller's left analog stick
