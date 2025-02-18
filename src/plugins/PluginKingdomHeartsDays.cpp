@@ -465,25 +465,31 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             return shapes;
         }
 
-        // TODO: KH still needs to implement everything that is commented right here
+        if (IsMissionInformationVisibleOnTopScreen) {
+            // mission information
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(0, 0)
+                .withSize(256, 24)
+                .placeAtCorner(corner_TopLeft)
+                .build());
+            // TODO: KH add effects
 
-        // bool showMissionInformationTopScreen = isMissionInformationVisibleOnTopScreen();
-        // bool showMissionInformationBottomScreen = !showMissionInformationTopScreen && ShowMissionInfo && isMissionInformationVisibleOnBottomScreen();
+            return shapes;
+        }
+        if (!IsMissionInformationVisibleOnTopScreen && ShowMissionInfo && IsMissionInformationVisibleOnBottomScreen) {
+            // mission information
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(0, 0)
+                .withSize(256, 24)
+                .placeAtCorner(corner_TopLeft)
+                .build());
+            // TODO: KH add effects
+        }
 
-        // if (showMissionInformationTopScreen || showMissionInformationBottomScreen) {
-        //     vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, showMissionInformationTopScreen, showMissionInformationBottomScreen);
-        //     if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
-        //         return missionInfoCoords;
-        //     }
-
-        //     if (showMissionInformationTopScreen) {
-        //         // nothing (clear screen)
-        //         return vec2(255, 191);
-        //     }
-        // }
-
+        // TODO: KH not working properly
         // if (isCutsceneFromChallengeMissionVisible()) {
-        //     return vec2(fTexcoord);
+        //     return shapes;
         // }
 
         // item notification
@@ -585,13 +591,16 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     if (GameScene == gameScene_PauseMenu) {
         if (PriorGameScene != gameScene_InGameWithDouble3D) // and !isScreenBlack(1)
         {
-            // TODO: KH
-            // if (isMissionInformationVisibleOnBottomScreen()) {
-            //     vec2 missionInfoCoords = getMissionInformationCoordinates(texPosition3d, false, true);
-            //     if (missionInfoCoords.x != -1 && missionInfoCoords.y != -1) {
-            //         return missionInfoCoords;
-            //     }
-            // }
+            if (IsMissionInformationVisibleOnBottomScreen) {
+                // mission information
+                shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 0)
+                    .withSize(256, 24)
+                    .placeAtCorner(corner_TopLeft)
+                    .build());
+                // TODO: KH add effects
+            }
 
             // mission gauge
             shapes.push_back(ShapeBuilder::square()
@@ -1206,6 +1215,28 @@ bool PluginKingdomHeartsDays::isMinimapVisible() {
     return ((pixel >> 0) & 0x3F) > 0x3C && ((pixel >> 8) & 0x3F) > 0x3C && ((pixel >> 16) & 0x3F) > 0x3C;
 }
 
+bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
+{
+    u32* buffer = topScreen2DTexture();
+    return ((getPixel(buffer, 0, 0, 2) >> 24) & 0xF) == 1 ||
+           ((getPixel(buffer, 0, 15, 2) >> 24) & 0xF) == 1 ||
+           ((getPixel(buffer, 254, 15, 2) >> 24) & 0xF) == 1;
+}
+
+bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
+{
+    u32* buffer = bottomScreen2DTexture();
+    u32 pixel = getPixel(buffer, 5, 4, 0);
+    return ((pixel >> 0) & 0x3F) >= 15 && ((pixel >> 8) & 0x3F) >= 15 && ((pixel >> 16) & 0x3F) >= 15;
+}
+
+bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    u32 pixel = getPixel(buffer, 64, 0, 0);
+    return ((pixel >> 0) & 0x3F) != 0 || ((pixel >> 8) & 0x3F) != 0 || ((pixel >> 16) & 0x3F) != 0x3F;
+}
+
 bool PluginKingdomHeartsDays::shouldRenderFrame()
 {
     if (!_superShouldRenderFrame())
@@ -1272,6 +1303,21 @@ int PluginKingdomHeartsDays::detectGameScene()
         bool _isDialogVisible = isDialogVisible();
         if (IsDialogVisible != _isDialogVisible) {
             IsDialogVisible = _isDialogVisible;
+            ShouldRefreshShapes = true;
+        }
+        bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
+        if (IsMissionInformationVisibleOnTopScreen != _isMissionInformationVisibleOnTopScreen) {
+            IsMissionInformationVisibleOnTopScreen = _isMissionInformationVisibleOnTopScreen;
+            ShouldRefreshShapes = true;
+        }
+        bool _isMissionInformationVisibleOnBottomScreen = isMissionInformationVisibleOnBottomScreen();
+        if (IsMissionInformationVisibleOnBottomScreen != _isMissionInformationVisibleOnBottomScreen) {
+            IsMissionInformationVisibleOnBottomScreen = _isMissionInformationVisibleOnBottomScreen;
+            ShouldRefreshShapes = true;
+        }
+        bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
+        if (IsCutsceneFromChallengeMissionVisible != _isCutsceneFromChallengeMissionVisible) {
+            IsCutsceneFromChallengeMissionVisible = _isCutsceneFromChallengeMissionVisible;
             ShouldRefreshShapes = true;
         }
     }

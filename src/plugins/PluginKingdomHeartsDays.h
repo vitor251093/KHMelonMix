@@ -81,8 +81,6 @@ private:
 
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
-    bool IsDialogVisible = false;
-    bool IsMinimapVisible = false;
     u32 priorMap;
     u32 Map;
 
@@ -144,8 +142,18 @@ private:
     u32* topScreen2DTexture();
     u32* bottomScreen2DTexture();
     bool isBottomScreen2DTextureBlack();
+
+    bool IsDialogVisible = false;
+    bool IsMinimapVisible = false;
+    bool IsMissionInformationVisibleOnTopScreen = false;
+    bool IsMissionInformationVisibleOnBottomScreen = false;
+    bool IsCutsceneFromChallengeMissionVisible = false;
     bool isDialogVisible();
     bool isMinimapVisible();
+    bool isMissionInformationVisibleOnTopScreen();
+    bool isMissionInformationVisibleOnBottomScreen();
+    bool isCutsceneFromChallengeMissionVisible();
+
     void hudToggle();
     void debugLogs(int gameScene);
 };
