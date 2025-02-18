@@ -75,6 +75,7 @@
 
 #include <functional>
 #include <math.h>
+#include <filesystem>
 
 #include "../GPU3D.h"
 #include "../NDS.h"
@@ -117,6 +118,7 @@ public:
     };
 
     virtual std::string assetsFolder() {return std::to_string(GameCode);}
+    std::filesystem::path assetsFolderPath();
     virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
 
     virtual const char* gpuOpenGL_FS() { return nullptr; };

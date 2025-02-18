@@ -1359,16 +1359,14 @@ std::filesystem::path PluginKingdomHeartsDays::patchReplacementCutsceneIfNeeded(
 
 std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
 
     filename = "hd" + std::string(cutscene->DsName) + ".mp4";
-    fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
@@ -1408,16 +1406,14 @@ u16 PluginKingdomHeartsDays::detectMidiBackgroundMusic() {
 
 std::string PluginKingdomHeartsDays::replacementBackgroundMusicFilePath(std::string name) {
     std::string filename = name + ".wav";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "audio" / filename;
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
 
     filename = name + ".mp3";
-    fullPath = assetsFolderPath / "audio" / filename;
+    fullPath = _assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
@@ -1497,11 +1493,9 @@ void PluginKingdomHeartsDays::refreshMouseStatus() {
 
 std::string PluginKingdomHeartsDays::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
-    std::string assetsFolderName = assetsFolder();
     std::string assetsRegionSubfolderName = assetsRegionSubfolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
