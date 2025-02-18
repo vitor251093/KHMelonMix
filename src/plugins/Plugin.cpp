@@ -5,6 +5,12 @@
 #include <cstdarg>
 #include <cstdio>
 
+#ifdef __APPLE__
+#include <objc/objc.h>
+#include <objc/NSObject.h>
+#include <objc/message.h>
+#endif
+
 #define RAM_SEARCH_ENABLED true
 // #define RAM_SEARCH_SIZE 8
 // #define RAM_SEARCH_SIZE 16
@@ -37,7 +43,14 @@ namespace Plugins
 std::filesystem::path Plugin::assetsFolderPath()
 {
     std::string assetsFolderName = assetsFolder();
+#ifdef __APPLE__
+    id bundle = objc_msgSend((id)objc_getClass("NSBundle"), sel_registerName("mainBundle"));
+    id bundlePath = objc_msgSend(bundle, sel_registerName("bundlePath"));
+    const char* pathCString = ((const char* (*)(id, SEL))objc_msgSend)(bundlePath, sel_registerName("UTF8String"));
+    std::filesystem::path currentPath = std::filesystem::path(pathCString) / "Contents";
+#else
     std::filesystem::path currentPath = std::filesystem::current_path();
+#endif
     return currentPath / "assets" / assetsFolderName;
 }
 
