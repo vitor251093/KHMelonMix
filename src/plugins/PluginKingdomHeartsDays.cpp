@@ -478,16 +478,24 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             return shapes;
         }
         if (!IsMissionInformationVisibleOnTopScreen && ShowMissionInfo && IsMissionInformationVisibleOnBottomScreen) {
-            // mission information
+            // bottom mission information (part 1)
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
                 .fromPosition(0, 0)
-                .withSize(256, 24)
+                .withSize(75, 24)
                 .placeAtCorner(corner_TopLeft)
-                .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
                 .singleColorToAlpha(8, 8, 8)
                 .build());
-            // TODO: KH add effects
+
+            // bottom mission information (part 2)
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(75, 8)
+                .withSize(181, 16)
+                .placeAtCorner(corner_TopLeft)
+                .withMargin(75.0, 8.0, 0.0, 0.0)
+                .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
+                .build());
         }
 
         // TODO: KH not working properly

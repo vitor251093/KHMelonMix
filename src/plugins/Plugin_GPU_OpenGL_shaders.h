@@ -252,7 +252,7 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
             break;
         
         case 1: // square at top left corner
-            squareFinalX1 = shapeData.margin[0];
+            squareFinalX1 = shapeData.margin[0]*heightScale;
             squareFinalY1 = shapeData.margin[1];
             break;
         
@@ -262,17 +262,17 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
             break;
 
         case 3: // square at top right corner
-            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2];
+            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2]*heightScale;
             squareFinalY1 = shapeData.margin[1];
             break;
 
         case 4: // square at right
-            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2];
+            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2]*heightScale;
             squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
             break;
 
         case 5: // square at bottom right corner
-            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2];
+            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2]*heightScale;
             squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
             break;
 
@@ -282,12 +282,12 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
             break;
 
         case 7: // square at left bottom corner
-            squareFinalX1 = shapeData.margin[0];
+            squareFinalX1 = shapeData.margin[0]*heightScale;
             squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
             break;
 
         case 8: // square at left
-            squareFinalX1 = shapeData.margin[0];
+            squareFinalX1 = shapeData.margin[0]*heightScale;
             squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
     }
 
