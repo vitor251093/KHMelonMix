@@ -471,6 +471,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .fromPosition(0, 0)
                 .withSize(256, 24)
                 .placeAtCorner(corner_TopLeft)
+                .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
                 .build());
             // TODO: KH add effects
 
