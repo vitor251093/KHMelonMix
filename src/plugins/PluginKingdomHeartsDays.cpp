@@ -531,27 +531,51 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
         }
 
         if (ShowTarget && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
-            // target label
+            float targetScale = 0.666;
+            int targetLabelMargin = 12;
+            int targetWidth = 64;
+
+            // target label (part 1)
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
-                .fromPosition(33, 51)
-                .withSize(62, 9)
+                .fromPosition(32, 51)
+                .withSize(targetLabelMargin, 9)
+                .placeAtCorner(corner_TopRight)
+                .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
+                .scale(targetScale)
+                .colorToAlpha(62.0, 62.0, 62.0)
+                .build());
+
+            // target label (part 2)
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(32 + targetLabelMargin, 51)
+                .withSize(targetWidth - targetLabelMargin*2, 9)
+                .placeAtCorner(corner_TopRight)
+                .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
+                .scale(targetScale)
+                .build());
+
+            // target label (part 3)
+            shapes.push_back(ShapeBuilder::square()
+                .fromBottomScreen()
+                .fromPosition(32 + targetWidth - targetLabelMargin, 51)
+                .withSize(targetLabelMargin, 9)
                 .placeAtCorner(corner_TopRight)
                 .withMargin(0.0, 30.0, 9.0, 0.0)
-                .scale(0.666)
+                .scale(targetScale)
+                .colorToAlpha(62.0, 62.0, 62.0)
                 .build());
-            // TODO: KH also needs color to alpha (with negative mask)
 
             // target
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
                 .fromPosition(32, 64)
-                .withSize(64, 76)
+                .withSize(targetWidth, 76)
                 .placeAtCorner(corner_TopRight)
                 .withMargin(0.0, 38.0, 9.0, 0.0)
-                .scale(0.666)
+                .scale(targetScale)
                 .build());
-            // TODO: KH also needs color to alpha (with negative mask)
         }
 
         if (ShowMissionGauge && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
