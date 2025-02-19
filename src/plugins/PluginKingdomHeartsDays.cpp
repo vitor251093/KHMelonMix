@@ -1293,9 +1293,8 @@ bool PluginKingdomHeartsDays::isMinimapVisible() {
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
 {
     u32* buffer = topScreen2DTexture();
-    return ((getPixel(buffer, 0, 0, 2) >> 24) & 0xF) == 1 ||
-           ((getPixel(buffer, 0, 15, 2) >> 24) & 0xF) == 1 ||
-           ((getPixel(buffer, 254, 15, 2) >> 24) & 0xF) == 1;
+    return (has2DOnTopOf3DAt(buffer, 0, 0) && has2DOnTopOf3DAt(buffer, 128, 0) && has2DOnTopOf3DAt(buffer, 254, 0)) ||
+           (has2DOnTopOf3DAt(buffer, 0, 8) && has2DOnTopOf3DAt(buffer, 128, 8) && has2DOnTopOf3DAt(buffer, 254, 8));
 }
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
