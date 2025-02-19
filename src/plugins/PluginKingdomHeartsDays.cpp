@@ -447,7 +447,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             break;
 
         case gameScene_InGameWithDouble3D:
-            if (ShouldShowBottomScreen) {
+            if (ShouldShowBottomScreen) { // TODO: KH UI condition is not working properly
                 break;
             }
         case gameScene_InGameWithMap:
@@ -658,7 +658,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             break;
 
         case gameScene_PauseMenu:
-            if (PriorGameScene != gameScene_InGameWithDouble3D) // and !isScreenBlack(1)
+            if (PriorGameScene != gameScene_InGameWithDouble3D) // TODO: KH UI and !isScreenBlack(1)
             {
                 if (IsMissionInformationVisibleOnBottomScreen) {
                     // bottom mission information (part 1)
