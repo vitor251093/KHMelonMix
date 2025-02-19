@@ -455,13 +455,23 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
         if ((GameScene == gameScene_InGameWithMap && (!isCharacterControllable || IsDialogVisible)) ||
             (GameScene == gameScene_InGameWithDouble3D && IsDialogVisible))
         {
+            if (IsCutsceneFromChallengeMissionVisible) {
+                shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(0, 0)
+                    .withSize(256, 24)
+                    .placeAtCorner(corner_TopLeft)
+                    .build());
+                // TODO: KH can still be improved
+            }
+
             // TODO: KH
             // return getIngameDialogTextureCoordinates(xpos, ypos);
 
-            // Temporary code, just to make the dialog visible
+            // TODO: KH Temporary code, just to make the dialog visible
             shapes.push_back(ShapeBuilder::square()
                 .preserveDsScale()
                 .build());
+
             return shapes;
         }
 
@@ -497,10 +507,16 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .build());
         }
 
-        // TODO: KH not working properly
-        // if (isCutsceneFromChallengeMissionVisible()) {
-        //     return shapes;
-        // }
+        if (IsCutsceneFromChallengeMissionVisible) {
+            shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(0, 0)
+                    .withSize(256, 24)
+                    .placeAtCorner(corner_TopLeft)
+                    .build());
+            // TODO: KH can still be improved
+
+            return shapes;
+        }
 
         // item notification
         shapes.push_back(ShapeBuilder::square()
@@ -1235,8 +1251,6 @@ u32* PluginKingdomHeartsDays::bottomScreen2DTexture()
     return nds->GPU.Framebuffer[FrontBuffer][1].get();
 }
 
-#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*y + x + 256*layer]
-
 bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 {
     return isBufferBlack(bottomScreen2DTexture());
@@ -1276,9 +1290,10 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    u32 pixel = getPixel(buffer, 64, 0, 0);
-    return ((pixel >> 0) & 0x3F) != 0 || ((pixel >> 8) & 0x3F) != 0 || ((pixel >> 16) & 0x3F) != 0x3F;
+    u32 pixel = getPixel(topScreen2DTexture(), 64, 0, 2);
+    u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
+    bool has2DOnTopOf3D = (pixelAlpha > 0x4 ? true : (pixelAlpha == 0x4 ? false : (((pixel >> 8) & 0xFF) > 0) ? true : false));
+    return has2DOnTopOf3D;
 }
 
 bool PluginKingdomHeartsDays::shouldRenderFrame()
