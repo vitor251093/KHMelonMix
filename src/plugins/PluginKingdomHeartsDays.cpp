@@ -417,248 +417,88 @@ float PluginKingdomHeartsDays::gpuOpenGL_FS_forcedAspectRatio()
 std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     auto shapes = std::vector<ShapeData>();
 
-    if (GameScene == gameScene_IntroLoadMenu) {
-        shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .preserveDsScale()
-                .build());
-    }
-
-    if (GameScene == gameScene_DayCounter ||
-        GameScene == gameScene_RoxasThoughts) {
-        shapes.push_back(ShapeBuilder::square()
-                .preserveDsScale()
-                .build());
-    }
-
-    if (GameScene == gameScene_Cutscene) {
-        if (detectTopScreenMobiCutscene() == nullptr) {
+    switch (GameScene) {
+        case gameScene_IntroLoadMenu:
             shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .preserveDsScale()
-                .build());
-        }
-        else if (detectBottomScreenMobiCutscene() == nullptr) {
-            shapes.push_back(ShapeBuilder::square()
-                .preserveDsScale()
-                .build());
-        }
-    }
-
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
-        if (GameScene == gameScene_InGameWithDouble3D && ShouldShowBottomScreen) {
-            return shapes;
-        }
-
-        if (HideAllHUD) {
-            return shapes;
-        }
-
-        if ((GameScene == gameScene_InGameWithMap && (!isCharacterControllable || IsDialogVisible)) ||
-            (GameScene == gameScene_InGameWithDouble3D && IsDialogVisible))
-        {
-            if (IsCutsceneFromChallengeMissionVisible) {
-                shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 0)
-                    .withSize(256, 24)
-                    .placeAtCorner(corner_TopLeft)
+                    .fromBottomScreen()
+                    .preserveDsScale()
                     .build());
+            break;
 
+        case gameScene_DayCounter:
+        case gameScene_RoxasThoughts:
+            shapes.push_back(ShapeBuilder::square()
+                    .preserveDsScale()
+                    .build());
+            break;
+
+        case gameScene_Cutscene:
+            if (detectTopScreenMobiCutscene() == nullptr) {
                 shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(128, 0)
-                    .withSize(128, 24)
-                    .placeAtCorner(corner_TopRight)
-                    .scale(10.0, 1.0)
+                    .fromBottomScreen()
+                    .preserveDsScale()
                     .build());
             }
+            else if (detectBottomScreenMobiCutscene() == nullptr) {
+                shapes.push_back(ShapeBuilder::square()
+                    .preserveDsScale()
+                    .build());
+            }
+            break;
 
-            // TODO: KH UI
-            // return getIngameDialogTextureCoordinates(xpos, ypos);
+        case gameScene_InGameWithDouble3D:
+            if (ShouldShowBottomScreen) {
+                break;
+            }
+        case gameScene_InGameWithMap:
+            if (HideAllHUD) {
+                break;
+            }
 
-            // Temporary code, just to make the dialog visible
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(0, 30)
-                .withSize(256, 162)
-                .placeAtCorner(corner_Bottom)
-                .preserveDsScale()
-                .build());
+            if ((GameScene == gameScene_InGameWithMap && (!isCharacterControllable || IsDialogVisible)) ||
+                (GameScene == gameScene_InGameWithDouble3D && IsDialogVisible))
+            {
+                if (IsCutsceneFromChallengeMissionVisible) {
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 0)
+                        .withSize(256, 24)
+                        .placeAtCorner(corner_TopLeft)
+                        .build());
 
-            return shapes;
-        }
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(128, 0)
+                        .withSize(128, 24)
+                        .placeAtCorner(corner_TopRight)
+                        .scale(10.0, 1.0)
+                        .build());
+                }
 
-        if (IsMissionInformationVisibleOnTopScreen) {
-            // top mission information
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(0, 0)
-                .withSize(256, 24)
-                .placeAtCorner(corner_TopLeft)
-                .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                .build());
+                // TODO: KH UI
+                // return getIngameDialogTextureCoordinates(xpos, ypos);
 
-            return shapes;
-        }
-        if (!IsMissionInformationVisibleOnTopScreen && ShowMissionInfo && IsMissionInformationVisibleOnBottomScreen) {
-            // bottom mission information (part 1)
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(0, 0)
-                .withSize(75, 24)
-                .placeAtCorner(corner_TopLeft)
-                .singleColorToAlpha(8, 8, 8)
-                .build());
+                // Temporary code, just to make the dialog visible
+                shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(0, 30)
+                    .withSize(256, 162)
+                    .placeAtCorner(corner_Bottom)
+                    .preserveDsScale()
+                    .build());
 
-            // bottom mission information (part 2)
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(75, 8)
-                .withSize(181, 16)
-                .placeAtCorner(corner_TopLeft)
-                .withMargin(75.0, 8.0, 0.0, 0.0)
-                .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                .build());
-        }
+                return shapes;
+            }
 
-        if (IsCutsceneFromChallengeMissionVisible) {
-            shapes.push_back(ShapeBuilder::square()
+            if (IsMissionInformationVisibleOnTopScreen) {
+                // top mission information
+                shapes.push_back(ShapeBuilder::square()
                     .fromPosition(0, 0)
                     .withSize(256, 24)
                     .placeAtCorner(corner_TopLeft)
+                    .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
                     .build());
 
-            shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(128, 0)
-                    .withSize(128, 24)
-                    .placeAtCorner(corner_TopRight)
-                    .scale(10.0, 1.0)
-                    .build());
-
-            return shapes;
-        }
-
-        // item notification
-        shapes.push_back(ShapeBuilder::square()
-            .fromPosition(0, 35)
-            .withSize(108, 86)
-            .placeAtCorner(corner_TopLeft)
-            .build());
-
-        // countdown and locked on
-        shapes.push_back(ShapeBuilder::square()
-            .fromPosition(93, 0)
-            .withSize(70, 20)
-            .placeAtCorner(corner_Top)
-            .build());
-        
-        if (ShowMap && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
-            // minimap
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(128, 60)
-                .withSize(72, 72)
-                .placeAtCorner(corner_TopRight)
-                .withMargin(0.0, 30.0, 9.0, 0.0)
-                .scale(0.8333)
-                .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
-                .invertGrayScaleColors()
-                .build());
-        }
-
-        if (ShowTarget && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
-            float targetScale = 0.666;
-            int targetLabelMargin = 12;
-            int targetWidth = 64;
-
-            // target label (part 1)
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(32, 51)
-                .withSize(targetLabelMargin, 9)
-                .placeAtCorner(corner_TopRight)
-                .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
-                .scale(targetScale)
-                .colorToAlpha(62.0, 62.0, 62.0)
-                .build());
-
-            // target label (part 2)
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(32 + targetLabelMargin, 51)
-                .withSize(targetWidth - targetLabelMargin*2, 9)
-                .placeAtCorner(corner_TopRight)
-                .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
-                .scale(targetScale)
-                .build());
-
-            // target label (part 3)
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(32 + targetWidth - targetLabelMargin, 51)
-                .withSize(targetLabelMargin, 9)
-                .placeAtCorner(corner_TopRight)
-                .withMargin(0.0, 30.0, 9.0, 0.0)
-                .scale(targetScale)
-                .colorToAlpha(62.0, 62.0, 62.0)
-                .build());
-
-            // target
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(32, 64)
-                .withSize(targetWidth, 76)
-                .placeAtCorner(corner_TopRight)
-                .withMargin(0.0, 38.0, 9.0, 0.0)
-                .scale(targetScale)
-                .build());
-        }
-
-        if (ShowMissionGauge && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
-            // mission gauge
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(5, 152)
-                .withSize(246, 40)
-                .placeAtCorner(corner_Bottom)
-                .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                .build());
-        }
-
-        // enemy health
-        shapes.push_back(ShapeBuilder::square()
-            .fromPosition(163, 0)
-            .withSize(93, 22)
-            .placeAtCorner(corner_TopRight)
-            .withMargin(0.0, 7.5, 9.0, 0.0)
-            .build());
-
-        // sigils and death counter
-        shapes.push_back(ShapeBuilder::square()
-            .fromPosition(163, 25)
-            .withSize(93, 30)
-            .placeAtCorner(corner_TopRight)
-            .withMargin(0.0, 92.5, 12.0, 0.0)
-            .build());
-
-        // command menu
-        shapes.push_back(ShapeBuilder::square()
-            .fromPosition(0, 86)
-            .withSize(108, 106)
-            .placeAtCorner(corner_BottomLeft)
-            .withMargin(10.0, 0.0, 0.0, 0.0)
-            .build());
-
-        // player health
-        shapes.push_back(ShapeBuilder::square()
-            .fromPosition(128, 84)
-            .withSize(128, 108)
-            .placeAtCorner(corner_BottomRight)
-            .withMargin(0.0, 0.0, 8.0, 3.0)
-            .build());
-    }
-
-    if (GameScene == gameScene_PauseMenu) {
-        if (PriorGameScene != gameScene_InGameWithDouble3D) // and !isScreenBlack(1)
-        {
-            if (IsMissionInformationVisibleOnBottomScreen) {
+                return shapes;
+            }
+            if (!IsMissionInformationVisibleOnTopScreen && ShowMissionInfo && IsMissionInformationVisibleOnBottomScreen) {
                 // bottom mission information (part 1)
                 shapes.push_back(ShapeBuilder::square()
                     .fromBottomScreen()
@@ -679,39 +519,202 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .build());
             }
 
-            // mission gauge
+            if (IsCutsceneFromChallengeMissionVisible) {
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 0)
+                        .withSize(256, 24)
+                        .placeAtCorner(corner_TopLeft)
+                        .build());
+
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(128, 0)
+                        .withSize(128, 24)
+                        .placeAtCorner(corner_TopRight)
+                        .scale(10.0, 1.0)
+                        .build());
+
+                return shapes;
+            }
+
+            // item notification
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(0, 35)
+                .withSize(108, 86)
+                .placeAtCorner(corner_TopLeft)
+                .build());
+
+            // countdown and locked on
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(93, 0)
+                .withSize(70, 20)
+                .placeAtCorner(corner_Top)
+                .build());
+            
+            if (ShowMap && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
+                // minimap
+                shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(128, 60)
+                    .withSize(72, 72)
+                    .placeAtCorner(corner_TopRight)
+                    .withMargin(0.0, 30.0, 9.0, 0.0)
+                    .scale(0.8333)
+                    .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                    .invertGrayScaleColors()
+                    .build());
+            }
+
+            if (ShowTarget && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
+                float targetScale = 0.666;
+                int targetLabelMargin = 12;
+                int targetWidth = 64;
+
+                // target label (part 1)
+                shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(32, 51)
+                    .withSize(targetLabelMargin, 9)
+                    .placeAtCorner(corner_TopRight)
+                    .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
+                    .scale(targetScale)
+                    .colorToAlpha(62.0, 62.0, 62.0)
+                    .build());
+
+                // target label (part 2)
+                shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(32 + targetLabelMargin, 51)
+                    .withSize(targetWidth - targetLabelMargin*2, 9)
+                    .placeAtCorner(corner_TopRight)
+                    .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
+                    .scale(targetScale)
+                    .build());
+
+                // target label (part 3)
+                shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(32 + targetWidth - targetLabelMargin, 51)
+                    .withSize(targetLabelMargin, 9)
+                    .placeAtCorner(corner_TopRight)
+                    .withMargin(0.0, 30.0, 9.0, 0.0)
+                    .scale(targetScale)
+                    .colorToAlpha(62.0, 62.0, 62.0)
+                    .build());
+
+                // target
+                shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(32, 64)
+                    .withSize(targetWidth, 76)
+                    .placeAtCorner(corner_TopRight)
+                    .withMargin(0.0, 38.0, 9.0, 0.0)
+                    .scale(targetScale)
+                    .build());
+            }
+
+            if (ShowMissionGauge && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
+                // mission gauge
+                shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(5, 152)
+                    .withSize(246, 40)
+                    .placeAtCorner(corner_Bottom)
+                    .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+                    .build());
+            }
+
+            // enemy health
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(163, 0)
+                .withSize(93, 22)
+                .placeAtCorner(corner_TopRight)
+                .withMargin(0.0, 7.5, 9.0, 0.0)
+                .build());
+
+            // sigils and death counter
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(163, 25)
+                .withSize(93, 30)
+                .placeAtCorner(corner_TopRight)
+                .withMargin(0.0, 92.5, 12.0, 0.0)
+                .build());
+
+            // command menu
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(0, 86)
+                .withSize(108, 106)
+                .placeAtCorner(corner_BottomLeft)
+                .withMargin(10.0, 0.0, 0.0, 0.0)
+                .build());
+
+            // player health
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(128, 84)
+                .withSize(128, 108)
+                .placeAtCorner(corner_BottomRight)
+                .withMargin(0.0, 0.0, 8.0, 3.0)
+                .build());
+
+            break;
+
+        case gameScene_PauseMenu:
+            if (PriorGameScene != gameScene_InGameWithDouble3D) // and !isScreenBlack(1)
+            {
+                if (IsMissionInformationVisibleOnBottomScreen) {
+                    // bottom mission information (part 1)
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(0, 0)
+                        .withSize(75, 24)
+                        .placeAtCorner(corner_TopLeft)
+                        .singleColorToAlpha(8, 8, 8)
+                        .build());
+
+                    // bottom mission information (part 2)
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(75, 8)
+                        .withSize(181, 16)
+                        .placeAtCorner(corner_TopLeft)
+                        .withMargin(75.0, 8.0, 0.0, 0.0)
+                        .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
+                        .build());
+                }
+
+                // mission gauge
+                shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(5, 152)
+                    .withSize(246, 40)
+                    .placeAtCorner(corner_Bottom)
+                    .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+                    .build());
+            }
+
+            // pause menu
+            shapes.push_back(ShapeBuilder::square()
+                .placeAtCorner(corner_Center)
+                .build());
+            break;
+    
+        case gameScene_Tutorial:
+            shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .preserveDsScale()
+                    .build());
+            break;
+
+        case gameScene_LoadingScreen:
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
-                .fromPosition(5, 152)
-                .withSize(246, 40)
-                .placeAtCorner(corner_Bottom)
-                .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+                .placeAtCorner(corner_BottomRight)
                 .build());
-        }
-
-        // pause menu
-        shapes.push_back(ShapeBuilder::square()
-            .placeAtCorner(corner_Center)
-            .build());
-    }
+            break;
     
-    if (GameScene == gameScene_Tutorial) {
-        shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .preserveDsScale()
+        case gameScene_DeathScreen:
+            shapes.push_back(ShapeBuilder::square()
                 .build());
-    }
-    
-    if (GameScene == gameScene_LoadingScreen) {
-        shapes.push_back(ShapeBuilder::square()
-            .fromBottomScreen()
-            .placeAtCorner(corner_BottomRight)
-            .build());
-    }
-    
-    if (GameScene == gameScene_DeathScreen) {
-        shapes.push_back(ShapeBuilder::square()
-            .build());
+            break;
     }
     
     return shapes;
