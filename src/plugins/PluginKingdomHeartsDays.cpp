@@ -445,7 +445,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
         }
     }
 
-    // TODO: KH also happens at
+    // TODO: KH UI also happens at
     // if (GameScene == gameScene_InGameWithDouble3D && !is2DGraphicDifferentFromColor(ivec4(0, 63, 0, 31), ivec2(130, 190))) {
     if (GameScene == gameScene_InGameWithMap) {
         if (HideAllHUD) {
@@ -461,14 +461,17 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withSize(256, 24)
                     .placeAtCorner(corner_TopLeft)
                     .build());
-                // TODO: KH can still be improved
+                // TODO: KH UI can still be improved
             }
 
-            // TODO: KH
+            // TODO: KH UI 
             // return getIngameDialogTextureCoordinates(xpos, ypos);
 
-            // TODO: KH Temporary code, just to make the dialog visible
+            // TODO: KH UI Temporary code, just to make the dialog visible
             shapes.push_back(ShapeBuilder::square()
+                .fromPosition(0, 30)
+                .withSize(256, 162)
+                .placeAtCorner(corner_Bottom)
                 .preserveDsScale()
                 .build());
 
@@ -513,7 +516,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withSize(256, 24)
                     .placeAtCorner(corner_TopLeft)
                     .build());
-            // TODO: KH can still be improved
+            // TODO: KH UI can still be improved
 
             return shapes;
         }
