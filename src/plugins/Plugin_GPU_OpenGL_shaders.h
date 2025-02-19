@@ -30,7 +30,11 @@ struct ShapeData {
 
     int shape; // 0 = SQUARE, 1 = FREEFORM
     int corner; // 0 = center, 1-8 = corners
-    float scale;
+    int _pad0;
+
+    float scaleX;
+    float scaleY;
+    int _pad1, _pad2;
 
     ivec4 square;      // X, Y, Width, Height (only valid if shape == 0)
     ivec4 freeForm[4]; // Four (X, Y) points (only valid if shape == 1)
@@ -39,7 +43,7 @@ struct ShapeData {
     // effects
     vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
     int invertGrayScaleColors;
-    int _pad0, _pad1, _pad2;  // Padding to align the struct to 16 bytes
+    int _pad3, _pad4, _pad5;
 
     vec4 cropSquareCorners;
 
@@ -233,13 +237,15 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
     float iuTexScale = (6.0)/uiScale;
     float heightScale = 1.0/currentAspectRatio;
 
-    float scale = shapeData.scale;
-    if (scale == 0) {
+    float scaleX = shapeData.scaleX;
+    float scaleY = shapeData.scaleY;
+    if (scaleX == 0) {
         iuTexScale = 1.0;
-        scale = 1.0;
+        scaleX = 1.0;
+        scaleY = 1.0;
     }
-    float squareFinalHeight = shapeData.square[3]*scale;
-    float squareFinalWidth = shapeData.square[2]*scale*heightScale;
+    float squareFinalHeight = shapeData.square[3]*scaleY;
+    float squareFinalWidth = shapeData.square[2]*scaleX*heightScale;
 
     float squareFinalX1 = 0.0;
     float squareFinalY1 = 0.0;
@@ -317,17 +323,19 @@ ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
             vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
 
             float iuTexScale = (6.0)/uiScale;
-            float scale = shapeData.scale;
-            if (scale == 0) {
+            float scaleX = shapeData.scaleX;
+            float scaleY = shapeData.scaleY;
+            if (scaleX == 0) {
                 iuTexScale = 1.0;
-                scale = 1.0;
+                scaleX = 1.0;
+                scaleY = 1.0;
             }
             vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
 
             if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
                    all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
 
-                vec2 finalPos = (1.0/scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
+                vec2 finalPos = (1.0/vec2(scaleX, scaleY))*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
                 if (dot(shapeData.cropSquareCorners, shapeData.cropSquareCorners) == 0.0) {
                     return ivec2(finalPos) + ivec2(shapeData.square[0], shapeData.square[1]);
                 }

@@ -23,10 +23,13 @@ struct vec4 {
 // UBO-compatible struct with proper padding
 struct alignas(16) ShapeData {
     int enabled;      // 4 bytes (bool is not std140-safe, so we use int)
-
     int shape;        // 4 bytes
     int corner;       // 4 bytes
-    float scale;      // 4 bytes
+    int _pad0;        // 4 bytes
+
+    float scaleX;      // 4 bytes
+    float scaleY;      // 4 bytes
+    int _pad1, _pad2;  // 8 bytes
 
     ivec4 square;      // 16 bytes (X, Y, Width, Height)
     ivec4 freeForm[4]; // 4 * 8 bytes = 32 bytes
@@ -34,7 +37,7 @@ struct alignas(16) ShapeData {
 
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
     int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
-    int _pad0, _pad1, _pad2;   // Padding to align the struct to 16 bytes
+    int _pad3, _pad4, _pad5;   // Padding to align the struct to 16 bytes
 
     vec4 cropSquareCorners;
 
@@ -79,7 +82,8 @@ public:
         shapeBuilder.shapeData.enabled = 1;
         shapeBuilder.shapeData.shape = 0;
         shapeBuilder.shapeData.corner = corner_Center;
-        shapeBuilder.shapeData.scale = 1.0;
+        shapeBuilder.shapeData.scaleX = 1.0;
+        shapeBuilder.shapeData.scaleY = 1.0;
         shapeBuilder.shapeData.square.x = 0;
         shapeBuilder.shapeData.square.y = 0;
         shapeBuilder.shapeData.square.z = 256;
@@ -101,12 +105,17 @@ public:
         return *this;
     }
     ShapeBuilder& scale(float _scale) {
-        shapeData.scale = _scale;
+        shapeData.scaleX = _scale;
+        shapeData.scaleY = _scale;
+        return *this;
+    }
+    ShapeBuilder& scale(float _scaleX, float _scaleY) {
+        shapeData.scaleX = _scaleX;
+        shapeData.scaleY = _scaleY;
         return *this;
     }
     ShapeBuilder& preserveDsScale() {
-        shapeData.scale = 0.0;
-        return *this;
+        return scale(0.0);
     }
     ShapeBuilder& fromPosition(int x, int y) {
         if (shapeData.shape == 0) {

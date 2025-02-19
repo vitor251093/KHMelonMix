@@ -461,7 +461,13 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withSize(256, 24)
                     .placeAtCorner(corner_TopLeft)
                     .build());
-                // TODO: KH UI can still be improved
+
+                shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(128, 0)
+                    .withSize(128, 24)
+                    .placeAtCorner(corner_TopRight)
+                    .scale(10.0, 1.0)
+                    .build());
             }
 
             // TODO: KH UI 
@@ -516,7 +522,13 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withSize(256, 24)
                     .placeAtCorner(corner_TopLeft)
                     .build());
-            // TODO: KH UI can still be improved
+
+            shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(128, 0)
+                    .withSize(128, 24)
+                    .placeAtCorner(corner_TopRight)
+                    .scale(10.0, 1.0)
+                    .build());
 
             return shapes;
         }
