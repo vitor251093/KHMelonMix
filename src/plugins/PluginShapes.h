@@ -28,17 +28,18 @@ struct alignas(16) ShapeData {
     int corner;       // 4 bytes
     float scale;      // 4 bytes
 
-    ivec4 square;   // 16 bytes (X, Y, Width, Height)
+    ivec4 square;      // 16 bytes (X, Y, Width, Height)
     ivec4 freeForm[4]; // 4 * 8 bytes = 32 bytes
-    vec4 margin;        // 16 bytes (left, top, right, down)
+    vec4 margin;       // 16 bytes (left, top, right, down)
 
-    vec4 fadeBorderSize; // 16 bytes (left fade, top fade, right fade, down fade)
+    vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
     int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
-    int _pad0, _pad1, _pad2;  // Padding to align the struct to 16 bytes
+    int _pad0, _pad1, _pad2;   // Padding to align the struct to 16 bytes
 
     vec4 cropSquareCorners;
 
-    ivec4 colorToAlpha;   // 16 bytes (RGBA, just ignore the A)
+    ivec4 colorToAlpha;       // 16 bytes (RGBA, just ignore the A)
+    ivec4 singleColorToAlpha; // 16 bytes (RGBA, just ignore the A)
 };
 
 enum
@@ -87,7 +88,6 @@ public:
         shapeBuilder.shapeData.margin.y = 0;
         shapeBuilder.shapeData.margin.z = 0;
         shapeBuilder.shapeData.margin.w = 0;
-        shapeBuilder.shapeData.colorToAlpha.x = -1;
         shapeBuilder._fromBottomScreen = false;
         return shapeBuilder;
     }
@@ -145,6 +145,20 @@ public:
         shapeData.cropSquareCorners.y = topRight;
         shapeData.cropSquareCorners.z = bottomLeft;
         shapeData.cropSquareCorners.w = bottomRight;
+        return *this;
+    }
+    ShapeBuilder& colorToAlpha(int red, int green, int blue) {
+        shapeData.colorToAlpha.x = red;
+        shapeData.colorToAlpha.y = green;
+        shapeData.colorToAlpha.z = blue;
+        shapeData.colorToAlpha.w = 1;
+        return *this;
+    }
+    ShapeBuilder& singleColorToAlpha(int red, int green, int blue) {
+        shapeData.singleColorToAlpha.x = red;
+        shapeData.singleColorToAlpha.y = green;
+        shapeData.singleColorToAlpha.z = blue;
+        shapeData.singleColorToAlpha.w = 1;
         return *this;
     }
 

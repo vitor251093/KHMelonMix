@@ -44,6 +44,7 @@ struct ShapeData {
     vec4 cropSquareCorners;
 
     ivec4 colorToAlpha;
+    ivec4 singleColorToAlpha;
 };
 
 layout(std140) uniform ShapeBlock {
@@ -579,7 +580,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     color = ivec4(color.r, blurVal /* 2D visibility */, 63 - blurVal /* 3D visibility */, 0x01);
                 }
             }
-            if (index == 2 && shapeData.colorToAlpha.r != -1) {
+            if (index == 2 && shapeData.colorToAlpha.a == 1) {
                 vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
 
                 if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
@@ -590,6 +591,20 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                                  abs(shapeData.colorToAlpha.g - colorZero.g) +
                                  abs(shapeData.colorToAlpha.b - colorZero.b))*2)/3;
                     color = ivec4(color.r, blur, 64 - blur, 0x01);
+                }
+            }
+            if (index == 2 && shapeData.singleColorToAlpha.a == 1) {
+                vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
+
+                if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
+                       all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
+                    
+                    ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                    if (colorZero.r == shapeData.singleColorToAlpha.r &&
+                        colorZero.g == shapeData.singleColorToAlpha.g &&
+                        colorZero.b == shapeData.singleColorToAlpha.b) {
+                        color = ivec4(color.r, 0, 64, 0x01);
+                    }
                 }
             }
         }
