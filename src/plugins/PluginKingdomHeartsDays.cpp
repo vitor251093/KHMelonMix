@@ -445,9 +445,11 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
         }
     }
 
-    // TODO: KH UI also happens at
-    // if (GameScene == gameScene_InGameWithDouble3D && !is2DGraphicDifferentFromColor(ivec4(0, 63, 0, 31), ivec2(130, 190))) {
-    if (GameScene == gameScene_InGameWithMap) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
+        if (GameScene == gameScene_InGameWithDouble3D && ShouldShowBottomScreen) {
+            return shapes;
+        }
+
         if (HideAllHUD) {
             return shapes;
         }
@@ -470,10 +472,10 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .build());
             }
 
-            // TODO: KH UI 
+            // TODO: KH UI
             // return getIngameDialogTextureCoordinates(xpos, ypos);
 
-            // TODO: KH UI Temporary code, just to make the dialog visible
+            // Temporary code, just to make the dialog visible
             shapes.push_back(ShapeBuilder::square()
                 .fromPosition(0, 30)
                 .withSize(256, 162)
@@ -1305,14 +1307,55 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 {
-    u32 pixel = getPixel(topScreen2DTexture(), 64, 0, 2);
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 0,   2) &&  has2DOnTopOf3DAt(buffer, 64,  2) &&
+          !has2DOnTopOf3DAt(buffer, 128, 2) && !has2DOnTopOf3DAt(buffer, 192, 2) &&
+          !has2DOnTopOf3DAt(buffer, 255, 2) &&
+           has2DOnTopOf3DAt(buffer, 0,   4) &&  has2DOnTopOf3DAt(buffer, 64,  4) &&
+           has2DOnTopOf3DAt(buffer, 128, 4) &&  has2DOnTopOf3DAt(buffer, 192, 4) &&
+           has2DOnTopOf3DAt(buffer, 255, 4) &&
+           has2DOnTopOf3DAt(buffer, 0,   6) &&  has2DOnTopOf3DAt(buffer, 64,  6) &&
+          !has2DOnTopOf3DAt(buffer, 128, 6) && !has2DOnTopOf3DAt(buffer, 192, 6) &&
+          !has2DOnTopOf3DAt(buffer, 255, 6);
+}
+
+bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
+{
+    u32 pixel = getPixel(buffer, x, y, 2);
     u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
-    bool has2DOnTopOf3D = (pixelAlpha > 0x4 ? true : (pixelAlpha == 0x4 ? false : (((pixel >> 8) & 0xFF) > 0) ? true : false));
-    return has2DOnTopOf3D;
+    return (pixelAlpha > 0x4 ? true : (pixelAlpha == 0x4 ? false : (((pixel >> 8) & 0xFF) > 0) ? true : false));
 }
 
 bool PluginKingdomHeartsDays::shouldRenderFrame()
 {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
+        bool _isMinimapVisible = isMinimapVisible();
+        if (IsMinimapVisible != _isMinimapVisible) {
+            IsMinimapVisible = _isMinimapVisible;
+            ShouldRefreshShapes = true;
+        }
+        bool _isDialogVisible = isDialogVisible();
+        if (IsDialogVisible != _isDialogVisible) {
+            IsDialogVisible = _isDialogVisible;
+            ShouldRefreshShapes = true;
+        }
+        bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
+        if (IsMissionInformationVisibleOnTopScreen != _isMissionInformationVisibleOnTopScreen) {
+            IsMissionInformationVisibleOnTopScreen = _isMissionInformationVisibleOnTopScreen;
+            ShouldRefreshShapes = true;
+        }
+        bool _isMissionInformationVisibleOnBottomScreen = isMissionInformationVisibleOnBottomScreen();
+        if (IsMissionInformationVisibleOnBottomScreen != _isMissionInformationVisibleOnBottomScreen) {
+            IsMissionInformationVisibleOnBottomScreen = _isMissionInformationVisibleOnBottomScreen;
+            ShouldRefreshShapes = true;
+        }
+        bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
+        if (IsCutsceneFromChallengeMissionVisible != _isCutsceneFromChallengeMissionVisible) {
+            IsCutsceneFromChallengeMissionVisible = _isCutsceneFromChallengeMissionVisible;
+            ShouldRefreshShapes = true;
+        }
+    }
+
     if (!_superShouldRenderFrame())
     {
         return false;
@@ -1355,6 +1398,10 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
         }
 
         bool showBottomScreen = _hasVisible3DOnBottomScreen && !(_ignore3DOnBottomScreen && _priorIgnore3DOnBottomScreen && _priorPriorIgnore3DOnBottomScreen);
+        if (ShouldShowBottomScreen != showBottomScreen) {
+            ShouldShowBottomScreen = showBottomScreen;
+            ShouldRefreshShapes = true;
+        }
         return (nds->PowerControl9 >> 15 != 0) ? !showBottomScreen : showBottomScreen;
     }
 
@@ -1366,34 +1413,6 @@ int PluginKingdomHeartsDays::detectGameScene()
     if (nds == nullptr)
     {
         return GameScene;
-    }
-
-    if (GameScene == gameScene_InGameWithMap) {
-        bool _isMinimapVisible = isMinimapVisible();
-        if (IsMinimapVisible != _isMinimapVisible) {
-            IsMinimapVisible = _isMinimapVisible;
-            ShouldRefreshShapes = true;
-        }
-        bool _isDialogVisible = isDialogVisible();
-        if (IsDialogVisible != _isDialogVisible) {
-            IsDialogVisible = _isDialogVisible;
-            ShouldRefreshShapes = true;
-        }
-        bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
-        if (IsMissionInformationVisibleOnTopScreen != _isMissionInformationVisibleOnTopScreen) {
-            IsMissionInformationVisibleOnTopScreen = _isMissionInformationVisibleOnTopScreen;
-            ShouldRefreshShapes = true;
-        }
-        bool _isMissionInformationVisibleOnBottomScreen = isMissionInformationVisibleOnBottomScreen();
-        if (IsMissionInformationVisibleOnBottomScreen != _isMissionInformationVisibleOnBottomScreen) {
-            IsMissionInformationVisibleOnBottomScreen = _isMissionInformationVisibleOnBottomScreen;
-            ShouldRefreshShapes = true;
-        }
-        bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
-        if (IsCutsceneFromChallengeMissionVisible != _isCutsceneFromChallengeMissionVisible) {
-            IsCutsceneFromChallengeMissionVisible = _isCutsceneFromChallengeMissionVisible;
-            ShouldRefreshShapes = true;
-        }
     }
 
     bool wasSaveLoaded = isSaveLoaded();

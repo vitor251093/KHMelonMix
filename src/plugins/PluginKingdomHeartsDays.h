@@ -143,6 +143,7 @@ private:
     u32* bottomScreen2DTexture();
     bool isBottomScreen2DTextureBlack();
 
+    bool ShouldShowBottomScreen = false;
     bool IsDialogVisible = false;
     bool IsMinimapVisible = false;
     bool IsMissionInformationVisibleOnTopScreen = false;
@@ -153,6 +154,7 @@ private:
     bool isMissionInformationVisibleOnTopScreen();
     bool isMissionInformationVisibleOnBottomScreen();
     bool isCutsceneFromChallengeMissionVisible();
+    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 
     void hudToggle();
     void debugLogs(int gameScene);
