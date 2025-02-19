@@ -572,9 +572,18 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                     float xBlur = min(leftBlurFactor, rightBlurFactor);
                     float yBlur = min(topBlurFactor, bottomBlurFactor);
+                    float visibilityOf2D = xBlur * yBlur;
 
-                    float blur = xBlur * yBlur * 63.0;
-                    color = ivec4(color.r, int(blur), 64 - int(blur), 0x01);
+                    if (visibilityOf2D == 1.0) {
+                        color = ivec4(0, 0x3F, 0, 0x01);
+                    }
+                    else if (visibilityOf2D == 0.0) {
+                        color = ivec4(0, 0, 0, 0x04);
+                    }
+                    else {
+                        int blurVal = int(visibilityOf2D * 63.0);
+                        color = ivec4(color.r, blurVal /* 2D visibility */, 63 - blurVal /* 3D visibility */, 0x01);
+                    }
                 }
             }
             if (index == 2 && shapeData.colorToAlpha.r != -1) {
