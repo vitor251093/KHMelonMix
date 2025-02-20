@@ -38,7 +38,8 @@ struct alignas(16) ShapeData { // 128 bytes
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
 
     int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
-    int _pad3, _pad4, _pad5;   // Padding to align the struct to 16 bytes
+    float opacity;
+    int _pad0, _pad1;   // Padding to align the struct to 16 bytes
 
     vec4 cropSquareCorners;    // 16 bytes (top left, top right, bottom left, bottom right)
     vec4 squareBorderRadius;
@@ -89,6 +90,7 @@ public:
         shapeBuilder.shapeData.squareInitialCoords.y = 0;
         shapeBuilder.shapeData.squareInitialCoords.z = 256;
         shapeBuilder.shapeData.squareInitialCoords.w = 192;
+        shapeBuilder.shapeData.opacity = 1.0;
         shapeBuilder._corner = corner_Center;
         shapeBuilder._margin.x = 0;
         shapeBuilder._margin.y = 0;
@@ -172,6 +174,10 @@ public:
     }
     ShapeBuilder& squareBorderRadius(float radius) {
         return squareBorderRadius(radius, radius, radius, radius);
+    }
+    ShapeBuilder& opacity(float opacity) {
+        shapeData.opacity = opacity;
+        return *this;
     }
     ShapeBuilder& colorToAlpha(int red, int green, int blue) {
         shapeData.colorToAlpha.x = red;

@@ -36,7 +36,8 @@ struct ShapeData {
     // effects
     vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
     int invertGrayScaleColors;
-    int _pad3, _pad4, _pad5;
+    float opacity;
+    int _pad0, _pad1;
 
     vec4 cropSquareCorners;
     vec4 squareBorderRadius;
@@ -523,7 +524,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                         color.g = color.g << 2;
                         color.b = color.b << 2;
                     
-                        if (any(greaterThan(shapeData.fadeBorderSize, vec4(0)))) {
+                        if (any(greaterThan(shapeData.fadeBorderSize, vec4(0))) || shapeData.opacity < 1.0) {
                             
                             float leftDiff = texPosition3d.x - squareFinalCoords[0];
                             float rightDiff = squareFinalCoords[2] - texPosition3d.x;
@@ -540,7 +541,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                             int visibilityOf2D = (shapeData.squareInitialCoords.y >= 192) ? 63 : (color.a > 0x4 ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1)));
                             float visibilityOf2DFactor = xBlur * yBlur;
 
-                            int blurVal = int(visibilityOf2DFactor * visibilityOf2D);
+                            int blurVal = int(visibilityOf2DFactor * visibilityOf2D * shapeData.opacity);
                             color = ivec4(color.r, blurVal /* 2D visibility */, 63 - blurVal /* 3D visibility */, 0x01);
 
                             // TODO: The fade does not work properly if you need this shape to blend with another shape
