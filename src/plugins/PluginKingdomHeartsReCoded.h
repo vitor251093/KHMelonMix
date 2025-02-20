@@ -123,8 +123,23 @@ private:
     bool isSaveLoaded();
 
     bool isBufferBlack(unsigned int* buffer);
+    u32* topScreen2DTexture();
+    u32* bottomScreen2DTexture();
     bool isTopScreen2DTextureBlack();
     bool isBottomScreen2DTextureBlack();
+
+    bool IsMissionInformationVisibleOnTopScreen = false;
+    bool IsDialogVisible = false;
+    bool IsMinimapVisible = false;
+    bool IsCommandMenuVisible = false;
+    bool IsHealthVisible = false;
+    bool isMissionInformationVisibleOnTopScreen();
+    bool isDialogVisible();
+    bool isMinimapVisible();
+    bool isCommandMenuVisible();
+    bool isHealthVisible();
+    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
+
     void hudToggle();
     void debugLogs(int gameScene);
 };

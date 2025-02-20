@@ -377,12 +377,12 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
             break;
 
         case gameScene_InGameDialog:
-            // TODO: KH UI
-            // bool _isHealthVisible = isHealthVisible();
-
-            // if (!_isHealthVisible && GameScene == 15) { // gameScene_InGameDialog
-            //     return getSingleSquaredScreenTextureCoordinates(xpos, ypos, 1, vec2(0, 0));
-            // }
+            if (!IsHealthVisible) {
+                shapes.push_back(ShapeBuilder::square()
+                    .preserveDsScale()
+                    .build(aspectRatio));
+                break;
+            }
 
         case gameScene_InGameOlympusBattle:
             // TODO: KH UI
@@ -393,185 +393,281 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
                 break;
             }
 
-            /*if (GameScene == gameScene_InGameWithMap && (!isCharacterControllable || IsDialogVisible))
+            if (IsMissionInformationVisibleOnTopScreen)
             {
-                float dialogScale = 5.333;
-
-                if (IsDialogPortraitLabelVisible)
-                {
-                    // dialog (portrait label right side)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(184, 170)
-                        .withSize(7, 14)
-                        .placeAtCorner(corner_Bottom)
-                        .scale(dialogScale)
-                        .withMargin(128 * dialogScale, 0.0, 0.0, 7.0 + 8 * dialogScale)
-                        .mirror(mirror_X)
-                        .build(aspectRatio));
-                }
-
-                // dialog (biggest part)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 30)
-                    .withSize(256, 162)
-                    .placeAtCorner(corner_Bottom)
-                    .scale(dialogScale)
-                    .withMargin(0.0, 0.0, 0.0, 7.0)
-                    .build(aspectRatio));
-
-                // dialog (left side)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 30)
-                    .withSize(3, 162)
-                    .placeAtCorner(corner_Bottom)
-                    .scale(dialogScale * 4, dialogScale)
-                    .withMargin(0.0, 0.0, 128 * dialogScale, 7.0)
-                    .build(aspectRatio));
-
-                // dialog (right side)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 30)
-                    .withSize(3, 162)
-                    .placeAtCorner(corner_Bottom)
-                    .scale(dialogScale * 4, dialogScale)
-                    .withMargin(128 * dialogScale, 0.0, 0.0, 7.0)
-                    .build(aspectRatio));
-
-                return shapes;
-            }
-
-            if (IsMissionInformationVisibleOnTopScreen) {
                 // top mission information
                 shapes.push_back(ShapeBuilder::square()
                     .fromPosition(0, 0)
-                    .withSize(256, 24)
+                    .withSize(256, 40)
                     .placeAtCorner(corner_TopLeft)
-                    .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                    .uiScale(UIScale)
-                    .build(aspectRatio));
-
-                return shapes;
-            }
-            if (!IsMissionInformationVisibleOnTopScreen && ShowMissionInfo && IsMissionInformationVisibleOnBottomScreen) {
-                // bottom mission information (part 1)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(0, 0)
-                    .withSize(75, 24)
-                    .placeAtCorner(corner_TopLeft)
-                    .singleColorToAlpha(8, 8, 8)
-                    .uiScale(UIScale)
-                    .build(aspectRatio));
-
-                // bottom mission information (part 2)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(75, 8)
-                    .withSize(181, 16)
-                    .placeAtCorner(corner_TopLeft)
-                    .withMargin(75.0, 8.0, 0.0, 0.0)
-                    .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
                     .uiScale(UIScale)
                     .build(aspectRatio));
             }
 
-            // item notification
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(0, 35)
-                .withSize(108, 86)
-                .placeAtCorner(corner_TopLeft)
-                .uiScale(UIScale)
-                .build(aspectRatio));
+            if (!IsHealthVisible && !IsCommandMenuVisible)
+            {
+                // texts over screen, like in the tutorial
+                shapes.push_back(ShapeBuilder::square()
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
 
-            // countdown and locked on
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(93, 0)
-                .withSize(70, 20)
-                .placeAtCorner(corner_Top)
-                .uiScale(UIScale)
-                .build(aspectRatio));
-            
+            if (IsDialogVisible) {
+                shapes.push_back(ShapeBuilder::square()
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
+
             if (GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
                 if (ShowMap) {
                     // minimap
                     shapes.push_back(ShapeBuilder::square()
                         .fromBottomScreen()
-                        .fromPosition(128, 60)
-                        .withSize(72, 72)
+                        .fromPosition(101, 66)
+                        .withSize(60, 60)
                         .placeAtCorner(corner_TopRight)
                         .withMargin(0.0, 30.0, 9.0, 0.0)
-                        .scale(0.8333)
+                        .scale(1.8)
                         .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                         .opacity(0.85)
-                        .invertGrayScaleColors()
-                        .uiScale(UIScale)
-                        .build(aspectRatio));
-                }
-
-                if (ShowTarget) {
-                    float targetScale = 0.666;
-                    int targetLabelMargin = 12;
-                    int targetWidth = 64;
-
-                    // target label (part 1)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(32, 51)
-                        .withSize(targetLabelMargin, 9)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
-                        .scale(targetScale)
-                        .colorToAlpha(62.0, 62.0, 62.0)
                         .uiScale(UIScale)
                         .build(aspectRatio));
 
-                    // target label (part 2)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(32 + targetLabelMargin, 51)
-                        .withSize(targetWidth - targetLabelMargin*2, 9)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
-                        .scale(targetScale)
-                        .uiScale(UIScale)
-                        .build(aspectRatio));
+                    // if (IsBugSector)
+                    // {
+                    //     // floor label
+                    //     float bottomLabelWidth = 50.0;
+                    //     float bottomLabelHeight = 15.0;
+                    //     float increaseLabelSize = 1.4;
+                    //     float labelWidth = (bottomLabelWidth/increaseLabelSize)*heightScale;
+                    //     float labelHeight = (bottomLabelHeight/increaseLabelSize);
+                    //     float labelRightMargin = 11.0;
+                    //     float labelTopMargin = 88.0;
+                    //     float labelLeftMargin = 256.0*iuTexScale - labelWidth - labelRightMargin;
+                    //     if (texPosition3d.x >= labelLeftMargin &&
+                    //         texPosition3d.x < (256.0*iuTexScale - labelRightMargin) && 
+                    //         texPosition3d.y <= labelHeight + labelTopMargin && 
+                    //         texPosition3d.y >= labelTopMargin) {
+                    //         return increaseLabelSize*fixStretch*(texPosition3d - vec2(labelLeftMargin, labelTopMargin)) + vec2(0, 192.0);
+                    //     }
 
-                    // target label (part 3)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(32 + targetWidth - targetLabelMargin, 51)
-                        .withSize(targetLabelMargin, 9)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 30.0, 9.0, 0.0)
-                        .scale(targetScale)
-                        .colorToAlpha(62.0, 62.0, 62.0)
-                        .uiScale(UIScale)
-                        .build(aspectRatio));
+                    //     // floor value
+                    //     float bottomFloorWidth = 82.0;
+                    //     float bottomFloorHeight = 15.0;
+                    //     float increaseFloorSize = 1.4;
+                    //     float floorWidth = (bottomFloorWidth/increaseFloorSize)*heightScale;
+                    //     float floorHeight = (bottomFloorHeight/increaseFloorSize);
+                    //     float floorRightMargin = 12.0;
+                    //     float floorTopMargin = 98.0;
+                    //     float floorLeftMargin = 256.0*iuTexScale - floorWidth - floorRightMargin;
+                    //     float bottomFloorLeftMargin = 50.0;
+                    //     if (texPosition3d.x >= floorLeftMargin &&
+                    //         texPosition3d.x < (256.0*iuTexScale - floorRightMargin) && 
+                    //         texPosition3d.y <= floorHeight + floorTopMargin && 
+                    //         texPosition3d.y >= floorTopMargin) {
+                    //         return increaseFloorSize*fixStretch*(texPosition3d - vec2(floorLeftMargin, floorTopMargin)) +
+                    //             vec2(0, 192.0) + vec2(bottomFloorLeftMargin, 0);
+                    //     }
 
-                    // target
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(32, 64)
-                        .withSize(targetWidth, 76)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 38.0, 9.0, 0.0)
-                        .scale(targetScale)
-                        .uiScale(UIScale)
-                        .build(aspectRatio));
-                }
+                    //     // enemies counter
+                    //     float bottomEnemiesWidth = 123.0;
+                    //     float bottomEnemiesHeight = 15.0;
+                    //     float bottomEnemies2Width = 23.0;
+                    //     float bottomEnemies2Height = 15.0;
+                    //     float bottomEnemiesLeftMargin = 133.0;
+                    //     float increaseEnemiesSize = 1.0;
+                    //     float enemiesBottomMargin = 12.0;
+                    //     float enemiesWidth = (bottomEnemiesWidth/increaseEnemiesSize)*heightScale;
+                    //     float enemies2Width = (bottomEnemies2Width/increaseEnemiesSize)*heightScale;
+                    //     float enemiesHeight = (bottomEnemiesHeight/increaseEnemiesSize);
+                    //     float enemies2Height = (bottomEnemies2Height/increaseEnemiesSize);
 
-                if (ShowMissionGauge) {
-                    // mission gauge
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(5, 152)
-                        .withSize(246, 40)
-                        .placeAtCorner(corner_Bottom)
-                        .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                        .uiScale(UIScale)
-                        .build(aspectRatio));
+                    //     // enemies counter (part 1)
+                    //     float enemiesLeftMargin = (256.0*iuTexScale - enemiesWidth - enemies2Width)/2;
+                    //     if (texPosition3d.x >= enemiesLeftMargin &&
+                    //         texPosition3d.x < enemiesLeftMargin + enemiesWidth && 
+                    //         texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
+                    //         texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                    //         return increaseEnemiesSize*fixStretch*(texPosition3d -
+                    //                 vec2(enemiesLeftMargin, 192.0*iuTexScale - enemiesHeight - enemiesBottomMargin)) +
+                    //             vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
+                    //     }
+
+                    //     // enemies counter (part 2)
+                    //     float enemies2LeftMargin = enemiesLeftMargin + enemiesWidth;
+                    //     if (texPosition3d.x >= enemies2LeftMargin &&
+                    //         texPosition3d.x < enemies2LeftMargin + enemies2Width && 
+                    //         texPosition3d.y >= (192.0*iuTexScale - enemies2Height - enemiesBottomMargin) &&
+                    //         texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
+                    //         return vec2(bottomEnemies2Width, bottomEnemies2Height) - (increaseEnemiesSize*fixStretch*(texPosition3d -
+                    //                 vec2(enemies2LeftMargin, 192.0*iuTexScale - enemies2Height - enemiesBottomMargin))) +
+                    //             vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
+                    //     }
+
+                    //     // mission information
+                    //     float sourceMissionInfoHeight = 26.0;
+                    //     float sourceMissionInfoWidth = 247.0;
+                    //     float sourceMissionInfoLeftMargin = 5.0;
+                    //     float sourceMissionInfoTopMargin = 166.0;
+                    //     float missionInfoHeight = sourceMissionInfoHeight;
+                    //     float missionInfoWidth = sourceMissionInfoWidth*heightScale;
+                    //     float missionInfoLeftMargin = 3.0;
+                    //     float missionInfoTopMargin = 6.0;
+
+                    //     if (texPosition3d.x >= missionInfoLeftMargin &&
+                    //         texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
+                    //         texPosition3d.y >= missionInfoTopMargin &&
+                    //         texPosition3d.y <  missionInfoTopMargin + missionInfoHeight) {
+                    //         return fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoTopMargin)) +
+                    //             vec2(0, 192.0) + vec2(sourceMissionInfoLeftMargin, sourceMissionInfoTopMargin);
+                    //     }
+                    // }
                 }
             }
+
+            if (IsHealthVisible)
+            {
+                if (GameScene == gameScene_InGameOlympusBattle) {
+                    // player health
+                    // float sourcePlayerHealthHeight = 78.0;
+                    // float sourcePlayerHealthWidth = 122.0;
+                    // float playerHealthHeight = sourcePlayerHealthHeight;
+                    // float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
+                    // float playerHealthRightMargin = 0.0;
+                    // float playerHealthBottomMargin = 0.0;
+                    // if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
+                    //     texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
+                    //     texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
+                    //     texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
+                    //     return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin,
+                    //                                             192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
+                    //         vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
+                    // }
+                }
+                else {
+                    // // player health
+                    // shapes.push_back(ShapeBuilder::square()
+                    //     .fromPosition(128, 84)
+                    //     .withSize(128, 108)
+                    //     .placeAtCorner(corner_BottomRight)
+                    //     .withMargin(0.0, 0.0, 8.0, 3.0)
+                    //     .uiScale(UIScale)
+                    //     .build(aspectRatio));
+                        
+                    // // player health
+                    // float sourcePlayerHealthHeight = 78.0;
+                    // float sourcePlayerHealthWidth = 92.0;
+                    // float playerHealthHeight = sourcePlayerHealthHeight;
+                    // float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
+                    // float playerHealthRightMargin = 8.0;
+                    // float playerHealthBottomMargin = 3.0;
+                    // if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
+                    //     texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
+                    //     texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
+                    //     texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
+
+                    //     vec2 finalPos = vec2((playerHealthWidth + playerHealthRightMargin) - (256.0*iuTexScale - texPosition3d.x),
+                    //                         (playerHealthHeight + playerHealthBottomMargin) - (192.0*iuTexScale - texPosition3d.y));
+                    //     if (finalPos.x*1.7 + finalPos.y > 64.0) {
+                    //         return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin,
+                    //                                                 192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
+                    //             vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
+                    //     }
+                    // }
+
+                    // // player allies health
+                    // float sourceAlliesHealthHeight = 118.0;
+                    // float sourceAlliesHealthWidth = 36.0;
+                    // float alliesHealthHeight = sourceAlliesHealthHeight;
+                    // float alliesHealthWidth = sourceAlliesHealthWidth*heightScale;
+                    // float alliesHealthRightMargin = 8.0;
+                    // float alliesHealthBottomMargin = 3.0;
+                    // if (texPosition3d.x >= (256.0*iuTexScale - alliesHealthWidth - alliesHealthRightMargin) &&
+                    //     texPosition3d.x <= (256.0*iuTexScale - alliesHealthRightMargin) &&
+                    //     texPosition3d.y >= (192.0*iuTexScale - alliesHealthHeight - alliesHealthBottomMargin) &&
+                    //     texPosition3d.y < (192.0*iuTexScale - alliesHealthBottomMargin)) {
+                    //     return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - alliesHealthWidth - alliesHealthRightMargin,
+                    //                                             192.0*iuTexScale - alliesHealthHeight - alliesHealthBottomMargin)) +
+                    //         vec2(256.0 - sourceAlliesHealthWidth, 192.0 - sourceAlliesHealthHeight);
+                    // }
+                }
+            }
+
+            if (IsCommandMenuVisible)
+            {
+                // command menu
+                shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(0, 108)
+                    .withSize(88, 84)
+                    .placeAtCorner(corner_BottomLeft)
+                    .withMargin(10.0, 0.0, 0.0, 0.0)
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
+
+                if (GameScene != gameScene_InGameOlympusBattle) {
+                //     // next area name
+                //     float sourceNextAreaNameHeight = 32.0;
+                //     float sourceNextAreaNameWidth = 80.0;
+                //     float nextAreaNameHeight = sourceNextAreaNameHeight;
+                //     float nextAreaNameWidth = sourceNextAreaNameWidth*heightScale;
+                //     float nextAreaNameRightMargin = 0.5;
+                //     float nextAreaNameBottomMargin = 0.0;
+                //     if (texPosition3d.x >= (128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2) &&
+                //         texPosition3d.x <= (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2) &&
+                //         texPosition3d.y >= (192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin) &&
+                //         texPosition3d.y < (192.0*iuTexScale - nextAreaNameBottomMargin)) {
+
+                //         vec2 finalPos = vec2((sourceNextAreaNameWidth*heightScale) - (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2 - texPosition3d.x),
+                //                             (nextAreaNameHeight + nextAreaNameBottomMargin) - (192.0*iuTexScale - texPosition3d.y));
+                //         if (finalPos.x + finalPos.y < 74.0) {
+                //             return fixStretch*(texPosition3d - vec2(128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2 + nextAreaNameRightMargin,
+                //                                                     192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin)) +
+                //                 vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
+                //         }
+                //     }
+                }
+            }
+
+            if (IsMissionInformationVisibleOnTopScreen) {
+                // // mission information
+                // float sourceMissionInfoHeight = 40.0;
+                // float missionInfoHeight = sourceMissionInfoHeight;
+                // float missionInfoY2 = missionInfoHeight;
+
+                // if (texPosition3d.y <  missionInfoY2) {
+                //     // nothing (clear screen)
+                //     return vec2(-1, -1);
+                // }
+            }
+
+            // overclock notification
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(0, 81)
+                .withSize(95, 27)
+                .placeAtCorner(corner_BottomLeft)
+                .withMargin(0.0, 0.0, 0.0, 84.0)
+                .uiScale(UIScale)
+                .build(aspectRatio));
+
+            // item notification
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(0, 39)
+                .withSize(95, 32)
+                .placeAtCorner(corner_BottomLeft)
+                .withMargin(0.0, 0.0, 0.0, 84.0)
+                .uiScale(UIScale)
+                .build(aspectRatio));
+
+            // level up notification
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(161, 39)
+                .withSize(95, 32)
+                .placeAtCorner(corner_BottomRight)
+                .withMargin(0.0, 0.0, 0.0, 84.0)
+                .uiScale(UIScale)
+                .build(aspectRatio));
 
             // enemy health
             shapes.push_back(ShapeBuilder::square()
@@ -579,33 +675,6 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
                 .withSize(93, 22)
                 .placeAtCorner(corner_TopRight)
                 .withMargin(0.0, 7.5, 9.0, 0.0)
-                .uiScale(UIScale)
-                .build(aspectRatio));
-
-            // sigils and death counter
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(163, 25)
-                .withSize(93, 30)
-                .placeAtCorner(corner_TopRight)
-                .withMargin(0.0, 92.5, 12.0, 0.0)
-                .uiScale(UIScale)
-                .build(aspectRatio));
-
-            // command menu
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(0, 86)
-                .withSize(108, 106)
-                .placeAtCorner(corner_BottomLeft)
-                .withMargin(10.0, 0.0, 0.0, 0.0)
-                .uiScale(UIScale)
-                .build(aspectRatio));
-
-            // player health
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(128, 84)
-                .withSize(128, 108)
-                .placeAtCorner(corner_BottomRight)
-                .withMargin(0.0, 0.0, 8.0, 3.0)
                 .uiScale(UIScale)
                 .build(aspectRatio));
 
@@ -618,7 +687,6 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
                 .build(aspectRatio));
 
             break;
-            */
 
         case gameScene_PauseMenu:
             // pause menu
@@ -1176,6 +1244,18 @@ bool PluginKingdomHeartsReCoded::isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
+u32* PluginKingdomHeartsReCoded::topScreen2DTexture()
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    return nds->GPU.Framebuffer[FrontBuffer][0].get();
+}
+
+u32* PluginKingdomHeartsReCoded::bottomScreen2DTexture()
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    return nds->GPU.Framebuffer[FrontBuffer][1].get();
+}
+
 bool PluginKingdomHeartsReCoded::isTopScreen2DTextureBlack()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
@@ -1190,8 +1270,74 @@ bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
     return isBufferBlack(bottomBuffer);
 }
 
+bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 128, 0) && has2DOnTopOf3DAt(buffer, 128, 10);
+}
+
+bool PluginKingdomHeartsReCoded::isDialogVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 128, 155);
+}
+
+bool PluginKingdomHeartsReCoded::isMinimapVisible()
+{
+    u32* buffer = bottomScreen2DTexture();
+    u32 pixel = getPixel(buffer, 1, 190, 0);
+    return ((pixel >> 0) & 0x3F) > 39 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) < 5;
+}
+
+bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 35, 185);
+}
+
+bool PluginKingdomHeartsReCoded::isHealthVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 233, 175);
+}
+
+bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
+{
+    u32 pixel = getPixel(buffer, x, y, 2);
+    u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
+    return (pixelAlpha > 0x4 ? true : (pixelAlpha == 0x4 ? false : (((pixel >> 8) & 0xFF) > 0) ? true : false));
+}
+
 bool PluginKingdomHeartsReCoded::shouldRenderFrame()
 {
+    if (GameScene == gameScene_InGameWithMap) {
+        bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
+        if (IsMissionInformationVisibleOnTopScreen != _isMissionInformationVisibleOnTopScreen) {
+            IsMissionInformationVisibleOnTopScreen = _isMissionInformationVisibleOnTopScreen;
+            ShouldRefreshShapes = true;
+        }
+        bool _isDialogVisible = isDialogVisible();
+        if (IsDialogVisible != _isDialogVisible) {
+            IsDialogVisible = _isDialogVisible;
+            ShouldRefreshShapes = true;
+        }
+        bool _isMinimapVisible = isMinimapVisible();
+        if (IsMinimapVisible != _isMinimapVisible) {
+            IsMinimapVisible = _isMinimapVisible;
+            ShouldRefreshShapes = true;
+        }
+        bool _isCommandMenuVisible = isCommandMenuVisible();
+        if (IsCommandMenuVisible != _isCommandMenuVisible) {
+            IsCommandMenuVisible = _isCommandMenuVisible;
+            ShouldRefreshShapes = true;
+        }
+        bool _isHealthVisible = isHealthVisible();
+        if (IsHealthVisible != _isHealthVisible) {
+            IsHealthVisible = _isHealthVisible;
+            ShouldRefreshShapes = true;
+        }
+    }
+
     if (!_superShouldRenderFrame())
     {
         return false;
