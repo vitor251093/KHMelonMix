@@ -484,7 +484,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .fromPosition(0, 30)
                     .withSize(256, 162)
                     .placeAtCorner(corner_Bottom)
-                    .preserveDsScale()
+                    .scale(5.333)
+                    .withMargin(0.0, 0.0, 0.0, 7.0)
                     .build(aspectRatio));
 
                 return shapes;
