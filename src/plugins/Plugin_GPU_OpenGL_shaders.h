@@ -35,9 +35,11 @@ struct ShapeData {
 
     // effects
     vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
+
     int invertGrayScaleColors;
     float opacity;
-    int _pad0, _pad1;
+    int mirror;
+    int _pad1;
 
     vec4 cropSquareCorners;
     vec4 squareBorderRadius;
@@ -504,6 +506,13 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                                  isValidConsideringSquareBorderRadius(finalPos, shapeData.squareBorderRadius, shapeData.squareInitialCoords);
 
                 if (validArea) {
+                    if ((shapeData.mirror & 0x1) == 0x1) {
+                        finalPos.x = shapeData.squareInitialCoords.z - finalPos.x;
+                    }
+                    if ((shapeData.mirror & 0x2) == 0x2) {
+                        finalPos.y = shapeData.squareInitialCoords.w - finalPos.y;
+                    }
+
                     ivec2 textureBeginning = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
                     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));

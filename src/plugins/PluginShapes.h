@@ -41,7 +41,8 @@ struct alignas(16) ShapeData { // 128 bytes
 
     int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
     float opacity;
-    int _pad0, _pad1;   // Padding to align the struct to 16 bytes
+    int mirror;
+    int _pad1;   // Padding to align the struct to 16 bytes
 
     vec4 cropSquareCorners;    // 16 bytes (top left, top right, bottom left, bottom right)
     vec4 squareBorderRadius;
@@ -77,6 +78,14 @@ enum
     brightnessMode_TopScreen,
     brightnessMode_BottomScreen,
     brightnessMode_Off
+};
+
+enum
+{
+    mirror_None,
+    mirror_X,
+    mirror_Y,
+    mirror_XY
 };
 
 class ShapeBuilder
@@ -158,6 +167,10 @@ public:
     }
     ShapeBuilder& invertGrayScaleColors() {
         shapeData.invertGrayScaleColors = 1;
+        return *this;
+    }
+    ShapeBuilder& mirror(int mirror) {
+        shapeData.mirror = mirror;
         return *this;
     }
     ShapeBuilder& cropSquareCorners(float topLeft, float topRight, float bottomLeft, float bottomRight) {

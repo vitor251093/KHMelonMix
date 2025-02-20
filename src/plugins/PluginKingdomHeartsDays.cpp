@@ -481,6 +481,19 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
 
                 float dialogScale = 5.333;
 
+                // if (isColorBlack(ivec4(texelFetch(ScreenTex, ivec2(250, 183), 0))))
+                {
+                    // dialog (portrait label right side)
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(184, 170)
+                        .withSize(7, 14)
+                        .placeAtCorner(corner_Bottom)
+                        .scale(dialogScale)
+                        .withMargin(128 * dialogScale, 0.0, 0.0, 7.0 + 8 * dialogScale)
+                        .mirror(mirror_X)
+                        .build(aspectRatio));
+                }
+
                 // dialog (biggest part)
                 shapes.push_back(ShapeBuilder::square()
                     .fromPosition(0, 30)
@@ -495,7 +508,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .fromPosition(0, 30)
                     .withSize(3, 162)
                     .placeAtCorner(corner_Bottom)
-                    .scale(dialogScale)
+                    .scale(dialogScale * 4, dialogScale)
                     .withMargin(0.0, 0.0, 128 * dialogScale, 7.0)
                     .build(aspectRatio));
 
@@ -504,7 +517,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .fromPosition(0, 30)
                     .withSize(3, 162)
                     .placeAtCorner(corner_Bottom)
-                    .scale(dialogScale)
+                    .scale(dialogScale * 4, dialogScale)
                     .withMargin(128 * dialogScale, 0.0, 0.0, 7.0)
                     .build(aspectRatio));
 
