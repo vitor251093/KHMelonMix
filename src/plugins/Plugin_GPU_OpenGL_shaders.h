@@ -30,8 +30,8 @@ struct ShapeData {
     float uiScale;
     vec2 scale;
 
-    ivec4 square;      // X, Y, Width, Height (only valid if shape == 0)
-    vec4 squareCoords;
+    ivec4 squareInitialCoords; // X, Y, Width, Height (only valid if shape == 0)
+    vec4 squareFinalCoords;
 
     // effects
     vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
@@ -445,15 +445,15 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         if (shapeData.shape == 0) { // square
             float uiTexScale = (6.0/shapeData.uiScale);
             vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
-            vec4 shape3DCoords = shapeData.squareCoords;
+            vec4 shape3DCoords = shapeData.squareFinalCoords;
 
             if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
                    all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
 
                 vec2 finalPos = (1.0/shapeData.scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
                 if ((finalPos.x + finalPos.y >= shapeData.cropSquareCorners[0]) &&
-                    (finalPos.y - finalPos.x + shapeData.square[2] >= shapeData.cropSquareCorners[1])) {
-                    ivec2 textureBeginning = ivec2(finalPos) + shapeData.square.xy;
+                    (finalPos.y - finalPos.x + shapeData.squareInitialCoords[2] >= shapeData.cropSquareCorners[1])) {
+                    ivec2 textureBeginning = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
                     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
@@ -488,7 +488,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                             float xBlur = min(leftBlurFactor, rightBlurFactor);
                             float yBlur = min(topBlurFactor, bottomBlurFactor);
-                            int visibilityOf2D = (shapeData.square.y >= 192) ? 63 : (color.a > 0x4 ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1)));
+                            int visibilityOf2D = (shapeData.squareInitialCoords.y >= 192) ? 63 : (color.a > 0x4 ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1)));
                             float visibilityOf2DFactor = xBlur * yBlur;
 
                             int blurVal = int(visibilityOf2DFactor * visibilityOf2D);

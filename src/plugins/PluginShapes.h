@@ -32,8 +32,8 @@ struct alignas(16) ShapeData { // 176 bytes
     float uiScale;       // 4 bytes
     vec2 scale;      // 8 bytes
 
-    ivec4 square;      // 16 bytes (X, Y, Width, Height)
-    vec4 squareCoords;
+    ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
+    vec4 squareFinalCoords;
 
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
     int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
@@ -83,10 +83,10 @@ public:
         shapeBuilder.shapeData.uiScale = 1.0;
         shapeBuilder.shapeData.scale.x = 1.0;
         shapeBuilder.shapeData.scale.y = 1.0;
-        shapeBuilder.shapeData.square.x = 0;
-        shapeBuilder.shapeData.square.y = 0;
-        shapeBuilder.shapeData.square.z = 256;
-        shapeBuilder.shapeData.square.w = 192;
+        shapeBuilder.shapeData.squareInitialCoords.x = 0;
+        shapeBuilder.shapeData.squareInitialCoords.y = 0;
+        shapeBuilder.shapeData.squareInitialCoords.z = 256;
+        shapeBuilder.shapeData.squareInitialCoords.w = 192;
         shapeBuilder._corner = corner_Center;
         shapeBuilder._margin.x = 0;
         shapeBuilder._margin.y = 0;
@@ -124,15 +124,15 @@ public:
     }
     ShapeBuilder& fromPosition(int x, int y) {
         if (shapeData.shape == 0) {
-            shapeData.square.x = x;
-            shapeData.square.y = y;
+            shapeData.squareInitialCoords.x = x;
+            shapeData.squareInitialCoords.y = y;
         }
         return *this;
     }
     ShapeBuilder& withSize(int width, int height) {
         if (shapeData.shape == 0) {
-            shapeData.square.z = width;
-            shapeData.square.w = height;
+            shapeData.squareInitialCoords.z = width;
+            shapeData.squareInitialCoords.w = height;
         }
         return *this;
     }
@@ -184,8 +184,8 @@ public:
         
         float heightScale = 1.0/aspectRatio;
 
-        float squareFinalHeight = shapeData.square.w*scaleY;
-        float squareFinalWidth = shapeData.square.z*scaleX*heightScale;
+        float squareFinalHeight = shapeData.squareInitialCoords.w*scaleY;
+        float squareFinalWidth = shapeData.squareInitialCoords.z*scaleX*heightScale;
 
         float squareFinalX1 = 0.0;
         float squareFinalY1 = 0.0;
@@ -240,12 +240,12 @@ public:
         float squareFinalX2 = squareFinalX1 + squareFinalWidth;
         float squareFinalY2 = squareFinalY1 + squareFinalHeight;
 
-        shapeData.squareCoords = {squareFinalX1, squareFinalY1, squareFinalX2, squareFinalY2};
+        shapeData.squareFinalCoords = {squareFinalX1, squareFinalY1, squareFinalX2, squareFinalY2};
     }
 
     ShapeData build(float aspectRatio) {
         if (_fromBottomScreen) {
-            shapeData.square.y += 192;
+            shapeData.squareInitialCoords.y += 192;
         }
 
         if (shapeData.shape == 0) { // square
