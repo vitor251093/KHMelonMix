@@ -476,9 +476,6 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                         .build(aspectRatio));
                 }
 
-                // TODO: KH UI
-                // return getIngameDialogTextureCoordinates(xpos, ypos);
-
                 float dialogScale = 5.333;
 
                 if (IsDialogPortraitLabelVisible)
