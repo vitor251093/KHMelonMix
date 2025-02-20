@@ -707,15 +707,17 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                         .build(aspectRatio));
                 }
 
-                // mission gauge
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(5, 152)
-                    .withSize(246, 40)
-                    .placeAtCorner(corner_Bottom)
-                    .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                    .uiScale(UIScale)
-                    .build(aspectRatio));
+                if (IsMinimapVisible) {
+                    // mission gauge
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(5, 152)
+                        .withSize(246, 40)
+                        .placeAtCorner(corner_Bottom)
+                        .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
+                }
             }
 
             // pause menu
