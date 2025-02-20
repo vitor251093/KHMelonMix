@@ -151,7 +151,7 @@ enum
     gameScene_PauseMenu,                // 7
     gameScene_Tutorial,                 // 8
     gameScene_InGameWithDouble3D,       // 9  // TODO: KH UI The performance of that scene is pretty bad right now
-    gameScene_MultiplayerMissionReview, // 10
+    gameScene_MultiplayerMissionReview, // 10 // TODO: KH UI The performance of that scene is pretty bad right now
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
     gameScene_RoxasThoughts,            // 13
@@ -688,7 +688,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             break;
 
         case gameScene_PauseMenu:
-            if (PriorGameScene != gameScene_InGameWithDouble3D) // TODO: KH UI and !isScreenBlack(1)
+            if (PriorGameScene != gameScene_InGameWithDouble3D)
             {
                 if (IsMissionInformationVisibleOnBottomScreen) {
                     // bottom mission information (part 1)
@@ -745,10 +745,19 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
         case gameScene_Tutorial:
             // TODO: KH UI turn the tutorial into a floating box, like in the other games
 
+            // tutorial
             shapes.push_back(ShapeBuilder::square()
                     .fromBottomScreen()
-                    .preserveDsScale()
+                    .uiScale(5.0)
                     .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(118, 182)
+                .withSize(20, 10)
+                .placeAtCorner(corner_Center)
+                .uiScale(1000.0)
+                .build(aspectRatio));
 
             break;
 
