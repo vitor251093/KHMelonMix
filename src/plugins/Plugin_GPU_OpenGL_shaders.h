@@ -217,18 +217,10 @@ vec2 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos, vec2 clea
     return clearVect;
 }
 
-vec4 get3DCoordinatesOf2DSquareShape(int corner, ivec4 square, vec2 scale, vec4 margin)
+vec4 get3DCoordinatesOf2DSquareShape(float iuTexScale, float scaleX, float scaleY, int corner, ivec4 square, vec2 scale, vec4 margin)
 {
-    float iuTexScale = (6.0)/uiScale;
     float heightScale = 1.0/currentAspectRatio;
 
-    float scaleX = scale.x;
-    float scaleY = scale.y;
-    if (scaleX == 0) {
-        iuTexScale = 1.0;
-        scaleX = 1.0;
-        scaleY = 1.0;
-    }
     float squareFinalHeight = square[3]*scaleY;
     float squareFinalWidth = square[2]*scaleX*heightScale;
 
@@ -514,9 +506,6 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         ShapeData shapeData = shapes[shapeIndex];
     
         if (shapeData.shape == 0) { // square
-            vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(
-                shapeData.corner, shapeData.square, shapeData.scale, shapeData.margin);
-
             float iuTexScale = (6.0)/uiScale;
             float scaleX = shapeData.scale.x;
             float scaleY = shapeData.scale.y;
@@ -525,7 +514,10 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 scaleX = 1.0;
                 scaleY = 1.0;
             }
+
             vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+            vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(iuTexScale, scaleX, scaleY,
+                shapeData.corner, shapeData.square, shapeData.scale, shapeData.margin);
 
             if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
                    all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
