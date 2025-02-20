@@ -23,7 +23,7 @@ namespace Plugins
 {
 const char* kCompositorFS_Plugin = R"(#version 140
 
-#define MAX_SHAPES 64
+#define SHAPES_DATA_ARRAY_SIZE 32
 
 struct ShapeData {
     int shape; // 0 = SQUARE, 1 = FREEFORM
@@ -45,7 +45,7 @@ struct ShapeData {
 };
 
 layout(std140) uniform ShapeBlock {
-    ShapeData shapes[MAX_SHAPES];
+    ShapeData shapes[SHAPES_DATA_ARRAY_SIZE];
 };
 
 uniform float currentAspectRatio;
@@ -534,13 +534,15 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 if ((finalPos.x + finalPos.y >= shapeData.cropSquareCorners[0]) &&
                     (finalPos.y - finalPos.x + shapeData.square[2] >= shapeData.cropSquareCorners[1])) {
                     ivec2 textureBeginning = ivec2(finalPos) + shapeData.square.xy;
-
                     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
-                    if (index == 0 && shapeData.invertGrayScaleColors == 1) {
-                        bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
-                        if (isShadeOfGray) {
-                            color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+
+                    if (index == 0) {
+                        if (shapeData.invertGrayScaleColors == 1) {
+                            bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+                            if (isShadeOfGray) {
+                                color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+                            }
                         }
                     }
                     if (index == 1) {
@@ -551,8 +553,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                         color.g = color.g << 2;
                         color.b = color.b << 2;
                     
-                        if (shapeData.fadeBorderSize[0] > 0 || shapeData.fadeBorderSize[1] > 0 ||
-                            shapeData.fadeBorderSize[2] > 0 || shapeData.fadeBorderSize[3] > 0) {
+                        if (any(greaterThan(shapeData.fadeBorderSize, vec4(0)))) {
                             
                             float leftDiff = texPosition3d.x - shape3DCoords[0];
                             float rightDiff = shape3DCoords[2] - texPosition3d.x;

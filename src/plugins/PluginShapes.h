@@ -1,7 +1,7 @@
 #ifndef PLUGIN_SHAPES_H
 #define PLUGIN_SHAPES_H
 
-#define SHAPES_DATA_ARRAY_SIZE 64
+#define SHAPES_DATA_ARRAY_SIZE 32
 
 namespace Plugins
 {
