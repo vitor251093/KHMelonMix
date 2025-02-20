@@ -26,14 +26,9 @@ const char* kCompositorFS_Plugin = R"(#version 140
 #define MAX_SHAPES 64
 
 struct ShapeData {
-    int enabled;
-
     int shape; // 0 = SQUARE, 1 = FREEFORM
     int corner; // 0 = center, 1-8 = corners
-    int _pad0;
-
     vec2 scale;
-    int _pad1, _pad2;
 
     ivec4 square;      // X, Y, Width, Height (only valid if shape == 0)
     vec4 margin;       // left, top, right, down
@@ -518,7 +513,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
         ShapeData shapeData = shapes[shapeIndex];
     
-        if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
+        if (shapeData.shape == 0) { // square
             vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(
                 shapeData.corner, shapeData.square, shapeData.scale, shapeData.margin);
 

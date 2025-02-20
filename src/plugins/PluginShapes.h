@@ -28,13 +28,9 @@ struct vec4 {
 
 // UBO-compatible struct with proper padding
 struct alignas(16) ShapeData { // 176 bytes
-    int enabled;      // 4 bytes (bool is not std140-safe, so we use int)
     int shape;        // 4 bytes
     int corner;       // 4 bytes
-    int _pad0;        // 4 bytes
-
     vec2 scale;        // 8 bytes
-    int _pad1, _pad2;  // 8 bytes
 
     ivec4 square;      // 16 bytes (X, Y, Width, Height)
     vec4 margin;       // 16 bytes (left, top, right, down)
@@ -83,7 +79,6 @@ class ShapeBuilder
 public:
     static ShapeBuilder square() {
         auto shapeBuilder = ShapeBuilder();
-        shapeBuilder.shapeData.enabled = 1;
         shapeBuilder.shapeData.shape = 0;
         shapeBuilder.shapeData.corner = corner_Center;
         shapeBuilder.shapeData.scale.x = 1.0;
