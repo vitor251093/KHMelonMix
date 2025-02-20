@@ -1336,8 +1336,7 @@ bool PluginKingdomHeartsDays::isDialogVisible()
 {
     u32* buffer = topScreen2DTexture();
     for (int y = 161; y >= 141; y--) {
-        u32 pixel = getPixel(buffer, 128, y, 2);
-        if (pixel & 0x3F >= 3) {
+        if (has2DOnTopOf3DAt(buffer, 128, y)) {
             return true;
         }
     }

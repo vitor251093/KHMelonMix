@@ -501,6 +501,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                             int blurVal = int(visibilityOf2DFactor * visibilityOf2D);
                             color = ivec4(color.r, blurVal /* 2D visibility */, 63 - blurVal /* 3D visibility */, 0x01);
+
+                            // TODO: The fade does not work properly if you need this shape to blend with another shape
                         }
 
                         if (shapeData.colorToAlpha.a == 1) {
