@@ -744,24 +744,23 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             break;
     
         case gameScene_Tutorial:
-            // TODO: KH UI cut the horizontal margins a little bit, just to make the border radius fit
-
             // tutorial
             shapes.push_back(ShapeBuilder::square()
                     .fromBottomScreen()
                     .fromPosition(5, 0)
                     .withSize(246, 192)
                     .uiScale(5.0)
-                    .opacity(0.95)
                     .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
                     .build(aspectRatio));
 
             // background
             shapes.push_back(ShapeBuilder::square()
-                .fromPosition(118, 182)
-                .withSize(20, 10)
+                .fromBottomScreen()
+                .fromPosition(0, 96)
+                .withSize(5, 5)
                 .placeAtCorner(corner_Center)
                 .uiScale(1000.0)
+                .opacity(0.75)
                 .build(aspectRatio));
 
             break;
@@ -940,7 +939,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
         s32 z = polygon->Vertices[vertexIndex]->Position[2];
 
         int resolutionScale = ScreenWidth/256;
-        float iuTexScale = (6.0)/UIScale;
+        float iuTexScale = SCREEN_SCALE/UIScale;
 
         float _x = (float)(*x);
         float _y = (float)(*y);

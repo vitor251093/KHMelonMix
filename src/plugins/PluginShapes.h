@@ -3,6 +3,8 @@
 
 #define SHAPES_DATA_ARRAY_SIZE 32
 
+#define SCREEN_SCALE 6.0
+
 namespace Plugins
 {
 
@@ -123,7 +125,7 @@ public:
         return *this;
     }
     ShapeBuilder& preserveDsScale() {
-        shapeData.uiScale = 6.0;
+        shapeData.uiScale = SCREEN_SCALE;
         return *this;
     }
     ShapeBuilder& fromPosition(int x, int y) {
@@ -196,7 +198,7 @@ public:
 
     void precompute3DCoordinatesOf2DSquareShape(float aspectRatio)
     {
-        float iuTexScale = (6.0)/shapeData.uiScale;
+        float iuTexScale = SCREEN_SCALE/shapeData.uiScale;
         float scaleX = shapeData.scale.x;
         float scaleY = shapeData.scale.y;
         
