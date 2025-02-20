@@ -749,9 +749,11 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             // tutorial
             shapes.push_back(ShapeBuilder::square()
                     .fromBottomScreen()
+                    .fromPosition(5, 0)
+                    .withSize(246, 192)
                     .uiScale(5.0)
                     .opacity(0.95)
-                    .squareBorderRadius(10.0)
+                    .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
                     .build(aspectRatio));
 
             // background
