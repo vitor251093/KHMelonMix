@@ -27,22 +27,23 @@ struct vec4 {
 };
 
 // UBO-compatible struct with proper padding
-struct alignas(16) ShapeData { // 176 bytes
+struct alignas(16) ShapeData { // 128 bytes
     int shape;       // 4 bytes
-    float uiScale;       // 4 bytes
+    float uiScale;   // 4 bytes
     vec2 scale;      // 8 bytes
 
     ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
-    vec4 squareFinalCoords;
+    vec4 squareFinalCoords;    // 16 bytes (X, Y, Width, Height)
 
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
+
     int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
     int _pad3, _pad4, _pad5;   // Padding to align the struct to 16 bytes
 
-    vec4 cropSquareCorners;
+    vec4 cropSquareCorners;    // 16 bytes (top left, top right, bottom left, bottom right)
 
-    ivec4 colorToAlpha;       // 16 bytes (RGBA, just ignore the A)
-    ivec4 singleColorToAlpha; // 16 bytes (RGBA, just ignore the A)
+    ivec4 colorToAlpha;        // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
+    ivec4 singleColorToAlpha;  // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
 };
 
 enum
