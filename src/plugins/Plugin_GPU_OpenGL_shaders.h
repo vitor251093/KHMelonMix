@@ -445,12 +445,12 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         if (shapeData.shape == 0) { // square
             float uiTexScale = (6.0/shapeData.uiScale);
             vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
-            vec4 shape3DCoords = shapeData.squareFinalCoords;
+            vec4 squareFinalCoords = shapeData.squareFinalCoords;
 
-            if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
-                   all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
+            if (all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) && 
+                   all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) {
 
-                vec2 finalPos = (1.0/shapeData.scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
+                vec2 finalPos = (1.0/shapeData.scale)*fixStretch*(texPosition3d - squareFinalCoords.xy);
                 if ((finalPos.x + finalPos.y >= shapeData.cropSquareCorners[0]) &&
                     (finalPos.y - finalPos.x + shapeData.squareInitialCoords[2] >= shapeData.cropSquareCorners[1])) {
                     ivec2 textureBeginning = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
@@ -475,12 +475,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     
                         if (any(greaterThan(shapeData.fadeBorderSize, vec4(0)))) {
                             
-                            float leftDiff = texPosition3d.x - shape3DCoords[0];
-                            float rightDiff = shape3DCoords[2] - texPosition3d.x;
-                            float topDiff = texPosition3d.y - shape3DCoords[1];
-                            float bottomDiff = shape3DCoords[3] - texPosition3d.y;
+                            float leftDiff = texPosition3d.x - squareFinalCoords[0];
+                            float rightDiff = squareFinalCoords[2] - texPosition3d.x;
+                            float topDiff = texPosition3d.y - squareFinalCoords[1];
+                            float bottomDiff = squareFinalCoords[3] - texPosition3d.y;
 
-                            float heightScale = 1.0/currentAspectRatio;
                             float leftBlurFactor   = shapeData.fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (shapeData.fadeBorderSize[0] * heightScale), 0.0, 1.0);
                             float topBlurFactor    = shapeData.fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  shapeData.fadeBorderSize[1], 0.0, 1.0);
                             float rightBlurFactor  = shapeData.fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (shapeData.fadeBorderSize[2] * heightScale), 0.0, 1.0);
