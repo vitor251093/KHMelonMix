@@ -149,11 +149,13 @@ private:
     bool IsMissionInformationVisibleOnTopScreen = false;
     bool IsMissionInformationVisibleOnBottomScreen = false;
     bool IsCutsceneFromChallengeMissionVisible = false;
+    bool IsDialogPortraitLabelVisible = false;
     bool isDialogVisible();
     bool isMinimapVisible();
     bool isMissionInformationVisibleOnTopScreen();
     bool isMissionInformationVisibleOnBottomScreen();
     bool isCutsceneFromChallengeMissionVisible();
+    bool isDialogPortraitLabelVisible();
     bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 
     void hudToggle();

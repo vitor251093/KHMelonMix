@@ -481,7 +481,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
 
                 float dialogScale = 5.333;
 
-                // if (isColorBlack(ivec4(texelFetch(ScreenTex, ivec2(250, 183), 0))))
+                if (IsDialogPortraitLabelVisible)
                 {
                     // dialog (portrait label right side)
                     shapes.push_back(ShapeBuilder::square()
@@ -1423,6 +1423,12 @@ bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
           !has2DOnTopOf3DAt(buffer, 255, 6);
 }
 
+bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
+{
+    u32 pixel = getPixel(topScreen2DTexture(), 250, 183, 0);
+    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
+}
+
 bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 {
     u32 pixel = getPixel(buffer, x, y, 2);
@@ -1456,6 +1462,11 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
         bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
         if (IsCutsceneFromChallengeMissionVisible != _isCutsceneFromChallengeMissionVisible) {
             IsCutsceneFromChallengeMissionVisible = _isCutsceneFromChallengeMissionVisible;
+            ShouldRefreshShapes = true;
+        }
+        bool _isDialogPortraitLabelVisible = isDialogPortraitLabelVisible();
+        if (IsDialogPortraitLabelVisible != _isDialogPortraitLabelVisible) {
+            IsDialogPortraitLabelVisible = _isDialogPortraitLabelVisible;
             ShouldRefreshShapes = true;
         }
     }
