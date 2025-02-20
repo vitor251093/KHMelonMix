@@ -14,6 +14,8 @@
 #include <objc/runtime.h>
 #endif
 
+#include "../OpenGLSupport.h"
+
 #define RAM_SEARCH_ENABLED true
 // #define RAM_SEARCH_SIZE 8
 // #define RAM_SEARCH_SIZE 16
@@ -90,6 +92,13 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     for (int index = 0; index <= 6; index ++) {
         CompGpuLastValues[CompShader][index] = -1;
     }
+
+    for (int index = 0; index < SHAPES_DATA_ARRAY_SIZE; index ++) {
+        std::string prefix = "fastShapes[" + std::to_string(index) + "].";
+        CompShapesShapeLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "shape").c_str());
+        CompShapesUiScaleLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "uiScale").c_str());
+        CompShapesSquareFinalCoordsLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "squareFinalCoords").c_str());
+    }
 }
 
 #define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
@@ -122,6 +131,13 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         glUniform1i(CompGpuLoc[CompShader][4], CompGpuLastValues[CompShader][4]);
         glUniform1i(CompGpuLoc[CompShader][5], CompGpuLastValues[CompShader][5]);
         glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
+
+        for (int index = 0; index < shapes.size(); index ++) {
+            glUniform1i(CompShapesShapeLoc[CompShader][index], shapes[index].shape);
+            glUniform1f(CompShapesUiScaleLoc[CompShader][index], shapes[index].uiScale);
+            glUniform4f(CompShapesSquareFinalCoordsLoc[CompShader][index], shapes[index].squareFinalCoords.x,
+                shapes[index].squareFinalCoords.y, shapes[index].squareFinalCoords.z, shapes[index].squareFinalCoords.w);
+        }
 
         shapes.resize(SHAPES_DATA_ARRAY_SIZE);
         auto shadersData = shapes.data();

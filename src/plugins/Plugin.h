@@ -257,6 +257,10 @@ protected:
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
     std::map<GLuint, int[20]> CompGpuLastValues{};
     std::map<GLuint, GLuint> CompUboLoc{};
+
+    std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesShapeLoc{};
+    std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesUiScaleLoc{};
+    std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesSquareFinalCoordsLoc{};
     bool ShouldRefreshShapes = true;
 
     float AspectRatio = 0;

@@ -729,12 +729,12 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             break;
     
         case gameScene_Tutorial:
+            // TODO: KH UI turn the tutorial into a floating box, like in the other games
+
             shapes.push_back(ShapeBuilder::square()
                     .fromBottomScreen()
                     .preserveDsScale()
                     .build(aspectRatio));
-
-            // TODO: KH UI background
 
             break;
 

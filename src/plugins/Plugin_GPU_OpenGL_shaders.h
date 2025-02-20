@@ -44,9 +44,17 @@ struct ShapeData {
     ivec4 singleColorToAlpha;
 };
 
+struct FastShapeData {
+    int shape;
+    float uiScale;
+    vec4 squareFinalCoords;
+};
+
 layout(std140) uniform ShapeBlock {
     ShapeData shapes[SHAPES_DATA_ARRAY_SIZE];
 };
+
+uniform FastShapeData fastShapes[SHAPES_DATA_ARRAY_SIZE];
 
 uniform float currentAspectRatio;
 uniform float forcedAspectRatio;
@@ -440,15 +448,16 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
-        ShapeData shapeData = shapes[shapeIndex];
+        FastShapeData fastShapeData = fastShapes[shapeIndex];
     
-        if (shapeData.shape == 0) { // square
-            float uiTexScale = (6.0/shapeData.uiScale);
+        if (fastShapeData.shape == 0) { // square
+            float uiTexScale = (6.0/fastShapeData.uiScale);
             vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
-            vec4 squareFinalCoords = shapeData.squareFinalCoords;
+            vec4 squareFinalCoords = fastShapeData.squareFinalCoords;
 
             if (all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) && 
                    all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) {
+                ShapeData shapeData = shapes[shapeIndex];
 
                 vec2 finalPos = (1.0/shapeData.scale)*fixStretch*(texPosition3d - squareFinalCoords.xy);
                 if ((finalPos.x + finalPos.y >= shapeData.cropSquareCorners[0]) &&
