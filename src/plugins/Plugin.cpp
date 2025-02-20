@@ -123,6 +123,7 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 
     if (updated) {
         std::vector<ShapeData> shapes = gpuOpenGL_FS_shapes();
+        printf("Updating shapes. New shape count: %d\n", shapes.size());
 
         glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
         glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
