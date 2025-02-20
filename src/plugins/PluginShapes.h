@@ -1,8 +1,14 @@
 #ifndef PLUGIN_SHAPES_H
 #define PLUGIN_SHAPES_H
 
+#define SHAPES_DATA_ARRAY_SIZE 64
+
 namespace Plugins
 {
+
+struct vec2 {
+    float x, y;
+};
 
 struct ivec2 {
     int x, y;
@@ -21,18 +27,16 @@ struct vec4 {
 };
 
 // UBO-compatible struct with proper padding
-struct alignas(16) ShapeData {
+struct alignas(16) ShapeData { // 176 bytes
     int enabled;      // 4 bytes (bool is not std140-safe, so we use int)
     int shape;        // 4 bytes
     int corner;       // 4 bytes
     int _pad0;        // 4 bytes
 
-    float scaleX;      // 4 bytes
-    float scaleY;      // 4 bytes
+    vec2 scale;        // 8 bytes
     int _pad1, _pad2;  // 8 bytes
 
     ivec4 square;      // 16 bytes (X, Y, Width, Height)
-    ivec4 freeForm[4]; // 4 * 8 bytes = 32 bytes
     vec4 margin;       // 16 bytes (left, top, right, down)
 
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
@@ -82,8 +86,8 @@ public:
         shapeBuilder.shapeData.enabled = 1;
         shapeBuilder.shapeData.shape = 0;
         shapeBuilder.shapeData.corner = corner_Center;
-        shapeBuilder.shapeData.scaleX = 1.0;
-        shapeBuilder.shapeData.scaleY = 1.0;
+        shapeBuilder.shapeData.scale.x = 1.0;
+        shapeBuilder.shapeData.scale.y = 1.0;
         shapeBuilder.shapeData.square.x = 0;
         shapeBuilder.shapeData.square.y = 0;
         shapeBuilder.shapeData.square.z = 256;
@@ -105,13 +109,13 @@ public:
         return *this;
     }
     ShapeBuilder& scale(float _scale) {
-        shapeData.scaleX = _scale;
-        shapeData.scaleY = _scale;
+        shapeData.scale.x = _scale;
+        shapeData.scale.y = _scale;
         return *this;
     }
     ShapeBuilder& scale(float _scaleX, float _scaleY) {
-        shapeData.scaleX = _scaleX;
-        shapeData.scaleY = _scaleY;
+        shapeData.scale.x = _scaleX;
+        shapeData.scale.y = _scaleY;
         return *this;
     }
     ShapeBuilder& preserveDsScale() {

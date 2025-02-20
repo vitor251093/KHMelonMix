@@ -23,7 +23,7 @@ namespace Plugins
 {
 const char* kCompositorFS_Plugin = R"(#version 140
 
-#define MAX_SHAPES 100
+#define MAX_SHAPES 64
 
 struct ShapeData {
     int enabled;
@@ -32,12 +32,10 @@ struct ShapeData {
     int corner; // 0 = center, 1-8 = corners
     int _pad0;
 
-    float scaleX;
-    float scaleY;
+    vec2 scale;
     int _pad1, _pad2;
 
     ivec4 square;      // X, Y, Width, Height (only valid if shape == 0)
-    ivec4 freeForm[4]; // Four (X, Y) points (only valid if shape == 1)
     vec4 margin;       // left, top, right, down
 
     // effects
@@ -73,14 +71,6 @@ uniform sampler2D _3DTex;
 smooth in vec2 fTexcoord;
 
 out vec4 oColor;
-
-// provides full transparency support to the transparency layer
-ivec4 fixTransparencyLayer(ivec4 layer)
-{
-    layer.g = layer.g << 2;
-    layer.b = layer.b << 2;
-    return layer;
-}
 
 ivec4 combineLayers(ivec4 _3dpix, ivec4 val1, ivec4 val2, ivec4 val3)
 {
@@ -232,25 +222,25 @@ vec2 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos, vec2 clea
     return clearVect;
 }
 
-vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
+vec4 get3DCoordinatesOf2DSquareShape(int corner, ivec4 square, vec2 scale, vec4 margin)
 {
     float iuTexScale = (6.0)/uiScale;
     float heightScale = 1.0/currentAspectRatio;
 
-    float scaleX = shapeData.scaleX;
-    float scaleY = shapeData.scaleY;
+    float scaleX = scale.x;
+    float scaleY = scale.y;
     if (scaleX == 0) {
         iuTexScale = 1.0;
         scaleX = 1.0;
         scaleY = 1.0;
     }
-    float squareFinalHeight = shapeData.square[3]*scaleY;
-    float squareFinalWidth = shapeData.square[2]*scaleX*heightScale;
+    float squareFinalHeight = square[3]*scaleY;
+    float squareFinalWidth = square[2]*scaleX*heightScale;
 
     float squareFinalX1 = 0.0;
     float squareFinalY1 = 0.0;
 
-    switch (shapeData.corner)
+    switch (corner)
     {
         case 0: // square at center
             squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
@@ -258,42 +248,42 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
             break;
         
         case 1: // square at top left corner
-            squareFinalX1 = shapeData.margin[0]*heightScale;
-            squareFinalY1 = shapeData.margin[1];
+            squareFinalX1 = margin[0]*heightScale;
+            squareFinalY1 = margin[1];
             break;
         
         case 2: // square at top
             squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-            squareFinalY1 = shapeData.margin[1];
+            squareFinalY1 = margin[1];
             break;
 
         case 3: // square at top right corner
-            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2]*heightScale;
-            squareFinalY1 = shapeData.margin[1];
+            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - margin[2]*heightScale;
+            squareFinalY1 = margin[1];
             break;
 
         case 4: // square at right
-            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2]*heightScale;
+            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - margin[2]*heightScale;
             squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
             break;
 
         case 5: // square at bottom right corner
-            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - shapeData.margin[2]*heightScale;
-            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
+            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - margin[2]*heightScale;
+            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - margin[3];
             break;
 
         case 6: // square at bottom
             squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
+            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - margin[3];
             break;
 
         case 7: // square at left bottom corner
-            squareFinalX1 = shapeData.margin[0]*heightScale;
-            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - shapeData.margin[3];
+            squareFinalX1 = margin[0]*heightScale;
+            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - margin[3];
             break;
 
         case 8: // square at left
-            squareFinalX1 = shapeData.margin[0]*heightScale;
+            squareFinalX1 = margin[0]*heightScale;
             squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
     }
 
@@ -301,66 +291,6 @@ vec4 get3DCoordinatesOf2DSquareShape(ShapeData shapeData)
     float squareFinalY2 = squareFinalY1 + squareFinalHeight;
 
     return vec4(squareFinalX1, squareFinalY1, squareFinalX2, squareFinalY2);
-}
-
-ivec2 getTopScreen2DTextureCoordinates(float xpos, float ypos)
-{
-    if (showOriginalHud) {
-        if (screenLayout == 1) { // bottom
-            return ivec2(fTexcoord) + ivec2(0, 192);
-        }
-        return ivec2(fTexcoord);
-    }
-
-    float heightScale = 1.0/currentAspectRatio;
-    float widthScale = currentAspectRatio;
-    vec2 fixStretch = vec2(widthScale, 1.0);
-
-    for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
-        ShapeData shapeData = shapes[shapeIndex];
-    
-        if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
-            vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
-
-            float iuTexScale = (6.0)/uiScale;
-            float scaleX = shapeData.scaleX;
-            float scaleY = shapeData.scaleY;
-            if (scaleX == 0) {
-                iuTexScale = 1.0;
-                scaleX = 1.0;
-                scaleY = 1.0;
-            }
-            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-
-            if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
-                   all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
-
-                vec2 finalPos = (1.0/vec2(scaleX, scaleY))*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
-                if (dot(shapeData.cropSquareCorners, shapeData.cropSquareCorners) == 0.0) {
-                    return ivec2(finalPos) + ivec2(shapeData.square[0], shapeData.square[1]);
-                }
-                else if ((finalPos.x + finalPos.y >= shapeData.cropSquareCorners[0]) &&
-                         (finalPos.y - finalPos.x + shapeData.square[2] >= shapeData.cropSquareCorners[1])) {
-                    return ivec2(finalPos) + ivec2(shapeData.square[0], shapeData.square[1]);
-                }
-            }
-        }
-    }
-
-    // nothing (clear screen)
-    return ivec2(-1, -1);
-}
-
-ivec2 getScreen2DTextureCoordinates(float xpos, float ypos)
-{
-    if (screenLayout == 2) { // vertical
-        return ivec2(getVerticalDualScreen2DTextureCoordinates(xpos, ypos, vec2(-1, -1)));
-    }
-    if (screenLayout == 3) { // horizontal
-        return ivec2(getHorizontalDualScreen2DTextureCoordinates(xpos, ypos, vec2(128, 0)));
-    }
-
-    return getTopScreen2DTextureCoordinates(xpos, ypos);
 }
 
 ivec4 getForcedAspectRatioScreen3DColor(float xpos, float ypos)
@@ -521,104 +451,162 @@ ivec4 getTopScreen3DColor()
 
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
-    ivec2 textureBeginning = getScreen2DTextureCoordinates(xpos, ypos);
-    if (textureBeginning.x == -1 && textureBeginning.y == -1) {
-        if (index == 1)
-        {
+    if (screenLayout == 2) { // vertical
+        ivec2 textureBeginning = ivec2(getVerticalDualScreen2DTextureCoordinates(xpos, ypos, vec2(-1, -1)));
+        if (textureBeginning.x == -1 && textureBeginning.y == -1) {
+            if (index == 1)
+            {
+                return ivec4(0, 0, 0, 0);
+            }
+            if (index == 2)
+            {
+                return ivec4(0, 0, 63, 0x01);
+            }
             return ivec4(0, 0, 0, 0);
         }
-        if (index == 2)
-        {
-            return ivec4(0, 0, 63, 0x01);
-        }
-        return ivec4(0, 0, 0, 0);
-    }
 
-    ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
-    ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
-    if (index == 1) {
+        ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
+        ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+        if (index == 2) {
+            // provides full transparency support to the transparency layer
+            color.g = color.g << 2;
+            color.b = color.b << 2;
+        }
         return color;
     }
-    if (index == 2) {
-        color = fixTransparencyLayer(color);
+
+    if (screenLayout == 3) { // horizontal
+        ivec2 textureBeginning = ivec2(getHorizontalDualScreen2DTextureCoordinates(xpos, ypos, vec2(128, 0)));
+        if (textureBeginning.x == -1 && textureBeginning.y == -1) {
+            if (index == 1)
+            {
+                return ivec4(0, 0, 0, 0);
+            }
+            if (index == 2)
+            {
+                return ivec4(0, 0, 63, 0x01);
+            }
+            return ivec4(0, 0, 0, 0);
+        }
+
+        ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
+        ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+        if (index == 2) {
+            // provides full transparency support to the transparency layer
+            color.g = color.g << 2;
+            color.b = color.b << 2;
+        }
+        return color;
     }
 
-    float iuTexScale = (6.0)/uiScale;
-    vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+    if (showOriginalHud) {
+        ivec2 textureBeginning = (screenLayout == 1) ? (ivec2(fTexcoord) + ivec2(0, 192)) : ivec2(fTexcoord);
+        ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
+        ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+        if (index == 2) {
+            // provides full transparency support to the transparency layer
+            color.g = color.g << 2;
+            color.b = color.b << 2;
+        }
+        return color;
+    }
+
+    float heightScale = 1.0/currentAspectRatio;
+    float widthScale = currentAspectRatio;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
         ShapeData shapeData = shapes[shapeIndex];
     
         if (shapeData.enabled == 1 && shapeData.shape == 0) { // square
-            if (index == 0 && shapeData.invertGrayScaleColors == 1) {
-                vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
+            vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(
+                shapeData.corner, shapeData.square, shapeData.scale, shapeData.margin);
 
-                if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
-                       all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
-                    
-                    bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
-                    if (isShadeOfGray) {
-                        color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+            float iuTexScale = (6.0)/uiScale;
+            float scaleX = shapeData.scale.x;
+            float scaleY = shapeData.scale.y;
+            if (scaleX == 0) {
+                iuTexScale = 1.0;
+                scaleX = 1.0;
+                scaleY = 1.0;
+            }
+            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
+
+            if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
+                   all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
+
+                vec2 finalPos = (1.0/vec2(scaleX, scaleY))*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
+                if ((finalPos.x + finalPos.y >= shapeData.cropSquareCorners[0]) &&
+                    (finalPos.y - finalPos.x + shapeData.square[2] >= shapeData.cropSquareCorners[1])) {
+                    ivec2 textureBeginning = ivec2(finalPos) + ivec2(shapeData.square[0], shapeData.square[1]);
+
+                    ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
+                    ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+                    if (index == 1) {
+                        return color;
                     }
-                }
-            }
-            if (index == 2 && (shapeData.fadeBorderSize[0] > 0 || shapeData.fadeBorderSize[1] > 0 ||
-                               shapeData.fadeBorderSize[2] > 0 || shapeData.fadeBorderSize[3] > 0)) {
-                vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
-
-                if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
-                       all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
-                
-                    float leftDiff = texPosition3d.x - shape3DCoords[0];
-                    float rightDiff = shape3DCoords[2] - texPosition3d.x;
-                    float topDiff = texPosition3d.y - shape3DCoords[1];
-                    float bottomDiff = shape3DCoords[3] - texPosition3d.y;
-
-                    float heightScale = 1.0/currentAspectRatio;
-                    float leftBlurFactor   = shapeData.fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (shapeData.fadeBorderSize[0] * heightScale), 0.0, 1.0);
-                    float topBlurFactor    = shapeData.fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  shapeData.fadeBorderSize[1], 0.0, 1.0);
-                    float rightBlurFactor  = shapeData.fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (shapeData.fadeBorderSize[2] * heightScale), 0.0, 1.0);
-                    float bottomBlurFactor = shapeData.fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  shapeData.fadeBorderSize[3], 0.0, 1.0);
-
-                    float xBlur = min(leftBlurFactor, rightBlurFactor);
-                    float yBlur = min(topBlurFactor, bottomBlurFactor);
-                    int visibilityOf2D = (shapeData.square.y >= 192) ? 63 : (color.a > 0x4 ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1)));
-                    float visibilityOf2DFactor = xBlur * yBlur;
-
-                    int blurVal = int(visibilityOf2DFactor * visibilityOf2D);
-                    color = ivec4(color.r, blurVal /* 2D visibility */, 63 - blurVal /* 3D visibility */, 0x01);
-                }
-            }
-            if (index == 2 && shapeData.colorToAlpha.a == 1) {
-                vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
-
-                if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
-                       all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
-                    
-                    ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                    int blur = ((abs(shapeData.colorToAlpha.r - colorZero.r) +
-                                 abs(shapeData.colorToAlpha.g - colorZero.g) +
-                                 abs(shapeData.colorToAlpha.b - colorZero.b))*2)/3;
-                    color = ivec4(color.r, blur, 64 - blur, 0x01);
-                }
-            }
-            if (index == 2 && shapeData.singleColorToAlpha.a == 1) {
-                vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(shapeData);
-
-                if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
-                       all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
-                    
-                    ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                    if (colorZero.r == shapeData.singleColorToAlpha.r &&
-                        colorZero.g == shapeData.singleColorToAlpha.g &&
-                        colorZero.b == shapeData.singleColorToAlpha.b) {
-                        color = ivec4(color.r, 0, 64, 0x01);
+                    if (index == 2) {
+                        // provides full transparency support to the transparency layer
+                        color.g = color.g << 2;
+                        color.b = color.b << 2;
                     }
+
+                    if (index == 0 && shapeData.invertGrayScaleColors == 1) {   
+                        bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+                        if (isShadeOfGray) {
+                            color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+                        }
+                    }
+                    if (index == 2 && (shapeData.fadeBorderSize[0] > 0 || shapeData.fadeBorderSize[1] > 0 ||
+                                       shapeData.fadeBorderSize[2] > 0 || shapeData.fadeBorderSize[3] > 0)) {
+                        
+                        float leftDiff = texPosition3d.x - shape3DCoords[0];
+                        float rightDiff = shape3DCoords[2] - texPosition3d.x;
+                        float topDiff = texPosition3d.y - shape3DCoords[1];
+                        float bottomDiff = shape3DCoords[3] - texPosition3d.y;
+
+                        float heightScale = 1.0/currentAspectRatio;
+                        float leftBlurFactor   = shapeData.fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (shapeData.fadeBorderSize[0] * heightScale), 0.0, 1.0);
+                        float topBlurFactor    = shapeData.fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  shapeData.fadeBorderSize[1], 0.0, 1.0);
+                        float rightBlurFactor  = shapeData.fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (shapeData.fadeBorderSize[2] * heightScale), 0.0, 1.0);
+                        float bottomBlurFactor = shapeData.fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  shapeData.fadeBorderSize[3], 0.0, 1.0);
+
+                        float xBlur = min(leftBlurFactor, rightBlurFactor);
+                        float yBlur = min(topBlurFactor, bottomBlurFactor);
+                        int visibilityOf2D = (shapeData.square.y >= 192) ? 63 : (color.a > 0x4 ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1)));
+                        float visibilityOf2DFactor = xBlur * yBlur;
+
+                        int blurVal = int(visibilityOf2DFactor * visibilityOf2D);
+                        color = ivec4(color.r, blurVal /* 2D visibility */, 63 - blurVal /* 3D visibility */, 0x01);
+                    }
+
+                    if (index == 2 && shapeData.colorToAlpha.a == 1) {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        int blur = ((abs(shapeData.colorToAlpha.r - colorZero.r) +
+                                    abs(shapeData.colorToAlpha.g - colorZero.g) +
+                                    abs(shapeData.colorToAlpha.b - colorZero.b))*2)/3;
+                        color = ivec4(color.r, blur, 64 - blur, 0x01);
+                    }
+
+                    if (index == 2 && shapeData.singleColorToAlpha.a == 1) {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.r == shapeData.singleColorToAlpha.r &&
+                            colorZero.g == shapeData.singleColorToAlpha.g &&
+                            colorZero.b == shapeData.singleColorToAlpha.b) {
+                            color = ivec4(color.r, 0, 64, 0x01);
+                        }
+                    }
+                    return color;
                 }
             }
         }
     }
 
-    return color;
+    if (index == 2)
+    {
+        return ivec4(0, 0, 63, 0x01);
+    }
+    return ivec4(0, 0, 0, 0);
 }
 
 ivec4 brightness()

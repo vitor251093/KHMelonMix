@@ -75,7 +75,7 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     GLuint uboBuffer;
     glGenBuffers(1, &uboBuffer);
     glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData) * 100, nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
     CompUboLoc[CompShader] = uboBuffer;
 
@@ -123,7 +123,7 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         glUniform1i(CompGpuLoc[CompShader][5], CompGpuLastValues[CompShader][5]);
         glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
 
-        shapes.resize(100);
+        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
         auto shadersData = shapes.data();
         glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
