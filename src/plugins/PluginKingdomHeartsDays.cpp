@@ -560,83 +560,85 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .uiScale(UIScale)
                 .build(aspectRatio));
             
-            if (ShowMap && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
-                // minimap
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(128, 60)
-                    .withSize(72, 72)
-                    .placeAtCorner(corner_TopRight)
-                    .withMargin(0.0, 30.0, 9.0, 0.0)
-                    .scale(0.8333)
-                    .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
-                    .invertGrayScaleColors()
-                    .uiScale(UIScale)
-                    .build(aspectRatio));
-            }
+            if (GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
+                if (ShowMap) {
+                    // minimap
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(128, 60)
+                        .withSize(72, 72)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 30.0, 9.0, 0.0)
+                        .scale(0.8333)
+                        .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                        .invertGrayScaleColors()
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
+                }
 
-            if (ShowTarget && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
-                float targetScale = 0.666;
-                int targetLabelMargin = 12;
-                int targetWidth = 64;
+                if (ShowTarget) {
+                    float targetScale = 0.666;
+                    int targetLabelMargin = 12;
+                    int targetWidth = 64;
 
-                // target label (part 1)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(32, 51)
-                    .withSize(targetLabelMargin, 9)
-                    .placeAtCorner(corner_TopRight)
-                    .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
-                    .scale(targetScale)
-                    .colorToAlpha(62.0, 62.0, 62.0)
-                    .uiScale(UIScale)
-                    .build(aspectRatio));
+                    // target label (part 1)
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(32, 51)
+                        .withSize(targetLabelMargin, 9)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
+                        .scale(targetScale)
+                        .colorToAlpha(62.0, 62.0, 62.0)
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
 
-                // target label (part 2)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(32 + targetLabelMargin, 51)
-                    .withSize(targetWidth - targetLabelMargin*2, 9)
-                    .placeAtCorner(corner_TopRight)
-                    .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
-                    .scale(targetScale)
-                    .uiScale(UIScale)
-                    .build(aspectRatio));
+                    // target label (part 2)
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(32 + targetLabelMargin, 51)
+                        .withSize(targetWidth - targetLabelMargin*2, 9)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
+                        .scale(targetScale)
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
 
-                // target label (part 3)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(32 + targetWidth - targetLabelMargin, 51)
-                    .withSize(targetLabelMargin, 9)
-                    .placeAtCorner(corner_TopRight)
-                    .withMargin(0.0, 30.0, 9.0, 0.0)
-                    .scale(targetScale)
-                    .colorToAlpha(62.0, 62.0, 62.0)
-                    .uiScale(UIScale)
-                    .build(aspectRatio));
+                    // target label (part 3)
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(32 + targetWidth - targetLabelMargin, 51)
+                        .withSize(targetLabelMargin, 9)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 30.0, 9.0, 0.0)
+                        .scale(targetScale)
+                        .colorToAlpha(62.0, 62.0, 62.0)
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
 
-                // target
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(32, 64)
-                    .withSize(targetWidth, 76)
-                    .placeAtCorner(corner_TopRight)
-                    .withMargin(0.0, 38.0, 9.0, 0.0)
-                    .scale(targetScale)
-                    .uiScale(UIScale)
-                    .build(aspectRatio));
-            }
+                    // target
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(32, 64)
+                        .withSize(targetWidth, 76)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 38.0, 9.0, 0.0)
+                        .scale(targetScale)
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
+                }
 
-            if (ShowMissionGauge && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
-                // mission gauge
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(5, 152)
-                    .withSize(246, 40)
-                    .placeAtCorner(corner_Bottom)
-                    .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                    .uiScale(UIScale)
-                    .build(aspectRatio));
+                if (ShowMissionGauge) {
+                    // mission gauge
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(5, 152)
+                        .withSize(246, 40)
+                        .placeAtCorner(corner_Bottom)
+                        .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
+                }
             }
 
             // enemy health
