@@ -39,6 +39,7 @@ struct ShapeData {
     int _pad3, _pad4, _pad5;
 
     vec4 cropSquareCorners;
+    vec4 squareBorderRadius;
 
     ivec4 colorToAlpha;
     ivec4 singleColorToAlpha;
@@ -381,6 +382,11 @@ ivec4 getTopScreen3DColor()
     return _3dpix;
 }
 
+bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, ivec4 squareInitialCoords) {
+    return (finalPos.x + finalPos.y >= cropSquareCorners[0]) &&
+           (finalPos.y - finalPos.x + squareInitialCoords[2] >= cropSquareCorners[1]);
+}
+
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
     if (screenLayout == 2) { // vertical
@@ -460,8 +466,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 ShapeData shapeData = shapes[shapeIndex];
 
                 vec2 finalPos = (1.0/shapeData.scale)*fixStretch*(texPosition3d - squareFinalCoords.xy);
-                if ((finalPos.x + finalPos.y >= shapeData.cropSquareCorners[0]) &&
-                    (finalPos.y - finalPos.x + shapeData.squareInitialCoords[2] >= shapeData.cropSquareCorners[1])) {
+                bool validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.cropSquareCorners, shapeData.squareInitialCoords);
+
+                // squareBorderRadius
+
+                if (validArea) {
                     ivec2 textureBeginning = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
                     ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));

@@ -41,6 +41,7 @@ struct alignas(16) ShapeData { // 128 bytes
     int _pad3, _pad4, _pad5;   // Padding to align the struct to 16 bytes
 
     vec4 cropSquareCorners;    // 16 bytes (top left, top right, bottom left, bottom right)
+    vec4 squareBorderRadius;
 
     ivec4 colorToAlpha;        // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
     ivec4 singleColorToAlpha;  // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
@@ -160,6 +161,13 @@ public:
         shapeData.cropSquareCorners.y = topRight;
         shapeData.cropSquareCorners.z = bottomLeft;
         shapeData.cropSquareCorners.w = bottomRight;
+        return *this;
+    }
+    ShapeBuilder& squareBorderRadius(float topLeft, float topRight, float bottomLeft, float bottomRight) {
+        shapeData.squareBorderRadius.x = topLeft;
+        shapeData.squareBorderRadius.y = topRight;
+        shapeData.squareBorderRadius.z = bottomLeft;
+        shapeData.squareBorderRadius.w = bottomRight;
         return *this;
     }
     ShapeBuilder& colorToAlpha(int red, int green, int blue) {
