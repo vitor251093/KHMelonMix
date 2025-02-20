@@ -447,7 +447,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             break;
 
         case gameScene_InGameWithDouble3D:
-            if (ShouldShowBottomScreen) { // TODO: KH UI condition is not working properly
+            if (ShouldShowBottomScreen) {
                 break;
             }
         case gameScene_InGameWithMap:
@@ -655,6 +655,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withMargin(0.0, 0.0, 8.0, 3.0)
                 .build());
 
+            // TODO: KH UI background
+
             break;
 
         case gameScene_PauseMenu:
@@ -695,6 +697,9 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             shapes.push_back(ShapeBuilder::square()
                 .placeAtCorner(corner_Center)
                 .build());
+
+             // TODO: KH UI background
+
             break;
     
         case gameScene_Tutorial:
@@ -702,6 +707,9 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .fromBottomScreen()
                     .preserveDsScale()
                     .build());
+
+            // TODO: KH UI background
+
             break;
 
         case gameScene_LoadingScreen:
