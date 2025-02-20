@@ -218,44 +218,41 @@ public:
                 break;
             
             case 1: // square at top left corner
-                squareFinalX1 = _margin.x*heightScale;
-                squareFinalY1 = _margin.y;
                 break;
             
             case 2: // square at top
                 squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-                squareFinalY1 = _margin.y;
                 break;
 
             case 3: // square at top right corner
-                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - _margin.z*heightScale;
-                squareFinalY1 = _margin.y;
+                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
                 break;
 
             case 4: // square at right
-                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - _margin.z*heightScale;
+                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
                 squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
                 break;
 
             case 5: // square at bottom right corner
-                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - _margin.z*heightScale;
-                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - _margin.w;
+                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
+                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
                 break;
 
             case 6: // square at bottom
                 squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - _margin.w;
+                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
                 break;
 
             case 7: // square at left bottom corner
-                squareFinalX1 = _margin.x*heightScale;
-                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - _margin.w;
+                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
                 break;
 
             case 8: // square at left
-                squareFinalX1 = _margin.x*heightScale;
                 squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
         }
+
+        squareFinalX1 = squareFinalX1 + _margin.x*heightScale - _margin.z*heightScale;
+        squareFinalY1 = squareFinalY1 + _margin.y - _margin.w;
 
         float squareFinalX2 = squareFinalX1 + squareFinalWidth;
         float squareFinalY2 = squareFinalY1 + squareFinalHeight;

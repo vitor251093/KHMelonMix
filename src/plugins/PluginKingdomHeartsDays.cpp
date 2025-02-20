@@ -479,13 +479,33 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 // TODO: KH UI
                 // return getIngameDialogTextureCoordinates(xpos, ypos);
 
-                // Temporary code, just to make the dialog visible
+                float dialogScale = 5.333;
+
+                // dialog (biggest part)
                 shapes.push_back(ShapeBuilder::square()
                     .fromPosition(0, 30)
                     .withSize(256, 162)
                     .placeAtCorner(corner_Bottom)
-                    .scale(5.333)
+                    .scale(dialogScale)
                     .withMargin(0.0, 0.0, 0.0, 7.0)
+                    .build(aspectRatio));
+
+                // dialog (left side)
+                shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(0, 30)
+                    .withSize(3, 162)
+                    .placeAtCorner(corner_Bottom)
+                    .scale(dialogScale)
+                    .withMargin(0.0, 0.0, 128 * dialogScale, 7.0)
+                    .build(aspectRatio));
+
+                // dialog (right side)
+                shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(0, 30)
+                    .withSize(3, 162)
+                    .placeAtCorner(corner_Bottom)
+                    .scale(dialogScale)
+                    .withMargin(128 * dialogScale, 0.0, 0.0, 7.0)
                     .build(aspectRatio));
 
                 return shapes;
