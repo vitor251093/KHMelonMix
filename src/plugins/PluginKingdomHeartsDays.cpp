@@ -415,6 +415,7 @@ float PluginKingdomHeartsDays::gpuOpenGL_FS_forcedAspectRatio()
 };
 
 std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData>();
 
     switch (GameScene) {
@@ -422,14 +423,14 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             shapes.push_back(ShapeBuilder::square()
                     .fromBottomScreen()
                     .preserveDsScale()
-                    .build());
+                    .build(aspectRatio));
             break;
 
         case gameScene_DayCounter:
         case gameScene_RoxasThoughts:
             shapes.push_back(ShapeBuilder::square()
                     .preserveDsScale()
-                    .build());
+                    .build(aspectRatio));
             break;
 
         case gameScene_Cutscene:
@@ -437,12 +438,12 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 shapes.push_back(ShapeBuilder::square()
                     .fromBottomScreen()
                     .preserveDsScale()
-                    .build());
+                    .build(aspectRatio));
             }
             else if (detectBottomScreenMobiCutscene() == nullptr) {
                 shapes.push_back(ShapeBuilder::square()
                     .preserveDsScale()
-                    .build());
+                    .build(aspectRatio));
             }
             break;
 
@@ -463,14 +464,16 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                         .fromPosition(0, 0)
                         .withSize(256, 24)
                         .placeAtCorner(corner_TopLeft)
-                        .build());
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
 
                     shapes.push_back(ShapeBuilder::square()
                         .fromPosition(128, 0)
                         .withSize(128, 24)
                         .placeAtCorner(corner_TopRight)
                         .scale(10.0, 1.0)
-                        .build());
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
                 }
 
                 // TODO: KH UI
@@ -482,7 +485,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withSize(256, 162)
                     .placeAtCorner(corner_Bottom)
                     .preserveDsScale()
-                    .build());
+                    .build(aspectRatio));
 
                 return shapes;
             }
@@ -494,7 +497,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withSize(256, 24)
                     .placeAtCorner(corner_TopLeft)
                     .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
 
                 return shapes;
             }
@@ -506,7 +510,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withSize(75, 24)
                     .placeAtCorner(corner_TopLeft)
                     .singleColorToAlpha(8, 8, 8)
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
 
                 // bottom mission information (part 2)
                 shapes.push_back(ShapeBuilder::square()
@@ -516,7 +521,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .placeAtCorner(corner_TopLeft)
                     .withMargin(75.0, 8.0, 0.0, 0.0)
                     .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
             }
 
             if (IsCutsceneFromChallengeMissionVisible) {
@@ -524,14 +530,16 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                         .fromPosition(0, 0)
                         .withSize(256, 24)
                         .placeAtCorner(corner_TopLeft)
-                        .build());
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
 
                 shapes.push_back(ShapeBuilder::square()
                         .fromPosition(128, 0)
                         .withSize(128, 24)
                         .placeAtCorner(corner_TopRight)
                         .scale(10.0, 1.0)
-                        .build());
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
 
                 return shapes;
             }
@@ -541,14 +549,16 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .fromPosition(0, 35)
                 .withSize(108, 86)
                 .placeAtCorner(corner_TopLeft)
-                .build());
+                .uiScale(UIScale)
+                .build(aspectRatio));
 
             // countdown and locked on
             shapes.push_back(ShapeBuilder::square()
                 .fromPosition(93, 0)
                 .withSize(70, 20)
                 .placeAtCorner(corner_Top)
-                .build());
+                .uiScale(UIScale)
+                .build(aspectRatio));
             
             if (ShowMap && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
                 // minimap
@@ -561,7 +571,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .scale(0.8333)
                     .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                     .invertGrayScaleColors()
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
             }
 
             if (ShowTarget && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
@@ -578,7 +589,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
                     .scale(targetScale)
                     .colorToAlpha(62.0, 62.0, 62.0)
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
 
                 // target label (part 2)
                 shapes.push_back(ShapeBuilder::square()
@@ -588,7 +600,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .placeAtCorner(corner_TopRight)
                     .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
                     .scale(targetScale)
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
 
                 // target label (part 3)
                 shapes.push_back(ShapeBuilder::square()
@@ -599,7 +612,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withMargin(0.0, 30.0, 9.0, 0.0)
                     .scale(targetScale)
                     .colorToAlpha(62.0, 62.0, 62.0)
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
 
                 // target
                 shapes.push_back(ShapeBuilder::square()
@@ -609,7 +623,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .placeAtCorner(corner_TopRight)
                     .withMargin(0.0, 38.0, 9.0, 0.0)
                     .scale(targetScale)
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
             }
 
             if (ShowMissionGauge && GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
@@ -620,7 +635,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withSize(246, 40)
                     .placeAtCorner(corner_Bottom)
                     .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
             }
 
             // enemy health
@@ -629,7 +645,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withSize(93, 22)
                 .placeAtCorner(corner_TopRight)
                 .withMargin(0.0, 7.5, 9.0, 0.0)
-                .build());
+                .uiScale(UIScale)
+                .build(aspectRatio));
 
             // sigils and death counter
             shapes.push_back(ShapeBuilder::square()
@@ -637,7 +654,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withSize(93, 30)
                 .placeAtCorner(corner_TopRight)
                 .withMargin(0.0, 92.5, 12.0, 0.0)
-                .build());
+                .uiScale(UIScale)
+                .build(aspectRatio));
 
             // command menu
             shapes.push_back(ShapeBuilder::square()
@@ -645,7 +663,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withSize(108, 106)
                 .placeAtCorner(corner_BottomLeft)
                 .withMargin(10.0, 0.0, 0.0, 0.0)
-                .build());
+                .uiScale(UIScale)
+                .build(aspectRatio));
 
             // player health
             shapes.push_back(ShapeBuilder::square()
@@ -653,7 +672,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .withSize(128, 108)
                 .placeAtCorner(corner_BottomRight)
                 .withMargin(0.0, 0.0, 8.0, 3.0)
-                .build());
+                .uiScale(UIScale)
+                .build(aspectRatio));
 
             // TODO: KH UI background
 
@@ -670,7 +690,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                         .withSize(75, 24)
                         .placeAtCorner(corner_TopLeft)
                         .singleColorToAlpha(8, 8, 8)
-                        .build());
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
 
                     // bottom mission information (part 2)
                     shapes.push_back(ShapeBuilder::square()
@@ -680,7 +701,8 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                         .placeAtCorner(corner_TopLeft)
                         .withMargin(75.0, 8.0, 0.0, 0.0)
                         .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                        .build());
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
                 }
 
                 // mission gauge
@@ -690,13 +712,15 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                     .withSize(246, 40)
                     .placeAtCorner(corner_Bottom)
                     .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                    .build());
+                    .uiScale(UIScale)
+                    .build(aspectRatio));
             }
 
             // pause menu
             shapes.push_back(ShapeBuilder::square()
                 .placeAtCorner(corner_Center)
-                .build());
+                .uiScale(UIScale)
+                .build(aspectRatio));
 
              // TODO: KH UI background
 
@@ -706,7 +730,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             shapes.push_back(ShapeBuilder::square()
                     .fromBottomScreen()
                     .preserveDsScale()
-                    .build());
+                    .build(aspectRatio));
 
             // TODO: KH UI background
 
@@ -716,12 +740,14 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
                 .placeAtCorner(corner_BottomRight)
-                .build());
+                .uiScale(UIScale)
+                .build(aspectRatio));
             break;
     
         case gameScene_DeathScreen:
             shapes.push_back(ShapeBuilder::square()
-                .build());
+                .uiScale(UIScale)
+                .build(aspectRatio));
             break;
     }
     

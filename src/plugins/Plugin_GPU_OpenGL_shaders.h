@@ -27,11 +27,11 @@ const char* kCompositorFS_Plugin = R"(#version 140
 
 struct ShapeData {
     int shape; // 0 = SQUARE, 1 = FREEFORM
-    int corner; // 0 = center, 1-8 = corners
+    float uiScale;
     vec2 scale;
 
     ivec4 square;      // X, Y, Width, Height (only valid if shape == 0)
-    vec4 margin;       // left, top, right, down
+    vec4 squareCoords;
 
     // effects
     vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
@@ -215,69 +215,6 @@ vec2 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos, vec2 clea
 
     // nothing (clear screen)
     return clearVect;
-}
-
-vec4 get3DCoordinatesOf2DSquareShape(float iuTexScale, float scaleX, float scaleY, int corner, ivec4 square, vec2 scale, vec4 margin)
-{
-    float heightScale = 1.0/currentAspectRatio;
-
-    float squareFinalHeight = square[3]*scaleY;
-    float squareFinalWidth = square[2]*scaleX*heightScale;
-
-    float squareFinalX1 = 0.0;
-    float squareFinalY1 = 0.0;
-
-    switch (corner)
-    {
-        case 0: // square at center
-            squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-            squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
-            break;
-        
-        case 1: // square at top left corner
-            squareFinalX1 = margin[0]*heightScale;
-            squareFinalY1 = margin[1];
-            break;
-        
-        case 2: // square at top
-            squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-            squareFinalY1 = margin[1];
-            break;
-
-        case 3: // square at top right corner
-            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - margin[2]*heightScale;
-            squareFinalY1 = margin[1];
-            break;
-
-        case 4: // square at right
-            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - margin[2]*heightScale;
-            squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
-            break;
-
-        case 5: // square at bottom right corner
-            squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - margin[2]*heightScale;
-            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - margin[3];
-            break;
-
-        case 6: // square at bottom
-            squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - margin[3];
-            break;
-
-        case 7: // square at left bottom corner
-            squareFinalX1 = margin[0]*heightScale;
-            squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - margin[3];
-            break;
-
-        case 8: // square at left
-            squareFinalX1 = margin[0]*heightScale;
-            squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
-    }
-
-    float squareFinalX2 = squareFinalX1 + squareFinalWidth;
-    float squareFinalY2 = squareFinalY1 + squareFinalHeight;
-
-    return vec4(squareFinalX1, squareFinalY1, squareFinalX2, squareFinalY2);
 }
 
 ivec4 getForcedAspectRatioScreen3DColor(float xpos, float ypos)
@@ -506,23 +443,14 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         ShapeData shapeData = shapes[shapeIndex];
     
         if (shapeData.shape == 0) { // square
-            float iuTexScale = (6.0)/uiScale;
-            float scaleX = shapeData.scale.x;
-            float scaleY = shapeData.scale.y;
-            if (scaleX == 0) {
-                iuTexScale = 1.0;
-                scaleX = 1.0;
-                scaleY = 1.0;
-            }
-
-            vec2 texPosition3d = vec2(xpos, ypos)*iuTexScale;
-            vec4 shape3DCoords = get3DCoordinatesOf2DSquareShape(iuTexScale, scaleX, scaleY,
-                shapeData.corner, shapeData.square, shapeData.scale, shapeData.margin);
+            float uiTexScale = (6.0/shapeData.uiScale);
+            vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
+            vec4 shape3DCoords = shapeData.squareCoords;
 
             if (all(greaterThanEqual(texPosition3d, shape3DCoords.xy)) && 
                    all(lessThanEqual(texPosition3d, shape3DCoords.zw))) {
 
-                vec2 finalPos = (1.0/vec2(scaleX, scaleY))*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
+                vec2 finalPos = (1.0/shapeData.scale)*fixStretch*(texPosition3d - vec2(shape3DCoords[0], shape3DCoords[1]));
                 if ((finalPos.x + finalPos.y >= shapeData.cropSquareCorners[0]) &&
                     (finalPos.y - finalPos.x + shapeData.square[2] >= shapeData.cropSquareCorners[1])) {
                     ivec2 textureBeginning = ivec2(finalPos) + shapeData.square.xy;

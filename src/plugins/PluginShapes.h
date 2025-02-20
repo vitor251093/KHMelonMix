@@ -28,12 +28,12 @@ struct vec4 {
 
 // UBO-compatible struct with proper padding
 struct alignas(16) ShapeData { // 176 bytes
-    int shape;        // 4 bytes
-    int corner;       // 4 bytes
-    vec2 scale;        // 8 bytes
+    int shape;       // 4 bytes
+    float uiScale;       // 4 bytes
+    vec2 scale;      // 8 bytes
 
     ivec4 square;      // 16 bytes (X, Y, Width, Height)
-    vec4 margin;       // 16 bytes (left, top, right, down)
+    vec4 squareCoords;
 
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
     int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
@@ -80,17 +80,18 @@ public:
     static ShapeBuilder square() {
         auto shapeBuilder = ShapeBuilder();
         shapeBuilder.shapeData.shape = 0;
-        shapeBuilder.shapeData.corner = corner_Center;
+        shapeBuilder.shapeData.uiScale = 1.0;
         shapeBuilder.shapeData.scale.x = 1.0;
         shapeBuilder.shapeData.scale.y = 1.0;
         shapeBuilder.shapeData.square.x = 0;
         shapeBuilder.shapeData.square.y = 0;
         shapeBuilder.shapeData.square.z = 256;
         shapeBuilder.shapeData.square.w = 192;
-        shapeBuilder.shapeData.margin.x = 0;
-        shapeBuilder.shapeData.margin.y = 0;
-        shapeBuilder.shapeData.margin.z = 0;
-        shapeBuilder.shapeData.margin.w = 0;
+        shapeBuilder._corner = corner_Center;
+        shapeBuilder._margin.x = 0;
+        shapeBuilder._margin.y = 0;
+        shapeBuilder._margin.z = 0;
+        shapeBuilder._margin.w = 0;
         shapeBuilder._fromBottomScreen = false;
         return shapeBuilder;
     }
@@ -99,8 +100,8 @@ public:
         _fromBottomScreen = true;
         return *this;
     }
-    ShapeBuilder& placeAtCorner(int _corner) {
-        shapeData.corner = _corner;
+    ShapeBuilder& placeAtCorner(int corner) {
+        _corner = corner;
         return *this;
     }
     ShapeBuilder& scale(float _scale) {
@@ -113,8 +114,13 @@ public:
         shapeData.scale.y = _scaleY;
         return *this;
     }
+    ShapeBuilder& uiScale(float uiScale) {
+        shapeData.uiScale = uiScale;
+        return *this;
+    }
     ShapeBuilder& preserveDsScale() {
-        return scale(0.0);
+        shapeData.uiScale = 6.0;
+        return *this;
     }
     ShapeBuilder& fromPosition(int x, int y) {
         if (shapeData.shape == 0) {
@@ -131,10 +137,10 @@ public:
         return *this;
     }
     ShapeBuilder& withMargin(float left, float top, float right, float bottom) {
-        shapeData.margin.x = left;
-        shapeData.margin.y = top;
-        shapeData.margin.z = right;
-        shapeData.margin.w = bottom;
+        _margin.x = left;
+        _margin.y = top;
+        _margin.z = right;
+        _margin.w = bottom;
         return *this;
     }
     ShapeBuilder& fadeBorderSize(float left, float top, float right, float bottom) {
@@ -170,15 +176,90 @@ public:
         return *this;
     }
 
-    ShapeData build() {
+    void precompute3DCoordinatesOf2DSquareShape(float aspectRatio)
+    {
+        float iuTexScale = (6.0)/shapeData.uiScale;
+        float scaleX = shapeData.scale.x;
+        float scaleY = shapeData.scale.y;
+        
+        float heightScale = 1.0/aspectRatio;
+
+        float squareFinalHeight = shapeData.square.w*scaleY;
+        float squareFinalWidth = shapeData.square.z*scaleX*heightScale;
+
+        float squareFinalX1 = 0.0;
+        float squareFinalY1 = 0.0;
+
+        switch (_corner)
+        {
+            case 0: // square at center
+                squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
+                squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+                break;
+            
+            case 1: // square at top left corner
+                squareFinalX1 = _margin.x*heightScale;
+                squareFinalY1 = _margin.y;
+                break;
+            
+            case 2: // square at top
+                squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
+                squareFinalY1 = _margin.y;
+                break;
+
+            case 3: // square at top right corner
+                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - _margin.z*heightScale;
+                squareFinalY1 = _margin.y;
+                break;
+
+            case 4: // square at right
+                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - _margin.z*heightScale;
+                squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+                break;
+
+            case 5: // square at bottom right corner
+                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth - _margin.z*heightScale;
+                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - _margin.w;
+                break;
+
+            case 6: // square at bottom
+                squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
+                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - _margin.w;
+                break;
+
+            case 7: // square at left bottom corner
+                squareFinalX1 = _margin.x*heightScale;
+                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight - _margin.w;
+                break;
+
+            case 8: // square at left
+                squareFinalX1 = _margin.x*heightScale;
+                squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+        }
+
+        float squareFinalX2 = squareFinalX1 + squareFinalWidth;
+        float squareFinalY2 = squareFinalY1 + squareFinalHeight;
+
+        shapeData.squareCoords = {squareFinalX1, squareFinalY1, squareFinalX2, squareFinalY2};
+    }
+
+    ShapeData build(float aspectRatio) {
         if (_fromBottomScreen) {
             shapeData.square.y += 192;
         }
+
+        if (shapeData.shape == 0) { // square
+            precompute3DCoordinatesOf2DSquareShape(aspectRatio);
+        }
+
         return shapeData;
     }
 private:
     ShapeData shapeData;
+
     bool _fromBottomScreen;
+    int _corner;
+    vec4 _margin;
 };
 
 }
