@@ -150,8 +150,8 @@ enum
     gameScene_InGameMenu,               // 6
     gameScene_PauseMenu,                // 7
     gameScene_Tutorial,                 // 8
-    gameScene_InGameWithDouble3D,       // 9  // TODO: KH UI The performance of that scene is pretty bad right now
-    gameScene_MultiplayerMissionReview, // 10 // TODO: KH UI The performance of that scene is pretty bad right now
+    gameScene_InGameWithDouble3D,       // 9
+    gameScene_MultiplayerMissionReview, // 10
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
     gameScene_RoxasThoughts,            // 13
