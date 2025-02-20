@@ -150,7 +150,7 @@ enum
     gameScene_InGameMenu,               // 6
     gameScene_PauseMenu,                // 7
     gameScene_Tutorial,                 // 8
-    gameScene_InGameWithDouble3D,       // 9
+    gameScene_InGameWithDouble3D,       // 9  // TODO: KH UI The performance of that scene is pretty bad right now
     gameScene_MultiplayerMissionReview, // 10
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
@@ -677,7 +677,13 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                 .uiScale(UIScale)
                 .build(aspectRatio));
 
-            // TODO: KH UI background
+            // background
+            shapes.push_back(ShapeBuilder::square()
+                .fromPosition(118, 182)
+                .withSize(20, 10)
+                .placeAtCorner(corner_Center)
+                .uiScale(100.0)
+                .build(aspectRatio));
 
             break;
 
