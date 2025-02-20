@@ -387,6 +387,39 @@ bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, 
            (finalPos.y - finalPos.x + squareInitialCoords[2] >= cropSquareCorners[1]);
 }
 
+bool isInsideRoundedCorner(vec2 pos, vec2 center, float radius) {
+    return (pos.x - center.x) * (pos.x - center.x) + 
+           (pos.y - center.y) * (pos.y - center.y) < radius * radius;
+}
+
+bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec4 squareInitialCoords) {
+    bool validArea = true;
+    float squareWidth = squareInitialCoords[2];
+    float squareHeight = squareInitialCoords[3];
+
+    // Top-left corner
+    if (finalPos.x < radius[0] && finalPos.y < radius[0]) {
+        validArea = isInsideRoundedCorner(finalPos, vec2(radius[0], radius[0]), radius[0]);
+    }
+
+    // Top-right corner
+    else if (finalPos.x > squareWidth - radius[1] && finalPos.y < radius[1]) {
+        validArea = isInsideRoundedCorner(finalPos, vec2(squareWidth - radius[1], radius[1]), radius[1]);
+    }
+    
+    // Bottom-left corner
+    else if (finalPos.x < radius[2] && finalPos.y > squareHeight - radius[2]) {
+        validArea = isInsideRoundedCorner(finalPos, vec2(radius[2], squareHeight - radius[2]), radius[2]);
+    }
+
+    // Bottom-right corner
+    else if (finalPos.x > squareWidth - radius[3] && finalPos.y > squareHeight - radius[3]) {
+        validArea = isInsideRoundedCorner(finalPos, vec2(squareWidth - radius[3], squareHeight - radius[3]), radius[3]);
+    }
+
+    return validArea;
+}
+
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
     if (screenLayout == 2) { // vertical
@@ -466,9 +499,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 ShapeData shapeData = shapes[shapeIndex];
 
                 vec2 finalPos = (1.0/shapeData.scale)*fixStretch*(texPosition3d - squareFinalCoords.xy);
-                bool validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.cropSquareCorners, shapeData.squareInitialCoords);
-
-                // squareBorderRadius
+                bool validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.cropSquareCorners, shapeData.squareInitialCoords) &&
+                                 isValidConsideringSquareBorderRadius(finalPos, shapeData.squareBorderRadius, shapeData.squareInitialCoords);
 
                 if (validArea) {
                     ivec2 textureBeginning = ivec2(finalPos) + shapeData.squareInitialCoords.xy;

@@ -170,6 +170,9 @@ public:
         shapeData.squareBorderRadius.w = bottomRight;
         return *this;
     }
+    ShapeBuilder& squareBorderRadius(float radius) {
+        return squareBorderRadius(radius, radius, radius, radius);
+    }
     ShapeBuilder& colorToAlpha(int red, int green, int blue) {
         shapeData.colorToAlpha.x = red;
         shapeData.colorToAlpha.y = green;
