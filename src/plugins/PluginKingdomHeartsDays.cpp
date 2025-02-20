@@ -571,6 +571,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
                         .withMargin(0.0, 30.0, 9.0, 0.0)
                         .scale(0.8333)
                         .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                        .opacity(0.85)
                         .invertGrayScaleColors()
                         .uiScale(UIScale)
                         .build(aspectRatio));
@@ -743,7 +744,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
             break;
     
         case gameScene_Tutorial:
-            // TODO: KH UI turn the tutorial into a floating box, like in the other games
+            // TODO: KH UI cut the horizontal margins a little bit, just to make the border radius fit
 
             // tutorial
             shapes.push_back(ShapeBuilder::square()
