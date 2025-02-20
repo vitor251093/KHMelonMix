@@ -1262,12 +1262,18 @@ bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
 u32* PluginKingdomHeartsDays::topScreen2DTexture()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
+    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 != 0) {
+        FrontBuffer = FrontBuffer ? 0 : 1;
+    }
     return nds->GPU.Framebuffer[FrontBuffer][0].get();
 }
 
 u32* PluginKingdomHeartsDays::bottomScreen2DTexture()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
+    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 != 0) {
+        FrontBuffer = FrontBuffer ? 0 : 1;
+    }
     return nds->GPU.Framebuffer[FrontBuffer][1].get();
 }
 
