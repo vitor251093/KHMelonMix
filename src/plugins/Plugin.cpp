@@ -100,7 +100,6 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
 
     for (int index = 0; index < SHAPES_DATA_ARRAY_SIZE; index ++) {
         std::string prefix = "fastShapes[" + std::to_string(index) + "].";
-        CompShapesShapeLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "shape").c_str());
         CompShapesScaleLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "sourceScale").c_str());
         CompShapesEffectsLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "effects").c_str());
         CompShapesSquareFinalCoordsLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "squareFinalCoords").c_str());
@@ -125,8 +124,6 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], brightnessMode, updated);
     ShouldRefreshShapes = false;
 
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], GameScene, updated);
-
     if (updated) {
         std::vector<ShapeData2D> shapes = renderer_2DShapes();
         printf("Updating shapes. New shape count: %d\n", shapes.size());
@@ -140,7 +137,6 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
 
         for (int index = 0; index < shapes.size(); index ++) {
-            glUniform1i(CompShapesShapeLoc[CompShader][index], shapes[index].shape);
             glUniform2f(CompShapesScaleLoc[CompShader][index], shapes[index].sourceScale.x, shapes[index].sourceScale.y);
             glUniform1i(CompShapesEffectsLoc[CompShader][index], shapes[index].effects);
             glUniform4f(CompShapesSquareFinalCoordsLoc[CompShader][index], shapes[index].squareFinalCoords.x,

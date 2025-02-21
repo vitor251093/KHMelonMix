@@ -30,14 +30,7 @@ struct vec4 {
 
 // UBO-compatible struct with proper padding
 struct alignas(16) ShapeData2D { // 128 bytes
-    int shape;         // 4 bytes
-    int _pad2;         // 4 bytes
     vec2 sourceScale;  // 8 bytes
-
-    ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
-    vec4 squareFinalCoords;    // 16 bytes (X, Y, Width, Height)
-
-    vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
 
     int effects;
     // 0x01 => invertGrayScaleColors
@@ -45,9 +38,14 @@ struct alignas(16) ShapeData2D { // 128 bytes
     // 0x04 => rounded corners
     // 0x08 => mirror X
     // 0x10 => mirror Y
+    // 0x20 => manipulate transparency
 
     float opacity;
-    int _pad0, _pad1;   // Padding to align the struct to 16 bytes
+
+    ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
+    vec4 squareFinalCoords;    // 16 bytes (X, Y, Width, Height)
+
+    vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
 
     vec4 squareCornersModifier;    // 16 bytes (top left, top right, bottom left, bottom right)
 
@@ -102,7 +100,7 @@ class ShapeBuilder
 public:
     static ShapeBuilder square() {
         auto shapeBuilder = ShapeBuilder();
-        shapeBuilder.shapeData.shape = shape_Square;
+        shapeBuilder._shape = shape_Square;
         shapeBuilder.shapeData.sourceScale.x = 1.0;
         shapeBuilder.shapeData.sourceScale.y = 1.0;
         shapeBuilder.shapeData.squareInitialCoords.x = 0;
@@ -146,14 +144,14 @@ public:
         return sourceScale(SCREEN_SCALE);
     }
     ShapeBuilder& fromPosition(int x, int y) {
-        if (shapeData.shape == shape_Square) {
+        if (_shape == shape_Square) {
             shapeData.squareInitialCoords.x = x;
             shapeData.squareInitialCoords.y = y;
         }
         return *this;
     }
     ShapeBuilder& withSize(int width, int height) {
-        if (shapeData.shape == shape_Square) {
+        if (_shape == shape_Square) {
             shapeData.squareInitialCoords.z = width;
             shapeData.squareInitialCoords.w = height;
         }
@@ -167,6 +165,7 @@ public:
         return *this;
     }
     ShapeBuilder& fadeBorderSize(float left, float top, float right, float bottom) {
+        shapeData.effects |= 0x20;
         shapeData.fadeBorderSize.x = left;
         shapeData.fadeBorderSize.y = top;
         shapeData.fadeBorderSize.z = right;
@@ -201,10 +200,12 @@ public:
         return squareBorderRadius(radius, radius, radius, radius);
     }
     ShapeBuilder& opacity(float opacity) {
+        shapeData.effects |= 0x20;
         shapeData.opacity = opacity;
         return *this;
     }
     ShapeBuilder& colorToAlpha(int red, int green, int blue) {
+        shapeData.effects |= 0x20;
         shapeData.colorToAlpha.x = red >> 2;
         shapeData.colorToAlpha.y = green >> 2;
         shapeData.colorToAlpha.z = blue >> 2;
@@ -212,6 +213,7 @@ public:
         return *this;
     }
     ShapeBuilder& singleColorToAlpha(int red, int green, int blue) {
+        shapeData.effects |= 0x20;
         shapeData.singleColorToAlpha.x = red >> 2;
         shapeData.singleColorToAlpha.y = green >> 2;
         shapeData.singleColorToAlpha.z = blue >> 2;
@@ -288,7 +290,7 @@ public:
             shapeData.squareInitialCoords.y += 192;
         }
 
-        if (shapeData.shape == shape_Square) {
+        if (_shape == shape_Square) {
             precompute3DCoordinatesOf2DSquareShape(aspectRatio);
         }
 
@@ -297,6 +299,7 @@ public:
 private:
     ShapeData2D shapeData;
 
+    int _shape;
     bool _fromBottomScreen;
     int _corner;
     float _hudScale;
