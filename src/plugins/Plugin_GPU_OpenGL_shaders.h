@@ -41,8 +41,7 @@ struct ShapeData2D {
     int mirror;
     int _pad1;
 
-    vec4 cropSquareCorners;
-    vec4 squareBorderRadius;
+    vec4 squareCornersModifier;
 
     ivec4 colorToAlpha;
     ivec4 singleColorToAlpha;
@@ -504,8 +503,16 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 ShapeData2D shapeData = shapes[shapeIndex];
 
                 vec2 finalPos = (1.0/shapeData.scale)*fixStretch*(texPosition3d - squareFinalCoords.xy);
-                bool validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.cropSquareCorners, shapeData.squareInitialCoords) &&
-                                 isValidConsideringSquareBorderRadius(finalPos, shapeData.squareBorderRadius, shapeData.squareInitialCoords);
+                bool validArea = true;
+
+                // crop corner as triangle
+                if ((shapeData.effects & 0x2) == 0x2) {
+                    validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
+                }
+                // rounded corners
+                if ((shapeData.effects & 0x4) == 0x4) {
+                    validArea = isValidConsideringSquareBorderRadius(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
+                }
 
                 if (validArea) {
                     if ((shapeData.mirror & 0x1) == 0x1) {

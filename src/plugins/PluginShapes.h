@@ -39,13 +39,12 @@ struct alignas(16) ShapeData2D { // 128 bytes
 
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
 
-    int effects; // 0x1 => invertGrayScaleColors
+    int effects; // 0x1 => invertGrayScaleColors, 0x2 => crop corner as triangle, 0x4 => rounded corners
     float opacity;
     int mirror;
     int _pad1;   // Padding to align the struct to 16 bytes
 
-    vec4 cropSquareCorners;    // 16 bytes (top left, top right, bottom left, bottom right)
-    vec4 squareBorderRadius;
+    vec4 squareCornersModifier;    // 16 bytes (top left, top right, bottom left, bottom right)
 
     ivec4 colorToAlpha;        // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
     ivec4 singleColorToAlpha;  // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
@@ -179,17 +178,19 @@ public:
         return *this;
     }
     ShapeBuilder& cropSquareCorners(float topLeft, float topRight, float bottomLeft, float bottomRight) {
-        shapeData.cropSquareCorners.x = topLeft;
-        shapeData.cropSquareCorners.y = topRight;
-        shapeData.cropSquareCorners.z = bottomLeft;
-        shapeData.cropSquareCorners.w = bottomRight;
+        shapeData.effects |= 0x2;
+        shapeData.squareCornersModifier.x = topLeft;
+        shapeData.squareCornersModifier.y = topRight;
+        shapeData.squareCornersModifier.z = bottomLeft;
+        shapeData.squareCornersModifier.w = bottomRight;
         return *this;
     }
     ShapeBuilder& squareBorderRadius(float topLeft, float topRight, float bottomLeft, float bottomRight) {
-        shapeData.squareBorderRadius.x = topLeft;
-        shapeData.squareBorderRadius.y = topRight;
-        shapeData.squareBorderRadius.z = bottomLeft;
-        shapeData.squareBorderRadius.w = bottomRight;
+        shapeData.effects |= 0x4;
+        shapeData.squareCornersModifier.x = topLeft;
+        shapeData.squareCornersModifier.y = topRight;
+        shapeData.squareCornersModifier.z = bottomLeft;
+        shapeData.squareCornersModifier.w = bottomRight;
         return *this;
     }
     ShapeBuilder& squareBorderRadius(float radius) {
