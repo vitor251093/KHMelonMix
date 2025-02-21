@@ -29,7 +29,7 @@ public:
     std::string assetsFolder();
     std::string tomlUniqueIdentifier();
 
-    std::vector<ShapeData> renderer_2DShapes();
+    std::vector<ShapeData2D> renderer_2DShapes();
     int renderer_screenLayout();
     int renderer_brightnessMode();
     float renderer_forcedAspectRatio();

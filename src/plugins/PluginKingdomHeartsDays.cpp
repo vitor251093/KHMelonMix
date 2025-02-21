@@ -545,9 +545,9 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
     }
 };
 
-std::vector<ShapeData> PluginKingdomHeartsDays::renderer_2DShapes() {
+std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    auto shapes = std::vector<ShapeData>();
+    auto shapes = std::vector<ShapeData2D>();
 
     switch (GameScene) {
         case gameScene_IntroLoadMenu:

@@ -29,7 +29,7 @@ struct vec4 {
 };
 
 // UBO-compatible struct with proper padding
-struct alignas(16) ShapeData { // 128 bytes
+struct alignas(16) ShapeData2D { // 128 bytes
     int shape;       // 4 bytes
     float uiScale;   // 4 bytes
     vec2 scale;      // 8 bytes
@@ -273,7 +273,7 @@ public:
         shapeData.squareFinalCoords = {squareFinalX1, squareFinalY1, squareFinalX2, squareFinalY2};
     }
 
-    ShapeData build(float aspectRatio) {
+    ShapeData2D build(float aspectRatio) {
         if (_fromBottomScreen) {
             shapeData.squareInitialCoords.y += 192;
         }
@@ -285,7 +285,7 @@ public:
         return shapeData;
     }
 private:
-    ShapeData shapeData;
+    ShapeData2D shapeData;
 
     bool _fromBottomScreen;
     int _corner;

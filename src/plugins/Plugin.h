@@ -135,7 +135,7 @@ public:
 
     virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {};
 
-    virtual std::vector<ShapeData> renderer_2DShapes() { return std::vector<ShapeData>(); };
+    virtual std::vector<ShapeData2D> renderer_2DShapes() { return std::vector<ShapeData2D>(); };
     virtual int renderer_screenLayout() { return 0; };
     virtual int renderer_brightnessMode() { return 0; };
     virtual float renderer_forcedAspectRatio() {return AspectRatio;};

@@ -25,7 +25,7 @@ const char* kCompositorFS_Plugin = R"(#version 140
 
 #define SHAPES_DATA_ARRAY_SIZE 32
 
-struct ShapeData {
+struct ShapeData2D {
     int shape; // 0 = SQUARE, 1 = FREEFORM
     float uiScale;
     vec2 scale;
@@ -48,17 +48,17 @@ struct ShapeData {
     ivec4 singleColorToAlpha;
 };
 
-struct FastShapeData {
+struct FastShapeData2D {
     int shape;
     float uiScale;
     vec4 squareFinalCoords;
 };
 
 layout(std140) uniform ShapeBlock {
-    ShapeData shapes[SHAPES_DATA_ARRAY_SIZE];
+    ShapeData2D shapes[SHAPES_DATA_ARRAY_SIZE];
 };
 
-uniform FastShapeData fastShapes[SHAPES_DATA_ARRAY_SIZE];
+uniform FastShapeData2D fastShapes[SHAPES_DATA_ARRAY_SIZE];
 
 uniform float currentAspectRatio;
 uniform float forcedAspectRatio;
@@ -490,7 +490,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     vec2 fixStretch = vec2(widthScale, 1.0);
 
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
-        FastShapeData fastShapeData = fastShapes[shapeIndex];
+        FastShapeData2D fastShapeData = fastShapes[shapeIndex];
     
         if (fastShapeData.shape == 0) { // square
             float uiTexScale = (6.0/fastShapeData.uiScale);
@@ -499,7 +499,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
             if (all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) && 
                    all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) {
-                ShapeData shapeData = shapes[shapeIndex];
+                ShapeData2D shapeData = shapes[shapeIndex];
 
                 vec2 finalPos = (1.0/shapeData.scale)*fixStretch*(texPosition3d - squareFinalCoords.xy);
                 bool validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.cropSquareCorners, shapeData.squareInitialCoords) &&

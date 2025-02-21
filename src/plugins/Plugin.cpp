@@ -77,7 +77,7 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     GLuint uboBuffer;
     glGenBuffers(1, &uboBuffer);
     glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData2D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
     CompUboLoc[CompShader] = uboBuffer;
 
@@ -122,7 +122,7 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], GameScene, updated);
 
     if (updated) {
-        std::vector<ShapeData> shapes = renderer_2DShapes();
+        std::vector<ShapeData2D> shapes = renderer_2DShapes();
         printf("Updating shapes. New shape count: %d\n", shapes.size());
 
         glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
@@ -144,7 +144,7 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         auto shadersData = shapes.data();
         glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData) * shapes.size());
+        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * shapes.size());
         glUnmapBuffer(GL_UNIFORM_BUFFER);
     }
 }
