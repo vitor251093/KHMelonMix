@@ -1434,7 +1434,7 @@ bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 
 bool PluginKingdomHeartsDays::shouldRenderFrame()
 {
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
+    {
         bool _isMinimapVisible = isMinimapVisible();
         if (IsMinimapVisible != _isMinimapVisible) {
             IsMinimapVisible = _isMinimapVisible;

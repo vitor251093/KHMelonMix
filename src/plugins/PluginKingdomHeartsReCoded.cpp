@@ -525,7 +525,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
             }
 
         case gameScene_InGameOlympusBattle:
-
         case gameScene_InGameWithMap:
             if (HideAllHUD) {
                 break;
@@ -643,6 +642,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .build(aspectRatio));
                 }
                 else {
+                    // TODO: KH UI implement
                     // // player health
                     // shapes.push_back(ShapeBuilder::square()
                     //     .fromPosition(128, 84)
@@ -1253,7 +1253,7 @@ bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 
 bool PluginKingdomHeartsReCoded::shouldRenderFrame()
 {
-    if (GameScene == gameScene_InGameWithMap) {
+    {
         bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
         if (IsMissionInformationVisibleOnTopScreen != _isMissionInformationVisibleOnTopScreen) {
             IsMissionInformationVisibleOnTopScreen = _isMissionInformationVisibleOnTopScreen;
