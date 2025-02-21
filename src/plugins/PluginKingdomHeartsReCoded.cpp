@@ -1236,7 +1236,22 @@ bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 {
     u32 pixel = getPixel(buffer, x, y, 2);
     u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
-    return (pixelAlpha > 0x4 ? true : (pixelAlpha == 0x4 ? false : (((pixel >> 8) & 0xFF) > 0) ? true : false));
+    if (pixelAlpha > 0x4) {
+        return true;
+    }
+    if (pixelAlpha == 0x4) {
+        return false;
+    }
+    if (((pixel >> 8) & 0xFF) == 0) {
+        return false;
+    }
+
+    u32 colorPixel = getPixel(buffer, x, y, 0);
+    u32 colorPixelAlpha = (colorPixel >> (8*3)) & 0xFF;
+    if (colorPixelAlpha == 0x20) {
+        return false;
+    }
+    return true;
 }
 
 bool PluginKingdomHeartsReCoded::shouldRenderFrame()
