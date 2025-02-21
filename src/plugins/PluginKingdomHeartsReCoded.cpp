@@ -605,6 +605,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .withSize(123, 15)
                             .placeAtCorner(corner_Bottom)
                             .withMargin(0.0, 0.0, 11.5, 12.0)
+                            .colorToAlpha(0x8, 0x30, 0xaa)
                             .uiScale(UIScale)
                             .build(aspectRatio));
 
@@ -615,6 +616,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .withSize(23, 15)
                             .placeAtCorner(corner_Bottom)
                             .withMargin(61.5, 0.0, 0.0, 12.0)
+                            .colorToAlpha(0x8, 0x30, 0xaa)
                             .uiScale(UIScale)
                             .mirror(mirror_XY)
                             .build(aspectRatio));
