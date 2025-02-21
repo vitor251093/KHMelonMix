@@ -525,10 +525,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
             }
 
         case gameScene_InGameOlympusBattle:
-            // TODO: KH UI
 
         case gameScene_InGameWithMap:
-            // TODO: KH UI
             if (HideAllHUD) {
                 break;
             }
@@ -719,15 +717,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     .scale(aspectRatio*13, 1.0*4)
                     .preserveDsScale()
                     .build(aspectRatio));
-
-                // float sourceMissionInfoHeight = 40.0;
-                // float missionInfoHeight = sourceMissionInfoHeight;
-                // float missionInfoY2 = missionInfoHeight;
-
-                // if (texPosition3d.y <  missionInfoY2) {
-                //     // nothing (clear screen)
-                //     return vec2(-1, -1);
-                // }
             }
 
             // overclock notification
