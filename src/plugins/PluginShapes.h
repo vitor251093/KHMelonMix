@@ -53,6 +53,11 @@ struct alignas(16) ShapeData2D { // 128 bytes
 
 enum
 {
+    shape_Square
+};
+
+enum
+{
     corner_Center,
     corner_TopLeft,
     corner_Top,
@@ -93,7 +98,7 @@ class ShapeBuilder
 public:
     static ShapeBuilder square() {
         auto shapeBuilder = ShapeBuilder();
-        shapeBuilder.shapeData.shape = 0;
+        shapeBuilder.shapeData.shape = shape_Square;
         shapeBuilder.shapeData.uiScale = 1.0;
         shapeBuilder.shapeData.scale.x = 1.0;
         shapeBuilder.shapeData.scale.y = 1.0;
@@ -138,14 +143,14 @@ public:
         return *this;
     }
     ShapeBuilder& fromPosition(int x, int y) {
-        if (shapeData.shape == 0) {
+        if (shapeData.shape == shape_Square) {
             shapeData.squareInitialCoords.x = x;
             shapeData.squareInitialCoords.y = y;
         }
         return *this;
     }
     ShapeBuilder& withSize(int width, int height) {
-        if (shapeData.shape == 0) {
+        if (shapeData.shape == shape_Square) {
             shapeData.squareInitialCoords.z = width;
             shapeData.squareInitialCoords.w = height;
         }
@@ -278,7 +283,7 @@ public:
             shapeData.squareInitialCoords.y += 192;
         }
 
-        if (shapeData.shape == 0) { // square
+        if (shapeData.shape == shape_Square) {
             precompute3DCoordinatesOf2DSquareShape(aspectRatio);
         }
 
