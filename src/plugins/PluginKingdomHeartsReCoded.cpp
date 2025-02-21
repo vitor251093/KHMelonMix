@@ -650,36 +650,17 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .build(aspectRatio));
                 }
                 else {
-                    // TODO: KH UI implement
-                    // // player health
-                    // shapes.push_back(ShapeBuilder::square()
-                    //     .fromPosition(128, 84)
-                    //     .withSize(128, 108)
-                    //     .placeAtCorner(corner_BottomRight)
-                    //     .withMargin(0.0, 0.0, 8.0, 3.0)
-                    //     .uiScale(UIScale)
-                    //     .build(aspectRatio));
+                    // player health
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(164, 114)
+                        .withSize(92, 78)
+                        .placeAtCorner(corner_BottomRight)
+                        .withMargin(0.0, 0.0, 8.0, 3.0)
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
                         
-                    // // player health
-                    // float sourcePlayerHealthHeight = 78.0;
-                    // float sourcePlayerHealthWidth = 92.0;
-                    // float playerHealthHeight = sourcePlayerHealthHeight;
-                    // float playerHealthWidth = sourcePlayerHealthWidth*heightScale;
-                    // float playerHealthRightMargin = 8.0;
-                    // float playerHealthBottomMargin = 3.0;
-                    // if (texPosition3d.x >= (256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin) &&
-                    //     texPosition3d.x <= (256.0*iuTexScale - playerHealthRightMargin) &&
-                    //     texPosition3d.y >= (192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin) &&
-                    //     texPosition3d.y < (192.0*iuTexScale - playerHealthBottomMargin)) {
-
-                    //     vec2 finalPos = vec2((playerHealthWidth + playerHealthRightMargin) - (256.0*iuTexScale - texPosition3d.x),
-                    //                         (playerHealthHeight + playerHealthBottomMargin) - (192.0*iuTexScale - texPosition3d.y));
-                    //     if (finalPos.x*1.7 + finalPos.y > 64.0) {
-                    //         return fixStretch*(texPosition3d - vec2(256.0*iuTexScale - playerHealthWidth - playerHealthRightMargin,
-                    //                                                 192.0*iuTexScale - playerHealthHeight - playerHealthBottomMargin)) +
-                    //             vec2(256.0 - sourcePlayerHealthWidth, 192.0 - sourcePlayerHealthHeight);
-                    //     }
-                    // }
+                    // TODO: KH UI implement cropped corner
+                    // if (finalPos.x*1.7 + finalPos.y > 64.0) {
 
                     // player allies health
                     shapes.push_back(ShapeBuilder::square()
