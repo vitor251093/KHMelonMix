@@ -19,13 +19,16 @@
 #include "GPU2D_Soft.h"
 #include "GPU.h"
 #include "GPU3D.h"
+#include "GPU_Texreplace.h"
+
+#include <filesystem>
 
 namespace melonDS
 {
 namespace GPU2D
 {
 SoftRenderer::SoftRenderer(melonDS::GPU& gpu)
-    : Renderer2D(), GPU(gpu)
+    : Renderer2D(), GPU(gpu), Texcache(Texcache2D())
 {
     // mosaic table is initialized at compile-time
 }
@@ -918,6 +921,7 @@ void SoftRenderer::DrawBG_Text(u32 line, u32 bgnum)
     asm volatile ("" : : : "memory");
 
     u16 bgcnt = CurUnit->BGCnt[bgnum];
+    // printf("bgcnt: %d\n", bgcnt);
 
     u32 tilesetaddr, tilemapaddr;
     u16* pal;
@@ -1076,6 +1080,27 @@ void SoftRenderer::DrawBG_Text(u32 line, u32 bgnum)
             xoff++;
         }
     }
+
+    /*if (plugin->shouldExportTextures())
+    {
+        unsigned char* imageData = nullptr;
+
+        for (int i = 0; i < 256; i++)
+        {
+            u32 trueColor = BGOBJLine[i];
+            *dst = r | (g << 8) | (b << 16)
+            u8 r = (u8)((trueColor & 0x3F) << 2);
+            u8 g = (u8)(((trueColor >>  8) & 0x3F) << 2);
+            u8 b = (u8)(((trueColor >> 16) & 0x3F) << 2);
+
+            unsigned char* pixel = imageData + ((yoff & 0x7) * 8 + (xpos & 0x7)) * (channels);
+
+            pixel[0] = r;
+            pixel[1] = g;
+            pixel[2] = b;
+            pixel[3] = 255;
+        }
+    }*/
 }
 
 template<bool mosaic, SoftRenderer::DrawPixel drawPixel>
@@ -1963,6 +1988,8 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         xoff = -xpos;
         xpos = 0;
     }
+    s32 orig_xoff = xoff;
+    s32 orig_xpos = xpos;
 
     u16 color = 0; // transparent in all cases
 
@@ -2170,6 +2197,8 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
             }
         }
     }
+
+    Texcache.GetTexture(GPU, width, height, orig_xoff, xend, orig_xpos, ypos, CurUnit, window, spritemode, pixelattr, attrib, objWindow, objLine);
 }
 
 }

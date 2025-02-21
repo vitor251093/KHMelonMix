@@ -97,6 +97,15 @@ struct CutsceneEntry
     int dsScreensState;
 };
 
+struct TextureEntry
+{
+    std::string filename;
+    u16 posX;
+    u16 posY;
+    u16 sizeX;
+    u16 sizeY;
+};
+
 class Plugin
 {
 protected:
@@ -155,7 +164,8 @@ public:
     virtual std::string localizationFilePath(std::string language) {return "";}
 
     virtual std::string textureIndexFilePath();
-    virtual std::map<std::string, std::string> getTexturesIndex();
+    virtual std::map<std::string, TextureEntry> getTexturesIndex();
+    virtual TextureEntry* textureFileConfig(std::string texture);
     virtual std::string textureFilePath(std::string texture);
     virtual std::string tmpTextureFilePath(std::string texture);
 
@@ -256,7 +266,7 @@ protected:
 
     bool _LastTouchScreenMovementWasByPlugin = false;
 
-    std::map<std::string, std::string> texturesIndex;
+    std::map<std::string, TextureEntry> texturesIndex;
 
     int _StartPressCount = 0;
     int _ReplayLimitCount = 0;
