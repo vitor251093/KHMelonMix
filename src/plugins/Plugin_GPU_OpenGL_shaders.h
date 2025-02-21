@@ -26,20 +26,18 @@ const char* kCompositorFS_Plugin = R"(#version 140
 #define SHAPES_DATA_ARRAY_SIZE 32
 
 struct ShapeData2D {
-    int shape; // 0 = SQUARE
+    int shape;
     float uiScale;
     vec2 scale;
 
-    ivec4 squareInitialCoords; // X, Y, Width, Height (only valid if shape == 0)
+    ivec4 squareInitialCoords;
     vec4 squareFinalCoords;
 
-    // effects
-    vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
+    vec4 fadeBorderSize;
 
-    int effects; // 0x1 => invertGrayScaleColors
+    int effects;
     float opacity;
-    int mirror;
-    int _pad1;
+    int _pad0, _pad1;
 
     vec4 squareCornersModifier;
 
@@ -515,10 +513,12 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 }
 
                 if (validArea) {
-                    if ((shapeData.mirror & 0x1) == 0x1) {
+                    // mirror X
+                    if ((shapeData.effects & 0x8) == 0x8) {
                         finalPos.x = shapeData.squareInitialCoords.z - finalPos.x;
                     }
-                    if ((shapeData.mirror & 0x2) == 0x2) {
+                    // mirror Y
+                    if ((shapeData.effects & 0x10) == 0x10) {
                         finalPos.y = shapeData.squareInitialCoords.w - finalPos.y;
                     }
 

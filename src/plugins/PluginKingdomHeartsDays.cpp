@@ -878,6 +878,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
 
                 if (IsMinimapVisible) {
                     // mission gauge
+                    // TODO: KH UI For some reason this is just appearing for one frame
                     shapes.push_back(ShapeBuilder::square()
                         .fromBottomScreen()
                         .fromPosition(5, 152)

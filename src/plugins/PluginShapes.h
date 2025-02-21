@@ -39,10 +39,15 @@ struct alignas(16) ShapeData2D { // 128 bytes
 
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
 
-    int effects; // 0x1 => invertGrayScaleColors, 0x2 => crop corner as triangle, 0x4 => rounded corners
+    int effects;
+    // 0x01 => invertGrayScaleColors
+    // 0x02 => crop corner as triangle
+    // 0x04 => rounded corners
+    // 0x08 => mirror X
+    // 0x10 => mirror Y
+
     float opacity;
-    int mirror;
-    int _pad1;   // Padding to align the struct to 16 bytes
+    int _pad0, _pad1;   // Padding to align the struct to 16 bytes
 
     vec4 squareCornersModifier;    // 16 bytes (top left, top right, bottom left, bottom right)
 
@@ -86,10 +91,10 @@ enum
 
 enum
 {
-    mirror_None,
-    mirror_X,
-    mirror_Y,
-    mirror_XY
+    mirror_None = 0x00,
+    mirror_X    = 0x08,
+    mirror_Y    = 0x10,
+    mirror_XY   = 0x18
 };
 
 class ShapeBuilder
@@ -174,7 +179,7 @@ public:
         return *this;
     }
     ShapeBuilder& mirror(int mirror) {
-        shapeData.mirror = mirror;
+        shapeData.effects |= mirror;
         return *this;
     }
     ShapeBuilder& cropSquareCorners(float topLeft, float topRight, float bottomLeft, float bottomRight) {
