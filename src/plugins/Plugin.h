@@ -128,17 +128,18 @@ public:
     virtual const char* gpuOpenGL_FS();
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
     virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
-    virtual std::vector<ShapeData> gpuOpenGL_FS_shapes() { return std::vector<ShapeData>(); };
-    virtual int gpuOpenGL_FS_screenLayout() { return 0; };
-    virtual int gpuOpenGL_FS_brightnessMode() { return 0; };
-    virtual float gpuOpenGL_FS_forcedAspectRatio() {return AspectRatio;};
-    virtual bool gpuOpenGL_FS_showOriginalHud() { return true; };
 
     virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
     virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
     virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
 
     virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {};
+
+    virtual std::vector<ShapeData> renderer_2DShapes() { return std::vector<ShapeData>(); };
+    virtual int renderer_screenLayout() { return 0; };
+    virtual int renderer_brightnessMode() { return 0; };
+    virtual float renderer_forcedAspectRatio() {return AspectRatio;};
+    virtual bool renderer_showOriginalUI() { return true; };
 
     bool togglePause();
 

@@ -105,10 +105,10 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
 
 void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    float forcedAspectRatio = gpuOpenGL_FS_forcedAspectRatio() / (4.f / 3.f);
-    bool showOriginalHud = gpuOpenGL_FS_showOriginalHud();
-    int screenLayout = gpuOpenGL_FS_screenLayout();
-    int brightnessMode = gpuOpenGL_FS_brightnessMode();
+    float forcedAspectRatio = renderer_forcedAspectRatio() / (4.f / 3.f);
+    bool showOriginalHud = renderer_showOriginalUI();
+    int screenLayout = renderer_screenLayout();
+    int brightnessMode = renderer_brightnessMode();
 
     bool updated = ShouldRefreshShapes;
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
@@ -122,7 +122,7 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], GameScene, updated);
 
     if (updated) {
-        std::vector<ShapeData> shapes = gpuOpenGL_FS_shapes();
+        std::vector<ShapeData> shapes = renderer_2DShapes();
         printf("Updating shapes. New shape count: %d\n", shapes.size());
 
         glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);

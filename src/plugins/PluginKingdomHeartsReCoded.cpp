@@ -339,12 +339,12 @@ std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
     return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 }
 
-float PluginKingdomHeartsReCoded::gpuOpenGL_FS_forcedAspectRatio()
+float PluginKingdomHeartsReCoded::renderer_forcedAspectRatio()
 {
     return (GameScene == gameScene_CutsceneWithStaticImages) ? (4.0/3) : AspectRatio;
 };
 
-std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
+std::vector<ShapeData> PluginKingdomHeartsReCoded::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData>();
 
@@ -679,7 +679,7 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
     return shapes;
 }
 
-int PluginKingdomHeartsReCoded::gpuOpenGL_FS_screenLayout() {
+int PluginKingdomHeartsReCoded::renderer_screenLayout() {
     switch (GameScene) {
         case gameScene_InGameWithMap:
         case gameScene_PauseMenu:
@@ -710,7 +710,7 @@ int PluginKingdomHeartsReCoded::gpuOpenGL_FS_screenLayout() {
     return screenLayout_Top;
 };
 
-int PluginKingdomHeartsReCoded::gpuOpenGL_FS_brightnessMode() {
+int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
     if (_ShouldHideScreenForTransitions) {
         return brightnessMode_Off;
     }
@@ -730,7 +730,7 @@ int PluginKingdomHeartsReCoded::gpuOpenGL_FS_brightnessMode() {
     return brightnessMode_Default;
 }
 
-bool PluginKingdomHeartsReCoded::gpuOpenGL_FS_showOriginalHud() {
+bool PluginKingdomHeartsReCoded::renderer_showOriginalUI() {
     return false;
 }
 

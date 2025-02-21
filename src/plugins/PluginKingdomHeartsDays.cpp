@@ -408,12 +408,144 @@ std::string PluginKingdomHeartsDays::tomlUniqueIdentifier() {
     return getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
 }
 
-float PluginKingdomHeartsDays::gpuOpenGL_FS_forcedAspectRatio()
-{
-    return (GameScene == gameScene_DayCounter) ? (4.0/3) : AspectRatio;
+const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
+    return kRenderVS_Z_KhDays;
 };
 
-std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
+void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags)
+{
+    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
+    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
+    CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
+    CompGpu3DLoc[flags][4] = glGetUniformLocation(prog, "HideAllHUD");
+
+    for (int index = 0; index <= 4; index ++) {
+        CompGpu3DLastValues[flags][index] = -1;
+    }
+}
+
+#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
+
+void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][1], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][2], UIScale, updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][3], ShowMissionInfo ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][4], HideAllHUD ? 1 : 0, updated);
+
+    if (updated) {
+        glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
+        for (int index = 1; index <= 4; index ++) {
+            glUniform1i(CompGpu3DLoc[flags][index], CompGpu3DLastValues[flags][index]);
+        }
+    }
+}
+
+#undef UPDATE_GPU_VAR
+
+void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return;
+    }
+
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    u32 attr = polygon->Attr;
+
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D) {
+        u32 aimAttr1 = 1058996416;
+        u32 aimAttr2 = 1042219200;
+        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2)) {
+            s32 z = polygon->Vertices[0]->Position[2];
+            float _z = ((float)z)/(1 << 22);
+            if (_z < 0) {
+                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                float xCenter = (x0 + x1)/2.0;
+
+                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
+                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
+                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
+                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
+            }
+        }
+    }
+
+    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
+    {
+        s32* x = &scaledPositions[vertexIndex][0];
+        s32* y = &scaledPositions[vertexIndex][1];
+        s32 z = polygon->Vertices[vertexIndex]->Position[2];
+
+        int resolutionScale = ScreenWidth/256;
+        float iuTexScale = SCREEN_SCALE/UIScale;
+
+        float _x = (float)(*x);
+        float _y = (float)(*y);
+        float _z = ((float)z)/(1 << 22);
+        if (HideAllHUD)
+        {
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D)
+            {
+                if (_x >= 0 && _x <= ScreenWidth &&
+                    _y >= 0 && _y <= ScreenHeight &&
+                    _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
+                    _x = 0;
+                    _y = 0;
+                }
+            }
+        }
+        else
+        {
+            if (GameScene == gameScene_InGameWithMap)
+            {
+                float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
+
+                float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
+                if ((_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (2.0/5)*(ScreenHeight) &&
+                    (abs(_z - effectLayer) < 0.0001))) {
+                    _x = (_x)/(iuTexScale*aspectRatio);
+                    _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
+                }
+
+                float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
+                if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
+                    (abs(_z - textLayer) < 0.0001) &&
+                    attr != 34144384 && attr != 34799744 /* rain */)) {
+                    _x = (_x)/(iuTexScale*aspectRatio);
+                    _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
+                }
+            }
+
+            if (GameScene == gameScene_PauseMenu)
+            {
+                if (_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
+                    _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
+                    _x = 0;
+                    _y = 0;
+                }
+            }
+        }
+
+        *x = (s32)(_x);
+        *y = (s32)(_y);
+    }
+};
+
+std::vector<ShapeData> PluginKingdomHeartsDays::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData>();
 
@@ -813,7 +945,7 @@ std::vector<ShapeData> PluginKingdomHeartsDays::gpuOpenGL_FS_shapes() {
     return shapes;
 }
 
-int PluginKingdomHeartsDays::gpuOpenGL_FS_screenLayout() {
+int PluginKingdomHeartsDays::renderer_screenLayout() {
     switch (GameScene) {
         case gameScene_DayCounter:
         case gameScene_RoxasThoughts:
@@ -864,7 +996,7 @@ int PluginKingdomHeartsDays::gpuOpenGL_FS_screenLayout() {
     return screenLayout_Top;
 };
 
-int PluginKingdomHeartsDays::gpuOpenGL_FS_brightnessMode() {
+int PluginKingdomHeartsDays::renderer_brightnessMode() {
     if (_ShouldHideScreenForTransitions) {
         return brightnessMode_Off;
     }
@@ -885,146 +1017,14 @@ int PluginKingdomHeartsDays::gpuOpenGL_FS_brightnessMode() {
     return brightnessMode_Default;
 }
 
-bool PluginKingdomHeartsDays::gpuOpenGL_FS_showOriginalHud() {
+float PluginKingdomHeartsDays::renderer_forcedAspectRatio()
+{
+    return (GameScene == gameScene_DayCounter) ? (4.0/3) : AspectRatio;
+};
+
+bool PluginKingdomHeartsDays::renderer_showOriginalUI() {
     return false;
 }
-
-const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return nullptr;
-    }
-
-    return kRenderVS_Z_KhDays;
-};
-
-void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags)
-{
-    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
-    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
-    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
-    CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
-    CompGpu3DLoc[flags][4] = glGetUniformLocation(prog, "HideAllHUD");
-
-    for (int index = 0; index <= 4; index ++) {
-        CompGpu3DLastValues[flags][index] = -1;
-    }
-}
-
-#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
-
-void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
-{
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    
-    bool updated = false;
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][1], GameScene, updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][2], UIScale, updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][3], ShowMissionInfo ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][4], HideAllHUD ? 1 : 0, updated);
-
-    if (updated) {
-        glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
-        for (int index = 1; index <= 4; index ++) {
-            glUniform1i(CompGpu3DLoc[flags][index], CompGpu3DLastValues[flags][index]);
-        }
-    }
-}
-
-#undef UPDATE_GPU_VAR
-
-void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return;
-    }
-
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    u32 attr = polygon->Attr;
-
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D) {
-        u32 aimAttr1 = 1058996416;
-        u32 aimAttr2 = 1042219200;
-        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2)) {
-            s32 z = polygon->Vertices[0]->Position[2];
-            float _z = ((float)z)/(1 << 22);
-            if (_z < 0) {
-                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-                float xCenter = (x0 + x1)/2.0;
-
-                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
-                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
-                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
-                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
-            }
-        }
-    }
-
-    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
-    {
-        s32* x = &scaledPositions[vertexIndex][0];
-        s32* y = &scaledPositions[vertexIndex][1];
-        s32 z = polygon->Vertices[vertexIndex]->Position[2];
-
-        int resolutionScale = ScreenWidth/256;
-        float iuTexScale = SCREEN_SCALE/UIScale;
-
-        float _x = (float)(*x);
-        float _y = (float)(*y);
-        float _z = ((float)z)/(1 << 22);
-        if (HideAllHUD)
-        {
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameWithDouble3D)
-            {
-                if (_x >= 0 && _x <= ScreenWidth &&
-                    _y >= 0 && _y <= ScreenHeight &&
-                    _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
-                    _x = 0;
-                    _y = 0;
-                }
-            }
-        }
-        else
-        {
-            if (GameScene == gameScene_InGameWithMap)
-            {
-                float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
-
-                float effectLayer = -0.0003; // blue shine behind the heart counter and "CHAIN" label
-                if ((_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
-                    _y >= 0 && _y <= (2.0/5)*(ScreenHeight) &&
-                    (abs(_z - effectLayer) < 0.0001))) {
-                    _x = (_x)/(iuTexScale*aspectRatio);
-                    _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
-                }
-
-                float textLayer = -0.0007; // heart counter, timer, "BONUS" label and +X floating labels
-                if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
-                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
-                    (abs(_z - textLayer) < 0.0001) &&
-                    attr != 34144384 && attr != 34799744 /* rain */)) {
-                    _x = (_x)/(iuTexScale*aspectRatio);
-                    _y = (_y)/(iuTexScale) + heartTopMargin*resolutionScale;
-                }
-            }
-
-            if (GameScene == gameScene_PauseMenu)
-            {
-                if (_x >= 0 && _x <= (1.0/2)*(ScreenWidth) &&
-                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
-                    _z < (s32)(-(0.0007)) && _z >= (s32)(-(1.000))) {
-                    _x = 0;
-                    _y = 0;
-                }
-            }
-        }
-
-        *x = (s32)(_x);
-        *y = (s32)(_y);
-    }
-};
 
 void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
 {

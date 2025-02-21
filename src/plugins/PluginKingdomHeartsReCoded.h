@@ -29,11 +29,11 @@ public:
     std::string assetsFolder();
     std::string tomlUniqueIdentifier();
 
-    std::vector<ShapeData> gpuOpenGL_FS_shapes();
-    int gpuOpenGL_FS_screenLayout();
-    int gpuOpenGL_FS_brightnessMode();
-    float gpuOpenGL_FS_forcedAspectRatio();
-    bool gpuOpenGL_FS_showOriginalHud();
+    std::vector<ShapeData> renderer_2DShapes();
+    int renderer_screenLayout();
+    int renderer_brightnessMode();
+    float renderer_forcedAspectRatio();
+    bool renderer_showOriginalUI();
 
     const char* gpu3DOpenGLClassic_VS_Z();
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
