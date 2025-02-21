@@ -435,41 +435,29 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
                         .uiScale(UIScale)
                         .build(aspectRatio));
 
-                    // if (IsBugSector)
-                    // {
-                    //     // floor label
-                    //     float bottomLabelWidth = 50.0;
-                    //     float bottomLabelHeight = 15.0;
-                    //     float increaseLabelSize = 1.4;
-                    //     float labelWidth = (bottomLabelWidth/increaseLabelSize)*heightScale;
-                    //     float labelHeight = (bottomLabelHeight/increaseLabelSize);
-                    //     float labelRightMargin = 11.0;
-                    //     float labelTopMargin = 88.0;
-                    //     float labelLeftMargin = 256.0*iuTexScale - labelWidth - labelRightMargin;
-                    //     if (texPosition3d.x >= labelLeftMargin &&
-                    //         texPosition3d.x < (256.0*iuTexScale - labelRightMargin) && 
-                    //         texPosition3d.y <= labelHeight + labelTopMargin && 
-                    //         texPosition3d.y >= labelTopMargin) {
-                    //         return increaseLabelSize*fixStretch*(texPosition3d - vec2(labelLeftMargin, labelTopMargin)) + vec2(0, 192.0);
-                    //     }
+                    if (IsBugSector)
+                    {
+                        // floor label
+                        shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(0, 0)
+                            .withSize(50, 15)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 88.0, 11.0, 0.0)
+                            .scale(1.4)
+                            .uiScale(UIScale)
+                            .build(aspectRatio));
 
-                    //     // floor value
-                    //     float bottomFloorWidth = 82.0;
-                    //     float bottomFloorHeight = 15.0;
-                    //     float increaseFloorSize = 1.4;
-                    //     float floorWidth = (bottomFloorWidth/increaseFloorSize)*heightScale;
-                    //     float floorHeight = (bottomFloorHeight/increaseFloorSize);
-                    //     float floorRightMargin = 12.0;
-                    //     float floorTopMargin = 98.0;
-                    //     float floorLeftMargin = 256.0*iuTexScale - floorWidth - floorRightMargin;
-                    //     float bottomFloorLeftMargin = 50.0;
-                    //     if (texPosition3d.x >= floorLeftMargin &&
-                    //         texPosition3d.x < (256.0*iuTexScale - floorRightMargin) && 
-                    //         texPosition3d.y <= floorHeight + floorTopMargin && 
-                    //         texPosition3d.y >= floorTopMargin) {
-                    //         return increaseFloorSize*fixStretch*(texPosition3d - vec2(floorLeftMargin, floorTopMargin)) +
-                    //             vec2(0, 192.0) + vec2(bottomFloorLeftMargin, 0);
-                    //     }
+                        // floor value
+                        shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(50, 0)
+                            .withSize(82, 15)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 98.0, 12.0, 0.0)
+                            .scale(1.4)
+                            .uiScale(UIScale)
+                            .build(aspectRatio));
 
                     //     // enemies counter
                     //     float bottomEnemiesWidth = 123.0;
@@ -506,24 +494,16 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
                     //             vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
                     //     }
 
-                    //     // mission information
-                    //     float sourceMissionInfoHeight = 26.0;
-                    //     float sourceMissionInfoWidth = 247.0;
-                    //     float sourceMissionInfoLeftMargin = 5.0;
-                    //     float sourceMissionInfoTopMargin = 166.0;
-                    //     float missionInfoHeight = sourceMissionInfoHeight;
-                    //     float missionInfoWidth = sourceMissionInfoWidth*heightScale;
-                    //     float missionInfoLeftMargin = 3.0;
-                    //     float missionInfoTopMargin = 6.0;
-
-                    //     if (texPosition3d.x >= missionInfoLeftMargin &&
-                    //         texPosition3d.x <  missionInfoLeftMargin + missionInfoWidth &&
-                    //         texPosition3d.y >= missionInfoTopMargin &&
-                    //         texPosition3d.y <  missionInfoTopMargin + missionInfoHeight) {
-                    //         return fixStretch*(texPosition3d - vec2(missionInfoLeftMargin, missionInfoTopMargin)) +
-                    //             vec2(0, 192.0) + vec2(sourceMissionInfoLeftMargin, sourceMissionInfoTopMargin);
-                    //     }
-                    // }
+                        // mission information
+                        shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 166)
+                            .withSize(247, 26)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(3.0, 6.0, 0.0, 0.0)
+                            .uiScale(UIScale)
+                            .build(aspectRatio));
+                    }
                 }
             }
 
@@ -1289,6 +1269,11 @@ bool PluginKingdomHeartsReCoded::isMinimapVisible()
     return ((pixel >> 0) & 0x3F) > 39 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) < 5;
 }
 
+bool PluginKingdomHeartsReCoded::isBugSector()
+{
+    return getFloorLevel() != 0;
+}
+
 bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
 {
     u32* buffer = topScreen2DTexture();
@@ -1324,6 +1309,11 @@ bool PluginKingdomHeartsReCoded::shouldRenderFrame()
         bool _isMinimapVisible = isMinimapVisible();
         if (IsMinimapVisible != _isMinimapVisible) {
             IsMinimapVisible = _isMinimapVisible;
+            ShouldRefreshShapes = true;
+        }
+        bool _isBugSector = isBugSector();
+        if (IsBugSector != _isBugSector) {
+            IsBugSector = _isBugSector;
             ShouldRefreshShapes = true;
         }
         bool _isCommandMenuVisible = isCommandMenuVisible();

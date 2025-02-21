@@ -131,11 +131,13 @@ private:
     bool IsMissionInformationVisibleOnTopScreen = false;
     bool IsDialogVisible = false;
     bool IsMinimapVisible = false;
+    bool IsBugSector = false;
     bool IsCommandMenuVisible = false;
     bool IsHealthVisible = false;
     bool isMissionInformationVisibleOnTopScreen();
     bool isDialogVisible();
     bool isMinimapVisible();
+    bool isBugSector();
     bool isCommandMenuVisible();
     bool isHealthVisible();
     bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
