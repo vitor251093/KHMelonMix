@@ -812,11 +812,11 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
         s32 z = polygon->Vertices[vertexIndex]->Position[2];
         s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
 
-        int resolutionScale = ScreenWidth/256;
-        float commandMenuLeftMargin = 6.7;
-        float commandMenuBottomMargin = 0.5;
-
         float iuTexScale = (6.0)/UIScale;
+
+        int resolutionScale = ScreenWidth/256;
+        float commandMenuLeftMargin = 5.1;
+        float commandMenuBottomMargin = 0.5;
 
         float _x = (float)(*x);
         float _y = (float)(*y);
@@ -852,6 +852,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
 
             if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
             {
+                // command menu
                 if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
                     _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
                     _z == (s32)(-1.000) &&
