@@ -7,7 +7,6 @@
 #define REPLACEMENT_BGM_ENABLED true
 #define MOUSE_CURSOR_AS_CAMERA_ENABLED false
 
-#define SHOW_GAME_SCENE false
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
 
