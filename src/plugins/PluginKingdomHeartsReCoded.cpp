@@ -699,13 +699,13 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
                 if (GameScene != gameScene_InGameOlympusBattle) {
                     // next area name
-                    // shapes.push_back(ShapeBuilder::square()
-                    //     .fromPosition(48, 160)
-                    //     .withSize(80, 32)
-                    //     .placeAtCorner(corner_Bottom)
-                    //     .cropSquareCorners(0.0, 0.0, 0.5, 0.0)
-                    //     .uiScale(UIScale)
-                    //     .build(aspectRatio));
+                    shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(88, 160)
+                        .withSize(80, 32)
+                        .placeAtCorner(corner_Bottom)
+                        .cropSquareCorners(0.0, 0.0, 0.0, 0.0)
+                        .uiScale(UIScale)
+                        .build(aspectRatio));
                     // TODO: KH UI one of the corners needs to cropped
                 }
             }
