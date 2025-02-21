@@ -339,9 +339,149 @@ std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
     return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 }
 
-float PluginKingdomHeartsReCoded::renderer_forcedAspectRatio()
+const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
+    return kRenderVS_Z_KhReCoded;
+};
+
+void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags)
 {
-    return (GameScene == gameScene_CutsceneWithStaticImages) ? (4.0/3) : AspectRatio;
+    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
+    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
+
+    for (int index = 0; index <= 2; index ++) {
+        CompGpu3DLastValues[flags][index] = -1;
+    }
+}
+
+#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
+
+void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][1], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpu3DLoc[flags][2], UIScale, updated);
+
+    if (updated) {
+        glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
+        for (int index = 1; index <= 2; index ++) {
+            glUniform1i(CompGpu3DLoc[flags][index], CompGpu3DLastValues[flags][index]);
+        }
+    }
+}
+
+#undef UPDATE_GPU_VAR
+
+void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return;
+    }
+
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    u32 attr = polygon->Attr;
+
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu) {
+        u32 aimAttr1 = 1058996416;
+        u32 aimAttr2 = 1042219200;
+        u32 greenAimSmallSquare = 1025441984;
+        u32 greenAimBigSquare = 2033856;
+        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2 || attr == greenAimSmallSquare || attr == greenAimBigSquare)) {
+            s32 z = polygon->Vertices[0]->Position[2];
+            float _z = ((float)z)/(1 << 22);
+            if (_z < 0) {
+                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
+                float xCenter = (x0 + x1)/2.0;
+
+                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
+                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
+                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
+                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
+            }
+        }
+    }
+
+    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
+    {
+        s32* x = &scaledPositions[vertexIndex][0];
+        s32* y = &scaledPositions[vertexIndex][1];
+        s32 z = polygon->Vertices[vertexIndex]->Position[2];
+        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
+
+        float iuTexScale = (6.0)/UIScale;
+
+        int resolutionScale = ScreenWidth/256;
+        float commandMenuLeftMargin = 5.1;
+        float commandMenuBottomMargin = 0.5;
+
+        float _x = (float)(*x);
+        float _y = (float)(*y);
+        float _z = ((float)z)/(1 << 22);
+
+        if (HideAllHUD)
+        {
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
+            {
+                if (_x >= 0 && _x <= ScreenWidth &&
+                    _y >= 0 && _y <= ScreenHeight &&
+                    _z < 0) {
+                    _x = 0;
+                    _y = 0;
+                }
+            }
+        }
+        else
+        {
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog)
+            {
+                // Bug sector SP score
+                float bugSectorSpScoreTopMargin = 18.0;
+                float bugSectorSpScoreScale = (4.0)/UIScale;
+
+                if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
+                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
+                    _z < 0)) {
+                    _x = (_x)/(bugSectorSpScoreScale*aspectRatio);
+                    _y = (_y)/(bugSectorSpScoreScale) + bugSectorSpScoreTopMargin*resolutionScale;
+                }
+            }
+
+            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
+            {
+                // command menu
+                if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
+                    _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
+                    _z == (s32)(-1.000) &&
+                    rgb[0] < 200) {
+
+                    _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
+                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
+                }
+            }
+
+            if (GameScene == gameScene_InGameOlympusBattle)
+            {
+                if (_x >= (ScreenWidth/2)        && _x <= (ScreenWidth)  &&
+                    _y >= (2.0/3)*(ScreenHeight) && _y <= (ScreenHeight)) {
+
+                    _x = ScreenWidth - ((ScreenWidth - _x)/(iuTexScale*aspectRatio));
+                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale));
+                }
+            }
+        }
+
+        *x = (s32)(_x);
+        *y = (s32)(_y);
+    }
 };
 
 std::vector<ShapeData> PluginKingdomHeartsReCoded::renderer_2DShapes() {
@@ -730,154 +870,14 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
     return brightnessMode_Default;
 }
 
+float PluginKingdomHeartsReCoded::renderer_forcedAspectRatio()
+{
+    return (GameScene == gameScene_CutsceneWithStaticImages) ? (4.0/3) : AspectRatio;
+};
+
 bool PluginKingdomHeartsReCoded::renderer_showOriginalUI() {
     return false;
 }
-
-const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return nullptr;
-    }
-
-    return kRenderVS_Z_KhReCoded;
-};
-
-void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags)
-{
-    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
-    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
-    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
-
-    for (int index = 0; index <= 2; index ++) {
-        CompGpu3DLastValues[flags][index] = -1;
-    }
-}
-
-#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
-
-void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
-{
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-
-    bool updated = false;
-    UPDATE_GPU_VAR(CompGpu3DLoc[flags][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpu3DLoc[flags][1], GameScene, updated);
-    UPDATE_GPU_VAR(CompGpu3DLoc[flags][2], UIScale, updated);
-
-    if (updated) {
-        glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
-        for (int index = 1; index <= 2; index ++) {
-            glUniform1i(CompGpu3DLoc[flags][index], CompGpu3DLastValues[flags][index]);
-        }
-    }
-}
-
-#undef UPDATE_GPU_VAR
-
-void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return;
-    }
-
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    u32 attr = polygon->Attr;
-
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu) {
-        u32 aimAttr1 = 1058996416;
-        u32 aimAttr2 = 1042219200;
-        u32 greenAimSmallSquare = 1025441984;
-        u32 greenAimBigSquare = 2033856;
-        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2 || attr == greenAimSmallSquare || attr == greenAimBigSquare)) {
-            s32 z = polygon->Vertices[0]->Position[2];
-            float _z = ((float)z)/(1 << 22);
-            if (_z < 0) {
-                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-                float xCenter = (x0 + x1)/2.0;
-
-                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
-                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
-                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
-                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
-            }
-        }
-    }
-
-    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
-    {
-        s32* x = &scaledPositions[vertexIndex][0];
-        s32* y = &scaledPositions[vertexIndex][1];
-        s32 z = polygon->Vertices[vertexIndex]->Position[2];
-        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
-
-        float iuTexScale = (6.0)/UIScale;
-
-        int resolutionScale = ScreenWidth/256;
-        float commandMenuLeftMargin = 5.1;
-        float commandMenuBottomMargin = 0.5;
-
-        float _x = (float)(*x);
-        float _y = (float)(*y);
-        float _z = ((float)z)/(1 << 22);
-
-        if (HideAllHUD)
-        {
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
-            {
-                if (_x >= 0 && _x <= ScreenWidth &&
-                    _y >= 0 && _y <= ScreenHeight &&
-                    _z < 0) {
-                    _x = 0;
-                    _y = 0;
-                }
-            }
-        }
-        else
-        {
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog)
-            {
-                // Bug sector SP score
-                float bugSectorSpScoreTopMargin = 18.0;
-                float bugSectorSpScoreScale = (4.0)/UIScale;
-
-                if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
-                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
-                    _z < 0)) {
-                    _x = (_x)/(bugSectorSpScoreScale*aspectRatio);
-                    _y = (_y)/(bugSectorSpScoreScale) + bugSectorSpScoreTopMargin*resolutionScale;
-                }
-            }
-
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
-            {
-                // command menu
-                if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
-                    _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
-                    _z == (s32)(-1.000) &&
-                    rgb[0] < 200) {
-
-                    _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
-                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
-                }
-            }
-
-            if (GameScene == gameScene_InGameOlympusBattle)
-            {
-                if (_x >= (ScreenWidth/2)        && _x <= (ScreenWidth)  &&
-                    _y >= (2.0/3)*(ScreenHeight) && _y <= (ScreenHeight)) {
-
-                    _x = ScreenWidth - ((ScreenWidth - _x)/(iuTexScale*aspectRatio));
-                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale));
-                }
-            }
-        }
-
-        *x = (s32)(_x);
-        *y = (s32)(_y);
-    }
-};
 
 void PluginKingdomHeartsReCoded::onLoadState()
 {
