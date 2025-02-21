@@ -16,8 +16,6 @@
 
 #include "../OpenGLSupport.h"
 
-#define SHOW_GAME_SCENE false
-
 #define RAM_SEARCH_ENABLED true
 // #define RAM_SEARCH_SIZE 8
 // #define RAM_SEARCH_SIZE 16
