@@ -260,7 +260,8 @@ protected:
     std::map<GLuint, GLuint> CompUboLoc{};
 
     std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesShapeLoc{};
-    std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesUiScaleLoc{};
+    std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesScaleLoc{};
+    std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesEffectsLoc{};
     std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesSquareFinalCoordsLoc{};
     bool ShouldRefreshShapes = true;
 

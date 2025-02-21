@@ -537,7 +537,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     .fromPosition(0, 0)
                     .withSize(256, 40)
                     .placeAtCorner(corner_TopLeft)
-                    .uiScale(UIScale)
+                    .hudScale(UIScale)
                     .build(aspectRatio));
             }
 
@@ -566,10 +566,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .withSize(108, 108)
                         .placeAtCorner(corner_TopRight)
                         .withMargin(0.0, 30.0, 9.0, 0.0)
-                        .scale(0.555)
+                        .sourceScale(0.555)
                         .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                         .opacity(0.95)
-                        .uiScale(UIScale)
+                        .hudScale(UIScale)
                         .build(aspectRatio));
 
                     if (IsBugSector)
@@ -582,8 +582,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .placeAtCorner(corner_TopRight)
                             .withMargin(0.0, 88.0, 11.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
-                            .scale(1.0/1.4)
-                            .uiScale(UIScale)
+                            .sourceScale(1.0/1.4)
+                            .hudScale(UIScale)
                             .build(aspectRatio));
 
                         // floor value
@@ -594,8 +594,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .placeAtCorner(corner_TopRight)
                             .withMargin(0.0, 98.0, 12.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
-                            .scale(1.0/1.4)
-                            .uiScale(UIScale)
+                            .sourceScale(1.0/1.4)
+                            .hudScale(UIScale)
                             .build(aspectRatio));
 
                         float enemiesCounterDiagonalMergeFactor = 5.0;
@@ -609,7 +609,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .withMargin(0.0, 0.0, 11.5 - enemiesCounterDiagonalMergeFactor/2, 12.0)
                             .cropSquareCorners(0.0, 0.0, 0.0, enemiesCounterDiagonalMergeFactor)
                             .colorToAlpha(0x8, 0x30, 0xaa)
-                            .uiScale(UIScale)
+                            .hudScale(UIScale)
                             .build(aspectRatio));
 
                         // enemies counter (right side)
@@ -621,7 +621,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .withMargin(61.5 - enemiesCounterDiagonalMergeFactor/2, 0.0, 0.0, 12.0)
                             .cropSquareCorners(enemiesCounterDiagonalMergeFactor, 0.0, 0.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
-                            .uiScale(UIScale)
+                            .hudScale(UIScale)
                             .mirror(mirror_XY)
                             .build(aspectRatio));
 
@@ -632,7 +632,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .withSize(247, 26)
                             .placeAtCorner(corner_TopLeft)
                             .withMargin(3.0, 6.0, 0.0, 0.0)
-                            .uiScale(UIScale)
+                            .hudScale(UIScale)
                             .build(aspectRatio));
                     }
                 }
@@ -646,7 +646,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .fromPosition(134, 114)
                         .withSize(122, 78)
                         .placeAtCorner(corner_BottomRight)
-                        .uiScale(UIScale)
+                        .hudScale(UIScale)
                         .build(aspectRatio));
                 }
                 else {
@@ -656,7 +656,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .withSize(92, 78)
                         .placeAtCorner(corner_BottomRight)
                         .withMargin(0.0, 0.0, 8.0, 3.0)
-                        .uiScale(UIScale)
+                        .hudScale(UIScale)
                         .build(aspectRatio));
                         
                     // TODO: KH UI implement cropped corner
@@ -668,7 +668,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .withSize(36, 118)
                         .placeAtCorner(corner_BottomRight)
                         .withMargin(0.0, 0.0, 8.0, 3.0)
-                        .uiScale(UIScale)
+                        .hudScale(UIScale)
                         .build(aspectRatio));
                 }
             }
@@ -681,7 +681,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     .withSize(88, 84)
                     .placeAtCorner(corner_BottomLeft)
                     .withMargin(10.0, 0.0, 0.0, 0.0)
-                    .uiScale(UIScale)
+                    .hudScale(UIScale)
                     .build(aspectRatio));
 
                 if (GameScene != gameScene_InGameOlympusBattle) {
@@ -691,7 +691,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .withSize(80, 32)
                         .placeAtCorner(corner_Bottom)
                         .cropSquareCorners(0.0, 0.0, 0.0, 18.0)
-                        .uiScale(UIScale)
+                        .hudScale(UIScale)
                         .build(aspectRatio));
                 }
             }
@@ -702,7 +702,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     .fromPosition(118, 182)
                     .withSize(20, 10)
                     .placeAtCorner(corner_Top)
-                    .scale(aspectRatio*13, 1.0*4)
+                    .sourceScale(aspectRatio*13, 1.0*4)
                     .preserveDsScale()
                     .build(aspectRatio));
             }
@@ -713,7 +713,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 .withSize(95, 27)
                 .placeAtCorner(corner_BottomLeft)
                 .withMargin(0.0, 0.0, 0.0, 84.0)
-                .uiScale(UIScale)
+                .hudScale(UIScale)
                 .build(aspectRatio));
 
             // item notification
@@ -722,7 +722,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 .withSize(95, 32)
                 .placeAtCorner(corner_BottomLeft)
                 .withMargin(0.0, 0.0, 0.0, 84.0)
-                .uiScale(UIScale)
+                .hudScale(UIScale)
                 .build(aspectRatio));
 
             // level up notification
@@ -731,7 +731,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 .withSize(95, 32)
                 .placeAtCorner(corner_BottomRight)
                 .withMargin(0.0, 0.0, 0.0, 84.0)
-                .uiScale(UIScale)
+                .hudScale(UIScale)
                 .build(aspectRatio));
 
             // enemy health
@@ -740,7 +740,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 .withSize(93, 22)
                 .placeAtCorner(corner_TopRight)
                 .withMargin(0.0, 7.5, 9.0, 0.0)
-                .uiScale(UIScale)
+                .hudScale(UIScale)
                 .build(aspectRatio));
 
             // background
@@ -748,7 +748,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 .fromPosition(118, 182)
                 .withSize(20, 10)
                 .placeAtCorner(corner_Center)
-                .uiScale(1000.0)
+                .sourceScale(1000.0)
                 .build(aspectRatio));
 
             break;
@@ -757,7 +757,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
             // pause menu
             shapes.push_back(ShapeBuilder::square()
                 .placeAtCorner(corner_Center)
-                .uiScale(UIScale)
+                .hudScale(UIScale)
                 .build(aspectRatio));
 
             // background
@@ -765,7 +765,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 .fromPosition(118, 182)
                 .withSize(20, 10)
                 .placeAtCorner(corner_Center)
-                .uiScale(1000.0)
+                .sourceScale(1000.0)
                 .build(aspectRatio));
 
             break;
@@ -776,7 +776,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     .fromBottomScreen()
                     .fromPosition(5, 0)
                     .withSize(246, 192)
-                    .uiScale(5.0)
+                    .sourceScale(5.0)
                     .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
                     .build(aspectRatio));
 
@@ -786,7 +786,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 .fromPosition(0, 96)
                 .withSize(5, 5)
                 .placeAtCorner(corner_Center)
-                .uiScale(1000.0)
+                .sourceScale(1000.0)
                 .opacity(0.75)
                 .build(aspectRatio));
 
@@ -796,7 +796,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
             shapes.push_back(ShapeBuilder::square()
                 .fromBottomScreen()
                 .placeAtCorner(corner_BottomRight)
-                .uiScale(UIScale)
+                .hudScale(UIScale)
                 .build(aspectRatio));
             break;
     }

@@ -88,7 +88,7 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
 
     CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
     CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "uiScale");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
     CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
     CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
     CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
@@ -101,7 +101,8 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     for (int index = 0; index < SHAPES_DATA_ARRAY_SIZE; index ++) {
         std::string prefix = "fastShapes[" + std::to_string(index) + "].";
         CompShapesShapeLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "shape").c_str());
-        CompShapesUiScaleLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "uiScale").c_str());
+        CompShapesScaleLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "sourceScale").c_str());
+        CompShapesEffectsLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "effects").c_str());
         CompShapesSquareFinalCoordsLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "squareFinalCoords").c_str());
     }
 }
@@ -140,7 +141,8 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 
         for (int index = 0; index < shapes.size(); index ++) {
             glUniform1i(CompShapesShapeLoc[CompShader][index], shapes[index].shape);
-            glUniform1f(CompShapesUiScaleLoc[CompShader][index], shapes[index].uiScale);
+            glUniform2f(CompShapesScaleLoc[CompShader][index], shapes[index].sourceScale.x, shapes[index].sourceScale.y);
+            glUniform1i(CompShapesEffectsLoc[CompShader][index], shapes[index].effects);
             glUniform4f(CompShapesSquareFinalCoordsLoc[CompShader][index], shapes[index].squareFinalCoords.x,
                 shapes[index].squareFinalCoords.y, shapes[index].squareFinalCoords.z, shapes[index].squareFinalCoords.w);
         }

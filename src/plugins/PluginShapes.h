@@ -30,9 +30,9 @@ struct vec4 {
 
 // UBO-compatible struct with proper padding
 struct alignas(16) ShapeData2D { // 128 bytes
-    int shape;       // 4 bytes
-    float uiScale;   // 4 bytes
-    vec2 scale;      // 8 bytes
+    int shape;         // 4 bytes
+    int _pad2;         // 4 bytes
+    vec2 sourceScale;  // 8 bytes
 
     ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
     vec4 squareFinalCoords;    // 16 bytes (X, Y, Width, Height)
@@ -103,14 +103,14 @@ public:
     static ShapeBuilder square() {
         auto shapeBuilder = ShapeBuilder();
         shapeBuilder.shapeData.shape = shape_Square;
-        shapeBuilder.shapeData.uiScale = 1.0;
-        shapeBuilder.shapeData.scale.x = 1.0;
-        shapeBuilder.shapeData.scale.y = 1.0;
+        shapeBuilder.shapeData.sourceScale.x = 1.0;
+        shapeBuilder.shapeData.sourceScale.y = 1.0;
         shapeBuilder.shapeData.squareInitialCoords.x = 0;
         shapeBuilder.shapeData.squareInitialCoords.y = 0;
         shapeBuilder.shapeData.squareInitialCoords.z = 256;
         shapeBuilder.shapeData.squareInitialCoords.w = 192;
         shapeBuilder.shapeData.opacity = 1.0;
+        shapeBuilder._hudScale = 1.0;
         shapeBuilder._corner = corner_Center;
         shapeBuilder._margin.x = 0;
         shapeBuilder._margin.y = 0;
@@ -128,23 +128,22 @@ public:
         _corner = corner;
         return *this;
     }
-    ShapeBuilder& scale(float _scale) {
-        shapeData.scale.x = _scale;
-        shapeData.scale.y = _scale;
+    ShapeBuilder& sourceScale(float _scale) {
+        shapeData.sourceScale.x = _scale;
+        shapeData.sourceScale.y = _scale;
         return *this;
     }
-    ShapeBuilder& scale(float _scaleX, float _scaleY) {
-        shapeData.scale.x = _scaleX;
-        shapeData.scale.y = _scaleY;
+    ShapeBuilder& sourceScale(float _scaleX, float _scaleY) {
+        shapeData.sourceScale.x = _scaleX;
+        shapeData.sourceScale.y = _scaleY;
         return *this;
     }
-    ShapeBuilder& uiScale(float uiScale) {
-        shapeData.uiScale = uiScale;
+    ShapeBuilder& hudScale(float hudScale) {
+        _hudScale = hudScale;
         return *this;
     }
     ShapeBuilder& preserveDsScale() {
-        shapeData.uiScale = SCREEN_SCALE;
-        return *this;
+        return sourceScale(SCREEN_SCALE);
     }
     ShapeBuilder& fromPosition(int x, int y) {
         if (shapeData.shape == shape_Square) {
@@ -222,9 +221,9 @@ public:
 
     void precompute3DCoordinatesOf2DSquareShape(float aspectRatio)
     {
-        float iuTexScale = SCREEN_SCALE/shapeData.uiScale;
-        float scaleX = shapeData.scale.x;
-        float scaleY = shapeData.scale.y;
+        float iuTexScale = SCREEN_SCALE/_hudScale;
+        float scaleX = shapeData.sourceScale.x;
+        float scaleY = shapeData.sourceScale.y;
         
         float heightScale = 1.0/aspectRatio;
 
@@ -300,6 +299,7 @@ private:
 
     bool _fromBottomScreen;
     int _corner;
+    float _hudScale;
     vec4 _margin;
 };
 
