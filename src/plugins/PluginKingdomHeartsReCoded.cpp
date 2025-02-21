@@ -711,7 +711,15 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
             }
 
             if (IsMissionInformationVisibleOnTopScreen) {
-                // // mission information
+                // cleaning the rest of the upper area of the screen
+                shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(118, 182)
+                    .withSize(20, 10)
+                    .placeAtCorner(corner_Top)
+                    .scale(aspectRatio*13, 1.0*4)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
                 // float sourceMissionInfoHeight = 40.0;
                 // float missionInfoHeight = sourceMissionInfoHeight;
                 // float missionInfoY2 = missionInfoHeight;
@@ -1214,7 +1222,7 @@ bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
 {
     u32* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 128, 0) && has2DOnTopOf3DAt(buffer, 128, 10);
+    return has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10);
 }
 
 bool PluginKingdomHeartsReCoded::isDialogVisible()
