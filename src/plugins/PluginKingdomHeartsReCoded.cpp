@@ -598,13 +598,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .uiScale(UIScale)
                             .build(aspectRatio));
 
+                        float enemiesCounterDiagonalMergeFactor = 5.0;
+
                         // enemies counter (biggest part)
                         shapes.push_back(ShapeBuilder::square()
                             .fromBottomScreen()
                             .fromPosition(133, 0)
                             .withSize(123, 15)
                             .placeAtCorner(corner_Bottom)
-                            .withMargin(0.0, 0.0, 11.5, 12.0)
+                            .withMargin(0.0, 0.0, 11.5 - enemiesCounterDiagonalMergeFactor/2, 12.0)
+                            .cropSquareCorners(0.0, 0.0, 0.0, enemiesCounterDiagonalMergeFactor)
                             .colorToAlpha(0x8, 0x30, 0xaa)
                             .uiScale(UIScale)
                             .build(aspectRatio));
@@ -615,7 +618,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(133, 0)
                             .withSize(23, 15)
                             .placeAtCorner(corner_Bottom)
-                            .withMargin(61.5, 0.0, 0.0, 12.0)
+                            .withMargin(61.5 - enemiesCounterDiagonalMergeFactor/2, 0.0, 0.0, 12.0)
+                            .cropSquareCorners(enemiesCounterDiagonalMergeFactor, 0.0, 0.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
                             .uiScale(UIScale)
                             .mirror(mirror_XY)
