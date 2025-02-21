@@ -701,10 +701,9 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .fromPosition(88, 160)
                         .withSize(80, 32)
                         .placeAtCorner(corner_Bottom)
-                        .cropSquareCorners(0.0, 0.0, 0.0, 0.0)
+                        .cropSquareCorners(0.0, 0.0, 0.0, 18.0)
                         .uiScale(UIScale)
                         .build(aspectRatio));
-                    // TODO: KH UI one of the corners needs to cropped
                 }
             }
 

@@ -387,7 +387,9 @@ ivec4 getTopScreen3DColor()
 
 bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, ivec4 squareInitialCoords) {
     return (finalPos.x + finalPos.y >= cropSquareCorners[0]) &&
-           (finalPos.y - finalPos.x + squareInitialCoords[2] >= cropSquareCorners[1]);
+           ((0 - finalPos.x + squareInitialCoords[2]) + finalPos.y >= cropSquareCorners[1]) &&
+           (finalPos.x + (0 - finalPos.y + squareInitialCoords[3]) >= cropSquareCorners[2]) &&
+           ((0 - finalPos.x + squareInitialCoords[2]) + (0 - finalPos.y + squareInitialCoords[3]) >= cropSquareCorners[3]);
 }
 
 bool isInsideRoundedCorner(vec2 pos, vec2 center, float radius) {
