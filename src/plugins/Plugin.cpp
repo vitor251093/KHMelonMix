@@ -67,6 +67,11 @@ std::filesystem::path Plugin::assetsFolderPath()
 
 const char* Plugin::gpuOpenGL_FS()
 {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
     return kCompositorFS_Plugin;
 }
 
