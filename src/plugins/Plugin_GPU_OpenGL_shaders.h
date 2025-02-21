@@ -527,10 +527,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                             }
                         }
                     }
-                    if (index == 1) {
-                        return color;
-                    }
-                    if (index == 2) {
+                    else if (index == 2) {
                         // provides full transparency support to the transparency layer
                         color.g = color.g << 2;
                         color.b = color.b << 2;

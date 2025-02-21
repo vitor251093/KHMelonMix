@@ -1111,6 +1111,7 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u
 
 void PluginKingdomHeartsReCoded::hudToggle()
 {
+    ShouldRefreshShapes = true;
     HUDState = (HUDState + 1) % 3;
     if (HUDState == 0) { // map mode
         ShowMap = true;
