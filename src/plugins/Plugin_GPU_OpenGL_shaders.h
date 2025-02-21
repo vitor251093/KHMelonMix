@@ -26,7 +26,7 @@ const char* kCompositorFS_Plugin = R"(#version 140
 #define SHAPES_DATA_ARRAY_SIZE 32
 
 struct ShapeData2D {
-    int shape; // 0 = SQUARE, 1 = FREEFORM
+    int shape; // 0 = SQUARE
     float uiScale;
     vec2 scale;
 
