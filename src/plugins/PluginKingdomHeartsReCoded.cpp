@@ -425,13 +425,13 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
                     // minimap
                     shapes.push_back(ShapeBuilder::square()
                         .fromBottomScreen()
-                        .fromPosition(101, 66)
-                        .withSize(60, 60)
+                        .fromPosition(77, 42)
+                        .withSize(108, 108)
                         .placeAtCorner(corner_TopRight)
                         .withMargin(0.0, 30.0, 9.0, 0.0)
-                        .scale(1.8)
+                        .scale(0.555)
                         .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
-                        .opacity(0.85)
+                        .opacity(0.95)
                         .uiScale(UIScale)
                         .build(aspectRatio));
 
@@ -444,7 +444,7 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
                             .withSize(50, 15)
                             .placeAtCorner(corner_TopRight)
                             .withMargin(0.0, 88.0, 11.0, 0.0)
-                            .scale(1.4)
+                            .scale(1.0/1.4)
                             .uiScale(UIScale)
                             .build(aspectRatio));
 
@@ -455,44 +455,30 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
                             .withSize(82, 15)
                             .placeAtCorner(corner_TopRight)
                             .withMargin(0.0, 98.0, 12.0, 0.0)
-                            .scale(1.4)
+                            .scale(1.0/1.4)
                             .uiScale(UIScale)
                             .build(aspectRatio));
 
-                    //     // enemies counter
-                    //     float bottomEnemiesWidth = 123.0;
-                    //     float bottomEnemiesHeight = 15.0;
-                    //     float bottomEnemies2Width = 23.0;
-                    //     float bottomEnemies2Height = 15.0;
-                    //     float bottomEnemiesLeftMargin = 133.0;
-                    //     float increaseEnemiesSize = 1.0;
-                    //     float enemiesBottomMargin = 12.0;
-                    //     float enemiesWidth = (bottomEnemiesWidth/increaseEnemiesSize)*heightScale;
-                    //     float enemies2Width = (bottomEnemies2Width/increaseEnemiesSize)*heightScale;
-                    //     float enemiesHeight = (bottomEnemiesHeight/increaseEnemiesSize);
-                    //     float enemies2Height = (bottomEnemies2Height/increaseEnemiesSize);
+                        // enemies counter (biggest part)
+                        shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(133, 0)
+                            .withSize(123, 15)
+                            .placeAtCorner(corner_Bottom)
+                            .withMargin(0.0, 0.0, 11.5, 12.0)
+                            .uiScale(UIScale)
+                            .build(aspectRatio));
 
-                    //     // enemies counter (part 1)
-                    //     float enemiesLeftMargin = (256.0*iuTexScale - enemiesWidth - enemies2Width)/2;
-                    //     if (texPosition3d.x >= enemiesLeftMargin &&
-                    //         texPosition3d.x < enemiesLeftMargin + enemiesWidth && 
-                    //         texPosition3d.y >= (192.0*iuTexScale - enemiesHeight - enemiesBottomMargin) &&
-                    //         texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
-                    //         return increaseEnemiesSize*fixStretch*(texPosition3d -
-                    //                 vec2(enemiesLeftMargin, 192.0*iuTexScale - enemiesHeight - enemiesBottomMargin)) +
-                    //             vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
-                    //     }
-
-                    //     // enemies counter (part 2)
-                    //     float enemies2LeftMargin = enemiesLeftMargin + enemiesWidth;
-                    //     if (texPosition3d.x >= enemies2LeftMargin &&
-                    //         texPosition3d.x < enemies2LeftMargin + enemies2Width && 
-                    //         texPosition3d.y >= (192.0*iuTexScale - enemies2Height - enemiesBottomMargin) &&
-                    //         texPosition3d.y < (192.0*iuTexScale - enemiesBottomMargin)) {
-                    //         return vec2(bottomEnemies2Width, bottomEnemies2Height) - (increaseEnemiesSize*fixStretch*(texPosition3d -
-                    //                 vec2(enemies2LeftMargin, 192.0*iuTexScale - enemies2Height - enemiesBottomMargin))) +
-                    //             vec2(0, 192.0) + vec2(bottomEnemiesLeftMargin, 0);
-                    //     }
+                        // enemies counter (right side)
+                        shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(133, 0)
+                            .withSize(23, 15)
+                            .placeAtCorner(corner_Bottom)
+                            .withMargin(61.5, 0.0, 0.0, 12.0)
+                            .uiScale(UIScale)
+                            .mirror(mirror_XY)
+                            .build(aspectRatio));
 
                         // mission information
                         shapes.push_back(ShapeBuilder::square()
@@ -572,26 +558,15 @@ std::vector<ShapeData> PluginKingdomHeartsReCoded::gpuOpenGL_FS_shapes() {
                     .build(aspectRatio));
 
                 if (GameScene != gameScene_InGameOlympusBattle) {
-                //     // next area name
-                //     float sourceNextAreaNameHeight = 32.0;
-                //     float sourceNextAreaNameWidth = 80.0;
-                //     float nextAreaNameHeight = sourceNextAreaNameHeight;
-                //     float nextAreaNameWidth = sourceNextAreaNameWidth*heightScale;
-                //     float nextAreaNameRightMargin = 0.5;
-                //     float nextAreaNameBottomMargin = 0.0;
-                //     if (texPosition3d.x >= (128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2) &&
-                //         texPosition3d.x <= (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2) &&
-                //         texPosition3d.y >= (192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin) &&
-                //         texPosition3d.y < (192.0*iuTexScale - nextAreaNameBottomMargin)) {
-
-                //         vec2 finalPos = vec2((sourceNextAreaNameWidth*heightScale) - (128.0*iuTexScale + sourceNextAreaNameWidth*heightScale/2 - texPosition3d.x),
-                //                             (nextAreaNameHeight + nextAreaNameBottomMargin) - (192.0*iuTexScale - texPosition3d.y));
-                //         if (finalPos.x + finalPos.y < 74.0) {
-                //             return fixStretch*(texPosition3d - vec2(128.0*iuTexScale - sourceNextAreaNameWidth*heightScale/2 + nextAreaNameRightMargin,
-                //                                                     192.0*iuTexScale - nextAreaNameHeight - nextAreaNameBottomMargin)) +
-                //                 vec2(128.0 - sourceNextAreaNameWidth/2, 192.0 - sourceNextAreaNameHeight);
-                //         }
-                //     }
+                    // next area name
+                    // shapes.push_back(ShapeBuilder::square()
+                    //     .fromPosition(48, 160)
+                    //     .withSize(80, 32)
+                    //     .placeAtCorner(corner_Bottom)
+                    //     .cropSquareCorners(0.0, 0.0, 0.5, 0.0)
+                    //     .uiScale(UIScale)
+                    //     .build(aspectRatio));
+                    // TODO: KH UI one of the corners needs to cropped
                 }
             }
 
@@ -1251,7 +1226,7 @@ bool PluginKingdomHeartsReCoded::isMinimapVisible()
 {
     u32* buffer = bottomScreen2DTexture();
     u32 pixel = getPixel(buffer, 1, 190, 0);
-    return ((pixel >> 0) & 0x3F) > 39 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) < 5;
+    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) > 39;
 }
 
 bool PluginKingdomHeartsReCoded::isBugSector()
