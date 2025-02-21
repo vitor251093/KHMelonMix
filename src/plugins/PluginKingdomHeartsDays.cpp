@@ -671,7 +671,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                     .fromPosition(0, 0)
                     .withSize(75, 24)
                     .placeAtCorner(corner_TopLeft)
-                    .singleColorToAlpha(8, 8, 8)
+                    .singleColorToAlpha(32, 32, 32)
                     .uiScale(UIScale)
                     .build(aspectRatio));
 
@@ -752,7 +752,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .placeAtCorner(corner_TopRight)
                         .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
                         .scale(targetScale)
-                        .colorToAlpha(62.0, 62.0, 62.0)
+                        .colorToAlpha(248, 248, 248)
                         .uiScale(UIScale)
                         .build(aspectRatio));
 
@@ -775,7 +775,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .placeAtCorner(corner_TopRight)
                         .withMargin(0.0, 30.0, 9.0, 0.0)
                         .scale(targetScale)
-                        .colorToAlpha(62.0, 62.0, 62.0)
+                        .colorToAlpha(248, 248, 248)
                         .uiScale(UIScale)
                         .build(aspectRatio));
 
@@ -860,7 +860,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .fromPosition(0, 0)
                         .withSize(75, 24)
                         .placeAtCorner(corner_TopLeft)
-                        .singleColorToAlpha(8, 8, 8)
+                        .singleColorToAlpha(32, 32, 32)
                         .uiScale(UIScale)
                         .build(aspectRatio));
 

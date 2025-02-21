@@ -200,16 +200,16 @@ public:
         return *this;
     }
     ShapeBuilder& colorToAlpha(int red, int green, int blue) {
-        shapeData.colorToAlpha.x = red;
-        shapeData.colorToAlpha.y = green;
-        shapeData.colorToAlpha.z = blue;
+        shapeData.colorToAlpha.x = red >> 2;
+        shapeData.colorToAlpha.y = green >> 2;
+        shapeData.colorToAlpha.z = blue >> 2;
         shapeData.colorToAlpha.w = 1;
         return *this;
     }
     ShapeBuilder& singleColorToAlpha(int red, int green, int blue) {
-        shapeData.singleColorToAlpha.x = red;
-        shapeData.singleColorToAlpha.y = green;
-        shapeData.singleColorToAlpha.z = blue;
+        shapeData.singleColorToAlpha.x = red >> 2;
+        shapeData.singleColorToAlpha.y = green >> 2;
+        shapeData.singleColorToAlpha.z = blue >> 2;
         shapeData.singleColorToAlpha.w = 1;
         return *this;
     }
