@@ -36,7 +36,7 @@ struct ShapeData2D {
     // effects
     vec4 fadeBorderSize; // left fade border, top fade border, right fade border, down fade border
 
-    int invertGrayScaleColors;
+    int effects; // 0x1 => invertGrayScaleColors
     float opacity;
     int mirror;
     int _pad1;
@@ -520,7 +520,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
                     if (index == 0) {
-                        if (shapeData.invertGrayScaleColors == 1) {
+                        // invert gray scale colors
+                        if ((shapeData.effects & 0x1) == 0x1) {
                             bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
                             if (isShadeOfGray) {
                                 color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);

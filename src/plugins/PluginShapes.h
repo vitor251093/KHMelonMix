@@ -39,7 +39,7 @@ struct alignas(16) ShapeData2D { // 128 bytes
 
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
 
-    int invertGrayScaleColors; // 4 bytes (bool -> int for std140)
+    int effects; // 0x1 => invertGrayScaleColors
     float opacity;
     int mirror;
     int _pad1;   // Padding to align the struct to 16 bytes
@@ -171,7 +171,7 @@ public:
         return *this;
     }
     ShapeBuilder& invertGrayScaleColors() {
-        shapeData.invertGrayScaleColors = 1;
+        shapeData.effects |= 0x1;
         return *this;
     }
     ShapeBuilder& mirror(int mirror) {
