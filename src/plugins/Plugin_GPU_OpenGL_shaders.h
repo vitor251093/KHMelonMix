@@ -505,11 +505,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             bool validArea = true;
 
             // crop corner as triangle
-            if ((fastShapeData.effects & 0x2) == 0x2) {
+            if ((fastShapeData.effects & 0x2) != 0) {
                 validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
             }
             // rounded corners
-            if ((fastShapeData.effects & 0x4) == 0x4) {
+            if ((fastShapeData.effects & 0x4) != 0) {
                 validArea = isValidConsideringSquareBorderRadius(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
             }
 
@@ -519,11 +519,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 }
 
                 // mirror X
-                if ((fastShapeData.effects & 0x8) == 0x8) {
+                if ((fastShapeData.effects & 0x8) != 0) {
                     finalPos.x = shapeData.squareInitialCoords.z - finalPos.x;
                 }
                 // mirror Y
-                if ((fastShapeData.effects & 0x10) == 0x10) {
+                if ((fastShapeData.effects & 0x10) != 0) {
                     finalPos.y = shapeData.squareInitialCoords.w - finalPos.y;
                 }
 
@@ -533,7 +533,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                 if (index == 0) {
                     // invert gray scale colors
-                    if ((fastShapeData.effects & 0x1) == 0x1) {
+                    if ((fastShapeData.effects & 0x1) != 0) {
                         bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
                         if (isShadeOfGray) {
                             color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
@@ -546,7 +546,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     color.b = color.b << 2;
                 
                     // manipulate transparency
-                    if ((fastShapeData.effects & 0x20) == 0x20) 
+                    if ((fastShapeData.effects & 0x20) != 0)
                     {
                         if (any(greaterThan(shapeData.fadeBorderSize, vec4(0))) || shapeData.opacity < 1.0)
                         {    
