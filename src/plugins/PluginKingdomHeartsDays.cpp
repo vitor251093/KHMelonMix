@@ -600,13 +600,11 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             break;
 
         case gameScene_InGameWithDouble3D:
-            if (ShouldShowBottomScreen) {
+            if ((gameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
                 break;
             }
+
         case gameScene_InGameWithMap:
-            if (HideAllHUD) {
-                break;
-            }
 
             if ((gameSceneState & (1 << gameSceneState_cutsceneFromChallengeMission)) > 0)
             {
