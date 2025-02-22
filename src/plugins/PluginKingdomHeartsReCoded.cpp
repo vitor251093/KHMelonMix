@@ -882,7 +882,7 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
                 if (ShowMap) {
                     state |= (1 << gameSceneState_showMinimap);
 
-                    if (IsBugSector)
+                    if (isBugSector())
                     {
                         state |= (1 << gameSceneState_showFloorCounter);
                         state |= (1 << gameSceneState_showEnemiesCounter);

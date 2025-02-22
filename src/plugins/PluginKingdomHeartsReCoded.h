@@ -129,12 +129,6 @@ private:
     bool isTopScreen2DTextureBlack();
     bool isBottomScreen2DTextureBlack();
 
-    bool IsMissionInformationVisibleOnTopScreen = false;
-    bool IsDialogVisible = false;
-    bool IsMinimapVisible = false;
-    bool IsBugSector = false;
-    bool IsCommandMenuVisible = false;
-    bool IsHealthVisible = false;
     bool isMissionInformationVisibleOnTopScreen();
     bool isDialogVisible();
     bool isMinimapVisible();

@@ -141,7 +141,10 @@ public:
         return *this;
     }
     ShapeBuilder& preserveDsScale() {
-        return sourceScale(SCREEN_SCALE/_hudScale);
+        float mulScale = SCREEN_SCALE/_hudScale;
+        shapeData.sourceScale.x *= mulScale;
+        shapeData.sourceScale.y *= mulScale;
+        return *this;
     }
     ShapeBuilder& fromPosition(int x, int y) {
         if (_shape == shape_Square) {
