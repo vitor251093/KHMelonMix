@@ -141,7 +141,7 @@ public:
         return *this;
     }
     ShapeBuilder& preserveDsScale() {
-        return sourceScale(SCREEN_SCALE);
+        return sourceScale(SCREEN_SCALE/_hudScale);
     }
     ShapeBuilder& fromPosition(int x, int y) {
         if (_shape == shape_Square) {

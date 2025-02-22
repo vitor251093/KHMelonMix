@@ -114,19 +114,23 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     bool showOriginalHud = renderer_showOriginalUI();
     int screenLayout = renderer_screenLayout();
     int brightnessMode = renderer_brightnessMode();
+    int gameSceneState = renderer_gameSceneState();
 
-    bool updated = ShouldRefreshShapes;
+    bool updated = false;
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(forcedAspectRatio*1000), updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], UIScale, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], showOriginalHud ? 1 : 0, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], screenLayout, updated);
     UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], brightnessMode, updated);
-    ShouldRefreshShapes = false;
+
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][6], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], gameSceneState, updated);
 
     if (updated) {
-        std::vector<ShapeData2D> shapes = renderer_2DShapes();
+        std::vector<ShapeData2D> shapes = renderer_2DShapes(GameScene, gameSceneState);
         printf("Updating shapes. New shape count: %d\n", shapes.size());
+        printf("Updated conditions: scene %d - state %d\n", GameScene, gameSceneState);
 
         glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
         glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
