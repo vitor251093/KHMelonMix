@@ -21,39 +21,23 @@
 
 namespace Plugins
 {
-const char* kCompositorFS_Plugin = R"(#version 140
-
-#define SHAPES_DATA_ARRAY_SIZE 32
-
+const char* kCompositorFS_PluginStructs = R"(
 struct ShapeData2D {
     vec2 sourceScale;
-
     int effects;
-
     float opacity;
-
     ivec4 squareInitialCoords;
     vec4 squareFinalCoords;
-
     vec4 fadeBorderSize;
-
     vec4 squareCornersModifier;
-
     ivec4 colorToAlpha;
     ivec4 singleColorToAlpha;
 };
+)";
 
-struct FastShapeData2D {
-    vec2 sourceScale;
-    int effects;
-    vec4 squareFinalCoords;
-};
-
-layout(std140) uniform ShapeBlock {
-    ShapeData2D shapes[SHAPES_DATA_ARRAY_SIZE];
-};
-
-uniform FastShapeData2D fastShapes[SHAPES_DATA_ARRAY_SIZE];
+const char* kCompositorFS_PluginUniforms = R"(
+uniform int gameScene;
+uniform int gameSceneState;
 
 uniform float currentAspectRatio;
 uniform float forcedAspectRatio;
@@ -63,7 +47,9 @@ uniform bool showOriginalHud;
 uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
 uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = no brightness
 
-uniform int shapeCount;
+)";
+
+const char* kCompositorFS_Plugin = R"(
 
 
 uniform uint u3DScale;
@@ -489,41 +475,37 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     float uiTexScale = (6.0/hudScale);
     vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
 
+    ShapeData2D shapes[SHAPES_DATA_ARRAY_SIZE];
+    int shapeCount;
+    getShapes(shapes, shapeCount);
+
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
-        FastShapeData2D fastShapeData = fastShapes[shapeIndex];    
-        vec4 squareFinalCoords = fastShapeData.squareFinalCoords;
+        ShapeData2D shapeData = shapes[shapeIndex];    
+
+        vec4 squareFinalCoords = shapeData.squareFinalCoords;
 
         if (all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) && 
                all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) {
-            ShapeData2D shapeData;
-            bool loadedShapeData = (fastShapeData.effects & 0x6) != 0;
-            if (loadedShapeData) {
-                shapeData = shapes[shapeIndex];
-            }
 
-            vec2 finalPos = (1.0/fastShapeData.sourceScale)*fixStretch*(texPosition3d - squareFinalCoords.xy);
+            vec2 finalPos = (1.0/shapeData.sourceScale)*fixStretch*(texPosition3d - squareFinalCoords.xy);
             bool validArea = true;
 
             // crop corner as triangle
-            if ((fastShapeData.effects & 0x2) == 0x2) {
+            if ((shapeData.effects & 0x2) == 0x2) {
                 validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
             }
             // rounded corners
-            if ((fastShapeData.effects & 0x4) == 0x4) {
+            if ((shapeData.effects & 0x4) == 0x4) {
                 validArea = isValidConsideringSquareBorderRadius(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
             }
 
             if (validArea) {
-                if (!loadedShapeData) {
-                    shapeData = shapes[shapeIndex];
-                }
-
                 // mirror X
-                if ((fastShapeData.effects & 0x8) == 0x8) {
+                if ((shapeData.effects & 0x8) == 0x8) {
                     finalPos.x = shapeData.squareInitialCoords.z - finalPos.x;
                 }
                 // mirror Y
-                if ((fastShapeData.effects & 0x10) == 0x10) {
+                if ((shapeData.effects & 0x10) == 0x10) {
                     finalPos.y = shapeData.squareInitialCoords.w - finalPos.y;
                 }
 
@@ -533,7 +515,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                 if (index == 0) {
                     // invert gray scale colors
-                    if ((fastShapeData.effects & 0x1) == 0x1) {
+                    if ((shapeData.effects & 0x1) == 0x1) {
                         bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
                         if (isShadeOfGray) {
                             color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
@@ -546,7 +528,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     color.b = color.b << 2;
                 
                     // manipulate transparency
-                    if ((fastShapeData.effects & 0x20) == 0x20) 
+                    if ((shapeData.effects & 0x20) == 0x20) 
                     {
                         if (any(greaterThan(shapeData.fadeBorderSize, vec4(0))) || shapeData.opacity < 1.0)
                         {    

@@ -136,6 +136,7 @@ public:
     virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {};
 
     virtual std::vector<ShapeData2D> renderer_2DShapes() { return std::vector<ShapeData2D>(); };
+    virtual int renderer_gameSceneState() { return 0; };
     virtual int renderer_screenLayout() { return 0; };
     virtual int renderer_brightnessMode() { return 0; };
     virtual float renderer_forcedAspectRatio() {return AspectRatio;};
@@ -257,7 +258,6 @@ public:
 protected:
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
     std::map<GLuint, int[20]> CompGpuLastValues{};
-    std::map<GLuint, GLuint> CompUboLoc{};
 
     std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesScaleLoc{};
     std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesEffectsLoc{};

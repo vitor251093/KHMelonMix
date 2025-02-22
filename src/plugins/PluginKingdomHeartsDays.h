@@ -31,6 +31,7 @@ public:
     std::string tomlUniqueIdentifier();
 
     std::vector<ShapeData2D> renderer_2DShapes();
+    int renderer_gameSceneState();
     int renderer_screenLayout();
     int renderer_brightnessMode();
     float renderer_forcedAspectRatio();
@@ -144,12 +145,6 @@ private:
     bool isBottomScreen2DTextureBlack();
 
     bool ShouldShowBottomScreen = false;
-    bool IsDialogVisible = false;
-    bool IsMinimapVisible = false;
-    bool IsMissionInformationVisibleOnTopScreen = false;
-    bool IsMissionInformationVisibleOnBottomScreen = false;
-    bool IsCutsceneFromChallengeMissionVisible = false;
-    bool IsDialogPortraitLabelVisible = false;
     bool isDialogVisible();
     bool isMinimapVisible();
     bool isMissionInformationVisibleOnTopScreen();

@@ -161,6 +161,23 @@ enum
 
 enum
 {
+    gameSceneState_characterControllable,
+    gameSceneState_showHud,
+    gameSceneState_dialogVisible,
+    gameSceneState_dialogPortraitLabelVisible,
+    gameSceneState_showMinimap,
+    gameSceneState_showTarget,
+    gameSceneState_showMissionGauge,
+    gameSceneState_cutsceneFromChallengeMission,
+    gameSceneState_topScreenMissionInformationVisible,
+    gameSceneState_showBottomScreenMissionInformation,
+    gameSceneState_bottomScreenSora,
+    gameSceneState_bottomScreenCutscene,
+    gameSceneState_topScreenCutscene
+};
+
+enum
+{
     HK_HUDToggle,
     HK_RLockOn,
     HK_LSwitchTarget,
@@ -549,402 +566,507 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
 
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .preserveDsScale()
+            .gameScenes(1 << gameScene_IntroLoadMenu)
+            .build(aspectRatio));
+
+    shapes.push_back(ShapeBuilder::square()
+            .preserveDsScale()
+            .gameScenes((1 << gameScene_DayCounter) | (1 << gameScene_RoxasThoughts))
+            .build(aspectRatio));
+
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .preserveDsScale()
+            .gameScenes(1 << gameScene_Cutscene)
+            .requiredState(1 << gameSceneState_bottomScreenCutscene)
+            .build(aspectRatio));
+
+    shapes.push_back(ShapeBuilder::square()
+            .preserveDsScale()
+            .gameScenes(1 << gameScene_Cutscene)
+            .requiredState(1 << gameSceneState_topScreenCutscene)
+            .build(aspectRatio));
+
+    // challenge mission cutscene header (part 1)
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(0, 0)
+            .withSize(256, 24)
+            .placeAtCorner(corner_TopLeft)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_cutsceneFromChallengeMission))
+            .build(aspectRatio));
+
+    // challenge mission cutscene header (part 2)
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(128, 0)
+            .withSize(128, 24)
+            .placeAtCorner(corner_TopRight)
+            .sourceScale(10.0, 1.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_cutsceneFromChallengeMission))
+            .build(aspectRatio));
+
+    float dialogScale = 5.333;
+
+    // dialog (portrait label right side)
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(184, 170)
+            .withSize(7, 14)
+            .placeAtCorner(corner_Bottom)
+            .sourceScale(dialogScale)
+            .withMargin(128 * dialogScale, 0.0, 0.0, 7.0 + 8 * dialogScale)
+            .mirror(mirror_X)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_dialogVisible) | (1 << gameSceneState_dialogPortraitLabelVisible))
+            .build(aspectRatio));
+
+    // dialog (biggest part)
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(0, 30)
+            .withSize(256, 162)
+            .placeAtCorner(corner_Bottom)
+            .sourceScale(dialogScale)
+            .withMargin(0.0, 0.0, 0.0, 7.0)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_dialogVisible))
+            .build(aspectRatio));
+
+    // dialog (left side)
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(0, 30)
+            .withSize(3, 162)
+            .placeAtCorner(corner_Bottom)
+            .sourceScale(dialogScale * 4, dialogScale)
+            .withMargin(0.0, 0.0, 128 * dialogScale, 7.0)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_dialogVisible))
+            .build(aspectRatio));
+
+    // dialog (right side)
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(0, 30)
+            .withSize(3, 162)
+            .placeAtCorner(corner_Bottom)
+            .sourceScale(dialogScale * 4, dialogScale)
+            .withMargin(128 * dialogScale, 0.0, 0.0, 7.0)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_dialogVisible))
+            .build(aspectRatio));
+
+    // top mission information
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(0, 0)
+            .withSize(256, 24)
+            .placeAtCorner(corner_TopLeft)
+            .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState(1 << gameSceneState_topScreenMissionInformationVisible)
+            .build(aspectRatio));
+
+    // bottom mission information (part 1)
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(0, 0)
+            .withSize(75, 24)
+            .placeAtCorner(corner_TopLeft)
+            .singleColorToAlpha(32, 32, 32)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState(1 << gameSceneState_showBottomScreenMissionInformation)
+            .build(aspectRatio));
+
+    // bottom mission information (part 2)
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(75, 8)
+            .withSize(181, 16)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(75.0, 8.0, 0.0, 0.0)
+            .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState(1 << gameSceneState_showBottomScreenMissionInformation)
+            .build(aspectRatio));
+
+    // item notification
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(0, 35)
+            .withSize(108, 86)
+            .placeAtCorner(corner_TopLeft)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_showHud) | (1 << gameSceneState_characterControllable))
+            .build(aspectRatio));
+
+    // countdown and locked on
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(93, 0)
+            .withSize(70, 20)
+            .placeAtCorner(corner_Top)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_showHud) | (1 << gameSceneState_characterControllable))
+            .build(aspectRatio));
+            
+    // minimap
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(128, 60)
+            .withSize(72, 72)
+            .placeAtCorner(corner_TopRight)
+            .withMargin(0.0, 30.0, 9.0, 0.0)
+            .sourceScale(0.8333)
+            .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+            .opacity(0.85)
+            .invertGrayScaleColors()
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState(1 << gameSceneState_showMinimap)
+            .build(aspectRatio));
+
+    float targetScale = 0.666;
+    int targetLabelMargin = 12;
+    int targetWidth = 64;
+
+    // target label (part 1)
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(32, 51)
+            .withSize(targetLabelMargin, 9)
+            .placeAtCorner(corner_TopRight)
+            .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
+            .sourceScale(targetScale)
+            .colorToAlpha(248, 248, 248)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState(1 << gameSceneState_showTarget)
+            .build(aspectRatio));
+
+    // target label (part 2)
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(32 + targetLabelMargin, 51)
+            .withSize(targetWidth - targetLabelMargin*2, 9)
+            .placeAtCorner(corner_TopRight)
+            .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
+            .sourceScale(targetScale)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState(1 << gameSceneState_showTarget)
+            .build(aspectRatio));
+
+    // target label (part 3)
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(32 + targetWidth - targetLabelMargin, 51)
+            .withSize(targetLabelMargin, 9)
+            .placeAtCorner(corner_TopRight)
+            .withMargin(0.0, 30.0, 9.0, 0.0)
+            .sourceScale(targetScale)
+            .colorToAlpha(248, 248, 248)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState(1 << gameSceneState_showTarget)
+            .build(aspectRatio));
+
+    // target
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(32, 64)
+            .withSize(targetWidth, 76)
+            .placeAtCorner(corner_TopRight)
+            .withMargin(0.0, 38.0, 9.0, 0.0)
+            .sourceScale(targetScale)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState(1 << gameSceneState_showTarget)
+            .build(aspectRatio));
+
+    // mission gauge
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(5, 152)
+            .withSize(246, 40)
+            .placeAtCorner(corner_Bottom)
+            .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState(1 << gameSceneState_showMissionGauge)
+            .build(aspectRatio));
+
+    // enemy health
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(163, 0)
+            .withSize(93, 22)
+            .placeAtCorner(corner_TopRight)
+            .withMargin(0.0, 7.5, 9.0, 0.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_showHud) | (1 << gameSceneState_characterControllable))
+            .build(aspectRatio));
+
+    // sigils and death counter
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(163, 25)
+            .withSize(93, 30)
+            .placeAtCorner(corner_TopRight)
+            .withMargin(0.0, 92.5, 12.0, 0.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_showHud) | (1 << gameSceneState_characterControllable))
+            .build(aspectRatio));
+
+    // command menu
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(0, 86)
+            .withSize(108, 106)
+            .placeAtCorner(corner_BottomLeft)
+            .withMargin(10.0, 0.0, 0.0, 0.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_showHud) | (1 << gameSceneState_characterControllable))
+            .build(aspectRatio));
+
+    // player health
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(128, 84)
+            .withSize(128, 108)
+            .placeAtCorner(corner_BottomRight)
+            .withMargin(0.0, 0.0, 8.0, 3.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .requiredState((1 << gameSceneState_showHud) | (1 << gameSceneState_characterControllable))
+            .build(aspectRatio));
+
+    // background
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(118, 182)
+            .withSize(20, 10)
+            .placeAtCorner(corner_Center)
+            .sourceScale(1000.0)
+            .gameScenes((1 << gameScene_InGameWithDouble3D) | (1 << gameScene_InGameWithMap))
+            .build(aspectRatio));
+
+    // bottom mission information (part 1)
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(0, 0)
+            .withSize(75, 24)
+            .placeAtCorner(corner_TopLeft)
+            .singleColorToAlpha(32, 32, 32)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_PauseMenu))
+            .requiredState(1 << gameSceneState_showBottomScreenMissionInformation)
+            .build(aspectRatio));
+
+    // bottom mission information (part 2)
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(75, 8)
+            .withSize(181, 16)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(75.0, 8.0, 0.0, 0.0)
+            .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_PauseMenu))
+            .requiredState(1 << gameSceneState_showBottomScreenMissionInformation)
+            .build(aspectRatio));
+
+    // mission gauge
+    // TODO: KH UI For some reason this is just appearing for one frame
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(5, 152)
+            .withSize(246, 40)
+            .placeAtCorner(corner_Bottom)
+            .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_PauseMenu))
+            .requiredState(1 << gameSceneState_showMissionGauge)
+            .build(aspectRatio));
+
+    // pause menu
+    shapes.push_back(ShapeBuilder::square()
+            .placeAtCorner(corner_Center)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_PauseMenu))
+            .build(aspectRatio));
+
+    // background
+    shapes.push_back(ShapeBuilder::square()
+            .fromPosition(118, 182)
+            .withSize(20, 10)
+            .placeAtCorner(corner_Center)
+            .sourceScale(1000.0)
+            .gameScenes((1 << gameScene_PauseMenu))
+            .build(aspectRatio));
+
+    // tutorial
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(5, 0)
+            .withSize(246, 192)
+            .sourceScale(5.0)
+            .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
+            .gameScenes((1 << gameScene_Tutorial))
+            .build(aspectRatio));
+
+    // tutorial background
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .fromPosition(0, 96)
+            .withSize(5, 5)
+            .placeAtCorner(corner_Center)
+            .sourceScale(1000.0)
+            .opacity(0.75)
+            .gameScenes((1 << gameScene_Tutorial))
+            .build(aspectRatio));
+
+    // loading screen
+    shapes.push_back(ShapeBuilder::square()
+            .fromBottomScreen()
+            .placeAtCorner(corner_BottomRight)
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_LoadingScreen))
+            .build(aspectRatio));
+
+    // death screen    
+    shapes.push_back(ShapeBuilder::square()
+            .hudScale(UIScale)
+            .gameScenes((1 << gameScene_DeathScreen))
+            .build(aspectRatio));
+    
+    return shapes;
+}
+
+int PluginKingdomHeartsDays::renderer_gameSceneState() {
+    int state = 0;
+
     switch (GameScene) {
         case gameScene_IntroLoadMenu:
-            shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .preserveDsScale()
-                    .build(aspectRatio));
             break;
 
         case gameScene_DayCounter:
+            break;
+
         case gameScene_RoxasThoughts:
-            shapes.push_back(ShapeBuilder::square()
-                    .preserveDsScale()
-                    .build(aspectRatio));
             break;
 
         case gameScene_Cutscene:
             if (detectTopScreenMobiCutscene() == nullptr) {
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .preserveDsScale()
-                    .build(aspectRatio));
+                state |= (1 << gameSceneState_bottomScreenCutscene);
             }
             else if (detectBottomScreenMobiCutscene() == nullptr) {
-                shapes.push_back(ShapeBuilder::square()
-                    .preserveDsScale()
-                    .build(aspectRatio));
+                state |= (1 << gameSceneState_topScreenCutscene);
             }
             break;
 
         case gameScene_InGameWithDouble3D:
             if (ShouldShowBottomScreen) {
+                state |= (1 << gameSceneState_bottomScreenSora);
                 break;
             }
+
         case gameScene_InGameWithMap:
-            if (HideAllHUD) {
-                break;
-            }
-
-            if ((GameScene == gameScene_InGameWithMap && (!isCharacterControllable || IsDialogVisible)) ||
-                (GameScene == gameScene_InGameWithDouble3D && IsDialogVisible))
             {
-                if (IsCutsceneFromChallengeMissionVisible) {
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(0, 0)
-                        .withSize(256, 24)
-                        .placeAtCorner(corner_TopLeft)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                bool _isMinimapVisible = isMinimapVisible();
+                bool _isDialogVisible = isDialogVisible();
+                bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
+                bool _isMissionInformationVisibleOnBottomScreen = isMissionInformationVisibleOnBottomScreen();
+                bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
+                bool _isDialogPortraitLabelVisible = isDialogPortraitLabelVisible();
 
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(128, 0)
-                        .withSize(128, 24)
-                        .placeAtCorner(corner_TopRight)
-                        .sourceScale(10.0, 1.0)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                if (isCharacterControllable) {
+                    state |= (1 << gameSceneState_characterControllable);
                 }
 
-                float dialogScale = 5.333;
-
-                if (IsDialogPortraitLabelVisible)
+                if ((GameScene == gameScene_InGameWithMap && (!isCharacterControllable || _isDialogVisible)) ||
+                    (GameScene == gameScene_InGameWithDouble3D && _isDialogVisible))
                 {
-                    // dialog (portrait label right side)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(184, 170)
-                        .withSize(7, 14)
-                        .placeAtCorner(corner_Bottom)
-                        .sourceScale(dialogScale)
-                        .withMargin(128 * dialogScale, 0.0, 0.0, 7.0 + 8 * dialogScale)
-                        .mirror(mirror_X)
-                        .build(aspectRatio));
+                    state |= (1 << gameSceneState_dialogVisible);
+
+                    if (_isCutsceneFromChallengeMissionVisible) {
+                        state |= (1 << gameSceneState_cutsceneFromChallengeMission);
+                    }
+
+                    if (_isDialogPortraitLabelVisible) {
+                        state |= (1 << gameSceneState_dialogPortraitLabelVisible);
+                    }
+
+                    break;
                 }
 
-                // dialog (biggest part)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 30)
-                    .withSize(256, 162)
-                    .placeAtCorner(corner_Bottom)
-                    .sourceScale(dialogScale)
-                    .withMargin(0.0, 0.0, 0.0, 7.0)
-                    .build(aspectRatio));
+                if (_isMissionInformationVisibleOnTopScreen) {
+                    state |= (1 << gameSceneState_topScreenMissionInformationVisible);
 
-                // dialog (left side)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 30)
-                    .withSize(3, 162)
-                    .placeAtCorner(corner_Bottom)
-                    .sourceScale(dialogScale * 4, dialogScale)
-                    .withMargin(0.0, 0.0, 128 * dialogScale, 7.0)
-                    .build(aspectRatio));
-
-                // dialog (right side)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 30)
-                    .withSize(3, 162)
-                    .placeAtCorner(corner_Bottom)
-                    .sourceScale(dialogScale * 4, dialogScale)
-                    .withMargin(128 * dialogScale, 0.0, 0.0, 7.0)
-                    .build(aspectRatio));
-
-                return shapes;
-            }
-
-            if (IsMissionInformationVisibleOnTopScreen) {
-                // top mission information
-                shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 0)
-                    .withSize(256, 24)
-                    .placeAtCorner(corner_TopLeft)
-                    .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                    .hudScale(UIScale)
-                    .build(aspectRatio));
-
-                return shapes;
-            }
-            if (!IsMissionInformationVisibleOnTopScreen && ShowMissionInfo && IsMissionInformationVisibleOnBottomScreen) {
-                // bottom mission information (part 1)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(0, 0)
-                    .withSize(75, 24)
-                    .placeAtCorner(corner_TopLeft)
-                    .singleColorToAlpha(32, 32, 32)
-                    .hudScale(UIScale)
-                    .build(aspectRatio));
-
-                // bottom mission information (part 2)
-                shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(75, 8)
-                    .withSize(181, 16)
-                    .placeAtCorner(corner_TopLeft)
-                    .withMargin(75.0, 8.0, 0.0, 0.0)
-                    .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                    .hudScale(UIScale)
-                    .build(aspectRatio));
-            }
-
-            if (IsCutsceneFromChallengeMissionVisible) {
-                shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(0, 0)
-                        .withSize(256, 24)
-                        .placeAtCorner(corner_TopLeft)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
-
-                shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(128, 0)
-                        .withSize(128, 24)
-                        .placeAtCorner(corner_TopRight)
-                        .sourceScale(10.0, 1.0)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
-
-                return shapes;
-            }
-
-            // item notification
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(0, 35)
-                .withSize(108, 86)
-                .placeAtCorner(corner_TopLeft)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // countdown and locked on
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(93, 0)
-                .withSize(70, 20)
-                .placeAtCorner(corner_Top)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-            
-            if (GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
-                if (ShowMap) {
-                    // minimap
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(128, 60)
-                        .withSize(72, 72)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 30.0, 9.0, 0.0)
-                        .sourceScale(0.8333)
-                        .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
-                        .opacity(0.85)
-                        .invertGrayScaleColors()
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                    break;
                 }
 
-                if (ShowTarget) {
-                    float targetScale = 0.666;
-                    int targetLabelMargin = 12;
-                    int targetWidth = 64;
-
-                    // target label (part 1)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(32, 51)
-                        .withSize(targetLabelMargin, 9)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
-                        .sourceScale(targetScale)
-                        .colorToAlpha(248, 248, 248)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
-
-                    // target label (part 2)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(32 + targetLabelMargin, 51)
-                        .withSize(targetWidth - targetLabelMargin*2, 9)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
-                        .sourceScale(targetScale)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
-
-                    // target label (part 3)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(32 + targetWidth - targetLabelMargin, 51)
-                        .withSize(targetLabelMargin, 9)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 30.0, 9.0, 0.0)
-                        .sourceScale(targetScale)
-                        .colorToAlpha(248, 248, 248)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
-
-                    // target
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(32, 64)
-                        .withSize(targetWidth, 76)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 38.0, 9.0, 0.0)
-                        .sourceScale(targetScale)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                if (!_isMissionInformationVisibleOnTopScreen && ShowMissionInfo && _isMissionInformationVisibleOnBottomScreen) {
+                    state |= (1 << gameSceneState_showBottomScreenMissionInformation);
                 }
 
-                if (ShowMissionGauge) {
-                    // mission gauge
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(5, 152)
-                        .withSize(246, 40)
-                        .placeAtCorner(corner_Bottom)
-                        .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                if (_isCutsceneFromChallengeMissionVisible) {
+                    state |= (1 << gameSceneState_cutsceneFromChallengeMission);
+
+                    break;
+                }
+
+                if (!HideAllHUD) {
+                    state |= (1 << gameSceneState_showHud);
+                }
+
+                if (GameScene == gameScene_InGameWithMap && _isMinimapVisible) {
+                    if (ShowMap) {
+                        state |= (1 << gameSceneState_showMinimap);
+                    }
+
+                    if (ShowTarget) {
+                        state |= (1 << gameSceneState_showTarget);
+                    }
+
+                    if (ShowMissionGauge) {
+                        state |= (1 << gameSceneState_showMissionGauge);
+                    }
                 }
             }
-
-            // enemy health
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(163, 0)
-                .withSize(93, 22)
-                .placeAtCorner(corner_TopRight)
-                .withMargin(0.0, 7.5, 9.0, 0.0)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // sigils and death counter
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(163, 25)
-                .withSize(93, 30)
-                .placeAtCorner(corner_TopRight)
-                .withMargin(0.0, 92.5, 12.0, 0.0)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // command menu
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(0, 86)
-                .withSize(108, 106)
-                .placeAtCorner(corner_BottomLeft)
-                .withMargin(10.0, 0.0, 0.0, 0.0)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // player health
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(128, 84)
-                .withSize(128, 108)
-                .placeAtCorner(corner_BottomRight)
-                .withMargin(0.0, 0.0, 8.0, 3.0)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // background
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(118, 182)
-                .withSize(20, 10)
-                .placeAtCorner(corner_Center)
-                .sourceScale(1000.0)
-                .build(aspectRatio));
 
             break;
 
         case gameScene_PauseMenu:
             if (PriorGameScene != gameScene_InGameWithDouble3D)
             {
-                if (IsMissionInformationVisibleOnBottomScreen) {
-                    // bottom mission information (part 1)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(0, 0)
-                        .withSize(75, 24)
-                        .placeAtCorner(corner_TopLeft)
-                        .singleColorToAlpha(32, 32, 32)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
-
-                    // bottom mission information (part 2)
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(75, 8)
-                        .withSize(181, 16)
-                        .placeAtCorner(corner_TopLeft)
-                        .withMargin(75.0, 8.0, 0.0, 0.0)
-                        .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                if (isMissionInformationVisibleOnBottomScreen()) {
+                    state |= (1 << gameSceneState_showBottomScreenMissionInformation);
                 }
 
-                if (IsMinimapVisible) {
+                if (isMinimapVisible()) {
                     // mission gauge
                     // TODO: KH UI For some reason this is just appearing for one frame
-                    shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(5, 152)
-                        .withSize(246, 40)
-                        .placeAtCorner(corner_Bottom)
-                        .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                    state |= (1 << gameSceneState_showMissionGauge);
                 }
             }
 
-            // pause menu
-            shapes.push_back(ShapeBuilder::square()
-                .placeAtCorner(corner_Center)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // background
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(118, 182)
-                .withSize(20, 10)
-                .placeAtCorner(corner_Center)
-                .sourceScale(1000.0)
-                .build(aspectRatio));
-
             break;
-    
+
         case gameScene_Tutorial:
-            // tutorial
-            shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .fromPosition(5, 0)
-                    .withSize(246, 192)
-                    .sourceScale(5.0)
-                    .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
-                    .build(aspectRatio));
-
-            // background
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(0, 96)
-                .withSize(5, 5)
-                .placeAtCorner(corner_Center)
-                .sourceScale(1000.0)
-                .opacity(0.75)
-                .build(aspectRatio));
-
             break;
 
         case gameScene_LoadingScreen:
-            shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .placeAtCorner(corner_BottomRight)
-                .hudScale(UIScale)
-                .build(aspectRatio));
             break;
-    
+
         case gameScene_DeathScreen:
-            shapes.push_back(ShapeBuilder::square()
-                .hudScale(UIScale)
-                .build(aspectRatio));
             break;
     }
-    
-    return shapes;
-}
+
+    return state;
+};
 
 int PluginKingdomHeartsDays::renderer_screenLayout() {
     switch (GameScene) {
@@ -1276,7 +1398,6 @@ bool PluginKingdomHeartsDays::shouldRumble() {
 
 void PluginKingdomHeartsDays::hudToggle()
 {
-    ShouldRefreshShapes = true;
     HUDState = (HUDState + 1) % 4;
     if (HUDState == 0) { // exploration mode
         ShowMap = true;
@@ -1450,39 +1571,6 @@ bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 
 bool PluginKingdomHeartsDays::shouldRenderFrame()
 {
-    {
-        bool _isMinimapVisible = isMinimapVisible();
-        if (IsMinimapVisible != _isMinimapVisible) {
-            IsMinimapVisible = _isMinimapVisible;
-            ShouldRefreshShapes = true;
-        }
-        bool _isDialogVisible = isDialogVisible();
-        if (IsDialogVisible != _isDialogVisible) {
-            IsDialogVisible = _isDialogVisible;
-            ShouldRefreshShapes = true;
-        }
-        bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
-        if (IsMissionInformationVisibleOnTopScreen != _isMissionInformationVisibleOnTopScreen) {
-            IsMissionInformationVisibleOnTopScreen = _isMissionInformationVisibleOnTopScreen;
-            ShouldRefreshShapes = true;
-        }
-        bool _isMissionInformationVisibleOnBottomScreen = isMissionInformationVisibleOnBottomScreen();
-        if (IsMissionInformationVisibleOnBottomScreen != _isMissionInformationVisibleOnBottomScreen) {
-            IsMissionInformationVisibleOnBottomScreen = _isMissionInformationVisibleOnBottomScreen;
-            ShouldRefreshShapes = true;
-        }
-        bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
-        if (IsCutsceneFromChallengeMissionVisible != _isCutsceneFromChallengeMissionVisible) {
-            IsCutsceneFromChallengeMissionVisible = _isCutsceneFromChallengeMissionVisible;
-            ShouldRefreshShapes = true;
-        }
-        bool _isDialogPortraitLabelVisible = isDialogPortraitLabelVisible();
-        if (IsDialogPortraitLabelVisible != _isDialogPortraitLabelVisible) {
-            IsDialogPortraitLabelVisible = _isDialogPortraitLabelVisible;
-            ShouldRefreshShapes = true;
-        }
-    }
-
     if (!_superShouldRenderFrame())
     {
         return false;
@@ -1527,7 +1615,6 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
         bool showBottomScreen = _hasVisible3DOnBottomScreen && !(_ignore3DOnBottomScreen && _priorIgnore3DOnBottomScreen && _priorPriorIgnore3DOnBottomScreen);
         if (ShouldShowBottomScreen != showBottomScreen) {
             ShouldShowBottomScreen = showBottomScreen;
-            ShouldRefreshShapes = true;
         }
         return (nds->PowerControl9 >> 15 != 0) ? !showBottomScreen : showBottomScreen;
     }

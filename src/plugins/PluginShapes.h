@@ -10,26 +10,89 @@ namespace Plugins
 
 struct vec2 {
     float x, y;
+
+    std::string toOpenGLStruct() {
+        std::string openGlStruct;
+        openGlStruct += "vec2(";
+        openGlStruct += std::to_string(x);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(y);
+        openGlStruct += ")";
+        return openGlStruct;
+    }
 };
 
 struct ivec2 {
     int x, y;
+
+    std::string toOpenGLStruct() {
+        std::string openGlStruct;
+        openGlStruct += "ivec2(";
+        openGlStruct += std::to_string(x);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(y);
+        openGlStruct += ")";
+        return openGlStruct;
+    }
 };
 
 struct ivec3 {
     int x, y, z;
+
+    std::string toOpenGLStruct() {
+        std::string openGlStruct;
+        openGlStruct += "ivec3(";
+        openGlStruct += std::to_string(x);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(y);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(z);
+        openGlStruct += ")";
+        return openGlStruct;
+    }
 };
 
 struct ivec4 {
     int x, y, z, w;
+
+    std::string toOpenGLStruct() {
+        std::string openGlStruct;
+        openGlStruct += "ivec4(";
+        openGlStruct += std::to_string(x);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(y);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(z);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(w);
+        openGlStruct += ")";
+        return openGlStruct;
+    }
 };
 
 struct vec4 {
     float x, y, z, w;
+
+    std::string toOpenGLStruct() {
+        std::string openGlStruct;
+        openGlStruct += "vec4(";
+        openGlStruct += std::to_string(x);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(y);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(z);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(w);
+        openGlStruct += ")";
+        return openGlStruct;
+    }
 };
 
 // UBO-compatible struct with proper padding
 struct alignas(16) ShapeData2D { // 128 bytes
+    int gameScenes;
+    int requiredState;
+
     vec2 sourceScale;  // 8 bytes
 
     int effects;
@@ -51,6 +114,32 @@ struct alignas(16) ShapeData2D { // 128 bytes
 
     ivec4 colorToAlpha;        // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
     ivec4 singleColorToAlpha;  // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
+
+    std::string toOpenGLStruct() {
+        std::string openGlStruct;
+        openGlStruct += "ShapeData2D(";
+
+        openGlStruct += sourceScale.toOpenGLStruct();
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(effects);
+        openGlStruct += ", ";
+        openGlStruct += std::to_string(opacity);
+        openGlStruct += ", ";
+        openGlStruct += squareInitialCoords.toOpenGLStruct();
+        openGlStruct += ", ";
+        openGlStruct += squareFinalCoords.toOpenGLStruct();
+        openGlStruct += ", ";
+        openGlStruct += fadeBorderSize.toOpenGLStruct();
+        openGlStruct += ", ";
+        openGlStruct += squareCornersModifier.toOpenGLStruct();
+        openGlStruct += ", ";
+        openGlStruct += colorToAlpha.toOpenGLStruct();
+        openGlStruct += ", ";
+        openGlStruct += singleColorToAlpha.toOpenGLStruct();
+        
+        openGlStruct += ")";
+        return openGlStruct;
+    }
 };
 
 enum
@@ -108,6 +197,8 @@ public:
         shapeBuilder.shapeData.squareInitialCoords.z = 256;
         shapeBuilder.shapeData.squareInitialCoords.w = 192;
         shapeBuilder.shapeData.opacity = 1.0;
+        shapeBuilder.shapeData.gameScenes = 0;
+        shapeBuilder.shapeData.requiredState = 0;
         shapeBuilder._hudScale = 1.0;
         shapeBuilder._corner = corner_Center;
         shapeBuilder._margin.x = 0;
@@ -138,6 +229,14 @@ public:
     }
     ShapeBuilder& hudScale(float hudScale) {
         _hudScale = hudScale;
+        return *this;
+    }
+    ShapeBuilder& gameScenes(int _gameScenes) {
+        shapeData.gameScenes = _gameScenes;
+        return *this;
+    }
+    ShapeBuilder& requiredState(int _requiredState) {
+        shapeData.requiredState = _requiredState;
         return *this;
     }
     ShapeBuilder& preserveDsScale() {
