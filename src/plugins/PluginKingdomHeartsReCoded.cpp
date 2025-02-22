@@ -1,6 +1,5 @@
 #include "PluginKingdomHeartsReCoded.h"
 
-#include "PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h"
 #include "PluginKingdomHeartsReCoded_GPU3D_OpenGL_shaders.h"
 
 namespace Plugins
