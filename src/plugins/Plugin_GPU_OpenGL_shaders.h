@@ -490,26 +490,28 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
 
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
-        FastShapeData2D fastShapeData = fastShapes[shapeIndex];    
+        FastShapeData2D fastShapeData = fastShapes[shapeIndex];
         vec4 squareFinalCoords = fastShapeData.squareFinalCoords;
 
         if (all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) && 
                all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) {
+            int effects = fastShapeData.effects;
+
             ShapeData2D shapeData;
-            bool loadedShapeData = (fastShapeData.effects & 0x6) != 0;
+            bool loadedShapeData = (effects & 0x6) != 0;
             if (loadedShapeData) {
                 shapeData = shapes[shapeIndex];
             }
 
-            vec2 finalPos = (1.0/fastShapeData.sourceScale)*fixStretch*(texPosition3d - squareFinalCoords.xy);
+            vec2 finalPos = (fixStretch/fastShapeData.sourceScale)*(texPosition3d - squareFinalCoords.xy);
             bool validArea = true;
 
             // crop corner as triangle
-            if ((fastShapeData.effects & 0x2) != 0) {
+            if ((effects & 0x2) != 0) {
                 validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
             }
             // rounded corners
-            if ((fastShapeData.effects & 0x4) != 0) {
+            if ((effects & 0x4) != 0) {
                 validArea = isValidConsideringSquareBorderRadius(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
             }
 
@@ -519,11 +521,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 }
 
                 // mirror X
-                if ((fastShapeData.effects & 0x8) != 0) {
+                if ((effects & 0x8) != 0) {
                     finalPos.x = shapeData.squareInitialCoords.z - finalPos.x;
                 }
                 // mirror Y
-                if ((fastShapeData.effects & 0x10) != 0) {
+                if ((effects & 0x10) != 0) {
                     finalPos.y = shapeData.squareInitialCoords.w - finalPos.y;
                 }
 
@@ -533,7 +535,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                 if (index == 0) {
                     // invert gray scale colors
-                    if ((fastShapeData.effects & 0x1) != 0) {
+                    if ((effects & 0x1) != 0) {
                         bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
                         if (isShadeOfGray) {
                             color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
@@ -546,23 +548,24 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     color.b = color.b << 2;
                 
                     // manipulate transparency
-                    if ((fastShapeData.effects & 0x20) != 0)
+                    if ((effects & 0x20) != 0)
                     {
-                        if (any(greaterThan(shapeData.fadeBorderSize, vec4(0))) || shapeData.opacity < 1.0)
+                        vec4 fadeBorderSize = shapeData.fadeBorderSize;
+                        if (any(greaterThan(fadeBorderSize, vec4(0))) || shapeData.opacity < 1.0)
                         {    
                             float leftDiff = texPosition3d.x - squareFinalCoords[0];
                             float rightDiff = squareFinalCoords[2] - texPosition3d.x;
                             float topDiff = texPosition3d.y - squareFinalCoords[1];
                             float bottomDiff = squareFinalCoords[3] - texPosition3d.y;
 
-                            float leftBlurFactor   = shapeData.fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (shapeData.fadeBorderSize[0] * heightScale), 0.0, 1.0);
-                            float topBlurFactor    = shapeData.fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  shapeData.fadeBorderSize[1], 0.0, 1.0);
-                            float rightBlurFactor  = shapeData.fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (shapeData.fadeBorderSize[2] * heightScale), 0.0, 1.0);
-                            float bottomBlurFactor = shapeData.fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  shapeData.fadeBorderSize[3], 0.0, 1.0);
+                            float leftBlurFactor   = fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (fadeBorderSize[0] * heightScale), 0.0, 1.0);
+                            float topBlurFactor    = fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  fadeBorderSize[1], 0.0, 1.0);
+                            float rightBlurFactor  = fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (fadeBorderSize[2] * heightScale), 0.0, 1.0);
+                            float bottomBlurFactor = fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  fadeBorderSize[3], 0.0, 1.0);
 
                             float xBlur = min(leftBlurFactor, rightBlurFactor);
                             float yBlur = min(topBlurFactor, bottomBlurFactor);
-                            int visibilityOf2D = (shapeData.squareInitialCoords.y >= 192) ? 63 : (color.a > 0x4 ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1)));
+                            int visibilityOf2D = (shapeData.squareInitialCoords.y >= 192 || color.a > 0x4) ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1));
                             float visibilityOf2DFactor = xBlur * yBlur;
 
                             int blurVal = int(visibilityOf2DFactor * visibilityOf2D * shapeData.opacity);
@@ -575,8 +578,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                         {
                             ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
                             int blur = ((abs(shapeData.colorToAlpha.r - colorZero.r) +
-                                        abs(shapeData.colorToAlpha.g - colorZero.g) +
-                                        abs(shapeData.colorToAlpha.b - colorZero.b))*2)/3;
+                                         abs(shapeData.colorToAlpha.g - colorZero.g) +
+                                         abs(shapeData.colorToAlpha.b - colorZero.b))*2)/3;
                             color = ivec4(color.r, blur, 64 - blur, 0x01);
                         }
 
