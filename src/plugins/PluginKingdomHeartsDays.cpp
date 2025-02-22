@@ -883,9 +883,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .build(aspectRatio));
             }
 
-            if ((gameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
+            if ((gameSceneState & (1 << gameSceneState_showMissionGauge)) > 0) {
                 // mission gauge
-                // TODO: KH UI For some reason this is just appearing for one frame
                 shapes.push_back(ShapeBuilder::square()
                         .fromBottomScreen()
                         .fromPosition(5, 152)
@@ -1057,8 +1056,6 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                 }
 
                 if (isMinimapVisible()) {
-                    // mission gauge
-                    // TODO: KH UI For some reason this is just appearing for one frame
                     state |= (1 << gameSceneState_showMissionGauge);
                 }
             }
@@ -1520,7 +1517,10 @@ bool PluginKingdomHeartsDays::isDialogVisible()
 
 bool PluginKingdomHeartsDays::isMinimapVisible() {
     u32 pixel = getPixel(bottomScreen2DTexture(), 99, 53, 0);
-    return ((pixel >> 0) & 0x3F) > 0x3C && ((pixel >> 8) & 0x3F) > 0x3C && ((pixel >> 16) & 0x3F) > 0x3C;
+    if (GameScene == gameScene_PauseMenu) {
+        return ((pixel >> 0) & 0x3F) == 0x1F && ((pixel >> 8) & 0x3F) == 0x1F && ((pixel >> 16) & 0x3F) == 0x1F;
+    }
+    return ((pixel >> 0) & 0x3F) == 0x3E && ((pixel >> 8) & 0x3F) == 0x3E && ((pixel >> 16) & 0x3F) == 0x3E;
 }
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
