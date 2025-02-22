@@ -139,6 +139,24 @@ enum
 
 enum
 {
+    gameSceneState_showHud,
+    gameSceneState_dialogVisible,
+    gameSceneState_textOverScreen,
+    gameSceneState_showRegularPlayerHealth,
+    gameSceneState_showOlympusBattlePlayerHealth,
+    gameSceneState_showMinimap,
+    gameSceneState_showCommandMenu,
+    gameSceneState_showNextAreaName,
+    gameSceneState_showFloorCounter,
+    gameSceneState_showEnemiesCounter,
+    gameSceneState_topScreenMissionInformationVisible,
+    gameSceneState_showBottomScreenMissionInformation,
+    gameSceneState_bottomScreenCutscene,
+    gameSceneState_topScreenCutscene
+};
+
+enum
+{
     HK_HUDToggle,
     HK_RLockOn,
     HK_LSwitchTarget,
@@ -492,90 +510,95 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
         case gameScene_IntroLoadMenu:
             shapes.push_back(ShapeBuilder::square()
                     .fromBottomScreen()
+                    .hudScale(UIScale)
                     .preserveDsScale()
                     .build(aspectRatio));
             break;
 
         case gameScene_Cutscene:
-            if (detectTopScreenMobiCutscene() == nullptr) {
+            if ((gameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
                 shapes.push_back(ShapeBuilder::square()
-                    .fromBottomScreen()
-                    .preserveDsScale()
-                    .build(aspectRatio));
+                        .fromBottomScreen()
+                        .hudScale(UIScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
             }
-            else if (detectBottomScreenMobiCutscene() == nullptr) {
+            if ((gameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
                 shapes.push_back(ShapeBuilder::square()
-                    .preserveDsScale()
-                    .build(aspectRatio));
+                        .hudScale(UIScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
             }
             break;
 
         case gameScene_CutsceneWithStaticImages:
             shapes.push_back(ShapeBuilder::square()
-                    .preserveDsScale()
-                    .build(aspectRatio));
+                        .hudScale(UIScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
             break;
 
         case gameScene_InGameDialog:
-            if (!IsHealthVisible) {
+            if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
                 shapes.push_back(ShapeBuilder::square()
-                    .preserveDsScale()
-                    .build(aspectRatio));
+                        .hudScale(UIScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
                 break;
             }
 
         case gameScene_InGameOlympusBattle:
         case gameScene_InGameWithMap:
-            if (HideAllHUD) {
-                break;
-            }
-
-            if (IsMissionInformationVisibleOnTopScreen)
+            if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
             {
                 // top mission information
                 shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 0)
-                    .withSize(256, 40)
-                    .placeAtCorner(corner_TopLeft)
-                    .hudScale(UIScale)
-                    .build(aspectRatio));
+                        .fromPosition(0, 0)
+                        .withSize(256, 40)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
             }
 
-            if (!IsHealthVisible && !IsCommandMenuVisible)
+            if ((gameSceneState & (1 << gameSceneState_textOverScreen)) > 0)
             {
                 // texts over screen, like in the tutorial
                 shapes.push_back(ShapeBuilder::square()
+                        .hudScale(UIScale)
                         .preserveDsScale()
                         .build(aspectRatio));
                 break;
             }
 
-            if (IsDialogVisible) {
+            if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
                 shapes.push_back(ShapeBuilder::square()
+                        .hudScale(UIScale)
                         .preserveDsScale()
                         .build(aspectRatio));
                 break;
             }
 
-            if (GameScene == gameScene_InGameWithMap && IsMinimapVisible) {
-                if (ShowMap) {
+            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0)
+            {
+                if ((gameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
                     // minimap
                     shapes.push_back(ShapeBuilder::square()
-                        .fromBottomScreen()
-                        .fromPosition(77, 42)
-                        .withSize(108, 108)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 30.0, 9.0, 0.0)
-                        .sourceScale(0.555)
-                        .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
-                        .opacity(0.95)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                            .fromBottomScreen()
+                            .fromPosition(77, 42)
+                            .withSize(108, 108)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 30.0, 9.0, 0.0)
+                            .sourceScale(0.555)
+                            .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                            .opacity(0.95)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+                }
 
-                    if (IsBugSector)
-                    {
-                        // floor label
-                        shapes.push_back(ShapeBuilder::square()
+                if ((gameSceneState & (1 << gameSceneState_showFloorCounter)) > 0)
+                {
+                    // floor label
+                    shapes.push_back(ShapeBuilder::square()
                             .fromBottomScreen()
                             .fromPosition(0, 0)
                             .withSize(50, 15)
@@ -586,8 +609,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .hudScale(UIScale)
                             .build(aspectRatio));
 
-                        // floor value
-                        shapes.push_back(ShapeBuilder::square()
+                    // floor value
+                    shapes.push_back(ShapeBuilder::square()
                             .fromBottomScreen()
                             .fromPosition(50, 0)
                             .withSize(82, 15)
@@ -597,11 +620,14 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .sourceScale(1.0/1.4)
                             .hudScale(UIScale)
                             .build(aspectRatio));
+                }
 
-                        float enemiesCounterDiagonalMergeFactor = 5.0;
+                if ((gameSceneState & (1 << gameSceneState_showEnemiesCounter)) > 0)
+                {
+                    float enemiesCounterDiagonalMergeFactor = 5.0;
 
-                        // enemies counter (biggest part)
-                        shapes.push_back(ShapeBuilder::square()
+                    // enemies counter (biggest part)
+                    shapes.push_back(ShapeBuilder::square()
                             .fromBottomScreen()
                             .fromPosition(133, 0)
                             .withSize(123, 15)
@@ -612,8 +638,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .hudScale(UIScale)
                             .build(aspectRatio));
 
-                        // enemies counter (right side)
-                        shapes.push_back(ShapeBuilder::square()
+                    // enemies counter (right side)
+                    shapes.push_back(ShapeBuilder::square()
                             .fromBottomScreen()
                             .fromPosition(133, 0)
                             .withSize(23, 15)
@@ -624,9 +650,12 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .hudScale(UIScale)
                             .mirror(mirror_XY)
                             .build(aspectRatio));
+                }
 
-                        // mission information
-                        shapes.push_back(ShapeBuilder::square()
+                if ((gameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0)
+                {
+                    // mission information
+                    shapes.push_back(ShapeBuilder::square()
                             .fromBottomScreen()
                             .fromPosition(5, 166)
                             .withSize(247, 26)
@@ -634,139 +663,141 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withMargin(3.0, 6.0, 0.0, 0.0)
                             .hudScale(UIScale)
                             .build(aspectRatio));
-                    }
                 }
-            }
 
-            if (IsHealthVisible)
-            {
-                if (GameScene == gameScene_InGameOlympusBattle) {
+                if ((gameSceneState & (1 << gameSceneState_showOlympusBattlePlayerHealth)) > 0)
+                {
                     // player health
                     shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(134, 114)
-                        .withSize(122, 78)
-                        .placeAtCorner(corner_BottomRight)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                            .fromPosition(134, 114)
+                            .withSize(122, 78)
+                            .placeAtCorner(corner_BottomRight)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
                 }
-                else {
+
+                if ((gameSceneState & (1 << gameSceneState_showRegularPlayerHealth)) > 0)
+                {
                     // player health
                     shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(164, 114)
-                        .withSize(92, 78)
-                        .placeAtCorner(corner_BottomRight)
-                        .withMargin(0.0, 0.0, 8.0, 3.0)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                            .fromPosition(164, 114)
+                            .withSize(92, 78)
+                            .placeAtCorner(corner_BottomRight)
+                            .withMargin(0.0, 0.0, 8.0, 3.0)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
                         
                     // TODO: KH UI implement cropped corner
                     // if (finalPos.x*1.7 + finalPos.y > 64.0) {
 
                     // player allies health
                     shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(220, 74)
-                        .withSize(36, 118)
-                        .placeAtCorner(corner_BottomRight)
-                        .withMargin(0.0, 0.0, 8.0, 3.0)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
+                            .fromPosition(220, 74)
+                            .withSize(36, 118)
+                            .placeAtCorner(corner_BottomRight)
+                            .withMargin(0.0, 0.0, 8.0, 3.0)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
                 }
-            }
 
-            if (IsCommandMenuVisible)
-            {
-                // command menu
-                shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(0, 108)
-                    .withSize(88, 84)
-                    .placeAtCorner(corner_BottomLeft)
-                    .withMargin(10.0, 0.0, 0.0, 0.0)
-                    .hudScale(UIScale)
-                    .build(aspectRatio));
+                if ((gameSceneState & (1 << gameSceneState_showCommandMenu)) > 0)
+                {
+                    // command menu
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromPosition(0, 108)
+                            .withSize(88, 84)
+                            .placeAtCorner(corner_BottomLeft)
+                            .withMargin(10.0, 0.0, 0.0, 0.0)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+                }
 
-                if (GameScene != gameScene_InGameOlympusBattle) {
+                if ((gameSceneState & (1 << gameSceneState_showNextAreaName)) > 0)
+                {
                     // next area name
                     shapes.push_back(ShapeBuilder::square()
-                        .fromPosition(88, 160)
-                        .withSize(80, 32)
-                        .placeAtCorner(corner_Bottom)
-                        .cropSquareCorners(0.0, 0.0, 0.0, 18.0)
+                            .fromPosition(88, 160)
+                            .withSize(80, 32)
+                            .placeAtCorner(corner_Bottom)
+                            .cropSquareCorners(0.0, 0.0, 0.0, 18.0)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
+                {
+                    // cleaning the rest of the upper area of the screen
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromPosition(118, 182)
+                            .withSize(20, 10)
+                            .placeAtCorner(corner_Top)
+                            .sourceScale(aspectRatio*13, 1.0*4)
+                            .hudScale(UIScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+                }
+
+                // overclock notification
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 81)
+                        .withSize(95, 27)
+                        .placeAtCorner(corner_BottomLeft)
+                        .withMargin(0.0, 0.0, 0.0, 84.0)
                         .hudScale(UIScale)
                         .build(aspectRatio));
-                }
-            }
 
-            if (IsMissionInformationVisibleOnTopScreen) {
-                // cleaning the rest of the upper area of the screen
+                // item notification
                 shapes.push_back(ShapeBuilder::square()
-                    .fromPosition(118, 182)
-                    .withSize(20, 10)
-                    .placeAtCorner(corner_Top)
-                    .sourceScale(aspectRatio*13, 1.0*4)
-                    .preserveDsScale()
-                    .build(aspectRatio));
+                        .fromPosition(0, 39)
+                        .withSize(95, 32)
+                        .placeAtCorner(corner_BottomLeft)
+                        .withMargin(0.0, 0.0, 0.0, 84.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // level up notification
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(161, 39)
+                        .withSize(95, 32)
+                        .placeAtCorner(corner_BottomRight)
+                        .withMargin(0.0, 0.0, 0.0, 84.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // enemy health
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(163, 0)
+                        .withSize(93, 22)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 7.5, 9.0, 0.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // background
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(118, 182)
+                        .withSize(20, 10)
+                        .placeAtCorner(corner_Center)
+                        .sourceScale(1000.0)
+                        .build(aspectRatio));
             }
-
-            // overclock notification
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(0, 81)
-                .withSize(95, 27)
-                .placeAtCorner(corner_BottomLeft)
-                .withMargin(0.0, 0.0, 0.0, 84.0)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // item notification
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(0, 39)
-                .withSize(95, 32)
-                .placeAtCorner(corner_BottomLeft)
-                .withMargin(0.0, 0.0, 0.0, 84.0)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // level up notification
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(161, 39)
-                .withSize(95, 32)
-                .placeAtCorner(corner_BottomRight)
-                .withMargin(0.0, 0.0, 0.0, 84.0)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // enemy health
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(163, 0)
-                .withSize(93, 22)
-                .placeAtCorner(corner_TopRight)
-                .withMargin(0.0, 7.5, 9.0, 0.0)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-            // background
-            shapes.push_back(ShapeBuilder::square()
-                .fromPosition(118, 182)
-                .withSize(20, 10)
-                .placeAtCorner(corner_Center)
-                .sourceScale(1000.0)
-                .build(aspectRatio));
 
             break;
 
         case gameScene_PauseMenu:
             // pause menu
             shapes.push_back(ShapeBuilder::square()
-                .placeAtCorner(corner_Center)
-                .hudScale(UIScale)
-                .build(aspectRatio));
+                    .placeAtCorner(corner_Center)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
 
             // background
             shapes.push_back(ShapeBuilder::square()
-                .fromPosition(118, 182)
-                .withSize(20, 10)
-                .placeAtCorner(corner_Center)
-                .sourceScale(1000.0)
-                .build(aspectRatio));
+                    .fromPosition(118, 182)
+                    .withSize(20, 10)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .build(aspectRatio));
 
             break;
     
@@ -782,26 +813,121 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
             // background
             shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .fromPosition(0, 96)
-                .withSize(5, 5)
-                .placeAtCorner(corner_Center)
-                .sourceScale(1000.0)
-                .opacity(0.75)
-                .build(aspectRatio));
+                    .fromBottomScreen()
+                    .fromPosition(0, 96)
+                    .withSize(5, 5)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .opacity(0.75)
+                    .build(aspectRatio));
 
             break;
 
         case gameScene_LoadingScreen:
             shapes.push_back(ShapeBuilder::square()
-                .fromBottomScreen()
-                .placeAtCorner(corner_BottomRight)
-                .hudScale(UIScale)
-                .build(aspectRatio));
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_BottomRight)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
             break;
     }
     
     return shapes;
+}
+
+int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
+    int state = 0;
+
+    switch (GameScene) {
+        case gameScene_IntroLoadMenu:
+            break;
+
+        case gameScene_Cutscene:
+            if (detectTopScreenMobiCutscene() == nullptr) {
+                state |= (1 << gameSceneState_bottomScreenCutscene);
+            }
+            else if (detectBottomScreenMobiCutscene() == nullptr) {
+                state |= (1 << gameSceneState_topScreenCutscene);
+            }
+            break;
+
+        case gameScene_CutsceneWithStaticImages:
+            break;
+
+        case gameScene_InGameDialog:
+            if (!isHealthVisible()) {
+                state |= (1 << gameSceneState_dialogVisible);
+                break;
+            }
+
+        case gameScene_InGameOlympusBattle:
+        case gameScene_InGameWithMap:
+            if (isMissionInformationVisibleOnTopScreen())
+            {
+                state |= (1 << gameSceneState_topScreenMissionInformationVisible);
+            }
+
+            if (!isHealthVisible() && !isCommandMenuVisible())
+            {
+                state |= (1 << gameSceneState_textOverScreen);
+                break;
+            }
+
+            if (isDialogVisible()) {
+                state |= (1 << gameSceneState_dialogVisible);
+                break;
+            }
+
+            if (GameScene == gameScene_InGameWithMap && isMinimapVisible()) {
+                if (ShowMap) {
+                    state |= (1 << gameSceneState_showMinimap);
+
+                    if (IsBugSector)
+                    {
+                        state |= (1 << gameSceneState_showFloorCounter);
+                        state |= (1 << gameSceneState_showEnemiesCounter);
+                        state |= (1 << gameSceneState_showBottomScreenMissionInformation);
+                    }
+                }
+            }
+
+            if (!HideAllHUD)
+            {
+                if (isHealthVisible())
+                {
+                    if (GameScene == gameScene_InGameOlympusBattle) {
+                        state |= (1 << gameSceneState_showOlympusBattlePlayerHealth);
+                    }
+                    else {
+                        state |= (1 << gameSceneState_showRegularPlayerHealth);
+                    }
+                }
+
+                if (isCommandMenuVisible())
+                {
+                    state |= (1 << gameSceneState_showCommandMenu);
+
+                    if (GameScene != gameScene_InGameOlympusBattle) {
+                        state |= (1 << gameSceneState_showNextAreaName);
+                    }
+                }
+
+                state |= (1 << gameSceneState_showHud);
+            }
+
+            break;
+
+        case gameScene_PauseMenu:
+            break;
+    
+        case gameScene_Tutorial:
+            break;
+
+        case gameScene_LoadingScreen:
+            break;
+    }
+    
+    return state;
 }
 
 int PluginKingdomHeartsReCoded::renderer_screenLayout() {
@@ -1111,7 +1237,6 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u
 
 void PluginKingdomHeartsReCoded::hudToggle()
 {
-    ShouldRefreshShapes = true;
     HUDState = (HUDState + 1) % 3;
     if (HUDState == 0) { // map mode
         ShowMap = true;
@@ -1257,39 +1382,6 @@ bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 
 bool PluginKingdomHeartsReCoded::shouldRenderFrame()
 {
-    {
-        bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
-        if (IsMissionInformationVisibleOnTopScreen != _isMissionInformationVisibleOnTopScreen) {
-            IsMissionInformationVisibleOnTopScreen = _isMissionInformationVisibleOnTopScreen;
-            ShouldRefreshShapes = true;
-        }
-        bool _isDialogVisible = isDialogVisible();
-        if (IsDialogVisible != _isDialogVisible) {
-            IsDialogVisible = _isDialogVisible;
-            ShouldRefreshShapes = true;
-        }
-        bool _isMinimapVisible = isMinimapVisible();
-        if (IsMinimapVisible != _isMinimapVisible) {
-            IsMinimapVisible = _isMinimapVisible;
-            ShouldRefreshShapes = true;
-        }
-        bool _isBugSector = isBugSector();
-        if (IsBugSector != _isBugSector) {
-            IsBugSector = _isBugSector;
-            ShouldRefreshShapes = true;
-        }
-        bool _isCommandMenuVisible = isCommandMenuVisible();
-        if (IsCommandMenuVisible != _isCommandMenuVisible) {
-            IsCommandMenuVisible = _isCommandMenuVisible;
-            ShouldRefreshShapes = true;
-        }
-        bool _isHealthVisible = isHealthVisible();
-        if (IsHealthVisible != _isHealthVisible) {
-            IsHealthVisible = _isHealthVisible;
-            ShouldRefreshShapes = true;
-        }
-    }
-
     if (!_superShouldRenderFrame())
     {
         return false;

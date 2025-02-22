@@ -263,7 +263,6 @@ protected:
     std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesScaleLoc{};
     std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesEffectsLoc{};
     std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesSquareFinalCoordsLoc{};
-    bool ShouldRefreshShapes = true;
 
     float AspectRatio = 0;
     int PriorGameScene = -1;

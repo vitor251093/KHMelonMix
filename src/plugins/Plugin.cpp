@@ -733,8 +733,6 @@ bool Plugin::setGameScene(int newGameScene)
         // Game scene
         PriorGameScene = GameScene;
         GameScene = newGameScene;
-
-        ShouldRefreshShapes = true;
     }
 
     return updated;
