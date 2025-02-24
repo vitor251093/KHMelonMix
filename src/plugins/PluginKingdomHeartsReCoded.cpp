@@ -685,13 +685,25 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .hudScale(UIScale)
                             .build(aspectRatio));
 
-                    // bottom mission information (bottom sides black-blue separation)
+                    // bottom mission information (bottom left black-blue separation)
                     shapes.push_back(ShapeBuilder::square()
                             .fromBottomScreen()
                             .fromPosition(5, 175)
-                            .withSize(247, 6)
+                            .withSize(10, 6)
                             .placeAtCorner(corner_TopLeft)
                             .withMargin(3.0, 29.0, 0.0, 0.0)
+                            .cropSquareCorners(0.0, 0.0, 2.25, 0.0)
+                            .mirror(mirror_Y)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (bottom right black-blue separation)
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(242, 175)
+                            .withSize(10, 6)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(240.0, 29.0, 0.0, 0.0)
                             .mirror(mirror_Y)
                             .hudScale(UIScale)
                             .build(aspectRatio));
