@@ -880,8 +880,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 shapes.push_back(ShapeBuilder::square()
                         .fromPosition(161, 39)
                         .withSize(95, 32)
-                        .placeAtCorner(corner_BottomRight)
-                        .withMargin(0.0, 0.0, 0.0, 84.0)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 115.0, 0.0, 0.0)
                         .hudScale(UIScale)
                         .build(aspectRatio));
 
