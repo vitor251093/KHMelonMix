@@ -97,12 +97,6 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     for (int index = 0; index <= 6; index ++) {
         CompGpuLastValues[CompShader][index] = -1;
     }
-
-    for (int index = 0; index < SHAPES_DATA_ARRAY_SIZE; index ++) {
-        CompShapesScaleLoc[CompShader][index] = glGetUniformLocation(CompShader, ("fastShapesSourceScale[" + std::to_string(index) + "]").c_str());
-        CompShapesEffectsLoc[CompShader][index] = glGetUniformLocation(CompShader, ("fastShapesEffects[" + std::to_string(index) + "]").c_str());
-        CompShapesSquareFinalCoordsLoc[CompShader][index] = glGetUniformLocation(CompShader, ("fastShapesSquareFinalCoords[" + std::to_string(index) + "]").c_str());
-    }
 }
 
 #define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
@@ -139,18 +133,10 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         glUniform1i(CompGpuLoc[CompShader][5], CompGpuLastValues[CompShader][5]);
         glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
 
-        for (int index = 0; index < shapes.size(); index ++) {
-            glUniform2f(CompShapesScaleLoc[CompShader][index], shapes[index].sourceScale.x, shapes[index].sourceScale.y);
-            glUniform1i(CompShapesEffectsLoc[CompShader][index], shapes[index].effects);
-            glUniform4f(CompShapesSquareFinalCoordsLoc[CompShader][index], shapes[index].squareFinalCoords.x,
-                shapes[index].squareFinalCoords.y, shapes[index].squareFinalCoords.z, shapes[index].squareFinalCoords.w);
-        }
-
-        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
-        auto shadersData = shapes.data();
+        auto shadersData = ShapeBuilder::buildUboPayload(shapes.data(), shapes.size());
         glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * shapes.size());
+        if (unibuf) memcpy(unibuf, &shadersData, sizeof(ShapeData2D) * SHAPES_DATA_ARRAY_SIZE);
         glUnmapBuffer(GL_UNIFORM_BUFFER);
     }
 }

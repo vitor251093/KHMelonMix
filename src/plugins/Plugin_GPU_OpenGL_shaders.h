@@ -25,31 +25,23 @@ const char* kCompositorFS_Plugin = R"(#version 140
 
 #define SHAPES_DATA_ARRAY_SIZE 32
 
-struct ShapeData2D {
-    vec2 sourceScale;
-
-    int effects;
-
-    float opacity;
-
-    ivec4 squareInitialCoords;
-    vec4 squareFinalCoords;
-
-    vec4 fadeBorderSize;
-
-    vec4 squareCornersModifier;
-
-    ivec4 colorToAlpha;
-    ivec4 singleColorToAlpha;
-};
-
 layout(std140) uniform ShapeBlock {
-    ShapeData2D shapes[SHAPES_DATA_ARRAY_SIZE];
-};
+    ivec4 shapeSquareInitialCoords[SHAPES_DATA_ARRAY_SIZE];
+    vec4 shapeSquareFinalCoords[SHAPES_DATA_ARRAY_SIZE];
 
-uniform vec2 fastShapesSourceScale[SHAPES_DATA_ARRAY_SIZE];
-uniform int  fastShapesEffects[SHAPES_DATA_ARRAY_SIZE];
-uniform vec4 fastShapesSquareFinalCoords[SHAPES_DATA_ARRAY_SIZE];
+    vec4 shapeSourceScale[SHAPES_DATA_ARRAY_SIZE];
+
+    ivec4 shapeEffects[SHAPES_DATA_ARRAY_SIZE];
+
+    vec4 shapeOpacity[SHAPES_DATA_ARRAY_SIZE];
+
+    vec4 shapeFadeBorderSize[SHAPES_DATA_ARRAY_SIZE];
+
+    vec4 shapeSquareCornersModifier[SHAPES_DATA_ARRAY_SIZE];
+
+    ivec4 shapeColorToAlpha[SHAPES_DATA_ARRAY_SIZE];
+    ivec4 shapeSingleColorToAlpha[SHAPES_DATA_ARRAY_SIZE];
+};
 
 uniform float currentAspectRatio;
 uniform float forcedAspectRatio;
@@ -474,46 +466,36 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
 
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
-        vec4 squareFinalCoords = fastShapesSquareFinalCoords[shapeIndex];
+        vec4 squareFinalCoords = shapeSquareFinalCoords[shapeIndex];
 
         if (all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) && 
                all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) {
-            int effects = fastShapesEffects[shapeIndex];
+            int effects = shapeEffects[shapeIndex].x;
 
-            ShapeData2D shapeData;
-            bool loadedShapeData = (effects & 0x6) != 0;
-            if (loadedShapeData) {
-                shapeData = shapes[shapeIndex];
-            }
-
-            vec2 finalPos = (fixStretch/fastShapesSourceScale[shapeIndex])*(texPosition3d - squareFinalCoords.xy);
+            vec2 finalPos = (fixStretch/shapeSourceScale[shapeIndex].xy)*(texPosition3d - squareFinalCoords.xy);
             bool validArea = true;
 
             // crop corner as triangle
             if ((effects & 0x2) != 0) {
-                validArea = isValidConsideringCropSquareCorners(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
+                validArea = isValidConsideringCropSquareCorners(finalPos, shapeSquareCornersModifier[shapeIndex], shapeSquareInitialCoords[shapeIndex]);
             }
             // rounded corners
             if ((effects & 0x4) != 0) {
-                validArea = isValidConsideringSquareBorderRadius(finalPos, shapeData.squareCornersModifier, shapeData.squareInitialCoords);
+                validArea = isValidConsideringSquareBorderRadius(finalPos, shapeSquareCornersModifier[shapeIndex], shapeSquareInitialCoords[shapeIndex]);
             }
 
             if (validArea) {
-                if (!loadedShapeData) {
-                    shapeData = shapes[shapeIndex];
-                }
-
                 // mirror X
                 if ((effects & 0x8) != 0) {
-                    finalPos.x = shapeData.squareInitialCoords.z - finalPos.x;
+                    finalPos.x = shapeSquareInitialCoords[shapeIndex].z - finalPos.x;
                 }
                 // mirror Y
                 if ((effects & 0x10) != 0) {
-                    finalPos.y = shapeData.squareInitialCoords.w - finalPos.y;
+                    finalPos.y = shapeSquareInitialCoords[shapeIndex].w - finalPos.y;
                 }
 
                 if (index == 0) {
-                    ivec2 coordinates = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
+                    ivec2 coordinates = ivec2(finalPos) + shapeSquareInitialCoords[shapeIndex].xy;
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
                     // invert gray scale colors
@@ -527,11 +509,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     return color;
                 }
                 else if (index == 1) {
-                    ivec2 coordinates = ivec2(finalPos + shapeData.squareInitialCoords.xy + vec2(256,0));
+                    ivec2 coordinates = ivec2(finalPos + shapeSquareInitialCoords[shapeIndex].xy + vec2(256,0));
                     return ivec4(texelFetch(ScreenTex, coordinates, 0));
                 }
                 else { // index == 2
-                    ivec2 textureBeginning = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
+                    ivec2 textureBeginning = ivec2(finalPos) + shapeSquareInitialCoords[shapeIndex].xy;
                     ivec2 coordinates = textureBeginning + ivec2(512,0);
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
@@ -542,8 +524,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     // manipulate transparency
                     if ((effects & 0x20) != 0)
                     {
-                        vec4 fadeBorderSize = shapeData.fadeBorderSize;
-                        if (any(greaterThan(fadeBorderSize, vec4(0))) || shapeData.opacity < 1.0)
+                        vec4 fadeBorderSize = shapeFadeBorderSize[shapeIndex];
+                        float opacity = shapeOpacity[shapeIndex].x;
+                        if (any(greaterThan(fadeBorderSize, vec4(0))) || opacity < 1.0)
                         {    
                             float leftDiff = texPosition3d.x - squareFinalCoords[0];
                             float rightDiff = squareFinalCoords[2] - texPosition3d.x;
@@ -557,30 +540,32 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
                             float xBlur = min(leftBlurFactor, rightBlurFactor);
                             float yBlur = min(topBlurFactor, bottomBlurFactor);
-                            int visibilityOf2D = (shapeData.squareInitialCoords.y >= 192 || color.a > 0x4) ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1));
+                            int visibilityOf2D = (shapeSquareInitialCoords[shapeIndex].y >= 192 || color.a > 0x4) ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1));
                             float visibilityOf2DFactor = xBlur * yBlur;
 
-                            int blurVal = int(visibilityOf2DFactor * visibilityOf2D * shapeData.opacity);
+                            int blurVal = int(visibilityOf2DFactor * visibilityOf2D * opacity);
                             color = ivec4(color.r, blurVal /* 2D visibility */, 63 - blurVal /* 3D visibility */, 0x01);
 
                             // TODO: The fade does not work properly if you need this shape to blend with another shape
                         }
 
-                        if (shapeData.colorToAlpha.a == 1)
+                        ivec4 colorToAlpha = shapeColorToAlpha[shapeIndex];
+                        if (colorToAlpha.a == 1)
                         {
                             ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                            int blur = ((abs(shapeData.colorToAlpha.r - colorZero.r) +
-                                         abs(shapeData.colorToAlpha.g - colorZero.g) +
-                                         abs(shapeData.colorToAlpha.b - colorZero.b))*2)/3;
+                            int blur = ((abs(colorToAlpha.r - colorZero.r) +
+                                         abs(colorToAlpha.g - colorZero.g) +
+                                         abs(colorToAlpha.b - colorZero.b))*2)/3;
                             color = ivec4(color.r, blur, 64 - blur, 0x01);
                         }
 
-                        if (shapeData.singleColorToAlpha.a == 1)
+                        ivec4 singleColorToAlpha = shapeSingleColorToAlpha[shapeIndex];
+                        if (singleColorToAlpha.a == 1)
                         {
                             ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                            if (colorZero.r == shapeData.singleColorToAlpha.r &&
-                                colorZero.g == shapeData.singleColorToAlpha.g &&
-                                colorZero.b == shapeData.singleColorToAlpha.b) {
+                            if (colorZero.r == singleColorToAlpha.r &&
+                                colorZero.g == singleColorToAlpha.g &&
+                                colorZero.b == singleColorToAlpha.b) {
                                 color = ivec4(color.r, 0, 64, 0x01);
                             }
                         }

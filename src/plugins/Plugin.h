@@ -260,10 +260,6 @@ protected:
     std::map<GLuint, int[20]> CompGpuLastValues{};
     std::map<GLuint, GLuint> CompUboLoc{};
 
-    std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesScaleLoc{};
-    std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesEffectsLoc{};
-    std::map<GLuint, GLuint[SHAPES_DATA_ARRAY_SIZE]> CompShapesSquareFinalCoordsLoc{};
-
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
