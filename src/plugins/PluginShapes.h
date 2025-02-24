@@ -29,28 +29,7 @@ struct vec4 {
 };
 
 // UBO-compatible struct with proper padding
-struct alignas(16) ShapeData2DList_UBOPayload {
-    ivec4 squareInitialCoords[SHAPES_DATA_ARRAY_SIZE];
-    vec4 squareFinalCoords[SHAPES_DATA_ARRAY_SIZE];
-
-    vec4 sourceScale[SHAPES_DATA_ARRAY_SIZE]; // 8 bytes, with 8 bytes of paddding
-
-    ivec4 effects[SHAPES_DATA_ARRAY_SIZE]; // 4 bytes, with 12 bytes of paddding
-
-    vec4 opacity[SHAPES_DATA_ARRAY_SIZE]; // 4 bytes, with 12 bytes of paddding
-
-    vec4 fadeBorderSize[SHAPES_DATA_ARRAY_SIZE];
-
-    vec4 squareCornersModifier[SHAPES_DATA_ARRAY_SIZE];
-
-    ivec4 colorToAlpha[SHAPES_DATA_ARRAY_SIZE];
-    ivec4 singleColorToAlpha[SHAPES_DATA_ARRAY_SIZE];
-};
-
-struct ShapeData2D { // 128 bytes
-    ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
-    vec4 squareFinalCoords;    // 16 bytes (X, Y, Width, Height)
-
+struct alignas(16) ShapeData2D { // 128 bytes
     vec2 sourceScale;  // 8 bytes (X factor, Y factor)
 
     int effects;
@@ -62,6 +41,9 @@ struct ShapeData2D { // 128 bytes
     // 0x20 => manipulate transparency
 
     float opacity;
+
+    ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
+    vec4 squareFinalCoords;    // 16 bytes (X, Y, Width, Height)
 
     vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
 
@@ -116,29 +98,6 @@ enum
 class ShapeBuilder
 {
 public:
-
-    static ShapeData2DList_UBOPayload buildUboPayload(ShapeData2D* shapes, int size) {
-        ShapeData2DList_UBOPayload payload;
-        for (int index = 0; index < size; index++) {
-            payload.squareInitialCoords[index] = shapes[index].squareInitialCoords;
-            payload.squareFinalCoords[index] = shapes[index].squareFinalCoords;
-
-            payload.sourceScale[index] = vec4{shapes[index].sourceScale.x, shapes[index].sourceScale.y, 0, 0};
-
-            payload.effects[index] = ivec4{shapes[index].effects, 0, 0, 0};
-
-            payload.opacity[index] = vec4{shapes[index].opacity, 0, 0, 0};
-
-            payload.fadeBorderSize[index] = shapes[index].fadeBorderSize;
-
-            payload.squareCornersModifier[index] = shapes[index].squareCornersModifier;
-
-            payload.colorToAlpha[index] = shapes[index].colorToAlpha;
-            payload.singleColorToAlpha[index] = shapes[index].singleColorToAlpha;
-        }
-        return payload;
-    }
-
     static ShapeBuilder square() {
         auto shapeBuilder = ShapeBuilder();
         shapeBuilder._shape = shape_Square;

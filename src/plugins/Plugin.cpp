@@ -133,10 +133,11 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         glUniform1i(CompGpuLoc[CompShader][5], CompGpuLastValues[CompShader][5]);
         glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
 
-        auto shadersData = ShapeBuilder::buildUboPayload(shapes.data(), shapes.size());
+        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
+        auto shadersData = shapes.data();
         glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-        if (unibuf) memcpy(unibuf, &shadersData, sizeof(ShapeData2D) * SHAPES_DATA_ARRAY_SIZE);
+        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * shapes.size());
         glUnmapBuffer(GL_UNIFORM_BUFFER);
     }
 }
