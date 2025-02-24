@@ -695,6 +695,30 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .cropSquareCorners(4.0, 0.0, 0.0, 0.0)
                             .hudScale(UIScale)
                             .build(aspectRatio));
+
+                    // bottom mission information (bottom right corner)
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 166)
+                            .withSize(119, 3)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(131.0, 34.0, 0.0, 0.0)
+                            .cropSquareCorners(0.0, 0.0, 0.0, 4.0)
+                            .mirror(mirror_XY)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (bottom right corner)
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 166)
+                            .withSize(128, 3)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(3.0, 34.0, 0.0, 0.0)
+                            .cropSquareCorners(0.0, 0.0, 4.0, 0.0)
+                            .mirror(mirror_Y)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
                 }
 
                 if ((gameSceneState & (1 << gameSceneState_showOlympusBattlePlayerHealth)) > 0)
