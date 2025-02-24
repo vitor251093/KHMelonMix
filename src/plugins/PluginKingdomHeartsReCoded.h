@@ -129,6 +129,7 @@ private:
     bool isTopScreen2DTextureBlack();
     bool isBottomScreen2DTextureBlack();
 
+    bool isResultScreenVisible();
     bool isMissionInformationVisibleOnTopScreen();
     bool isDialogVisible();
     bool isMinimapVisible();

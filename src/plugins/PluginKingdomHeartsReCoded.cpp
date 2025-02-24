@@ -23,7 +23,14 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define PAUSE_SCREEN_ADDRESS_JP 0x020567f0
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
 
-#define DIALOG_SCREEN_ADDRESS_US 0x0219e9a8
+#define KIND_OF_SCREEN_ADDRESS_US 0x0205fe4c // may also be 0x0205fe60
+#define KIND_OF_SCREEN_ADDRESS_EU 0x0205fe4c // TODO: KH
+#define KIND_OF_SCREEN_ADDRESS_JP 0x0205fe4c // TODO: KH
+
+#define KIND_OF_SCREEN_PLATFORM_SECTION_RESULT 0x0500
+#define KIND_OF_SCREEN_OLYMPUS_LAYER_REVIEW    0x8000
+
+#define DIALOG_SCREEN_ADDRESS_US 0x0219e9a8 // may also be 0x02060390
 #define DIALOG_SCREEN_ADDRESS_EU 0x0219e9c8
 #define DIALOG_SCREEN_ADDRESS_JP 0x0219e9a8 // TODO: KH
 
@@ -141,6 +148,7 @@ enum
     gameSceneState_showHud,
     gameSceneState_dialogVisible,
     gameSceneState_textOverScreen,
+    gameSceneState_showResultScreen,
     gameSceneState_showRegularPlayerHealth,
     gameSceneState_showOlympusBattlePlayerHealth,
     gameSceneState_showMinimap,
@@ -551,6 +559,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
         case gameScene_InGameOlympusBattle:
         case gameScene_InGameWithMap:
+            if ((gameSceneState & (1 << gameSceneState_showResultScreen)) > 0)
+            {
+                // review/result screens of different kinds
+                shapes.push_back(ShapeBuilder::square()
+                        .hudScale(UIScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
+
             if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
             {
                 // top mission information
@@ -958,6 +976,12 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
 
         case gameScene_InGameOlympusBattle:
         case gameScene_InGameWithMap:
+            if (isResultScreenVisible())
+            {
+                state |= (1 << gameSceneState_showResultScreen);
+                break;
+            }
+
             if (isMissionInformationVisibleOnTopScreen())
             {
                 state |= (1 << gameSceneState_topScreenMissionInformationVisible);
@@ -1416,6 +1440,13 @@ bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
     int FrontBuffer = nds->GPU.FrontBuffer;
     u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
     return isBufferBlack(bottomBuffer);
+}
+
+bool PluginKingdomHeartsReCoded::isResultScreenVisible()
+{
+    u32 address = getU32ByCart(KIND_OF_SCREEN_ADDRESS_US, KIND_OF_SCREEN_ADDRESS_EU, KIND_OF_SCREEN_ADDRESS_JP);
+    u16 value = nds->ARM7Read16(address);
+    return value == KIND_OF_SCREEN_PLATFORM_SECTION_RESULT || value == KIND_OF_SCREEN_OLYMPUS_LAYER_REVIEW;
 }
 
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
