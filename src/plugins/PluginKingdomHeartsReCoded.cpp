@@ -424,6 +424,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
                 scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
                 scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
                 scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
+                return;
             }
         }
     }
@@ -467,7 +468,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
                 float bugSectorSpScoreZ = -1.0;
 
                 if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
-                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
+                    _y >= 0 && _y <= (0.3)*(ScreenHeight) &&
                     _z == bugSectorSpScoreZ)) {
                     _x = (_x)/(bugSectorSpScoreScale*aspectRatio);
                     _y = (_y)/(bugSectorSpScoreScale) + bugSectorSpScoreTopMargin*resolutionScale;
