@@ -653,13 +653,35 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
                 if ((gameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0)
                 {
-                    // mission information
+                    // bottom mission information (top right corner)
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 166)
+                            .withSize(119, 3)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(131.0, 6.0, 0.0, 0.0)
+                            .cropSquareCorners(0.0, 4.0, 0.0, 0.0)
+                            .mirror(mirror_X)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (top right corner transparent BG)
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromPosition(118, 182)
+                            .withSize(3, 3)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(247.0, 6.0, 0.0, 0.0)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (bigger area)
                     shapes.push_back(ShapeBuilder::square()
                             .fromBottomScreen()
                             .fromPosition(5, 166)
                             .withSize(247, 26)
                             .placeAtCorner(corner_TopLeft)
                             .withMargin(3.0, 6.0, 0.0, 0.0)
+                            .cropSquareCorners(4.0, 0.0, 0.0, 0.0)
                             .hudScale(UIScale)
                             .build(aspectRatio));
                 }
