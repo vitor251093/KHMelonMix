@@ -372,11 +372,11 @@ ivec4 getTopScreen3DColor()
     return _3dpix;
 }
 
-bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, ivec4 squareInitialCoords) {
+bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, ivec2 squareInitialSize) {
     return (finalPos.x + finalPos.y >= cropSquareCorners[0]) &&
-           ((0 - finalPos.x + squareInitialCoords[2]) + finalPos.y >= cropSquareCorners[1]) &&
-           (finalPos.x + (0 - finalPos.y + squareInitialCoords[3]) >= cropSquareCorners[2]) &&
-           ((0 - finalPos.x + squareInitialCoords[2]) + (0 - finalPos.y + squareInitialCoords[3]) >= cropSquareCorners[3]);
+           ((0 - finalPos.x + squareInitialSize[0]) + finalPos.y >= cropSquareCorners[1]) &&
+           (finalPos.x + (0 - finalPos.y + squareInitialSize[1]) >= cropSquareCorners[2]) &&
+           ((0 - finalPos.x + squareInitialSize[0]) + (0 - finalPos.y + squareInitialSize[1]) >= cropSquareCorners[3]);
 }
 
 bool isInsideRoundedCorner(vec2 pos, vec2 center, float radius) {
@@ -384,10 +384,10 @@ bool isInsideRoundedCorner(vec2 pos, vec2 center, float radius) {
            (pos.y - center.y) * (pos.y - center.y) < radius * radius;
 }
 
-bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec4 squareInitialCoords) {
+bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squareInitialSize) {
     bool validArea = true;
-    float squareWidth = squareInitialCoords[2];
-    float squareHeight = squareInitialCoords[3];
+    float squareWidth = squareInitialSize[0];
+    float squareHeight = squareInitialSize[1];
 
     // Top-left corner
     if (finalPos.x < radius[0] && finalPos.y < radius[0]) {
@@ -481,11 +481,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
             // crop corner as triangle
             if ((effects & 0x2) != 0) {
-                validArea = isValidConsideringCropSquareCorners(finalPos, shapes[shapeIndex].squareCornersModifier, shapes[shapeIndex].squareInitialCoords);
+                validArea = isValidConsideringCropSquareCorners(finalPos, shapes[shapeIndex].squareCornersModifier, shapes[shapeIndex].squareInitialCoords.zw);
             }
             // rounded corners
             if ((effects & 0x4) != 0) {
-                validArea = isValidConsideringSquareBorderRadius(finalPos, shapes[shapeIndex].squareCornersModifier, shapes[shapeIndex].squareInitialCoords);
+                validArea = isValidConsideringSquareBorderRadius(finalPos, shapes[shapeIndex].squareCornersModifier, shapes[shapeIndex].squareInitialCoords.zw);
             }
 
             if (validArea) {
