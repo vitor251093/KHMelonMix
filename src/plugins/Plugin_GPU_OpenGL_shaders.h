@@ -529,11 +529,10 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     finalPos.y = shapeData.squareInitialCoords.w - finalPos.y;
                 }
 
-                ivec2 textureBeginning = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
-                ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
-                ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
-
                 if (index == 0) {
+                    ivec2 coordinates = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
+                    ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+
                     // invert gray scale colors
                     if ((effects & 0x1) != 0) {
                         bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
@@ -541,8 +540,18 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                             color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
                         }
                     }
+
+                    return color;
+                }
+                else if (index == 1) {
+                    ivec2 coordinates = ivec2(finalPos + shapeData.squareInitialCoords.xy + vec2(256,0));
+                    return ivec4(texelFetch(ScreenTex, coordinates, 0));
                 }
                 else if (index == 2) {
+                    ivec2 textureBeginning = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
+                    ivec2 coordinates = textureBeginning + ivec2(512,0);
+                    ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+
                     // provides full transparency support to the transparency layer
                     color.g = color.g << 2;
                     color.b = color.b << 2;
@@ -593,8 +602,8 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                             }
                         }
                     }
+                    return color;
                 }
-                return color;
             }
         }
     }
