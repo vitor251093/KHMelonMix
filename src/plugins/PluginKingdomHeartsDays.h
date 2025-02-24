@@ -30,9 +30,12 @@ public:
     std::string assetsRegionSubfolder();
     std::string tomlUniqueIdentifier();
 
-    const char* gpuOpenGL_FS();
-    void gpuOpenGL_FS_initVariables(GLuint CompShader);
-    void gpuOpenGL_FS_updateVariables(GLuint CompShader);
+    std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState);
+    int renderer_gameSceneState();
+    int renderer_screenLayout();
+    int renderer_brightnessMode();
+    float renderer_forcedAspectRatio();
+    bool renderer_showOriginalUI();
 
     const char* gpu3DOpenGLClassic_VS_Z();
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
@@ -81,15 +84,13 @@ private:
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
-    int UIScale = 4;
+
     bool ShowMap;
     bool ShowTarget;
     bool ShowMissionGauge;
     bool ShowMissionInfo;
     bool HideAllHUD;
 
-    std::map<GLuint, GLuint[20]> CompGpuLoc{};
-    std::map<GLuint, int[20]> CompGpuLastValues{};
     std::map<u32, GLuint[5]> CompGpu3DLoc{};
     std::map<u32, int[5]> CompGpu3DLastValues{};
 
@@ -139,8 +140,19 @@ private:
     bool isSaveLoaded();
 
     bool isBufferBlack(unsigned int* buffer);
-    bool isTopScreen2DTextureBlack();
+    u32* topScreen2DTexture();
+    u32* bottomScreen2DTexture();
     bool isBottomScreen2DTextureBlack();
+
+    bool ShouldShowBottomScreen = false;
+    bool isDialogVisible();
+    bool isMinimapVisible();
+    bool isMissionInformationVisibleOnTopScreen();
+    bool isMissionInformationVisibleOnBottomScreen();
+    bool isCutsceneFromChallengeMissionVisible();
+    bool isDialogPortraitLabelVisible();
+    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
+
     void hudToggle();
     void debugLogs(int gameScene);
 };

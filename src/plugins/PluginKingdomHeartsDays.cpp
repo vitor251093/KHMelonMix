@@ -1,6 +1,5 @@
 #include "PluginKingdomHeartsDays.h"
 
-#include "PluginKingdomHeartsDays_GPU_OpenGL_shaders.h"
 #include "PluginKingdomHeartsDays_GPU3D_OpenGL_shaders.h"
 
 namespace Plugins
@@ -162,6 +161,23 @@ enum
 
 enum
 {
+    gameSceneState_characterControllable,
+    gameSceneState_showHud,
+    gameSceneState_dialogVisible,
+    gameSceneState_dialogPortraitLabelVisible,
+    gameSceneState_showMinimap,
+    gameSceneState_showTarget,
+    gameSceneState_showMissionGauge,
+    gameSceneState_cutsceneFromChallengeMission,
+    gameSceneState_topScreenMissionInformationVisible,
+    gameSceneState_showBottomScreenMissionInformation,
+    gameSceneState_bottomScreenSora,
+    gameSceneState_bottomScreenCutscene,
+    gameSceneState_topScreenCutscene
+};
+
+enum
+{
     HK_HUDToggle,
     HK_RLockOn,
     HK_LSwitchTarget,
@@ -180,7 +196,6 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     priorMap = -1;
     Map = 0;
-    UIScale = 4;
 
     // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;
@@ -410,73 +425,6 @@ std::string PluginKingdomHeartsDays::tomlUniqueIdentifier() {
     return getStringByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
 }
 
-const char* PluginKingdomHeartsDays::gpuOpenGL_FS() {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return nullptr;
-    }
-
-    return kCompositorFS_KhDays;
-};
-
-void PluginKingdomHeartsDays::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "PriorGameScene");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "GameScene");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "KHUIScale");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "ShowTarget");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "ShowMissionGauge");
-    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "ShowMissionInfo");
-    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "HideAllHUD");
-    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "HideScene");
-    CompGpuLoc[CompShader][10] = glGetUniformLocation(CompShader, "MainMenuView");
-    CompGpuLoc[CompShader][11] = glGetUniformLocation(CompShader, "DSCutsceneState");
-    CompGpuLoc[CompShader][12] = glGetUniformLocation(CompShader, "IsCharacterControllable");
-
-    for (int index = 0; index <= 12; index ++) {
-        CompGpuLastValues[CompShader][index] = -1;
-    }
-}
-
-#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
-
-void PluginKingdomHeartsDays::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
-    u32 currentMainMenuView = getCurrentMainMenuView();
-
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
-    CutsceneEntry* bsCutscene = detectBottomScreenMobiCutscene();
-    int dsCutsceneState = (tsCutscene == nullptr ? 0 : 2) + (bsCutscene == nullptr ? 0 : 1);
-
-    bool isCredits = nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
-    if (isCredits) {
-        dsCutsceneState = 3;
-    }
-
-    bool updated = false;
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], PriorGameScene, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], GameScene, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], UIScale, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], ShowMap ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], ShowTarget ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][6], ShowMissionGauge ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], ShowMissionInfo ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][8], HideAllHUD ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][9], _ShouldHideScreenForTransitions ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][10], currentMainMenuView, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][11], dsCutsceneState, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][12], isCharacterControllable ? 1 : 0, updated);
-
-    if (updated) {
-        glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
-        for (int index = 1; index <= 12; index ++) {
-            glUniform1i(CompGpuLoc[CompShader][index], CompGpuLastValues[CompShader][index]);
-        }
-    }
-}
-
 const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
@@ -498,6 +446,8 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog,
         CompGpu3DLastValues[flags][index] = -1;
     }
 }
+
+#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
 
 void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
 {
@@ -555,7 +505,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
         s32 z = polygon->Vertices[vertexIndex]->Position[2];
 
         int resolutionScale = ScreenWidth/256;
-        float iuTexScale = (6.0)/UIScale;
+        float iuTexScale = SCREEN_SCALE/UIScale;
 
         float _x = (float)(*x);
         float _y = (float)(*y);
@@ -611,6 +561,598 @@ void PluginKingdomHeartsDays::gpu3DOpenGLCompute_applyChangesToPolygon(int Scree
         *y = (s32)(_y);
     }
 };
+
+std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScene, int gameSceneState) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    auto shapes = std::vector<ShapeData2D>();
+
+    switch (gameScene) {
+        case gameScene_IntroLoadMenu:
+            shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .hudScale(UIScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+            break;
+
+        case gameScene_DayCounter:
+        case gameScene_RoxasThoughts:
+            shapes.push_back(ShapeBuilder::square()
+                    .hudScale(UIScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+            break;
+
+        case gameScene_Cutscene:
+            if ((gameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
+                shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .hudScale(UIScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            }
+            if ((gameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
+                shapes.push_back(ShapeBuilder::square()
+                        .hudScale(UIScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            }
+            break;
+
+        case gameScene_InGameWithDouble3D:
+            if ((gameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
+                break;
+            }
+
+        case gameScene_InGameWithMap:
+
+            if ((gameSceneState & (1 << gameSceneState_cutsceneFromChallengeMission)) > 0)
+            {
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 0)
+                        .withSize(256, 24)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(128, 0)
+                        .withSize(128, 24)
+                        .placeAtCorner(corner_TopRight)
+                        .sourceScale(10.0, 1.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+            }
+
+            if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0)
+            {
+                float dialogScale = 5.333/UIScale;
+
+                if ((gameSceneState & (1 << gameSceneState_dialogPortraitLabelVisible)) > 0)
+                {
+                    // dialog (portrait label right side)
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromPosition(184, 170)
+                            .withSize(7, 14)
+                            .placeAtCorner(corner_Bottom)
+                            .sourceScale(dialogScale)
+                            .withMargin(128 * dialogScale, 0.0, 0.0, 7.0 + 8 * dialogScale)
+                            .mirror(mirror_X)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+                }
+
+                // dialog (biggest part)
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 30)
+                        .withSize(256, 162)
+                        .placeAtCorner(corner_Bottom)
+                        .sourceScale(dialogScale)
+                        .withMargin(0.0, 0.0, 0.0, 7.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // dialog (left side)
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 30)
+                        .withSize(3, 162)
+                        .placeAtCorner(corner_Bottom)
+                        .sourceScale(dialogScale * 4, dialogScale)
+                        .withMargin(0.0, 0.0, 128 * dialogScale, 7.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // dialog (right side)
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 30)
+                        .withSize(3, 162)
+                        .placeAtCorner(corner_Bottom)
+                        .sourceScale(dialogScale * 4, dialogScale)
+                        .withMargin(128 * dialogScale, 0.0, 0.0, 7.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                return shapes;
+            }
+
+            if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0) {
+                // top mission information
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 0)
+                        .withSize(256, 24)
+                        .placeAtCorner(corner_TopLeft)
+                        .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                return shapes;
+            }
+            if ((gameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0) {
+                // bottom mission information (part 1)
+                shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(0, 0)
+                        .withSize(75, 24)
+                        .placeAtCorner(corner_TopLeft)
+                        .singleColorToAlpha(32, 32, 32)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // bottom mission information (part 2)
+                shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(75, 8)
+                        .withSize(181, 16)
+                        .placeAtCorner(corner_TopLeft)
+                        .withMargin(75.0, 8.0, 0.0, 0.0)
+                        .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+            }
+
+            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0 &&
+                (gameSceneState & (1 << gameSceneState_characterControllable)) > 0)
+            {
+                // item notification
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 35)
+                        .withSize(108, 86)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // countdown and locked on
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(93, 0)
+                        .withSize(70, 20)
+                        .placeAtCorner(corner_Top)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                if ((gameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
+                    // minimap
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(128, 60)
+                            .withSize(72, 72)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 30.0, 9.0, 0.0)
+                            .sourceScale(0.8333)
+                            .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                            .opacity(0.85)
+                            .invertGrayScaleColors()
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_showTarget)) > 0) {
+                    float targetScale = 0.666;
+                    int targetLabelMargin = 12;
+                    int targetWidth = 64;
+
+                    // target label (part 1)
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(32, 51)
+                            .withSize(targetLabelMargin, 9)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
+                            .sourceScale(targetScale)
+                            .colorToAlpha(248, 248, 248)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+
+                    // target label (part 2)
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(32 + targetLabelMargin, 51)
+                            .withSize(targetWidth - targetLabelMargin*2, 9)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
+                            .sourceScale(targetScale)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+
+                    // target label (part 3)
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(32 + targetWidth - targetLabelMargin, 51)
+                            .withSize(targetLabelMargin, 9)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 30.0, 9.0, 0.0)
+                            .sourceScale(targetScale)
+                            .colorToAlpha(248, 248, 248)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+
+                    // target
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(32, 64)
+                            .withSize(targetWidth, 76)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 38.0, 9.0, 0.0)
+                            .sourceScale(targetScale)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_showMissionGauge)) > 0) {
+                    // mission gauge
+                    shapes.push_back(ShapeBuilder::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 152)
+                            .withSize(246, 40)
+                            .placeAtCorner(corner_Bottom)
+                            .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+                            .hudScale(UIScale)
+                            .build(aspectRatio));
+                }
+
+                // enemy health
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(163, 0)
+                        .withSize(93, 22)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 7.5, 9.0, 0.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // sigils and death counter
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(163, 25)
+                        .withSize(93, 30)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 92.5, 12.0, 0.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // command menu
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(0, 86)
+                        .withSize(108, 106)
+                        .placeAtCorner(corner_BottomLeft)
+                        .withMargin(10.0, 0.0, 0.0, 0.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // player health
+                shapes.push_back(ShapeBuilder::square()
+                        .fromPosition(128, 84)
+                        .withSize(128, 108)
+                        .placeAtCorner(corner_BottomRight)
+                        .withMargin(0.0, 0.0, 8.0, 3.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+            }
+
+            // background
+            shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(118, 182)
+                    .withSize(20, 10)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+
+            break;
+
+        case gameScene_PauseMenu:
+            if ((gameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0) {
+                // bottom mission information (part 1)
+                shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(0, 0)
+                        .withSize(75, 24)
+                        .placeAtCorner(corner_TopLeft)
+                        .singleColorToAlpha(32, 32, 32)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+
+                // bottom mission information (part 2)
+                shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(75, 8)
+                        .withSize(181, 16)
+                        .placeAtCorner(corner_TopLeft)
+                        .withMargin(75.0, 8.0, 0.0, 0.0)
+                        .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+            }
+
+            if ((gameSceneState & (1 << gameSceneState_showMissionGauge)) > 0) {
+                // mission gauge
+                shapes.push_back(ShapeBuilder::square()
+                        .fromBottomScreen()
+                        .fromPosition(5, 152)
+                        .withSize(246, 40)
+                        .placeAtCorner(corner_Bottom)
+                        .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+            }
+
+            // pause menu
+            shapes.push_back(ShapeBuilder::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(118, 182)
+                    .withSize(20, 10)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+
+            break;
+    
+        case gameScene_Tutorial:
+            // tutorial
+            shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(5, 0)
+                    .withSize(246, 192)
+                    .sourceScale(5.0/UIScale)
+                    .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 96)
+                    .withSize(5, 5)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .opacity(0.75)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+
+            break;
+
+        case gameScene_LoadingScreen:
+            shapes.push_back(ShapeBuilder::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_BottomRight)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+            break;
+    
+        case gameScene_DeathScreen:
+            shapes.push_back(ShapeBuilder::square()
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+            break;
+    }
+    
+    return shapes;
+}
+
+int PluginKingdomHeartsDays::renderer_gameSceneState() {
+    int state = 0;
+
+    switch (GameScene) {
+        case gameScene_IntroLoadMenu:
+            break;
+
+        case gameScene_DayCounter:
+            break;
+
+        case gameScene_RoxasThoughts:
+            break;
+
+        case gameScene_Cutscene:
+            if (detectTopScreenMobiCutscene() == nullptr) {
+                state |= (1 << gameSceneState_bottomScreenCutscene);
+            }
+            else if (detectBottomScreenMobiCutscene() == nullptr) {
+                state |= (1 << gameSceneState_topScreenCutscene);
+            }
+            break;
+
+        case gameScene_InGameWithDouble3D:
+            if (ShouldShowBottomScreen) {
+                state |= (1 << gameSceneState_bottomScreenSora);
+                break;
+            }
+
+        case gameScene_InGameWithMap:
+            {
+                bool _isMinimapVisible = isMinimapVisible();
+                bool _isDialogVisible = isDialogVisible();
+                bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
+                bool _isMissionInformationVisibleOnBottomScreen = isMissionInformationVisibleOnBottomScreen();
+                bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
+                bool _isDialogPortraitLabelVisible = isDialogPortraitLabelVisible();
+
+                if (isCharacterControllable) {
+                    state |= (1 << gameSceneState_characterControllable);
+                }
+
+                if ((GameScene == gameScene_InGameWithMap && (!isCharacterControllable || _isDialogVisible)) ||
+                    (GameScene == gameScene_InGameWithDouble3D && _isDialogVisible))
+                {
+                    state |= (1 << gameSceneState_dialogVisible);
+
+                    if (_isCutsceneFromChallengeMissionVisible) {
+                        state |= (1 << gameSceneState_cutsceneFromChallengeMission);
+                    }
+
+                    if (_isDialogPortraitLabelVisible) {
+                        state |= (1 << gameSceneState_dialogPortraitLabelVisible);
+                    }
+
+                    break;
+                }
+
+                if (_isMissionInformationVisibleOnTopScreen) {
+                    state |= (1 << gameSceneState_topScreenMissionInformationVisible);
+
+                    break;
+                }
+
+                if (!_isMissionInformationVisibleOnTopScreen && ShowMissionInfo && _isMissionInformationVisibleOnBottomScreen) {
+                    state |= (1 << gameSceneState_showBottomScreenMissionInformation);
+                }
+
+                if (_isCutsceneFromChallengeMissionVisible) {
+                    state |= (1 << gameSceneState_cutsceneFromChallengeMission);
+
+                    break;
+                }
+
+                if (!HideAllHUD) {
+                    state |= (1 << gameSceneState_showHud);
+                }
+
+                if (GameScene == gameScene_InGameWithMap && _isMinimapVisible) {
+                    if (ShowMap) {
+                        state |= (1 << gameSceneState_showMinimap);
+                    }
+
+                    if (ShowTarget) {
+                        state |= (1 << gameSceneState_showTarget);
+                    }
+
+                    if (ShowMissionGauge) {
+                        state |= (1 << gameSceneState_showMissionGauge);
+                    }
+                }
+            }
+
+            break;
+
+        case gameScene_PauseMenu:
+            if (PriorGameScene != gameScene_InGameWithDouble3D)
+            {
+                if (isMissionInformationVisibleOnBottomScreen()) {
+                    state |= (1 << gameSceneState_showBottomScreenMissionInformation);
+                }
+
+                if (isMinimapVisible()) {
+                    state |= (1 << gameSceneState_showMissionGauge);
+                }
+            }
+
+            break;
+
+        case gameScene_Tutorial:
+            break;
+
+        case gameScene_LoadingScreen:
+            break;
+
+        case gameScene_DeathScreen:
+            break;
+    }
+
+    return state;
+};
+
+int PluginKingdomHeartsDays::renderer_screenLayout() {
+    switch (GameScene) {
+        case gameScene_DayCounter:
+        case gameScene_RoxasThoughts:
+        case gameScene_InGameWithMap:
+        case gameScene_PauseMenu:
+        case gameScene_InGameWithDouble3D:
+        case gameScene_DeathScreen:
+        case gameScene_Other:
+            return screenLayout_Top;
+        
+        case gameScene_IntroLoadMenu:
+        case gameScene_Tutorial:
+        case gameScene_LoadingScreen:
+            return screenLayout_Bottom;
+        
+        case gameScene_MultiplayerMissionReview:
+            return screenLayout_BothVertical;
+        
+        case gameScene_Intro:
+        case gameScene_MainMenu:
+        case gameScene_Shop:
+        case gameScene_TheEnd:
+            return screenLayout_BothHorizontal;
+        
+        case gameScene_Cutscene:
+            if (nds->ARM7Read8(getU32ByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10) {
+                return screenLayout_BothHorizontal;
+            }
+            return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
+    }
+
+    if (GameScene == gameScene_InGameMenu) {
+        u32 mainMenuView = getCurrentMainMenuView();
+        switch (mainMenuView) {
+            case 3: // holo-mission / challenges
+            case 4: // roxas's diary / enemy profile
+                return screenLayout_BothHorizontal;
+            
+            case 6: // config
+            case 7: // save
+                return screenLayout_Top;
+            
+            default:
+                return screenLayout_BothHorizontal;
+        }
+    }
+
+    return screenLayout_Top;
+};
+
+int PluginKingdomHeartsDays::renderer_brightnessMode() {
+    if (_ShouldHideScreenForTransitions) {
+        return brightnessMode_Off;
+    }
+    if (GameScene == gameScene_PauseMenu                ||
+        GameScene == gameScene_InGameWithDouble3D       ||
+        GameScene == gameScene_MultiplayerMissionReview ||
+        GameScene == gameScene_Shop                     ||
+        GameScene == gameScene_RoxasThoughts            ||
+        GameScene == gameScene_DeathScreen              ||
+        GameScene == gameScene_Other) {
+        return brightnessMode_TopScreen;
+    }
+    if (GameScene == gameScene_IntroLoadMenu ||
+        GameScene == gameScene_Tutorial      ||
+        GameScene == gameScene_LoadingScreen) {
+        return brightnessMode_BottomScreen;
+    }
+    return brightnessMode_Default;
+}
+
+float PluginKingdomHeartsDays::renderer_forcedAspectRatio()
+{
+    return (GameScene == gameScene_DayCounter) ? (4.0/3) : AspectRatio;
+};
+
+bool PluginKingdomHeartsDays::renderer_showOriginalUI() {
+    return false;
+}
 
 void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)
 {
@@ -937,18 +1479,102 @@ bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
-bool PluginKingdomHeartsDays::isTopScreen2DTextureBlack()
+u32* PluginKingdomHeartsDays::topScreen2DTexture()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
-    return isBufferBlack(topBuffer);
+    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 != 0) {
+        FrontBuffer = FrontBuffer ? 0 : 1;
+    }
+    return nds->GPU.Framebuffer[FrontBuffer][0].get();
+}
+
+u32* PluginKingdomHeartsDays::bottomScreen2DTexture()
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 != 0) {
+        FrontBuffer = FrontBuffer ? 0 : 1;
+    }
+    return nds->GPU.Framebuffer[FrontBuffer][1].get();
 }
 
 bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
-    return isBufferBlack(bottomBuffer);
+    return isBufferBlack(bottomScreen2DTexture());
+}
+
+bool PluginKingdomHeartsDays::isDialogVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    for (int y = 161; y >= 141; y--) {
+        if (has2DOnTopOf3DAt(buffer, 128, y)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool PluginKingdomHeartsDays::isMinimapVisible() {
+    u32 pixel = getPixel(bottomScreen2DTexture(), 99, 53, 0);
+    if (GameScene == gameScene_PauseMenu) {
+        return ((pixel >> 0) & 0x3F) == 0x1F && ((pixel >> 8) & 0x3F) == 0x1F && ((pixel >> 16) & 0x3F) == 0x1F;
+    }
+    return ((pixel >> 0) & 0x3F) == 0x3E && ((pixel >> 8) & 0x3F) == 0x3E && ((pixel >> 16) & 0x3F) == 0x3E;
+}
+
+bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
+{
+    u32* buffer = topScreen2DTexture();
+    return (has2DOnTopOf3DAt(buffer, 0, 0) && has2DOnTopOf3DAt(buffer, 128, 0) && has2DOnTopOf3DAt(buffer, 254, 0)) ||
+           (has2DOnTopOf3DAt(buffer, 0, 8) && has2DOnTopOf3DAt(buffer, 128, 8) && has2DOnTopOf3DAt(buffer, 254, 8));
+}
+
+bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
+{
+    u32* buffer = bottomScreen2DTexture();
+    u32 pixel = getPixel(buffer, 5, 4, 0);
+    return ((pixel >> 0) & 0x3F) >= 15 && ((pixel >> 8) & 0x3F) >= 15 && ((pixel >> 16) & 0x3F) >= 15;
+}
+
+bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 0,   2) &&  has2DOnTopOf3DAt(buffer, 64,  2) &&
+          !has2DOnTopOf3DAt(buffer, 128, 2) && !has2DOnTopOf3DAt(buffer, 192, 2) &&
+          !has2DOnTopOf3DAt(buffer, 255, 2) &&
+           has2DOnTopOf3DAt(buffer, 0,   4) &&  has2DOnTopOf3DAt(buffer, 64,  4) &&
+           has2DOnTopOf3DAt(buffer, 128, 4) &&  has2DOnTopOf3DAt(buffer, 192, 4) &&
+           has2DOnTopOf3DAt(buffer, 255, 4) &&
+           has2DOnTopOf3DAt(buffer, 0,   6) &&  has2DOnTopOf3DAt(buffer, 64,  6) &&
+          !has2DOnTopOf3DAt(buffer, 128, 6) && !has2DOnTopOf3DAt(buffer, 192, 6) &&
+          !has2DOnTopOf3DAt(buffer, 255, 6);
+}
+
+bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
+{
+    u32 pixel = getPixel(topScreen2DTexture(), 250, 183, 0);
+    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
+}
+
+bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
+{
+    u32 pixel = getPixel(buffer, x, y, 2);
+    u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
+    if (pixelAlpha > 0x4) {
+        return true;
+    }
+    if (pixelAlpha == 0x4) {
+        return false;
+    }
+    if (((pixel >> 8) & 0xFF) == 0) {
+        return false;
+    }
+
+    u32 colorPixel = getPixel(buffer, x, y, 0);
+    u32 colorPixelAlpha = (colorPixel >> (8*3)) & 0xFF;
+    if (colorPixelAlpha == 0x20) {
+        return false;
+    }
+    return true;
 }
 
 bool PluginKingdomHeartsDays::shouldRenderFrame()
@@ -995,6 +1621,9 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
         }
 
         bool showBottomScreen = _hasVisible3DOnBottomScreen && !(_ignore3DOnBottomScreen && _priorIgnore3DOnBottomScreen && _priorPriorIgnore3DOnBottomScreen);
+        if (ShouldShowBottomScreen != showBottomScreen) {
+            ShouldShowBottomScreen = showBottomScreen;
+        }
         return (nds->PowerControl9 >> 15 != 0) ? !showBottomScreen : showBottomScreen;
     }
 
@@ -1188,7 +1817,7 @@ int PluginKingdomHeartsDays::detectGameScene()
             return gameScene_DayCounter;
         }
 
-        if (nds->GPU.GPU2D_B.MasterBrightness == 32784) // TODO: Replace with memory detection
+        if (nds->GPU.GPU2D_B.MasterBrightness == 32784) // TODO: KH Replace with memory detection
         {
             return gameScene_RoxasThoughts;
         }

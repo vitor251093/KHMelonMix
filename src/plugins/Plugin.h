@@ -11,6 +11,8 @@
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
 
+#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*y + x + 256*layer]
+
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   ((byte) & 0x80000000 ? '1' : '0'), \
@@ -82,6 +84,8 @@
 
 #include "../OpenGLSupport.h"
 
+#include "./PluginShapes.h"
+
 namespace Plugins
 {
 using namespace melonDS;
@@ -121,15 +125,22 @@ public:
     std::filesystem::path assetsFolderPath();
     virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
 
-    virtual const char* gpuOpenGL_FS() { return nullptr; };
-    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) {};
-    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) {};
+    virtual const char* gpuOpenGL_FS();
+    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
+    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
 
     virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
     virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
     virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
 
     virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {};
+
+    virtual std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData2D>(); };
+    virtual int renderer_gameSceneState() { return 0; };
+    virtual int renderer_screenLayout() { return 0; };
+    virtual int renderer_brightnessMode() { return 0; };
+    virtual float renderer_forcedAspectRatio() {return AspectRatio;};
+    virtual bool renderer_showOriginalUI() { return true; };
 
     bool togglePause();
 
@@ -245,10 +256,15 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
+    std::map<GLuint, GLuint[20]> CompGpuLoc{};
+    std::map<GLuint, int[20]> CompGpuLastValues{};
+    std::map<GLuint, GLuint> CompUboLoc{};
+
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
     int HUDState = -1;
+    int UIScale = 4;
 
     bool DisableEnhancedGraphics = false;
     bool ExportTextures = false;

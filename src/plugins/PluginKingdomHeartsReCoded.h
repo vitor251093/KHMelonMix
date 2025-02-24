@@ -29,9 +29,12 @@ public:
     std::string assetsFolder();
     std::string tomlUniqueIdentifier();
 
-    const char* gpuOpenGL_FS();
-    void gpuOpenGL_FS_initVariables(GLuint CompShader);
-    void gpuOpenGL_FS_updateVariables(GLuint CompShader);
+    std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState);
+    int renderer_gameSceneState();
+    int renderer_screenLayout();
+    int renderer_brightnessMode();
+    float renderer_forcedAspectRatio();
+    bool renderer_showOriginalUI();
 
     const char* gpu3DOpenGLClassic_VS_Z();
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
@@ -121,8 +124,19 @@ private:
     bool isSaveLoaded();
 
     bool isBufferBlack(unsigned int* buffer);
+    u32* topScreen2DTexture();
+    u32* bottomScreen2DTexture();
     bool isTopScreen2DTextureBlack();
     bool isBottomScreen2DTextureBlack();
+
+    bool isMissionInformationVisibleOnTopScreen();
+    bool isDialogVisible();
+    bool isMinimapVisible();
+    bool isBugSector();
+    bool isCommandMenuVisible();
+    bool isHealthVisible();
+    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
+
     void hudToggle();
     void debugLogs(int gameScene);
 };

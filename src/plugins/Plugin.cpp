@@ -1,5 +1,7 @@
 #include "Plugin.h"
 
+#include "Plugin_GPU_OpenGL_shaders.h"
+
 #include <iostream>
 #include <string>
 #include <cstdarg>
@@ -11,6 +13,8 @@
 #include <objc/message.h>
 #include <objc/runtime.h>
 #endif
+
+#include "../OpenGLSupport.h"
 
 #define RAM_SEARCH_ENABLED true
 // #define RAM_SEARCH_SIZE 8
@@ -60,6 +64,85 @@ std::filesystem::path Plugin::assetsFolderPath()
 #endif
     return currentPath / "assets" / assetsFolderName;
 }
+
+const char* Plugin::gpuOpenGL_FS()
+{
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
+    return kCompositorFS_Plugin;
+}
+
+void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
+    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock");
+    glUniformBlockBinding(CompShader, blockIndex, 1);
+
+    GLuint uboBuffer;
+    glGenBuffers(1, &uboBuffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData2D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
+    CompUboLoc[CompShader] = uboBuffer;
+
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
+
+    for (int index = 0; index <= 6; index ++) {
+        CompGpuLastValues[CompShader][index] = -1;
+    }
+}
+
+#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
+
+void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    float forcedAspectRatio = renderer_forcedAspectRatio() / (4.f / 3.f);
+    bool showOriginalHud = renderer_showOriginalUI();
+    int screenLayout = renderer_screenLayout();
+    int brightnessMode = renderer_brightnessMode();
+    int gameSceneState = renderer_gameSceneState();
+
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(forcedAspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], UIScale, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], showOriginalHud ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], screenLayout, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], brightnessMode, updated);
+
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][6], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], gameSceneState, updated);
+
+    if (updated) {
+        std::vector<ShapeData2D> shapes = renderer_2DShapes(GameScene, gameSceneState);
+        printf("Updating shapes. New shape count: %d\n", shapes.size());
+        printf("Updated conditions: scene %d - state %d\n", GameScene, gameSceneState);
+
+        glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
+        glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
+        glUniform1i(CompGpuLoc[CompShader][2], CompGpuLastValues[CompShader][2]);
+        glUniform1i(CompGpuLoc[CompShader][3], CompGpuLastValues[CompShader][3]);
+        glUniform1i(CompGpuLoc[CompShader][4], CompGpuLastValues[CompShader][4]);
+        glUniform1i(CompGpuLoc[CompShader][5], CompGpuLastValues[CompShader][5]);
+        glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
+
+        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
+        auto shadersData = shapes.data();
+        glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
+        void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * shapes.size());
+        glUnmapBuffer(GL_UNIFORM_BUFFER);
+    }
+}
+
+#undef UPDATE_GPU_VAR
 
 bool Plugin::togglePause()
 {
