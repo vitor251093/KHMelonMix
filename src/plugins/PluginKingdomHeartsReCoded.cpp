@@ -406,6 +406,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
     float aspectRatio = AspectRatio / (4.f / 3.f);
     u32 attr = polygon->Attr;
 
+    // aims
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu) {
         u32 aimAttr1 = 1058996416;
         u32 aimAttr2 = 1042219200;
@@ -463,10 +464,11 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
                 // Bug sector SP score
                 float bugSectorSpScoreTopMargin = 18.0;
                 float bugSectorSpScoreScale = (4.0)/UIScale;
+                float bugSectorSpScoreZ = -1.0;
 
                 if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
                     _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
-                    _z < 0)) {
+                    _z == bugSectorSpScoreZ)) {
                     _x = (_x)/(bugSectorSpScoreScale*aspectRatio);
                     _y = (_y)/(bugSectorSpScoreScale) + bugSectorSpScoreTopMargin*resolutionScale;
                 }
