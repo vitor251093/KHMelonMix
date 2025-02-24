@@ -43,17 +43,13 @@ struct ShapeData2D {
     ivec4 singleColorToAlpha;
 };
 
-struct FastShapeData2D {
-    vec2 sourceScale;
-    int effects;
-    vec4 squareFinalCoords;
-};
-
 layout(std140) uniform ShapeBlock {
     ShapeData2D shapes[SHAPES_DATA_ARRAY_SIZE];
 };
 
-uniform FastShapeData2D fastShapes[SHAPES_DATA_ARRAY_SIZE];
+uniform vec2 fastShapesSourceScale[SHAPES_DATA_ARRAY_SIZE];
+uniform int  fastShapesEffects[SHAPES_DATA_ARRAY_SIZE];
+uniform vec4 fastShapesSquareFinalCoords[SHAPES_DATA_ARRAY_SIZE];
 
 uniform float currentAspectRatio;
 uniform float forcedAspectRatio;
@@ -448,18 +444,6 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
     if (screenLayout == 3) { // horizontal
         ivec2 textureBeginning = ivec2(getHorizontalDualScreen2DTextureCoordinates(xpos, ypos, vec2(128, 0)));
-        if (textureBeginning.x == -1 && textureBeginning.y == -1) {
-            if (index == 1)
-            {
-                return ivec4(0, 0, 0, 0);
-            }
-            if (index == 2)
-            {
-                return ivec4(0, 0, 63, 0x01);
-            }
-            return ivec4(0, 0, 0, 0);
-        }
-
         ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
         ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
         if (index == 2) {
@@ -490,12 +474,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
 
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
-        FastShapeData2D fastShapeData = fastShapes[shapeIndex];
-        vec4 squareFinalCoords = fastShapeData.squareFinalCoords;
+        vec4 squareFinalCoords = fastShapesSquareFinalCoords[shapeIndex];
 
         if (all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) && 
                all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) {
-            int effects = fastShapeData.effects;
+            int effects = fastShapesEffects[shapeIndex];
 
             ShapeData2D shapeData;
             bool loadedShapeData = (effects & 0x6) != 0;
@@ -503,7 +486,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 shapeData = shapes[shapeIndex];
             }
 
-            vec2 finalPos = (fixStretch/fastShapeData.sourceScale)*(texPosition3d - squareFinalCoords.xy);
+            vec2 finalPos = (fixStretch/fastShapesSourceScale[shapeIndex])*(texPosition3d - squareFinalCoords.xy);
             bool validArea = true;
 
             // crop corner as triangle
@@ -547,7 +530,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     ivec2 coordinates = ivec2(finalPos + shapeData.squareInitialCoords.xy + vec2(256,0));
                     return ivec4(texelFetch(ScreenTex, coordinates, 0));
                 }
-                else if (index == 2) {
+                else { // index == 2
                     ivec2 textureBeginning = ivec2(finalPos) + shapeData.squareInitialCoords.xy;
                     ivec2 coordinates = textureBeginning + ivec2(512,0);
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));

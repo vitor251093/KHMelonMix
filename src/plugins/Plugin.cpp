@@ -99,10 +99,9 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     }
 
     for (int index = 0; index < SHAPES_DATA_ARRAY_SIZE; index ++) {
-        std::string prefix = "fastShapes[" + std::to_string(index) + "].";
-        CompShapesScaleLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "sourceScale").c_str());
-        CompShapesEffectsLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "effects").c_str());
-        CompShapesSquareFinalCoordsLoc[CompShader][index] = glGetUniformLocation(CompShader, (prefix + "squareFinalCoords").c_str());
+        CompShapesScaleLoc[CompShader][index] = glGetUniformLocation(CompShader, ("fastShapesSourceScale[" + std::to_string(index) + "]").c_str());
+        CompShapesEffectsLoc[CompShader][index] = glGetUniformLocation(CompShader, ("fastShapesEffects[" + std::to_string(index) + "]").c_str());
+        CompShapesSquareFinalCoordsLoc[CompShader][index] = glGetUniformLocation(CompShader, ("fastShapesSquareFinalCoords[" + std::to_string(index) + "]").c_str());
     }
 }
 
