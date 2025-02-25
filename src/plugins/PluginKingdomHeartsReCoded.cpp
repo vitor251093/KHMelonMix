@@ -975,7 +975,7 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
                 if (ShowMap) {
                     state |= (1 << gameSceneState_showMinimap);
 
-                    int framesPerTick = 10;
+                    int framesPerTick = 48;
                     MinimapFrameTick = (MinimapFrameTick + 1) % (framesPerTick*2);
                     if (MinimapFrameTick < framesPerTick) {
                         state |= (1 << gameSceneState_minimapCenterTick);
@@ -1480,11 +1480,19 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
 
                     int x2 = x + 1;
                     int y2 = y + 1;
-                    while (getPixel(buffer, x2 + 1, y2, 0) == 0x1000343e) {
-                        x2 += 1;
-                    }
-                    while (getPixel(buffer, x2, y2 + 1, 0) == 0x1000343e) {
-                        y2 += 1;
+                    while (1) {
+                        bool inc = false;
+                        if (getPixel(buffer, x2 + 1, y2, 0) == 0x1000343e) {
+                            x2 += 1;
+                            inc = true;
+                        }
+                        if (getPixel(buffer, x2, y2 + 1, 0) == 0x1000343e) {
+                            y2 += 1;
+                            inc = true;
+                        }
+                        if (!inc) {
+                            break;
+                        }
                     }
 
                     possibilities.push_back(ivec4{x:x, y:y, z:x2-x+1, w:y2-y+1});
@@ -1498,24 +1506,21 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
         return ivec2{x:128, y:96};
     }
 
-    int avgX = 0;
-    int avgY = 0;
-    int avgCount = 0;
+    int maxX = 0;
+    int maxY = 0;
     int bigSize = 0;
     for (int i = 0; i < posSize; i++) {
         if (bigSize < possibilities[i].z*possibilities[i].w) {
             bigSize = possibilities[i].z*possibilities[i].w;
-            avgX = 0;
-            avgY = 0;
-            avgCount = 0;
+            maxX = 0;
+            maxY = 0;
         }
         if (bigSize == possibilities[i].z*possibilities[i].w) {
-            avgX += possibilities[i].x;
-            avgY += possibilities[i].y;
-            avgCount += 1;
+            maxX = std::max(maxX, possibilities[i].x);
+            maxY = std::max(maxY, possibilities[i].y);
         }
     }
-    return ivec2{x:avgX/avgCount, y:avgY/avgCount};
+    return ivec2{x:maxX, y:maxY};
 }
 
 bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
