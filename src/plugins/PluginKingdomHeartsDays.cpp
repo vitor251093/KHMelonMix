@@ -134,10 +134,6 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
-#define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
-#define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
-#define LOCK_ON_PRESS_FRAME_LIMIT         100
-
 enum
 {
     gameScene_Intro,                    // 0
@@ -196,27 +192,6 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     priorMap = -1;
     Map = 0;
-
-    // game scene detection utils
-    _muchOlderHad3DOnTopScreen = false;
-    _muchOlderHad3DOnBottomScreen = false;
-    _olderHad3DOnTopScreen = false;
-    _olderHad3DOnBottomScreen = false;
-    _had3DOnTopScreen = false;
-    _had3DOnBottomScreen = false;
-
-    // should render frame utils
-    _hasVisible3DOnBottomScreen = false;
-    _ignore3DOnBottomScreen = false;
-    _priorIgnore3DOnBottomScreen = false;
-    _priorPriorIgnore3DOnBottomScreen = false;
-
-    // apply addon to input mask utils
-    PriorAddonMask = 0;
-    PriorPriorAddonMask = 0;
-    LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
-    LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
-    SwitchTargetPressOnHold = false;
 
     customKeyMappingNames = {
         "HK_HUDToggle",

@@ -4,6 +4,10 @@
 #include "Plugin.h"
 #include "../NDS.h"
 
+#define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
+#define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
+#define LOCK_ON_PRESS_FRAME_LIMIT         100
+
 namespace Plugins
 {
 using namespace melonDS;
@@ -94,21 +98,25 @@ private:
     std::map<u32, GLuint[5]> CompGpu3DLoc{};
     std::map<u32, int[5]> CompGpu3DLastValues{};
 
-    bool _muchOlderHad3DOnTopScreen;
-    bool _muchOlderHad3DOnBottomScreen;
-    bool _olderHad3DOnTopScreen;
-    bool _olderHad3DOnBottomScreen;
-    bool _had3DOnTopScreen;
-    bool _had3DOnBottomScreen;
+    // game scene detection utils
+    bool _muchOlderHad3DOnTopScreen = false;
+    bool _muchOlderHad3DOnBottomScreen = false;
+    bool _olderHad3DOnTopScreen = false;
+    bool _olderHad3DOnBottomScreen = false;
+    bool _had3DOnTopScreen = false;
+    bool _had3DOnBottomScreen = false;
 
-    bool _hasVisible3DOnBottomScreen;
-    bool _ignore3DOnBottomScreen;
-    bool _priorIgnore3DOnBottomScreen;
-    bool _priorPriorIgnore3DOnBottomScreen;
+    // should render frame utils
+    bool _hasVisible3DOnBottomScreen = false;
+    bool _ignore3DOnBottomScreen = false;
+    bool _priorIgnore3DOnBottomScreen = false;
+    bool _priorPriorIgnore3DOnBottomScreen = false;
 
-    u32 PriorAddonMask, PriorPriorAddonMask;
-    u32 LastLockOnPress, LastSwitchTargetPress;
-    bool SwitchTargetPressOnHold;
+    // apply addon to input mask utils
+    u32 PriorAddonMask = 0, PriorPriorAddonMask = 0;
+    u32 LastSwitchTargetPress = SWITCH_TARGET_PRESS_FRAME_LIMIT;
+    u32 LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
+    bool SwitchTargetPressOnHold = false;
 
     std::array<CutsceneEntry, 46> Cutscenes;
 
