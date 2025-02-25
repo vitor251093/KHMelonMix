@@ -48,6 +48,11 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define GAME_STATE_ADDRESS_EU 0x02056f4a
 #define GAME_STATE_ADDRESS_JP 0x02056d6a
 
+// 0x00 => death screen
+#define DEATH_SCREEN_ADDRESS_US 0x02056f5c
+#define DEATH_SCREEN_ADDRESS_EU 0x02056f5c // TODO: KH
+#define DEATH_SCREEN_ADDRESS_JP 0x02056f5c // TODO: KH
+
 // 0x04 => playable (example: ingame); 0x03 => world selection; 0x02 => not playable (menus)
 #define IS_PLAYABLE_AREA_US 0x0205a8c0
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0
@@ -106,9 +111,10 @@ enum
     gameScene_Tutorial,                 // 12
     gameScene_Shop,                     // 13
     gameScene_LoadingScreen,            // 14
-    gameScene_TheEnd,                   // 15
-    gameScene_Other2D,                  // 16
-    gameScene_Other                     // 17
+    gameScene_DeathScreen,              // 15
+    gameScene_TheEnd,                   // 16
+    gameScene_Other2D,                  // 17
+    gameScene_Other                     // 18
 };
 
 enum
@@ -946,6 +952,13 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                     .hudScale(UIScale)
                     .build(aspectRatio));
             break;
+
+        case gameScene_DeathScreen:
+            shapes.push_back(ShapeBuilder::square()
+                    .hudScale(UIScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+            break;
     }
     
     return shapes;
@@ -1667,6 +1680,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
     bool isInGameDialog = nds->ARM7Read32(getU32ByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
         getU32ByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
+    bool isDeathScreen = nds->ARM7Read32(getU32ByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP)) == 0;
 
     u8 gameState2 = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
@@ -1772,6 +1786,11 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     else if (GameScene == gameScene_PauseMenu)
     {
         return PriorGameScene;
+    }
+
+    if (isDeathScreen)
+    {
+        return gameScene_DeathScreen;
     }
 
     if (isInGameDialog)
