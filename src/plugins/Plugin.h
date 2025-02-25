@@ -133,9 +133,10 @@ public:
     virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
     virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
 
-    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {};
+    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
 
     virtual std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData2D>(); };
+    virtual std::vector<ShapeData3D> renderer_3DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData3D>(); };
     virtual int renderer_gameSceneState() { return 0; };
     virtual int renderer_screenLayout() { return 0; };
     virtual int renderer_brightnessMode() { return 0; };

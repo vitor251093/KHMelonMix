@@ -29,7 +29,7 @@ struct vec4 {
 };
 
 // UBO-compatible struct with proper padding
-struct alignas(16) ShapeData2D { // 128 bytes
+struct alignas(16) ShapeData2D { // 112 bytes
     vec2 sourceScale;  // 8 bytes (X factor, Y factor)
 
     int effects;
@@ -53,6 +53,26 @@ struct alignas(16) ShapeData2D { // 128 bytes
     ivec4 singleColorToAlpha;  // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
 };
 
+// UBO-compatible struct with proper padding
+struct alignas(16) ShapeData3D { // 112 bytes
+    vec2 sourceScale;  // 8 bytes (X factor, Y factor)
+
+    int corner;     // 4 bytes
+    float hudScale; // 4 bytes
+
+    ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
+
+    vec4 margin; // 16 bytes (left, top, right, bottom)
+
+    vec2 zRange;
+    int polygonAttributes;
+    int polygonVertexesCount;
+
+    int effects;
+    // 0x01 => polygon mode
+    // 0x02 => hide
+};
+
 enum
 {
     shape_Square
@@ -60,6 +80,7 @@ enum
 
 enum
 {
+    corner_PreservePosition,
     corner_Center,
     corner_TopLeft,
     corner_Top,
@@ -95,11 +116,11 @@ enum
     mirror_XY   = 0x18
 };
 
-class ShapeBuilder
+class ShapeBuilder2D
 {
 public:
-    static ShapeBuilder square() {
-        auto shapeBuilder = ShapeBuilder();
+    static ShapeBuilder2D square() {
+        auto shapeBuilder = ShapeBuilder2D();
         shapeBuilder._shape = shape_Square;
         shapeBuilder.shapeData.sourceScale.x = 1.0;
         shapeBuilder.shapeData.sourceScale.y = 1.0;
@@ -109,7 +130,7 @@ public:
         shapeBuilder.shapeData.squareInitialCoords.w = 192;
         shapeBuilder.shapeData.opacity = 1.0;
         shapeBuilder._hudScale = 1.0;
-        shapeBuilder._corner = corner_Center;
+        shapeBuilder._corner = corner_PreservePosition;
         shapeBuilder._margin.x = 0;
         shapeBuilder._margin.y = 0;
         shapeBuilder._margin.z = 0;
@@ -118,56 +139,56 @@ public:
         return shapeBuilder;
     }
 
-    ShapeBuilder& fromBottomScreen() {
+    ShapeBuilder2D& fromBottomScreen() {
         _fromBottomScreen = true;
         return *this;
     }
-    ShapeBuilder& placeAtCorner(int corner) {
+    ShapeBuilder2D& placeAtCorner(int corner) {
         _corner = corner;
         return *this;
     }
-    ShapeBuilder& sourceScale(float _scale) {
+    ShapeBuilder2D& sourceScale(float _scale) {
         shapeData.sourceScale.x = _scale;
         shapeData.sourceScale.y = _scale;
         return *this;
     }
-    ShapeBuilder& sourceScale(float _scaleX, float _scaleY) {
+    ShapeBuilder2D& sourceScale(float _scaleX, float _scaleY) {
         shapeData.sourceScale.x = _scaleX;
         shapeData.sourceScale.y = _scaleY;
         return *this;
     }
-    ShapeBuilder& hudScale(float hudScale) {
+    ShapeBuilder2D& hudScale(float hudScale) {
         _hudScale = hudScale;
         return *this;
     }
-    ShapeBuilder& preserveDsScale() {
+    ShapeBuilder2D& preserveDsScale() {
         float mulScale = SCREEN_SCALE/_hudScale;
         shapeData.sourceScale.x *= mulScale;
         shapeData.sourceScale.y *= mulScale;
         return *this;
     }
-    ShapeBuilder& fromPosition(int x, int y) {
+    ShapeBuilder2D& fromPosition(int x, int y) {
         if (_shape == shape_Square) {
             shapeData.squareInitialCoords.x = x;
             shapeData.squareInitialCoords.y = y;
         }
         return *this;
     }
-    ShapeBuilder& withSize(int width, int height) {
+    ShapeBuilder2D& withSize(int width, int height) {
         if (_shape == shape_Square) {
             shapeData.squareInitialCoords.z = width;
             shapeData.squareInitialCoords.w = height;
         }
         return *this;
     }
-    ShapeBuilder& withMargin(float left, float top, float right, float bottom) {
+    ShapeBuilder2D& withMargin(float left, float top, float right, float bottom) {
         _margin.x = left;
         _margin.y = top;
         _margin.z = right;
         _margin.w = bottom;
         return *this;
     }
-    ShapeBuilder& fadeBorderSize(float left, float top, float right, float bottom) {
+    ShapeBuilder2D& fadeBorderSize(float left, float top, float right, float bottom) {
         shapeData.effects |= 0x20;
         shapeData.fadeBorderSize.x = left;
         shapeData.fadeBorderSize.y = top;
@@ -175,15 +196,15 @@ public:
         shapeData.fadeBorderSize.w = bottom;
         return *this;
     }
-    ShapeBuilder& invertGrayScaleColors() {
+    ShapeBuilder2D& invertGrayScaleColors() {
         shapeData.effects |= 0x1;
         return *this;
     }
-    ShapeBuilder& mirror(int mirror) {
+    ShapeBuilder2D& mirror(int mirror) {
         shapeData.effects |= mirror;
         return *this;
     }
-    ShapeBuilder& cropSquareCorners(float topLeft, float topRight, float bottomLeft, float bottomRight) {
+    ShapeBuilder2D& cropSquareCorners(float topLeft, float topRight, float bottomLeft, float bottomRight) {
         shapeData.effects |= 0x2;
         shapeData.squareCornersModifier.x = topLeft;
         shapeData.squareCornersModifier.y = topRight;
@@ -191,7 +212,7 @@ public:
         shapeData.squareCornersModifier.w = bottomRight;
         return *this;
     }
-    ShapeBuilder& squareBorderRadius(float topLeft, float topRight, float bottomLeft, float bottomRight) {
+    ShapeBuilder2D& squareBorderRadius(float topLeft, float topRight, float bottomLeft, float bottomRight) {
         shapeData.effects |= 0x4;
         shapeData.squareCornersModifier.x = topLeft;
         shapeData.squareCornersModifier.y = topRight;
@@ -199,15 +220,15 @@ public:
         shapeData.squareCornersModifier.w = bottomRight;
         return *this;
     }
-    ShapeBuilder& squareBorderRadius(float radius) {
+    ShapeBuilder2D& squareBorderRadius(float radius) {
         return squareBorderRadius(radius, radius, radius, radius);
     }
-    ShapeBuilder& opacity(float opacity) {
+    ShapeBuilder2D& opacity(float opacity) {
         shapeData.effects |= 0x20;
         shapeData.opacity = opacity;
         return *this;
     }
-    ShapeBuilder& colorToAlpha(int red, int green, int blue) {
+    ShapeBuilder2D& colorToAlpha(int red, int green, int blue) {
         shapeData.effects |= 0x20;
         shapeData.colorToAlpha.x = red >> 2;
         shapeData.colorToAlpha.y = green >> 2;
@@ -215,7 +236,7 @@ public:
         shapeData.colorToAlpha.w = 1;
         return *this;
     }
-    ShapeBuilder& singleColorToAlpha(int red, int green, int blue) {
+    ShapeBuilder2D& singleColorToAlpha(int red, int green, int blue) {
         shapeData.effects |= 0x20;
         shapeData.singleColorToAlpha.x = red >> 2;
         shapeData.singleColorToAlpha.y = green >> 2;
@@ -232,50 +253,55 @@ public:
         
         float heightScale = 1.0/aspectRatio;
 
-        float squareFinalHeight = shapeData.squareInitialCoords.w*scaleY;
         float squareFinalWidth = shapeData.squareInitialCoords.z*scaleX*heightScale;
+        float squareFinalHeight = shapeData.squareInitialCoords.w*scaleY;
 
         float squareFinalX1 = 0.0;
         float squareFinalY1 = 0.0;
 
         switch (_corner)
         {
-            case 0: // square at center
+            case corner_PreservePosition:
+                squareFinalX1 = (shapeData.squareInitialCoords.x + shapeData.squareInitialCoords.z/2)*scaleX - squareFinalWidth/2;
+                squareFinalY1 = (shapeData.squareInitialCoords.y + shapeData.squareInitialCoords.w/2)*scaleY - squareFinalHeight/2;
+                break;
+
+            case corner_Center:
                 squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
                 squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
                 break;
             
-            case 1: // square at top left corner
+            case corner_TopLeft:
                 break;
             
-            case 2: // square at top
+            case corner_Top:
                 squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
                 break;
 
-            case 3: // square at top right corner
+            case corner_TopRight:
                 squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
                 break;
 
-            case 4: // square at right
+            case corner_Right:
                 squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
                 squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
                 break;
 
-            case 5: // square at bottom right corner
+            case corner_BottomRight:
                 squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
                 squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
                 break;
 
-            case 6: // square at bottom
+            case corner_Bottom:
                 squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
                 squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
                 break;
 
-            case 7: // square at left bottom corner
+            case corner_BottomLeft:
                 squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
                 break;
 
-            case 8: // square at left
+            case corner_Left:
                 squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
         }
 
@@ -307,6 +333,110 @@ private:
     int _corner;
     float _hudScale;
     vec4 _margin;
+};
+
+class ShapeBuilder3D
+{
+public:
+    static ShapeBuilder3D square() {
+        auto shapeBuilder = ShapeBuilder3D();
+        shapeBuilder._shape = shape_Square;
+        shapeBuilder.shapeData.sourceScale.x = 1.0;
+        shapeBuilder.shapeData.sourceScale.y = 1.0;
+        shapeBuilder.shapeData.squareInitialCoords.x = 0;
+        shapeBuilder.shapeData.squareInitialCoords.y = 0;
+        shapeBuilder.shapeData.squareInitialCoords.z = 256;
+        shapeBuilder.shapeData.squareInitialCoords.w = 192;
+        shapeBuilder.shapeData.hudScale = SCREEN_SCALE;
+        shapeBuilder.shapeData.corner = corner_PreservePosition;
+        shapeBuilder.shapeData.margin.x = 0;
+        shapeBuilder.shapeData.margin.y = 0;
+        shapeBuilder.shapeData.margin.z = 0;
+        shapeBuilder.shapeData.margin.w = 0;
+        return shapeBuilder;
+    }
+
+    ShapeBuilder3D& polygonAttributes(int _polygonAttributes) {
+        shapeData.polygonAttributes = _polygonAttributes;
+        return *this;
+    }
+    ShapeBuilder3D& polygonMode() {
+        shapeData.effects |= 0x1;
+        return *this;
+    }
+    ShapeBuilder3D& polygonVertexesCount(int _polygonVertexesCount) {
+        shapeData.polygonVertexesCount = _polygonVertexesCount;
+        return *this;
+    }
+    ShapeBuilder3D& placeAtCorner(int corner) {
+        shapeData.corner = corner;
+        return *this;
+    }
+    ShapeBuilder3D& zRange(float _minZ, float _maxZ) {
+        shapeData.zRange.x = _minZ;
+        shapeData.zRange.y = _maxZ;
+        return *this;
+    }
+    ShapeBuilder3D& zValue(float z) {
+        shapeData.zRange.x = z;
+        shapeData.zRange.y = z;
+        return *this;
+    }
+    ShapeBuilder3D& sourceScale(float _scale) {
+        shapeData.sourceScale.x = _scale;
+        shapeData.sourceScale.y = _scale;
+        return *this;
+    }
+    ShapeBuilder3D& sourceScale(float _scaleX, float _scaleY) {
+        shapeData.sourceScale.x = _scaleX;
+        shapeData.sourceScale.y = _scaleY;
+        return *this;
+    }
+    ShapeBuilder3D& hudScale(float hudScale) {
+        shapeData.hudScale = hudScale;
+        return *this;
+    }
+    ShapeBuilder3D& preserveDsScale() {
+        float mulScale = SCREEN_SCALE/shapeData.hudScale;
+        shapeData.sourceScale.x *= mulScale;
+        shapeData.sourceScale.y *= mulScale;
+        return *this;
+    }
+    ShapeBuilder3D& fromPosition(int x, int y) {
+        if (_shape == shape_Square) {
+            shapeData.squareInitialCoords.x = x;
+            shapeData.squareInitialCoords.y = y;
+        }
+        return *this;
+    }
+    ShapeBuilder3D& withSize(int width, int height) {
+        if (_shape == shape_Square) {
+            shapeData.squareInitialCoords.z = width;
+            shapeData.squareInitialCoords.w = height;
+        }
+        return *this;
+    }
+    ShapeBuilder3D& withMargin(float left, float top, float right, float bottom) {
+        shapeData.margin.x = left;
+        shapeData.margin.y = top;
+        shapeData.margin.z = right;
+        shapeData.margin.w = bottom;
+        return *this;
+    }
+    ShapeBuilder3D& hide() {
+        shapeData.effects |= 0x2;
+        return *this;
+    }
+
+    ShapeData3D build(float aspectRatio) {
+        _aspectRatio = aspectRatio;
+        return shapeData;
+    }
+private:
+    ShapeData3D shapeData;
+
+    int _shape;
+    float _aspectRatio;
 };
 
 }

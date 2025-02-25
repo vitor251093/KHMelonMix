@@ -144,6 +144,143 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 
 #undef UPDATE_GPU_VAR
 
+void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return;
+    }
+
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    int resolutionScale = ScreenWidth/256;
+
+    int gameSceneState = renderer_gameSceneState();
+    std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
+
+    u32 attr = polygon->Attr;
+    for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
+    {
+        ShapeData3D shape = shapes[shapeIndex];
+
+        // polygon mode
+        if ((shape.effects & 0x1) != 0) {
+
+            if ((shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) &&
+                (shape.polygonAttributes    == 0 || shape.polygonAttributes    == attr)) {
+                s32 z = polygon->Vertices[0]->Position[2];
+                float _z = ((float)z)/(1 << 22);
+                if (shape.zRange.x <= _z && shape.zRange.y >= _z) 
+                {    
+                    u32 x0 = (int)scaledPositions[0][0];
+                    u32 x1 = (int)scaledPositions[0][0];
+                    for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
+                        x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
+                        x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
+                    }
+                    float xCenter = (x0 + x1)/2.0;
+
+                    for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
+                        scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
+                    }
+                }
+            }
+        }
+    }
+
+    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
+    {
+        s32* x = &scaledPositions[vertexIndex][0];
+        s32* y = &scaledPositions[vertexIndex][1];
+        s32 z = polygon->Vertices[vertexIndex]->Position[2];
+        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
+
+        float _x = (float)(*x);
+        float _y = (float)(*y);
+        float _z = ((float)z)/(1 << 22);
+
+        for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
+        {
+            ShapeData3D shape = shapes[shapeIndex];
+            float iuTexScale = SCREEN_SCALE/shape.hudScale;
+            float xScaleInv = iuTexScale/shape.sourceScale.x;
+            float yScaleInv = iuTexScale/shape.sourceScale.y;
+
+            // vertex mode
+            if ((shape.effects & 0x1) == 0)
+            {
+                if (_x >= shape.squareInitialCoords.x*resolutionScale && _x <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
+                    _y >= shape.squareInitialCoords.y*resolutionScale && _y <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
+                    _z >= shape.zRange.x && _z <= shape.zRange.y)
+                {
+                    // hide vertex
+                    if ((shape.effects & 0x2) != 0)
+                    {
+                        _x = 0;
+                        _y = 0;
+                    }
+                    else {
+                        switch (shape.corner)
+                        {
+                            case corner_PreservePosition:
+                                break;
+
+                            case corner_Center:
+                                _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
+                                break;
+                            
+                            case corner_TopLeft:
+                                _x = _x/(xScaleInv*aspectRatio);
+                                _y = _y/(yScaleInv);
+                                break;
+                            
+                            case corner_Top:
+                                _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
+                                _y = _y/(yScaleInv);
+                                break;
+
+                            case corner_TopRight:
+                                _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
+                                _y = _y/(yScaleInv);
+                                break;
+
+                            case corner_Right:
+                                _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
+                                break;
+
+                            case corner_BottomRight:
+                                _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
+                                break;
+
+                            case corner_Bottom:
+                                _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
+                                break;
+
+                            case corner_BottomLeft:
+                                _x = _x/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
+                                break;
+
+                            case corner_Left:
+                                _x = _x/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
+                                break;
+                        }
+
+                        _x = _x + (shape.margin.x*resolutionScale - shape.margin.z*resolutionScale)/aspectRatio;
+                        _y = _y + shape.margin.y*resolutionScale - shape.margin.w*resolutionScale;
+                    }
+                }
+            }
+        }
+
+        *x = (s32)(_x);
+        *y = (s32)(_y);
+    }
+};
+
 bool Plugin::togglePause()
 {
     if (_RunningReplacementCutscene) {
