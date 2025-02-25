@@ -35,7 +35,7 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 
 // 0x00 => death screen
 #define DEATH_SCREEN_ADDRESS_US 0x02056f5c
-#define DEATH_SCREEN_ADDRESS_EU 0x02056f5c // TODO: KH
+#define DEATH_SCREEN_ADDRESS_EU 0x02056f5c // TODO: KH probably correct, but didn't check
 #define DEATH_SCREEN_ADDRESS_JP 0x02056f5c // TODO: KH
 
 // 0x04 => playable (example: ingame); 0x03 => world selection; 0x02 => not playable (menus)
@@ -44,7 +44,7 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_PLAYABLE_AREA_JP 0x0205a6e0
 
 #define KIND_OF_SCREEN_ADDRESS_US 0x0205fe4c // may also be 0x0205fe60
-#define KIND_OF_SCREEN_ADDRESS_EU 0x0205fe4c // TODO: KH
+#define KIND_OF_SCREEN_ADDRESS_EU 0x0205fe4c
 #define KIND_OF_SCREEN_ADDRESS_JP 0x0205fe4c // TODO: KH
 
 #define KIND_OF_SCREEN_PLATFORM_SECTION_RESULT 0x0500
@@ -63,7 +63,7 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define FLOOR_LEVEL_ADDRESS_JP 0x02060687 // TODO: KH
 
 #define TYPE_OF_BATTLE_ADDRESS_US 0x020b5608 // or 0x020b5620
-#define TYPE_OF_BATTLE_ADDRESS_EU 0x020b5608 // TODO: KH
+#define TYPE_OF_BATTLE_ADDRESS_EU 0x020b5628 // TODO: KH unconfirmed
 #define TYPE_OF_BATTLE_ADDRESS_JP 0x020b5608 // TODO: KH
 
 #define CUTSCENE_ADDRESS_US 0x020b7db8
