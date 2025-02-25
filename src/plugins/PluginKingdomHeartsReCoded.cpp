@@ -448,6 +448,17 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int Sc
                 }
             }
 
+            if (!update && (GameScene == gameScene_InGameOlympusBattle))
+            {
+                // olympus hand pointers
+                if (_x >= (1.0/2)*(ScreenWidth) && _x <= (1)*(ScreenWidth) &&
+                    _z == (s32)(-1.000)) {
+
+                    _x = (_x)/(aspectRatio) + (ScreenWidth - ScreenWidth/aspectRatio)/2;
+                    update = true;
+                }
+            }
+
             if (!update && (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog))
             {
                 // Bug sector SP score
