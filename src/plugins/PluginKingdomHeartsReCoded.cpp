@@ -529,6 +529,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                     .hudScale(UIScale)
                     .build(aspectRatio));
 
+            // cleaning the rest of the upper area of the screen
+            shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(118, 182)
+                    .withSize(14, 10)
+                    .placeAtCorner(corner_Top)
+                    .sourceScale(aspectRatio*20, 1.0*4)
+                    .hudScale(UIScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
         case gameScene_InGameDialog:
             if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
                 shapes.push_back(ShapeBuilder::square()
