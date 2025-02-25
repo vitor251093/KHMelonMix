@@ -81,8 +81,7 @@ private:
     u32 Map;
     int UIScale = 4;
     bool ShowMap;
-    int MinimapCenterX;
-    int MinimapCenterY;
+    int MinimapFrameTick;
     bool HideAllHUD;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
@@ -136,6 +135,7 @@ private:
     bool isBugSector();
     bool isCommandMenuVisible();
     bool isHealthVisible();
+    ivec2 minimapCenter();
     bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 
     void hudToggle();

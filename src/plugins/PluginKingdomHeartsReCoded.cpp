@@ -73,38 +73,6 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define CUTSCENE_ADDRESS_EU 0x020b7e08
 #define CUTSCENE_ADDRESS_JP 0x020b7858
 
-#define MINIMAP_1_CENTER_X_ADDRESS_US 0x023d8054
-#define MINIMAP_1_CENTER_X_ADDRESS_EU 0x023d8054 // TODO: KH
-#define MINIMAP_1_CENTER_X_ADDRESS_JP 0x023d8054 // TODO: KH
-
-#define MINIMAP_1_CENTER_Y_ADDRESS_US 0x023d8058
-#define MINIMAP_1_CENTER_Y_ADDRESS_EU 0x023d8058 // TODO: KH
-#define MINIMAP_1_CENTER_Y_ADDRESS_JP 0x023d8058 // TODO: KH
-
-#define MINIMAP_2_CENTER_X_ADDRESS_US 0x023d6c68
-#define MINIMAP_2_CENTER_X_ADDRESS_EU 0x023d6c68 // TODO: KH
-#define MINIMAP_2_CENTER_X_ADDRESS_JP 0x023d6c68 // TODO: KH
-
-#define MINIMAP_2_CENTER_Y_ADDRESS_US 0x023d6c6c
-#define MINIMAP_2_CENTER_Y_ADDRESS_EU 0x023d6c6c // TODO: KH
-#define MINIMAP_2_CENTER_Y_ADDRESS_JP 0x023d6c6c // TODO: KH
-
-#define MINIMAP_3_CENTER_X_ADDRESS_US 0x023d8081
-#define MINIMAP_3_CENTER_X_ADDRESS_EU 0x023d8081 // TODO: KH
-#define MINIMAP_3_CENTER_X_ADDRESS_JP 0x023d8081 // TODO: KH
-
-#define MINIMAP_3_CENTER_Y_ADDRESS_US 0x023d8085
-#define MINIMAP_3_CENTER_Y_ADDRESS_EU 0x023d8085 // TODO: KH
-#define MINIMAP_3_CENTER_Y_ADDRESS_JP 0x023d8085 // TODO: KH
-
-#define MINIMAP_4_CENTER_X_ADDRESS_US 0x023c6a94
-#define MINIMAP_4_CENTER_X_ADDRESS_EU 0x023c6a94 // TODO: KH
-#define MINIMAP_4_CENTER_X_ADDRESS_JP 0x023c6a94 // TODO: KH
-
-#define MINIMAP_4_CENTER_Y_ADDRESS_US 0x023c6a98
-#define MINIMAP_4_CENTER_Y_ADDRESS_EU 0x023c6a98 // TODO: KH
-#define MINIMAP_4_CENTER_Y_ADDRESS_JP 0x023c6a98 // TODO: KH
-
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US 0x02198310
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU 0x021991b0
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP 0x02198310 // TODO: KH
@@ -159,7 +127,8 @@ enum
     gameSceneState_topScreenMissionInformationVisible,
     gameSceneState_showBottomScreenMissionInformation,
     gameSceneState_bottomScreenCutscene,
-    gameSceneState_topScreenCutscene
+    gameSceneState_topScreenCutscene,
+    gameSceneState_minimapCenterTick
 };
 
 enum
@@ -183,10 +152,6 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     priorMap = -1;
     Map = 0;
     UIScale = 4;
-
-    // game scene detection utils (extra: minimap coordinates)
-    MinimapCenterX = 128;
-    MinimapCenterY = 96;
 
     // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;
@@ -609,9 +574,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
             {
                 if ((gameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
                     // minimap
+                    ivec2 _minimapCenter = minimapCenter();
                     shapes.push_back(ShapeBuilder::square()
                             .fromBottomScreen()
-                            .fromPosition(77, 42)
+                            .fromPosition(_minimapCenter.x - 54, _minimapCenter.y - 54)
                             .withSize(108, 108)
                             .placeAtCorner(corner_TopRight)
                             .withMargin(0.0, 30.0, 9.0, 0.0)
@@ -1008,6 +974,12 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
             if (GameScene == gameScene_InGameWithMap && isMinimapVisible()) {
                 if (ShowMap) {
                     state |= (1 << gameSceneState_showMinimap);
+
+                    int framesPerTick = 10;
+                    MinimapFrameTick = (MinimapFrameTick + 1) % (framesPerTick*2);
+                    if (MinimapFrameTick < framesPerTick) {
+                        state |= (1 << gameSceneState_minimapCenterTick);
+                    }
 
                     if (isBugSector())
                     {
@@ -1492,6 +1464,60 @@ bool PluginKingdomHeartsReCoded::isHealthVisible()
     return has2DOnTopOf3DAt(buffer, 233, 175);
 }
 
+#define IS_COLOR(pixel,r,g,b) ((((pixel >> 8) & 0xFF) == b) && (((pixel >> 4) & 0xFF) == g) && (((pixel >> 0) & 0xFF) == r))
+
+ivec2 PluginKingdomHeartsReCoded::minimapCenter()
+{
+    std::vector<ivec4> possibilities;
+    u32* buffer = bottomScreen2DTexture();
+    for (int y = 32; y < 151; y++) {
+        for (int x = 8; x < 247; x++) {
+            u32 pixel1 = getPixel(buffer, x, y, 0);
+            if (pixel1 == 0x1000343e) {
+                if (getPixel(buffer, x + 1, y,     0) == 0x1000343e &&
+                    getPixel(buffer, x,     y + 1, 0) == 0x1000343e &&
+                    getPixel(buffer, x + 1, y + 1, 0) == 0x1000343e) {
+
+                    int x2 = x + 1;
+                    int y2 = y + 1;
+                    while (getPixel(buffer, x2 + 1, y2, 0) == 0x1000343e) {
+                        x2 += 1;
+                    }
+                    while (getPixel(buffer, x2, y2 + 1, 0) == 0x1000343e) {
+                        y2 += 1;
+                    }
+
+                    possibilities.push_back(ivec4{x:x, y:y, z:x2-x+1, w:y2-y+1});
+                }
+            }
+        }
+    }
+
+    int posSize = possibilities.size();
+    if (posSize == 0) {
+        return ivec2{x:128, y:96};
+    }
+
+    int avgX = 0;
+    int avgY = 0;
+    int avgCount = 0;
+    int bigSize = 0;
+    for (int i = 0; i < posSize; i++) {
+        if (bigSize < possibilities[i].z*possibilities[i].w) {
+            bigSize = possibilities[i].z*possibilities[i].w;
+            avgX = 0;
+            avgY = 0;
+            avgCount = 0;
+        }
+        if (bigSize == possibilities[i].z*possibilities[i].w) {
+            avgX += possibilities[i].x;
+            avgY += possibilities[i].y;
+            avgCount += 1;
+        }
+    }
+    return ivec2{x:avgX/avgCount, y:avgY/avgCount};
+}
+
 bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 {
     u32 pixel = getPixel(buffer, x, y, 2);
@@ -1559,43 +1585,6 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     u8 gameState2 = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
     bool isWorldSelection = gameState2 == 0x03;
-
-    u32 minimapCenterXAddress = getU32ByCart(MINIMAP_1_CENTER_X_ADDRESS_US, MINIMAP_1_CENTER_X_ADDRESS_EU, MINIMAP_1_CENTER_X_ADDRESS_JP);
-    u32 minimapCenterYAddress = getU32ByCart(MINIMAP_1_CENTER_Y_ADDRESS_US, MINIMAP_1_CENTER_Y_ADDRESS_EU, MINIMAP_1_CENTER_Y_ADDRESS_JP);
-    u32 newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
-    u32 newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-    if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
-        MinimapCenterX = newMinimapCenterX;
-        MinimapCenterY = newMinimapCenterY;
-    }
-    else {
-        minimapCenterXAddress = getU32ByCart(MINIMAP_2_CENTER_X_ADDRESS_US, MINIMAP_2_CENTER_X_ADDRESS_EU, MINIMAP_2_CENTER_X_ADDRESS_JP);
-        minimapCenterYAddress = getU32ByCart(MINIMAP_2_CENTER_Y_ADDRESS_US, MINIMAP_2_CENTER_Y_ADDRESS_EU, MINIMAP_2_CENTER_Y_ADDRESS_JP);
-        newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
-        newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-        if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
-            MinimapCenterX = newMinimapCenterX;
-            MinimapCenterY = newMinimapCenterY;
-        }
-        else {
-            minimapCenterXAddress = getU32ByCart(MINIMAP_3_CENTER_X_ADDRESS_US, MINIMAP_3_CENTER_X_ADDRESS_EU, MINIMAP_3_CENTER_X_ADDRESS_JP);
-            minimapCenterYAddress = getU32ByCart(MINIMAP_3_CENTER_Y_ADDRESS_US, MINIMAP_3_CENTER_Y_ADDRESS_EU, MINIMAP_3_CENTER_Y_ADDRESS_JP);
-            newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
-            newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-            if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
-                MinimapCenterX = newMinimapCenterX;
-                MinimapCenterY = newMinimapCenterY;
-            }
-            else {
-                minimapCenterXAddress = getU32ByCart(MINIMAP_4_CENTER_X_ADDRESS_US, MINIMAP_4_CENTER_X_ADDRESS_EU, MINIMAP_4_CENTER_X_ADDRESS_JP);
-                minimapCenterYAddress = getU32ByCart(MINIMAP_4_CENTER_Y_ADDRESS_US, MINIMAP_4_CENTER_Y_ADDRESS_EU, MINIMAP_4_CENTER_Y_ADDRESS_JP);
-                newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
-                newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-                MinimapCenterX = newMinimapCenterX;
-                MinimapCenterY = newMinimapCenterY;
-            }
-        }
-    }
 
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
