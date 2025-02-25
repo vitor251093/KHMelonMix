@@ -11,7 +11,7 @@
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
 
-#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*y + x + 256*layer]
+#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \

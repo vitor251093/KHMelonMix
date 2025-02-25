@@ -1503,34 +1503,62 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
     int minX = 8;
     int maxX = 247;
 
+    bool targetColorMap1[6][6] = {
+        {false, false, false, false, false, false},
+        {false, false, true,  true,  false, false},
+        {false, true,  true,  true,  true,  false},
+        {false, true,  true,  true,  true,  false},
+        {false, false, true,  true,  false, false},
+        {false, false, false, false, false, false}
+    };
+    bool targetColorMap2[4][4] = {
+        {false, false, false, false},
+        {false, true,  true,  false},
+        {false, true,  true,  false},
+        {false, false, false, false}
+    };
+
     std::vector<ivec4> possibilities;
     u32* buffer = bottomScreen2DTexture();
     for (int y = minY; y < maxY; y++) {
         for (int x = minX; x < maxX; x++) {
-            u32 pixel1 = getPixel(buffer, x, y, 0);
-            if (pixel1 == 0x1000343e) {
-                if (getPixel(buffer, x + 1, y,     0) == 0x1000343e &&
-                    getPixel(buffer, x,     y + 1, 0) == 0x1000343e &&
-                    getPixel(buffer, x + 1, y + 1, 0) == 0x1000343e) {
+            if (getPixel(buffer, x, y, 0) == 0x1000343e) {
+                bool valid = true;
+                for (int subY = 0; subY < 6; subY ++) {
+                    for (int subX = 0; subX < 6; subX ++) {
+                        if (targetColorMap1[subY][subX]) {
+                            valid = valid && (getPixel(buffer, x + subX - 2, y + subY - 2, 0) == 0x1000343e);
+                        }
+                        else {
+                            valid = valid && (getPixel(buffer, x + subX - 2, y + subY - 2, 0) != 0x1000343e);
+                        }
+                        if (!valid) break;
+                    }
+                    if (!valid) break;
+                }
 
-                    int x2 = x + 1;
-                    int y2 = y + 1;
-                    while (1) {
-                        bool inc = false;
-                        if (getPixel(buffer, x2 + 1, y2, 0) == 0x1000343e) {
-                            x2 += 1;
-                            inc = true;
+                if (valid) {
+                    possibilities.push_back(ivec4{x:x, y:y, z:6, w:6});
+                }
+
+                if (!valid) {
+                    valid = true;
+                    for (int subY = 0; subY < 4; subY ++) {
+                        for (int subX = 0; subX < 4; subX ++) {
+                            if (targetColorMap2[subY][subX]) {
+                                valid = valid && (getPixel(buffer, x + subX - 1, y + subY - 1, 0) == 0x1000343e);
+                            }
+                            else {
+                                valid = valid && (getPixel(buffer, x + subX - 1, y + subY - 1, 0) != 0x1000343e);
+                            }
+                            if (!valid) break;
                         }
-                        if (getPixel(buffer, x2, y2 + 1, 0) == 0x1000343e) {
-                            y2 += 1;
-                            inc = true;
-                        }
-                        if (!inc) {
-                            break;
-                        }
+                        if (!valid) break;
                     }
 
-                    possibilities.push_back(ivec4{x:x, y:y, z:x2-x+1, w:y2-y+1});
+                    if (valid) {
+                        possibilities.push_back(ivec4{x:x, y:y, z:4, w:4});
+                    }
                 }
             }
         }
