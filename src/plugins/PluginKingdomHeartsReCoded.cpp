@@ -1517,21 +1517,24 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
         {false, true,  true,  false},
         {false, false, false, false}
     };
+    bool targetColorMap3[5][3] = {
+        {false, false, false},
+        {false, true,  false},
+        {false, true,  false},
+        {false, true,  false},
+        {false, false, false}
+    };
 
     std::vector<ivec4> possibilities;
     u32* buffer = bottomScreen2DTexture();
     for (int y = minY; y < maxY; y++) {
         for (int x = minX; x < maxX; x++) {
-            if (getPixel(buffer, x, y, 0) == 0x1000343e) {
+            if ((getPixel(buffer, x, y, 0) == 0x1000343e) || (getPixel(buffer, x, y, 0) == 0x1000383e)) {
                 bool valid = true;
                 for (int subY = 0; subY < 6; subY ++) {
                     for (int subX = 0; subX < 6; subX ++) {
-                        if (targetColorMap1[subY][subX]) {
-                            valid = valid && (getPixel(buffer, x + subX - 2, y + subY - 2, 0) == 0x1000343e);
-                        }
-                        else {
-                            valid = valid && (getPixel(buffer, x + subX - 2, y + subY - 2, 0) != 0x1000343e);
-                        }
+                        u32 pixel = getPixel(buffer, x + subX - 2, y + subY - 2, 0);
+                        valid = valid && (targetColorMap1[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
                         if (!valid) break;
                     }
                     if (!valid) break;
@@ -1545,12 +1548,8 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
                     valid = true;
                     for (int subY = 0; subY < 4; subY ++) {
                         for (int subX = 0; subX < 4; subX ++) {
-                            if (targetColorMap2[subY][subX]) {
-                                valid = valid && (getPixel(buffer, x + subX - 1, y + subY - 1, 0) == 0x1000343e);
-                            }
-                            else {
-                                valid = valid && (getPixel(buffer, x + subX - 1, y + subY - 1, 0) != 0x1000343e);
-                            }
+                            u32 pixel = getPixel(buffer, x + subX - 1, y + subY - 1, 0);
+                            valid = valid && (targetColorMap2[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
                             if (!valid) break;
                         }
                         if (!valid) break;
@@ -1558,6 +1557,22 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
 
                     if (valid) {
                         possibilities.push_back(ivec4{x:x, y:y, z:4, w:4});
+                    }
+
+                    if (!valid) {
+                        valid = true;
+                        for (int subY = 0; subY < 5; subY ++) {
+                            for (int subX = 0; subX < 3; subX ++) {
+                                u32 pixel = getPixel(buffer, x + subX - 1, y + subY - 2, 0);
+                                valid = valid && (targetColorMap3[subY][subX] ? (pixel == 0x1000383e) : (pixel != 0x1000383e));
+                                if (!valid) break;
+                            }
+                            if (!valid) break;
+                        }
+
+                        if (valid) {
+                            possibilities.push_back(ivec4{x:x, y:y, z:3, w:5});
+                        }
                     }
                 }
             }
