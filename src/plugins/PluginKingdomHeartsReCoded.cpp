@@ -1468,10 +1468,16 @@ bool PluginKingdomHeartsReCoded::isHealthVisible()
 
 ivec2 PluginKingdomHeartsReCoded::minimapCenter()
 {
+    int distanceToCenter = 54;
+    int minY = 31;
+    int maxY = 151;
+    int minX = 8;
+    int maxX = 247;
+
     std::vector<ivec4> possibilities;
     u32* buffer = bottomScreen2DTexture();
-    for (int y = 32; y < 151; y++) {
-        for (int x = 8; x < 247; x++) {
+    for (int y = minY; y < maxY; y++) {
+        for (int x = minX; x < maxX; x++) {
             u32 pixel1 = getPixel(buffer, x, y, 0);
             if (pixel1 == 0x1000343e) {
                 if (getPixel(buffer, x + 1, y,     0) == 0x1000343e &&
@@ -1506,21 +1512,24 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
         return ivec2{x:128, y:96};
     }
 
-    int maxX = 0;
-    int maxY = 0;
+    int x = 0;
+    int y = 0;
     int bigSize = 0;
     for (int i = 0; i < posSize; i++) {
         if (bigSize < possibilities[i].z*possibilities[i].w) {
             bigSize = possibilities[i].z*possibilities[i].w;
-            maxX = 0;
-            maxY = 0;
+            x = 0;
+            y = 0;
         }
         if (bigSize == possibilities[i].z*possibilities[i].w) {
-            maxX = std::max(maxX, possibilities[i].x);
-            maxY = std::max(maxY, possibilities[i].y);
+            x = std::max(x, possibilities[i].x);
+            y = std::max(y, possibilities[i].y);
         }
     }
-    return ivec2{x:maxX, y:maxY};
+    return ivec2{
+        x:std::max(std::min(x, maxX - distanceToCenter), minX + distanceToCenter),
+        y:std::max(std::min(y, maxY - distanceToCenter), minY + distanceToCenter)
+    };
 }
 
 bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
