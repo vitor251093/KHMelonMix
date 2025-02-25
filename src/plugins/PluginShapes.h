@@ -54,7 +54,7 @@ struct alignas(16) ShapeData2D { // 112 bytes
 };
 
 // UBO-compatible struct with proper padding
-struct alignas(16) ShapeData3D { // 112 bytes
+struct alignas(16) ShapeData3D {
     vec2 sourceScale;  // 8 bytes (X factor, Y factor)
 
     int corner;     // 4 bytes

@@ -156,60 +156,54 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
     int gameSceneState = renderer_gameSceneState();
     std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
 
-    u32 attr = polygon->Attr;
     for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
     {
         ShapeData3D shape = shapes[shapeIndex];
 
         // polygon mode
         if ((shape.effects & 0x1) != 0) {
+            if (shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) {
+                if (shape.polygonAttributes == 0 || shape.polygonAttributes == polygon->Attr) {
+                    s32 z = polygon->Vertices[0]->Position[2];
+                    float _z = ((float)z)/(1 << 22);
+                    if (_z >= shape.zRange.x && _z <= shape.zRange.y) 
+                    {
+                        u32 x0 = (int)scaledPositions[0][0];
+                        u32 x1 = (int)scaledPositions[0][0];
+                        for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
+                            x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
+                            x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
+                        }
+                        float xCenter = (x0 + x1)/2.0;
 
-            if ((shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) &&
-                (shape.polygonAttributes    == 0 || shape.polygonAttributes    == attr)) {
-                s32 z = polygon->Vertices[0]->Position[2];
-                float _z = ((float)z)/(1 << 22);
-                if (shape.zRange.x <= _z && shape.zRange.y >= _z) 
-                {    
-                    u32 x0 = (int)scaledPositions[0][0];
-                    u32 x1 = (int)scaledPositions[0][0];
-                    for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
-                        x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
-                        x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
-                    }
-                    float xCenter = (x0 + x1)/2.0;
-
-                    for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
-                        scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
+                        for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
+                            scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
+                        }
                     }
                 }
             }
         }
-    }
-
-    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
-    {
-        s32* x = &scaledPositions[vertexIndex][0];
-        s32* y = &scaledPositions[vertexIndex][1];
-        s32 z = polygon->Vertices[vertexIndex]->Position[2];
-        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
-
-        float _x = (float)(*x);
-        float _y = (float)(*y);
-        float _z = ((float)z)/(1 << 22);
-
-        for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
+        else // vertex mode
         {
-            ShapeData3D shape = shapes[shapeIndex];
             float iuTexScale = SCREEN_SCALE/shape.hudScale;
             float xScaleInv = iuTexScale/shape.sourceScale.x;
             float yScaleInv = iuTexScale/shape.sourceScale.y;
 
-            // vertex mode
-            if ((shape.effects & 0x1) == 0)
+            for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
             {
+                s32* x = &scaledPositions[vertexIndex][0];
+                s32* y = &scaledPositions[vertexIndex][1];
+                s32 z = polygon->Vertices[vertexIndex]->Position[2];
+                s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
+
+                float _x = (float)(*x);
+                float _y = (float)(*y);
+                float _z = ((float)z)/(1 << 22);
+
                 if (_x >= shape.squareInitialCoords.x*resolutionScale && _x <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
                     _y >= shape.squareInitialCoords.y*resolutionScale && _y <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
-                    _z >= shape.zRange.x && _z <= shape.zRange.y)
+                    _z >= shape.zRange.x && _z <= shape.zRange.y &&
+                    (shape.polygonAttributes == 0 || shape.polygonAttributes == polygon->Attr))
                 {
                     // hide vertex
                     if ((shape.effects & 0x2) != 0)
@@ -273,11 +267,11 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
                         _y = _y + shape.margin.y*resolutionScale - shape.margin.w*resolutionScale;
                     }
                 }
+
+                *x = (s32)(_x);
+                *y = (s32)(_y);
             }
         }
-
-        *x = (s32)(_x);
-        *y = (s32)(_y);
     }
 };
 
