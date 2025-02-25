@@ -520,6 +520,15 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .build(aspectRatio));
             break;
 
+        case gameScene_InGameOlympusBattle:
+            // moves list
+            shapes.push_back(ShapeBuilder::square()
+                    .fromPosition(0, 0)
+                    .withSize(256, 40)
+                    .placeAtCorner(corner_TopLeft)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+
         case gameScene_InGameDialog:
             if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
                 shapes.push_back(ShapeBuilder::square()
@@ -529,7 +538,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 break;
             }
 
-        case gameScene_InGameOlympusBattle:
         case gameScene_InGameWithMap:
             if ((gameSceneState & (1 << gameSceneState_showResultScreen)) > 0)
             {
