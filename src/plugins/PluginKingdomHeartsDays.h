@@ -125,10 +125,6 @@ private:
 
     int detectGameScene();
 
-    u32 getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress, u32 jpRev1Address);
-    std::string getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress, std::string jpRev1Address);
-    bool getBoolByCart(bool usAddress, bool euAddress, bool jpAddress, bool jpRev1Address);
-
     u32 getMobiCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue);
     u32 detectTopScreenMobiCutsceneAddress();
