@@ -1512,7 +1512,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
 {
     int distanceToCenter = 54;
     int minY = 31;
-    int maxY = 151;
+    int maxY = 140;
     int minX = 8;
     int maxX = 247;
 
@@ -1594,7 +1594,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
 
     int posSize = possibilities.size();
     if (posSize == 0) {
-        return ivec2{x:128, y:96};
+        return ivec2{x:MinimapCenterX, y:MinimapCenterY};
     }
 
     int x = 0;
@@ -1611,10 +1611,15 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
             y = std::max(y, possibilities[i].y);
         }
     }
-    return ivec2{
+    ivec2 result = {
         x:std::max(std::min(x, maxX - distanceToCenter), minX + distanceToCenter),
         y:std::max(std::min(y, maxY - distanceToCenter), minY + distanceToCenter)
     };
+
+    MinimapCenterX = result.x;
+    MinimapCenterY = result.y;
+
+    return result;
 }
 
 bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)

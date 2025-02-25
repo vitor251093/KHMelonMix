@@ -81,6 +81,8 @@ private:
     u32 Map;
     int UIScale = 4;
     bool ShowMap;
+    int MinimapCenterX = 128;
+    int MinimapCenterY = 96;
     int MinimapFrameTick;
     bool HideAllHUD;
 
