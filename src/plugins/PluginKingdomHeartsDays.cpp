@@ -938,6 +938,7 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
         case gameScene_InGameWithDouble3D:
             if (ShouldShowBottomScreen) {
                 state |= (1 << gameSceneState_bottomScreenSora);
+                state |= (1 << gameSceneState_showHud);
                 break;
             }
 
