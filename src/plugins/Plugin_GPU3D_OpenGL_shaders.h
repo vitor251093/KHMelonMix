@@ -72,6 +72,8 @@ void main()
     fpos.z = (float(vPosition.z << zshift) / 8388608.0) - 1.0;
     fpos.w = float(vPosition.w) / 65536.0f;
 
+    int ScreenWidth = int(uScreenSize.x);
+    int ScreenHeight = int(uScreenSize.y);
     float aspectRatio = currentAspectRatio;
     float resolutionScale = uScreenSize.x/256.0;
     float _x = fpos.x;
@@ -105,23 +107,23 @@ void main()
             bool colorMatchEqual = false;
             bool colorMatchEqual2 = false;
             bool colorMatchNeg = false;
-            for (int i = 0; i < shapes[shapeIndex].colorCount; i++) {
-                colorMatchEqual = true;
-                if ((((shapes[shapeIndex].color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-                    && (((shapes[shapeIndex].color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-                    && (((shapes[shapeIndex].color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                    colorMatchEqual2 = true;
-                    break;
-                }
-            }
-            for (int i = 0; i < shapes[shapeIndex].negatedColorCount; i++) {
-                if ((((shapes[shapeIndex].negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-                    && (((shapes[shapeIndex].negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-                    && (((shapes[shapeIndex].negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                    colorMatchNeg = true;
-                    break;
-                }
-            }
+            // for (int i = 0; i < shapes[shapeIndex].colorCount; i++) {
+            //     colorMatchEqual = true;
+            //     if ((((shapes[shapeIndex].color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+            //         && (((shapes[shapeIndex].color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+            //         && (((shapes[shapeIndex].color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+            //         colorMatchEqual2 = true;
+            //         break;
+            //     }
+            // }
+            // for (int i = 0; i < shapes[shapeIndex].negatedColorCount; i++) {
+            //     if ((((shapes[shapeIndex].negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+            //         && (((shapes[shapeIndex].negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+            //         && (((shapes[shapeIndex].negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+            //         colorMatchNeg = true;
+            //         break;
+            //     }
+            // }
             bool colorMatch = (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
 
             float iuTexScale = SCREEN_SCALE/shapes[shapeIndex].hudScale;
