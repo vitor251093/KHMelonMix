@@ -65,11 +65,11 @@ uniform float currentAspectRatio;
 void main()
 {
     int attr = vPolygonAttr.x;
-    int zshift = (attr >> 16) & 0x1F;
+    int zshift = (attr >> 16) & 0xFFFF;
 
     vec4 fpos;
     fpos.xy = vec2(vPosition.xy);
-    fpos.z = (float(vPosition.z << zshift) / 8388608.0) - 1.0;
+    fpos.z = (float(vPosition.z << zshift) / 0xFFFFFF)*2 - 1.0;
     fpos.w = float(vPosition.w) / 65536.0f;
 
     int ScreenWidth = int(uScreenSize.x);
