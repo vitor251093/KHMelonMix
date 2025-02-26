@@ -356,6 +356,8 @@ public:
         shapeBuilder.shapeData.squareInitialCoords.w = 192;
         shapeBuilder.shapeData.hudScale = SCREEN_SCALE;
         shapeBuilder.shapeData.corner = corner_PreservePosition;
+        shapeBuilder.shapeData.zRange.x = -1.0;
+        shapeBuilder.shapeData.zRange.y = 1.0;
         shapeBuilder.shapeData.margin.x = 0;
         shapeBuilder.shapeData.margin.y = 0;
         shapeBuilder.shapeData.margin.z = 0;

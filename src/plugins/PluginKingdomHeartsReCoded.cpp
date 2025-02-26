@@ -853,84 +853,91 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
 
-    switch (gameScene) {
-        case gameScene_InGameOlympusBattle:
+    if (gameScene == gameScene_InGameWithMap || gameScene == gameScene_InGameDialog || gameScene == gameScene_InGameOlympusBattle)
+    {
+        if (HideAllHUD)
+        {
+            // no HUD
+            shapes.push_back(ShapeBuilder3D::square()
+                    .placeAtCorner(corner_Center)
+                    .zRange(-1.0, -0.000001)
+                    .hide()
+                    .build(aspectRatio));
+            return shapes;
+        }
+
+        // aim
+        shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
+                .polygonVertexesCount(4)
+                .polygonAttributes(1058996416)
+                .zRange(-1.0, -0.5)
+                .build(aspectRatio));
+
+        // aim
+        shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
+                .polygonVertexesCount(4)
+                .polygonAttributes(1042219200)
+                .zRange(-1.0, -0.5)
+                .build(aspectRatio));
+
+        // green aim small square
+        shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
+                .polygonVertexesCount(4)
+                .polygonAttributes(1025441984)
+                .zRange(-1.0, -0.5)
+                .build(aspectRatio));
+
+        // green aim big square
+        shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
+                .polygonVertexesCount(4)
+                .polygonAttributes(2033856)
+                .zRange(-1.0, -0.5)
+                .build(aspectRatio));
+
+        // command menu
+        shapes.push_back(ShapeBuilder3D::square()
+                .fromPosition(0, 24)
+                .withSize(80, 168)
+                .placeAtCorner(corner_BottomLeft)
+                .withMargin(6.8, 0.0, 0.0, 0.5)
+                .zRange(-1.0, -1.0)
+                .negateColor(0xFFFFFF)
+                .hudScale(UIScale)
+                .logger()
+                .build(aspectRatio));
+
+        if (gameScene == gameScene_InGameOlympusBattle) {
             // olympus hand pointers
             shapes.push_back(ShapeBuilder3D::square()
                     .placeAtCorner(corner_Center)
                     .zRange(-1.0, -1.0)
                     .build(aspectRatio));
 
-        case gameScene_InGameWithMap:
-        case gameScene_InGameDialog:
-            if (!HideAllHUD)
-            {
-                // aim
-                shapes.push_back(ShapeBuilder3D::square()
-                        .polygonMode()
-                        .polygonVertexesCount(4)
-                        .polygonAttributes(1058996416)
-                        .zRange(-1.0, -0.5)
-                        .build(aspectRatio));
-
-                // aim
-                shapes.push_back(ShapeBuilder3D::square()
-                        .polygonMode()
-                        .polygonVertexesCount(4)
-                        .polygonAttributes(1042219200)
-                        .zRange(-1.0, -0.5)
-                        .build(aspectRatio));
-
-                // green aim small square
-                shapes.push_back(ShapeBuilder3D::square()
-                        .polygonMode()
-                        .polygonVertexesCount(4)
-                        .polygonAttributes(1025441984)
-                        .zRange(-1.0, -0.5)
-                        .build(aspectRatio));
-
-                // green aim big square
-                shapes.push_back(ShapeBuilder3D::square()
-                        .polygonMode()
-                        .polygonVertexesCount(4)
-                        .polygonAttributes(2033856)
-                        .zRange(-1.0, -0.5)
-                        .build(aspectRatio));
-
-                // SP score
-                shapes.push_back(ShapeBuilder3D::square()
-                        .fromPosition(0, 0)
-                        .withSize(102, 58)
-                        .placeAtCorner(corner_TopLeft)
-                        .withMargin(0.0, 18.0, 0.0, 0.0)
-                        .sourceScale(1.5)
-                        .zRange(-1.0, -1.0)
-                        .hudScale(UIScale)
-                        .build(aspectRatio));
-                // TODO: KH UI This is also distorting the aims
-
-                // command menu
-                shapes.push_back(ShapeBuilder3D::square()
-                        .fromPosition(0, 24)
-                        .withSize(80, 168)
-                        .placeAtCorner(corner_BottomLeft)
-                        .withMargin(6.8, 0.0, 0.0, 0.5)
-                        .zRange(-1.0, -1.0)
-                        .negateColor(0xFFFFFF)
-                        .hudScale(UIScale)
-                        .logger()
-                        .build(aspectRatio));
-            }
-            else
-            {
-                // no HUD
-                shapes.push_back(ShapeBuilder3D::square()
-                        .placeAtCorner(corner_Center)
-                        .zRange(-1.0, -0.000001)
-                        .hide()
-                        .build(aspectRatio));
-            }
-            break;
+            // player health
+            shapes.push_back(ShapeBuilder3D::square()
+                    .fromPosition(128, 128)
+                    .withSize(128, 64)
+                    .placeAtCorner(corner_BottomRight)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+        }
+        else {
+            // SP score
+            shapes.push_back(ShapeBuilder3D::square()
+                    .fromPosition(0, 0)
+                    .withSize(102, 58)
+                    .placeAtCorner(corner_TopLeft)
+                    .withMargin(0.0, 18.0, 0.0, 0.0)
+                    .sourceScale(1.5)
+                    .zRange(-1.0, -1.0)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+            // TODO: KH UI This is also distorting the aims
+        }
     }
 
     return shapes;
