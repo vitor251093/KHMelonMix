@@ -158,14 +158,20 @@ const char* Plugin::gpu3DOpenGLClassic_VS_Z() {
 void Plugin::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint CompShader, u32 flags)
 {
     GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock3D");
-    glUniformBlockBinding(CompShader, blockIndex, 1);
+    glUniformBlockBinding(CompShader, blockIndex, 2);
 
-    GLuint uboBuffer;
-    glGenBuffers(1, &uboBuffer);
-    glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData3D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
-    CompUbo3DLoc[CompShader][flags] = uboBuffer;
+    if (CompUbo3DLocInit != true) {
+#if DEBUG_MODE_ENABLED
+        printf("Initializing 3D shapes UBO\n");
+#endif
+        GLuint uboBuffer;
+        glGenBuffers(1, &uboBuffer);
+        glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData3D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboBuffer);
+        CompUbo3DLoc[CompShader] = uboBuffer;
+        CompUbo3DLocInit = true;
+    }
 
     CompGpu3DLoc[CompShader][flags][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
     CompGpu3DLoc[CompShader][flags][1] = glGetUniformLocation(CompShader, "hudScale");
@@ -201,7 +207,7 @@ void Plugin::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flag
 
         shapes.resize(SHAPES_DATA_ARRAY_SIZE);
         auto shadersData = shapes.data();
-        glBindBuffer(GL_UNIFORM_BUFFER, CompUbo3DLoc[CompShader][flags]);
+        glBindBuffer(GL_UNIFORM_BUFFER, CompUbo3DLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
         if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData3D) * shapes.size());
         glUnmapBuffer(GL_UNIFORM_BUFFER);

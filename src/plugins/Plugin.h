@@ -263,7 +263,8 @@ protected:
 
     std::map<u32, std::map<u32, GLuint[20]>> CompGpu3DLoc{};
     std::map<u32, std::map<u32, int[20]>> CompGpu3DLastValues{};
-    std::map<u32, std::map<u32, GLuint>> CompUbo3DLoc{};
+    std::map<u32, GLuint> CompUbo3DLoc{};
+    bool CompUbo3DLocInit = false;
 
     float AspectRatio = 0;
     int PriorGameScene = -1;
