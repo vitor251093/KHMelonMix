@@ -159,11 +159,20 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
     for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
     {
         ShapeData3D shape = shapes[shapeIndex];
+        bool loggerModeEnabled = (shape.effects & 0x4) != 0;
+
+        bool attrMatch = true;
+        for (int i = 0; i < 4; i++) {
+            attrMatch = attrMatch && (shape.polygonAttributes[i] == 0 || shape.polygonAttributes[i] == polygon->Attr);
+        }
+        for (int i = 0; i < 4; i++) {
+            attrMatch = attrMatch && (shape.negatedPolygonAttributes[i] == 0 || shape.negatedPolygonAttributes[i] != polygon->Attr);
+        }
 
         // polygon mode
         if ((shape.effects & 0x1) != 0) {
             if (shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) {
-                if (shape.polygonAttributes == 0 || shape.polygonAttributes == polygon->Attr) {
+                if (attrMatch) {
                     s32 z = polygon->Vertices[0]->Position[2];
                     float _z = ((float)z)/(1 << 22);
                     if (_z >= shape.zRange.x && _z <= shape.zRange.y) 
@@ -202,8 +211,7 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
 
                 if (_x >= shape.squareInitialCoords.x*resolutionScale && _x <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
                     _y >= shape.squareInitialCoords.y*resolutionScale && _y <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
-                    _z >= shape.zRange.x && _z <= shape.zRange.y &&
-                    (shape.polygonAttributes == 0 || shape.polygonAttributes == polygon->Attr))
+                    _z >= shape.zRange.x && _z <= shape.zRange.y && attrMatch)
                 {
                     // hide vertex
                     if ((shape.effects & 0x2) != 0)

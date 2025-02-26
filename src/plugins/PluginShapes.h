@@ -65,7 +65,8 @@ struct alignas(16) ShapeData3D {
     vec4 margin; // 16 bytes (left, top, right, bottom)
 
     vec2 zRange;
-    int polygonAttributes;
+    int polygonAttributes[4];
+    int negatedPolygonAttributes[4];
     int polygonVertexesCount;
 
     int effects;
@@ -357,7 +358,11 @@ public:
     }
 
     ShapeBuilder3D& polygonAttributes(int _polygonAttributes) {
-        shapeData.polygonAttributes = _polygonAttributes;
+        shapeData.polygonAttributes[_polygonAttributesIndex++] = _polygonAttributes;
+        return *this;
+    }
+    ShapeBuilder3D& negatePolygonAttributes(int _polygonAttributes) {
+        shapeData.negatedPolygonAttributes[_negatedPolygonAttributesIndex++] = _polygonAttributes;
         return *this;
     }
     ShapeBuilder3D& polygonMode() {
@@ -427,6 +432,10 @@ public:
         shapeData.effects |= 0x2;
         return *this;
     }
+    ShapeBuilder3D& logger() {
+        shapeData.effects |= 0x4;
+        return *this;
+    }
 
     ShapeData3D build(float aspectRatio) {
         _aspectRatio = aspectRatio;
@@ -437,6 +446,8 @@ private:
 
     int _shape;
     float _aspectRatio;
+    int _polygonAttributesIndex = 0;
+    int _negatedPolygonAttributesIndex = 0;
 };
 
 }

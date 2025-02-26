@@ -894,8 +894,9 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
                         .withMargin(0.0, heartTopMargin, 0.0, 0.0)
                         .zRange(-0.0008, -0.0006)
                         .hudScale(UIScale)
+                        .negatePolygonAttributes(34144384) // rain
+                        .negatePolygonAttributes(34799744) // rain
                         .build(aspectRatio));
-                // TODO: KH UI needs to filter by attribute to avoid changing the rain
             }
             else
             {
