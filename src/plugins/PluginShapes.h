@@ -76,8 +76,10 @@ struct alignas(16) ShapeData3D {
 
     int color[4];
     int negatedColor[4];
+
     int colorCount = 0;
     int negatedColorCount = 0;
+    int _pad0, _pad1;
 };
 
 enum

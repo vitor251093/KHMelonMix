@@ -426,7 +426,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog,
 
 #define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
 
-void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
+void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags)
 {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     

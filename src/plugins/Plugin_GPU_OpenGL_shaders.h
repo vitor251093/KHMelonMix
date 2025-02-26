@@ -43,7 +43,7 @@ struct ShapeData2D {
     ivec4 singleColorToAlpha;
 };
 
-layout(std140) uniform ShapeBlock {
+layout(std140) uniform ShapeBlock2D {
     ShapeData2D shapes[SHAPES_DATA_ARRAY_SIZE];
 };
 

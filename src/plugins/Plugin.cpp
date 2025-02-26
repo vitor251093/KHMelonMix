@@ -1,6 +1,7 @@
 #include "Plugin.h"
 
 #include "Plugin_GPU_OpenGL_shaders.h"
+#include "Plugin_GPU3D_OpenGL_shaders.h"
 
 #include <iostream>
 #include <string>
@@ -76,7 +77,7 @@ const char* Plugin::gpuOpenGL_FS()
 }
 
 void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock");
+    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock2D");
     glUniformBlockBinding(CompShader, blockIndex, 1);
 
     GLuint uboBuffer;
@@ -141,6 +142,68 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
         glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
         if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * shapes.size());
+        glUnmapBuffer(GL_UNIFORM_BUFFER);
+    }
+}
+
+const char* Plugin::gpu3DOpenGLClassic_VS_Z() {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
+    return kRenderVS_Z_Plugin;
+};
+
+void Plugin::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint CompShader, u32 flags)
+{
+    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock3D");
+    glUniformBlockBinding(CompShader, blockIndex, 1);
+
+    GLuint uboBuffer;
+    glGenBuffers(1, &uboBuffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData3D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
+    CompUbo3DLoc[CompShader][flags] = uboBuffer;
+
+    CompGpu3DLoc[CompShader][flags][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
+    CompGpu3DLoc[CompShader][flags][1] = glGetUniformLocation(CompShader, "hudScale");
+    CompGpu3DLoc[CompShader][flags][2] = glGetUniformLocation(CompShader, "shapeCount");
+
+    for (int index = 0; index <= 2; index ++) {
+        CompGpu3DLastValues[CompShader][flags][index] = -1;
+    }
+}
+
+void Plugin::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    int gameSceneState = renderer_gameSceneState();
+    
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][1], UIScale, updated);
+
+    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][2], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][3], gameSceneState, updated);
+
+    if (updated) {
+        std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
+
+#if DEBUG_MODE_ENABLED
+        printf("Updating 3D shapes. New shape count: %d\n", shapes.size());
+#endif
+
+        glUniform1f(CompGpu3DLoc[CompShader][flags][0], aspectRatio);
+        glUniform1i(CompGpu3DLoc[CompShader][flags][1], CompGpu3DLastValues[CompShader][flags][1]);
+        glUniform1i(CompGpu3DLoc[CompShader][flags][2], shapes.size());
+
+        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
+        auto shadersData = shapes.data();
+        glBindBuffer(GL_UNIFORM_BUFFER, CompUbo3DLoc[CompShader][flags]);
+        void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData3D) * shapes.size());
         glUnmapBuffer(GL_UNIFORM_BUFFER);
     }
 }
@@ -211,52 +274,53 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
         for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
         {
             ShapeData3D shape = shapes[shapeIndex];
-            bool loggerModeEnabled = (shape.effects & 0x4) != 0;
-
-            bool attrMatchEqual = false;
-            bool attrMatchEqual2 = false;
-            bool attrMatchNeg = false;
-            for (int i = 0; i < 4; i++) {
-                if (shape.polygonAttributes[i] != 0) {
-                    attrMatchEqual = true;
-                    if (shape.polygonAttributes[i] == polygon->Attr) {
-                        attrMatchEqual2 = true;
-                        break;
-                    }
-                }
-            }
-            for (int i = 0; i < 4; i++) {
-                if (shape.negatedPolygonAttributes[i] != 0 && shape.negatedPolygonAttributes[i] == polygon->Attr) {
-                    attrMatchNeg = true;
-                    break;
-                }
-            }
-            bool attrMatch = (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
-
-            bool colorMatchEqual = false;
-            bool colorMatchEqual2 = false;
-            bool colorMatchNeg = false;
-            for (int i = 0; i < shape.colorCount; i++) {
-                colorMatchEqual = true;
-                if ((((shape.color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-                 && (((shape.color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-                 && (((shape.color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                    colorMatchEqual2 = true;
-                    break;
-                }
-            }
-            for (int i = 0; i < shape.negatedColorCount; i++) {
-                if ((((shape.negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-                 && (((shape.negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-                 && (((shape.negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                    colorMatchNeg = true;
-                    break;
-                }
-            }
-            bool colorMatch = (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
 
             // vertex mode
             if ((shape.effects & 0x1) == 0) {
+                bool loggerModeEnabled = (shape.effects & 0x4) != 0;
+
+                bool attrMatchEqual = false;
+                bool attrMatchEqual2 = false;
+                bool attrMatchNeg = false;
+                for (int i = 0; i < 4; i++) {
+                    if (shape.polygonAttributes[i] != 0) {
+                        attrMatchEqual = true;
+                        if (shape.polygonAttributes[i] == polygon->Attr) {
+                            attrMatchEqual2 = true;
+                            break;
+                        }
+                    }
+                }
+                for (int i = 0; i < 4; i++) {
+                    if (shape.negatedPolygonAttributes[i] != 0 && shape.negatedPolygonAttributes[i] == polygon->Attr) {
+                        attrMatchNeg = true;
+                        break;
+                    }
+                }
+                bool attrMatch = (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
+
+                bool colorMatchEqual = false;
+                bool colorMatchEqual2 = false;
+                bool colorMatchNeg = false;
+                for (int i = 0; i < shape.colorCount; i++) {
+                    colorMatchEqual = true;
+                    if ((((shape.color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+                    && (((shape.color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+                    && (((shape.color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                        colorMatchEqual2 = true;
+                        break;
+                    }
+                }
+                for (int i = 0; i < shape.negatedColorCount; i++) {
+                    if ((((shape.negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+                    && (((shape.negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+                    && (((shape.negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                        colorMatchNeg = true;
+                        break;
+                    }
+                }
+                bool colorMatch = (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
+
                 float iuTexScale = SCREEN_SCALE/shape.hudScale;
                 float xScaleInv = iuTexScale/shape.sourceScale.x;
                 float yScaleInv = iuTexScale/shape.sourceScale.y;

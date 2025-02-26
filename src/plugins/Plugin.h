@@ -129,9 +129,9 @@ public:
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
     virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
 
-    virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
-    virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
-    virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
+    virtual const char* gpu3DOpenGLClassic_VS_Z();
+    virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint CompShader, u32 flags);
+    virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags);
 
     virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
 
@@ -260,6 +260,10 @@ protected:
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
     std::map<GLuint, int[20]> CompGpuLastValues{};
     std::map<GLuint, GLuint> CompUboLoc{};
+
+    std::map<u32, std::map<u32, GLuint[20]>> CompGpu3DLoc{};
+    std::map<u32, std::map<u32, int[20]>> CompGpu3DLastValues{};
+    std::map<u32, std::map<u32, GLuint>> CompUbo3DLoc{};
 
     float AspectRatio = 0;
     int PriorGameScene = -1;

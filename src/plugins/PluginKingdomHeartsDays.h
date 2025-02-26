@@ -44,7 +44,7 @@ public:
 
     const char* gpu3DOpenGLClassic_VS_Z();
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
-    void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags);
+    void gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags);
 
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
