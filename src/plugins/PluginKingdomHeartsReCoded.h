@@ -30,6 +30,7 @@ public:
     std::string tomlUniqueIdentifier();
 
     std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState);
+    std::vector<ShapeData3D> renderer_3DShapes(int gameScene, int gameSceneState);
     int renderer_gameSceneState();
     int renderer_screenLayout();
     int renderer_brightnessMode();
@@ -39,8 +40,6 @@ public:
     const char* gpu3DOpenGLClassic_VS_Z();
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
     void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags);
-
-    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
 
     void onLoadState();
 

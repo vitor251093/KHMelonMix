@@ -122,8 +122,11 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 
     if (updated) {
         std::vector<ShapeData2D> shapes = renderer_2DShapes(GameScene, gameSceneState);
+
+#if DEBUG_MODE_ENABLED
         printf("Updating shapes. New shape count: %d\n", shapes.size());
         printf("Updated conditions: scene %d - state %d\n", GameScene, gameSceneState);
+#endif
 
         glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
         glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
@@ -192,26 +195,75 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
                 }
             }
         }
-        else // vertex mode
+    }
+
+    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
+    {
+        s32* x = &scaledPositions[vertexIndex][0];
+        s32* y = &scaledPositions[vertexIndex][1];
+        s32 z = polygon->Vertices[vertexIndex]->Position[2];
+        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
+
+        float _x = (float)(*x);
+        float _y = (float)(*y);
+        float _z = ((float)z)/(1 << 22);
+
+        for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
         {
-            float iuTexScale = SCREEN_SCALE/shape.hudScale;
-            float xScaleInv = iuTexScale/shape.sourceScale.x;
-            float yScaleInv = iuTexScale/shape.sourceScale.y;
+            ShapeData3D shape = shapes[shapeIndex];
+            bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
-            for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
-            {
-                s32* x = &scaledPositions[vertexIndex][0];
-                s32* y = &scaledPositions[vertexIndex][1];
-                s32 z = polygon->Vertices[vertexIndex]->Position[2];
-                s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
+            bool attrMatchEqual = false;
+            bool attrMatchEqual2 = false;
+            bool attrMatchNeg = false;
+            for (int i = 0; i < 4; i++) {
+                if (shape.polygonAttributes[i] != 0) {
+                    attrMatchEqual = true;
+                    if (shape.polygonAttributes[i] == polygon->Attr) {
+                        attrMatchEqual2 = true;
+                        break;
+                    }
+                }
+            }
+            for (int i = 0; i < 4; i++) {
+                if (shape.negatedPolygonAttributes[i] != 0 && shape.negatedPolygonAttributes[i] == polygon->Attr) {
+                    attrMatchNeg = true;
+                    break;
+                }
+            }
+            bool attrMatch = (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
 
-                float _x = (float)(*x);
-                float _y = (float)(*y);
-                float _z = ((float)z)/(1 << 22);
+            bool colorMatchEqual = false;
+            bool colorMatchEqual2 = false;
+            bool colorMatchNeg = false;
+            for (int i = 0; i < shape.colorCount; i++) {
+                colorMatchEqual = true;
+                if ((((shape.color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+                 && (((shape.color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+                 && (((shape.color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                    colorMatchEqual2 = true;
+                    break;
+                }
+            }
+            for (int i = 0; i < shape.negatedColorCount; i++) {
+                if ((((shape.negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+                 && (((shape.negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+                 && (((shape.negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                    colorMatchNeg = true;
+                    break;
+                }
+            }
+            bool colorMatch = (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
+
+            // vertex mode
+            if ((shape.effects & 0x1) == 0) {
+                float iuTexScale = SCREEN_SCALE/shape.hudScale;
+                float xScaleInv = iuTexScale/shape.sourceScale.x;
+                float yScaleInv = iuTexScale/shape.sourceScale.y;
 
                 if (_x >= shape.squareInitialCoords.x*resolutionScale && _x <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
                     _y >= shape.squareInitialCoords.y*resolutionScale && _y <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
-                    _z >= shape.zRange.x && _z <= shape.zRange.y && attrMatch)
+                    _z >= shape.zRange.x && _z <= shape.zRange.y && attrMatch && colorMatch)
                 {
                     // hide vertex
                     if ((shape.effects & 0x2) != 0)
@@ -274,10 +326,11 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
                         _x = _x + (shape.margin.x*resolutionScale - shape.margin.z*resolutionScale)/aspectRatio;
                         _y = _y + shape.margin.y*resolutionScale - shape.margin.w*resolutionScale;
                     }
-                }
 
-                *x = (s32)(_x);
-                *y = (s32)(_y);
+                    *x = (s32)(_x);
+                    *y = (s32)(_y);
+                    break;
+                }
             }
         }
     }

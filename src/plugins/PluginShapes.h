@@ -65,13 +65,19 @@ struct alignas(16) ShapeData3D {
     vec4 margin; // 16 bytes (left, top, right, bottom)
 
     vec2 zRange;
-    int polygonAttributes[4];
-    int negatedPolygonAttributes[4];
     int polygonVertexesCount;
 
     int effects;
     // 0x01 => polygon mode
     // 0x02 => hide
+
+    int polygonAttributes[4];
+    int negatedPolygonAttributes[4];
+
+    int color[4];
+    int negatedColor[4];
+    int colorCount = 0;
+    int negatedColorCount = 0;
 };
 
 enum
@@ -363,6 +369,14 @@ public:
     }
     ShapeBuilder3D& negatePolygonAttributes(int _polygonAttributes) {
         shapeData.negatedPolygonAttributes[_negatedPolygonAttributesIndex++] = _polygonAttributes;
+        return *this;
+    }
+    ShapeBuilder3D& color(int _color) {
+        shapeData.color[shapeData.colorCount++] = _color;
+        return *this;
+    }
+    ShapeBuilder3D& negateColor(int _color) {
+        shapeData.negatedColor[shapeData.negatedColorCount++] = _color;
         return *this;
     }
     ShapeBuilder3D& polygonMode() {

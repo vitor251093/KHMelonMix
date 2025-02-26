@@ -376,131 +376,6 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 fla
 
 #undef UPDATE_GPU_VAR
 
-void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return;
-    }
-
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    u32 attr = polygon->Attr;
-
-    // aims
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu) {
-        u32 aimAttr1 = 1058996416;
-        u32 aimAttr2 = 1042219200;
-        u32 greenAimSmallSquare = 1025441984;
-        u32 greenAimBigSquare = 2033856; // also bug sector counter
-        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2 || attr == greenAimSmallSquare || attr == greenAimBigSquare)) {
-            s32 z = polygon->Vertices[0]->Position[2];
-            float _z = ((float)z)/(1 << 22);
-            if (_z < 0) {
-                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-                float xCenter = (x0 + x1)/2.0;
-
-                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
-                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
-                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
-                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
-            }
-        }
-    }
-
-    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
-    {
-        s32* x = &scaledPositions[vertexIndex][0];
-        s32* y = &scaledPositions[vertexIndex][1];
-        s32 z = polygon->Vertices[vertexIndex]->Position[2];
-        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
-
-        float iuTexScale = (6.0)/UIScale;
-
-        int resolutionScale = ScreenWidth/256;
-        float commandMenuLeftMargin = 5.1;
-        float commandMenuBottomMargin = 0.5;
-
-        float _x = (float)(*x);
-        float _y = (float)(*y);
-        float _z = ((float)z)/(1 << 22);
-        bool update = false;
-
-        if (HideAllHUD)
-        {
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
-            {
-                if (_x >= 0 && _x <= ScreenWidth &&
-                    _y >= 0 && _y <= ScreenHeight &&
-                    _z < 0) {
-                    _x = 0;
-                    _y = 0;
-                    update = true;
-                }
-            }
-        }
-        else
-        {
-            if (!update && (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle))
-            {
-                // command menu
-                if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
-                    _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
-                    _z == (s32)(-1.000) &&
-                    rgb[0] < 200) {
-
-                    _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
-                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
-                    update = true;
-                }
-            }
-
-            if (!update && (GameScene == gameScene_InGameOlympusBattle))
-            {
-                // olympus hand pointers
-                if (_x >= (1.0/2)*(ScreenWidth) && _x <= (1)*(ScreenWidth) &&
-                    _z == (s32)(-1.000)) {
-
-                    _x = (_x)/(aspectRatio) + (ScreenWidth - ScreenWidth/aspectRatio)/2;
-                    update = true;
-                }
-            }
-
-            if (!update && (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog))
-            {
-                // Bug sector SP score
-                float bugSectorSpScoreTopMargin = 18.0;
-                float bugSectorSpScoreScale = (4.0)/UIScale;
-                float bugSectorSpScoreZ = -1.0;
-
-                if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
-                    _y >= 0 && _y <= (0.3)*(ScreenHeight) &&
-                    _z == bugSectorSpScoreZ)) {
-
-                    _x = (_x)/(bugSectorSpScoreScale*aspectRatio);
-                    _y = (_y)/(bugSectorSpScoreScale) + bugSectorSpScoreTopMargin*resolutionScale;
-                    update = true;
-                }
-            }
-
-            if (!update && GameScene == gameScene_InGameOlympusBattle)
-            {
-                if (_x >= (ScreenWidth/2)        && _x <= (ScreenWidth)  &&
-                    _y >= (2.0/3)*(ScreenHeight) && _y <= (ScreenHeight)) {
-
-                    _x = ScreenWidth - ((ScreenWidth - _x)/(iuTexScale*aspectRatio));
-                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale));
-                    update = true;
-                }
-            }
-        }
-
-        if (update) {
-            *x = (s32)(_x);
-            *y = (s32)(_y);
-        }
-    }
-};
-
 std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameScene, int gameSceneState) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
@@ -971,6 +846,93 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
             break;
     }
     
+    return shapes;
+}
+
+std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameScene, int gameSceneState) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    auto shapes = std::vector<ShapeData3D>();
+
+    switch (gameScene) {
+        case gameScene_InGameOlympusBattle:
+            // olympus hand pointers
+            shapes.push_back(ShapeBuilder3D::square()
+                    .placeAtCorner(corner_Center)
+                    .zRange(-1.0, -1.0)
+                    .build(aspectRatio));
+
+        case gameScene_InGameWithMap:
+        case gameScene_InGameDialog:
+            if (!HideAllHUD)
+            {
+                // aim
+                shapes.push_back(ShapeBuilder3D::square()
+                        .polygonMode()
+                        .polygonVertexesCount(4)
+                        .polygonAttributes(1058996416)
+                        .zRange(-1.0, -0.5)
+                        .build(aspectRatio));
+
+                // aim
+                shapes.push_back(ShapeBuilder3D::square()
+                        .polygonMode()
+                        .polygonVertexesCount(4)
+                        .polygonAttributes(1042219200)
+                        .zRange(-1.0, -0.5)
+                        .build(aspectRatio));
+
+                // green aim small square
+                shapes.push_back(ShapeBuilder3D::square()
+                        .polygonMode()
+                        .polygonVertexesCount(4)
+                        .polygonAttributes(1025441984)
+                        .zRange(-1.0, -0.5)
+                        .build(aspectRatio));
+
+                // green aim big square
+                shapes.push_back(ShapeBuilder3D::square()
+                        .polygonMode()
+                        .polygonVertexesCount(4)
+                        .polygonAttributes(2033856)
+                        .zRange(-1.0, -0.5)
+                        .build(aspectRatio));
+
+                // SP score
+                shapes.push_back(ShapeBuilder3D::square()
+                        .fromPosition(0, 0)
+                        .withSize(102, 58)
+                        .placeAtCorner(corner_TopLeft)
+                        .withMargin(0.0, 18.0, 0.0, 0.0)
+                        .sourceScale(1.5)
+                        .zRange(-1.0, -1.0)
+                        .hudScale(UIScale)
+                        .build(aspectRatio));
+                // TODO: KH UI This is also distorting the aims
+
+                // command menu
+                shapes.push_back(ShapeBuilder3D::square()
+                        .fromPosition(0, 24)
+                        .withSize(80, 168)
+                        .placeAtCorner(corner_BottomLeft)
+                        .withMargin(6.8, 0.0, 0.0, 0.5)
+                        .zRange(-1.0, -1.0)
+                        .negateColor(0xFFFFFF)
+                        .hudScale(UIScale)
+                        .logger()
+                        .build(aspectRatio));
+            }
+            else
+            {
+                // no HUD
+                shapes.push_back(ShapeBuilder3D::square()
+                        .placeAtCorner(corner_Center)
+                        .zRange(-1.0, -0.000001)
+                        .hide()
+                        .build(aspectRatio));
+            }
+            break;
+    }
+
     return shapes;
 }
 
