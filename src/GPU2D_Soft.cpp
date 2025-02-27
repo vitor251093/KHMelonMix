@@ -378,8 +378,8 @@ void SoftRenderer::DoCapture(u32 line, u32 width)
             for (int i = 0; i < 256; i++)
             {
                 u32 val1 = BGOBJLine[i];
-                u32 val2 = BGOBJLine[256+i];
-                u32 val3 = BGOBJLine[512+i];
+                u32 val2 = BGOBJLine[i+256];
+                u32 val3 = BGOBJLine[i+512];
 
                 u32 compmode = (val3 >> 24) & 0xF;
 
@@ -784,8 +784,8 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line, bool lastLineOfBatch)
             for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             {
                 u32 val1 = BGOBJLine[i];
-                u32 val2 = BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i];
-                u32 val3 = BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i];
+                u32 val2 = BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE];
+                u32 val3 = BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE];
 
                 u32 flag1 = val1 >> 24;
                 u32 flag2 = val2 >> 24;
@@ -807,8 +807,8 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line, bool lastLineOfBatch)
                     // 3D on top, blending
 
                     BGOBJLine[i] = val2;
-                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val2, val3);
-                    BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = 0x04000000;
+                    BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val2, val3);
+                    BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = 0x04000000;
                 }
                 else if ((flag1 & 0xC0) == 0x40)
                 {
@@ -819,8 +819,8 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line, bool lastLineOfBatch)
                     if (!(WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x20)) bldcnteffect = 0;
 
                     BGOBJLine[i] = val2;
-                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val2, val3);
-                    BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = (bldcnteffect << 24) | (CurUnit->EVY << 8);
+                    BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val2, val3);
+                    BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = (bldcnteffect << 24) | (CurUnit->EVY << 8);
                 }
                 else if (((flag2 & 0xC0) == 0x40) && ((CurUnit->BlendCnt & 0x01C0) == 0x0140))
                 {
@@ -842,16 +842,16 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line, bool lastLineOfBatch)
                         bldcnteffect = 7;
 
                     BGOBJLine[i] = val1;
-                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val3);
-                    BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = (bldcnteffect << 24) | (CurUnit->EVB << 16) | (CurUnit->EVA << 8);
+                    BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val3);
+                    BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = (bldcnteffect << 24) | (CurUnit->EVB << 16) | (CurUnit->EVA << 8);
                 }
                 else
                 {
                     // no potential 3D pixel involved
 
                     BGOBJLine[i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val2);
-                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = 0;
-                    BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = 0x07000000;
+                    BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = 0;
+                    BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = 0x07000000;
                 }
             }
         }
@@ -860,11 +860,11 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line, bool lastLineOfBatch)
             for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             {
                 u32 val1 = BGOBJLine[i];
-                u32 val2 = BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i];
+                u32 val2 = BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE];
 
                 BGOBJLine[i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val2);
-                BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = 0;
-                BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = 0x07000000;
+                BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = 0;
+                BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = 0x07000000;
             }
         }
     }
