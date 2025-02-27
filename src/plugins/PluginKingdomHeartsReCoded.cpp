@@ -574,19 +574,19 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
                         // challenge meter icon
                         shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(9, 9)
-                                .withSize(15, challengeMeterHeight)
+                                .fromPosition(10, 9)
+                                .withSize(13, challengeMeterHeight)
                                 .placeAtCorner(corner_TopLeft)
-                                .withMargin(20.0, 32.0, 0.0, 0.0)
+                                .withMargin(21.0, 32.0, 0.0, 0.0)
                                 .hudScale(UIScale)
                                 .build(aspectRatio));
 
                         // challenge meter bar
                         shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(24, 9)
-                                .withSize(87, challengeMeterHeight)
+                                .fromPosition(24, 10)
+                                .withSize(87, challengeMeterHeight - 2)
                                 .placeAtCorner(corner_TopLeft)
-                                .withMargin(35.0, 32.0, 0.0, 0.0)
+                                .withMargin(35.0, 33.0, 0.0, 0.0)
                                 .sourceScale(2.25, 1.0)
                                 .hudScale(UIScale)
                                 .build(aspectRatio));
@@ -666,11 +666,11 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         // bottom mission information (side areas)
                         shapes.push_back(ShapeBuilder2D::square()
                                 .fromBottomScreen()
-                                .fromPosition(5, 189)
-                                .withSize(247, 3)
+                                .fromPosition(5, 190)
+                                .withSize(247, 2)
                                 .placeAtCorner(corner_TopLeft)
                                 .withMargin(3.0, 32.0, 0.0, 0.0)
-                                .sourceScale(1.0, 2.5)
+                                .sourceScale(1.0, 4.0)
                                 .hudScale(UIScale)
                                 .build(aspectRatio));
                     }
