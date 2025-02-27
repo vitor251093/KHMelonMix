@@ -740,7 +740,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     .fromPosition(118, 182)
                     .withSize(20, 10)
                     .placeAtCorner(corner_Center)
-                    .sourceScale(100.0)
+                    .sourceScale(1000.0)
                     .hudScale(UIScale)
                     .build(aspectRatio));
 

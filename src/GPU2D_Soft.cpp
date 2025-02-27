@@ -919,7 +919,7 @@ void SoftRenderer::DrawBG_3D()
     {
         for (i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
         {
-            if (!(WindowMask[i] & 0x01)) continue;
+            if (!(WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x01)) continue;
 
             BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE];
             BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = BGOBJLine[i];
