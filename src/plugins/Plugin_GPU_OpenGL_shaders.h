@@ -453,9 +453,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     }
 
     if (showOriginalHud) {
-        ivec2 textureBeginning = (screenLayout == 1) ? (ivec2(fTexcoord) + ivec2(0, 192)) : ivec2(fTexcoord);
-        ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
-        ivec4 color = ivec4(texelFetch(ScreenTex, coordinates*MODIFIER_2D_TEXTURE_SCALE, 0));
+        vec2 textureBeginning = (screenLayout == 1) ? (fTexcoord + vec2(0, 192)) : fTexcoord;
+        vec2 coordinates = textureBeginning + vec2(256,0)*index;
+        ivec4 color = ivec4(texelFetch(ScreenTex, ivec2(coordinates*MODIFIER_2D_TEXTURE_SCALE), 0));
         if (index == 2) {
             // provides full transparency support to the transparency layer
             color.g = color.g << 2;
