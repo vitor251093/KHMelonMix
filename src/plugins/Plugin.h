@@ -12,6 +12,7 @@
 #define ERROR_LOG_FILE_ENABLED true
 
 #define getPixel(buffer, x, y, layer) buffer[(256*3*MODIFIER_2D_TEXTURE_SCALE + 1)*(y) + (x) + 256*MODIFIER_2D_TEXTURE_SCALE*(layer)]
+#define getDsPixel(buffer, x, y, layer) buffer[(256*3*MODIFIER_2D_TEXTURE_SCALE + 1)*(y)*MODIFIER_2D_TEXTURE_SCALE + (x)*MODIFIER_2D_TEXTURE_SCALE + 256*MODIFIER_2D_TEXTURE_SCALE*(layer)]
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
