@@ -132,6 +132,7 @@ enum
     gameSceneState_showEnemiesCounter,
     gameSceneState_topScreenMissionInformationVisible,
     gameSceneState_showBottomScreenMissionInformation,
+    gameSceneState_showChallengeMeter,
     gameSceneState_bottomScreenCutscene,
     gameSceneState_topScreenCutscene,
     gameSceneState_minimapCenterTick
@@ -565,6 +566,32 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
                 if ((gameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0)
                 {
+                    bool showChallengeMeter = (gameSceneState & (1 << gameSceneState_showChallengeMeter)) > 0;
+                    int challengeMeterHeight = 0;
+                    if (showChallengeMeter)
+                    {
+                        challengeMeterHeight = 7;
+
+                        // challenge meter icon
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(9, 9)
+                                .withSize(15, challengeMeterHeight)
+                                .placeAtCorner(corner_TopLeft)
+                                .withMargin(20.0, 32.0, 0.0, 0.0)
+                                .hudScale(UIScale)
+                                .build(aspectRatio));
+
+                        // challenge meter bar
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(24, 9)
+                                .withSize(87, challengeMeterHeight)
+                                .placeAtCorner(corner_TopLeft)
+                                .withMargin(35.0, 32.0, 0.0, 0.0)
+                                .sourceScale(2.25, 1.0)
+                                .hudScale(UIScale)
+                                .build(aspectRatio));
+                    }
+
                     // bottom mission information (top right corner)
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromBottomScreen()
@@ -592,7 +619,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .fromPosition(10, 175)
                             .withSize(237, 4)
                             .placeAtCorner(corner_TopLeft)
-                            .withMargin(8.0, 32.0, 0.0, 0.0)
+                            .withMargin(8.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
                             .mirror(mirror_Y)
                             .sourceScale(1.0, 0.5)
                             .hudScale(UIScale)
@@ -604,7 +631,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .fromPosition(5, 175)
                             .withSize(10, 6)
                             .placeAtCorner(corner_TopLeft)
-                            .withMargin(3.0, 31.0, 0.0, 0.0)
+                            .withMargin(3.0, 31.0 + challengeMeterHeight, 0.0, 0.0)
                             .cropSquareCorners(0.0, 0.0, 2.25, 0.0)
                             .mirror(mirror_Y)
                             .sourceScale(1.0, 0.5)
@@ -617,7 +644,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .fromPosition(242, 175)
                             .withSize(10, 6)
                             .placeAtCorner(corner_TopLeft)
-                            .withMargin(240.0, 31.0, 0.0, 0.0)
+                            .withMargin(240.0, 31.0 + challengeMeterHeight, 0.0, 0.0)
                             .mirror(mirror_Y)
                             .sourceScale(1.0, 0.5)
                             .hudScale(UIScale)
@@ -634,13 +661,27 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .hudScale(UIScale)
                             .build(aspectRatio));
 
+                    if (showChallengeMeter)
+                    {
+                        // bottom mission information (side areas)
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromBottomScreen()
+                                .fromPosition(5, 189)
+                                .withSize(247, 3)
+                                .placeAtCorner(corner_TopLeft)
+                                .withMargin(3.0, 32.0, 0.0, 0.0)
+                                .sourceScale(1.0, 2.5)
+                                .hudScale(UIScale)
+                                .build(aspectRatio));
+                    }
+
                     // bottom mission information (bottom right corner)
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromBottomScreen()
                             .fromPosition(5, 166)
                             .withSize(119, 5)
                             .placeAtCorner(corner_TopLeft)
-                            .withMargin(131.0, 32.0, 0.0, 0.0)
+                            .withMargin(131.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
                             .cropSquareCorners(0.0, 0.0, 0.0, 4.0)
                             .mirror(mirror_XY)
                             .sourceScale(1.0, 0.5)
@@ -653,7 +694,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .fromPosition(5, 166)
                             .withSize(128, 5)
                             .placeAtCorner(corner_TopLeft)
-                            .withMargin(3.0, 32.0, 0.0, 0.0)
+                            .withMargin(3.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
                             .cropSquareCorners(0.0, 0.0, 4.0, 0.0)
                             .mirror(mirror_Y)
                             .sourceScale(1.0, 0.5)
@@ -1007,6 +1048,11 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
                         state |= (1 << gameSceneState_showFloorCounter);
                         state |= (1 << gameSceneState_showEnemiesCounter);
                         state |= (1 << gameSceneState_showBottomScreenMissionInformation);
+
+                        if (isChallengeMeterVisible() && !isMissionInformationVisibleOnTopScreen())
+                        {
+                            state |= (1 << gameSceneState_showChallengeMeter);
+                        }
                     }
                 }
             }
@@ -1471,6 +1517,12 @@ bool PluginKingdomHeartsReCoded::isMinimapVisible()
 bool PluginKingdomHeartsReCoded::isBugSector()
 {
     return getFloorLevel() != 0;
+}
+
+bool PluginKingdomHeartsReCoded::isChallengeMeterVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 12, 12);
 }
 
 bool PluginKingdomHeartsReCoded::isCommandMenuVisible()

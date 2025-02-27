@@ -134,6 +134,7 @@ private:
     bool isDialogVisible();
     bool isMinimapVisible();
     bool isBugSector();
+    bool isChallengeMeterVisible();
     bool isCommandMenuVisible();
     bool isHealthVisible();
     ivec2 minimapCenter();
