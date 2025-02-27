@@ -11,32 +11,7 @@
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
 
-#define RAM_SEARCH_ENABLED true
-#define RAM_SEARCH_SIZE 32
-#define RAM_SEARCH_LIMIT_MIN 0
-#define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
-#define RAM_SEARCH_INTERVAL_MARGIN 0x050
-
-// #define RAM_SEARCH_EXACT_VALUE     0x05B07E00
-// #define RAM_SEARCH_EXACT_VALUE_MIN 0x05B07E00
-// #define RAM_SEARCH_EXACT_VALUE_MAX 0x05BEE334
-
-
-// #define RAM_SEARCH_LIMIT_MIN 0x04f6c5 - 0x1F00
-// #define RAM_SEARCH_LIMIT_MAX 0x04f6c5 + 0x1F00
-// #define RAM_SEARCH_LIMIT_MAX 0x19FFFF
-
-// WARNING: THE MACRO BELOW CAN ONLY BE USED ALONGSIDE RAM_SEARCH_EXACT_VALUE* MACROS,
-// OTHERWISE IT WILL DO NOTHING BUT MAKE SEARCH IMPOSSIBLE, AND DECREASE THE FRAMERATE
-#define RAM_SEARCH_EVERY_SINGLE_FRAME false
-
-#if RAM_SEARCH_SIZE == 32
-#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read32(addr)
-#elif RAM_SEARCH_SIZE == 16
-#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read16(addr)
-#else
-#define RAM_SEARCH_READ(nds,addr) nds->ARM7Read8(addr)
-#endif
+#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
@@ -102,11 +77,14 @@
 
 #include <functional>
 #include <math.h>
+#include <filesystem>
 
 #include "../GPU3D.h"
 #include "../NDS.h"
 
 #include "../OpenGLSupport.h"
+
+#include "./PluginShapes.h"
 
 namespace Plugins
 {
@@ -153,17 +131,26 @@ public:
     };
 
     virtual std::string assetsFolder() {return std::to_string(GameCode);}
+    std::filesystem::path assetsFolderPath();
     virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
 
-    virtual const char* gpuOpenGL_FS() { return nullptr; };
-    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) {};
-    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) {};
+    virtual const char* gpuOpenGL_FS();
+    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
+    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
 
-    virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
-    virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
-    virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
+    virtual const char* gpu3DOpenGLClassic_VS_Z();
+    virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint CompShader, u32 flags);
+    virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags);
 
-    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {};
+    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
+
+    virtual std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData2D>(); };
+    virtual std::vector<ShapeData3D> renderer_3DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData3D>(); };
+    virtual int renderer_gameSceneState() { return 0; };
+    virtual int renderer_screenLayout() { return 0; };
+    virtual int renderer_brightnessMode() { return 0; };
+    virtual float renderer_forcedAspectRatio() {return AspectRatio;};
+    virtual bool renderer_showOriginalUI() { return true; };
 
     bool togglePause();
 
@@ -177,6 +164,7 @@ public:
     virtual bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {return false;}
     void _superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask, u16 sensitivity, bool resetOnEdge);
     virtual void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask);
+    virtual bool shouldRumble() {return false;}
 
     bool shouldExportTextures() {
         return ExportTextures;
@@ -279,10 +267,20 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
+    std::map<GLuint, GLuint[20]> CompGpuLoc{};
+    std::map<GLuint, int[20]> CompGpuLastValues{};
+    std::map<GLuint, GLuint> CompUboLoc{};
+
+    std::map<u32, std::map<u32, GLuint[20]>> CompGpu3DLoc{};
+    std::map<u32, std::map<u32, int[20]>> CompGpu3DLastValues{};
+    std::map<u32, GLuint> CompUbo3DLoc{};
+    bool CompUbo3DLocInit = false;
+
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
     int HUDState = -1;
+    int UIScale = 4;
 
     bool DisableEnhancedGraphics = false;
     bool ExportTextures = false;
@@ -330,7 +328,7 @@ protected:
     bool _MouseCursorIsGrabbed = false;
 
 public:
-    bool isReady() { return GameCode != 0 && nds != nullptr; };
+    bool isReady() { return GameCode != 0 && nds != nullptr && nds->NDSCartSlot.GetCart() != nullptr; };
 };
 }
 

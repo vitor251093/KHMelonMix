@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - ci/*
   pull_request:
     branches:
       - master
@@ -12,19 +13,27 @@ env:
   MELONDS_GIT_BRANCH: ${{ github.ref }}
   MELONDS_GIT_HASH: ${{ github.sha }}
   MELONDS_BUILD_PROVIDER: GitHub Actions
-  MELONDS_VERSION_SUFFIX: " RC"
+  MELONDS_VERSION_SUFFIX: ""
 
 jobs:
-  build-x86_64:
-    name: x86_64
-    runs-on: ubuntu-22.04
+  build:
+    continue-on-error: true
+    strategy:
+      matrix:
+        arch:
+          - runner: ubuntu-22.04
+            name: x86_64
+          - runner: ubuntu-22.04-arm
+            name: aarch64
+
+    name: ${{ matrix.arch.name }}
+    runs-on: ${{ matrix.arch.runner }}
 
     steps:
     - uses: actions/checkout@v4
       name: Check out sources
     - name: Install dependencies
       run: |
-        sudo rm -f /etc/apt/sources.list.d/dotnetdev.list /etc/apt/sources.list.d/microsoft-prod.list
         sudo apt update
         sudo apt install --allow-downgrades cmake ninja-build extra-cmake-modules libpcap0.8-dev libsdl2-dev libenet-dev \
           qt6-{base,base-private,multimedia}-dev libqt6svg6-dev libarchive-dev libzstd-dev libfuse2
@@ -53,23 +62,27 @@ jobs:
         cp ./res/scripts/MelonMix_KHReCoded.sh ./dist/MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
       with:
-        name: MelonMix-ubuntu-x86_64
+        name: MelonMix-ubuntu-${{ matrix.arch.name }}
         path: dist
     - name: Fetch AppImage tools
+      # linuxdeploy doesn't seem to work on the aarch64 runners?
+      if: matrix.arch.name != 'aarch64'
       run: |
-        wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-        wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+        wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${{ matrix.arch.name }}.AppImage
+        wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-${{ matrix.arch.name }}.AppImage
         wget https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gstreamer/master/linuxdeploy-plugin-gstreamer.sh
         chmod a+x linuxdeploy-*.AppImage
         chmod a+x linuxdeploy-*.sh
     - name: Build the AppImage
+      if: matrix.arch.name != 'aarch64'
       env:
         QMAKE: /usr/lib/qt6/bin/qmake
       run: |
-        ./linuxdeploy-x86_64.AppImage --list-plugins
-        ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin qt
-        ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin gstreamer --output appimage
+        ./linuxdeploy-${{ matrix.arch.name }}.AppImage --list-plugins
+        ./linuxdeploy-${{ matrix.arch.name }}.AppImage --appdir AppDir --plugin qt
+        ./linuxdeploy-${{ matrix.arch.name }}.AppImage --appdir AppDir --plugin gstreamer --output appimage
     - name: Preparing artifacts (appimage-x86_64)
+      if: matrix.arch.name != 'aarch64'
       run: |
         mkdir dist_appimage
         mkdir -p ./dist_appimage/roms
@@ -80,51 +93,7 @@ jobs:
         cp ./res/scripts/MelonMix_KHDays_AppImage.sh    ./dist_appimage/MelonMix_KHDays.sh
         cp ./res/scripts/MelonMix_KHReCoded_AppImage.sh ./dist_appimage/MelonMix_KHReCoded.sh
     - uses: actions/upload-artifact@v4
+      if: matrix.arch.name != 'aarch64'
       with:
-        name: MelonMix-appimage-x86_64
+        name: MelonMix-appimage-${{ matrix.arch.name }}
         path: dist_appimage
-
-  build-aarch64:
-    name: aarch64
-    runs-on: ubuntu-latest
-    container: ubuntu:22.04
-
-    steps:
-      - name: Prepare system
-        shell: bash
-        run: |
-          dpkg --add-architecture arm64
-          sh -c "sed \"s|^deb \([a-z\.:/]*\) \([a-z\-]*\) \(.*\)$|deb [arch=amd64] \1 \2 \3\ndeb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports \2 \3|\" /etc/apt/sources.list > /etc/apt/sources.list.new"
-          rm /etc/apt/sources.list
-          mv /etc/apt/sources.list{.new,}
-          apt update
-          apt -y full-upgrade
-          apt -y install git {gcc-12,g++-12}-aarch64-linux-gnu cmake ninja-build extra-cmake-modules \
-            {libsdl2,qt6-{base,base-private,multimedia},libqt6svg6,libarchive,libzstd,libenet}-dev:arm64 \
-            pkg-config dpkg-dev
-      - name: Check out source
-        uses: actions/checkout@v4
-      - name: Configure
-        shell: bash
-        run: |
-          cmake -B build -G Ninja \
-            -DPKG_CONFIG_EXECUTABLE=/usr/bin/aarch64-linux-gnu-pkg-config \
-            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc-12 \
-            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++-12 \
-            -DMELONDS_EMBED_BUILD_INFO=ON
-      - name: Build
-        shell: bash
-        run: |
-          cmake --build build
-          mkdir dist
-          mkdir -p ./dist/roms
-          touch ./dist/roms/DELETE_ME
-          cp -r ./assets ./dist/assets
-          rm -r ./dist/assets/days/2d_textures
-          mv build/melonDS dist/MelonMix
-          cp ./res/scripts/MelonMix_KHDays.sh    ./dist/MelonMix_KHDays.sh
-          cp ./res/scripts/MelonMix_KHReCoded.sh ./dist/MelonMix_KHReCoded.sh
-      - uses: actions/upload-artifact@v4
-        with:
-          name: MelonMix-ubuntu-aarch64
-          path: dist
