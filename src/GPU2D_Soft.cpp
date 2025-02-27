@@ -772,7 +772,7 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line, bool lastLineOfBatch)
         for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
         {
             u32 val1 = BGOBJLine[i];
-            u32 val2 = BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i];
+            u32 val2 = BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE];
 
             BGOBJLine[i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val2);
         }
