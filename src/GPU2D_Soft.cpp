@@ -162,7 +162,8 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
 
     if (forceblank)
     {
-        for (u32 aLine = firstLine; aLine <= lastLine; aLine++) {
+        for (u32 aLine = firstLine; aLine <= lastLine; aLine++)
+        {
         u32* dst = &Framebuffer[CurUnit->Num][stride * aLine];
         for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             dst[i] = 0xFFFFFFFF;
@@ -178,7 +179,8 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
     u32 dispmode = CurUnit->DispCnt >> 16;
     dispmode &= (CurUnit->Num ? 0x1 : 0x3);
 
-    for (u32 aLine = firstLine; aLine <= lastLine; aLine++) {
+    for (u32 aLine = firstLine; aLine <= lastLine; aLine++)
+    {
     bool isLastLine = aLine == lastLine;
 
     // always render regular graphics
