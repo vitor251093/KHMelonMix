@@ -105,14 +105,14 @@ u32 SoftRenderer::ColorComposite(int i, u32 val1, u32 val2) const
     return val1;
 }
 
-void SoftRenderer::DrawScanline(u32 aLine, Unit* unit)
+void SoftRenderer::DrawScanline(u32 line, Unit* unit)
 {
     CurUnit = unit;
 
-    for (u32 line = aLine*MODIFIER_2D_TEXTURE_SCALE; line < aLine*MODIFIER_2D_TEXTURE_SCALE + MODIFIER_2D_TEXTURE_SCALE; line++) {
+    u32 firstLine = line*MODIFIER_2D_TEXTURE_SCALE;
+    u32 lastLine = (line + 1)*MODIFIER_2D_TEXTURE_SCALE - 1;
 
     int stride = GPU.GPU3D.IsRendererAccelerated() ? (256*3*MODIFIER_2D_TEXTURE_SCALE + 1) : 256*MODIFIER_2D_TEXTURE_SCALE;
-    u32* dst = &Framebuffer[CurUnit->Num][stride * line];
 
     int n3dline = line;
     line = GPU.VCount;
@@ -140,7 +140,7 @@ void SoftRenderer::DrawScanline(u32 aLine, Unit* unit)
 
     // scanlines that end up outside of the GPU drawing range
     // (as a result of writing to VCount) are filled white
-    if (line > 192*MODIFIER_2D_TEXTURE_SCALE) forceblank = true;
+    if (line > 192) forceblank = true;
 
     // GPU B can be completely disabled by POWCNT1
     // oddly that's not the case for GPU A
@@ -162,12 +162,15 @@ void SoftRenderer::DrawScanline(u32 aLine, Unit* unit)
 
     if (forceblank)
     {
+        for (u32 aLine = firstLine; aLine <= lastLine; aLine++) {
+        u32* dst = &Framebuffer[CurUnit->Num][stride * aLine];
         for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             dst[i] = 0xFFFFFFFF;
 
         if (GPU.GPU3D.IsRendererAccelerated())
         {
             dst[256*3*MODIFIER_2D_TEXTURE_SCALE] = 0;
+        }
         }
         return;
     }
@@ -176,9 +179,16 @@ void SoftRenderer::DrawScanline(u32 aLine, Unit* unit)
     dispmode &= (CurUnit->Num ? 0x1 : 0x3);
 
     // always render regular graphics
-    DrawScanline_BGOBJ(line);
+    for (u32 aLine = firstLine; aLine <= lastLine; aLine++) {
+        bool isLastLine = aLine == lastLine;
+        DrawScanline_BGOBJ(line, isLastLine);
+    }
+
     CurUnit->UpdateMosaicCounters(line);
 
+    for (u32 aLine = firstLine; aLine <= lastLine; aLine++)
+    {
+    u32* dst = &Framebuffer[CurUnit->Num][stride * aLine];
     switch (dispmode)
     {
     case 0: // screen off
@@ -244,6 +254,7 @@ void SoftRenderer::DrawScanline(u32 aLine, Unit* unit)
         }
         break;
     }
+    }
 
     // capture
     if ((CurUnit->Num == 0) && CurUnit->CaptureLatch)
@@ -261,7 +272,10 @@ void SoftRenderer::DrawScanline(u32 aLine, Unit* unit)
             DoCapture(line, capwidth);
     }
 
+    for (u32 aLine = firstLine; aLine <= lastLine; aLine++)
+    {
     u32 masterBrightness = CurUnit->MasterBrightness;
+    u32* dst = &Framebuffer[CurUnit->Num][stride * aLine];
 
     if (GPU.GPU3D.IsRendererAccelerated())
     {
@@ -701,7 +715,7 @@ void SoftRenderer::DrawScanlineBGMode7(u32 line)
     }
 }
 
-void SoftRenderer::DrawScanline_BGOBJ(u32 line)
+void SoftRenderer::DrawScanline_BGOBJ(u32 line, bool lastLineOfBatch)
 {
     // forced blank disables BG/OBJ compositing
     if (CurUnit->DispCnt & (1<<7))
@@ -758,7 +772,7 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
             u32 val1 = BGOBJLine[i];
             u32 val2 = BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i];
 
-            BGOBJLine[i] = ColorComposite(i, val1, val2);
+            BGOBJLine[i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val2);
         }
     }
     else
@@ -790,8 +804,8 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
                 {
                     // 3D on top, blending
 
-                    BGOBJLine[i]     = val2;
-                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = ColorComposite(i, val2, val3);
+                    BGOBJLine[i] = val2;
+                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val2, val3);
                     BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = 0x04000000;
                 }
                 else if ((flag1 & 0xC0) == 0x40)
@@ -800,10 +814,10 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
 
                     if (bldcnteffect == 1)             bldcnteffect = 0;
                     if (!(CurUnit->BlendCnt & 0x0001)) bldcnteffect = 0;
-                    if (!(WindowMask[i] & 0x20))       bldcnteffect = 0;
+                    if (!(WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x20)) bldcnteffect = 0;
 
-                    BGOBJLine[i]     = val2;
-                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = ColorComposite(i, val2, val3);
+                    BGOBJLine[i] = val2;
+                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val2, val3);
                     BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = (bldcnteffect << 24) | (CurUnit->EVY << 8);
                 }
                 else if (((flag2 & 0xC0) == 0x40) && ((CurUnit->BlendCnt & 0x01C0) == 0x0140))
@@ -816,7 +830,7 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
                         eva = flag1 & 0x1F;
                         evb = 16 - eva;
                     }
-                    else if (((CurUnit->BlendCnt & target1) && (WindowMask[i] & 0x20)) ||
+                    else if (((CurUnit->BlendCnt & target1) && (WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x20)) ||
                             ((flag1 & 0xC0) == 0x80))
                     {
                         eva = CurUnit->EVA;
@@ -825,15 +839,15 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
                     else
                         bldcnteffect = 7;
 
-                    BGOBJLine[i]     = val1;
-                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = ColorComposite(i, val1, val3);
+                    BGOBJLine[i] = val1;
+                    BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val3);
                     BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = (bldcnteffect << 24) | (CurUnit->EVB << 16) | (CurUnit->EVA << 8);
                 }
                 else
                 {
                     // no potential 3D pixel involved
 
-                    BGOBJLine[i]     = ColorComposite(i, val1, val2);
+                    BGOBJLine[i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val2);
                     BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = 0;
                     BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = 0x07000000;
                 }
@@ -846,20 +860,22 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
                 u32 val1 = BGOBJLine[i];
                 u32 val2 = BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i];
 
-                BGOBJLine[i]     = ColorComposite(i, val1, val2);
+                BGOBJLine[i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val2);
                 BGOBJLine[256*MODIFIER_2D_TEXTURE_SCALE+i] = 0;
                 BGOBJLine[512*MODIFIER_2D_TEXTURE_SCALE+i] = 0x07000000;
             }
         }
     }
 
-    if (CurUnit->BGMosaicY >= CurUnit->BGMosaicYMax)
-    {
-        CurUnit->BGMosaicY = 0;
-        CurUnit->BGMosaicYMax = CurUnit->BGMosaicSize[1];
+    if (lastLineOfBatch) {
+        if (CurUnit->BGMosaicY >= CurUnit->BGMosaicYMax)
+        {
+            CurUnit->BGMosaicY = 0;
+            CurUnit->BGMosaicYMax = CurUnit->BGMosaicSize[1];
+        }
+        else
+            CurUnit->BGMosaicY++;
     }
-    else
-        CurUnit->BGMosaicY++;
 
     /*if (OBJMosaicY >= OBJMosaicYMax)
     {
