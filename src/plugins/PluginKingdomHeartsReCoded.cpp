@@ -567,11 +567,9 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 if ((gameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0)
                 {
                     bool showChallengeMeter = (gameSceneState & (1 << gameSceneState_showChallengeMeter)) > 0;
-                    int challengeMeterHeight = 0;
+                    int challengeMeterHeight = showChallengeMeter ? 7 : 0;
                     if (showChallengeMeter)
                     {
-                        challengeMeterHeight = 7;
-
                         // challenge meter icon
                         shapes.push_back(ShapeBuilder2D::square()
                                 .fromPosition(10, 9)
