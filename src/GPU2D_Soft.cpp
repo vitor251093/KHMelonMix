@@ -178,16 +178,16 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
     u32 dispmode = CurUnit->DispCnt >> 16;
     dispmode &= (CurUnit->Num ? 0x1 : 0x3);
 
-    // always render regular graphics
     for (u32 aLine = firstLine; aLine <= lastLine; aLine++) {
-        bool isLastLine = aLine == lastLine;
-        DrawScanline_BGOBJ(line, isLastLine);
+    bool isLastLine = aLine == lastLine;
+
+    // always render regular graphics
+    DrawScanline_BGOBJ(line, isLastLine);
+
+    if (isLastLine) {
+        CurUnit->UpdateMosaicCounters(line);
     }
 
-    CurUnit->UpdateMosaicCounters(line);
-
-    for (u32 aLine = firstLine; aLine <= lastLine; aLine++)
-    {
     u32* dst = &Framebuffer[CurUnit->Num][stride * aLine];
     switch (dispmode)
     {
