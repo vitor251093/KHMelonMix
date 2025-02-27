@@ -213,6 +213,13 @@ void EmuThread::run()
             emuInstance->plugin->applyTouchKeyMaskToTouchControls(&emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, emuInstance->touchInputMask);
             emuInstance->plugin->applyHotkeyToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
             emuInstance->plugin->applyAddonKeysToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->pluginMask, &emuInstance->pluginPress);
+            
+            if (!emuInstance->isRumbling && emuInstance->plugin->shouldRumble()) {
+                emuInstance->inputRumbleStart(1000); // duration in ms
+            }
+            if (emuInstance->isRumbling && !emuInstance->plugin->shouldRumble()) {
+                emuInstance->inputRumbleStop();
+            }
         }
 
         if (emuInstance->hotkeyPressed(HK_FrameLimitToggle)) emit windowLimitFPSChange();
@@ -371,6 +378,8 @@ void EmuThread::run()
                 nlines = emuInstance->nds->RunFrame();
             }
 
+            refreshPluginState();
+
             if (emuInstance->ndsSave)
                 emuInstance->ndsSave->CheckFlush();
 
@@ -431,10 +440,8 @@ void EmuThread::run()
 
             if (slowmo) emuInstance->curFPS = emuInstance->slowmoFPS;
             else if (fastforward) emuInstance->curFPS = emuInstance->fastForwardFPS;
-            else if (!emuInstance->doLimitFPS) emuInstance->curFPS = 1000.0;
+            else if (!emuInstance->doLimitFPS && !emuInstance->doAudioSync) emuInstance->curFPS = 1000.0;
             else emuInstance->curFPS = emuInstance->targetFPS;
-
-            refreshPluginState();
 
             if (emuInstance->audioDSiVolumeSync && emuInstance->nds->ConsoleType == 1)
             {
@@ -456,6 +463,7 @@ void EmuThread::run()
 
             if (frametimeStep < 0.001) frametimeStep = 0.001;
 
+            if (emuInstance->doLimitFPS)
             {
                 double curtime = SDL_GetPerformanceCounter() * perfCountsSec;
 
@@ -495,9 +503,9 @@ void EmuThread::run()
                 double actualfps = (59.8261 * 263.0) / nlines;
                 int inst = emuInstance->instanceID;
                 if (inst == 0)
-                    sprintf(melontitle, "[%d/%.0f] khDaysMM " MELONDS_VERSION, fps, actualfps);
+                    snprintf(melontitle, sizeof(melontitle), "[%d/%.0f] khDaysMM " MELONDS_VERSION, fps, actualfps);
                 else
-                    sprintf(melontitle, "[%d/%.0f] khDaysMM (%d)", fps, fpstarget, inst+1);
+                    snprintf(melontitle, sizeof(melontitle), "[%d/%.0f] khDaysMM (%d)", fps, actualfps, inst+1);
                 changeWindowTitle(melontitle);
             }
         }
@@ -512,9 +520,9 @@ void EmuThread::run()
 
             int inst = emuInstance->instanceID;
             if (inst == 0)
-                sprintf(melontitle, "khDaysMM " MELONDS_VERSION);
+                snprintf(melontitle, sizeof(melontitle), "khDaysMM " MELONDS_VERSION);
             else
-                sprintf(melontitle, "khDaysMM (%d)", inst+1);
+                snprintf(melontitle, sizeof(melontitle), "khDaysMM (%d)", inst+1);
             changeWindowTitle(melontitle);
 
             SDL_Delay(75);
@@ -923,12 +931,8 @@ void EmuThread::emuRun()
 
 void EmuThread::emuPause(bool broadcast)
 {
-    auto nds = emuInstance->getNDS();
-    if (nds != nullptr) {
-        auto rom = nds->NDSCartSlot.GetCart();
-        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-            return;
-        }
+    if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady() && emuInstance->plugin->togglePause()) {
+        return;
     }
 
     sendMessage(msg_EmuPause);
@@ -940,12 +944,8 @@ void EmuThread::emuPause(bool broadcast)
 
 void EmuThread::emuUnpause(bool broadcast)
 {
-    auto nds = emuInstance->getNDS();
-    if (nds != nullptr) {
-        auto rom = nds->NDSCartSlot.GetCart();
-        if (rom != nullptr && emuInstance->plugin != nullptr && emuInstance->plugin->togglePause()) {
-            return;
-        }
+    if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady() && emuInstance->plugin->togglePause()) {
+        return;
     }
 
     sendMessage(msg_EmuUnpause);

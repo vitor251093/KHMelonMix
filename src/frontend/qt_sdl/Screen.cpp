@@ -263,11 +263,8 @@ void ScreenPanel::refreshAspectRatio()
         aspectTop = ((float)((QWidget*)this)->width()) / ((QWidget*)this)->height();
     }
 
-    if (emuInstance->getNDS() != nullptr) {
-        auto rom = emuInstance->getNDS()->NDSCartSlot.GetCart();
-        if (rom != nullptr && emuInstance->plugin != nullptr) {
-            emuInstance->plugin->setAspectRatio(aspectTop);
-        }
+    if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady()) {
+        emuInstance->plugin->setAspectRatio(aspectTop);
     }
 }
 
@@ -934,7 +931,7 @@ bool ScreenPanelGL::createContext()
     if (ourwin->getWindowID() != 0)
     {
         if (windowinfo.has_value())
-            if (glContext = parentwin->getOGLContext()->CreateSharedContext(*windowinfo))
+            if ((glContext = parentwin->getOGLContext()->CreateSharedContext(*windowinfo)))
                 glContext->DoneCurrent();
     }
     else
@@ -943,7 +940,7 @@ bool ScreenPanelGL::createContext()
                 GL::Context::Version{GL::Context::Profile::Core, 4, 3},
                 GL::Context::Version{GL::Context::Profile::Core, 3, 2}};
         if (windowinfo.has_value())
-            if (glContext = GL::Context::Create(*windowinfo, versionsToTry))
+            if ((glContext = GL::Context::Create(*windowinfo, versionsToTry)))
                 glContext->DoneCurrent();
     }
 
