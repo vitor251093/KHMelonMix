@@ -20,6 +20,8 @@
 
 #include "OpenGLSupport.h"
 
+#define MODIFIER_2D_TEXTURE_SCALE 4
+
 #include <array>
 #include <optional>
 
