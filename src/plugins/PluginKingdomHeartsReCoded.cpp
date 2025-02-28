@@ -380,13 +380,14 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint 
 std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameScene, int gameSceneState) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
+    int hudScale = UIScale;
 
     switch (GameScene) {
         case gameScene_IntroLoadMenu:
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
                     .placeAtCorner(corner_Center)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .preserveDsScale()
                     .build(aspectRatio));
             break;
@@ -396,14 +397,14 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
                         .placeAtCorner(corner_Center)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
             }
             if ((gameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
             }
@@ -412,7 +413,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
         case gameScene_CutsceneWithStaticImages:
             shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
             break;
@@ -423,7 +424,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                     .fromPosition(0, 0)
                     .withSize(256, 40)
                     .placeAtCorner(corner_TopLeft)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
 
             // cleaning the rest of the upper area of the screen
@@ -432,7 +433,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                     .withSize(14, 10)
                     .placeAtCorner(corner_Top)
                     .sourceScale(aspectRatio*20, 1.0*4)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .preserveDsScale()
                     .build(aspectRatio));
 
@@ -440,7 +441,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
             if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
                 break;
@@ -452,7 +453,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 // review/result screens of different kinds
                 shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
                 break;
@@ -465,7 +466,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .fromPosition(0, 0)
                         .withSize(256, 40)
                         .placeAtCorner(corner_TopLeft)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
             }
 
@@ -474,7 +475,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 // texts over screen, like in the tutorial
                 shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
                 break;
@@ -483,7 +484,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
             if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
                 break;
@@ -503,7 +504,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .sourceScale(0.555)
                             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                             .opacity(0.95)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -518,7 +519,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withMargin(0.0, 88.0, 11.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
                             .sourceScale(1.0/1.4)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // floor value
@@ -530,7 +531,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withMargin(0.0, 98.0, 12.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
                             .sourceScale(1.0/1.4)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -547,7 +548,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withMargin(0.0, 0.0, 11.5 - enemiesCounterDiagonalMergeFactor/2, 12.0)
                             .cropSquareCorners(0.0, 0.0, 0.0, enemiesCounterDiagonalMergeFactor)
                             .colorToAlpha(0x8, 0x30, 0xaa)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // enemies counter (right side)
@@ -559,7 +560,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withMargin(61.5 - enemiesCounterDiagonalMergeFactor/2, 0.0, 0.0, 12.0)
                             .cropSquareCorners(enemiesCounterDiagonalMergeFactor, 0.0, 0.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .mirror(mirror_XY)
                             .build(aspectRatio));
                 }
@@ -576,7 +577,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                                 .withSize(13, challengeMeterHeight)
                                 .placeAtCorner(corner_TopLeft)
                                 .withMargin(21.0, 32.0, 0.0, 0.0)
-                                .hudScale(UIScale)
+                                .hudScale(hudScale)
                                 .build(aspectRatio));
 
                         // challenge meter bar
@@ -586,7 +587,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                                 .placeAtCorner(corner_TopLeft)
                                 .withMargin(35.0, 33.0, 0.0, 0.0)
                                 .sourceScale(2.25, 1.0)
-                                .hudScale(UIScale)
+                                .hudScale(hudScale)
                                 .build(aspectRatio));
                     }
 
@@ -599,7 +600,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withMargin(131.0, 6.0, 0.0, 0.0)
                             .cropSquareCorners(0.0, 4.0, 0.0, 0.0)
                             .mirror(mirror_X)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // bottom mission information (top right corner transparent BG)
@@ -608,7 +609,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withSize(3, 3)
                             .placeAtCorner(corner_TopLeft)
                             .withMargin(247.0, 6.0, 0.0, 0.0)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // bottom mission information (bottom center black-blue separation)
@@ -620,7 +621,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withMargin(8.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
                             .mirror(mirror_Y)
                             .sourceScale(1.0, 0.5)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // bottom mission information (bottom left black-blue separation)
@@ -633,7 +634,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .cropSquareCorners(0.0, 0.0, 2.25, 0.0)
                             .mirror(mirror_Y)
                             .sourceScale(1.0, 0.5)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // bottom mission information (bottom right black-blue separation)
@@ -645,7 +646,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withMargin(240.0, 31.0 + challengeMeterHeight, 0.0, 0.0)
                             .mirror(mirror_Y)
                             .sourceScale(1.0, 0.5)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // bottom mission information (bigger area)
@@ -656,7 +657,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .placeAtCorner(corner_TopLeft)
                             .withMargin(3.0, 6.0, 0.0, 0.0)
                             .cropSquareCorners(4.0, 0.0, 0.0, 0.0)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     if (showChallengeMeter)
@@ -669,7 +670,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                                 .placeAtCorner(corner_TopLeft)
                                 .withMargin(3.0, 32.0, 0.0, 0.0)
                                 .sourceScale(1.0, 4.0)
-                                .hudScale(UIScale)
+                                .hudScale(hudScale)
                                 .build(aspectRatio));
                     }
 
@@ -683,7 +684,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .cropSquareCorners(0.0, 0.0, 0.0, 4.0)
                             .mirror(mirror_XY)
                             .sourceScale(1.0, 0.5)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // bottom mission information (bottom left corner)
@@ -696,7 +697,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .cropSquareCorners(0.0, 0.0, 4.0, 0.0)
                             .mirror(mirror_Y)
                             .sourceScale(1.0, 0.5)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -707,7 +708,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .fromPosition(134, 114)
                             .withSize(122, 78)
                             .placeAtCorner(corner_BottomRight)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -719,7 +720,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withSize(92, 78)
                             .placeAtCorner(corner_BottomRight)
                             .withMargin(0.0, 0.0, 8.0, 3.0)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                         
                     // TODO: KH UI implement cropped corner
@@ -731,7 +732,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withSize(36, 118)
                             .placeAtCorner(corner_BottomRight)
                             .withMargin(0.0, 0.0, 8.0, 3.0)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -743,7 +744,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withSize(88, 84)
                             .placeAtCorner(corner_BottomLeft)
                             .withMargin(10.0, 0.0, 0.0, 0.0)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -755,7 +756,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withSize(80, 32)
                             .placeAtCorner(corner_Bottom)
                             .cropSquareCorners(0.0, 0.0, 0.0, 18.0)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -767,7 +768,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withSize(20, 10)
                             .placeAtCorner(corner_Top)
                             .sourceScale(aspectRatio*13, 1.0*4)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .preserveDsScale()
                             .build(aspectRatio));
                 }
@@ -778,7 +779,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .withSize(95, 27)
                         .placeAtCorner(corner_BottomLeft)
                         .withMargin(0.0, 0.0, 0.0, 84.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // item notification
@@ -787,7 +788,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .withSize(95, 32)
                         .placeAtCorner(corner_BottomLeft)
                         .withMargin(0.0, 0.0, 0.0, 84.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // pickup notification
@@ -796,7 +797,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .withSize(72, 16)
                         .placeAtCorner(corner_BottomLeft)
                         .withMargin(10.0, 0.0, 0.0, 128.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // level up notification
@@ -805,7 +806,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .withSize(95, 32)
                         .placeAtCorner(corner_TopRight)
                         .withMargin(0.0, 115.0, 0.0, 0.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // enemy health
@@ -814,7 +815,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .withSize(93, 22)
                         .placeAtCorner(corner_TopRight)
                         .withMargin(0.0, 7.5, 9.0, 0.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // background
@@ -832,7 +833,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
             // pause menu
             shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
 
             // background
@@ -872,14 +873,14 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
                     .placeAtCorner(corner_BottomRight)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
             break;
 
         case gameScene_DeathScreen:
             shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .preserveDsScale()
                     .build(aspectRatio));
             break;
