@@ -158,7 +158,6 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 
     priorMap = -1;
     Map = 0;
-    UIScale = 4;
 
     // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;

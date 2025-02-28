@@ -82,7 +82,6 @@ private:
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
-    int UIScale = 4;
     bool ShowMap;
     int MinimapCenterX = 128;
     int MinimapCenterY = 96;

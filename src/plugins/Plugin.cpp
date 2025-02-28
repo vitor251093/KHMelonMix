@@ -1033,6 +1033,8 @@ void Plugin::_superLoadConfigs(
     DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
+    UIScale = getIntConfig(root + ".HUDScale");
+    UIScale = (UIScale == 0) ? 4 : UIScale;
 }
 void Plugin::loadConfigs(
     std::function<bool(std::string)> getBoolConfig,
