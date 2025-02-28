@@ -198,6 +198,10 @@ void EmuThread::run()
                 },
                 [cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
+                    return ref.GetInt(path);
+                },
+                [cfg = globalCfg](const std::string& path){
+                    Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetString(path);
                 });
 

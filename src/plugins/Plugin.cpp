@@ -1018,17 +1018,29 @@ void Plugin::setAspectRatio(float aspectRatio)
 
     AspectRatio = aspectRatio;
 }
+void Plugin::setInternalResolutionScale(int scale)
+{
+    InternalResolutionScale = scale;
+}
 
-void Plugin::_superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+void Plugin::_superLoadConfigs(
+    std::function<bool(std::string)> getBoolConfig,
+    std::function<int(std::string)> getIntConfig,
+    std::function<std::string(std::string)> getStringConfig
+)
 {
     std::string root = tomlUniqueIdentifier();
     DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
 }
-void Plugin::loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+void Plugin::loadConfigs(
+    std::function<bool(std::string)> getBoolConfig,
+    std::function<int(std::string)> getIntConfig,
+    std::function<std::string(std::string)> getStringConfig
+)
 {
-    _superLoadConfigs(getBoolConfig, getStringConfig);
+    _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
 }
 
 void Plugin::errorLog(const char* format, ...) {

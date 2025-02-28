@@ -64,9 +64,13 @@ public:
 
     u32 getAspectRatioAddress();
 
-    void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+    void loadConfigs(
+        std::function<bool(std::string)> getBoolConfig,
+        std::function<int(std::string)> getIntConfig,
+        std::function<std::string(std::string)> getStringConfig
+    )
     {
-        _superLoadConfigs(getBoolConfig, getStringConfig);
+        _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
 
         std::string root = tomlUniqueIdentifier();
 

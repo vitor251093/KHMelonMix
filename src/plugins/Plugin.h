@@ -242,9 +242,18 @@ public:
 
     virtual u32 getAspectRatioAddress() {return 0;}
     virtual void setAspectRatio(float aspectRatio);
+    virtual void setInternalResolutionScale(int scale);
 
-    void _superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
-    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
+    void _superLoadConfigs(
+        std::function<bool(std::string)> getBoolConfig,
+        std::function<int(std::string)> getIntConfig,
+        std::function<std::string(std::string)> getStringConfig
+    );
+    virtual void loadConfigs(
+        std::function<bool(std::string)> getBoolConfig,
+        std::function<int(std::string)> getIntConfig,
+        std::function<std::string(std::string)> getStringConfig
+    );
 
     virtual void hudToggle() {}
 
@@ -266,6 +275,7 @@ protected:
     std::map<u32, GLuint> CompUbo3DLoc{};
     bool CompUbo3DLocInit = false;
 
+    int InternalResolutionScale = 1;
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
