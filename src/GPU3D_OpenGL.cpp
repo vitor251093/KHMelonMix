@@ -80,7 +80,7 @@ void GLRenderer::UseRenderShader(u32 flags)
     CurShaderID = flags;
 
     if (GamePlugin != nullptr) {
-        GamePlugin->gpu3DOpenGLClassic_VS_Z_updateVariables(flags);
+        GamePlugin->gpu3DOpenGLClassic_VS_Z_updateVariables(RenderShader[flags], flags);
     }
 }
 

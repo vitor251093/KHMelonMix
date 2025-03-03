@@ -11,6 +11,8 @@
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
 
+#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
+
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   ((byte) & 0x80000000 ? '1' : '0'), \
@@ -75,11 +77,14 @@
 
 #include <functional>
 #include <math.h>
+#include <filesystem>
 
 #include "../GPU3D.h"
 #include "../NDS.h"
 
 #include "../OpenGLSupport.h"
+
+#include "./PluginShapes.h"
 
 namespace Plugins
 {
@@ -117,17 +122,26 @@ public:
     };
 
     virtual std::string assetsFolder() {return std::to_string(GameCode);}
+    std::filesystem::path assetsFolderPath();
     virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
 
-    virtual const char* gpuOpenGL_FS() { return nullptr; };
-    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader) {};
-    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader) {};
+    virtual const char* gpuOpenGL_FS();
+    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
+    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
 
-    virtual const char* gpu3DOpenGLClassic_VS_Z() { return nullptr; };
-    virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags) {};
-    virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags) {};
+    virtual const char* gpu3DOpenGLClassic_VS_Z();
+    virtual void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint CompShader, u32 flags);
+    virtual void gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags);
 
-    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {};
+    virtual void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
+
+    virtual std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData2D>(); };
+    virtual std::vector<ShapeData3D> renderer_3DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData3D>(); };
+    virtual int renderer_gameSceneState() { return 0; };
+    virtual int renderer_screenLayout() { return 0; };
+    virtual int renderer_brightnessMode() { return 0; };
+    virtual float renderer_forcedAspectRatio() {return AspectRatio;};
+    virtual bool renderer_showOriginalUI() { return true; };
 
     bool togglePause();
 
@@ -228,9 +242,18 @@ public:
 
     virtual u32 getAspectRatioAddress() {return 0;}
     virtual void setAspectRatio(float aspectRatio);
+    virtual void setInternalResolutionScale(int scale);
 
-    void _superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
-    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
+    void _superLoadConfigs(
+        std::function<bool(std::string)> getBoolConfig,
+        std::function<int(std::string)> getIntConfig,
+        std::function<std::string(std::string)> getStringConfig
+    );
+    virtual void loadConfigs(
+        std::function<bool(std::string)> getBoolConfig,
+        std::function<int(std::string)> getIntConfig,
+        std::function<std::string(std::string)> getStringConfig
+    );
 
     virtual void hudToggle() {}
 
@@ -243,10 +266,21 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
+    std::map<GLuint, GLuint[20]> CompGpuLoc{};
+    std::map<GLuint, int[20]> CompGpuLastValues{};
+    std::map<GLuint, GLuint> CompUboLoc{};
+
+    std::map<u32, std::map<u32, GLuint[20]>> CompGpu3DLoc{};
+    std::map<u32, std::map<u32, int[20]>> CompGpu3DLastValues{};
+    std::map<u32, GLuint> CompUbo3DLoc{};
+    bool CompUbo3DLocInit = false;
+
+    int InternalResolutionScale = 1;
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
     int HUDState = -1;
+    int UIScale = 4;
 
     bool DisableEnhancedGraphics = false;
     bool ExportTextures = false;

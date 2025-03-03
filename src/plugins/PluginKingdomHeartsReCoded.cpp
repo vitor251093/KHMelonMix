@@ -1,6 +1,5 @@
 #include "PluginKingdomHeartsReCoded.h"
 
-#include "PluginKingdomHeartsReCoded_GPU_OpenGL_shaders.h"
 #include "PluginKingdomHeartsReCoded_GPU3D_OpenGL_shaders.h"
 
 namespace Plugins
@@ -24,14 +23,6 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define PAUSE_SCREEN_ADDRESS_JP 0x020567f0
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
 
-#define DIALOG_SCREEN_ADDRESS_US 0x0219e9a8
-#define DIALOG_SCREEN_ADDRESS_EU 0x0219e9c8
-#define DIALOG_SCREEN_ADDRESS_JP 0x0219e9a8 // TODO: KH
-
-#define DIALOG_SCREEN_VALUE_US 0x00000000
-#define DIALOG_SCREEN_VALUE_EU 0x00000000
-#define DIALOG_SCREEN_VALUE_JP 0x00000000 // TODO: KH
-
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US 0x02056e90
 #define IS_CUTSCENE_EU 0x02056e90
@@ -42,70 +33,58 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define GAME_STATE_ADDRESS_EU 0x02056f4a
 #define GAME_STATE_ADDRESS_JP 0x02056d6a
 
+// 0x00 => death screen
+#define DEATH_SCREEN_ADDRESS_US 0x02056f5c
+#define DEATH_SCREEN_ADDRESS_EU 0x02056f5c // TODO: KH probably correct, but didn't check
+#define DEATH_SCREEN_ADDRESS_JP 0x02056d7c // TODO: KH probably correct, but didn't check
+
 // 0x04 => playable (example: ingame); 0x03 => world selection; 0x02 => not playable (menus)
 #define IS_PLAYABLE_AREA_US 0x0205a8c0
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0
 #define IS_PLAYABLE_AREA_JP 0x0205a6e0
 
+#define KIND_OF_SCREEN_ADDRESS_US 0x0205fe4c // may also be 0x0205fe60
+#define KIND_OF_SCREEN_ADDRESS_EU 0x0205fe4c
+#define KIND_OF_SCREEN_ADDRESS_JP 0x0205fc6c // TODO: KH probably correct, but didn't check
+
+#define KIND_OF_SCREEN_PLATFORM_SECTION_RESULT 0x0500
+#define KIND_OF_SCREEN_OLYMPUS_LAYER_REVIEW    0x8000
+
 #define BUG_SECTOR_IDENTIFIER_ADDRESS_US 0x0206083d
-#define BUG_SECTOR_IDENTIFIER_ADDRESS_EU 0x0206083d // TODO: KH
-#define BUG_SECTOR_IDENTIFIER_ADDRESS_JP 0x0206065d // TODO: KH
+#define BUG_SECTOR_IDENTIFIER_ADDRESS_EU 0x0206083d
+#define BUG_SECTOR_IDENTIFIER_ADDRESS_JP 0x0206065d // TODO: KH probably correct, but didn't check
 
 #define BUG_SECTOR_IDENTIFIER_VALUE_US 0x48
-#define BUG_SECTOR_IDENTIFIER_VALUE_EU 0x48 // TODO: KH
-#define BUG_SECTOR_IDENTIFIER_VALUE_JP 0x48 // TODO: KH
+#define BUG_SECTOR_IDENTIFIER_VALUE_EU 0x48
+#define BUG_SECTOR_IDENTIFIER_VALUE_JP 0x48 // TODO: KH probably correct, but didn't check
 
 #define FLOOR_LEVEL_ADDRESS_US 0x02060867
-#define FLOOR_LEVEL_ADDRESS_EU 0x02060867 // TODO: KH
+#define FLOOR_LEVEL_ADDRESS_EU 0x02060867
 #define FLOOR_LEVEL_ADDRESS_JP 0x02060687 // TODO: KH
 
 #define TYPE_OF_BATTLE_ADDRESS_US 0x020b5608 // or 0x020b5620
-#define TYPE_OF_BATTLE_ADDRESS_EU 0x020b5608 // TODO: KH
-#define TYPE_OF_BATTLE_ADDRESS_JP 0x020b5608 // TODO: KH
+#define TYPE_OF_BATTLE_ADDRESS_EU 0x020b5628 // TODO: KH unconfirmed, but probable
+#define TYPE_OF_BATTLE_ADDRESS_JP 0x020b5608 // TODO: KH wrong
 
 #define CUTSCENE_ADDRESS_US 0x020b7db8
 #define CUTSCENE_ADDRESS_EU 0x020b7e08
 #define CUTSCENE_ADDRESS_JP 0x020b7858
 
-#define MINIMAP_1_CENTER_X_ADDRESS_US 0x023d8054
-#define MINIMAP_1_CENTER_X_ADDRESS_EU 0x023d8054 // TODO: KH
-#define MINIMAP_1_CENTER_X_ADDRESS_JP 0x023d8054 // TODO: KH
-
-#define MINIMAP_1_CENTER_Y_ADDRESS_US 0x023d8058
-#define MINIMAP_1_CENTER_Y_ADDRESS_EU 0x023d8058 // TODO: KH
-#define MINIMAP_1_CENTER_Y_ADDRESS_JP 0x023d8058 // TODO: KH
-
-#define MINIMAP_2_CENTER_X_ADDRESS_US 0x023d6c68
-#define MINIMAP_2_CENTER_X_ADDRESS_EU 0x023d6c68 // TODO: KH
-#define MINIMAP_2_CENTER_X_ADDRESS_JP 0x023d6c68 // TODO: KH
-
-#define MINIMAP_2_CENTER_Y_ADDRESS_US 0x023d6c6c
-#define MINIMAP_2_CENTER_Y_ADDRESS_EU 0x023d6c6c // TODO: KH
-#define MINIMAP_2_CENTER_Y_ADDRESS_JP 0x023d6c6c // TODO: KH
-
-#define MINIMAP_3_CENTER_X_ADDRESS_US 0x023d8081
-#define MINIMAP_3_CENTER_X_ADDRESS_EU 0x023d8081 // TODO: KH
-#define MINIMAP_3_CENTER_X_ADDRESS_JP 0x023d8081 // TODO: KH
-
-#define MINIMAP_3_CENTER_Y_ADDRESS_US 0x023d8085
-#define MINIMAP_3_CENTER_Y_ADDRESS_EU 0x023d8085 // TODO: KH
-#define MINIMAP_3_CENTER_Y_ADDRESS_JP 0x023d8085 // TODO: KH
-
-#define MINIMAP_4_CENTER_X_ADDRESS_US 0x023c6a94
-#define MINIMAP_4_CENTER_X_ADDRESS_EU 0x023c6a94 // TODO: KH
-#define MINIMAP_4_CENTER_X_ADDRESS_JP 0x023c6a94 // TODO: KH
-
-#define MINIMAP_4_CENTER_Y_ADDRESS_US 0x023c6a98
-#define MINIMAP_4_CENTER_Y_ADDRESS_EU 0x023c6a98 // TODO: KH
-#define MINIMAP_4_CENTER_Y_ADDRESS_JP 0x023c6a98 // TODO: KH
-
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US 0x02198310
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU 0x021991b0
-#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP 0x02198310 // TODO: KH
+#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP 0x02198310 // TODO: KH wrong
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_US 0x200
 #define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_EU 0x200
-#define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_JP 0x002 // TODO: KH
+#define INGAME_MENU_COMMAND_LIST_SETTING_VALUE_JP 0x002 // TODO: KH probably wrong
+
+#define DIALOG_SCREEN_ADDRESS_US 0x0219e9a8 // may also be 0x02060390
+#define DIALOG_SCREEN_ADDRESS_EU 0x0219e9c8
+#define DIALOG_SCREEN_ADDRESS_JP 0x0219e9a8 // TODO: KH wrong
+
+#define DIALOG_SCREEN_VALUE_US 0x00000000
+#define DIALOG_SCREEN_VALUE_EU 0x00000000
+#define DIALOG_SCREEN_VALUE_JP 0x00000000 // TODO: KH probably correct, but didn't check
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
@@ -121,22 +100,42 @@ enum
     gameScene_Intro,                    // 0
     gameScene_MainMenu,                 // 1
     gameScene_IntroLoadMenu,            // 2
-    gameScene_DayCounter,               // 3
-    gameScene_Cutscene,                 // 4
+    gameScene_Cutscene,                 // 3
+    gameScene_CutsceneWithStaticImages, // 4
     gameScene_InGameWithMap,            // 5
-    gameScene_InGameMenu,               // 6
-    gameScene_InGameSaveMenu,           // 7
-    gameScene_PauseMenu,                // 8
-    gameScene_Tutorial,                 // 9
-    gameScene_InGameWithDouble3D,       // 10
-    gameScene_Shop,                     // 11
-    gameScene_LoadingScreen,            // 12
-    gameScene_CutsceneWithStaticImages, // 13
-    gameScene_WorldSelection,           // 14
-    gameScene_InGameDialog,             // 15
-    gameScene_InGameOlympusBattle,      // 16
+    gameScene_InGameDialog,             // 6
+    gameScene_InGameOlympusBattle,      // 7
+    gameScene_InGameMenu,               // 8
+    gameScene_WorldSelection,           // 10
+    gameScene_PauseMenu,                // 11
+    gameScene_Tutorial,                 // 12
+    gameScene_Shop,                     // 13
+    gameScene_LoadingScreen,            // 14
+    gameScene_DeathScreen,              // 15
+    gameScene_TheEnd,                   // 16
     gameScene_Other2D,                  // 17
     gameScene_Other                     // 18
+};
+
+enum
+{
+    gameSceneState_showHud,
+    gameSceneState_dialogVisible,
+    gameSceneState_textOverScreen,
+    gameSceneState_showResultScreen,
+    gameSceneState_showRegularPlayerHealth,
+    gameSceneState_showOlympusBattlePlayerHealth,
+    gameSceneState_showMinimap,
+    gameSceneState_showCommandMenu,
+    gameSceneState_showNextAreaName,
+    gameSceneState_showFloorCounter,
+    gameSceneState_showEnemiesCounter,
+    gameSceneState_topScreenMissionInformationVisible,
+    gameSceneState_showBottomScreenMissionInformation,
+    gameSceneState_showChallengeMeter,
+    gameSceneState_bottomScreenCutscene,
+    gameSceneState_topScreenCutscene,
+    gameSceneState_minimapCenterTick
 };
 
 enum
@@ -159,11 +158,6 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 
     priorMap = -1;
     Map = 0;
-    UIScale = 4;
-
-    // game scene detection utils (extra: minimap coordinates)
-    MinimapCenterX = 128;
-    MinimapCenterY = 96;
 
     // game scene detection utils
     _muchOlderHad3DOnTopScreen = false;
@@ -341,60 +335,6 @@ std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
     return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 }
 
-const char* PluginKingdomHeartsReCoded::gpuOpenGL_FS() {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return nullptr;
-    }
-
-    return kCompositorFS_KhReCoded;
-};
-
-void PluginKingdomHeartsReCoded::gpuOpenGL_FS_initVariables(GLuint CompShader) {
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "TopScreenAspectRatio");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "PriorGameScene");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "GameScene");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "KHUIScale");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "ShowMap");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "MinimapCenterX");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "MinimapCenterY");
-    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "HideAllHUD");
-    CompGpuLoc[CompShader][8] = glGetUniformLocation(CompShader, "DSCutsceneState");
-    CompGpuLoc[CompShader][9] = glGetUniformLocation(CompShader, "IsBugSector");
-
-    for (int index = 0; index <= 9; index ++) {
-        CompGpuLastValues[CompShader][index] = -1;
-    }
-}
-
-#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
-
-void PluginKingdomHeartsReCoded::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    CutsceneEntry* tsCutscene = detectTopScreenMobiCutscene();
-    int dsCutsceneState = (tsCutscene == nullptr ? 0 : tsCutscene->dsScreensState);
-    bool isBugSector = getFloorLevel() == 0 ? false : true;
-
-    bool updated = false;
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], PriorGameScene, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], GameScene, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], UIScale, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], ShowMap ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], MinimapCenterX, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][6], MinimapCenterY, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], HideAllHUD ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][8], dsCutsceneState, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][9], isBugSector, updated);
-
-    if (updated) {
-        glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
-        for (int index = 1; index <= 9; index ++) {
-            glUniform1i(CompGpuLoc[CompShader][index], CompGpuLastValues[CompShader][index]);
-        }
-    }
-}
-
 const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
@@ -415,7 +355,9 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint pr
     }
 }
 
-void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags)
+#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
+
+void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags)
 {
     float aspectRatio = AspectRatio / (4.f / 3.f);
 
@@ -434,108 +376,783 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(u32 fla
 
 #undef UPDATE_GPU_VAR
 
-void PluginKingdomHeartsReCoded::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return;
-    }
-
+std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameScene, int gameSceneState) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    u32 attr = polygon->Attr;
+    auto shapes = std::vector<ShapeData2D>();
+    int hudScale = UIScale;
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_PauseMenu) {
-        u32 aimAttr1 = 1058996416;
-        u32 aimAttr2 = 1042219200;
-        u32 greenAimSmallSquare = 1025441984;
-        u32 greenAimBigSquare = 2033856;
-        if (polygon->NumVertices == 4 && (attr == aimAttr1 || attr == aimAttr2 || attr == greenAimSmallSquare || attr == greenAimBigSquare)) {
-            s32 z = polygon->Vertices[0]->Position[2];
-            float _z = ((float)z)/(1 << 22);
-            if (_z < 0) {
-                u32 x0 = std::min({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-                u32 x1 = std::max({(int)scaledPositions[0][0], (int)scaledPositions[1][0], (int)scaledPositions[2][0], (int)scaledPositions[3][0]});
-                float xCenter = (x0 + x1)/2.0;
+    switch (GameScene) {
+        case gameScene_IntroLoadMenu:
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+            break;
 
-                scaledPositions[0][0] = (u32)(xCenter + (s32)(((float)scaledPositions[0][0] - xCenter)/aspectRatio));
-                scaledPositions[1][0] = (u32)(xCenter + (s32)(((float)scaledPositions[1][0] - xCenter)/aspectRatio));
-                scaledPositions[2][0] = (u32)(xCenter + (s32)(((float)scaledPositions[2][0] - xCenter)/aspectRatio));
-                scaledPositions[3][0] = (u32)(xCenter + (s32)(((float)scaledPositions[3][0] - xCenter)/aspectRatio));
+        case gameScene_Cutscene:
+            if ((gameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
             }
-        }
+            if ((gameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            }
+            break;
+
+        case gameScene_CutsceneWithStaticImages:
+            shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            break;
+
+        case gameScene_InGameOlympusBattle:
+            // moves list
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(0, 0)
+                    .withSize(256, 40)
+                    .placeAtCorner(corner_TopLeft)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+
+            // cleaning the rest of the upper area of the screen
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(118, 182)
+                    .withSize(14, 10)
+                    .placeAtCorner(corner_Top)
+                    .sourceScale(aspectRatio*20, 1.0*4)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+        case gameScene_InGameDialog:
+            if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
+
+        case gameScene_InGameWithMap:
+            if ((gameSceneState & (1 << gameSceneState_showResultScreen)) > 0)
+            {
+                // review/result screens of different kinds
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
+
+            if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
+            {
+                // top mission information
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(256, 40)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+            }
+
+            if ((gameSceneState & (1 << gameSceneState_textOverScreen)) > 0)
+            {
+                // texts over screen, like in the tutorial
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
+
+            if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
+
+            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0)
+            {
+                if ((gameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
+                    // minimap
+                    ivec2 _minimapCenter = minimapCenter();
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(_minimapCenter.x - 54, _minimapCenter.y - 54)
+                            .withSize(108, 108)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 30.0, 9.0, 0.0)
+                            .sourceScale(0.555)
+                            .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                            .opacity(0.95)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_showFloorCounter)) > 0)
+                {
+                    // floor label
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(0, 0)
+                            .withSize(50, 15)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 88.0, 11.0, 0.0)
+                            .colorToAlpha(0x8, 0x30, 0xaa)
+                            .sourceScale(1.0/1.4)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // floor value
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(50, 0)
+                            .withSize(82, 15)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 98.0, 12.0, 0.0)
+                            .colorToAlpha(0x8, 0x30, 0xaa)
+                            .sourceScale(1.0/1.4)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_showEnemiesCounter)) > 0)
+                {
+                    float enemiesCounterDiagonalMergeFactor = 5.0;
+
+                    // enemies counter (biggest part)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(133, 0)
+                            .withSize(123, 15)
+                            .placeAtCorner(corner_Bottom)
+                            .withMargin(0.0, 0.0, 11.5 - enemiesCounterDiagonalMergeFactor/2, 12.0)
+                            .cropSquareCorners(0.0, 0.0, 0.0, enemiesCounterDiagonalMergeFactor)
+                            .colorToAlpha(0x8, 0x30, 0xaa)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // enemies counter (right side)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(133, 0)
+                            .withSize(23, 15)
+                            .placeAtCorner(corner_Bottom)
+                            .withMargin(61.5 - enemiesCounterDiagonalMergeFactor/2, 0.0, 0.0, 12.0)
+                            .cropSquareCorners(enemiesCounterDiagonalMergeFactor, 0.0, 0.0, 0.0)
+                            .colorToAlpha(0x8, 0x30, 0xaa)
+                            .hudScale(hudScale)
+                            .mirror(mirror_XY)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0)
+                {
+                    bool showChallengeMeter = (gameSceneState & (1 << gameSceneState_showChallengeMeter)) > 0;
+                    int challengeMeterHeight = showChallengeMeter ? 7 : 0;
+                    if (showChallengeMeter)
+                    {
+                        // challenge meter icon
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(10, 9)
+                                .withSize(13, challengeMeterHeight)
+                                .placeAtCorner(corner_TopLeft)
+                                .withMargin(21.0, 32.0, 0.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+
+                        // challenge meter bar
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(24, 10)
+                                .withSize(87, challengeMeterHeight - 2)
+                                .placeAtCorner(corner_TopLeft)
+                                .withMargin(35.0, 34.0, 0.0, 0.0)
+                                .sourceScale(2.25, 0.6)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
+
+                    // bottom mission information (top right corner)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 166)
+                            .withSize(119, 3)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(131.0, 6.0, 0.0, 0.0)
+                            .cropSquareCorners(0.0, 4.0, 0.0, 0.0)
+                            .mirror(mirror_X)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (top right corner transparent BG)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(118, 182)
+                            .withSize(3, 3)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(247.0, 6.0, 0.0, 0.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (bottom center black-blue separation)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(10, 175)
+                            .withSize(237, 4)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(8.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
+                            .mirror(mirror_Y)
+                            .sourceScale(1.0, 0.5)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (bottom left black-blue separation)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 175)
+                            .withSize(10, 6)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(3.0, 31.0 + challengeMeterHeight, 0.0, 0.0)
+                            .cropSquareCorners(0.0, 0.0, 2.25, 0.0)
+                            .mirror(mirror_Y)
+                            .sourceScale(1.0, 0.5)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (bottom right black-blue separation)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(242, 175)
+                            .withSize(10, 6)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(240.0, 31.0 + challengeMeterHeight, 0.0, 0.0)
+                            .mirror(mirror_Y)
+                            .sourceScale(1.0, 0.5)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (bigger area)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 166)
+                            .withSize(247, 26)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(3.0, 6.0, 0.0, 0.0)
+                            .cropSquareCorners(4.0, 0.0, 0.0, 0.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    if (showChallengeMeter)
+                    {
+                        // bottom mission information (side areas)
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromBottomScreen()
+                                .fromPosition(5, 190)
+                                .withSize(247, 2)
+                                .placeAtCorner(corner_TopLeft)
+                                .withMargin(3.0, 32.0, 0.0, 0.0)
+                                .sourceScale(1.0, 4.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
+
+                    // bottom mission information (bottom right corner)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 166)
+                            .withSize(119, 5)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(131.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
+                            .cropSquareCorners(0.0, 0.0, 0.0, 4.0)
+                            .mirror(mirror_XY)
+                            .sourceScale(1.0, 0.5)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // bottom mission information (bottom left corner)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 166)
+                            .withSize(128, 5)
+                            .placeAtCorner(corner_TopLeft)
+                            .withMargin(3.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
+                            .cropSquareCorners(0.0, 0.0, 4.0, 0.0)
+                            .mirror(mirror_Y)
+                            .sourceScale(1.0, 0.5)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_showOlympusBattlePlayerHealth)) > 0)
+                {
+                    // player health
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(134, 114)
+                            .withSize(122, 78)
+                            .placeAtCorner(corner_BottomRight)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_showRegularPlayerHealth)) > 0)
+                {
+                    // player health
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(164, 114)
+                            .withSize(92, 78)
+                            .placeAtCorner(corner_BottomRight)
+                            .withMargin(0.0, 0.0, 8.0, 3.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                        
+                    // TODO: KH UI implement cropped corner
+                    // if (finalPos.x*1.7 + finalPos.y > 64.0) {
+
+                    // player allies health
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(220, 74)
+                            .withSize(36, 118)
+                            .placeAtCorner(corner_BottomRight)
+                            .withMargin(0.0, 0.0, 8.0, 3.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_showCommandMenu)) > 0)
+                {
+                    // command menu
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 108)
+                            .withSize(88, 84)
+                            .placeAtCorner(corner_BottomLeft)
+                            .withMargin(10.0, 0.0, 0.0, 0.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_showNextAreaName)) > 0)
+                {
+                    // next area name
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(88, 160)
+                            .withSize(80, 32)
+                            .placeAtCorner(corner_Bottom)
+                            .cropSquareCorners(0.0, 0.0, 0.0, 18.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
+                {
+                    // cleaning the rest of the upper area of the screen
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(118, 182)
+                            .withSize(20, 10)
+                            .placeAtCorner(corner_Top)
+                            .sourceScale(aspectRatio*13, 1.0*4)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+                }
+
+                // overclock notification
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 81)
+                        .withSize(95, 27)
+                        .placeAtCorner(corner_BottomLeft)
+                        .withMargin(0.0, 0.0, 0.0, 84.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // item notification
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 39)
+                        .withSize(95, 32)
+                        .placeAtCorner(corner_BottomLeft)
+                        .withMargin(0.0, 0.0, 0.0, 84.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // pickup notification
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 48)
+                        .withSize(72, 16)
+                        .placeAtCorner(corner_BottomLeft)
+                        .withMargin(10.0, 0.0, 0.0, 128.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // level up notification
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(161, 39)
+                        .withSize(95, 32)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 115.0, 0.0, 0.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // enemy health
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(163, 0)
+                        .withSize(93, 22)
+                        .placeAtCorner(corner_TopRight)
+                        .withMargin(0.0, 7.5, 9.0, 0.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // background
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(118, 182)
+                        .withSize(20, 10)
+                        .placeAtCorner(corner_Center)
+                        .sourceScale(1000.0)
+                        .build(aspectRatio));
+            }
+
+            break;
+
+        case gameScene_PauseMenu:
+            // pause menu
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(118, 182)
+                    .withSize(20, 10)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .build(aspectRatio));
+
+            break;
+    
+        case gameScene_Tutorial:
+            // tutorial
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(5, 0)
+                    .withSize(246, 192)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(5.0)
+                    .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 96)
+                    .withSize(5, 5)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .opacity(0.75)
+                    .build(aspectRatio));
+
+            break;
+
+        case gameScene_LoadingScreen:
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_BottomRight)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+            break;
+
+        case gameScene_DeathScreen:
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+            break;
     }
+    
+    return shapes;
+}
 
-    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
+std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameScene, int gameSceneState) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    auto shapes = std::vector<ShapeData3D>();
+
+    if (gameScene == gameScene_InGameWithMap || gameScene == gameScene_InGameDialog || gameScene == gameScene_InGameOlympusBattle)
     {
-        s32* x = &scaledPositions[vertexIndex][0];
-        s32* y = &scaledPositions[vertexIndex][1];
-        s32 z = polygon->Vertices[vertexIndex]->Position[2];
-        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
-
-        int resolutionScale = ScreenWidth/256;
-        float commandMenuLeftMargin = 6.7;
-        float commandMenuBottomMargin = 0.5;
-
-        float iuTexScale = (6.0)/UIScale;
-
-        float _x = (float)(*x);
-        float _y = (float)(*y);
-        float _z = ((float)z)/(1 << 22);
-
         if (HideAllHUD)
         {
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
-            {
-                if (_x >= 0 && _x <= ScreenWidth &&
-                    _y >= 0 && _y <= ScreenHeight &&
-                    _z < 0) {
-                    _x = 0;
-                    _y = 0;
-                }
-            }
-        }
-        else
-        {
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog)
-            {
-                // Bug sector SP score
-                float bugSectorSpScoreTopMargin = 18.0;
-                float bugSectorSpScoreScale = (4.0)/UIScale;
-
-                if ((_x >= 0 && _x <= (2.0/5)*(ScreenWidth) &&
-                    _y >= 0 && _y <= (1.0/4)*(ScreenHeight) &&
-                    _z < 0)) {
-                    _x = (_x)/(bugSectorSpScoreScale*aspectRatio);
-                    _y = (_y)/(bugSectorSpScoreScale) + bugSectorSpScoreTopMargin*resolutionScale;
-                }
-            }
-
-            if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameDialog || GameScene == gameScene_PauseMenu || GameScene == gameScene_InGameOlympusBattle)
-            {
-                if (_x >= 0 && _x <= (5.0/16)*(ScreenWidth) &&
-                    _y >= (1.0/8)*(ScreenHeight) && _y <= (ScreenHeight) &&
-                    _z == (s32)(-1.000) &&
-                    rgb[0] < 200) {
-
-                    _x = (_x)/(iuTexScale*aspectRatio) + commandMenuLeftMargin*resolutionScale;
-                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale)) - commandMenuBottomMargin*resolutionScale;
-                }
-            }
-
-            if (GameScene == gameScene_InGameOlympusBattle)
-            {
-                if (_x >= (ScreenWidth/2)        && _x <= (ScreenWidth)  &&
-                    _y >= (2.0/3)*(ScreenHeight) && _y <= (ScreenHeight)) {
-
-                    _x = ScreenWidth - ((ScreenWidth - _x)/(iuTexScale*aspectRatio));
-                    _y = ScreenHeight - ((ScreenHeight - _y)/(iuTexScale));
-                }
-            }
+            // no HUD
+            shapes.push_back(ShapeBuilder3D::square()
+                    .placeAtCorner(corner_Center)
+                    .zRange(-1.0, -0.000001)
+                    .hide()
+                    .build(aspectRatio));
+            return shapes;
         }
 
-        *x = (s32)(_x);
-        *y = (s32)(_y);
+        // aim
+        shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
+                .polygonVertexesCount(4)
+                .polygonAttributes(1058996416)
+                .zRange(-1.0, -0.5)
+                .build(aspectRatio));
+
+        // aim
+        shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
+                .polygonVertexesCount(4)
+                .polygonAttributes(1042219200)
+                .zRange(-1.0, -0.5)
+                .build(aspectRatio));
+
+        // green aim small square
+        shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
+                .polygonVertexesCount(4)
+                .polygonAttributes(1025441984)
+                .zRange(-1.0, -0.5)
+                .build(aspectRatio));
+
+        // green aim big square
+        shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
+                .polygonVertexesCount(4)
+                .polygonAttributes(2033856)
+                .zRange(-1.0, -0.5)
+                .build(aspectRatio));
+
+        // command menu
+        shapes.push_back(ShapeBuilder3D::square()
+                .fromPosition(0, 24)
+                .withSize(80, 168)
+                .placeAtCorner(corner_BottomLeft)
+                .withMargin(6.8, 0.0, 0.0, 0.5)
+                .zRange(-1.0, -1.0)
+                .negateColor(0xFFFFFF)
+                .hudScale(UIScale)
+                .logger()
+                .build(aspectRatio));
+
+        if (gameScene == gameScene_InGameOlympusBattle) {
+            // olympus hand pointers
+            shapes.push_back(ShapeBuilder3D::square()
+                    .placeAtCorner(corner_Center)
+                    .zRange(-1.0, -1.0)
+                    .build(aspectRatio));
+
+            // player health
+            shapes.push_back(ShapeBuilder3D::square()
+                    .fromPosition(128, 128)
+                    .withSize(128, 64)
+                    .placeAtCorner(corner_BottomRight)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+        }
+        else {
+            // SP score
+            shapes.push_back(ShapeBuilder3D::square()
+                    .fromPosition(0, 0)
+                    .withSize(102, 58)
+                    .placeAtCorner(corner_TopLeft)
+                    .withMargin(0.0, 18.0, 0.0, 0.0)
+                    .sourceScale(1.5)
+                    .zRange(-1.0, -1.0)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+            // TODO: KH UI This is also distorting the aims
+        }
     }
+
+    return shapes;
+}
+
+int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
+    int state = 0;
+
+    switch (GameScene) {
+        case gameScene_IntroLoadMenu:
+            break;
+
+        case gameScene_Cutscene:
+            if (detectTopScreenMobiCutscene() == nullptr) {
+                state |= (1 << gameSceneState_bottomScreenCutscene);
+            }
+            else if (detectBottomScreenMobiCutscene() == nullptr) {
+                state |= (1 << gameSceneState_topScreenCutscene);
+            }
+            break;
+
+        case gameScene_CutsceneWithStaticImages:
+            break;
+
+        case gameScene_InGameDialog:
+            if (!isHealthVisible()) {
+                state |= (1 << gameSceneState_dialogVisible);
+                break;
+            }
+
+        case gameScene_InGameOlympusBattle:
+        case gameScene_InGameWithMap:
+            if (isResultScreenVisible())
+            {
+                state |= (1 << gameSceneState_showResultScreen);
+                break;
+            }
+
+            if (isMissionInformationVisibleOnTopScreen())
+            {
+                state |= (1 << gameSceneState_topScreenMissionInformationVisible);
+            }
+
+            if (!isHealthVisible() && !isCommandMenuVisible())
+            {
+                state |= (1 << gameSceneState_textOverScreen);
+                break;
+            }
+
+            if (isDialogVisible()) {
+                state |= (1 << gameSceneState_dialogVisible);
+                break;
+            }
+
+            if (GameScene == gameScene_InGameWithMap && isMinimapVisible()) {
+                if (ShowMap) {
+                    state |= (1 << gameSceneState_showMinimap);
+
+                    int framesPerTick = 48;
+                    MinimapFrameTick = (MinimapFrameTick + 1) % (framesPerTick*2);
+                    if (MinimapFrameTick < framesPerTick) {
+                        state |= (1 << gameSceneState_minimapCenterTick);
+                    }
+
+                    if (isBugSector())
+                    {
+                        state |= (1 << gameSceneState_showFloorCounter);
+                        state |= (1 << gameSceneState_showEnemiesCounter);
+                        state |= (1 << gameSceneState_showBottomScreenMissionInformation);
+
+                        if (isChallengeMeterVisible() && !isMissionInformationVisibleOnTopScreen())
+                        {
+                            state |= (1 << gameSceneState_showChallengeMeter);
+                        }
+                    }
+                }
+            }
+
+            if (!HideAllHUD)
+            {
+                if (isHealthVisible())
+                {
+                    if (GameScene == gameScene_InGameOlympusBattle) {
+                        state |= (1 << gameSceneState_showOlympusBattlePlayerHealth);
+                    }
+                    else {
+                        state |= (1 << gameSceneState_showRegularPlayerHealth);
+                    }
+                }
+
+                if (isCommandMenuVisible())
+                {
+                    state |= (1 << gameSceneState_showCommandMenu);
+
+                    if (GameScene != gameScene_InGameOlympusBattle) {
+                        state |= (1 << gameSceneState_showNextAreaName);
+                    }
+                }
+
+                state |= (1 << gameSceneState_showHud);
+            }
+
+            break;
+
+        case gameScene_PauseMenu:
+            break;
+    
+        case gameScene_Tutorial:
+            break;
+
+        case gameScene_LoadingScreen:
+            break;
+    }
+    
+    return state;
+}
+
+int PluginKingdomHeartsReCoded::renderer_screenLayout() {
+    switch (GameScene) {
+        case gameScene_InGameWithMap:
+        case gameScene_PauseMenu:
+        case gameScene_CutsceneWithStaticImages:
+        case gameScene_InGameDialog:
+        case gameScene_InGameOlympusBattle:
+            return screenLayout_Top;
+        
+        case gameScene_IntroLoadMenu:
+        case gameScene_Tutorial:
+        case gameScene_LoadingScreen:
+            return screenLayout_Bottom;
+        
+        case gameScene_Intro:
+        case gameScene_MainMenu:
+        case gameScene_InGameMenu:
+        case gameScene_WorldSelection:
+        case gameScene_Shop:
+        case gameScene_TheEnd:
+        case gameScene_Other2D:
+        case gameScene_Other:
+            return screenLayout_BothHorizontal;
+        
+        case gameScene_Cutscene:
+            return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
+    }
+
+    return screenLayout_Top;
 };
+
+int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
+    if (_ShouldHideScreenForTransitions) {
+        return brightnessMode_Off;
+    }
+    if (GameScene == gameScene_Cutscene                 ||
+        GameScene == gameScene_InGameWithMap            ||
+        GameScene == gameScene_PauseMenu                ||
+        GameScene == gameScene_CutsceneWithStaticImages ||
+        GameScene == gameScene_InGameDialog             ||
+        GameScene == gameScene_InGameOlympusBattle      ||
+        GameScene == gameScene_Other2D) {
+        return brightnessMode_TopScreen;
+    }
+    if (GameScene == gameScene_Tutorial ||
+        GameScene == gameScene_WorldSelection) {
+        return brightnessMode_BottomScreen;
+    }
+    return brightnessMode_Default;
+}
+
+float PluginKingdomHeartsReCoded::renderer_forcedAspectRatio()
+{
+    return (GameScene == gameScene_CutsceneWithStaticImages) ? (4.0/3) : AspectRatio;
+};
+
+bool PluginKingdomHeartsReCoded::renderer_showOriginalUI() {
+    return false;
+}
 
 void PluginKingdomHeartsReCoded::onLoadState()
 {
@@ -572,7 +1189,7 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
         hudToggle();
     }
 
-    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D || GameScene == gameScene_InGameOlympusBattle) {
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameOlympusBattle) {
         // Enabling L + D-Pad
         if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
         {
@@ -805,14 +1422,11 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_Intro: return "Game scene: Intro";
         case gameScene_MainMenu: return "Game scene: Main menu";
         case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
-        case gameScene_DayCounter: return "Game scene: Day counter";
         case gameScene_Cutscene: return "Game scene: Cutscene";
         case gameScene_InGameWithMap: return "Game scene: Ingame (with minimap)";
         case gameScene_InGameMenu: return "Game scene: Ingame menu";
-        case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_Tutorial: return "Game scene: Tutorial";
-        case gameScene_InGameWithDouble3D: return "Game scene: Ingame (with cutscene)";
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
@@ -846,6 +1460,18 @@ bool PluginKingdomHeartsReCoded::isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
+u32* PluginKingdomHeartsReCoded::topScreen2DTexture()
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    return nds->GPU.Framebuffer[FrontBuffer][0].get();
+}
+
+u32* PluginKingdomHeartsReCoded::bottomScreen2DTexture()
+{
+    int FrontBuffer = nds->GPU.FrontBuffer;
+    return nds->GPU.Framebuffer[FrontBuffer][1].get();
+}
+
 bool PluginKingdomHeartsReCoded::isTopScreen2DTextureBlack()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
@@ -858,6 +1484,193 @@ bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
     int FrontBuffer = nds->GPU.FrontBuffer;
     u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
     return isBufferBlack(bottomBuffer);
+}
+
+bool PluginKingdomHeartsReCoded::isResultScreenVisible()
+{
+    u32 address = getU32ByCart(KIND_OF_SCREEN_ADDRESS_US, KIND_OF_SCREEN_ADDRESS_EU, KIND_OF_SCREEN_ADDRESS_JP);
+    u16 value = nds->ARM7Read16(address);
+    return value == KIND_OF_SCREEN_PLATFORM_SECTION_RESULT || value == KIND_OF_SCREEN_OLYMPUS_LAYER_REVIEW;
+}
+
+bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10);
+}
+
+bool PluginKingdomHeartsReCoded::isDialogVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 128, 155);
+}
+
+bool PluginKingdomHeartsReCoded::isMinimapVisible()
+{
+    u32* buffer = bottomScreen2DTexture();
+    u32 pixel = getPixel(buffer, 1, 190, 0);
+    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) > 39;
+}
+
+bool PluginKingdomHeartsReCoded::isBugSector()
+{
+    return getFloorLevel() != 0;
+}
+
+bool PluginKingdomHeartsReCoded::isChallengeMeterVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 12, 12);
+}
+
+bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 35, 185);
+}
+
+bool PluginKingdomHeartsReCoded::isHealthVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 233, 175);
+}
+
+#define IS_COLOR(pixel,r,g,b) ((((pixel >> 8) & 0xFF) == b) && (((pixel >> 4) & 0xFF) == g) && (((pixel >> 0) & 0xFF) == r))
+
+ivec2 PluginKingdomHeartsReCoded::minimapCenter()
+{
+    int distanceToCenter = 54;
+    int minY = 31;
+    int maxY = 140;
+    int minX = 8;
+    int maxX = 247;
+
+    bool targetColorMap1[6][6] = {
+        {false, false, false, false, false, false},
+        {false, false, true,  true,  false, false},
+        {false, true,  true,  true,  true,  false},
+        {false, true,  true,  true,  true,  false},
+        {false, false, true,  true,  false, false},
+        {false, false, false, false, false, false}
+    };
+    bool targetColorMap2[4][4] = {
+        {false, false, false, false},
+        {false, true,  true,  false},
+        {false, true,  true,  false},
+        {false, false, false, false}
+    };
+    bool targetColorMap3[5][3] = {
+        {false, false, false},
+        {false, true,  false},
+        {false, true,  false},
+        {false, true,  false},
+        {false, false, false}
+    };
+
+    std::vector<ivec4> possibilities;
+    u32* buffer = bottomScreen2DTexture();
+    for (int y = minY; y < maxY; y++) {
+        for (int x = minX; x < maxX; x++) {
+            if ((getPixel(buffer, x, y, 0) == 0x1000343e) || (getPixel(buffer, x, y, 0) == 0x1000383e)) {
+                bool valid = true;
+                for (int subY = 0; subY < 6; subY ++) {
+                    for (int subX = 0; subX < 6; subX ++) {
+                        u32 pixel = getPixel(buffer, x + subX - 2, y + subY - 2, 0);
+                        valid = valid && (targetColorMap1[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
+                        if (!valid) break;
+                    }
+                    if (!valid) break;
+                }
+
+                if (valid) {
+                    possibilities.push_back(ivec4{x:x, y:y, z:6, w:6});
+                }
+
+                if (!valid) {
+                    valid = true;
+                    for (int subY = 0; subY < 4; subY ++) {
+                        for (int subX = 0; subX < 4; subX ++) {
+                            u32 pixel = getPixel(buffer, x + subX - 1, y + subY - 1, 0);
+                            valid = valid && (targetColorMap2[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
+                            if (!valid) break;
+                        }
+                        if (!valid) break;
+                    }
+
+                    if (valid) {
+                        possibilities.push_back(ivec4{x:x, y:y, z:4, w:4});
+                    }
+
+                    if (!valid) {
+                        valid = true;
+                        for (int subY = 0; subY < 5; subY ++) {
+                            for (int subX = 0; subX < 3; subX ++) {
+                                u32 pixel = getPixel(buffer, x + subX - 1, y + subY - 2, 0);
+                                valid = valid && (targetColorMap3[subY][subX] ? (pixel == 0x1000383e) : (pixel != 0x1000383e));
+                                if (!valid) break;
+                            }
+                            if (!valid) break;
+                        }
+
+                        if (valid) {
+                            possibilities.push_back(ivec4{x:x, y:y, z:3, w:5});
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    int posSize = possibilities.size();
+    if (posSize == 0) {
+        return ivec2{x:MinimapCenterX, y:MinimapCenterY};
+    }
+
+    int x = 0;
+    int y = 0;
+    int bigSize = 0;
+    for (int i = 0; i < posSize; i++) {
+        if (bigSize < possibilities[i].z*possibilities[i].w) {
+            bigSize = possibilities[i].z*possibilities[i].w;
+            x = 0;
+            y = 0;
+        }
+        if (bigSize == possibilities[i].z*possibilities[i].w) {
+            x = std::max(x, possibilities[i].x);
+            y = std::max(y, possibilities[i].y);
+        }
+    }
+    ivec2 result = {
+        x:std::max(std::min(x, maxX - distanceToCenter), minX + distanceToCenter),
+        y:std::max(std::min(y, maxY - distanceToCenter), minY + distanceToCenter)
+    };
+
+    MinimapCenterX = result.x;
+    MinimapCenterY = result.y;
+
+    return result;
+}
+
+bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
+{
+    u32 pixel = getPixel(buffer, x, y, 2);
+    u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
+    if (pixelAlpha > 0x4) {
+        return true;
+    }
+    if (pixelAlpha == 0x4) {
+        return false;
+    }
+    if (((pixel >> 8) & 0xFF) == 0) {
+        return false;
+    }
+
+    u32 colorPixel = getPixel(buffer, x, y, 0);
+    u32 colorPixelAlpha = (colorPixel >> (8*3)) & 0xFF;
+    if (colorPixelAlpha == 0x20) {
+        return false;
+    }
+    return true;
 }
 
 bool PluginKingdomHeartsReCoded::shouldRenderFrame()
@@ -901,47 +1714,11 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
     bool isInGameDialog = nds->ARM7Read32(getU32ByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
         getU32ByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
+    bool isDeathScreen = nds->ARM7Read32(getU32ByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP)) == 0;
 
     u8 gameState2 = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
     bool isWorldSelection = gameState2 == 0x03;
-
-    u32 minimapCenterXAddress = getU32ByCart(MINIMAP_1_CENTER_X_ADDRESS_US, MINIMAP_1_CENTER_X_ADDRESS_EU, MINIMAP_1_CENTER_X_ADDRESS_JP);
-    u32 minimapCenterYAddress = getU32ByCart(MINIMAP_1_CENTER_Y_ADDRESS_US, MINIMAP_1_CENTER_Y_ADDRESS_EU, MINIMAP_1_CENTER_Y_ADDRESS_JP);
-    u32 newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
-    u32 newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-    if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
-        MinimapCenterX = newMinimapCenterX;
-        MinimapCenterY = newMinimapCenterY;
-    }
-    else {
-        minimapCenterXAddress = getU32ByCart(MINIMAP_2_CENTER_X_ADDRESS_US, MINIMAP_2_CENTER_X_ADDRESS_EU, MINIMAP_2_CENTER_X_ADDRESS_JP);
-        minimapCenterYAddress = getU32ByCart(MINIMAP_2_CENTER_Y_ADDRESS_US, MINIMAP_2_CENTER_Y_ADDRESS_EU, MINIMAP_2_CENTER_Y_ADDRESS_JP);
-        newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
-        newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-        if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
-            MinimapCenterX = newMinimapCenterX;
-            MinimapCenterY = newMinimapCenterY;
-        }
-        else {
-            minimapCenterXAddress = getU32ByCart(MINIMAP_3_CENTER_X_ADDRESS_US, MINIMAP_3_CENTER_X_ADDRESS_EU, MINIMAP_3_CENTER_X_ADDRESS_JP);
-            minimapCenterYAddress = getU32ByCart(MINIMAP_3_CENTER_Y_ADDRESS_US, MINIMAP_3_CENTER_Y_ADDRESS_EU, MINIMAP_3_CENTER_Y_ADDRESS_JP);
-            newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
-            newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-            if (newMinimapCenterX < 256 && newMinimapCenterX > 0 && newMinimapCenterY < 192 && newMinimapCenterY > 0) {
-                MinimapCenterX = newMinimapCenterX;
-                MinimapCenterY = newMinimapCenterY;
-            }
-            else {
-                minimapCenterXAddress = getU32ByCart(MINIMAP_4_CENTER_X_ADDRESS_US, MINIMAP_4_CENTER_X_ADDRESS_EU, MINIMAP_4_CENTER_X_ADDRESS_JP);
-                minimapCenterYAddress = getU32ByCart(MINIMAP_4_CENTER_Y_ADDRESS_US, MINIMAP_4_CENTER_Y_ADDRESS_EU, MINIMAP_4_CENTER_Y_ADDRESS_JP);
-                newMinimapCenterX = nds->ARM7Read32(minimapCenterXAddress) >> 3*4;
-                newMinimapCenterY = nds->ARM7Read32(minimapCenterYAddress) >> 3*4;
-                MinimapCenterX = newMinimapCenterX;
-                MinimapCenterY = newMinimapCenterY;
-            }
-        }
-    }
 
     // Scale of brightness, from 0 (black) to 15 (every element is visible)
     u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
@@ -987,7 +1764,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
 
     if (has3DOnBothScreens)
     {
-        return gameScene_InGameWithDouble3D;
+        return gameScene_Other;
     }
     else if (has3DOnBottomScreen)
     {
@@ -1043,6 +1820,11 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     else if (GameScene == gameScene_PauseMenu)
     {
         return PriorGameScene;
+    }
+
+    if (isDeathScreen)
+    {
+        return gameScene_DeathScreen;
     }
 
     if (isInGameDialog)
@@ -1201,16 +1983,14 @@ std::filesystem::path PluginKingdomHeartsReCoded::patchReplacementCutsceneIfNeed
 
 std::string PluginKingdomHeartsReCoded::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
 
     filename = "hd" + std::string(cutscene->DsName) + ".mp4";
-    fullPath = assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
@@ -1243,16 +2023,14 @@ bool PluginKingdomHeartsReCoded::isUnskippableMobiCutscene(CutsceneEntry* cutsce
 
 std::string PluginKingdomHeartsReCoded::replacementBackgroundMusicFilePath(std::string name) {
     std::string filename = name + ".wav";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "audio" / filename;
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
 
     filename = name + ".mp3";
-    fullPath = assetsFolderPath / "audio" / filename;
+    fullPath = _assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
@@ -1262,10 +2040,8 @@ std::string PluginKingdomHeartsReCoded::replacementBackgroundMusicFilePath(std::
 
 std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path fullPath = assetsFolderPath / "localization" / filename;
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "localization" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }

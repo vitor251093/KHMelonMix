@@ -1,9 +1,21 @@
 #include "Plugin.h"
 
+#include "Plugin_GPU_OpenGL_shaders.h"
+#include "Plugin_GPU3D_OpenGL_shaders.h"
+
 #include <iostream>
 #include <string>
 #include <cstdarg>
 #include <cstdio>
+
+#ifdef __APPLE__
+#include <objc/objc.h>
+#include <objc/NSObject.h>
+#include <objc/message.h>
+#include <objc/runtime.h>
+#endif
+
+#include "../OpenGLSupport.h"
 
 #define RAM_SEARCH_ENABLED true
 // #define RAM_SEARCH_SIZE 8
@@ -33,6 +45,366 @@
 
 namespace Plugins
 {
+
+std::filesystem::path Plugin::assetsFolderPath()
+{
+    std::string assetsFolderName = assetsFolder();
+#ifdef __APPLE__
+    Class nsBundleClass = (Class)objc_getClass("NSBundle");
+    SEL mainBundleSel = sel_registerName("mainBundle");
+    SEL bundlePathSel = sel_registerName("bundlePath");
+    SEL utf8StringSel = sel_registerName("UTF8String");
+
+    id bundle = ((id(*)(Class, SEL))objc_msgSend)(nsBundleClass, mainBundleSel);
+    id bundlePath = ((id(*)(id, SEL))objc_msgSend)(bundle, bundlePathSel);
+    const char* pathCString = ((const char* (*)(id, SEL))objc_msgSend)(bundlePath, utf8StringSel);
+    
+    std::filesystem::path currentPath = std::filesystem::path(pathCString) / "Contents";
+#else
+    std::filesystem::path currentPath = std::filesystem::current_path();
+#endif
+    return currentPath / "assets" / assetsFolderName;
+}
+
+const char* Plugin::gpuOpenGL_FS()
+{
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
+    return kCompositorFS_Plugin;
+}
+
+void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
+    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock2D");
+    glUniformBlockBinding(CompShader, blockIndex, 1);
+
+    GLuint uboBuffer;
+    glGenBuffers(1, &uboBuffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData2D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
+    CompUboLoc[CompShader] = uboBuffer;
+
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
+
+    for (int index = 0; index <= 6; index ++) {
+        CompGpuLastValues[CompShader][index] = -1;
+    }
+}
+
+#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
+
+void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    float forcedAspectRatio = renderer_forcedAspectRatio() / (4.f / 3.f);
+    bool showOriginalHud = renderer_showOriginalUI();
+    int screenLayout = renderer_screenLayout();
+    int brightnessMode = renderer_brightnessMode();
+    int gameSceneState = renderer_gameSceneState();
+
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(forcedAspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], UIScale, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], showOriginalHud ? 1 : 0, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], screenLayout, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], brightnessMode, updated);
+
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][6], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], gameSceneState, updated);
+
+    if (updated) {
+        std::vector<ShapeData2D> shapes = renderer_2DShapes(GameScene, gameSceneState);
+
+#if DEBUG_MODE_ENABLED
+        printf("Updating shapes. New shape count: %d\n", shapes.size());
+        printf("Updated conditions: scene %d - state %d\n", GameScene, gameSceneState);
+#endif
+
+        glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
+        glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
+        glUniform1i(CompGpuLoc[CompShader][2], CompGpuLastValues[CompShader][2]);
+        glUniform1i(CompGpuLoc[CompShader][3], CompGpuLastValues[CompShader][3]);
+        glUniform1i(CompGpuLoc[CompShader][4], CompGpuLastValues[CompShader][4]);
+        glUniform1i(CompGpuLoc[CompShader][5], CompGpuLastValues[CompShader][5]);
+        glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
+
+        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
+        auto shadersData = shapes.data();
+        glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
+        void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * shapes.size());
+        glUnmapBuffer(GL_UNIFORM_BUFFER);
+    }
+}
+
+const char* Plugin::gpu3DOpenGLClassic_VS_Z() {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
+    return kRenderVS_Z_Plugin;
+};
+
+void Plugin::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint CompShader, u32 flags)
+{
+    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock3D");
+    glUniformBlockBinding(CompShader, blockIndex, 2);
+
+    if (CompUbo3DLocInit != true) {
+#if DEBUG_MODE_ENABLED
+        printf("Initializing 3D shapes UBO\n");
+#endif
+        GLuint uboBuffer;
+        glGenBuffers(1, &uboBuffer);
+        glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData3D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboBuffer);
+        CompUbo3DLoc[CompShader] = uboBuffer;
+        CompUbo3DLocInit = true;
+    }
+
+    CompGpu3DLoc[CompShader][flags][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
+    CompGpu3DLoc[CompShader][flags][1] = glGetUniformLocation(CompShader, "hudScale");
+    CompGpu3DLoc[CompShader][flags][2] = glGetUniformLocation(CompShader, "shapeCount");
+
+    for (int index = 0; index <= 2; index ++) {
+        CompGpu3DLastValues[CompShader][flags][index] = -1;
+    }
+}
+
+void Plugin::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    int gameSceneState = renderer_gameSceneState();
+    
+    bool updated = false;
+    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][0], (int)(aspectRatio*1000), updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][1], UIScale, updated);
+
+    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][2], GameScene, updated);
+    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][3], gameSceneState, updated);
+
+    if (updated) {
+        std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
+
+#if DEBUG_MODE_ENABLED
+        printf("Updating 3D shapes. New shape count: %d\n", shapes.size());
+#endif
+
+        glUniform1f(CompGpu3DLoc[CompShader][flags][0], aspectRatio);
+        glUniform1i(CompGpu3DLoc[CompShader][flags][1], CompGpu3DLastValues[CompShader][flags][1]);
+        glUniform1i(CompGpu3DLoc[CompShader][flags][2], shapes.size());
+
+        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
+        auto shadersData = shapes.data();
+        glBindBuffer(GL_UNIFORM_BUFFER, CompUbo3DLoc[CompShader]);
+        void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData3D) * shapes.size());
+        glUnmapBuffer(GL_UNIFORM_BUFFER);
+    }
+}
+
+#undef UPDATE_GPU_VAR
+
+void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
+    bool disable = DisableEnhancedGraphics;
+    if (disable) {
+        return;
+    }
+
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    int resolutionScale = ScreenWidth/256;
+
+    int gameSceneState = renderer_gameSceneState();
+    std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
+
+    for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
+    {
+        ShapeData3D shape = shapes[shapeIndex];
+        bool loggerModeEnabled = (shape.effects & 0x4) != 0;
+
+        bool attrMatch = true;
+        for (int i = 0; i < 4; i++) {
+            attrMatch = attrMatch && (shape.polygonAttributes[i] == 0 || shape.polygonAttributes[i] == polygon->Attr);
+        }
+        for (int i = 0; i < 4; i++) {
+            attrMatch = attrMatch && (shape.negatedPolygonAttributes[i] == 0 || shape.negatedPolygonAttributes[i] != polygon->Attr);
+        }
+
+        // polygon mode
+        if ((shape.effects & 0x1) != 0) {
+            if (shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) {
+                if (attrMatch) {
+                    s32 z = polygon->Vertices[0]->Position[2];
+                    float _z = ((float)z)/(1 << 22);
+                    if (_z >= shape.zRange.x && _z <= shape.zRange.y) 
+                    {
+                        u32 x0 = (int)scaledPositions[0][0];
+                        u32 x1 = (int)scaledPositions[0][0];
+                        for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
+                            x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
+                            x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
+                        }
+                        float xCenter = (x0 + x1)/2.0;
+
+                        for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
+                            scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
+    {
+        s32* x = &scaledPositions[vertexIndex][0];
+        s32* y = &scaledPositions[vertexIndex][1];
+        s32 z = polygon->Vertices[vertexIndex]->Position[2];
+        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
+
+        float _x = (float)(*x);
+        float _y = (float)(*y);
+        float _z = ((float)z)/(1 << 22);
+
+        for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
+        {
+            ShapeData3D shape = shapes[shapeIndex];
+
+            // vertex mode
+            if ((shape.effects & 0x1) == 0) {
+                bool loggerModeEnabled = (shape.effects & 0x4) != 0;
+
+                bool attrMatchEqual = false;
+                bool attrMatchEqual2 = false;
+                bool attrMatchNeg = false;
+                for (int i = 0; i < 4; i++) {
+                    if (shape.polygonAttributes[i] != 0) {
+                        attrMatchEqual = true;
+                        if (shape.polygonAttributes[i] == polygon->Attr) {
+                            attrMatchEqual2 = true;
+                            break;
+                        }
+                    }
+                }
+                for (int i = 0; i < 4; i++) {
+                    if (shape.negatedPolygonAttributes[i] != 0 && shape.negatedPolygonAttributes[i] == polygon->Attr) {
+                        attrMatchNeg = true;
+                        break;
+                    }
+                }
+                bool attrMatch = (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
+
+                bool colorMatchEqual = false;
+                bool colorMatchEqual2 = false;
+                bool colorMatchNeg = false;
+                for (int i = 0; i < shape.colorCount; i++) {
+                    colorMatchEqual = true;
+                    if ((((shape.color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+                    && (((shape.color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+                    && (((shape.color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                        colorMatchEqual2 = true;
+                        break;
+                    }
+                }
+                for (int i = 0; i < shape.negatedColorCount; i++) {
+                    if ((((shape.negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+                    && (((shape.negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+                    && (((shape.negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                        colorMatchNeg = true;
+                        break;
+                    }
+                }
+                bool colorMatch = (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
+
+                float iuTexScale = SCREEN_SCALE/shape.hudScale;
+                float xScaleInv = iuTexScale/shape.sourceScale.x;
+                float yScaleInv = iuTexScale/shape.sourceScale.y;
+
+                if (_x >= shape.squareInitialCoords.x*resolutionScale && _x <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
+                    _y >= shape.squareInitialCoords.y*resolutionScale && _y <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
+                    _z >= shape.zRange.x && _z <= shape.zRange.y && attrMatch && colorMatch)
+                {
+                    // hide vertex
+                    if ((shape.effects & 0x2) != 0)
+                    {
+                        _x = 0;
+                        _y = 0;
+                    }
+                    else {
+                        switch (shape.corner)
+                        {
+                            case corner_PreservePosition:
+                                break;
+
+                            case corner_Center:
+                                _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
+                                break;
+                            
+                            case corner_TopLeft:
+                                _x = _x/(xScaleInv*aspectRatio);
+                                _y = _y/(yScaleInv);
+                                break;
+                            
+                            case corner_Top:
+                                _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
+                                _y = _y/(yScaleInv);
+                                break;
+
+                            case corner_TopRight:
+                                _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
+                                _y = _y/(yScaleInv);
+                                break;
+
+                            case corner_Right:
+                                _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
+                                break;
+
+                            case corner_BottomRight:
+                                _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
+                                break;
+
+                            case corner_Bottom:
+                                _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
+                                break;
+
+                            case corner_BottomLeft:
+                                _x = _x/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
+                                break;
+
+                            case corner_Left:
+                                _x = _x/(xScaleInv*aspectRatio);
+                                _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
+                                break;
+                        }
+
+                        _x = _x + (shape.margin.x*resolutionScale - shape.margin.z*resolutionScale)/aspectRatio;
+                        _y = _y + shape.margin.y*resolutionScale - shape.margin.w*resolutionScale;
+                    }
+
+                    *x = (s32)(_x);
+                    *y = (s32)(_y);
+                    break;
+                }
+            }
+        }
+    }
+};
 
 bool Plugin::togglePause()
 {
@@ -219,10 +591,8 @@ std::string trim(const std::string& str) {
 }
 std::string Plugin::textureIndexFilePath() {
     std::string filename = "index.ini";
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
     std::filesystem::path fullPath = texturesFolder / filename;
 
     if (!std::filesystem::exists(fullPath)) {
@@ -267,12 +637,10 @@ std::map<std::string, std::string> Plugin::getTexturesIndex() {
     return texturesIndex;
 }
 std::string Plugin::textureFilePath(std::string texture) {
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path texturesFolder = assetsFolderPath / "textures";
-    if (!std::filesystem::exists(assetsFolderPath)) {
-        std::filesystem::create_directory(assetsFolderPath);
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
+    if (!std::filesystem::exists(_assetsFolderPath)) {
+        std::filesystem::create_directory(_assetsFolderPath);
     }
 
     std::map<std::string, std::string> texturesIndex = getTexturesIndex();
@@ -295,10 +663,8 @@ std::string Plugin::textureFilePath(std::string texture) {
     return fullPath.string();
 }
 std::string Plugin::tmpTextureFilePath(std::string texture) {
-    std::string assetsFolderName = assetsFolder();
-    std::filesystem::path currentPath = std::filesystem::current_path();
-    std::filesystem::path assetsFolderPath = currentPath / "assets" / assetsFolderName;
-    std::filesystem::path tmpFolderPath = assetsFolderPath / "textures_tmp";
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path tmpFolderPath = _assetsFolderPath / "textures_tmp";
 
     if (shouldExportTextures() && !std::filesystem::exists(tmpFolderPath)) {
         std::filesystem::create_directory(tmpFolderPath);
@@ -652,17 +1018,31 @@ void Plugin::setAspectRatio(float aspectRatio)
 
     AspectRatio = aspectRatio;
 }
+void Plugin::setInternalResolutionScale(int scale)
+{
+    InternalResolutionScale = scale;
+}
 
-void Plugin::_superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+void Plugin::_superLoadConfigs(
+    std::function<bool(std::string)> getBoolConfig,
+    std::function<int(std::string)> getIntConfig,
+    std::function<std::string(std::string)> getStringConfig
+)
 {
     std::string root = tomlUniqueIdentifier();
     DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
+    UIScale = getIntConfig(root + ".HUDScale");
+    UIScale = (UIScale == 0) ? 4 : UIScale;
 }
-void Plugin::loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+void Plugin::loadConfigs(
+    std::function<bool(std::string)> getBoolConfig,
+    std::function<int(std::string)> getIntConfig,
+    std::function<std::string(std::string)> getStringConfig
+)
 {
-    _superLoadConfigs(getBoolConfig, getStringConfig);
+    _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
 }
 
 void Plugin::errorLog(const char* format, ...) {

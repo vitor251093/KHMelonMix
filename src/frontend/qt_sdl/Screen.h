@@ -128,7 +128,7 @@ protected:
 
     virtual void setupScreenLayout();
 
-    void refreshAspectRatio();
+    void refreshAspectRatioAndScale();
 
     void resizeEvent(QResizeEvent* event) override;
 

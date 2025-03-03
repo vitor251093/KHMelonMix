@@ -29,15 +29,17 @@ public:
     std::string assetsFolder();
     std::string tomlUniqueIdentifier();
 
-    const char* gpuOpenGL_FS();
-    void gpuOpenGL_FS_initVariables(GLuint CompShader);
-    void gpuOpenGL_FS_updateVariables(GLuint CompShader);
+    std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState);
+    std::vector<ShapeData3D> renderer_3DShapes(int gameScene, int gameSceneState);
+    int renderer_gameSceneState();
+    int renderer_screenLayout();
+    int renderer_brightnessMode();
+    float renderer_forcedAspectRatio();
+    bool renderer_showOriginalUI();
 
     const char* gpu3DOpenGLClassic_VS_Z();
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
-    void gpu3DOpenGLClassic_VS_Z_updateVariables(u32 flags);
-
-    void gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
+    void gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags);
 
     void onLoadState();
 
@@ -62,9 +64,13 @@ public:
 
     u32 getAspectRatioAddress();
 
-    void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+    void loadConfigs(
+        std::function<bool(std::string)> getBoolConfig,
+        std::function<int(std::string)> getIntConfig,
+        std::function<std::string(std::string)> getStringConfig
+    )
     {
-        _superLoadConfigs(getBoolConfig, getStringConfig);
+        _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
 
         std::string root = tomlUniqueIdentifier();
 
@@ -76,10 +82,10 @@ private:
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
-    int UIScale = 4;
     bool ShowMap;
-    int MinimapCenterX;
-    int MinimapCenterY;
+    int MinimapCenterX = 128;
+    int MinimapCenterY = 96;
+    int MinimapFrameTick;
     bool HideAllHUD;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
@@ -121,8 +127,22 @@ private:
     bool isSaveLoaded();
 
     bool isBufferBlack(unsigned int* buffer);
+    u32* topScreen2DTexture();
+    u32* bottomScreen2DTexture();
     bool isTopScreen2DTextureBlack();
     bool isBottomScreen2DTextureBlack();
+
+    bool isResultScreenVisible();
+    bool isMissionInformationVisibleOnTopScreen();
+    bool isDialogVisible();
+    bool isMinimapVisible();
+    bool isBugSector();
+    bool isChallengeMeterVisible();
+    bool isCommandMenuVisible();
+    bool isHealthVisible();
+    ivec2 minimapCenter();
+    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
+
     void hudToggle();
     void debugLogs(int gameScene);
 };
