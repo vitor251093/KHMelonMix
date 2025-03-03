@@ -1142,25 +1142,28 @@ bool PluginKingdomHeartsDays::isCameraBaseAddress(u32 addr)
 
 std::vector<u32> PluginKingdomHeartsDays::getCameraBaseAddresses()
 {
-    if (!lastCameraBaseAddresses.empty()) {
-        bool allValid = true;
-        for (u32 lastCameraBaseAddress : lastCameraBaseAddresses) {
-            if (!isCameraBaseAddress(lastCameraBaseAddress)) {
-                allValid = false;
-                break;
+    if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D || GameScene == gameScene_MultiplayerMissionReview)
+    {
+        if (!lastCameraBaseAddresses.empty()) {
+            bool allValid = true;
+            for (u32 lastCameraBaseAddress : lastCameraBaseAddresses) {
+                if (!isCameraBaseAddress(lastCameraBaseAddress)) {
+                    allValid = false;
+                    break;
+                }
+            }
+            if (allValid) {
+                return lastCameraBaseAddresses;
             }
         }
-        if (allValid) {
-            return lastCameraBaseAddresses;
-        }
-    }
 
-    lastCameraBaseAddresses.clear();
+        lastCameraBaseAddresses.clear();
 
-    for (u32 addr = 0x01000000; addr < 0x03000000; addr+=4) {
-    // for (u32 addr = 0x02000000; addr < 0x02500000; addr+=4) {
-        if (isCameraBaseAddress(addr)) {
-            lastCameraBaseAddresses.push_back(addr);
+        for (u32 addr = 0x01000000; addr < 0x03000000; addr+=4) {
+        // for (u32 addr = 0x02000000; addr < 0x02500000; addr+=4) {
+            if (isCameraBaseAddress(addr)) {
+                lastCameraBaseAddresses.push_back(addr);
+            }
         }
     }
 
