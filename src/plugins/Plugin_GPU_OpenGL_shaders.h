@@ -120,7 +120,7 @@ ivec4 combineLayers(ivec4 _3dpix, ivec4 val1, ivec4 val2, ivec4 val3)
     return val1;
 }
 
-vec2 getHorizontalDualScreen2DTextureCoordinates(float xpos, float ypos, vec2 clearVect)
+vec2 getHorizontalDualScreen2DTextureCoordinates(float xpos, float ypos)
 {
     int screenScale = 2;
     vec2 texPosition3d = vec2(xpos*screenScale, ypos*screenScale);
@@ -164,11 +164,12 @@ vec2 getHorizontalDualScreen2DTextureCoordinates(float xpos, float ypos, vec2 cl
         }
     }
 
+
     // nothing (clear screen)
-    return clearVect;
+    return vec2(-1, -1);
 }
 
-vec2 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos, vec2 clearVect)
+vec2 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos)
 {
     int screenScale = 2;
     vec2 texPosition3d = vec2(xpos*screenScale, ypos*screenScale);
@@ -213,7 +214,7 @@ vec2 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos, vec2 clea
     }
 
     // nothing (clear screen)
-    return clearVect;
+    return vec2(-1, -1);
 }
 
 ivec4 getForcedAspectRatioScreen3DColor(float xpos, float ypos)
@@ -415,7 +416,7 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
     if (screenLayout == 2) { // vertical
-        ivec2 textureBeginning = ivec2(getVerticalDualScreen2DTextureCoordinates(xpos, ypos, vec2(-1, -1)));
+        ivec2 textureBeginning = ivec2(getVerticalDualScreen2DTextureCoordinates(xpos, ypos));
         if (textureBeginning.x == -1 && textureBeginning.y == -1) {
             if (index == 1)
             {
@@ -439,7 +440,21 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     }
 
     if (screenLayout == 3) { // horizontal
-        ivec2 textureBeginning = ivec2(getHorizontalDualScreen2DTextureCoordinates(xpos, ypos, vec2(128, 0)));
+        ivec2 textureBeginning = ivec2(getHorizontalDualScreen2DTextureCoordinates(xpos, ypos));
+        if (textureBeginning.x == -1 && textureBeginning.y == -1) {
+            ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, 96), 0));
+
+            if ((mbright.b & 0x3) != 1 || ((mbright.g >> 6) == 2 && mbright.r >= 16))
+            {
+                // black screen due to brightness
+                textureBeginning = ivec2(-1, -1);
+            }
+            else
+            {
+                textureBeginning = ivec2(128, 0);
+            }
+        }
+
         ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
         ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
         if (index == 2) {
