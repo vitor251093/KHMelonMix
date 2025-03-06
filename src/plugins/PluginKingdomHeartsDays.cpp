@@ -831,6 +831,15 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
 
             break;
 
+        case gameScene_InGameMenu:
+            // config and save; the others are in horizontal style
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+            break;
+
         case gameScene_LoadingScreen:
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()

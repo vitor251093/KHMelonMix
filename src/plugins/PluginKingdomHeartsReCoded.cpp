@@ -979,6 +979,16 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
         }
     }
 
+    if (gameScene == gameScene_WorldSelection)
+    {
+        shapes.push_back(ShapeBuilder3D::square()
+                .withSize(256, 192)
+                .placeAtCorner(corner_Center)
+                .sourceScale(aspectRatio*aspectRatio, 1.0)
+                .hudScale(SCREEN_SCALE)
+                .build(aspectRatio));
+    }
+
     return shapes;
 }
 
