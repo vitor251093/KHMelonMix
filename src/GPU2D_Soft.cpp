@@ -19,13 +19,16 @@
 #include "GPU2D_Soft.h"
 #include "GPU.h"
 #include "GPU3D.h"
+#include "GPU_Texreplace.h"
+
+#include <filesystem>
 
 namespace melonDS
 {
 namespace GPU2D
 {
 SoftRenderer::SoftRenderer(melonDS::GPU& gpu)
-    : Renderer2D(), GPU(gpu)
+    : Renderer2D(), GPU(gpu), Texcache(Texcache2D())
 {
     // mosaic table is initialized at compile-time
 }
@@ -106,8 +109,10 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
 {
     CurUnit = unit;
 
-    int stride = GPU.GPU3D.IsRendererAccelerated() ? (256*3 + 1) : 256;
-    u32* dst = &Framebuffer[CurUnit->Num][stride * line];
+    u32 firstLine = line*MODIFIER_2D_TEXTURE_SCALE;
+    u32 lastLine = (line + 1)*MODIFIER_2D_TEXTURE_SCALE - 1;
+
+    int stride = GPU.GPU3D.IsRendererAccelerated() ? (256*3*MODIFIER_2D_TEXTURE_SCALE + 1) : 256*MODIFIER_2D_TEXTURE_SCALE;
 
     int n3dline = line;
     line = GPU.VCount;
@@ -157,12 +162,16 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
 
     if (forceblank)
     {
-        for (int i = 0; i < 256; i++)
+        for (u32 aLine = firstLine; aLine <= lastLine; aLine++)
+        {
+        u32* dst = &Framebuffer[CurUnit->Num][stride * aLine];
+        for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             dst[i] = 0xFFFFFFFF;
 
         if (GPU.GPU3D.IsRendererAccelerated())
         {
-            dst[256*3] = 0;
+            dst[256*3*MODIFIER_2D_TEXTURE_SCALE] = 0;
+        }
         }
         return;
     }
@@ -170,15 +179,23 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
     u32 dispmode = CurUnit->DispCnt >> 16;
     dispmode &= (CurUnit->Num ? 0x1 : 0x3);
 
-    // always render regular graphics
-    DrawScanline_BGOBJ(line);
-    CurUnit->UpdateMosaicCounters(line);
+    for (u32 aLine = firstLine; aLine <= lastLine; aLine++)
+    {
+    bool isLastLine = aLine == lastLine;
 
+    // always render regular graphics
+    DrawScanline_BGOBJ(line, isLastLine);
+
+    if (isLastLine) {
+        CurUnit->UpdateMosaicCounters(line);
+    }
+
+    u32* dst = &Framebuffer[CurUnit->Num][stride * aLine];
     switch (dispmode)
     {
     case 0: // screen off
         {
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
                 dst[i] = 0x003F3F3F;
         }
         break;
@@ -206,12 +223,15 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
                     u8 g = (color & 0x03E0) >> 4;
                     u8 b = (color & 0x7C00) >> 9;
 
-                    dst[i] = r | (g << 8) | (b << 16);
+                    for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                    {
+                        dst[i*MODIFIER_2D_TEXTURE_SCALE + j] = r | (g << 8) | (b << 16);
+                    }
                 }
             }
             else
             {
-                for (int i = 0; i < 256; i++)
+                for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
                 {
                     dst[i] = 0;
                 }
@@ -228,10 +248,14 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
                 u8 g = (color & 0x03E0) >> 4;
                 u8 b = (color & 0x7C00) >> 9;
 
-                dst[i] = r | (g << 8) | (b << 16);
+                for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                {
+                    dst[i*MODIFIER_2D_TEXTURE_SCALE + j] = r | (g << 8) | (b << 16);
+                }
             }
         }
         break;
+    }
     }
 
     // capture
@@ -250,13 +274,16 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
             DoCapture(line, capwidth);
     }
 
+    for (u32 aLine = firstLine; aLine <= lastLine; aLine++)
+    {
     u32 masterBrightness = CurUnit->MasterBrightness;
+    u32* dst = &Framebuffer[CurUnit->Num][stride * aLine];
 
     if (GPU.GPU3D.IsRendererAccelerated())
     {
         u32 xpos = GPU.GPU3D.GetRenderXPos();
 
-        dst[256*3] = masterBrightness |
+        dst[256*3*MODIFIER_2D_TEXTURE_SCALE] = masterBrightness |
                      (CurUnit->DispCnt & 0x30000) |
                      (xpos << 24) | ((xpos & 0x100) << 15);
         return;
@@ -271,7 +298,7 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
             u32 factor = masterBrightness & 0x1F;
             if (factor > 16) factor = 16;
 
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             {
                 dst[i] = ColorBrightnessUp(dst[i], factor, 0x0);
             }
@@ -282,7 +309,7 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
             u32 factor = masterBrightness & 0x1F;
             if (factor > 16) factor = 16;
 
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             {
                 dst[i] = ColorBrightnessDown(dst[i], factor, 0xF);
             }
@@ -292,7 +319,7 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
     // convert to 32-bit BGRA
     // note: 32-bit RGBA would be more straightforward, but
     // BGRA seems to be more compatible (Direct2D soft, cairo...)
-    for (int i = 0; i < 256; i+=2)
+    for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i+=2)
     {
         u64 c = *(u64*)&dst[i];
 
@@ -302,6 +329,7 @@ void SoftRenderer::DrawScanline(u32 line, Unit* unit)
         c = r | g | b;
 
         *(u64*)&dst[i] = c | ((c & 0x00C0C0C000C0C0C0) >> 6) | 0xFF000000FF000000;
+    }
     }
 }
 
@@ -350,8 +378,8 @@ void SoftRenderer::DoCapture(u32 line, u32 width)
             for (int i = 0; i < 256; i++)
             {
                 u32 val1 = BGOBJLine[i];
-                u32 val2 = BGOBJLine[256+i];
-                u32 val3 = BGOBJLine[512+i];
+                u32 val2 = BGOBJLine[i+256];
+                u32 val3 = BGOBJLine[i+512];
 
                 u32 compmode = (val3 >> 24) & 0xF;
 
@@ -689,12 +717,12 @@ void SoftRenderer::DrawScanlineBGMode7(u32 line)
     }
 }
 
-void SoftRenderer::DrawScanline_BGOBJ(u32 line)
+void SoftRenderer::DrawScanline_BGOBJ(u32 line, bool lastLineOfBatch)
 {
     // forced blank disables BG/OBJ compositing
     if (CurUnit->DispCnt & (1<<7))
     {
-        for (int i = 0; i < 256; i++)
+        for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             BGOBJLine[i] = 0xFF3F3F3F;
 
         return;
@@ -712,7 +740,7 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
         backdrop = r | (g << 8) | (b << 16) | 0x20000000;
         backdrop |= (backdrop << 32);
 
-        for (int i = 0; i < 256; i+=2)
+        for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i+=2)
             *(u64*)&BGOBJLine[i] = backdrop;
     }
 
@@ -741,23 +769,23 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
 
     if (!GPU.GPU3D.IsRendererAccelerated())
     {
-        for (int i = 0; i < 256; i++)
+        for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
         {
             u32 val1 = BGOBJLine[i];
-            u32 val2 = BGOBJLine[256+i];
+            u32 val2 = BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE];
 
-            BGOBJLine[i] = ColorComposite(i, val1, val2);
+            BGOBJLine[i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val2);
         }
     }
     else
     {
         if (CurUnit->Num == 0)
         {
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             {
                 u32 val1 = BGOBJLine[i];
-                u32 val2 = BGOBJLine[256+i];
-                u32 val3 = BGOBJLine[512+i];
+                u32 val2 = BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE];
+                u32 val3 = BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE];
 
                 u32 flag1 = val1 >> 24;
                 u32 flag2 = val2 >> 24;
@@ -778,9 +806,9 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
                 {
                     // 3D on top, blending
 
-                    BGOBJLine[i]     = val2;
-                    BGOBJLine[256+i] = ColorComposite(i, val2, val3);
-                    BGOBJLine[512+i] = 0x04000000;
+                    BGOBJLine[i] = val2;
+                    BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val2, val3);
+                    BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = 0x04000000;
                 }
                 else if ((flag1 & 0xC0) == 0x40)
                 {
@@ -788,11 +816,11 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
 
                     if (bldcnteffect == 1)             bldcnteffect = 0;
                     if (!(CurUnit->BlendCnt & 0x0001)) bldcnteffect = 0;
-                    if (!(WindowMask[i] & 0x20))       bldcnteffect = 0;
+                    if (!(WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x20)) bldcnteffect = 0;
 
-                    BGOBJLine[i]     = val2;
-                    BGOBJLine[256+i] = ColorComposite(i, val2, val3);
-                    BGOBJLine[512+i] = (bldcnteffect << 24) | (CurUnit->EVY << 8);
+                    BGOBJLine[i] = val2;
+                    BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val2, val3);
+                    BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = (bldcnteffect << 24) | (CurUnit->EVY << 8);
                 }
                 else if (((flag2 & 0xC0) == 0x40) && ((CurUnit->BlendCnt & 0x01C0) == 0x0140))
                 {
@@ -804,7 +832,7 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
                         eva = flag1 & 0x1F;
                         evb = 16 - eva;
                     }
-                    else if (((CurUnit->BlendCnt & target1) && (WindowMask[i] & 0x20)) ||
+                    else if (((CurUnit->BlendCnt & target1) && (WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x20)) ||
                             ((flag1 & 0xC0) == 0x80))
                     {
                         eva = CurUnit->EVA;
@@ -813,41 +841,43 @@ void SoftRenderer::DrawScanline_BGOBJ(u32 line)
                     else
                         bldcnteffect = 7;
 
-                    BGOBJLine[i]     = val1;
-                    BGOBJLine[256+i] = ColorComposite(i, val1, val3);
-                    BGOBJLine[512+i] = (bldcnteffect << 24) | (CurUnit->EVB << 16) | (CurUnit->EVA << 8);
+                    BGOBJLine[i] = val1;
+                    BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val3);
+                    BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = (bldcnteffect << 24) | (CurUnit->EVB << 16) | (CurUnit->EVA << 8);
                 }
                 else
                 {
                     // no potential 3D pixel involved
 
-                    BGOBJLine[i]     = ColorComposite(i, val1, val2);
-                    BGOBJLine[256+i] = 0;
-                    BGOBJLine[512+i] = 0x07000000;
+                    BGOBJLine[i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val2);
+                    BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = 0;
+                    BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = 0x07000000;
                 }
             }
         }
         else
         {
-            for (int i = 0; i < 256; i++)
+            for (int i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
             {
                 u32 val1 = BGOBJLine[i];
-                u32 val2 = BGOBJLine[256+i];
+                u32 val2 = BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE];
 
-                BGOBJLine[i]     = ColorComposite(i, val1, val2);
-                BGOBJLine[256+i] = 0;
-                BGOBJLine[512+i] = 0x07000000;
+                BGOBJLine[i] = ColorComposite(i/MODIFIER_2D_TEXTURE_SCALE, val1, val2);
+                BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = 0;
+                BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = 0x07000000;
             }
         }
     }
 
-    if (CurUnit->BGMosaicY >= CurUnit->BGMosaicYMax)
-    {
-        CurUnit->BGMosaicY = 0;
-        CurUnit->BGMosaicYMax = CurUnit->BGMosaicSize[1];
+    if (lastLineOfBatch) {
+        if (CurUnit->BGMosaicY >= CurUnit->BGMosaicYMax)
+        {
+            CurUnit->BGMosaicY = 0;
+            CurUnit->BGMosaicYMax = CurUnit->BGMosaicSize[1];
+        }
+        else
+            CurUnit->BGMosaicY++;
     }
-    else
-        CurUnit->BGMosaicY++;
 
     /*if (OBJMosaicY >= OBJMosaicYMax)
     {
@@ -866,7 +896,7 @@ void SoftRenderer::DrawPixel_Normal(u32* dst, u16 color, u32 flag)
     u8 b = (color & 0x7C00) >> 9;
     //g |= ((color & 0x8000) >> 15);
 
-    *(dst+256) = *dst;
+    *(dst+256*MODIFIER_2D_TEXTURE_SCALE) = *dst;
     *dst = r | (g << 8) | (b << 16) | flag;
 }
 
@@ -876,8 +906,8 @@ void SoftRenderer::DrawPixel_Accel(u32* dst, u16 color, u32 flag)
     u8 g = (color & 0x03E0) >> 4;
     u8 b = (color & 0x7C00) >> 9;
 
-    *(dst+512) = *(dst+256);
-    *(dst+256) = *dst;
+    *(dst+512*MODIFIER_2D_TEXTURE_SCALE) = *(dst+256*MODIFIER_2D_TEXTURE_SCALE);
+    *(dst+256*MODIFIER_2D_TEXTURE_SCALE) = *dst;
     *dst = r | (g << 8) | (b << 16) | flag;
 }
 
@@ -887,25 +917,25 @@ void SoftRenderer::DrawBG_3D()
 
     if (GPU.GPU3D.IsRendererAccelerated())
     {
-        for (i = 0; i < 256; i++)
+        for (i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
         {
-            if (!(WindowMask[i] & 0x01)) continue;
+            if (!(WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x01)) continue;
 
-            BGOBJLine[i+512] = BGOBJLine[i+256];
-            BGOBJLine[i+256] = BGOBJLine[i];
+            BGOBJLine[i+512*MODIFIER_2D_TEXTURE_SCALE] = BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE];
+            BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = BGOBJLine[i];
             BGOBJLine[i] = 0x40000000; // 3D-layer placeholder
         }
     }
     else
     {
-        for (i = 0; i < 256; i++)
+        for (i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
         {
-            u32 c = _3DLine[i];
+            u32 c = _3DLine[i/MODIFIER_2D_TEXTURE_SCALE];
 
             if ((c >> 24) == 0) continue;
-            if (!(WindowMask[i] & 0x01)) continue;
+            if (!(WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x01)) continue;
 
-            BGOBJLine[i+256] = BGOBJLine[i];
+            BGOBJLine[i+256*MODIFIER_2D_TEXTURE_SCALE] = BGOBJLine[i];
             BGOBJLine[i] = c | 0x40000000;
         }
     }
@@ -918,6 +948,7 @@ void SoftRenderer::DrawBG_Text(u32 line, u32 bgnum)
     asm volatile ("" : : : "memory");
 
     u16 bgcnt = CurUnit->BGCnt[bgnum];
+    // printf("bgcnt: %d\n", bgcnt);
 
     u32 tilesetaddr, tilemapaddr;
     u16* pal;
@@ -1016,8 +1047,10 @@ void SoftRenderer::DrawBG_Text(u32 line, u32 bgnum)
                 u32 tilexoff = (curtile & 0x0400) ? (7-(xpos&0x7)) : (xpos&0x7);
                 color = bgvram[(pixelsaddr + tilexoff) & bgvrammask];
 
-                if (color)
-                    drawPixel(&BGOBJLine[i], curpal[color], 0x01000000<<bgnum);
+                for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++) {
+                    if (color)
+                        drawPixel(&BGOBJLine[i*MODIFIER_2D_TEXTURE_SCALE + j], curpal[color], 0x01000000<<bgnum);
+                }
             }
 
             xoff++;
@@ -1069,13 +1102,36 @@ void SoftRenderer::DrawBG_Text(u32 line, u32 bgnum)
                     color = bgvram[(pixelsaddr + (tilexoff >> 1)) & bgvrammask] & 0x0F;
                 }
 
-                if (color)
-                    drawPixel(&BGOBJLine[i], curpal[color], 0x01000000<<bgnum);
+                for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++) {
+                    if (color)
+                        drawPixel(&BGOBJLine[i*MODIFIER_2D_TEXTURE_SCALE + j], curpal[color], 0x01000000<<bgnum);
+                }
             }
 
             xoff++;
         }
     }
+
+    /*if (plugin->shouldExportTextures())
+    {
+        unsigned char* imageData = nullptr;
+
+        for (int i = 0; i < 256; i++)
+        {
+            u32 trueColor = BGOBJLine[i];
+            *dst = r | (g << 8) | (b << 16)
+            u8 r = (u8)((trueColor & 0x3F) << 2);
+            u8 g = (u8)(((trueColor >>  8) & 0x3F) << 2);
+            u8 b = (u8)(((trueColor >> 16) & 0x3F) << 2);
+
+            unsigned char* pixel = imageData + ((yoff & 0x7) * 8 + (xpos & 0x7)) * (channels);
+
+            pixel[0] = r;
+            pixel[1] = g;
+            pixel[2] = b;
+            pixel[3] = 255;
+        }
+    }*/
 }
 
 template<bool mosaic, SoftRenderer::DrawPixel drawPixel>
@@ -1166,8 +1222,10 @@ void SoftRenderer::DrawBG_Affine(u32 line, u32 bgnum)
 
                 color = bgvram[(tilesetaddr + (curtile << 6) + (tileyoff << 3) + tilexoff) & bgvrammask];
 
-                if (color)
-                    drawPixel(&BGOBJLine[i], pal[color], 0x01000000<<bgnum);
+                for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++) {
+                    if (color)
+                        drawPixel(&BGOBJLine[i*MODIFIER_2D_TEXTURE_SCALE + j], pal[color], 0x01000000<<bgnum);
+                }
             }
         }
 
@@ -1265,8 +1323,10 @@ void SoftRenderer::DrawBG_Extended(u32 line, u32 bgnum)
                     {
                         color = *(u16*)&bgvram[(tilemapaddr + (((((finalY & ymask) >> 8) << yshift) + ((finalX & xmask) >> 8)) << 1)) & bgvrammask];
 
-                        if (color & 0x8000)
-                            drawPixel(&BGOBJLine[i], color, 0x01000000<<bgnum);
+                        for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++) {
+                            if (color & 0x8000)
+                                drawPixel(&BGOBJLine[i*MODIFIER_2D_TEXTURE_SCALE + j], color, 0x01000000<<bgnum);
+                        }
                     }
                 }
 
@@ -1304,8 +1364,10 @@ void SoftRenderer::DrawBG_Extended(u32 line, u32 bgnum)
                     {
                         color = bgvram[(tilemapaddr + (((finalY & ymask) >> 8) << yshift) + ((finalX & xmask) >> 8)) & bgvrammask];
 
-                        if (color)
-                            drawPixel(&BGOBJLine[i], pal[color], 0x01000000<<bgnum);
+                        for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++) {
+                            if (color)
+                                drawPixel(&BGOBJLine[i*MODIFIER_2D_TEXTURE_SCALE + j], pal[color], 0x01000000<<bgnum);
+                        }
                     }
                 }
 
@@ -1386,8 +1448,10 @@ void SoftRenderer::DrawBG_Extended(u32 line, u32 bgnum)
 
                     color = bgvram[(tilesetaddr + ((curtile & 0x03FF) << 6) + (tileyoff << 3) + tilexoff) & bgvrammask];
 
-                    if (color)
-                        drawPixel(&BGOBJLine[i], curpal[color], 0x01000000<<bgnum);
+                    for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++) {
+                        if (color)
+                            drawPixel(&BGOBJLine[i*MODIFIER_2D_TEXTURE_SCALE + j], curpal[color], 0x01000000<<bgnum);
+                    }
                 }
             }
 
@@ -1481,8 +1545,10 @@ void SoftRenderer::DrawBG_Large(u32 line) // BG is always BG2
             {
                 color = bgvram[((((finalY & ymask) >> 8) << yshift) + ((finalX & xmask) >> 8)) & bgvrammask];
 
-                if (color)
-                    drawPixel(&BGOBJLine[i], pal[color], 0x01000000<<2);
+                for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++) {
+                    if (color)
+                        drawPixel(&BGOBJLine[i*MODIFIER_2D_TEXTURE_SCALE + j], pal[color], 0x01000000<<2);
+                }
             }
         }
 
@@ -1514,11 +1580,11 @@ void SoftRenderer::ApplySpriteMosaicX()
 
     u32 lastcolor = objLine[0];
 
-    for (u32 i = 1; i < 256; i++)
+    for (u32 i = 1; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
     {
         u32 currentcolor = objLine[i];
 
-        if (!(lastcolor & currentcolor & 0x100000) || curOBJXMosaicTable[i] == 0)
+        if (!(lastcolor & currentcolor & 0x100000) || curOBJXMosaicTable[i/MODIFIER_2D_TEXTURE_SCALE] == 0)
             lastcolor = currentcolor;
         else
             objLine[i] = lastcolor;
@@ -1535,10 +1601,10 @@ void SoftRenderer::InterleaveSprites(u32 prio)
     {
         u16* extpal = CurUnit->GetOBJExtPal();
 
-        for (u32 i = 0; i < 256; i++)
+        for (u32 i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
         {
             if ((objLine[i] & 0x70000) != prio) continue;
-            if (!(WindowMask[i] & 0x10))        continue;
+            if (!(WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x10)) continue;
 
             u16 color;
             u32 pixel = objLine[i];
@@ -1557,10 +1623,10 @@ void SoftRenderer::InterleaveSprites(u32 prio)
     {
         // optimized no-extpal version
 
-        for (u32 i = 0; i < 256; i++)
+        for (u32 i = 0; i < 256*MODIFIER_2D_TEXTURE_SCALE; i++)
         {
             if ((objLine[i] & 0x70000) != prio) continue;
-            if (!(WindowMask[i] & 0x10))        continue;
+            if (!(WindowMask[i/MODIFIER_2D_TEXTURE_SCALE] & 0x10)) continue;
 
             u16 color;
             u32 pixel = objLine[i];
@@ -1585,10 +1651,12 @@ void SoftRenderer::InterleaveSprites(u32 prio)
         DrawSprite_##type<false>(__VA_ARGS__); \
     }
 
-void SoftRenderer::DrawSprites(u32 line, Unit* unit)
+void SoftRenderer::DrawSprites(u32 aLine, Unit* unit)
 {
     CurUnit = unit;
 
+    for (u32 bLine = aLine*MODIFIER_2D_TEXTURE_SCALE; bLine < aLine*MODIFIER_2D_TEXTURE_SCALE + MODIFIER_2D_TEXTURE_SCALE; bLine++) {
+    u32 line = bLine / MODIFIER_2D_TEXTURE_SCALE;
     if (line == 0)
     {
         // reset those counters here
@@ -1613,7 +1681,7 @@ void SoftRenderer::DrawSprites(u32 line, Unit* unit)
     }
 
     NumSprites[CurUnit->Num] = 0;
-    memset(OBJLine[CurUnit->Num], 0, 256*4);
+    memset(OBJLine[CurUnit->Num], 0, 256*4*MODIFIER_2D_TEXTURE_SCALE);
     memset(OBJWindow[CurUnit->Num], 0, 256);
     if (!(CurUnit->DispCnt & 0x1000)) return;
 
@@ -1706,6 +1774,7 @@ void SoftRenderer::DrawSprites(u32 line, Unit* unit)
                 NumSprites[CurUnit->Num]++;
             }
         }
+    }
     }
 }
 
@@ -1811,12 +1880,17 @@ void SoftRenderer::DrawSprite_Rotscale(u32 num, u32 boundwidth, u32 boundheight,
                 if (color & 0x8000)
                 {
                     if (window) objWindow[xpos] = 1;
-                    else        objLine[xpos] = color | pixelattr;
+                    else {
+                        for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                            objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = color | pixelattr;
+                    }
                 }
                 else if (!window)
                 {
-                    if (objLine[xpos] == 0)
-                        objLine[xpos] = pixelattr & 0x180000;
+                    if (objLine[xpos] == 0) {
+                        for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                            objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = pixelattr & 0x180000;
+                    }
                 }
             }
 
@@ -1866,12 +1940,17 @@ void SoftRenderer::DrawSprite_Rotscale(u32 num, u32 boundwidth, u32 boundheight,
                     if (color)
                     {
                         if (window) objWindow[xpos] = 1;
-                        else        objLine[xpos] = color | pixelattr;
+                        else {
+                            for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                                objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = color | pixelattr;
+                        }
                     }
                     else if (!window)
                     {
-                        if (objLine[xpos] == 0)
-                            objLine[xpos] = pixelattr & 0x180000;
+                        if (objLine[xpos] == 0) {
+                            for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                                objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = pixelattr & 0x180000;
+                        }
                     }
                 }
 
@@ -1903,12 +1982,17 @@ void SoftRenderer::DrawSprite_Rotscale(u32 num, u32 boundwidth, u32 boundheight,
                     if (color)
                     {
                         if (window) objWindow[xpos] = 1;
-                        else        objLine[xpos] = color | pixelattr;
+                        else {
+                            for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                                objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = color | pixelattr;
+                        }
                     }
                     else if (!window)
                     {
-                        if (objLine[xpos] == 0)
-                            objLine[xpos] = pixelattr & 0x180000;
+                        if (objLine[xpos] == 0) {
+                            for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                                objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = pixelattr & 0x180000;
+                        }
                     }
                 }
 
@@ -1963,6 +2047,8 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
         xoff = -xpos;
         xpos = 0;
     }
+    s32 orig_xoff = xoff;
+    s32 orig_xpos = xpos;
 
     u16 color = 0; // transparent in all cases
 
@@ -2029,12 +2115,17 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
             if (color & 0x8000)
             {
                 if (window) objWindow[xpos] = 1;
-                else        objLine[xpos] = color | pixelattr;
+                else {
+                    for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                        objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = color | pixelattr;
+                }
             }
             else if (!window)
             {
-                if (objLine[xpos] == 0)
-                    objLine[xpos] = pixelattr & 0x180000;
+                if (objLine[xpos] == 0) {
+                    for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                        objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = pixelattr & 0x180000;
+                }
             }
 
             xoff++;
@@ -2096,12 +2187,17 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
                 if (color)
                 {
                     if (window) objWindow[xpos] = 1;
-                    else        objLine[xpos] = color | pixelattr;
+                    else {
+                        for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                            objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = color | pixelattr;
+                    }
                 }
                 else if (!window)
                 {
-                    if (objLine[xpos] == 0)
-                        objLine[xpos] = pixelattr & 0x180000;
+                    if (objLine[xpos] == 0) {
+                        for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                            objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = pixelattr & 0x180000;
+                    }
                 }
 
                 xoff++;
@@ -2156,12 +2252,17 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
                 if (color)
                 {
                     if (window) objWindow[xpos] = 1;
-                    else        objLine[xpos] = color | pixelattr;
+                    else {
+                        for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                            objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = color | pixelattr;
+                    }
                 }
                 else if (!window)
                 {
-                    if (objLine[xpos] == 0)
-                        objLine[xpos] = pixelattr & 0x180000;
+                    if (objLine[xpos] == 0) {
+                        for (int j = 0; j < MODIFIER_2D_TEXTURE_SCALE; j++)
+                            objLine[xpos*MODIFIER_2D_TEXTURE_SCALE + j] = pixelattr & 0x180000;
+                    }
                 }
 
                 xoff++;
@@ -2170,6 +2271,8 @@ void SoftRenderer::DrawSprite_Normal(u32 num, u32 width, u32 height, s32 xpos, s
             }
         }
     }
+
+    Texcache.GetTexture(GPU, width, height, orig_xoff, xend, orig_xpos, ypos, CurUnit, window, spritemode, pixelattr, attrib, objWindow, objLine);
 }
 
 }
