@@ -612,7 +612,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             if ((gameSceneState & (1 << gameSceneState_showHud)) > 0 &&
                 (gameSceneState & (1 << gameSceneState_characterControllable)) > 0)
             {
-                // item notification
+                // item notification and timer (left side of the screen)
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromPosition(0, 0)
                         .withSize(108, 86)
@@ -621,7 +621,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
-                // countdown and locked on
+                // countdown and locked on (top center of the screen)
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromPosition(93, 0)
                         .withSize(70, 20)
