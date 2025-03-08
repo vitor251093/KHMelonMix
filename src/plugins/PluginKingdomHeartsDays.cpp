@@ -614,9 +614,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             {
                 // item notification
                 shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 35)
+                        .fromPosition(0, 0)
                         .withSize(108, 86)
                         .placeAtCorner(corner_TopLeft)
+                        .withMargin(0.0, 35.0, 0.0, 0.0)
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
@@ -625,6 +626,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .fromPosition(93, 0)
                         .withSize(70, 20)
                         .placeAtCorner(corner_Top)
+                        .withMargin(0.0, 9.0, 0.0, 0.0)
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
