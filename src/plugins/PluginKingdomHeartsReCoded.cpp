@@ -795,7 +795,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .fromPosition(0, 44)
                         .withSize(102, 24)
                         .placeAtCorner(corner_BottomLeft)
-                        .withMargin(10.0, 0.0, 0.0, 124.0)
+                        .withMargin(0.0, 0.0, 0.0, 124.0)
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
@@ -937,16 +937,26 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .zRange(-1.0, -0.5)
                 .build(aspectRatio));
 
-        // command menu
+        // pickup notification
         shapes.push_back(ShapeBuilder3D::square()
                 .fromPosition(0, 24)
-                .withSize(80, 168)
+                .withSize(80, 44)
+                .placeAtCorner(corner_BottomLeft)
+                .withMargin(0.0, 0.0, 0.0, 0.5)
+                .zRange(-1.0, -1.0)
+                .negateColor(0xFFFFFF)
+                .hudScale(UIScale)
+                .build(aspectRatio));
+
+        // command menu
+        shapes.push_back(ShapeBuilder3D::square()
+                .fromPosition(0, 69)
+                .withSize(80, 124)
                 .placeAtCorner(corner_BottomLeft)
                 .withMargin(6.8, 0.0, 0.0, 0.5)
                 .zRange(-1.0, -1.0)
                 .negateColor(0xFFFFFF)
                 .hudScale(UIScale)
-                .logger()
                 .build(aspectRatio));
 
         if (gameScene == gameScene_InGameOlympusBattle) {

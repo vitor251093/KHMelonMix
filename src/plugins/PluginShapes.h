@@ -314,7 +314,7 @@ public:
                 squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
         }
 
-        squareFinalX1 = squareFinalX1 + _margin.x*heightScale - _margin.z*heightScale;
+        squareFinalX1 = squareFinalX1 + (_margin.x - _margin.z)*heightScale;
         squareFinalY1 = squareFinalY1 + _margin.y - _margin.w;
 
         float squareFinalX2 = squareFinalX1 + squareFinalWidth;
