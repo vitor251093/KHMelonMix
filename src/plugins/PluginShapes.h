@@ -257,6 +257,10 @@ public:
     void precompute3DCoordinatesOf2DSquareShape(float aspectRatio)
     {
         float iuTexScale = SCREEN_SCALE/_hudScale;
+
+        float ScreenWidth = 256.0*iuTexScale;
+        float ScreenHeight = 192.0*iuTexScale;
+
         float scaleX = shapeData.sourceScale.x;
         float scaleY = shapeData.sourceScale.y;
         
@@ -276,46 +280,46 @@ public:
                 break;
 
             case corner_Center:
-                squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-                squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+                squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
+                squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
                 break;
             
             case corner_TopLeft:
                 break;
             
             case corner_Top:
-                squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
+                squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
                 break;
 
             case corner_TopRight:
-                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
+                squareFinalX1 = ScreenWidth - squareFinalWidth;
                 break;
 
             case corner_Right:
-                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
-                squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+                squareFinalX1 = ScreenWidth - squareFinalWidth;
+                squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
                 break;
 
             case corner_BottomRight:
-                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
-                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
+                squareFinalX1 = ScreenWidth - squareFinalWidth;
+                squareFinalY1 = ScreenHeight - squareFinalHeight;
                 break;
 
             case corner_Bottom:
-                squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
+                squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
+                squareFinalY1 = ScreenHeight - squareFinalHeight;
                 break;
 
             case corner_BottomLeft:
-                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
+                squareFinalY1 = ScreenHeight - squareFinalHeight;
                 break;
 
             case corner_Left:
-                squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+                squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
         }
 
         squareFinalX1 = squareFinalX1 + (_margin.x - _margin.z)*heightScale;
-        squareFinalY1 = squareFinalY1 + _margin.y - _margin.w;
+        squareFinalY1 = squareFinalY1 + (_margin.y - _margin.w);
 
         float squareFinalX2 = squareFinalX1 + squareFinalWidth;
         float squareFinalY2 = squareFinalY1 + squareFinalHeight;

@@ -897,7 +897,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
                         .zRange(-10000.0, -0.00000)
                         .build(aspectRatio));
 
-                float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
+                float heartTopMargin = (ShowMissionInfo ? 24.0 : 0.0);
 
                 // blue shine behind the heart counter and "CHAIN" label
                 shapes.push_back(ShapeBuilder3D::square()
