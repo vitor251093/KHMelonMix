@@ -98,7 +98,7 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 enum
 {
     gameScene_Intro,                    // 0
-    gameScene_MainMenu,                 // 1
+    gameScene_TitleScreen,              // 1
     gameScene_IntroLoadMenu,            // 2
     gameScene_Cutscene,                 // 3
     gameScene_CutsceneWithStaticImages, // 4
@@ -1119,7 +1119,7 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
             return screenLayout_Bottom;
         
         case gameScene_Intro:
-        case gameScene_MainMenu:
+        case gameScene_TitleScreen:
         case gameScene_InGameMenu:
         case gameScene_WorldSelection:
         case gameScene_Shop:
@@ -1430,7 +1430,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
 {
     switch (GameScene) {
         case gameScene_Intro: return "Game scene: Intro";
-        case gameScene_MainMenu: return "Game scene: Main menu";
+        case gameScene_TitleScreen: return "Game scene: Title screen";
         case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
         case gameScene_Cutscene: return "Game scene: Cutscene";
         case gameScene_InGameWithMap: return "Game scene: Ingame (with minimap)";
@@ -1769,7 +1769,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
             }
         }
 
-        return gameScene_MainMenu;
+        return gameScene_TitleScreen;
     }
 
     if (has3DOnBothScreens)

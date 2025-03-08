@@ -139,7 +139,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 enum
 {
     gameScene_Intro,                    // 0
-    gameScene_MainMenu,                 // 1
+    gameScene_TitleScreen,              // 1
     gameScene_IntroLoadMenu,            // 2
     gameScene_DayCounter,               // 3
     gameScene_Cutscene,                 // 4
@@ -1065,7 +1065,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
             return screenLayout_BothVertical;
         
         case gameScene_Intro:
-        case gameScene_MainMenu:
+        case gameScene_TitleScreen:
         case gameScene_Shop:
         case gameScene_TheEnd:
             return screenLayout_BothHorizontal;
@@ -1109,7 +1109,8 @@ int PluginKingdomHeartsDays::renderer_brightnessMode() {
         GameScene == gameScene_Other) {
         return brightnessMode_TopScreen;
     }
-    if (GameScene == gameScene_IntroLoadMenu ||
+    if (GameScene == gameScene_TitleScreen   ||
+        GameScene == gameScene_IntroLoadMenu ||
         GameScene == gameScene_Tutorial      ||
         GameScene == gameScene_LoadingScreen) {
         return brightnessMode_BottomScreen;
@@ -1410,7 +1411,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
 {
     switch (GameScene) {
         case gameScene_Intro: return "Game scene: Intro";
-        case gameScene_MainMenu: return "Game scene: Main menu";
+        case gameScene_TitleScreen: return "Game scene: Title screen";
         case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
         case gameScene_DayCounter: return "Game scene: Day counter";
         case gameScene_Cutscene: return "Game scene: Cutscene";
@@ -1677,29 +1678,29 @@ int PluginKingdomHeartsDays::detectGameScene()
             {
                 if (mayBeMainMenu)
                 {
-                    return gameScene_MainMenu;
+                    return gameScene_TitleScreen;
                 }
             }
 
-            if (GameScene == gameScene_MainMenu)
+            if (GameScene == gameScene_TitleScreen)
             {
                 mayBeMainMenu = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
                 if (mayBeMainMenu) {
-                    return gameScene_MainMenu;
+                    return gameScene_TitleScreen;
                 }
             }
 
             // Main menu
             if (mayBeMainMenu)
             {
-                return gameScene_MainMenu;
+                return gameScene_TitleScreen;
             }
 
             // Intro
             if (GameScene == -1 || GameScene == gameScene_Intro)
             {
                 mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
-                return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
+                return mayBeMainMenu ? gameScene_TitleScreen : gameScene_Intro;
             }
         }
     }
