@@ -792,10 +792,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
                 // pickup notification
                 shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 48)
-                        .withSize(72, 16)
+                        .fromPosition(0, 44)
+                        .withSize(102, 24)
                         .placeAtCorner(corner_BottomLeft)
-                        .withMargin(10.0, 0.0, 0.0, 128.0)
+                        .withMargin(10.0, 0.0, 0.0, 124.0)
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
