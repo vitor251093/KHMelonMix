@@ -224,24 +224,11 @@ ivec4 getForcedAspectRatioScreen3DColor(float xpos, float ypos)
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    float sourceScreenHeight = 192.0;
     float sourceScreenWidth = 256.0;
-    float sourceScreenTopMargin = 0;
-    float sourceScreenLeftMargin = 0;
-    float screenHeight = sourceScreenHeight;
-    float screenWidth = sourceScreenWidth*heightScale;
-    float screenTopMargin = 0;
-    float screenLeftMargin = (256.0 - screenWidth)/2;
-    if (texPosition3d.x >= screenLeftMargin &&
-        texPosition3d.x < (screenWidth + screenLeftMargin) && 
-        texPosition3d.y <= (screenHeight + screenTopMargin) && 
-        texPosition3d.y >= screenTopMargin) {
-        ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(screenLeftMargin, screenTopMargin)) +
-            vec2(sourceScreenLeftMargin, sourceScreenTopMargin))*u3DScale);
-        return ivec4(texelFetch(_3DTex, position3d, 0).bgra
-            * vec4(63,63,63,31));
-    }
-    return ivec4(63,63,63,0);
+    float screenLeftMargin = (sourceScreenWidth - sourceScreenWidth*heightScale)/2;
+    
+    ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(screenLeftMargin, 0)))*u3DScale);
+    return ivec4(texelFetch(_3DTex, position3d, 0).bgra * vec4(63,63,63,31));
 }
 
 ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
