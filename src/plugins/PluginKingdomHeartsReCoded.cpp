@@ -1403,7 +1403,7 @@ bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_horizontalDualScreen(i
     return true;
 }
 bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {
-    if (GameScene == gameScene_InGameMenu) {
+    if (renderer_screenLayout() == screenLayout_BothHorizontal) {
         return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
     }
     return false;

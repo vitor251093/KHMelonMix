@@ -1365,11 +1365,8 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords(int width, int height, in
         return overrideMouseTouchCoords_cameraControl(width, height, x, y, touching);
 #endif
     }
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        if (mainMenuView != 6 && mainMenuView != 7) {
-            return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
-        }
+    if (renderer_screenLayout() == screenLayout_BothHorizontal) {
+        return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
     }
     return false;
 }
