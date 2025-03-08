@@ -233,16 +233,16 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
         ShapeData3D shape = shapes[shapeIndex];
         bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
-        bool attrMatch = true;
-        for (int i = 0; i < 4; i++) {
-            attrMatch = attrMatch && (shape.polygonAttributes[i] == 0 || shape.polygonAttributes[i] == polygon->Attr);
-        }
-        for (int i = 0; i < 4; i++) {
-            attrMatch = attrMatch && (shape.negatedPolygonAttributes[i] == 0 || shape.negatedPolygonAttributes[i] != polygon->Attr);
-        }
-
         // polygon mode
         if ((shape.effects & 0x1) != 0) {
+            bool attrMatch = true;
+            for (int i = 0; i < 4; i++) {
+                attrMatch = attrMatch && (shape.polygonAttributes[i] == 0 || shape.polygonAttributes[i] == polygon->Attr);
+            }
+            for (int i = 0; i < 4; i++) {
+                attrMatch = attrMatch && (shape.negatedPolygonAttributes[i] == 0 || shape.negatedPolygonAttributes[i] != polygon->Attr);
+            }
+
             if (shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) {
                 if (attrMatch) {
                     s32 z = polygon->Vertices[0]->Position[2];
@@ -283,126 +283,10 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
 
             // vertex mode
             if ((shape.effects & 0x1) == 0) {
-                bool loggerModeEnabled = (shape.effects & 0x4) != 0;
-
-                bool attrMatchEqual = false;
-                bool attrMatchEqual2 = false;
-                bool attrMatchNeg = false;
-                for (int i = 0; i < 4; i++) {
-                    if (shape.polygonAttributes[i] != 0) {
-                        attrMatchEqual = true;
-                        if (shape.polygonAttributes[i] == polygon->Attr) {
-                            attrMatchEqual2 = true;
-                            break;
-                        }
-                    }
-                }
-                for (int i = 0; i < 4; i++) {
-                    if (shape.negatedPolygonAttributes[i] != 0 && shape.negatedPolygonAttributes[i] == polygon->Attr) {
-                        attrMatchNeg = true;
-                        break;
-                    }
-                }
-                bool attrMatch = (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
-
-                bool colorMatchEqual = false;
-                bool colorMatchEqual2 = false;
-                bool colorMatchNeg = false;
-                for (int i = 0; i < shape.colorCount; i++) {
-                    colorMatchEqual = true;
-                    if ((((shape.color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-                    && (((shape.color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-                    && (((shape.color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                        colorMatchEqual2 = true;
-                        break;
-                    }
-                }
-                for (int i = 0; i < shape.negatedColorCount; i++) {
-                    if ((((shape.negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-                    && (((shape.negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-                    && (((shape.negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                        colorMatchNeg = true;
-                        break;
-                    }
-                }
-                bool colorMatch = (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
-
-                float iuTexScale = SCREEN_SCALE/shape.hudScale;
-
-                float scaleX = shape.sourceScale.x;
-                float scaleY = shape.sourceScale.y;
-                
-                float heightScale = 1.0/aspectRatio;
-
-                float squareFinalWidth = (shape.squareInitialCoords.z*scaleX*resolutionScale*heightScale)/iuTexScale;
-                float squareFinalHeight = (shape.squareInitialCoords.w*scaleY*resolutionScale)/iuTexScale;
-
-                if (_x >= shape.squareInitialCoords.x*resolutionScale && _x <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
-                    _y >= shape.squareInitialCoords.y*resolutionScale && _y <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
-                    _z >= shape.zRange.x && _z <= shape.zRange.y && attrMatch && colorMatch)
-                {
-                    // hide vertex
-                    if ((shape.effects & 0x2) != 0)
-                    {
-                        _x = 0;
-                        _y = 0;
-                    }
-                    else {
-                        float squareFinalX1 = 0.0;
-                        float squareFinalY1 = 0.0;
-
-                        switch (shape.corner)
-                        {
-                            case corner_PreservePosition:
-                                squareFinalX1 = (shape.squareInitialCoords.x + shape.squareInitialCoords.z/2)*scaleX - squareFinalWidth/2;
-                                squareFinalY1 = (shape.squareInitialCoords.y + shape.squareInitialCoords.w/2)*scaleY - squareFinalHeight/2;
-                                break;
-
-                            case corner_Center:
-                                squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
-                                squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
-                                break;
-                            
-                            case corner_TopLeft:
-                                break;
-                            
-                            case corner_Top:
-                                squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
-                                break;
-
-                            case corner_TopRight:
-                                squareFinalX1 = ScreenWidth - squareFinalWidth;
-                                break;
-
-                            case corner_Right:
-                                squareFinalX1 = ScreenWidth - squareFinalWidth;
-                                squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
-                                break;
-
-                            case corner_BottomRight:
-                                squareFinalX1 = ScreenWidth - squareFinalWidth;
-                                squareFinalY1 = ScreenHeight - squareFinalHeight;
-                                break;
-
-                            case corner_Bottom:
-                                squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
-                                squareFinalY1 = ScreenHeight - squareFinalHeight;
-                                break;
-
-                            case corner_BottomLeft:
-                                squareFinalY1 = ScreenHeight - squareFinalHeight;
-                                break;
-
-                            case corner_Left:
-                                squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
-                        }
-
-                        _x = ((_x - shape.squareInitialCoords.x*resolutionScale)/iuTexScale)*scaleX*heightScale + squareFinalX1 + (shape.margin.x - shape.margin.z)*(resolutionScale/(iuTexScale*aspectRatio));
-                        _y = ((_y - shape.squareInitialCoords.y*resolutionScale)/iuTexScale)*scaleY             + squareFinalY1 + (shape.margin.y - shape.margin.w)*(resolutionScale/iuTexScale);
-                    }
-
-                    *x = (s32)(_x);
-                    *y = (s32)(_y);
+                vec3 newValues = shape.compute3DCoordinatesOf3DSquareShapeInVertexMode(_x, _y, _z, polygon->Attr, rgb, resolutionScale, aspectRatio);
+                if (newValues.z == 1) {
+                    *x = (s32)(newValues.x);
+                    *y = (s32)(newValues.y);
                     break;
                 }
             }
