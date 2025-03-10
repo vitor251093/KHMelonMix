@@ -905,7 +905,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
             return shapes;
         }
 
-        if (gameScene == gameScene_InGameWithMap) {
+        if (gameScene != gameScene_InGameOlympusBattle) {
             // SP score
             shapes.push_back(ShapeBuilder3D::square()
                     .fromPosition(0, 0)
