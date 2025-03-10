@@ -905,6 +905,20 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
             return shapes;
         }
 
+        if (gameScene == gameScene_InGameWithMap) {
+            // SP score
+            shapes.push_back(ShapeBuilder3D::square()
+                    .fromPosition(0, 0)
+                    .withSize(110, 58)
+                    .placeAtCorner(corner_TopLeft)
+                    .withMargin(0.0, 30.0, 0.0, 0.0)
+                    .sourceScale(1.5)
+                    .zRange(-1.0, -1.0)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+            // TODO: KH UI This is also distorting the aims
+        }
+
         // aim
         shapes.push_back(ShapeBuilder3D::square()
                 .polygonMode()
@@ -973,19 +987,6 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                     .placeAtCorner(corner_BottomRight)
                     .hudScale(UIScale)
                     .build(aspectRatio));
-        }
-        else {
-            // SP score
-            shapes.push_back(ShapeBuilder3D::square()
-                    .fromPosition(0, 0)
-                    .withSize(110, 58)
-                    .placeAtCorner(corner_TopLeft)
-                    .withMargin(0.0, 30.0, 0.0, 0.0)
-                    .sourceScale(1.5)
-                    .zRange(-1.0, -1.0)
-                    .hudScale(UIScale)
-                    .build(aspectRatio));
-            // TODO: KH UI This is also distorting the aims
         }
     }
 
