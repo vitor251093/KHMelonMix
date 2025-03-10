@@ -978,7 +978,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
             // SP score
             shapes.push_back(ShapeBuilder3D::square()
                     .fromPosition(0, 0)
-                    .withSize(102, 58)
+                    .withSize(110, 58)
                     .placeAtCorner(corner_TopLeft)
                     .withMargin(0.0, 30.0, 0.0, 0.0)
                     .sourceScale(1.5)
