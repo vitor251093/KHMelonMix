@@ -1110,6 +1110,7 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
         case gameScene_CutsceneWithStaticImages:
         case gameScene_InGameDialog:
         case gameScene_InGameOlympusBattle:
+        case gameScene_ResultScreen:
             return screenLayout_Top;
         
         case gameScene_IntroLoadMenu:
@@ -1144,6 +1145,7 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
         GameScene == gameScene_CutsceneWithStaticImages ||
         GameScene == gameScene_InGameDialog             ||
         GameScene == gameScene_InGameOlympusBattle      ||
+        GameScene == gameScene_ResultScreen             ||
         GameScene == gameScene_Other2D) {
         return brightnessMode_TopScreen;
     }
