@@ -260,6 +260,8 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
                         for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
                             scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
                         }
+
+                        return;
                     }
                 }
             }

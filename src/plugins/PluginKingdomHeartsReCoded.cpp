@@ -911,7 +911,6 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                     .zRange(-1.0, -1.0)
                     .hudScale(UIScale)
                     .build(aspectRatio));
-            // TODO: KH UI This is also distorting the aims
         }
 
         // aim
