@@ -1023,7 +1023,7 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
             break;
 
         case gameScene_InGameDialog:
-            if (!isHealthVisible()) {
+            if (!isHealthVisible() || !isCommandMenuVisible()) {
                 state |= (1 << gameSceneState_dialogVisible);
                 break;
             }
