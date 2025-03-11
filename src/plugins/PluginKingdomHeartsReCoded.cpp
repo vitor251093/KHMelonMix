@@ -43,12 +43,9 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_PLAYABLE_AREA_EU 0x0205a8c0
 #define IS_PLAYABLE_AREA_JP 0x0205a6e0
 
-#define KIND_OF_SCREEN_ADDRESS_US 0x0205fe4c // may also be 0x0205fe60
-#define KIND_OF_SCREEN_ADDRESS_EU 0x0205fe4c
-#define KIND_OF_SCREEN_ADDRESS_JP 0x0205fc6c // TODO: KH probably correct, but didn't check
-
-#define KIND_OF_SCREEN_PLATFORM_SECTION_RESULT 0x0500
-#define KIND_OF_SCREEN_OLYMPUS_LAYER_REVIEW    0x8000
+#define RESULT_SCREEN_ID_US 0x02060434
+#define RESULT_SCREEN_ID_EU 0x02060434
+#define RESULT_SCREEN_ID_JP 0x02060254 // TODO: KH probably correct, but didn't check
 
 #define BUG_SECTOR_IDENTIFIER_ADDRESS_US 0x0206083d
 #define BUG_SECTOR_IDENTIFIER_ADDRESS_EU 0x0206083d
@@ -106,6 +103,7 @@ enum
     gameScene_InGameDialog,             // 6
     gameScene_InGameOlympusBattle,      // 7
     gameScene_InGameMenu,               // 8
+    gameScene_ResultScreen,             // 9
     gameScene_WorldSelection,           // 10
     gameScene_PauseMenu,                // 11
     gameScene_Tutorial,                 // 12
@@ -122,7 +120,6 @@ enum
     gameSceneState_showHud,
     gameSceneState_dialogVisible,
     gameSceneState_textOverScreen,
-    gameSceneState_showResultScreen,
     gameSceneState_showRegularPlayerHealth,
     gameSceneState_showOlympusBattlePlayerHealth,
     gameSceneState_showMinimap,
@@ -446,18 +443,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 break;
             }
 
-        case gameScene_InGameWithMap:
-            if ((gameSceneState & (1 << gameSceneState_showResultScreen)) > 0)
-            {
-                // review/result screens of different kinds
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-                break;
-            }
+        case gameScene_ResultScreen:
+            // review/result screens of different kinds
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+            break;
 
+        case gameScene_InGameWithMap:
             if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
             {
                 // top mission information
@@ -1030,12 +1025,6 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
 
         case gameScene_InGameOlympusBattle:
         case gameScene_InGameWithMap:
-            if (isResultScreenVisible())
-            {
-                state |= (1 << gameSceneState_showResultScreen);
-                break;
-            }
-
             if (isMissionInformationVisibleOnTopScreen())
             {
                 state |= (1 << gameSceneState_topScreenMissionInformationVisible);
@@ -1509,9 +1498,9 @@ bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
 
 bool PluginKingdomHeartsReCoded::isResultScreenVisible()
 {
-    u32 address = getU32ByCart(KIND_OF_SCREEN_ADDRESS_US, KIND_OF_SCREEN_ADDRESS_EU, KIND_OF_SCREEN_ADDRESS_JP);
-    u16 value = nds->ARM7Read16(address);
-    return value == KIND_OF_SCREEN_PLATFORM_SECTION_RESULT || value == KIND_OF_SCREEN_OLYMPUS_LAYER_REVIEW;
+    u32 address = getU32ByCart(RESULT_SCREEN_ID_US, RESULT_SCREEN_ID_EU, RESULT_SCREEN_ID_JP);
+    u32 value = nds->ARM7Read32(address);
+    return value != 0;
 }
 
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
@@ -1846,6 +1835,11 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     if (isDeathScreen)
     {
         return gameScene_DeathScreen;
+    }
+
+    if (isResultScreenVisible())
+    {
+        return gameScene_ResultScreen;
     }
 
     if (isInGameDialog)
