@@ -414,6 +414,15 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .build(aspectRatio));
             break;
 
+        case gameScene_ResultScreen:
+            // review/result screens of different kinds
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+            break;
+
         case gameScene_InGameOlympusBattle:
             // moves list
             shapes.push_back(ShapeBuilder2D::square()
@@ -442,15 +451,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .build(aspectRatio));
                 break;
             }
-
-        case gameScene_ResultScreen:
-            // review/result screens of different kinds
-            shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
-            break;
 
         case gameScene_InGameWithMap:
             if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
@@ -1440,6 +1440,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_Shop: return "Game scene: Shop";
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_CutsceneWithStaticImages: return "Game scene: Cutscene with static images";
+        case gameScene_ResultScreen: return "Game scene: Result screen";
         case gameScene_WorldSelection: return "Game scene: World selection";
         case gameScene_InGameDialog: return "Game scene: Ingame dialog";
         case gameScene_InGameOlympusBattle: return "Game scene: Ingame (Olympus battle)";
