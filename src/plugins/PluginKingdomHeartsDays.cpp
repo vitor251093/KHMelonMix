@@ -159,7 +159,6 @@ enum
 
 enum
 {
-    gameSceneState_characterControllable,
     gameSceneState_showHud,
     gameSceneState_dialogVisible,
     gameSceneState_dialogPortraitLabelVisible,
@@ -609,8 +608,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .build(aspectRatio));
             }
 
-            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0 &&
-                (gameSceneState & (1 << gameSceneState_characterControllable)) > 0)
+            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0)
             {
                 // item notification and timer (left side of the screen)
                 shapes.push_back(ShapeBuilder2D::square()
@@ -972,10 +970,6 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                 bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
                 bool _isDialogPortraitLabelVisible = isDialogPortraitLabelVisible();
 
-                if (isCharacterControllable) {
-                    state |= (1 << gameSceneState_characterControllable);
-                }
-
                 if ((GameScene == gameScene_InGameWithMap && (!isCharacterControllable || _isDialogVisible)) ||
                     (GameScene == gameScene_InGameWithDouble3D && _isDialogVisible))
                 {
@@ -1009,7 +1003,9 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                 }
 
                 if (!HideAllHUD) {
-                    state |= (1 << gameSceneState_showHud);
+                    if (isCharacterControllable || GameScene == gameScene_InGameWithDouble3D) {
+                        state |= (1 << gameSceneState_showHud);
+                    }
                 }
 
                 if (GameScene == gameScene_InGameWithMap && _isMinimapVisible) {
