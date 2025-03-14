@@ -491,12 +491,12 @@ std::string Plugin::textureIndexFilePath() {
 
     return fullPath.string();
 }
-std::map<std::string, std::string> Plugin::getTexturesIndex() {
+std::map<std::string, TextureEntry> Plugin::getTexturesIndex() {
     if (!texturesIndex.empty()) {
         return texturesIndex;
     }
 
-    std::map<std::string, std::string> _texturesIndex;
+    std::map<std::string, TextureEntry> _texturesIndex;
     std::string indexFilePath = textureIndexFilePath();
     if (indexFilePath.empty()) {
         return texturesIndex;
@@ -519,12 +519,44 @@ std::map<std::string, std::string> Plugin::getTexturesIndex() {
             std::string entrynameStr = trim(std::string(entryname));
             std::string entryvalStr = trim(std::string(entryval));
             if (!entrynameStr.empty() && entrynameStr.compare(0, 1, ";") != 0 && entrynameStr.compare(0, 1, "[") != 0) {
-                _texturesIndex[entrynameStr] = entryvalStr;
+                std::string s = entryvalStr;
+                std::string delimiter = ";";
+                std::string delimiter2 = ",";
+
+                TextureEntry textureObj = {s, 0, 0, 0, 0};
+                if (s.find(delimiter) != std::string::npos) {
+                    std::vector<std::string> tokens;
+                    size_t last = 0;
+                    size_t next = 0;
+                    while ((next = s.find(delimiter, last)) != std::string::npos) {
+                        tokens.push_back(s.substr(last, next-last));
+                        last = next + 1;
+                    }
+                    tokens.push_back(s.substr(last));
+
+                    if (tokens.size() == 3) {
+                        textureObj.filename = tokens[0];
+                        textureObj.posX = (u16)std::stoi(tokens[1].substr(0, tokens[1].find(delimiter2)));
+                        textureObj.posY = (u16)std::stoi(tokens[1].substr(tokens[1].find(delimiter2) + 1));
+                        textureObj.sizeX = (u16)std::stoi(tokens[2].substr(0, tokens[2].find(delimiter2)));
+                        textureObj.sizeY = (u16)std::stoi(tokens[2].substr(tokens[2].find(delimiter2) + 1));
+                    }
+                }
+
+                _texturesIndex[entrynameStr] = textureObj;
             }
         }
     }
     texturesIndex = _texturesIndex;
     return texturesIndex;
+}
+
+TextureEntry* Plugin::textureFileConfig(std::string texture) {
+    textureFilePath(texture);
+    if (texturesIndex.count(texture)) {
+        return &texturesIndex[texture];
+    }
+    return nullptr;
 }
 std::string Plugin::textureFilePath(std::string texture) {
     std::filesystem::path _assetsFolderPath = assetsFolderPath();
@@ -533,9 +565,10 @@ std::string Plugin::textureFilePath(std::string texture) {
         std::filesystem::create_directory(_assetsFolderPath);
     }
 
-    std::map<std::string, std::string> texturesIndex = getTexturesIndex();
+    std::map<std::string, TextureEntry> texturesIndex = getTexturesIndex();
     if (texturesIndex.count(texture)) {
-        std::filesystem::path fullPath = texturesFolder / texturesIndex[texture];
+        TextureEntry textureObj = texturesIndex[texture];
+        std::filesystem::path fullPath = texturesFolder / textureObj.filename;
         if (!std::filesystem::exists(fullPath)) {
             errorLog("Texture %s was supposed to be replaced by %s, but it doesn't exist", texture.c_str(), fullPath.string().c_str());
             return "";
@@ -544,12 +577,13 @@ std::string Plugin::textureFilePath(std::string texture) {
         return fullPath.string();
     }
 
-    std::filesystem::path fullPath = texturesFolder / (texture + ".png");
+    std::string filename = texture + ".png";
+    std::filesystem::path fullPath = texturesFolder / filename;
     if (!std::filesystem::exists(fullPath)) {
         return "";
     }
 
-    texturesIndex[texture] = texture + ".png";
+    texturesIndex[texture] = {filename, 0, 0, 0, 0};
     return fullPath.string();
 }
 std::string Plugin::tmpTextureFilePath(std::string texture) {

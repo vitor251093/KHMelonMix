@@ -11,7 +11,8 @@
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
 
-#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
+#define getPixel(buffer, x, y, layer) buffer[(256*3*MODIFIER_2D_TEXTURE_SCALE + 1)*(y) + (x) + 256*MODIFIER_2D_TEXTURE_SCALE*(layer)]
+#define getDsPixel(buffer, x, y, layer) buffer[(256*3*MODIFIER_2D_TEXTURE_SCALE + 1)*(y)*MODIFIER_2D_TEXTURE_SCALE + (x)*MODIFIER_2D_TEXTURE_SCALE + 256*MODIFIER_2D_TEXTURE_SCALE*(layer)]
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
@@ -101,6 +102,15 @@ struct CutsceneEntry
     int dsScreensState;
 };
 
+struct TextureEntry
+{
+    std::string filename;
+    u16 posX;
+    u16 posY;
+    u16 sizeX;
+    u16 sizeY;
+};
+
 class Plugin
 {
 protected:
@@ -167,7 +177,8 @@ public:
     virtual std::string localizationFilePath(std::string language) {return "";}
 
     virtual std::string textureIndexFilePath();
-    virtual std::map<std::string, std::string> getTexturesIndex();
+    virtual std::map<std::string, TextureEntry> getTexturesIndex();
+    virtual TextureEntry* textureFileConfig(std::string texture);
     virtual std::string textureFilePath(std::string texture);
     virtual std::string tmpTextureFilePath(std::string texture);
 
@@ -288,7 +299,7 @@ protected:
 
     bool _LastTouchScreenMovementWasByPlugin = false;
 
-    std::map<std::string, std::string> texturesIndex;
+    std::map<std::string, TextureEntry> texturesIndex;
 
     int _StartPressCount = 0;
     int _ReplayLimitCount = 0;
