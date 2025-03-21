@@ -976,9 +976,19 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
 
             // player health
             shapes.push_back(ShapeBuilder3D::square()
-                    .fromPosition(128, 128)
-                    .withSize(128, 64)
+                    .fromPosition(128, 140)
+                    .withSize(128, 52)
                     .placeAtCorner(corner_BottomRight)
+                    .zRange(-1.0, 0.0)
+                    .hudScale(UIScale)
+                    .build(aspectRatio));
+
+            // player health (red part)
+            shapes.push_back(ShapeBuilder3D::square()
+                    .fromPosition(128, 140)
+                    .withSize(128, 52)
+                    .placeAtCorner(corner_BottomRight)
+                    .zRange(0.25, 0.50)
                     .hudScale(UIScale)
                     .build(aspectRatio));
         }
