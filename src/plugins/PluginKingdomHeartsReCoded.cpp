@@ -1163,6 +1163,15 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
         GameScene == gameScene_WorldSelection) {
         return brightnessMode_BottomScreen;
     }
+    if (GameScene == gameScene_Intro          ||
+        GameScene == gameScene_InGameMenu     ||
+        GameScene == gameScene_WorldSelection ||
+        GameScene == gameScene_Shop           ||
+        GameScene == gameScene_TheEnd         ||
+        GameScene == gameScene_Other2D        ||
+        GameScene == gameScene_Other) {
+        return brightnessMode_Horizontal;
+    }
     return brightnessMode_Default;
 }
 

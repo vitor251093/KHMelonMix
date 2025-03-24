@@ -1116,11 +1116,14 @@ int PluginKingdomHeartsDays::renderer_brightnessMode() {
         GameScene == gameScene_Other) {
         return brightnessMode_TopScreen;
     }
-    if (GameScene == gameScene_TitleScreen   ||
-        GameScene == gameScene_IntroLoadMenu ||
+    if (GameScene == gameScene_IntroLoadMenu ||
         GameScene == gameScene_Tutorial      ||
         GameScene == gameScene_LoadingScreen) {
         return brightnessMode_BottomScreen;
+    }
+    if (GameScene == gameScene_Intro ||
+        GameScene == gameScene_TheEnd) {
+        return brightnessMode_Horizontal;
     }
     return brightnessMode_Default;
 }

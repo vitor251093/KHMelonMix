@@ -53,7 +53,7 @@ uniform float forcedAspectRatio;
 uniform int hudScale;
 uniform bool showOriginalHud;
 uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
-uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = no brightness
+uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = horizontal, 4 = no brightness
 
 uniform int shapeCount;
 
@@ -597,16 +597,15 @@ ivec4 brightness()
     if (brightnessMode == 2) { // bottom screen brightness
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192 + int(fTexcoord.y)), 0));
     }
-    if (brightnessMode == 3) { // no brightness
+    if (brightnessMode == 3) { // horizontal
+        int yOffset = (fTexcoord.x < 128) ? 96 : (192 + 96);
+        return ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset), 0));
+    }
+    if (brightnessMode == 4) { // no brightness
         return ivec4(0x1F, 2 << 6, 0x2, 0);
     }
 
     // brightnessMode == 0
-    if (screenLayout == 3) { // horizontal
-        int yOffset = (fTexcoord.x < 128) ? 96 : (192 + 96);
-        return ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset), 0));
-    }
-
     ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     int brightmode = mbright.g >> 6;
     if ((mbright.b & 0x3) != 0 && brightmode == 2) {
