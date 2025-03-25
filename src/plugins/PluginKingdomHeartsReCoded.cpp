@@ -719,8 +719,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
                     // player health
                     shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(164, 114)
-                            .withSize(92, 78)
+                            .fromPosition(168, 114)
+                            .withSize(88, 78)
                             .placeAtCorner(corner_BottomRight)
                             .withMargin(0.0, 0.0, 8.0, 3.0)
                             .hudScale(hudScale)
@@ -756,9 +756,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                     // next area name
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(88, 160)
-                            .withSize(80, 32)
+                            .withSize(80, 23)
                             .placeAtCorner(corner_Bottom)
-                            .cropSquareCorners(0.0, 0.0, 0.0, 18.0)
+                            .withMargin(0.0, 0.0, 0.0, 9.0)
+                            .cropSquareCorners(0.0, 0.0, 0.0, 9.0)
                             .hudScale(hudScale)
                             .build(aspectRatio));
                 }
