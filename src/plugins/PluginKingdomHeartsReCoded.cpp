@@ -708,6 +708,15 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
                 if ((gameSceneState & (1 << gameSceneState_showRegularPlayerHealth)) > 0)
                 {
+                    // player health (green bar)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(134, 182)
+                            .withSize(122, 10)
+                            .placeAtCorner(corner_BottomRight)
+                            .withMargin(0.0, 0.0, 8.0, 3.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
                     // player health
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(164, 114)
