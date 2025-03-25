@@ -129,6 +129,31 @@ struct alignas(16) ShapeData3D {
     int negatedColorCount = 0;
     int _pad0, _pad1;
 
+    bool doesColorMatch(int* rgb)
+    {
+        bool colorMatchEqual = false;
+        bool colorMatchEqual2 = false;
+        bool colorMatchNeg = false;
+        for (int i = 0; i < colorCount; i++) {
+            colorMatchEqual = true;
+            if ((((color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+            && (((color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+            && (((color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                colorMatchEqual2 = true;
+                break;
+            }
+        }
+        for (int i = 0; i < negatedColorCount; i++) {
+            if ((((negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+            && (((negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+            && (((negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                colorMatchNeg = true;
+                break;
+            }
+        }
+        return (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
+    }
+
     vec3 compute3DCoordinatesOf3DSquareShapeInVertexMode(float _x, float _y, float _z, int polygonAttr, int* rgb, float resolutionScale, float aspectRatio)
     {
         float updated = 0;
@@ -158,27 +183,7 @@ struct alignas(16) ShapeData3D {
             return vec3{_x, _y, updated};
         }
 
-        bool colorMatchEqual = false;
-        bool colorMatchEqual2 = false;
-        bool colorMatchNeg = false;
-        for (int i = 0; i < colorCount; i++) {
-            colorMatchEqual = true;
-            if ((((color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-            && (((color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-            && (((color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                colorMatchEqual2 = true;
-                break;
-            }
-        }
-        for (int i = 0; i < negatedColorCount; i++) {
-            if ((((negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-            && (((negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-            && (((negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                colorMatchNeg = true;
-                break;
-            }
-        }
-        bool colorMatch = (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
+        bool colorMatch = doesColorMatch(rgb);
         if (!colorMatch) {
             return vec3{_x, _y, updated};
         }

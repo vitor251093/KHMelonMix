@@ -249,19 +249,23 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
                     float _z = ((float)z)/(1 << 22);
                     if (_z >= shape.zRange.x && _z <= shape.zRange.y) 
                     {
-                        u32 x0 = (int)scaledPositions[0][0];
-                        u32 x1 = (int)scaledPositions[0][0];
-                        for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
-                            x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
-                            x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
-                        }
-                        float xCenter = (x0 + x1)/2.0;
+                        s32* rgb = polygon->Vertices[0]->FinalColor;
+                        if (shape.doesColorMatch(rgb))
+                        {
+                            u32 x0 = (int)scaledPositions[0][0];
+                            u32 x1 = (int)scaledPositions[0][0];
+                            for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
+                                x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
+                                x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
+                            }
+                            float xCenter = (x0 + x1)/2.0;
 
-                        for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
-                            scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
-                        }
+                            for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
+                                scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
+                            }
 
-                        return;
+                            return;
+                        }
                     }
                 }
             }
