@@ -13,6 +13,21 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define ASPECT_RATIO_ADDRESS_EU 0x0202A824
 #define ASPECT_RATIO_ADDRESS_JP 0x0202A728
 
+// 0x0d9eaa00 => main menu
+// 0x0da75400 => config
+// 0x00149600 => debug reports
+// 0x0014c800 => debug reports - trophies
+// 0x00150800 => debug reports - collection
+// 0x0e098800 => debug reports - story
+// 0x0df58400 => debug reports - enemy profiles
+// 0x00158200 => debug reports - character files
+// 0x0da15000 => quest list
+// 0x0da82800 => tutorials
+// 0x0d8ba800 => save menu
+#define MAIN_MENU_SCREEN_2_US 0x02055c20
+#define MAIN_MENU_SCREEN_2_EU 0x02055c20
+#define MAIN_MENU_SCREEN_2_JP 0x02055a40
+
 // 0x6780 => main menu
 // 0x0040 => stat matrix
 // 0x0380 => command matrix
@@ -435,6 +450,15 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
+            break;
+
+        case gameScene_InGameMenu:
+            // config, quest list and save; the others are in horizontal style
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
             break;
 
         case gameScene_ResultScreen:
@@ -1167,7 +1191,6 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
         
         case gameScene_Intro:
         case gameScene_TitleScreen:
-        case gameScene_InGameMenu:
         case gameScene_WorldSelection:
         case gameScene_Shop:
         case gameScene_TheEnd:
@@ -1177,6 +1200,19 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
         
         case gameScene_Cutscene:
             return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
+    }
+
+    if (GameScene == gameScene_InGameMenu) {
+        u32 mainMenuView = getCurrentMainMenuView();
+        switch (mainMenuView) {
+            case 5:  // config
+            case 12: // quest list
+            case 14: // save menu
+                return screenLayout_Top;
+            
+            default:
+                return screenLayout_BothHorizontal;
+        }
     }
 
     return screenLayout_Top;
@@ -2164,7 +2200,7 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
         return 0;
     }
 
-    u8 val = nds->ARM7Read32(getU32ByCart(MAIN_MENU_SCREEN_1_US, MAIN_MENU_SCREEN_1_EU, MAIN_MENU_SCREEN_1_JP));
+    u32 val = nds->ARM7Read32(getU32ByCart(MAIN_MENU_SCREEN_1_US, MAIN_MENU_SCREEN_1_EU, MAIN_MENU_SCREEN_1_JP));
     if (val == 0x6780) return 1;
     if (val == 0x0040) return 2;
     if (val == 0x0380) return 3;
@@ -2175,7 +2211,19 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
     if (val2 == 0x0009) return 11;
     if (val2 == 0x000b) return 15;
 
-    // TODO: KH Add support to the other main menu views
+    // TODO: KH This method is very unstable, and causes issues during transitions
+    u32 val3 = nds->ARM7Read32(getU32ByCart(MAIN_MENU_SCREEN_2_US, MAIN_MENU_SCREEN_2_EU, MAIN_MENU_SCREEN_2_JP));
+    if (val3 == 0x0da75400) return 5;
+    if (val3 == 0x00149600) return 6;
+    if (val3 == 0x0014c800) return 7;
+    if (val3 == 0x00150800) return 8;
+    if (val3 == 0x0e098800) return 9;
+    if (val3 == 0x0df58400) return 10;
+    if (val3 == 0x00158200) return 11;
+    if (val3 == 0x0da15000) return 12;
+    if (val3 == 0x0da82800) return 13;
+    if (val3 == 0x0d8ba800) return 14;
+
     return 0;
 }
 
