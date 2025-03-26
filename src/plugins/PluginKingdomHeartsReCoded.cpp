@@ -1161,10 +1161,9 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
 
 int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
     if (_ShouldHideScreenForTransitions) {
-        return brightnessMode_Off;
+        return brightnessMode_BlackScreen;
     }
-    if (GameScene == gameScene_Cutscene                 ||
-        GameScene == gameScene_InGameWithMap            ||
+    if (GameScene == gameScene_InGameWithMap            ||
         GameScene == gameScene_PauseMenu                ||
         GameScene == gameScene_CutsceneWithStaticImages ||
         GameScene == gameScene_InGameDialog             ||
@@ -1185,6 +1184,9 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
         GameScene == gameScene_Other2D        ||
         GameScene == gameScene_Other) {
         return brightnessMode_Horizontal;
+    }
+    if (GameScene == gameScene_Cutscene) {
+        return brightnessMode_RegularBrightness;
     }
     return brightnessMode_Default;
 }

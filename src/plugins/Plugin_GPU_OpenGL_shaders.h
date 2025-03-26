@@ -601,8 +601,11 @@ ivec4 brightness()
         int yOffset = (fTexcoord.x < 128) ? 96 : (192 + 96);
         return ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset), 0));
     }
-    if (brightnessMode == 4) { // no brightness
+    if (brightnessMode == 4) { // black screen
         return ivec4(0x1F, 2 << 6, 0x2, 0);
+    }
+    if (brightnessMode == 5) { // regular brightness
+        return ivec4(0, 2 << 6, 0x2, 0);
     }
 
     // brightnessMode == 0

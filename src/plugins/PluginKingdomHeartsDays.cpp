@@ -1105,7 +1105,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
 
 int PluginKingdomHeartsDays::renderer_brightnessMode() {
     if (_ShouldHideScreenForTransitions) {
-        return brightnessMode_Off;
+        return brightnessMode_BlackScreen;
     }
     if (GameScene == gameScene_PauseMenu                ||
         GameScene == gameScene_InGameWithDouble3D       ||
@@ -1124,6 +1124,9 @@ int PluginKingdomHeartsDays::renderer_brightnessMode() {
     if (GameScene == gameScene_Intro ||
         GameScene == gameScene_TheEnd) {
         return brightnessMode_Horizontal;
+    }
+    if (GameScene == gameScene_Cutscene) {
+        return brightnessMode_RegularBrightness;
     }
     return brightnessMode_Default;
 }
