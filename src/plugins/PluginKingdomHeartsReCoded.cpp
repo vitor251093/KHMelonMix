@@ -28,10 +28,24 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_CUTSCENE_EU 0x02056e90
 #define IS_CUTSCENE_JP 0x02056cb0
 
-// 0x01 => cutscene with skip button, 0x03 => regular cutscene, 0x08 => cutscene with static images, 0x10 => in-game, main menu
-#define GAME_STATE_ADDRESS_US 0x02056f4a
-#define GAME_STATE_ADDRESS_EU 0x02056f4a
-#define GAME_STATE_ADDRESS_JP 0x02056d6a
+// 0x01 => cutscene with skip button
+// 0x03 => regular cutscene
+// 0x08 => cutscene with static images (can cause false positives outside of cutscenes)
+// 0x10 => other stuff
+#define CUTSCENE_STATE_ADDRESS_US 0x02056f4a
+#define CUTSCENE_STATE_ADDRESS_EU 0x02056f4a
+#define CUTSCENE_STATE_ADDRESS_JP 0x02056d6a
+
+// 0x00 => nothing on screen, debug reports trophies
+// 0x01 => debug reports enemy profiles
+// 0x03 => intro, title screen, debug reports collection/story
+// 0x07 => cutscene with static images
+// 0x09 => debug reports character profiles
+// 0x0c => load screen, main menu
+// 0x0f => in-game
+#define GAME_STATE_ADDRESS_US 0x02056f50
+#define GAME_STATE_ADDRESS_EU 0x02056f50
+#define GAME_STATE_ADDRESS_JP 0x02056d70
 
 // 0x00 => death screen
 #define DEATH_SCREEN_ADDRESS_US 0x02056f5c
@@ -1755,7 +1769,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
-    int ingameState = nds->ARM7Read8(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
+    int ingameState = nds->ARM7Read16(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
     bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getU32ByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
     bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
     bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
@@ -1846,7 +1860,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         return gameScene_Shop;
     }
 
-    if (ingameState == 0x08)
+    if (ingameState == 0x07)
     {
         return gameScene_CutsceneWithStaticImages;
     }
