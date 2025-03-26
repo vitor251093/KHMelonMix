@@ -245,19 +245,25 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
 
             if (shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) {
                 if (attrMatch) {
+                    u32 x0 = (int)scaledPositions[0][0];
+                    u32 x1 = (int)scaledPositions[0][0];
+                    u32 y0 = (int)scaledPositions[0][1];
+                    u32 y1 = (int)scaledPositions[0][1];
+                    for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
+                        x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
+                        x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
+                        y0 = std::min((int)y0, (int)scaledPositions[vIndex][1]);
+                        y1 = std::max((int)y1, (int)scaledPositions[vIndex][1]);
+                    }
                     s32 z = polygon->Vertices[0]->Position[2];
                     float _z = ((float)z)/(1 << 22);
-                    if (_z >= shape.zRange.x && _z <= shape.zRange.y) 
+                    if (x1 >= shape.squareInitialCoords.x*resolutionScale && x0 <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
+                        y1 >= shape.squareInitialCoords.y*resolutionScale && y0 <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
+                        _z >= shape.zRange.x && _z <= shape.zRange.y)
                     {
                         s32* rgb = polygon->Vertices[0]->FinalColor;
                         if (shape.doesColorMatch(rgb))
                         {
-                            u32 x0 = (int)scaledPositions[0][0];
-                            u32 x1 = (int)scaledPositions[0][0];
-                            for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
-                                x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
-                                x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
-                            }
                             float xCenter = (x0 + x1)/2.0;
 
                             for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
