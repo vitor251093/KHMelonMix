@@ -123,6 +123,7 @@ private:
 
     u8 getFloorLevel();
     u32 getCurrentMission();
+    u32 getCurrentMainMenuView();
     u32 getCurrentMap();
     bool isSaveLoaded();
 

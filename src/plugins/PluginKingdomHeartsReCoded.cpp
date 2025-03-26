@@ -13,6 +13,14 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define ASPECT_RATIO_ADDRESS_EU 0x0202A824
 #define ASPECT_RATIO_ADDRESS_JP 0x0202A728
 
+// 0x6780 => main menu
+// 0x0040 => stat matrix
+// 0x0380 => command matrix
+// 0x5f40 => gear matrix
+#define MAIN_MENU_SCREEN_1_US 0x02055cac // 0x0205a8c8
+#define MAIN_MENU_SCREEN_1_EU 0x02055cac
+#define MAIN_MENU_SCREEN_1_JP 0x02055acc
+
 // 0x00 => intro and main menu
 #define IS_MAIN_MENU_US 0x02060c94
 #define IS_MAIN_MENU_EU 0x0205fdc4
@@ -2130,6 +2138,36 @@ u32 PluginKingdomHeartsReCoded::getCurrentMission()
 {
     return 0;
     // return nds->ARM7Read8(getU32ByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
+}
+
+// 0 -> none
+// 1 -> main menu root
+// 2 -> stat matrix
+// 3 -> command matrix
+// 4 -> gear matrix
+// 5 -> config
+// 6 -> debug reports
+// 7 -> debug reports - trophies
+// 8 -> debug reports - collection
+// 9 -> debug reports - story
+// 10 -> debug reports - enemy profiles
+// 11 -> debug reports - character files
+// 12 -> quest list
+// 13 -> tutorials
+u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
+{
+    if (GameScene == -1)
+    {
+        return 0;
+    }
+
+    u8 val = nds->ARM7Read32(getU32ByCart(MAIN_MENU_SCREEN_1_US, MAIN_MENU_SCREEN_1_EU, MAIN_MENU_SCREEN_1_JP));
+    if (val == 0x6780) return 1;
+    if (val == 0x0040) return 2;
+    if (val == 0x0380) return 3;
+    if (val == 0x5f40) return 4;
+    // TODO: KH Add support to the other main menu views
+    return 0;
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMap()
