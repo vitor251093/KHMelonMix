@@ -21,6 +21,7 @@
 // #define RAM_SEARCH_SIZE 8
 // #define RAM_SEARCH_SIZE 16
 #define RAM_SEARCH_SIZE 32
+#define RAM_SEARCH_MAX_RESULTS 50
 #define RAM_SEARCH_LIMIT_MIN 0
 // #define RAM_SEARCH_LIMIT_MAX 0x09FFFF
 #define RAM_SEARCH_LIMIT_MAX 0x19FFFF
@@ -1025,11 +1026,11 @@ void Plugin::ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
             }
         }
         if (total > 0) {
-            if (total < 50*(4/byteSize)) {
+            if (total < RAM_SEARCH_MAX_RESULTS*(4/byteSize)) {
                 for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                     u32 addr = (0x02000000 | index);
                     if (MainRAMState[index]) {
-                        printf("0x%08x: %d\n", addr, LastMainRAM[index]);
+                        printf("0x%08x: 0x%08x\n", addr, LastMainRAM[index]);
                     }
                 }
                 printf("\n");
