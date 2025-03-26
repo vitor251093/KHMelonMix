@@ -429,16 +429,20 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     if (screenLayout == 3) { // horizontal
         ivec2 textureBeginning = ivec2(getHorizontalDualScreen2DTextureCoordinates(xpos, ypos));
         if (textureBeginning.x == -1 && textureBeginning.y == -1) {
-            ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, 96), 0));
+            textureBeginning = ivec2(128, 0);
 
+            int yOffset = (xpos < 128) ? 96 : (192 + 96);
+            ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset), 0));
             if ((mbright.b & 0x3) != 1 || ((mbright.g >> 6) == 2 && mbright.r >= 16))
             {
                 // black screen due to brightness
                 textureBeginning = ivec2(-1, -1);
             }
-            else
-            {
-                textureBeginning = ivec2(128, 0);
+        }
+
+        if (textureBeginning.x == -1 && textureBeginning.y == -1) {
+            if (index == 2) {
+                return ivec4(255, 255, 255, 0);
             }
         }
 
