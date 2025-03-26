@@ -235,16 +235,8 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
 
         // polygon mode
         if ((shape.effects & 0x1) != 0) {
-            bool attrMatch = true;
-            for (int i = 0; i < 4; i++) {
-                attrMatch = attrMatch && (shape.polygonAttributes[i] == 0 || shape.polygonAttributes[i] == polygon->Attr);
-            }
-            for (int i = 0; i < 4; i++) {
-                attrMatch = attrMatch && (shape.negatedPolygonAttributes[i] == 0 || shape.negatedPolygonAttributes[i] != polygon->Attr);
-            }
-
             if (shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) {
-                if (attrMatch) {
+                if (shape.doesAttributeMatch(polygon->Attr)) {
                     u32 x0 = (int)scaledPositions[0][0];
                     u32 x1 = (int)scaledPositions[0][0];
                     u32 y0 = (int)scaledPositions[0][1];
@@ -261,8 +253,7 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
                         y1 >= shape.squareInitialCoords.y*resolutionScale && y0 <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
                         _z >= shape.zRange.x && _z <= shape.zRange.y)
                     {
-                        s32* rgb = polygon->Vertices[0]->FinalColor;
-                        if (shape.doesColorMatch(rgb))
+                        if (shape.doesColorMatch(polygon->Vertices[0]->FinalColor))
                         {
                             float xCenter = (x0 + x1)/2.0;
 

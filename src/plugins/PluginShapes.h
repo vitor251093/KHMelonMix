@@ -129,6 +129,28 @@ struct alignas(16) ShapeData3D {
     int negatedColorCount = 0;
     int _pad0, _pad1;
 
+    bool doesAttributeMatch(int polygonAttr) {
+        bool attrMatchEqual = false;
+        bool attrMatchEqual2 = false;
+        bool attrMatchNeg = false;
+        for (int i = 0; i < 4; i++) {
+            if (polygonAttributes[i] != 0) {
+                attrMatchEqual = true;
+                if (polygonAttributes[i] == polygonAttr) {
+                    attrMatchEqual2 = true;
+                    break;
+                }
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            if (negatedPolygonAttributes[i] != 0 && negatedPolygonAttributes[i] == polygonAttr) {
+                attrMatchNeg = true;
+                break;
+            }
+        }
+        return (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
+    }
+
     bool doesColorMatch(int* rgb)
     {
         bool colorMatchEqual = false;
@@ -160,25 +182,7 @@ struct alignas(16) ShapeData3D {
 
         bool loggerModeEnabled = (effects & 0x4) != 0;
 
-        bool attrMatchEqual = false;
-        bool attrMatchEqual2 = false;
-        bool attrMatchNeg = false;
-        for (int i = 0; i < 4; i++) {
-            if (polygonAttributes[i] != 0) {
-                attrMatchEqual = true;
-                if (polygonAttributes[i] == polygonAttr) {
-                    attrMatchEqual2 = true;
-                    break;
-                }
-            }
-        }
-        for (int i = 0; i < 4; i++) {
-            if (negatedPolygonAttributes[i] != 0 && negatedPolygonAttributes[i] == polygonAttr) {
-                attrMatchNeg = true;
-                break;
-            }
-        }
-        bool attrMatch = (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
+        bool attrMatch = doesAttributeMatch(polygonAttr);
         if (!attrMatch) {
             return vec3{_x, _y, updated};
         }
