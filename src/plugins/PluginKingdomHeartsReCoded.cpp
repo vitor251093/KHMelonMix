@@ -49,7 +49,8 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 // 0x03 => intro, title screen, debug reports collection/story
 // 0x07 => cutscene with static images
 // 0x09 => debug reports character profiles
-// 0x0c => load screen, main menu
+// 0x0b => world selection
+// 0x0c => load screen, main menu, alt main menu
 // 0x0f => in-game
 #define GAME_STATE_ADDRESS_US 0x02056f50
 #define GAME_STATE_ADDRESS_EU 0x02056f50
@@ -2154,6 +2155,8 @@ u32 PluginKingdomHeartsReCoded::getCurrentMission()
 // 11 -> debug reports - character files
 // 12 -> quest list
 // 13 -> tutorials
+// 14 -> save menu
+// 15 -> world selection
 u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
 {
     if (GameScene == -1)
@@ -2166,6 +2169,12 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
     if (val == 0x0040) return 2;
     if (val == 0x0380) return 3;
     if (val == 0x5f40) return 4;
+
+    u16 val2 = nds->ARM7Read16(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
+    if (val2 == 0x0001) return 10;
+    if (val2 == 0x0009) return 11;
+    if (val2 == 0x000b) return 15;
+
     // TODO: KH Add support to the other main menu views
     return 0;
 }
