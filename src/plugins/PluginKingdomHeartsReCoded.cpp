@@ -161,6 +161,7 @@ enum
     gameSceneState_showRegularPlayerHealth,
     gameSceneState_showOlympusBattlePlayerHealth,
     gameSceneState_showMinimap,
+    gameSceneState_showFullscreenMap,
     gameSceneState_showCommandMenu,
     gameSceneState_showNextAreaName,
     gameSceneState_showFloorCounter,
@@ -176,6 +177,7 @@ enum
 enum
 {
     HK_HUDToggle,
+    HK_FullscreenMapToggle,
     HK_RLockOn,
     HK_LSwitchTarget,
     HK_RSwitchTarget,
@@ -211,6 +213,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 
     customKeyMappingNames = {
         "HK_HUDToggle",
+        "HK_FullscreenMapToggle",
         "HK_RLockOn",
         "HK_LSwitchTarget",
         "HK_RSwitchTarget",
@@ -221,6 +224,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     };
     customKeyMappingLabels = {
         "[KH] HUD Toggle",
+        "[KH] Fullscreen Map Toggle",
         "[KH] (R1) R / Lock On",
         "[KH] (L2) Switch Target",
         "[KH] (R2) Switch Target",
@@ -500,6 +504,21 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
             }
 
         case gameScene_InGameWithMap:
+            if ((gameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0)
+            {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .fromPosition(8, 32)
+                        .withSize(240, 104)
+                        .placeAtCorner(corner_Center)
+                        .sourceScale(1.7)
+                        .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                        .opacity(0.90)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+                break;
+            }
+
             if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
             {
                 // top mission information
@@ -946,7 +965,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
 
     if (gameScene == gameScene_InGameWithMap || gameScene == gameScene_InGameDialog || gameScene == gameScene_InGameOlympusBattle)
     {
-        if (HideAllHUD)
+        if (HideAllHUD || ((gameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0))
         {
             // no HUD
             shapes.push_back(ShapeBuilder3D::square()
@@ -1112,6 +1131,11 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
             }
 
             if (GameScene == gameScene_InGameWithMap && isMinimapVisible()) {
+                if (ShowFullscreenMap) {
+                    state |= (1 << gameSceneState_showFullscreenMap);
+                    break;
+                }
+
                 if (ShowMap) {
                     state |= (1 << gameSceneState_showMinimap);
 
@@ -1292,6 +1316,9 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
 
     if ((*AddonPress) & (1 << HK_HUDToggle)) {
         hudToggle();
+    }
+    if ((*AddonPress) & (1 << HK_FullscreenMapToggle)) {
+        toggleFullscreenMap();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameOlympusBattle) {
@@ -1506,19 +1533,33 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u
 
 void PluginKingdomHeartsReCoded::hudToggle()
 {
-    HUDState = (HUDState + 1) % 3;
+    HUDState = HUDState + 1;
+    if (HUDState >= 2) {
+        HUDState = 0;
+    }
     if (HUDState == 0) { // map mode
         ShowMap = true;
-        HideAllHUD = false;
-    }
-    else if (HUDState == 1) { // no map mode
-        ShowMap = false;
+        ShowFullscreenMap = false;
         HideAllHUD = false;
     }
     else { // zero hud
         ShowMap = false;
+        ShowFullscreenMap = false;
         HideAllHUD = true;
     }
+}
+
+void PluginKingdomHeartsReCoded::toggleFullscreenMap()
+{
+    if (HUDState == 2) {
+        hudToggle();
+        return;
+    }
+
+    HUDState = 2;
+    ShowMap = false;
+    ShowFullscreenMap = true;
+    HideAllHUD = false;
 }
 
 const char* PluginKingdomHeartsReCoded::getGameSceneName()

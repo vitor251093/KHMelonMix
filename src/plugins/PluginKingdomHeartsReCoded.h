@@ -83,6 +83,7 @@ private:
     u32 priorMap;
     u32 Map;
     bool ShowMap;
+    bool ShowFullscreenMap;
     int MinimapCenterX = 128;
     int MinimapCenterY = 96;
     int MinimapFrameTick;
@@ -145,6 +146,7 @@ private:
     bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 
     void hudToggle();
+    void toggleFullscreenMap();
     void debugLogs(int gameScene);
 };
 }
