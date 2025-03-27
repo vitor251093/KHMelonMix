@@ -259,8 +259,7 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
                         {
                             if (loggerModeEnabled) {
                                 atLeastOneLog = true;
-                                printf("Position: %d - %d -- Size: %d - %d\n", shape.squareInitialCoords.x, shape.squareInitialCoords.y,
-                                    shape.squareInitialCoords.z - shape.squareInitialCoords.x, shape.squareInitialCoords.w - shape.squareInitialCoords.y);
+                                printf("Position: %d - %d -- Size: %d - %d\n", x0, y0, x1 - x0, y1 - y0);
                             }
 
                             float xCenter = (x0 + x1)/2.0;
