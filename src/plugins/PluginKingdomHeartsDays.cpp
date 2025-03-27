@@ -176,8 +176,8 @@ enum
 enum
 {
     HK_HUDToggle,
-    HK_RLockOn,
     HK_LSwitchTarget,
+    HK_RLockOn,
     HK_RSwitchTarget,
     HK_CommandMenuLeft,
     HK_CommandMenuRight,
@@ -196,8 +196,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     customKeyMappingNames = {
         "HK_HUDToggle",
-        "HK_RLockOn",
         "HK_LSwitchTarget",
+        "HK_RLockOn",
         "HK_RSwitchTarget",
         "HK_CommandMenuLeft",
         "HK_CommandMenuRight",
@@ -206,8 +206,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     };
     customKeyMappingLabels = {
         "[KH] HUD Toggle",
-        "[KH] (R1) R / Lock On",
         "[KH] (L2) Switch Target",
+        "[KH] (R1) Lock On",
         "[KH] (R2) Switch Target",
         "[KH] Command Menu - Left",
         "[KH] Command Menu - Right",
