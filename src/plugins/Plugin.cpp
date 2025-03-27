@@ -229,6 +229,7 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
     int gameSceneState = renderer_gameSceneState();
     std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
 
+    bool atLeastOneLog = false;
     for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
     {
         ShapeData3D shape = shapes[shapeIndex];
@@ -256,6 +257,12 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
                     {
                         if (shape.doesColorMatch(polygon->Vertices[0]->FinalColor))
                         {
+                            if (loggerModeEnabled) {
+                                atLeastOneLog = true;
+                                printf("Position: %d - %d -- Size: %d - %d\n", shape.squareInitialCoords.x, shape.squareInitialCoords.y,
+                                    shape.squareInitialCoords.z - shape.squareInitialCoords.x, shape.squareInitialCoords.w - shape.squareInitialCoords.y);
+                            }
+
                             float xCenter = (x0 + x1)/2.0;
 
                             for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
@@ -284,17 +291,26 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
         for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
         {
             ShapeData3D shape = shapes[shapeIndex];
+            bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
             // vertex mode
             if ((shape.effects & 0x1) == 0) {
                 vec3 newValues = shape.compute3DCoordinatesOf3DSquareShapeInVertexMode(_x, _y, _z, polygon->Attr, rgb, resolutionScale, aspectRatio);
                 if (newValues.z == 1) {
+                    if (loggerModeEnabled) {
+                        atLeastOneLog = true;
+                        printf("Position: %f - %f -- Attribute: %d\n", _x, _y, polygon->Attr);
+                    }
+
                     *x = (s32)(newValues.x);
                     *y = (s32)(newValues.y);
                     break;
                 }
             }
         }
+    }
+    if (atLeastOneLog) {
+        printf("\n");
     }
 };
 

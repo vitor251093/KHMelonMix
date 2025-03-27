@@ -979,8 +979,9 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
         if (gameScene != gameScene_InGameOlympusBattle) {
             // SP score
             shapes.push_back(ShapeBuilder3D::square()
+                    .negatePolygonAttributes(2031808) // pickup license notification
                     .fromPosition(0, 0)
-                    .withSize(110, 58)
+                    .withSize(110, 60)
                     .placeAtCorner(corner_TopLeft)
                     .withMargin(0.0, 30.0, 0.0, 0.0)
                     .sourceScale(1.5)
@@ -994,6 +995,8 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1058996416)
+                .fromPosition(0, 60)
+                .withSize(256, 132)
                 .zRange(-1.0, -0.5)
                 .build(aspectRatio));
 
@@ -1002,6 +1005,8 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1042219200)
+                .fromPosition(0, 60)
+                .withSize(256, 132)
                 .zRange(-1.0, -0.5)
                 .build(aspectRatio));
 
@@ -1010,8 +1015,8 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1025441984)
-                .fromPosition(0, 46)
-                .withSize(256, 146)
+                .fromPosition(0, 60)
+                .withSize(256, 136)
                 .zRange(-1.0, -0.5)
                 .build(aspectRatio));
 
@@ -1020,12 +1025,12 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(2033856)
-                .fromPosition(0, 46)
-                .withSize(256, 146)
+                .fromPosition(0, 60)
+                .withSize(256, 136)
                 .zRange(-1.0, -0.5)
                 .build(aspectRatio));
 
-        // pickup notification
+        // pickup license notification
         shapes.push_back(ShapeBuilder3D::square()
                 .fromPosition(0, 24)
                 .withSize(80, 44)
