@@ -1234,9 +1234,9 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
     if (GameScene == gameScene_InGameMenu) {
         u32 mainMenuView = getCurrentMainMenuView();
         switch (mainMenuView) {
-            case 5:  // config
-            case 12: // quest list
-            case 14: // save menu
+            case 6:  // config
+            case 13: // quest list
+            case 15: // save menu
                 return screenLayout_Top;
             
             default:
@@ -1265,7 +1265,6 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
         return brightnessMode_BottomScreen;
     }
     if (GameScene == gameScene_Intro          ||
-        GameScene == gameScene_InGameMenu     ||
         GameScene == gameScene_WorldSelection ||
         GameScene == gameScene_Shop           ||
         GameScene == gameScene_TheEnd         ||
@@ -1275,6 +1274,19 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
     }
     if (GameScene == gameScene_Cutscene) {
         return brightnessMode_RegularBrightness;
+    }
+    if (GameScene == gameScene_InGameMenu) {
+        u32 mainMenuView = getCurrentMainMenuView();
+        switch (mainMenuView) {
+            case 2:  // main menu root (save menu)
+            case 6:  // config
+            case 13: // quest list
+            case 15: // save menu
+                return brightnessMode_TopScreen;
+            
+            default:
+                return brightnessMode_Horizontal;
+        }
     }
     return brightnessMode_Default;
 }
@@ -2225,20 +2237,21 @@ u32 PluginKingdomHeartsReCoded::getCurrentMission()
 
 // 0 -> none
 // 1 -> main menu root
-// 2 -> stat matrix
-// 3 -> command matrix
-// 4 -> gear matrix
-// 5 -> config
-// 6 -> debug reports
-// 7 -> debug reports - trophies
-// 8 -> debug reports - collection
-// 9 -> debug reports - story
-// 10 -> debug reports - enemy profiles
-// 11 -> debug reports - character files
-// 12 -> quest list
-// 13 -> tutorials
-// 14 -> save menu
-// 15 -> world selection
+// 2 -> main menu root (save menu)
+// 3 -> stat matrix
+// 4 -> command matrix
+// 5 -> gear matrix
+// 6 -> config
+// 7 -> debug reports
+// 8 -> debug reports - trophies
+// 9 -> debug reports - collection
+// 10 -> debug reports - story
+// 11 -> debug reports - enemy profiles
+// 12 -> debug reports - character files
+// 13 -> quest list
+// 14 -> tutorials
+// 15 -> save menu
+// 16 -> world selection
 u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
 {
     if (GameScene == -1)
@@ -2246,31 +2259,49 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
         return 0;
     }
 
+    u32 mainMenuView = 0;
+
     u32 val = nds->ARM7Read32(getU32ByCart(MAIN_MENU_SCREEN_1_US, MAIN_MENU_SCREEN_1_EU, MAIN_MENU_SCREEN_1_JP));
-    if (val == 0x6780) return 1;
-    if (val == 0x0040) return 2;
-    if (val == 0x0380) return 3;
-    if (val == 0x5f40) return 4;
+    switch(val) {
+        case 0x6780: mainMenuView = 1; break;
+        case 0x0040: mainMenuView = 3; break;
+        case 0x0380: mainMenuView = 4; break;
+        case 0x5f40: mainMenuView = 5; break;
+         
+    }
 
-    u16 val2 = nds->ARM7Read16(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
-    if (val2 == 0x0001) return 10;
-    if (val2 == 0x0009) return 11;
-    if (val2 == 0x000b) return 15;
+    if (mainMenuView == 0) {
+        u16 val2 = nds->ARM7Read16(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
+        switch(val2) {
+            case 0x0001: mainMenuView = 11; break;
+            case 0x0009: mainMenuView = 12; break;
+            case 0x000b: mainMenuView = 16; break;
+        }
+    }
 
-    // TODO: KH This method is very unstable, and causes issues during transitions
-    u32 val3 = nds->ARM7Read32(getU32ByCart(MAIN_MENU_SCREEN_2_US, MAIN_MENU_SCREEN_2_EU, MAIN_MENU_SCREEN_2_JP));
-    if (val3 == 0x0da75400) return 5;
-    if (val3 == 0x00149600) return 6;
-    if (val3 == 0x0014c800) return 7;
-    if (val3 == 0x00150800) return 8;
-    if (val3 == 0x0e098800) return 9;
-    if (val3 == 0x0df58400) return 10;
-    if (val3 == 0x00158200) return 11;
-    if (val3 == 0x0da15000) return 12;
-    if (val3 == 0x0da82800) return 13;
-    if (val3 == 0x0d8ba800) return 14;
+    if (mainMenuView == 0) {
+        // TODO: KH This method is very unstable, and causes issues during transitions
+        u32 val3 = nds->ARM7Read32(getU32ByCart(MAIN_MENU_SCREEN_2_US, MAIN_MENU_SCREEN_2_EU, MAIN_MENU_SCREEN_2_JP));
+        switch(val3) {
+            case 0x0d9eaa00: case 0x0da75800: mainMenuView = 2; break;
+            case 0x0da75400: mainMenuView = 6; break;
+            case 0x00149600: mainMenuView = 7; break;
+            case 0x0014c800: mainMenuView = 8; break;
+            case 0x00150800: mainMenuView = 9; break;
+            case 0x0e098800: mainMenuView = 10; break;
+            case 0x0df58400: mainMenuView = 11; break;
+            case 0x00158200: mainMenuView = 12; break;
+            case 0x0da15000: mainMenuView = 13; break;
+            case 0x0da82800: mainMenuView = 14; break;
+            case 0x0d8ba800: mainMenuView = 15; break;
+        }
+    }
 
-    return 0;
+    if (mainMenuView != 0) {
+        lastMainMenuView = mainMenuView;
+    }
+
+    return lastMainMenuView;
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMap()

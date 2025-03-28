@@ -88,6 +88,7 @@ private:
     int MinimapCenterY = 96;
     int MinimapFrameTick;
     bool HideAllHUD;
+    u32 lastMainMenuView;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<GLuint, int[10]> CompGpuLastValues{};
