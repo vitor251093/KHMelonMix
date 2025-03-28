@@ -485,7 +485,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
             // cleaning the rest of the upper area of the screen
             shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(118, 162)
+                    .fromPosition(118, 152)
                     .withSize(14, 10)
                     .placeAtCorner(corner_Top)
                     .sourceScale(aspectRatio*20, 1.0*4)
@@ -834,7 +834,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 {
                     // cleaning the rest of the upper area of the screen
                     shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(118, 162)
+                            .fromPosition(118, 152)
                             .withSize(20, 10)
                             .placeAtCorner(corner_Top)
                             .sourceScale(aspectRatio*13, 1.0*4)
@@ -890,7 +890,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
                 // background
                 shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(118, 162)
+                        .fromPosition(118, 152)
                         .withSize(20, 10)
                         .placeAtCorner(corner_Center)
                         .sourceScale(1000.0)
@@ -908,7 +908,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
             // background
             shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(118, 162)
+                    .fromPosition(118, 152)
                     .withSize(20, 10)
                     .placeAtCorner(corner_Center)
                     .sourceScale(1000.0)
