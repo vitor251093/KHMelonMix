@@ -31,6 +31,10 @@
 
 class EmuInstance;
 
+namespace melonMix {
+class AudioPlayer;
+}
+
 namespace Ui { class MainWindowSettings; }
 class MainWindowSettings;
 
@@ -84,11 +88,9 @@ private:
     QAudioOutput* playerAudioOutput;
     QMediaPlayer* player;
 
-    QMediaPlayer* bgmPlayer;
-    QAudioOutput* bgmPlayerAudioOutput;
+    QScopedPointer<melonMix::AudioPlayer> bgmPlayer;
 
     void createVideoPlayer();
-    void createBgmPlayer();
 
 };
 
