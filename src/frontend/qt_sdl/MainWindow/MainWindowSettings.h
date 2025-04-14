@@ -47,16 +47,15 @@ public:
     ~MainWindowSettings();
 
 public slots:
-    void asyncStartBgmMusic(QString bgmMusicFilePath);
-    void asyncStopBgmMusic();
+    void asyncStartBgmMusic(quint16 bgmId, bool bStoreResumePos, QString bgmMusicFilePath);
+    void asyncStopBgmMusic(quint16 bgmId);
     void asyncPauseBgmMusic();
     void asyncUnpauseBgmMusic();
 
-    void startBgmMusic(QString bgmMusicFilePath);
-    void stopBgmMusic();
+    void startBgmMusic(quint16 bgmId, bool bStoreResumePos, QString bgmMusicFilePath);
+    void stopBgmMusic(quint16 bgmId);
     void pauseBgmMusic();
     void unpauseBgmMusic();
-
 
     void asyncStartVideo(QString videoFilePath);
     void asyncStopVideo();
@@ -67,6 +66,9 @@ public slots:
     void stopVideo();
     void pauseVideo();
     void unpauseVideo();
+
+private slots:
+    void onBgmFadeOutCompleted(melonMix::AudioPlayer* playerStopped);
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -88,7 +90,9 @@ private:
     QScopedPointer<QAudioOutput> playerAudioOutput;
     QScopedPointer<QMediaPlayer> player;
 
-    QScopedPointer<melonMix::AudioPlayer> bgmPlayer;
+    QList<melonMix::AudioPlayer*> bgmPlayers;
+    quint16 bgmToResumeId = 0;
+    quint64 bgmToResumePosition = 0;
 
     void createVideoPlayer();
 

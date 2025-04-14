@@ -8,9 +8,10 @@
 
 namespace melonMix {
 
-AudioPlayer::AudioPlayer(QObject *parent)
+AudioPlayer::AudioPlayer(QObject *parent, quint16 bgmId)
     : QObject(parent)
     , m_audioSource(new AudioSourceWav(this))
+    , m_bgmId(bgmId)
 {
 }
 
@@ -39,10 +40,10 @@ void AudioPlayer::setVolume(qreal value)
     }
 }
 
-void AudioPlayer::play()
+void AudioPlayer::play(qint64 resumePosition, int fadeInMs)
 {
     if (m_audioOutput) {
-        m_audioSource->onStarted();
+        m_audioSource->onStarted(resumePosition, fadeInMs);
         m_audioOutput->start(m_audioSource.get());
         m_playing = true;
     }
@@ -55,10 +56,17 @@ void AudioPlayer::stop(int fadeOutMs)
     }
 
     if (fadeOutMs == 0) {
-        onFadeOutCompleted();
+        m_audioOutput->stop();
+        m_audioSource->onStopped();
+        m_playing = false;
     } else {
         m_audioSource->startFadeOut(fadeOutMs);
     }
+}
+
+qint64 AudioPlayer::getCurrentPlayingPos() const
+{
+    return m_audioSource->getCurrentPlayingPos();
 }
 
 void AudioPlayer::onFadeOutCompleted()
@@ -68,6 +76,8 @@ void AudioPlayer::onFadeOutCompleted()
         m_audioSource->onStopped();
         m_playing = false;
     }
+
+    QMetaObject::invokeMethod(parent(), "onBgmFadeOutCompleted", Qt::QueuedConnection, Q_ARG(AudioPlayer*, this));
 }
 
 void AudioPlayer::pause()

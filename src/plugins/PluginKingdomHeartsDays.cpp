@@ -1998,6 +1998,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
         else if (soundtrackId == 0xFFFF) {
             if (_LastSoundtrackId != fakeSoundtrackId && _CurrentBackgroundMusic != 0) {
                 _ShouldStopReplacementBgmMusic = true;
+                _BackgroundMusicToStop = _CurrentBackgroundMusic;
                 printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
     
                 _CurrentBackgroundMusic = soundtrackId;
@@ -2006,6 +2007,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
         }
         else {
             _ShouldStopReplacementBgmMusic = true;
+            _BackgroundMusicToStop = _CurrentBackgroundMusic;
 
             if (replacementAvailable) {
                 u32 address = getAnyByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
@@ -2034,6 +2036,12 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
         _CurrentBackgroundMusic = soundtrackId;
         _LastSoundtrackId = soundtrackId;
     }
+}
+
+bool PluginKingdomHeartsDays::shouldStoreBgmResumePosition(u16 soundtrackId) const
+{
+    static std::vector<u16> ids = { 2, 5, 7, 9, 11, 15, 16, 33 };
+    return (std::find(ids.begin(), ids.end(), soundtrackId) != ids.end());
 }
 
 int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {

@@ -16,7 +16,7 @@ class AudioSourceWav : public QIODevice
 public:
     AudioSourceWav(QObject *parent = nullptr);
 
-    void onStarted();
+    void onStarted(qint64 resumePosition, int fadeInMs);
     void onStopped();
 
     bool load(const QString &fileName);
@@ -34,12 +34,16 @@ public:
     quint32 getNumChannels() const { return m_numChannels; }
     quint32 getBitsPerSample() const { return m_bitsPerSample; }
 
+    qint64 getCurrentPlayingPos() const { return m_currentPos; }
+    void startFadeIn(int durationMs);
     void startFadeOut(int durationMs);
 
     static QAudioFormat::SampleFormat bitsPerSampleToSampleFormat(quint16 bitsPerSample);
 
 private:
-    void applyFadeOut(char* data, qint64 bytesRead);
+    enum EFadeType : quint8 { FadeIn, FadeOut };
+    void applyFade(EFadeType type, char* data, qint64 bytesRead);
+
     bool readWavHeader();
 
     QFile m_file;
@@ -57,6 +61,10 @@ private:
     qint64 m_loopEndByte = 0;
 
     qint64 m_currentPos = 0;
+
+    bool m_fadeInActive = false;
+    int m_fadeInRemainingSamples = 0;
+    int m_fadeInTotalSamples = 0;
 
     bool m_fadeOutActive = false;
     int m_fadeOutRemainingSamples = 0;

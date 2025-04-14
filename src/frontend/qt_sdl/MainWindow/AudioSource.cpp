@@ -42,16 +42,22 @@ bool AudioSourceWav::load(const QString &fileName)
     return true;
 }
 
-void AudioSourceWav::onStarted()
+void AudioSourceWav::onStarted(qint64 resumePosition, int fadeInMs)
 {
     m_fadeOutActive = false;
     m_fadeOutRemainingSamples = 0;
-    m_currentPos = m_dataStart;
+    m_currentPos = m_dataStart + resumePosition;
+
+    if (fadeInMs) {
+        startFadeIn(fadeInMs);
+    }
 }
 
 void AudioSourceWav::onStopped()
 {
     m_currentPos = m_dataStart;
+    m_fadeInActive = false;
+    m_fadeInRemainingSamples = 0;
 }
 
 qint64 AudioSourceWav::readData(char *data, qint64 maxSize)
@@ -99,11 +105,22 @@ qint64 AudioSourceWav::readData(char *data, qint64 maxSize)
 
     m_currentPos = m_file.pos();
 
+    if (m_fadeInActive && bytesRead > 0) {
+        applyFade(EFadeType::FadeIn, data, bytesRead);
+    }
+
     if (m_fadeOutActive && bytesRead > 0) {
-        applyFadeOut(data, bytesRead);
+        applyFade(EFadeType::FadeOut, data, bytesRead);
     }
 
     return bytesRead;
+}
+
+void AudioSourceWav::startFadeIn(int durationMs)
+{
+    m_fadeInActive = true;
+    m_fadeInTotalSamples = (durationMs * m_sampleRate) / 1000;
+    m_fadeInRemainingSamples = m_fadeInTotalSamples;
 }
 
 void AudioSourceWav::startFadeOut(int durationMs)
@@ -113,19 +130,27 @@ void AudioSourceWav::startFadeOut(int durationMs)
     m_fadeOutRemainingSamples = m_fadeOutTotalSamples;
 }
 
-void AudioSourceWav::applyFadeOut(char* data, qint64 bytesRead)
+void AudioSourceWav::applyFade(EFadeType type, char* data, qint64 bytesRead)
 {
     int samplesPerFrame = m_numChannels;
     int bytesPerFrame = m_bytesPerFrame;
     int framesInBuffer = bytesRead / bytesPerFrame;
-    
+
+    int& remainingSamples = (type == EFadeType::FadeIn) ? m_fadeInRemainingSamples : m_fadeOutRemainingSamples;
+
     for (int frame = 0; frame < framesInBuffer; frame++) {
         float fadeProgress;
-        if (m_fadeOutRemainingSamples <= 0) {
-            fadeProgress = 0.0f;
+
+        if (remainingSamples <= 0) {
+            fadeProgress = (type == EFadeType::FadeIn) ? 1.0f : 0.0f;
         } else {
-            fadeProgress = static_cast<float>(m_fadeOutRemainingSamples) / m_fadeOutTotalSamples;
-            fadeProgress = fadeProgress * fadeProgress;
+            if (type == EFadeType::FadeIn) {
+                fadeProgress = 1.0f - static_cast<float>(m_fadeInRemainingSamples) / m_fadeInTotalSamples;
+                fadeProgress = fadeProgress * fadeProgress;
+            } else  {
+                fadeProgress = static_cast<float>(m_fadeOutRemainingSamples) / m_fadeOutTotalSamples;
+                fadeProgress = fadeProgress * fadeProgress;
+            }
         }
 
         for (int ch = 0; ch < m_numChannels; ch++) {
@@ -157,15 +182,26 @@ void AudioSourceWav::applyFadeOut(char* data, qint64 bytesRead)
             }
         }
 
-        if (m_fadeOutRemainingSamples > 0)
-            m_fadeOutRemainingSamples--;
+        if (remainingSamples > 0)
+            remainingSamples--;
     }
 
-    if (m_fadeOutRemainingSamples <= 0 && m_fadeOutActive)
+    if (type == EFadeType::FadeIn)
     {
-        m_fadeOutActive = false;
-        QMetaObject::invokeMethod(parent(), "onFadeOutCompleted", Qt::QueuedConnection);
-        printf("bgm fade out completed: stopped\n");
+        if (m_fadeInRemainingSamples <= 0 && m_fadeInActive)
+        {
+            m_fadeInActive = false;
+            printf("bgm fade in completed\n");
+        }
+    }
+    else
+    {
+        if (m_fadeOutRemainingSamples <= 0 && m_fadeOutActive)
+        {
+            m_fadeOutActive = false;
+            QMetaObject::invokeMethod(parent(), "onFadeOutCompleted", Qt::QueuedConnection);
+            printf("bgm fade out completed: stopped\n");
+        }
     }
 }
 

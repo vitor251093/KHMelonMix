@@ -137,7 +137,8 @@ private:
     bool canReturnToGameAfterReplacementCutscene();
 
     u16 detectMidiBackgroundMusic();
-    void refreshBackgroundMusic();
+    void refreshBackgroundMusic() override;
+    bool shouldStoreBgmResumePosition(u16 soundtrackId) const override;
 
     void refreshMouseStatus();
 

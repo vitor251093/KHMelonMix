@@ -157,8 +157,8 @@ signals:
 
     void syncVolumeLevel();
 
-    void windowStartBgmMusic(QString videoFilePath);
-    void windowStopBgmMusic();
+    void windowStartBgmMusic(quint16 bgmId, bool bStoreResumePos, QString videoFilePath);
+    void windowStopBgmMusic(quint16 bgmId);
     void windowPauseBgmMusic();
     void windowUnpauseBgmMusic();
 
