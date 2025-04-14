@@ -2017,6 +2017,12 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
                 _CurrentBackgroundMusic = soundtrackId;
                 _LastSoundtrackId = soundtrackId;
             }
+            else
+            {
+                // No replacement available, resetting
+                _CurrentBackgroundMusic = soundtrackId;
+                _LastSoundtrackId = soundtrackId;
+            }
         }
     }
     else {
