@@ -165,7 +165,7 @@ void AudioSourceWav::applyFadeOut(char* data, qint64 bytesRead)
     {
         m_fadeOutActive = false;
         QMetaObject::invokeMethod(parent(), "onFadeOutCompleted", Qt::QueuedConnection);
-        printf("bgm fade out completed: stopped");
+        printf("bgm fade out completed: stopped\n");
     }
 }
 

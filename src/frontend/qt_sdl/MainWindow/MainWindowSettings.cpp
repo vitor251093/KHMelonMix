@@ -42,6 +42,9 @@ MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
     emuInstance(inst),
     localCfg(inst->getLocalConfig()),
     ui(new Ui::MainWindowSettings),
+    playerWidget(new QVideoWidget(this)),
+    playerAudioOutput(new QAudioOutput(this)),
+    player(new QMediaPlayer(this)),
     bgmPlayer(new melonMix::AudioPlayer(this))
 {
     ui->setupUi(this);
@@ -53,7 +56,6 @@ MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
 
 MainWindowSettings::~MainWindowSettings()
 {
-    delete ui;
 }
 
 void MainWindowSettings::initWidgets()
@@ -122,16 +124,12 @@ void MainWindowSettings::unpauseBgmMusic()
 
 void MainWindowSettings::createVideoPlayer()
 {
-    playerWidget = new QVideoWidget(this);
     playerWidget->setCursor(Qt::BlankCursor);
 
-    playerAudioOutput = new QAudioOutput(this);
-    player = new QMediaPlayer(this);
-
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    centralWidget->addWidget(playerWidget);
+    centralWidget->addWidget(playerWidget.get());
 
-    connect(player, &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
+    connect(player.get(), &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         printf("======= MediaStatus: %d\n", status);
 
         if (status == QMediaPlayer::BufferingMedia || status == QMediaPlayer::BufferedMedia) {
@@ -150,13 +148,13 @@ void MainWindowSettings::createVideoPlayer()
         emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
     });
 #else
-    connect(player, &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
+    connect(player.get(), &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
         emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
     });
 #endif
 
-    player->setVideoOutput(playerWidget);
-    player->setAudioOutput(playerAudioOutput);
+    player->setVideoOutput(playerWidget.get());
+    player->setAudioOutput(playerAudioOutput.get());
 }
 
 void MainWindowSettings::asyncStartVideo(QString videoFilePath)
@@ -173,7 +171,7 @@ void MainWindowSettings::startVideo(QString videoFilePath)
 #endif
 
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    centralWidget->setCurrentWidget(playerWidget);
+    centralWidget->setCurrentWidget(playerWidget.get());
 
     int volume = localCfg.GetInt("Audio.Volume");
     playerAudioOutput->setVolume(volume / 256.0);

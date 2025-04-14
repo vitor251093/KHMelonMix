@@ -80,13 +80,13 @@ protected:
     virtual void showGame() = 0;
 
 private:
-    Ui::MainWindowSettings* ui;
+    QScopedPointer<Ui::MainWindowSettings> ui;
     Config::Table& localCfg;
     EmuInstance* emuInstance;
 
-    QVideoWidget* playerWidget;
-    QAudioOutput* playerAudioOutput;
-    QMediaPlayer* player;
+    QScopedPointer<QVideoWidget> playerWidget;
+    QScopedPointer<QAudioOutput> playerAudioOutput;
+    QScopedPointer<QMediaPlayer> player;
 
     QScopedPointer<melonMix::AudioPlayer> bgmPlayer;
 
