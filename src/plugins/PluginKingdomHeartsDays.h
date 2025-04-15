@@ -87,7 +87,6 @@ private:
     bool PausedInGame = false;
     bool isCharacterControllable = false;
 
-    bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
@@ -110,7 +109,6 @@ private:
     bool _had3DOnBottomScreen = false;
 
     // should render frame utils
-    bool _hasVisible3DOnBottomScreen = false;
     bool _ignore3DOnBottomScreen = false;
     bool _priorIgnore3DOnBottomScreen = false;
     bool _priorPriorIgnore3DOnBottomScreen = false;

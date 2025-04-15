@@ -1441,26 +1441,26 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
     }
 }
 
-// TODO: KH UI This function doesn't work as expected
 bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
 {
     if (!buffer) {
         return true;
     }
 
-    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
-    bool newIsNullScreen = true;
-    bool newIsBlackScreen = true;
-    for (int i = 0; i < 192*256; i++) {
-        unsigned int color = buffer[i] & 0xFFFFFF;
-        newIsNullScreen = newIsNullScreen && color == 0;
-        newIsBlackScreen = newIsBlackScreen &&
-                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
-        if (!newIsBlackScreen) {
-            break;
+    bool foundAny = false;
+    for (int x = 0; x < 256; x+=4) {
+        for (int y = 0; y < 192; y+=4) {
+            if (has2DOnTopOf3DAt(buffer, x, y)) {
+                foundAny = true;
+                u32 color = getPixel(buffer, x, y, 0) & 0xFFFFFF;
+                if (!(color == 0 || color == 0x000080 || color == 0x010000 || (color & 0xFFFFE0) == 0x018000)) {
+                    return false;
+                }
+            }
         }
     }
-    return !newIsNullScreen && newIsBlackScreen;
+
+    return foundAny;
 }
 
 u32* PluginKingdomHeartsDays::topScreen2DTexture()
@@ -1541,21 +1541,27 @@ bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 
 bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 {
-    u32 pixel = getPixel(buffer, x, y, 2);
-    u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
-    if (pixelAlpha > 0x4) {
+    u32 alphaChannelPixel = getPixel(buffer, x, y, 2);
+    u32 alphaChannelPixelAlpha = (alphaChannelPixel >> (8*3)) & 0xFF;
+    if (alphaChannelPixelAlpha > 0x4) {
         return true;
     }
-    if (pixelAlpha == 0x4) {
+    if (alphaChannelPixelAlpha == 0x4) {
         return false;
     }
-    if (((pixel >> 8) & 0xFF) == 0) {
+    if (((alphaChannelPixel >> 8) & 0xFF) == 0) {
         return false;
     }
 
     u32 colorPixel = getPixel(buffer, x, y, 0);
     u32 colorPixelAlpha = (colorPixel >> (8*3)) & 0xFF;
     if (colorPixelAlpha == 0x20) {
+        return false;
+    }
+    if (colorPixelAlpha == 0x04) {
+        return false;
+    }
+    if (colorPixelAlpha == 0x07) {
         return false;
     }
     return true;
@@ -1569,46 +1575,31 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
     }
     if (GameScene == gameScene_InGameWithDouble3D)
     {
-        u32 currentMap = getCurrentMap();
-        bool alternateSecondScreenDetection = (currentMap == 346);
+        bool has3DOnTopScreen = nds->PowerControl9 >> 15 != 0;
 
-        if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
+        if (!has3DOnTopScreen) // 3D on bottom screen
         {
-            _hasVisible3DOnBottomScreen = alternateSecondScreenDetection ? true : !IsBottomScreen2DTextureBlack;
+            u32* bottomBuffer = bottomScreen2DTexture();
 
-            if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
+            bool _hasVisible3DOnBottomScreen = true;
+
+            // fade from/to white, on "Mission Complete"
+            if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 14)) {
                 _hasVisible3DOnBottomScreen = false;
             }
-
-            if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 14)) { // fade to white, on "Mission Complete"
+            // fade from/to black, on victory pose
+            if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 15) && nds->GPU.GPU2D_B.MasterBrightness & 0x1F < 0x1F) {
                 _hasVisible3DOnBottomScreen = false;
             }
-        }
-        else // 3D on bottom screen
-        {
-            IsBottomScreen2DTextureBlack = isBottomScreen2DTextureBlack();
 
             _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
             _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
-            _ignore3DOnBottomScreen = false;
+            _ignore3DOnBottomScreen = isBottomScreen2DTextureBlack();
 
-            if (!alternateSecondScreenDetection && _hasVisible3DOnBottomScreen) {
-                int FrontBuffer = nds->GPU.FrontBuffer;
-                u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
-                if (bottomBuffer) {
-                    unsigned int color = bottomBuffer[(192*256)/2 + 96] & 0xFFFFFF;
-                    if (color == 0) {
-                        _ignore3DOnBottomScreen = true;
-                    }
-                }
-            }
+            ShouldShowBottomScreen = _hasVisible3DOnBottomScreen && !_ignore3DOnBottomScreen;
         }
 
-        bool showBottomScreen = _hasVisible3DOnBottomScreen && !(_ignore3DOnBottomScreen && _priorIgnore3DOnBottomScreen && _priorPriorIgnore3DOnBottomScreen);
-        if (ShouldShowBottomScreen != showBottomScreen) {
-            ShouldShowBottomScreen = showBottomScreen;
-        }
-        return (nds->PowerControl9 >> 15 != 0) ? !showBottomScreen : showBottomScreen;
+        return has3DOnTopScreen ? !ShouldShowBottomScreen : ShouldShowBottomScreen;
     }
 
     return true;
