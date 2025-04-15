@@ -453,12 +453,56 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
 
     switch (gameScene) {
         case gameScene_IntroLoadMenu:
+            // load label
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 0)
+                    .withSize(100, 16)
+                    .placeAtCorner(corner_TopLeft)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // rest of load label header
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(100, 0)
+                    .withSize(20, 16)
+                    .placeAtCorner(corner_TopRight)
+                    .sourceScale(1000.0, 1.0)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // footer
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 144)
+                    .withSize(256, 48)
+                    .placeAtCorner(corner_BottomLeft)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // rest of footer
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(251, 144)
+                    .withSize(5, 48)
+                    .placeAtCorner(corner_BottomRight)
+                    .sourceScale(1000.0, 1.0)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // main content
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
                     .placeAtCorner(corner_Center)
                     .hudScale(hudScale)
                     .preserveDsScale()
                     .build(aspectRatio));
+
             break;
 
         case gameScene_DayCounter:
@@ -836,6 +880,57 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
 
         case gameScene_InGameMenu:
             // config and save; the others are in horizontal style
+
+            if (getCurrentMainMenuView() == 7) { // save
+                // save label
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(100, 16)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of save label header
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(100, 0)
+                        .withSize(20, 16)
+                        .placeAtCorner(corner_TopRight)
+                        .sourceScale(1000.0, 1.0)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 144)
+                        .withSize(256, 48)
+                        .placeAtCorner(corner_BottomLeft)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(251, 144)
+                        .withSize(5, 48)
+                        .placeAtCorner(corner_BottomRight)
+                        .sourceScale(1000.0, 1.0)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // main content
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                break;
+            }
+        
+            // config
             shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
                     .hudScale(hudScale)
