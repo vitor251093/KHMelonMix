@@ -23,6 +23,9 @@ set(SOURCES_QT_SDL
     MainWindow/MainWindowSettings.cpp
     MainWindow/MapButton.h
     MainWindow/resources/ds.qrc
+    MainWindow/AudioSource.cpp
+    MainWindow/AudioPlayer.cpp
+    MainWindow/AudioWavParser.cpp
     VideoSettingsDialog.cpp
     CameraSettingsDialog.cpp
     AudioSettingsDialog.cpp

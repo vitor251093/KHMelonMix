@@ -840,6 +840,7 @@ bool Plugin::ShouldStopReplacementBgmMusic() {
     return false;
 }
 u16 Plugin::CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
+u16 Plugin::BackgroundMusicToStop() {return _BackgroundMusicToStop;};
 
 void Plugin::onReplacementBackgroundMusicStarted() {
     printf("Background music started\n");

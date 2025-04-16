@@ -214,12 +214,14 @@ public:
     bool ShouldUnpauseReplacementBgmMusic();
     bool ShouldStopReplacementBgmMusic();
     u16 CurrentBackgroundMusic();
+    u16 BackgroundMusicToStop();
 
     virtual std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
 
     void onReplacementBackgroundMusicStarted();
 
     virtual void refreshBackgroundMusic() {}
+    virtual bool shouldStoreBgmResumePosition(u16 soundtrackId) const { return false; }
 
 
     virtual void refreshMouseStatus() {}
@@ -321,6 +323,7 @@ protected:
     bool _ShouldStopReplacementBgmMusic = false;
     u16 _CurrentBackgroundMusic = 0;
     u16 _LastSoundtrackId = 0;
+    u16 _BackgroundMusicToStop = 0;
 
 
     bool _ShouldGrabMouseCursor = false;
