@@ -197,7 +197,7 @@ public:
 
             if (!requiresLoading) {
                 textureHandle = it->second.Texture.TextureIDs[index];
-                layer = it->second.Texture.Layer;
+                layer = it->second.Texture.LayerByIndex[index];
                 width = it->second.Texture.Width;
                 height = it->second.Texture.Height;
                 helper = &it->second.LastVariant;
@@ -374,24 +374,30 @@ public:
 
             for (u32 i = 0; i < layers; i++)
             {
-                freeTextures.push_back(TexArrayEntry{{{0, array}}, i, width, height});
+                freeTextures.push_back(TexArrayEntry{{{0, array}}, {{0, i}}, width, height});
             }
         }
 
         if (it != Cache.end()) {
+            TexArrayEntry newStoragePlace = freeTextures[freeTextures.size()-1];
+            freeTextures.pop_back();
+
             TexArrayEntry& storagePlace = it->second.Texture;
 
-            storagePlace.Width = oldWidth;
-            storagePlace.Height = oldHeight;
+            u32 layers = 1;
+            auto array = TexLoader.GenerateTexture(width, height, layers);
+            storagePlace.TextureIDs[storagePlace.CurrentIndex] = array;
             storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time + 1);
             storagePlace.TimePerIndex[storagePlace.CurrentIndex] = storagePlace.Countdown;
+            storagePlace.LayerByIndex[storagePlace.CurrentIndex] = newStoragePlace.LayerByIndex[0];
             
             entry.Texture = storagePlace;
 
-            TexLoader.UploadTexture(storagePlace.TextureIDs[storagePlace.CurrentIndex], width, height, storagePlace.Layer, imageData);
+            TexLoader.UploadTexture(storagePlace.TextureIDs[storagePlace.CurrentIndex], width, height,
+                    storagePlace.LayerByIndex[storagePlace.CurrentIndex], imageData);
 
             textureHandle = storagePlace.TextureIDs[storagePlace.CurrentIndex];
-            layer = storagePlace.Layer;
+            layer = storagePlace.LayerByIndex[storagePlace.CurrentIndex];
             helper = &Cache.emplace(std::make_pair(key, entry)).first->second.LastVariant;
         }
         else {
@@ -407,11 +413,12 @@ public:
             
             entry.Texture = storagePlace;
 
-            TexLoader.UploadTexture(storagePlace.TextureIDs[storagePlace.CurrentIndex], width, height, storagePlace.Layer, imageData);
+            TexLoader.UploadTexture(storagePlace.TextureIDs[storagePlace.CurrentIndex], width, height,
+                    storagePlace.LayerByIndex[storagePlace.CurrentIndex], imageData);
             //printf("using storage place %d %d | %d %d (%d)\n", width, height, storagePlace.TexArrayIdx, storagePlace.LayerIdx, array.ImageDescriptor);
 
             textureHandle = storagePlace.TextureIDs[storagePlace.CurrentIndex];
-            layer = storagePlace.Layer;
+            layer = storagePlace.LayerByIndex[storagePlace.CurrentIndex];
             helper = &Cache.emplace(std::make_pair(key, entry)).first->second.LastVariant;
         }
     }
@@ -434,7 +441,7 @@ private:
     struct TexArrayEntry
     {
         std::map<u32, TexHandleT> TextureIDs;
-        u32 Layer;
+        std::map<u32, u32> LayerByIndex;
         u32 Width;
         u32 Height;
         std::map<u32, u32> TimePerIndex;
