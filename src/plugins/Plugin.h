@@ -114,14 +114,11 @@ struct TextureEntry
     u32 totalScenes;
     TextureEntryScene scenes[1000];
 
-    u32 frameIndex;
     u32 sceneIndex;
-    u64 textureKey;
 
     void setPath(std::string _path) {
         type = "static";
         totalScenes = 1;
-        frameIndex = 0;
         sceneIndex = 0;
         scenes[0].path = _path;
     }
@@ -132,7 +129,6 @@ struct TextureEntry
 
     void setType(std::string _type) {
         type = _type;
-        frameIndex = 0;
         sceneIndex = 0;
     }
 
@@ -156,15 +152,13 @@ struct TextureEntry
     }
 
     TextureEntryScene& getNextScene() {
-        TextureEntryScene& scene = scenes[sceneIndex];
-        if (type == "animation" && scene.time == frameIndex++) {
-            frameIndex = 0;
-            if (totalScenes == sceneIndex++) {
+        if (type == "animation") {
+            if (totalScenes == ++sceneIndex) {
                 sceneIndex = 0;
             }
-            scene = scenes[sceneIndex];
+            return scenes[sceneIndex];
         }
-        return scene;
+        return scenes[sceneIndex];
     }
 };
 

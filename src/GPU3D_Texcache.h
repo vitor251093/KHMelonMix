@@ -178,8 +178,9 @@ public:
 
         if (it != Cache.end())
         {
+            bool requiresLoading = false;
             auto index = it->second.Texture.CurrentIndex;
-            if (it->second.Texture.Countdown > 0 && it->second.Texture.Countdown-- == 0) {
+            if (it->second.Texture.Countdown > 0 && it->second.Texture.Countdown-- == 1) {
                 index++;
                 
                 if (it->second.Texture.TimePerIndex.size() == it->second.Texture.TotalScenes) {
@@ -188,10 +189,13 @@ public:
                     }
                     it->second.Texture.Countdown = it->second.Texture.TimePerIndex[index] + 1;
                 }
+                else {
+                    requiresLoading = true;
+                }
             }
             it->second.Texture.CurrentIndex = index;
 
-            if (it->second.Texture.TextureIDs.find(index) != it->second.Texture.TextureIDs.end()) {
+            if (!requiresLoading) {
                 textureHandle = it->second.Texture.TextureIDs[index];
                 layer = it->second.Texture.Layer;
                 width = it->second.Texture.Width;
@@ -317,10 +321,7 @@ public:
             for (int i = 0; i < sizeof(textures) / sizeof(textures[0]); ++i) {
                 Plugins::TextureEntry* texture = textures[i];
                 auto& scene = texture->getNextScene();
-                std::string fullPath = scene.fullPath;
-                const char* path = fullPath.c_str();
-                printf("Texture type %s\n", texture->type.c_str());
-                printf("Checking texture %s with path %s and time %d\n", scene.path.c_str(), path, scene.time);
+                const char* path = scene.fullPath.c_str();
                 if (imageData == nullptr && strlen(path) > 0) {
                     imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
                     if (imageData != nullptr) {
@@ -380,7 +381,8 @@ public:
         if (it != Cache.end()) {
             TexArrayEntry& storagePlace = it->second.Texture;
 
-            storagePlace.TotalScenes = texturePtr == nullptr ? 1 : (texturePtr->totalScenes);
+            storagePlace.Width = oldWidth;
+            storagePlace.Height = oldHeight;
             storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time + 1);
             storagePlace.TimePerIndex[storagePlace.CurrentIndex] = storagePlace.Countdown;
             
@@ -396,9 +398,12 @@ public:
             TexArrayEntry storagePlace = freeTextures[freeTextures.size()-1];
             freeTextures.pop_back();
 
+            storagePlace.TotalScenes = texturePtr == nullptr ? 1 : (texturePtr->totalScenes);
+
             storagePlace.Width = oldWidth;
             storagePlace.Height = oldHeight;
-            storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time);
+            storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time + 1);
+            storagePlace.TimePerIndex[storagePlace.CurrentIndex] = storagePlace.Countdown;
             
             entry.Texture = storagePlace;
 
