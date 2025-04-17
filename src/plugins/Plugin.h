@@ -101,6 +101,53 @@ struct CutsceneEntry
     int dsScreensState;
 };
 
+struct TextureEntryScene
+{
+    std::string path;
+    u32 time;
+};
+
+struct TextureEntry
+{
+    std::string type;
+    u32 totalScenes;
+    TextureEntryScene scenes[1000];
+    u32 frameIndex;
+    u32 sceneIndex;
+
+    void setPath(std::string _path) {
+        type = "static";
+        totalScenes = 1;
+        scenes[0].path = _path;
+    }
+
+    void setType(std::string _type) {
+        type = _type;
+    }
+
+    void setFramePath(int index, std::string _path) {
+        totalScenes = totalScenes > index ? totalScenes : index;
+        scenes[index].path = _path;
+    }
+
+    void setFrameTime(int index, u32 _time) {
+        totalScenes = totalScenes > index ? totalScenes : index;
+        scenes[index].time = (_time * 60) / 1000;
+    }
+
+    std::string getPath() {
+        TextureEntryScene scene = scenes[sceneIndex];
+        if (type == "animation" && scene.time == frameIndex++) {
+            frameIndex = 0;
+            if (totalScenes == sceneIndex++) {
+                sceneIndex = 0;
+            }
+            scene = scenes[sceneIndex];
+        }
+        return scene.path;
+    }
+};
+
 class Plugin
 {
 protected:
@@ -167,7 +214,7 @@ public:
     virtual std::string localizationFilePath(std::string language) {return "";}
 
     virtual std::string textureIndexFilePath();
-    virtual std::map<std::string, std::string> getTexturesIndex();
+    virtual std::map<std::string, TextureEntry> getTexturesIndex();
     virtual std::string textureFilePath(std::string texture);
     virtual std::string tmpTextureFilePath(std::string texture);
 
@@ -290,7 +337,7 @@ protected:
 
     bool _LastTouchScreenMovementWasByPlugin = false;
 
-    std::map<std::string, std::string> texturesIndex;
+    std::map<std::string, TextureEntry> texturesIndex;
 
     int _StartPressCount = 0;
     int _ReplayLimitCount = 0;

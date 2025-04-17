@@ -508,12 +508,12 @@ std::string Plugin::textureIndexFilePath() {
 
     return fullPath.string();
 }
-std::map<std::string, std::string> Plugin::getTexturesIndex() {
+std::map<std::string, TextureEntry> Plugin::getTexturesIndex() {
     if (!texturesIndex.empty()) {
         return texturesIndex;
     }
 
-    std::map<std::string, std::string> _texturesIndex;
+    std::map<std::string, TextureEntry> _texturesIndex;
     std::string indexFilePath = textureIndexFilePath();
     if (indexFilePath.empty()) {
         return texturesIndex;
@@ -529,14 +529,42 @@ std::map<std::string, std::string> Plugin::getTexturesIndex() {
             if (!Platform::FileReadLine(linebuf, 1024, f))
                 break;
 
-            int ret = sscanf(linebuf, "%31[A-Za-z_0-9\\-]=%[^\t\r\n]", entryname, entryval);
+            int ret = sscanf(linebuf, "%31[A-Za-z_0-9\\-.]=%[^\t\r\n]", entryname, entryval);
             entryname[31] = '\0';
             if (ret < 2) continue;
 
             std::string entrynameStr = trim(std::string(entryname));
             std::string entryvalStr = trim(std::string(entryval));
             if (!entrynameStr.empty() && entrynameStr.compare(0, 1, ";") != 0 && entrynameStr.compare(0, 1, "[") != 0) {
-                _texturesIndex[entrynameStr] = entryvalStr;
+                std::string uniqueId = entrynameStr.substr(0, entrynameStr.find('.'));
+                if (!_texturesIndex.count(uniqueId)) {
+                    _texturesIndex[uniqueId] = TextureEntry();
+                }
+                auto texture = _texturesIndex[uniqueId];
+
+                if (entrynameStr == uniqueId) {
+                    texture.setPath(entryvalStr);
+                }
+                if (entrynameStr == (uniqueId + ".type")) {
+                    texture.setType(entryvalStr);
+                }
+
+                auto frameEntryPrefix = uniqueId + ".frames.";
+                if (entrynameStr.size() >= frameEntryPrefix.size() && entrynameStr.compare(0, frameEntryPrefix.size(), frameEntryPrefix) == 0)
+                {
+                    size_t firstDot = entrynameStr.find('.');
+                    size_t secondDot = entrynameStr.find('.', firstDot + 1);
+                    size_t thirdDot = entrynameStr.find('.', secondDot + 1);
+                    int frameIndexStr = std::stoi(entrynameStr.substr(secondDot + 1, thirdDot - secondDot - 1));
+
+                    auto frameEntryTimeSuffix = uniqueId + ".time";
+                    if (entrynameStr.size() >= frameEntryTimeSuffix.size() && entrynameStr.compare(entrynameStr.size() - frameEntryTimeSuffix.size(), frameEntryTimeSuffix.size(), frameEntryTimeSuffix)) {
+                        texture.setFrameTime(frameIndexStr, std::stoi(entryvalStr));
+                    }
+                    else {
+                        texture.setFramePath(frameIndexStr, entryvalStr);
+                    }
+                }
             }
         }
     }
@@ -550,9 +578,11 @@ std::string Plugin::textureFilePath(std::string texture) {
         std::filesystem::create_directory(_assetsFolderPath);
     }
 
-    std::map<std::string, std::string> texturesIndex = getTexturesIndex();
+    std::map<std::string, TextureEntry> texturesIndex = getTexturesIndex();
     if (texturesIndex.count(texture)) {
-        std::filesystem::path fullPath = texturesFolder / texturesIndex[texture];
+        TextureEntry textureSpecs = texturesIndex[texture];
+        auto filePath = textureSpecs.getPath();
+        std::filesystem::path fullPath = texturesFolder / filePath;
         if (!std::filesystem::exists(fullPath)) {
             errorLog("Texture %s was supposed to be replaced by %s, but it doesn't exist", texture.c_str(), fullPath.string().c_str());
             return "";
@@ -566,7 +596,8 @@ std::string Plugin::textureFilePath(std::string texture) {
         return "";
     }
 
-    texturesIndex[texture] = texture + ".png";
+    texturesIndex[texture] = TextureEntry();
+    texturesIndex[texture].setPath(texture + ".png");
     return fullPath.string();
 }
 std::string Plugin::tmpTextureFilePath(std::string texture) {
