@@ -178,12 +178,27 @@ public:
 
         if (it != Cache.end())
         {
-            textureHandle = it->second.Texture.TextureID;
-            layer = it->second.Texture.Layer;
-            width = it->second.Texture.Width;
-            height = it->second.Texture.Height;
-            helper = &it->second.LastVariant;
-            return;
+            auto index = it->second.Texture.CurrentIndex;
+            if (it->second.Texture.Countdown > 0 && it->second.Texture.Countdown-- == 0) {
+                index++;
+                
+                if (it->second.Texture.TimePerIndex.size() == it->second.Texture.TotalScenes) {
+                    if (it->second.Texture.TimePerIndex.find(index) == it->second.Texture.TimePerIndex.end()) {
+                        index = 0; 
+                    }
+                    it->second.Texture.Countdown = it->second.Texture.TimePerIndex[index] + 1;
+                }
+            }
+            it->second.Texture.CurrentIndex = index;
+
+            if (it->second.Texture.TextureIDs.find(index) != it->second.Texture.TextureIDs.end()) {
+                textureHandle = it->second.Texture.TextureIDs[index];
+                layer = it->second.Texture.Layer;
+                width = it->second.Texture.Width;
+                height = it->second.Texture.Height;
+                helper = &it->second.LastVariant;
+                return;
+            }
         }
 
         u32 widthLog2 = (texParam >> 20) & 0x7;
@@ -269,6 +284,7 @@ public:
         int oldHeight = height;
         unsigned char* imageData = (unsigned char*)DecodingBuffer;
         bool textureReplacementEnabled = true;
+        Plugins::TextureEntry* texturePtr = nullptr;
         if (textureReplacementEnabled) {
             std::ostringstream oss0;
             oss0 << "3d-";
@@ -289,23 +305,22 @@ public:
             oss << palBase;
             std::string uniqueIdentifier3 = oss.str();
 
-            std::string fullPath1 = GamePlugin->textureFilePath(uniqueIdentifier1);
-            std::string fullPath2 = GamePlugin->textureFilePath(uniqueIdentifier3);
-            std::string fullPath3 = GamePlugin->textureFilePath(uniqueIdentifier2);
-            std::string fullPathTmp = GamePlugin->tmpTextureFilePath(uniqueIdentifier3);
-
-            const char* path1 = fullPath1.c_str();
-            const char* path2 = fullPath2.c_str();
-            const char* path3 = fullPath3.c_str();
-            const char* pathTmp = fullPathTmp.c_str();
+            Plugins::TextureEntry& texture1 = GamePlugin->textureById(uniqueIdentifier1);
+            Plugins::TextureEntry& texture2 = GamePlugin->textureById(uniqueIdentifier3);
+            Plugins::TextureEntry& texture3 = GamePlugin->textureById(uniqueIdentifier2);
 
             int channels = 4;
             int r_width, r_height, r_channels;
             imageData = nullptr;
 
-            const char* paths[] = {path1, path2, path3};
-            for (int i = 0; i < sizeof(paths) / sizeof(paths[0]); ++i) {
-                const char* path = paths[i];
+            Plugins::TextureEntry* textures[] = {&texture1, &texture2, &texture3};
+            for (int i = 0; i < sizeof(textures) / sizeof(textures[0]); ++i) {
+                Plugins::TextureEntry* texture = textures[i];
+                auto& scene = texture->getNextScene();
+                std::string fullPath = scene.fullPath;
+                const char* path = fullPath.c_str();
+                printf("Texture type %s\n", texture->type.c_str());
+                printf("Checking texture %s with path %s and time %d\n", scene.path.c_str(), path, scene.time);
                 if (imageData == nullptr && strlen(path) > 0) {
                     imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
                     if (imageData != nullptr) {
@@ -313,6 +328,7 @@ public:
                             printf("Loading texture %s\n", path);
                             width = r_width;
                             height = r_height;
+                            texturePtr = texture;
                             break;
                         }
                         else {
@@ -327,6 +343,9 @@ public:
                 imageData = (unsigned char*)DecodingBuffer;
 
                 if (GamePlugin->shouldExportTextures()) {
+                    std::string fullPathTmp = GamePlugin->tmpTextureFilePath(uniqueIdentifier3);
+                    const char* pathTmp = fullPathTmp.c_str();
+
                     printf("Saving texture %s\n", pathTmp);
                     Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
                 }
@@ -354,23 +373,42 @@ public:
 
             for (u32 i = 0; i < layers; i++)
             {
-                freeTextures.push_back(TexArrayEntry{array, i, width, height});
+                freeTextures.push_back(TexArrayEntry{{{0, array}}, i, width, height});
             }
         }
 
-        TexArrayEntry storagePlace = freeTextures[freeTextures.size()-1];
-        freeTextures.pop_back();
+        if (it != Cache.end()) {
+            TexArrayEntry& storagePlace = it->second.Texture;
 
-        storagePlace.Width = oldWidth;
-        storagePlace.Height = oldHeight;
-        entry.Texture = storagePlace;
+            storagePlace.TotalScenes = texturePtr == nullptr ? 1 : (texturePtr->totalScenes);
+            storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time + 1);
+            storagePlace.TimePerIndex[storagePlace.CurrentIndex] = storagePlace.Countdown;
+            
+            entry.Texture = storagePlace;
 
-        TexLoader.UploadTexture(storagePlace.TextureID, width, height, storagePlace.Layer, imageData);
-        //printf("using storage place %d %d | %d %d (%d)\n", width, height, storagePlace.TexArrayIdx, storagePlace.LayerIdx, array.ImageDescriptor);
+            TexLoader.UploadTexture(storagePlace.TextureIDs[storagePlace.CurrentIndex], width, height, storagePlace.Layer, imageData);
 
-        textureHandle = storagePlace.TextureID;
-        layer = storagePlace.Layer;
-        helper = &Cache.emplace(std::make_pair(key, entry)).first->second.LastVariant;
+            textureHandle = storagePlace.TextureIDs[storagePlace.CurrentIndex];
+            layer = storagePlace.Layer;
+            helper = &Cache.emplace(std::make_pair(key, entry)).first->second.LastVariant;
+        }
+        else {
+            TexArrayEntry storagePlace = freeTextures[freeTextures.size()-1];
+            freeTextures.pop_back();
+
+            storagePlace.Width = oldWidth;
+            storagePlace.Height = oldHeight;
+            storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time);
+            
+            entry.Texture = storagePlace;
+
+            TexLoader.UploadTexture(storagePlace.TextureIDs[storagePlace.CurrentIndex], width, height, storagePlace.Layer, imageData);
+            //printf("using storage place %d %d | %d %d (%d)\n", width, height, storagePlace.TexArrayIdx, storagePlace.LayerIdx, array.ImageDescriptor);
+
+            textureHandle = storagePlace.TextureIDs[storagePlace.CurrentIndex];
+            layer = storagePlace.Layer;
+            helper = &Cache.emplace(std::make_pair(key, entry)).first->second.LastVariant;
+        }
     }
 
     void Reset()
@@ -390,10 +428,14 @@ public:
 private:
     struct TexArrayEntry
     {
-        TexHandleT TextureID;
+        std::map<u32, TexHandleT> TextureIDs;
         u32 Layer;
         u32 Width;
         u32 Height;
+        std::map<u32, u32> TimePerIndex;
+        u32 TotalScenes;
+        u32 CurrentIndex;
+        u32 Countdown;
     };
 
     struct TexCacheEntry

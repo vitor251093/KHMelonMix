@@ -104,6 +104,7 @@ struct CutsceneEntry
 struct TextureEntryScene
 {
     std::string path;
+    std::string fullPath;
     u32 time;
 };
 
@@ -112,31 +113,50 @@ struct TextureEntry
     std::string type;
     u32 totalScenes;
     TextureEntryScene scenes[1000];
+
     u32 frameIndex;
     u32 sceneIndex;
+    u64 textureKey;
 
     void setPath(std::string _path) {
         type = "static";
         totalScenes = 1;
+        frameIndex = 0;
+        sceneIndex = 0;
         scenes[0].path = _path;
+    }
+
+    void setFullPath(std::string _path) {
+        scenes[0].fullPath = _path;
     }
 
     void setType(std::string _type) {
         type = _type;
+        frameIndex = 0;
+        sceneIndex = 0;
     }
 
     void setFramePath(int index, std::string _path) {
-        totalScenes = totalScenes > index ? totalScenes : index;
+        totalScenes = totalScenes > (index + 1) ? totalScenes : (index + 1);
         scenes[index].path = _path;
     }
 
+    void setFrameFullPath(int index, std::string _path) {
+        totalScenes = totalScenes > (index + 1) ? totalScenes : (index + 1);
+        scenes[index].fullPath = _path;
+    }
+
     void setFrameTime(int index, u32 _time) {
-        totalScenes = totalScenes > index ? totalScenes : index;
+        totalScenes = totalScenes > (index + 1) ? totalScenes : (index + 1);
         scenes[index].time = (_time * 60) / 1000;
     }
 
-    std::string getPath() {
-        TextureEntryScene scene = scenes[sceneIndex];
+    TextureEntryScene& getLastScene() {
+        return scenes[sceneIndex];
+    }
+
+    TextureEntryScene& getNextScene() {
+        TextureEntryScene& scene = scenes[sceneIndex];
         if (type == "animation" && scene.time == frameIndex++) {
             frameIndex = 0;
             if (totalScenes == sceneIndex++) {
@@ -144,7 +164,7 @@ struct TextureEntry
             }
             scene = scenes[sceneIndex];
         }
-        return scene.path;
+        return scene;
     }
 };
 
@@ -214,8 +234,8 @@ public:
     virtual std::string localizationFilePath(std::string language) {return "";}
 
     virtual std::string textureIndexFilePath();
-    virtual std::map<std::string, TextureEntry> getTexturesIndex();
-    virtual std::string textureFilePath(std::string texture);
+    virtual std::map<std::string, TextureEntry>& getTexturesIndex();
+    virtual TextureEntry& textureById(std::string texture);
     virtual std::string tmpTextureFilePath(std::string texture);
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
