@@ -21,9 +21,10 @@
 // #define RAM_SEARCH_SIZE 8
 // #define RAM_SEARCH_SIZE 16
 #define RAM_SEARCH_SIZE 32
+#define RAM_SEARCH_MAX_RESULTS 50
 #define RAM_SEARCH_LIMIT_MIN 0
-// #define RAM_SEARCH_LIMIT_MAX 0x09FFFF
-#define RAM_SEARCH_LIMIT_MAX 0x19FFFF
+#define RAM_SEARCH_LIMIT_MAX 0x09FFFF
+// #define RAM_SEARCH_LIMIT_MAX 0x19FFFF
 // #define RAM_SEARCH_LIMIT_MAX 0x3FFFFF
 #define RAM_SEARCH_INTERVAL_MARGIN 0x050
 
@@ -228,37 +229,46 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
     int gameSceneState = renderer_gameSceneState();
     std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
 
+    bool atLeastOneLog = false;
     for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
     {
         ShapeData3D shape = shapes[shapeIndex];
         bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
-        bool attrMatch = true;
-        for (int i = 0; i < 4; i++) {
-            attrMatch = attrMatch && (shape.polygonAttributes[i] == 0 || shape.polygonAttributes[i] == polygon->Attr);
-        }
-        for (int i = 0; i < 4; i++) {
-            attrMatch = attrMatch && (shape.negatedPolygonAttributes[i] == 0 || shape.negatedPolygonAttributes[i] != polygon->Attr);
-        }
-
         // polygon mode
         if ((shape.effects & 0x1) != 0) {
             if (shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) {
-                if (attrMatch) {
+                if (shape.doesAttributeMatch(polygon->Attr)) {
+                    u32 x0 = (int)scaledPositions[0][0];
+                    u32 x1 = (int)scaledPositions[0][0];
+                    u32 y0 = (int)scaledPositions[0][1];
+                    u32 y1 = (int)scaledPositions[0][1];
+                    for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
+                        x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
+                        x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
+                        y0 = std::min((int)y0, (int)scaledPositions[vIndex][1]);
+                        y1 = std::max((int)y1, (int)scaledPositions[vIndex][1]);
+                    }
                     s32 z = polygon->Vertices[0]->Position[2];
                     float _z = ((float)z)/(1 << 22);
-                    if (_z >= shape.zRange.x && _z <= shape.zRange.y) 
+                    if (x1 >= shape.squareInitialCoords.x*resolutionScale && x0 <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
+                        y1 >= shape.squareInitialCoords.y*resolutionScale && y0 <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
+                        _z >= shape.zRange.x && _z <= shape.zRange.y)
                     {
-                        u32 x0 = (int)scaledPositions[0][0];
-                        u32 x1 = (int)scaledPositions[0][0];
-                        for (int vIndex = 1; vIndex < polygon->NumVertices; vIndex++) {
-                            x0 = std::min((int)x0, (int)scaledPositions[vIndex][0]);
-                            x1 = std::max((int)x1, (int)scaledPositions[vIndex][0]);
-                        }
-                        float xCenter = (x0 + x1)/2.0;
+                        if (shape.doesColorMatch(polygon->Vertices[0]->FinalColor))
+                        {
+                            if (loggerModeEnabled) {
+                                atLeastOneLog = true;
+                                printf("Position: %d - %d -- Size: %d - %d\n", x0, y0, x1 - x0, y1 - y0);
+                            }
 
-                        for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
-                            scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
+                            float xCenter = (x0 + x1)/2.0;
+
+                            for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
+                                scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
+                            }
+
+                            return;
                         }
                     }
                 }
@@ -280,129 +290,26 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
         for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
         {
             ShapeData3D shape = shapes[shapeIndex];
+            bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
             // vertex mode
             if ((shape.effects & 0x1) == 0) {
-                bool loggerModeEnabled = (shape.effects & 0x4) != 0;
-
-                bool attrMatchEqual = false;
-                bool attrMatchEqual2 = false;
-                bool attrMatchNeg = false;
-                for (int i = 0; i < 4; i++) {
-                    if (shape.polygonAttributes[i] != 0) {
-                        attrMatchEqual = true;
-                        if (shape.polygonAttributes[i] == polygon->Attr) {
-                            attrMatchEqual2 = true;
-                            break;
-                        }
-                    }
-                }
-                for (int i = 0; i < 4; i++) {
-                    if (shape.negatedPolygonAttributes[i] != 0 && shape.negatedPolygonAttributes[i] == polygon->Attr) {
-                        attrMatchNeg = true;
-                        break;
-                    }
-                }
-                bool attrMatch = (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
-
-                bool colorMatchEqual = false;
-                bool colorMatchEqual2 = false;
-                bool colorMatchNeg = false;
-                for (int i = 0; i < shape.colorCount; i++) {
-                    colorMatchEqual = true;
-                    if ((((shape.color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-                    && (((shape.color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-                    && (((shape.color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                        colorMatchEqual2 = true;
-                        break;
-                    }
-                }
-                for (int i = 0; i < shape.negatedColorCount; i++) {
-                    if ((((shape.negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
-                    && (((shape.negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
-                    && (((shape.negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
-                        colorMatchNeg = true;
-                        break;
-                    }
-                }
-                bool colorMatch = (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
-
-                float iuTexScale = SCREEN_SCALE/shape.hudScale;
-                float xScaleInv = iuTexScale/shape.sourceScale.x;
-                float yScaleInv = iuTexScale/shape.sourceScale.y;
-
-                if (_x >= shape.squareInitialCoords.x*resolutionScale && _x <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
-                    _y >= shape.squareInitialCoords.y*resolutionScale && _y <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
-                    _z >= shape.zRange.x && _z <= shape.zRange.y && attrMatch && colorMatch)
-                {
-                    // hide vertex
-                    if ((shape.effects & 0x2) != 0)
-                    {
-                        _x = 0;
-                        _y = 0;
-                    }
-                    else {
-                        switch (shape.corner)
-                        {
-                            case corner_PreservePosition:
-                                break;
-
-                            case corner_Center:
-                                _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
-                                _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
-                                break;
-                            
-                            case corner_TopLeft:
-                                _x = _x/(xScaleInv*aspectRatio);
-                                _y = _y/(yScaleInv);
-                                break;
-                            
-                            case corner_Top:
-                                _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
-                                _y = _y/(yScaleInv);
-                                break;
-
-                            case corner_TopRight:
-                                _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
-                                _y = _y/(yScaleInv);
-                                break;
-
-                            case corner_Right:
-                                _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
-                                _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
-                                break;
-
-                            case corner_BottomRight:
-                                _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
-                                _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
-                                break;
-
-                            case corner_Bottom:
-                                _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
-                                _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
-                                break;
-
-                            case corner_BottomLeft:
-                                _x = _x/(xScaleInv*aspectRatio);
-                                _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
-                                break;
-
-                            case corner_Left:
-                                _x = _x/(xScaleInv*aspectRatio);
-                                _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
-                                break;
-                        }
-
-                        _x = _x + (shape.margin.x*resolutionScale - shape.margin.z*resolutionScale)/aspectRatio;
-                        _y = _y + shape.margin.y*resolutionScale - shape.margin.w*resolutionScale;
+                vec3 newValues = shape.compute3DCoordinatesOf3DSquareShapeInVertexMode(_x, _y, _z, polygon->Attr, rgb, resolutionScale, aspectRatio);
+                if (newValues.z == 1) {
+                    if (loggerModeEnabled) {
+                        atLeastOneLog = true;
+                        printf("Position: %f - %f -- Attribute: %d\n", _x, _y, polygon->Attr);
                     }
 
-                    *x = (s32)(_x);
-                    *y = (s32)(_y);
+                    *x = (s32)(newValues.x);
+                    *y = (s32)(newValues.y);
                     break;
                 }
             }
         }
+    }
+    if (atLeastOneLog) {
+        printf("\n");
     }
 };
 
@@ -601,7 +508,7 @@ std::string Plugin::textureIndexFilePath() {
 
     return fullPath.string();
 }
-std::map<std::string, TextureEntry> Plugin::getTexturesIndex() {
+std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
     if (!texturesIndex.empty()) {
         return texturesIndex;
     }
@@ -612,6 +519,8 @@ std::map<std::string, TextureEntry> Plugin::getTexturesIndex() {
         return texturesIndex;
     }
 
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
     Platform::FileHandle* f = Platform::OpenLocalFile(indexFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
         char linebuf[1024];
@@ -622,79 +531,111 @@ std::map<std::string, TextureEntry> Plugin::getTexturesIndex() {
             if (!Platform::FileReadLine(linebuf, 1024, f))
                 break;
 
-            int ret = sscanf(linebuf, "%31[A-Za-z_0-9\\-]=%[^\t\r\n]", entryname, entryval);
+            int ret = sscanf(linebuf, "%31[A-Za-z_0-9\\-.]=%[^\t\r\n]", entryname, entryval);
             entryname[31] = '\0';
             if (ret < 2) continue;
 
             std::string entrynameStr = trim(std::string(entryname));
             std::string entryvalStr = trim(std::string(entryval));
             if (!entrynameStr.empty() && entrynameStr.compare(0, 1, ";") != 0 && entrynameStr.compare(0, 1, "[") != 0) {
-                std::string s = entryvalStr;
-                std::string delimiter = ";";
-                std::string delimiter2 = ",";
+                std::string uniqueId = (entrynameStr.find('.') == std::string::npos) ? entrynameStr : entrynameStr.substr(0, entrynameStr.find('.'));
+                if (!_texturesIndex.count(uniqueId)) {
+                    _texturesIndex[uniqueId] = TextureEntry();
+                }
+                auto& texture = _texturesIndex[uniqueId];
 
-                TextureEntry textureObj = {s, 0, 0, 0, 0};
-                if (s.find(delimiter) != std::string::npos) {
-                    std::vector<std::string> tokens;
-                    size_t last = 0;
-                    size_t next = 0;
-                    while ((next = s.find(delimiter, last)) != std::string::npos) {
-                        tokens.push_back(s.substr(last, next-last));
-                        last = next + 1;
+                if (entrynameStr == uniqueId) {
+                    std::string s = entryvalStr;
+                    std::string delimiter = ";";
+                    std::string delimiter2 = ",";
+
+                    texture.setPath(entryvalStr);
+                    if (s.find(delimiter) != std::string::npos) {
+                        std::vector<std::string> tokens;
+                        size_t last = 0;
+                        size_t next = 0;
+                        while ((next = s.find(delimiter, last)) != std::string::npos) {
+                            tokens.push_back(s.substr(last, next-last));
+                            last = next + 1;
+                        }
+                        tokens.push_back(s.substr(last));
+
+                        if (tokens.size() == 3) {
+                            auto& textureObj = texture.getLastScene();
+                            textureObj.path = tokens[0];
+                            textureObj.posX = (u16)std::stoi(tokens[1].substr(0, tokens[1].find(delimiter2)));
+                            textureObj.posY = (u16)std::stoi(tokens[1].substr(tokens[1].find(delimiter2) + 1));
+                            textureObj.sizeX = (u16)std::stoi(tokens[2].substr(0, tokens[2].find(delimiter2)));
+                            textureObj.sizeY = (u16)std::stoi(tokens[2].substr(tokens[2].find(delimiter2) + 1));
+                        }
                     }
-                    tokens.push_back(s.substr(last));
 
-                    if (tokens.size() == 3) {
-                        textureObj.filename = tokens[0];
-                        textureObj.posX = (u16)std::stoi(tokens[1].substr(0, tokens[1].find(delimiter2)));
-                        textureObj.posY = (u16)std::stoi(tokens[1].substr(tokens[1].find(delimiter2) + 1));
-                        textureObj.sizeX = (u16)std::stoi(tokens[2].substr(0, tokens[2].find(delimiter2)));
-                        textureObj.sizeY = (u16)std::stoi(tokens[2].substr(tokens[2].find(delimiter2) + 1));
+                    std::filesystem::path fullPath = texturesFolder / texture.getLastScene().path;
+                    if (!std::filesystem::exists(fullPath)) {
+                        errorLog("Texture %s was supposed to be replaced by %s, but it doesn't exist", uniqueId.c_str(), fullPath.string().c_str());
+                    }
+                    else {
+                        texture.setFullPath(fullPath.string());
                     }
                 }
+                if (entrynameStr == (uniqueId + ".type")) {
+                    texture.setType(entryvalStr);
+                }
 
-                _texturesIndex[entrynameStr] = textureObj;
+                auto frameEntryPrefix = uniqueId + ".frames.";
+                if (entrynameStr.size() >= frameEntryPrefix.size() && entrynameStr.compare(0, frameEntryPrefix.size(), frameEntryPrefix) == 0)
+                {
+                    size_t firstDot = entrynameStr.find('.');
+                    size_t secondDot = entrynameStr.find('.', firstDot + 1);
+                    size_t thirdDot = entrynameStr.find('.', secondDot + 1);
+                    if (firstDot != std::string::npos && secondDot != std::string::npos && thirdDot != std::string::npos) {
+                        int frameIndexStr = std::stoi(entrynameStr.substr(secondDot + 1, thirdDot - secondDot - 1));
+
+                        auto frameEntryTimeSuffix = uniqueId + ".time";
+                        if (entrynameStr.size() >= frameEntryTimeSuffix.size() && entrynameStr.compare(entrynameStr.size() - frameEntryTimeSuffix.size(), frameEntryTimeSuffix.size(), frameEntryTimeSuffix)) {
+                            texture.setFrameTime(frameIndexStr, std::stoi(entryvalStr));
+                        }
+                    }
+                    else {
+                        int frameIndexStr = std::stoi(entrynameStr.substr(entrynameStr.rfind('.') + 1));
+                        texture.setFramePath(frameIndexStr, entryvalStr);
+
+                        std::filesystem::path fullPath = texturesFolder / entryvalStr;
+                        if (!std::filesystem::exists(fullPath)) {
+                            errorLog("Texture %s was supposed to be replaced by %s, but it doesn't exist", uniqueId.c_str(), fullPath.string().c_str());
+                        }
+                        else {
+                            texture.setFrameFullPath(frameIndexStr, fullPath.string());
+                        }
+                    }
+                }
             }
         }
     }
+
     texturesIndex = _texturesIndex;
     return texturesIndex;
 }
-
-TextureEntry* Plugin::textureFileConfig(std::string texture) {
-    textureFilePath(texture);
-    if (texturesIndex.count(texture)) {
-        return &texturesIndex[texture];
-    }
-    return nullptr;
-}
-std::string Plugin::textureFilePath(std::string texture) {
+TextureEntry& Plugin::textureById(std::string texture) {
     std::filesystem::path _assetsFolderPath = assetsFolderPath();
     std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
     if (!std::filesystem::exists(_assetsFolderPath)) {
         std::filesystem::create_directory(_assetsFolderPath);
     }
 
-    std::map<std::string, TextureEntry> texturesIndex = getTexturesIndex();
+    std::map<std::string, TextureEntry>& texturesIndex = getTexturesIndex();
     if (texturesIndex.count(texture)) {
-        TextureEntry textureObj = texturesIndex[texture];
-        std::filesystem::path fullPath = texturesFolder / textureObj.filename;
-        if (!std::filesystem::exists(fullPath)) {
-            errorLog("Texture %s was supposed to be replaced by %s, but it doesn't exist", texture.c_str(), fullPath.string().c_str());
-            return "";
-        }
-
-        return fullPath.string();
+        return texturesIndex[texture];
     }
 
-    std::string filename = texture + ".png";
-    std::filesystem::path fullPath = texturesFolder / filename;
-    if (!std::filesystem::exists(fullPath)) {
-        return "";
-    }
+    texturesIndex[texture] = TextureEntry();
+    texturesIndex[texture].setPath(texture + ".png");
 
-    texturesIndex[texture] = {filename, 0, 0, 0, 0};
-    return fullPath.string();
+    std::filesystem::path fullPath = texturesFolder / (texture + ".png");
+    if (std::filesystem::exists(fullPath)) {
+        texturesIndex[texture].getLastScene().fullPath = fullPath.string();
+    }
+    return texturesIndex[texture];
 }
 std::string Plugin::tmpTextureFilePath(std::string texture) {
     std::filesystem::path _assetsFolderPath = assetsFolderPath();
@@ -967,6 +908,7 @@ bool Plugin::ShouldStopReplacementBgmMusic() {
     return false;
 }
 u16 Plugin::CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
+u16 Plugin::BackgroundMusicToStop() {return _BackgroundMusicToStop;};
 
 void Plugin::onReplacementBackgroundMusicStarted() {
     printf("Background music started\n");
@@ -1052,17 +994,31 @@ void Plugin::setAspectRatio(float aspectRatio)
 
     AspectRatio = aspectRatio;
 }
+void Plugin::setInternalResolutionScale(int scale)
+{
+    InternalResolutionScale = scale;
+}
 
-void Plugin::_superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+void Plugin::_superLoadConfigs(
+    std::function<bool(std::string)> getBoolConfig,
+    std::function<int(std::string)> getIntConfig,
+    std::function<std::string(std::string)> getStringConfig
+)
 {
     std::string root = tomlUniqueIdentifier();
     DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
+    UIScale = getIntConfig(root + ".HUDScale");
+    UIScale = (UIScale == 0) ? 4 : UIScale;
 }
-void Plugin::loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+void Plugin::loadConfigs(
+    std::function<bool(std::string)> getBoolConfig,
+    std::function<int(std::string)> getIntConfig,
+    std::function<std::string(std::string)> getStringConfig
+)
 {
-    _superLoadConfigs(getBoolConfig, getStringConfig);
+    _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
 }
 
 void Plugin::errorLog(const char* format, ...) {
@@ -1154,11 +1110,11 @@ void Plugin::ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
             }
         }
         if (total > 0) {
-            if (total < 50*(4/byteSize)) {
+            if (total < RAM_SEARCH_MAX_RESULTS*(4/byteSize)) {
                 for (u32 index = limitMin; index < limitMax; index+=byteSize) {
                     u32 addr = (0x02000000 | index);
                     if (MainRAMState[index]) {
-                        printf("0x%08x: %d\n", addr, LastMainRAM[index]);
+                        printf("0x%08x: 0x%08x\n", addr, LastMainRAM[index]);
                     }
                 }
                 printf("\n");

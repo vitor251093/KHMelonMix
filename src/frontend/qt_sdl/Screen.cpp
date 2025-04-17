@@ -245,10 +245,10 @@ void ScreenPanel::resizeEvent(QResizeEvent* event)
     setupScreenLayout();
     QWidget::resizeEvent(event);
 
-    refreshAspectRatio();
+    refreshAspectRatioAndScale();
 }
 
-void ScreenPanel::refreshAspectRatio()
+void ScreenPanel::refreshAspectRatioAndScale()
 {
     auto& cfg = mainWindow->getWindowConfig();
     int screenAspectTop = cfg.GetInt("ScreenAspectTop");
@@ -265,6 +265,10 @@ void ScreenPanel::refreshAspectRatio()
 
     if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady()) {
         emuInstance->plugin->setAspectRatio(aspectTop);
+
+        auto& globalCfg = emuInstance->getGlobalConfig();
+        int scale = globalCfg.GetInt("3D.GL.ScaleFactor");
+        emuInstance->plugin->setInternalResolutionScale(scale);
     }
 }
 
@@ -1142,7 +1146,7 @@ void ScreenPanelGL::drawScreenGL()
 {
     if (!glContext) return;
 
-    refreshAspectRatio();
+    refreshAspectRatioAndScale();
 
     auto emuThread = emuInstance->getEmuThread();
 

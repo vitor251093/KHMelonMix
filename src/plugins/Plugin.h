@@ -102,13 +102,69 @@ struct CutsceneEntry
     int dsScreensState;
 };
 
-struct TextureEntry
+struct TextureEntryScene
 {
-    std::string filename;
+    std::string path;
+    std::string fullPath;
+    u32 time;
     u16 posX;
     u16 posY;
     u16 sizeX;
     u16 sizeY;
+};
+
+struct TextureEntry
+{
+    std::string type;
+    u32 totalScenes;
+    TextureEntryScene scenes[1000];
+
+    u32 sceneIndex;
+
+    void setPath(std::string _path) {
+        type = "static";
+        totalScenes = 1;
+        sceneIndex = 0;
+        scenes[0].path = _path;
+    }
+
+    void setFullPath(std::string _path) {
+        scenes[0].fullPath = _path;
+    }
+
+    void setType(std::string _type) {
+        type = _type;
+        sceneIndex = 0;
+    }
+
+    void setFramePath(int index, std::string _path) {
+        totalScenes = totalScenes > (index + 1) ? totalScenes : (index + 1);
+        scenes[index].path = _path;
+    }
+
+    void setFrameFullPath(int index, std::string _path) {
+        totalScenes = totalScenes > (index + 1) ? totalScenes : (index + 1);
+        scenes[index].fullPath = _path;
+    }
+
+    void setFrameTime(int index, u32 _time) {
+        totalScenes = totalScenes > (index + 1) ? totalScenes : (index + 1);
+        scenes[index].time = (_time * 60) / 1000;
+    }
+
+    TextureEntryScene& getLastScene() {
+        return scenes[sceneIndex];
+    }
+
+    TextureEntryScene& getNextScene() {
+        if (type == "animation") {
+            if (totalScenes == ++sceneIndex) {
+                sceneIndex = 0;
+            }
+            return scenes[sceneIndex];
+        }
+        return scenes[sceneIndex];
+    }
 };
 
 class Plugin
@@ -177,9 +233,8 @@ public:
     virtual std::string localizationFilePath(std::string language) {return "";}
 
     virtual std::string textureIndexFilePath();
-    virtual std::map<std::string, TextureEntry> getTexturesIndex();
-    virtual TextureEntry* textureFileConfig(std::string texture);
-    virtual std::string textureFilePath(std::string texture);
+    virtual std::map<std::string, TextureEntry>& getTexturesIndex();
+    virtual TextureEntry& textureById(std::string texture);
     virtual std::string tmpTextureFilePath(std::string texture);
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
@@ -225,12 +280,14 @@ public:
     bool ShouldUnpauseReplacementBgmMusic();
     bool ShouldStopReplacementBgmMusic();
     u16 CurrentBackgroundMusic();
+    u16 BackgroundMusicToStop();
 
     virtual std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
 
     void onReplacementBackgroundMusicStarted();
 
     virtual void refreshBackgroundMusic() {}
+    virtual bool shouldStoreBgmResumePosition(u16 soundtrackId) const { return false; }
 
 
     virtual void refreshMouseStatus() {}
@@ -253,9 +310,18 @@ public:
 
     virtual u32 getAspectRatioAddress() {return 0;}
     virtual void setAspectRatio(float aspectRatio);
+    virtual void setInternalResolutionScale(int scale);
 
-    void _superLoadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
-    virtual void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig);
+    void _superLoadConfigs(
+        std::function<bool(std::string)> getBoolConfig,
+        std::function<int(std::string)> getIntConfig,
+        std::function<std::string(std::string)> getStringConfig
+    );
+    virtual void loadConfigs(
+        std::function<bool(std::string)> getBoolConfig,
+        std::function<int(std::string)> getIntConfig,
+        std::function<std::string(std::string)> getStringConfig
+    );
 
     virtual void hudToggle() {}
 
@@ -277,6 +343,7 @@ protected:
     std::map<u32, GLuint> CompUbo3DLoc{};
     bool CompUbo3DLocInit = false;
 
+    int InternalResolutionScale = 1;
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
@@ -322,6 +389,7 @@ protected:
     bool _ShouldStopReplacementBgmMusic = false;
     u16 _CurrentBackgroundMusic = 0;
     u16 _LastSoundtrackId = 0;
+    u16 _BackgroundMusicToStop = 0;
 
 
     bool _ShouldGrabMouseCursor = false;

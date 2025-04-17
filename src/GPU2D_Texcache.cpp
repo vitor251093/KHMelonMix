@@ -161,17 +161,16 @@ void Texcache2D::GetTexture(GPU& gpu, u32& width, u32& height, s32 orig_xoff, u3
         return;
     }
 
-    Plugins::TextureEntry* textureConfig = GamePlugin->textureFileConfig(uniqueIdentifier);
-    std::string fullPath = GamePlugin->textureFilePath(uniqueIdentifier);
+    Plugins::TextureEntry& textureConfig = GamePlugin->textureById(uniqueIdentifier);
+    std::string fullPath = textureConfig.getNextScene().fullPath;
     std::string fullPath2 = GamePlugin->tmpTextureFilePath(uniqueIdentifier);
-    if (textureConfig != nullptr) {
-        entry->X = textureConfig->posX;
-        entry->Y = textureConfig->posY;
-        entry->Width = textureConfig->sizeX == 0 ? width : textureConfig->sizeX;
-        entry->Height = textureConfig->sizeY == 0 ? height : textureConfig->sizeY;
-        entry->FullWidth = entry->X + entry->Width;
-        entry->FullHeight = entry->Y + entry->Height;
-    }
+    
+    entry->X = textureConfig.getLastScene().posX;
+    entry->Y = textureConfig.getLastScene().posY;
+    entry->Width = textureConfig.getLastScene().sizeX == 0 ? width : textureConfig.getLastScene().sizeX;
+    entry->Height = textureConfig.getLastScene().sizeY == 0 ? height : textureConfig.getLastScene().sizeY;
+    entry->FullWidth = entry->X + entry->Width;
+    entry->FullHeight = entry->Y + entry->Height;
 
     const char* path = fullPath.c_str();
     const char* path2 = fullPath2.c_str();

@@ -139,7 +139,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 enum
 {
     gameScene_Intro,                    // 0
-    gameScene_MainMenu,                 // 1
+    gameScene_TitleScreen,              // 1
     gameScene_IntroLoadMenu,            // 2
     gameScene_DayCounter,               // 3
     gameScene_Cutscene,                 // 4
@@ -159,7 +159,6 @@ enum
 
 enum
 {
-    gameSceneState_characterControllable,
     gameSceneState_showHud,
     gameSceneState_dialogVisible,
     gameSceneState_dialogPortraitLabelVisible,
@@ -177,8 +176,8 @@ enum
 enum
 {
     HK_HUDToggle,
-    HK_RLockOn,
     HK_LSwitchTarget,
+    HK_RLockOn,
     HK_RSwitchTarget,
     HK_CommandMenuLeft,
     HK_CommandMenuRight,
@@ -197,8 +196,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     customKeyMappingNames = {
         "HK_HUDToggle",
-        "HK_RLockOn",
         "HK_LSwitchTarget",
+        "HK_RLockOn",
         "HK_RSwitchTarget",
         "HK_CommandMenuLeft",
         "HK_CommandMenuRight",
@@ -207,8 +206,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     };
     customKeyMappingLabels = {
         "[KH] HUD Toggle",
-        "[KH] (R1) R / Lock On",
         "[KH] (L2) Switch Target",
+        "[KH] (R1) Lock On",
         "[KH] (R2) Switch Target",
         "[KH] Command Menu - Left",
         "[KH] Command Menu - Right",
@@ -450,22 +449,67 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint Com
 std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScene, int gameSceneState) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
+    int hudScale = UIScale;
 
     switch (gameScene) {
         case gameScene_IntroLoadMenu:
+            // load label
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 0)
+                    .withSize(100, 16)
+                    .placeAtCorner(corner_TopLeft)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // rest of load label header
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(100, 0)
+                    .withSize(20, 16)
+                    .placeAtCorner(corner_TopRight)
+                    .sourceScale(1000.0, 1.0)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // footer
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 144)
+                    .withSize(256, 48)
+                    .placeAtCorner(corner_BottomLeft)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // rest of footer
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(251, 144)
+                    .withSize(5, 48)
+                    .placeAtCorner(corner_BottomRight)
+                    .sourceScale(1000.0, 1.0)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // main content
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
                     .placeAtCorner(corner_Center)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .preserveDsScale()
                     .build(aspectRatio));
+
             break;
 
         case gameScene_DayCounter:
         case gameScene_RoxasThoughts:
             shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .preserveDsScale()
                     .build(aspectRatio));
             break;
@@ -475,14 +519,14 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
                         .placeAtCorner(corner_Center)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
             }
             if ((gameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
             }
@@ -501,7 +545,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .fromPosition(0, 0)
                         .withSize(256, 24)
                         .placeAtCorner(corner_TopLeft)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 shapes.push_back(ShapeBuilder2D::square()
@@ -509,13 +553,13 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .withSize(128, 24)
                         .placeAtCorner(corner_TopRight)
                         .sourceScale(10.0, 1.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
             }
 
             if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0)
             {
-                float dialogScale = 5.333/UIScale;
+                float dialogScale = 5.333/hudScale;
 
                 if ((gameSceneState & (1 << gameSceneState_dialogPortraitLabelVisible)) > 0)
                 {
@@ -527,7 +571,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                             .sourceScale(dialogScale)
                             .withMargin(128 * dialogScale, 0.0, 0.0, 7.0 + 8 * dialogScale)
                             .mirror(mirror_X)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -538,7 +582,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .placeAtCorner(corner_Bottom)
                         .sourceScale(dialogScale)
                         .withMargin(0.0, 0.0, 0.0, 7.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // dialog (left side)
@@ -548,7 +592,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .placeAtCorner(corner_Bottom)
                         .sourceScale(dialogScale * 4, dialogScale)
                         .withMargin(0.0, 0.0, 128 * dialogScale, 7.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // dialog (right side)
@@ -558,7 +602,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .placeAtCorner(corner_Bottom)
                         .sourceScale(dialogScale * 4, dialogScale)
                         .withMargin(128 * dialogScale, 0.0, 0.0, 7.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // background
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(118, 50)
+                        .withSize(20, 10)
+                        .placeAtCorner(corner_Center)
+                        .sourceScale(1000.0)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 return shapes;
@@ -571,7 +624,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .withSize(256, 24)
                         .placeAtCorner(corner_TopLeft)
                         .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 return shapes;
@@ -584,7 +637,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .withSize(75, 24)
                         .placeAtCorner(corner_TopLeft)
                         .singleColorToAlpha(32, 32, 32)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // bottom mission information (part 2)
@@ -595,27 +648,28 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .placeAtCorner(corner_TopLeft)
                         .withMargin(75.0, 8.0, 0.0, 0.0)
                         .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
             }
 
-            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0 &&
-                (gameSceneState & (1 << gameSceneState_characterControllable)) > 0)
+            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0)
             {
-                // item notification
+                // item notification and timer (left side of the screen)
                 shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 35)
+                        .fromPosition(0, 0)
                         .withSize(108, 86)
                         .placeAtCorner(corner_TopLeft)
-                        .hudScale(UIScale)
+                        .withMargin(0.0, 35.0, 0.0, 0.0)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
-                // countdown and locked on
+                // countdown and locked on (top center of the screen)
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromPosition(93, 0)
                         .withSize(70, 20)
                         .placeAtCorner(corner_Top)
-                        .hudScale(UIScale)
+                        .withMargin(0.0, 9.0, 0.0, 0.0)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 if ((gameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
@@ -630,7 +684,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                             .opacity(0.85)
                             .invertGrayScaleColors()
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -648,7 +702,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                             .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
                             .sourceScale(targetScale)
                             .colorToAlpha(248, 248, 248)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // target label (part 2)
@@ -659,7 +713,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                             .placeAtCorner(corner_TopRight)
                             .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
                             .sourceScale(targetScale)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // target label (part 3)
@@ -671,7 +725,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                             .withMargin(0.0, 30.0, 9.0, 0.0)
                             .sourceScale(targetScale)
                             .colorToAlpha(248, 248, 248)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // target
@@ -682,7 +736,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                             .placeAtCorner(corner_TopRight)
                             .withMargin(0.0, 38.0, 9.0, 0.0)
                             .sourceScale(targetScale)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -694,7 +748,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                             .withSize(246, 40)
                             .placeAtCorner(corner_Bottom)
                             .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                            .hudScale(UIScale)
+                            .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
@@ -704,7 +758,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .withSize(93, 22)
                         .placeAtCorner(corner_TopRight)
                         .withMargin(0.0, 7.5, 9.0, 0.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // sigils and death counter
@@ -713,7 +767,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .withSize(93, 30)
                         .placeAtCorner(corner_TopRight)
                         .withMargin(0.0, 92.5, 12.0, 0.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // command menu
@@ -722,7 +776,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .withSize(108, 106)
                         .placeAtCorner(corner_BottomLeft)
                         .withMargin(10.0, 0.0, 0.0, 0.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // player health
@@ -731,7 +785,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .withSize(128, 108)
                         .placeAtCorner(corner_BottomRight)
                         .withMargin(0.0, 0.0, 8.0, 3.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
             }
 
@@ -741,7 +795,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     .withSize(20, 10)
                     .placeAtCorner(corner_Center)
                     .sourceScale(1000.0)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
 
             break;
@@ -755,7 +809,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .withSize(75, 24)
                         .placeAtCorner(corner_TopLeft)
                         .singleColorToAlpha(32, 32, 32)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
 
                 // bottom mission information (part 2)
@@ -766,7 +820,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .placeAtCorner(corner_TopLeft)
                         .withMargin(75.0, 8.0, 0.0, 0.0)
                         .fadeBorderSize(0.0, 0.0, 64.0, 0.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
             }
 
@@ -778,14 +832,14 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .withSize(246, 40)
                         .placeAtCorner(corner_Bottom)
                         .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                        .hudScale(UIScale)
+                        .hudScale(hudScale)
                         .build(aspectRatio));
             }
 
             // pause menu
             shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
 
             // background
@@ -794,7 +848,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     .withSize(20, 10)
                     .placeAtCorner(corner_Center)
                     .sourceScale(1000.0)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
 
             break;
@@ -806,9 +860,9 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     .fromPosition(5, 0)
                     .withSize(246, 192)
                     .placeAtCorner(corner_Center)
-                    .sourceScale(5.0/UIScale)
+                    .sourceScale(5.0/hudScale)
                     .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
 
             // background
@@ -819,23 +873,83 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     .placeAtCorner(corner_Center)
                     .sourceScale(1000.0)
                     .opacity(0.75)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
 
+            break;
+
+        case gameScene_InGameMenu:
+            // config and save; the others are in horizontal style
+
+            if (getCurrentMainMenuView() == 7) { // save
+                // save label
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(100, 16)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of save label header
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(100, 0)
+                        .withSize(20, 16)
+                        .placeAtCorner(corner_TopRight)
+                        .sourceScale(1000.0, 1.0)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 144)
+                        .withSize(256, 48)
+                        .placeAtCorner(corner_BottomLeft)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(251, 144)
+                        .withSize(5, 48)
+                        .placeAtCorner(corner_BottomRight)
+                        .sourceScale(1000.0, 1.0)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // main content
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                break;
+            }
+        
+            // config
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
             break;
 
         case gameScene_LoadingScreen:
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
                     .placeAtCorner(corner_BottomRight)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
             break;
     
         case gameScene_DeathScreen:
             shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
             break;
     }
@@ -876,7 +990,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
                         .zRange(-10000.0, -0.00000)
                         .build(aspectRatio));
 
-                float heartTopMargin = (ShowMissionInfo ? 20.0 : 2.0);
+                float heartTopMargin = (ShowMissionInfo ? 24.0 : 0.0);
 
                 // blue shine behind the heart counter and "CHAIN" label
                 shapes.push_back(ShapeBuilder3D::square()
@@ -951,10 +1065,6 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                 bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
                 bool _isDialogPortraitLabelVisible = isDialogPortraitLabelVisible();
 
-                if (isCharacterControllable) {
-                    state |= (1 << gameSceneState_characterControllable);
-                }
-
                 if ((GameScene == gameScene_InGameWithMap && (!isCharacterControllable || _isDialogVisible)) ||
                     (GameScene == gameScene_InGameWithDouble3D && _isDialogVisible))
                 {
@@ -988,7 +1098,9 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                 }
 
                 if (!HideAllHUD) {
-                    state |= (1 << gameSceneState_showHud);
+                    if (isCharacterControllable || GameScene == gameScene_InGameWithDouble3D) {
+                        state |= (1 << gameSceneState_showHud);
+                    }
                 }
 
                 if (GameScene == gameScene_InGameWithMap && _isMinimapVisible) {
@@ -1055,7 +1167,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
             return screenLayout_BothVertical;
         
         case gameScene_Intro:
-        case gameScene_MainMenu:
+        case gameScene_TitleScreen:
         case gameScene_Shop:
         case gameScene_TheEnd:
             return screenLayout_BothHorizontal;
@@ -1088,7 +1200,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
 
 int PluginKingdomHeartsDays::renderer_brightnessMode() {
     if (_ShouldHideScreenForTransitions) {
-        return brightnessMode_Off;
+        return brightnessMode_BlackScreen;
     }
     if (GameScene == gameScene_PauseMenu                ||
         GameScene == gameScene_InGameWithDouble3D       ||
@@ -1103,6 +1215,13 @@ int PluginKingdomHeartsDays::renderer_brightnessMode() {
         GameScene == gameScene_Tutorial      ||
         GameScene == gameScene_LoadingScreen) {
         return brightnessMode_BottomScreen;
+    }
+    if (GameScene == gameScene_Intro ||
+        GameScene == gameScene_TheEnd) {
+        return brightnessMode_Horizontal;
+    }
+    if (GameScene == gameScene_Cutscene) {
+        return brightnessMode_RegularBrightness;
     }
     return brightnessMode_Default;
 }
@@ -1343,11 +1462,8 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords(int width, int height, in
         return overrideMouseTouchCoords_cameraControl(width, height, x, y, touching);
 #endif
     }
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        if (mainMenuView != 6 && mainMenuView != 7) {
-            return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
-        }
+    if (renderer_screenLayout() == screenLayout_BothHorizontal) {
+        return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
     }
     return false;
 }
@@ -1400,7 +1516,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
 {
     switch (GameScene) {
         case gameScene_Intro: return "Game scene: Intro";
-        case gameScene_MainMenu: return "Game scene: Main menu";
+        case gameScene_TitleScreen: return "Game scene: Title screen";
         case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
         case gameScene_DayCounter: return "Game scene: Day counter";
         case gameScene_Cutscene: return "Game scene: Cutscene";
@@ -1667,29 +1783,29 @@ int PluginKingdomHeartsDays::detectGameScene()
             {
                 if (mayBeMainMenu)
                 {
-                    return gameScene_MainMenu;
+                    return gameScene_TitleScreen;
                 }
             }
 
-            if (GameScene == gameScene_MainMenu)
+            if (GameScene == gameScene_TitleScreen)
             {
                 mayBeMainMenu = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
                 if (mayBeMainMenu) {
-                    return gameScene_MainMenu;
+                    return gameScene_TitleScreen;
                 }
             }
 
             // Main menu
             if (mayBeMainMenu)
             {
-                return gameScene_MainMenu;
+                return gameScene_TitleScreen;
             }
 
             // Intro
             if (GameScene == -1 || GameScene == gameScene_Intro)
             {
                 mayBeMainMenu = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
-                return mayBeMainMenu ? gameScene_MainMenu : gameScene_Intro;
+                return mayBeMainMenu ? gameScene_TitleScreen : gameScene_Intro;
             }
         }
     }
@@ -1977,6 +2093,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
         else if (soundtrackId == 0xFFFF) {
             if (_LastSoundtrackId != fakeSoundtrackId && _CurrentBackgroundMusic != 0) {
                 _ShouldStopReplacementBgmMusic = true;
+                _BackgroundMusicToStop = _CurrentBackgroundMusic;
                 printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
     
                 _CurrentBackgroundMusic = soundtrackId;
@@ -1985,6 +2102,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
         }
         else {
             _ShouldStopReplacementBgmMusic = true;
+            _BackgroundMusicToStop = _CurrentBackgroundMusic;
 
             if (replacementAvailable) {
                 u32 address = getAnyByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
@@ -1993,6 +2111,12 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
                 _ShouldStartReplacementBgmMusic = replacementAvailable;
                 printf("Starting replacement song %d\n", soundtrackId);
         
+                _CurrentBackgroundMusic = soundtrackId;
+                _LastSoundtrackId = soundtrackId;
+            }
+            else
+            {
+                // No replacement available, resetting
                 _CurrentBackgroundMusic = soundtrackId;
                 _LastSoundtrackId = soundtrackId;
             }
@@ -2007,6 +2131,12 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
         _CurrentBackgroundMusic = soundtrackId;
         _LastSoundtrackId = soundtrackId;
     }
+}
+
+bool PluginKingdomHeartsDays::shouldStoreBgmResumePosition(u16 soundtrackId) const
+{
+    static std::vector<u16> ids = { 2, 5, 7, 9, 11, 15, 16, 33 };
+    return (std::find(ids.begin(), ids.end(), soundtrackId) != ids.end());
 }
 
 int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {

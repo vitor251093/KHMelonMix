@@ -90,8 +90,8 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
 
-    connect(this, SIGNAL(windowStartBgmMusic(QString)), window, SLOT(asyncStartBgmMusic(QString)));
-    connect(this, SIGNAL(windowStopBgmMusic()), window, SLOT(asyncStopBgmMusic()));
+    connect(this, SIGNAL(windowStartBgmMusic(quint16, bool, QString)), window, SLOT(asyncStartBgmMusic(quint16, bool, QString)));
+    connect(this, SIGNAL(windowStopBgmMusic(quint16)), window, SLOT(asyncStopBgmMusic(quint16)));
     connect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
     connect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
     
@@ -118,8 +118,8 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
 
-    disconnect(this, SIGNAL(windowStartBgmMusic(QString)), window, SLOT(asyncStartBgmMusic(QString)));
-    disconnect(this, SIGNAL(windowStopBgmMusic()), window, SLOT(asyncStopBgmMusic()));
+    disconnect(this, SIGNAL(windowStartBgmMusic(quint16, bool, QString)), window, SLOT(asyncStartBgmMusic(quint16, bool, QString)));
+    disconnect(this, SIGNAL(windowStopBgmMusic(quint16)), window, SLOT(asyncStopBgmMusic(quint16)));
     
     disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
@@ -196,6 +196,10 @@ void EmuThread::run()
                 emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetBool(path);
+                },
+                [cfg = globalCfg](const std::string& path){
+                    Config::Table& ref = const_cast <Config::Table&>(cfg);
+                    return ref.GetInt(path);
                 },
                 [cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
@@ -767,11 +771,13 @@ void EmuThread::refreshPluginState()
     bool disableInvisibleFastMode = false;
 
     if (emuInstance->plugin->ShouldStopReplacementBgmMusic()) {
-        emit windowStopBgmMusic();
+        auto bgm = emuInstance->plugin->BackgroundMusicToStop();
+        emit windowStopBgmMusic(bgm);
     }
 
     if (emuInstance->plugin->ShouldStartReplacementBgmMusic()) {
-        auto bgm = emuInstance->plugin->CurrentBackgroundMusic();
+        u16 bgm = emuInstance->plugin->CurrentBackgroundMusic();
+        bool bShouldStoreResumePos = emuInstance->plugin->shouldStoreBgmResumePosition(bgm);
         if (bgm != 0) {
             std::string path = emuInstance->plugin->replacementBackgroundMusicFilePath("bgm" + std::to_string(bgm));
             if (path != "") {
@@ -782,16 +788,16 @@ void EmuThread::refreshPluginState()
 
                     emuStatus = emuStatus_Paused;
                     QString filePath = QString::fromUtf8(path.c_str());
-                    emit windowStartBgmMusic(filePath);
+                    emit windowStartBgmMusic(bgm, bShouldStoreResumePos, filePath);
                 }
                 else {
-                    QTimer::singleShot(emuInstance->plugin->delayBeforeStartReplacementBackgroundMusic(), mainWindow, [this, bgm, path]() {
+                    QTimer::singleShot(emuInstance->plugin->delayBeforeStartReplacementBackgroundMusic(), mainWindow, [this, bgm, bShouldStoreResumePos, path]() {
                         // disabling fast-foward, otherwise it will affect the cutscenes
                         emuInstance->setVSyncGL(true);
 
                         emuStatus = emuStatus_Paused;
                         QString filePath = QString::fromUtf8(path.c_str());
-                        emit windowStartBgmMusic(filePath);
+                        emit windowStartBgmMusic(bgm, bShouldStoreResumePos, filePath);
                     });
                 }
             }

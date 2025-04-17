@@ -64,9 +64,13 @@ public:
 
     u32 getAspectRatioAddress();
 
-    void loadConfigs(std::function<bool(std::string)> getBoolConfig, std::function<std::string(std::string)> getStringConfig)
+    void loadConfigs(
+        std::function<bool(std::string)> getBoolConfig,
+        std::function<int(std::string)> getIntConfig,
+        std::function<std::string(std::string)> getStringConfig
+    )
     {
-        _superLoadConfigs(getBoolConfig, getStringConfig);
+        _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
 
         std::string root = tomlUniqueIdentifier();
 
@@ -78,12 +82,13 @@ private:
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
-    int UIScale = 4;
     bool ShowMap;
+    bool ShowFullscreenMap;
     int MinimapCenterX = 128;
     int MinimapCenterY = 96;
     int MinimapFrameTick;
     bool HideAllHUD;
+    u32 lastMainMenuView;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<GLuint, int[10]> CompGpuLastValues{};
@@ -120,6 +125,7 @@ private:
 
     u8 getFloorLevel();
     u32 getCurrentMission();
+    u32 getCurrentMainMenuView();
     u32 getCurrentMap();
     bool isSaveLoaded();
 
@@ -134,12 +140,14 @@ private:
     bool isDialogVisible();
     bool isMinimapVisible();
     bool isBugSector();
+    bool isChallengeMeterVisible();
     bool isCommandMenuVisible();
     bool isHealthVisible();
     ivec2 minimapCenter();
     bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 
     void hudToggle();
+    void toggleFullscreenMap();
     void debugLogs(int gameScene);
 };
 }

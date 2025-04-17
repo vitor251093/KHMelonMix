@@ -127,8 +127,14 @@ void main()
             bool colorMatch = (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
 
             float iuTexScale = SCREEN_SCALE/shapes[shapeIndex].hudScale;
-            float xScaleInv = iuTexScale/shapes[shapeIndex].sourceScale.x;
-            float yScaleInv = iuTexScale/shapes[shapeIndex].sourceScale.y;
+
+            float scaleX = shapes[shapeIndex].sourceScale.x;
+            float scaleY = shapes[shapeIndex].sourceScale.y;
+
+            float heightScale = 1.0/aspectRatio;
+
+            float squareFinalWidth = (shapes[shapeIndex].squareInitialCoords.z*scaleX*resolutionScale*heightScale)/iuTexScale;
+            float squareFinalHeight = (shapes[shapeIndex].squareInitialCoords.w*scaleY*resolutionScale)/iuTexScale;
 
             if (_x >= shapes[shapeIndex].squareInitialCoords.x*resolutionScale && _x <= (shapes[shapeIndex].squareInitialCoords.x + shapes[shapeIndex].squareInitialCoords.z)*resolutionScale &&
                 _y >= shapes[shapeIndex].squareInitialCoords.y*resolutionScale && _y <= (shapes[shapeIndex].squareInitialCoords.y + shapes[shapeIndex].squareInitialCoords.w)*resolutionScale &&
@@ -141,59 +147,57 @@ void main()
                     _y = 0;
                 }
                 else {
+                    float squareFinalX1 = 0.0;
+                    float squareFinalY1 = 0.0;
+
                     switch (shapes[shapeIndex].corner)
                     {
                         case 0: // corner_PreservePosition
+                            squareFinalX1 = (shapes[shapeIndex].squareInitialCoords.x + shapes[shapeIndex].squareInitialCoords.z/2)*scaleX - squareFinalWidth/2;
+                            squareFinalY1 = (shapes[shapeIndex].squareInitialCoords.y + shapes[shapeIndex].squareInitialCoords.w/2)*scaleY - squareFinalHeight/2;
                             break;
 
                         case 1: // corner_Center
-                            _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
-                            _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
+                            squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
+                            squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
                             break;
                         
                         case 2: // corner_TopLeft
-                            _x = _x/(xScaleInv*aspectRatio);
-                            _y = _y/(yScaleInv);
                             break;
                         
                         case 3: // corner_Top
-                            _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
-                            _y = _y/(yScaleInv);
+                            squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
                             break;
 
                         case 4: // corner_TopRight
-                            _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
-                            _y = _y/(yScaleInv);
+                            squareFinalX1 = ScreenWidth - squareFinalWidth;
                             break;
 
                         case 5: // corner_Right
-                            _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
-                            _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
+                            squareFinalX1 = ScreenWidth - squareFinalWidth;
+                            squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
                             break;
 
                         case 6: // corner_BottomRight
-                            _x = ScreenWidth - (ScreenWidth - _x)/(xScaleInv*aspectRatio);
-                            _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
+                            squareFinalX1 = ScreenWidth - squareFinalWidth;
+                            squareFinalY1 = ScreenHeight - squareFinalHeight;
                             break;
 
                         case 7: // corner_Bottom
-                            _x = ScreenWidth/2 + (_x - ScreenWidth/2)/(xScaleInv*aspectRatio);
-                            _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
+                            squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
+                            squareFinalY1 = ScreenHeight - squareFinalHeight;
                             break;
 
                         case 8: // corner_BottomLeft
-                            _x = _x/(xScaleInv*aspectRatio);
-                            _y = ScreenHeight - ((ScreenHeight - _y)/(yScaleInv));
+                            squareFinalY1 = ScreenHeight - squareFinalHeight;
                             break;
 
                         case 9: // corner_Left
-                            _x = _x/(xScaleInv*aspectRatio);
-                            _y = ScreenHeight/2 + (_y - ScreenHeight/2)/(yScaleInv);
-                            break;
+                            squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
                     }
 
-                    _x = _x + (shapes[shapeIndex].margin.x*resolutionScale - shapes[shapeIndex].margin.z*resolutionScale)/aspectRatio;
-                    _y = _y +  shapes[shapeIndex].margin.y*resolutionScale - shapes[shapeIndex].margin.w*resolutionScale;
+                    _x = ((_x - shapes[shapeIndex].squareInitialCoords.x*resolutionScale)/iuTexScale)*scaleX*heightScale + squareFinalX1 + (shapes[shapeIndex].margin.x - shapes[shapeIndex].margin.z)*(resolutionScale/(iuTexScale*aspectRatio));
+                    _y = ((_y - shapes[shapeIndex].squareInitialCoords.y*resolutionScale)/iuTexScale)*scaleY             + squareFinalY1 + (shapes[shapeIndex].margin.y - shapes[shapeIndex].margin.w)*(resolutionScale/iuTexScale);
                 }
 
                 fpos.x = _x;
@@ -203,12 +207,12 @@ void main()
         }
     }
 
+    fpos.xy = ((fpos.xy * 2.0) / uScreenSize) - 1.0;
+    fpos.xyz *= fpos.w;
+
     fColor = vec4(vColor) / vec4(255.0,255.0,255.0,31.0);
     fTexcoord = vec2(vTexcoord) / 16.0;
     fPolygonAttr = vPolygonAttr;
-
-    fpos.xy = ((fpos.xy * 2.0) / uScreenSize) - 1.0;
-    fpos.xyz *= fpos.w;
 
     gl_Position = fpos;
 }
