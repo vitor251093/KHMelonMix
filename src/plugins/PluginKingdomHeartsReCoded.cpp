@@ -51,6 +51,10 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_CUTSCENE_EU 0x02056e90
 #define IS_CUTSCENE_JP 0x02056cb0
 
+#define IS_LOAD_SCREEN_US 0x02056f4c // may also be 0x02056f48, 0x02056f50, 0x02056f58 or 0x02056f5c
+#define IS_LOAD_SCREEN_EU 0x02056f4c
+#define IS_LOAD_SCREEN_JP 0x02056d6c
+
 // 0x01 => cutscene with skip button
 // 0x03 => regular cutscene
 // 0x08 => cutscene with static images (can cause false positives outside of cutscenes)
@@ -422,12 +426,69 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
 
     switch (GameScene) {
         case gameScene_IntroLoadMenu:
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromBottomScreen()
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
+            {
+                float scale = 192.0/(192 - 31 + 48);
+
+                // load label
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(100, 16)
+                        .placeAtCorner(corner_TopLeft)
+                        .sourceScale(scale, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of load label header
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(100, 0)
+                        .withSize(20, 16)
+                        .placeAtCorner(corner_TopRight)
+                        .sourceScale(1000.0, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .fromPosition(0, 144)
+                        .withSize(256, 48)
+                        .placeAtCorner(corner_BottomLeft)
+                        .sourceScale(scale, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .fromPosition(251, 144)
+                        .withSize(5, 48)
+                        .placeAtCorner(corner_BottomRight)
+                        .sourceScale(1000.0, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // main content
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Top)
+                        .sourceScale(scale, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // main content background
+                shapes.push_back(ShapeBuilder2D::square()
+                        .withSize(1, 192)
+                        .placeAtCorner(corner_Top)
+                        .sourceScale(2000.0, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            }
+
             break;
 
         case gameScene_Cutscene:
@@ -1876,6 +1937,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getU32ByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
     bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
     bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
+    bool isIntroLoadMenu = nds->ARM7Read32(getU32ByCart(IS_LOAD_SCREEN_US, IS_LOAD_SCREEN_EU, IS_LOAD_SCREEN_JP)) == 0x10;
     bool isInGameDialog = nds->ARM7Read32(getU32ByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
         getU32ByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
     bool isDeathScreen = nds->ARM7Read32(getU32ByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP)) == 0;
@@ -1904,23 +1966,9 @@ int PluginKingdomHeartsReCoded::detectGameScene()
             }
         }
 
-        // Intro save menu
-        bool isIntroLoadMenu = (nds->GPU.GPU2D_B.BlendCnt == 4164 || nds->GPU.GPU2D_B.BlendCnt == 4161) &&
-            (nds->GPU.GPU2D_A.EVA == 0 || nds->GPU.GPU2D_A.EVA == 16) &&
-             nds->GPU.GPU2D_A.EVB == 0 && nds->GPU.GPU2D_A.EVY == 0 &&
-            (nds->GPU.GPU2D_B.EVA < 10 && nds->GPU.GPU2D_B.EVA >= 0) && 
-            (nds->GPU.GPU2D_B.EVB >  7 && nds->GPU.GPU2D_B.EVB <= 16) && nds->GPU.GPU2D_B.EVY == 0;
-
         if (isIntroLoadMenu)
         {
             return gameScene_IntroLoadMenu;
-        }
-        if (GameScene == gameScene_IntroLoadMenu)
-        {
-            if (nds->GPU.GPU3D.NumVertices != 8)
-            {
-                return gameScene_IntroLoadMenu;
-            }
         }
 
         return gameScene_TitleScreen;
