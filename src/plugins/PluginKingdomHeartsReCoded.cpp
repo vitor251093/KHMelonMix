@@ -145,16 +145,17 @@ enum
     gameScene_InGameDialog,             // 6
     gameScene_InGameOlympusBattle,      // 7
     gameScene_InGameMenu,               // 8
-    gameScene_ResultScreen,             // 9
-    gameScene_WorldSelection,           // 10
-    gameScene_PauseMenu,                // 11
-    gameScene_Tutorial,                 // 12
-    gameScene_Shop,                     // 13
-    gameScene_LoadingScreen,            // 14
-    gameScene_DeathScreen,              // 15
-    gameScene_TheEnd,                   // 16
-    gameScene_Other2D,                  // 17
-    gameScene_Other                     // 18
+    gameScene_InGameSaveMenu,           // 9
+    gameScene_ResultScreen,             // 10
+    gameScene_WorldSelection,           // 11
+    gameScene_PauseMenu,                // 12
+    gameScene_Tutorial,                 // 13
+    gameScene_Shop,                     // 14
+    gameScene_LoadingScreen,            // 15
+    gameScene_DeathScreen,              // 16
+    gameScene_TheEnd,                   // 17
+    gameScene_Other2D,                  // 18
+    gameScene_Other                     // 19
 };
 
 enum
@@ -517,8 +518,85 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .build(aspectRatio));
             break;
 
+        case gameScene_InGameSaveMenu:
+            {
+                float scale = 192.0/(192 - 31 + 48);
+
+                // save label
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(100, 16)
+                        .placeAtCorner(corner_TopLeft)
+                        .sourceScale(scale, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of save label header
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(100, 0)
+                        .withSize(20, 16)
+                        .placeAtCorner(corner_TopRight)
+                        .sourceScale(1000.0, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // footer info
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 164)
+                        .withSize(256, 28)
+                        .withMargin(128.0, 0.0, 0.0, 10.0)
+                        .placeAtCorner(corner_BottomLeft)
+                        .sourceScale(scale, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .fromPosition(0, 144)
+                        .withSize(256, 48)
+                        .placeAtCorner(corner_BottomLeft)
+                        .sourceScale(scale, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .fromPosition(251, 144)
+                        .withSize(5, 48)
+                        .placeAtCorner(corner_BottomRight)
+                        .sourceScale(1000.0, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // main content
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Top)
+                        .sourceScale(scale, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // main content background
+                shapes.push_back(ShapeBuilder2D::square()
+                        .withSize(1, 192)
+                        .placeAtCorner(corner_Top)
+                        .sourceScale(2000.0, scale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                break;
+            }
+
         case gameScene_InGameMenu:
-            // config, quest list and save; the others are in horizontal style
+            // config and quest list; the others are in horizontal style
             shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
                     .hudScale(hudScale)
@@ -1269,6 +1347,7 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
         case gameScene_InGameWithMap:
         case gameScene_PauseMenu:
         case gameScene_CutsceneWithStaticImages:
+        case gameScene_InGameSaveMenu:
         case gameScene_InGameDialog:
         case gameScene_InGameOlympusBattle:
         case gameScene_ResultScreen:
@@ -1297,7 +1376,6 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
         switch (mainMenuView) {
             case 6:  // config
             case 13: // quest list
-            case 15: // save menu
                 return screenLayout_Top;
             
             default:
@@ -1315,6 +1393,7 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
     if (GameScene == gameScene_InGameWithMap            ||
         GameScene == gameScene_PauseMenu                ||
         GameScene == gameScene_CutsceneWithStaticImages ||
+        GameScene == gameScene_InGameSaveMenu           ||
         GameScene == gameScene_InGameDialog             ||
         GameScene == gameScene_InGameOlympusBattle      ||
         GameScene == gameScene_ResultScreen             ||
@@ -1342,7 +1421,6 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
             case 2:  // main menu root (save menu)
             case 6:  // config
             case 13: // quest list
-            case 15: // save menu
                 return brightnessMode_TopScreen;
             
             default:
@@ -1649,6 +1727,7 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
         case gameScene_Cutscene: return "Game scene: Cutscene";
         case gameScene_InGameWithMap: return "Game scene: Ingame (with minimap)";
         case gameScene_InGameMenu: return "Game scene: Ingame menu";
+        case gameScene_InGameSaveMenu: return "Game scene: Ingame save menu";
         case gameScene_PauseMenu: return "Game scene: Pause menu";
         case gameScene_Tutorial: return "Game scene: Tutorial";
         case gameScene_Shop: return "Game scene: Shop";
@@ -1941,6 +2020,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool isInGameDialog = nds->ARM7Read32(getU32ByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
         getU32ByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
     bool isDeathScreen = nds->ARM7Read32(getU32ByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP)) == 0;
+    u32 mainMenuView = getCurrentMainMenuView();
 
     u8 gameState2 = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
@@ -2018,6 +2098,11 @@ int PluginKingdomHeartsReCoded::detectGameScene()
 
     if (isUnplayableArea)
     {
+        if (mainMenuView == 15)
+        {
+            return gameScene_InGameSaveMenu;
+        }
+
         return gameScene_InGameMenu;
     }
     if (isWorldSelection)
