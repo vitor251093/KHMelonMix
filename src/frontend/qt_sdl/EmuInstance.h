@@ -149,6 +149,9 @@ public:
     void setJoystick(int id);
     int getJoystickID() { return joystickID; }
     SDL_Joystick* getJoystick() { return joystick; }
+    std::vector<int> heldKeys;
+    std::vector<int> keyStrokes;
+
     void autoMapJoystick();
 
     Plugins::Plugin* plugin = nullptr;
@@ -296,6 +299,8 @@ public:
     bool fastForwardToggled;
     bool slowmoToggled;
     bool doAudioSync;
+
+    melonDS::u32 getInputMask(){return inputMask;}
 private:
 
     std::unique_ptr<melonDS::Savestate> backupState;
