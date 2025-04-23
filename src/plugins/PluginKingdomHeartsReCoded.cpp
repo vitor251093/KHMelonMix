@@ -1120,7 +1120,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
             shapes.push_back(ShapeBuilder3D::square()
                     .negatePolygonAttributes(2031808) // pickup license notification
                     .fromPosition(0, 0)
-                    .withSize(110, 60)
+                    .withSize(120, 60)
                     .placeAtCorner(corner_TopLeft)
                     .withMargin(0.0, 30.0, 0.0, 0.0)
                     .sourceScale(1.5)
