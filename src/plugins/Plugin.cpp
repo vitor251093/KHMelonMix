@@ -324,7 +324,7 @@ bool Plugin::togglePause()
         }
         return true;
     }
-    if (_RunningReplacementBgmMusic) {
+    if (isBackgroundMusicPlaying()) {
         if (_PausedReplacementBgmMusic) {
             _ShouldUnpauseReplacementBgmMusic = true;
         }
@@ -843,55 +843,39 @@ void Plugin::onReturnToGameAfterCutscene() {
     }
 }
 
-bool Plugin::ShouldStartReplacementBgmMusic() {
-    if (_ShouldStartReplacementBgmMusic) {
-        _ShouldStartReplacementBgmMusic = false;
-        return true;
-    }
-    return false;
-}
 int Plugin::delayBeforeStartReplacementBackgroundMusic() {
     return 0;
 }
-bool Plugin::StartedReplacementBgmMusic() {
-    if (_StartedReplacementBgmMusic) {
-        _StartedReplacementBgmMusic = false;
-        return true;
+
+std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
+    std::string filename = "bgm" + std::to_string(id) + ".wav";
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
     }
-    return false;
-}
-bool Plugin::RunningReplacementBgmMusic() {return _RunningReplacementBgmMusic;}
-bool Plugin::ShouldPauseReplacementBgmMusic() {
-    if (_ShouldPauseReplacementBgmMusic) {
-        _ShouldPauseReplacementBgmMusic = false;
-        _PausedReplacementBgmMusic = true;
-        return true;
+
+    filename = "bgm" + std::to_string(id) + ".mp3";
+    fullPath = _assetsFolderPath / "audio" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
     }
-    return false;
+
+    return "";
 }
-bool Plugin::ShouldUnpauseReplacementBgmMusic() {
-    if (_ShouldUnpauseReplacementBgmMusic) {
-        _ShouldUnpauseReplacementBgmMusic = false;
-        _PausedReplacementBgmMusic = false;
-        return true;
-    }
-    return false;
-}
-bool Plugin::ShouldStopReplacementBgmMusic() {
-    if (_ShouldStopReplacementBgmMusic) {
-        _ShouldStopReplacementBgmMusic = false;
-        return true;
-    }
-    return false;
-}
-u16 Plugin::CurrentBackgroundMusic() {return _CurrentBackgroundMusic;};
-u16 Plugin::BackgroundMusicToStop() {return _BackgroundMusicToStop;};
+
 
 void Plugin::onReplacementBackgroundMusicStarted() {
-    printf("Background music started\n");
+    //printf("Background music started\n");
     _ShouldStartReplacementBgmMusic = false;
-    _StartedReplacementBgmMusic = true;
-    _RunningReplacementBgmMusic = true;
+}
+
+bool Plugin::getShouldUpdateBackgroundMusicVolume() {
+    if (_ShouldUpdateReplacementBgmMusicVolume) {
+        _ShouldUpdateReplacementBgmMusicVolume = false;
+        return true;
+    }
+    return false;
 }
 
 bool Plugin::ShouldGrabMouseCursor() {

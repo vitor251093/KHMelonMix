@@ -62,7 +62,6 @@ public:
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene);
 
     int delayBeforeStartReplacementBackgroundMusic();
-    std::string replacementBackgroundMusicFilePath(std::string name);
 
     const char* getGameSceneName();
 
@@ -136,9 +135,16 @@ private:
     bool didMobiCutsceneEnded();
     bool canReturnToGameAfterReplacementCutscene();
 
+    EMusicRequest getMusicReplacementRequest() override;
+
     u16 detectMidiBackgroundMusic();
     void refreshBackgroundMusic() override;
-    bool shouldStoreBgmResumePosition(u16 soundtrackId) const override;
+    bool isBgmOfFieldType(u16 soundtrackId) const override;
+    bool isBgmOfBattleType(u16 soundtrackId) const override;
+    std::string getBackgroundMusicName(u16 soundtrackId) const override;
+    void muteSongSequence(u16 bgmId);
+    u16 getSongIdInSongTable(u16 bgmId);
+    void stopBackgroundMusic(bool bImmediateStop);
 
     void refreshMouseStatus();
 

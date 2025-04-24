@@ -2322,23 +2322,6 @@ bool PluginKingdomHeartsReCoded::isUnskippableMobiCutscene(CutsceneEntry* cutsce
     // return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 
-std::string PluginKingdomHeartsReCoded::replacementBackgroundMusicFilePath(std::string name) {
-    std::string filename = name + ".wav";
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
-    std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
-    }
-
-    filename = name + ".mp3";
-    fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
-    }
-
-    return "";
-}
-
 std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::filesystem::path _assetsFolderPath = assetsFolderPath();

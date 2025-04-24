@@ -89,10 +89,11 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
 
-    connect(this, SIGNAL(windowStartBgmMusic(quint16, bool, QString)), window, SLOT(asyncStartBgmMusic(quint16, bool, QString)));
-    connect(this, SIGNAL(windowStopBgmMusic(quint16)), window, SLOT(asyncStopBgmMusic(quint16)));
+    connect(this, SIGNAL(windowStartBgmMusic(quint16, quint8, bool, quint32, QString)), window, SLOT(asyncStartBgmMusic(quint16, quint8, bool, quint32, QString)));
+    connect(this, SIGNAL(windowStopBgmMusic(quint16, bool, bool)), window, SLOT(asyncStopBgmMusic(quint16, bool, bool)));
     connect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
     connect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
+    connect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
     
     connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
@@ -117,9 +118,12 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
 
-    disconnect(this, SIGNAL(windowStartBgmMusic(quint16, bool, QString)), window, SLOT(asyncStartBgmMusic(quint16, bool, QString)));
-    disconnect(this, SIGNAL(windowStopBgmMusic(quint16)), window, SLOT(asyncStopBgmMusic(quint16)));
-    
+    disconnect(this, SIGNAL(windowStartBgmMusic(quint16, quint8, bool, quint32, QString)), window, SLOT(asyncStartBgmMusic(quint16, quint8, bool, quint32, QString)));
+    disconnect(this, SIGNAL(windowStopBgmMusic(quint16, bool, bool)), window, SLOT(asyncStopBgmMusic(quint16, bool, bool)));
+    disconnect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
+    disconnect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
+    disconnect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
+
     disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
     disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
@@ -769,52 +773,58 @@ void EmuThread::refreshPluginState()
     bool enableInvisibleFastMode = false;
     bool disableInvisibleFastMode = false;
 
-    if (emuInstance->plugin->ShouldStopReplacementBgmMusic()) {
-        auto bgm = emuInstance->plugin->BackgroundMusicToStop();
-        emit windowStopBgmMusic(bgm);
-    }
+    if (true)
+    {
+        auto* plugin = emuInstance->plugin;
 
-    if (emuInstance->plugin->ShouldStartReplacementBgmMusic()) {
-        u16 bgm = emuInstance->plugin->CurrentBackgroundMusic();
-        bool bShouldStoreResumePos = emuInstance->plugin->shouldStoreBgmResumePosition(bgm);
-        if (bgm != 0) {
-            std::string path = emuInstance->plugin->replacementBackgroundMusicFilePath("bgm" + std::to_string(bgm));
-            if (path != "") {
-                int delay = emuInstance->plugin->delayBeforeStartReplacementBackgroundMusic();
-                if (delay == 0) {
-                    // disabling fast-foward, otherwise it will affect the cutscenes
-                    emuInstance->setVSyncGL(true);
+        auto request = plugin->getMusicReplacementRequest();
+        switch(request)
+        {
+        case Plugins::Plugin::EMusicRequest::Start:
+        {
+            // disabling fast-forward, otherwise it will affect the cutscenes
+            emuInstance->setVSyncGL(true);
 
-                    emuStatus = emuStatus_Paused;
-                    QString filePath = QString::fromUtf8(path.c_str());
-                    emit windowStartBgmMusic(bgm, bShouldStoreResumePos, filePath);
-                }
-                else {
-                    QTimer::singleShot(emuInstance->plugin->delayBeforeStartReplacementBackgroundMusic(), mainWindow, [this, bgm, bShouldStoreResumePos, path]() {
-                        // disabling fast-foward, otherwise it will affect the cutscenes
-                        emuInstance->setVSyncGL(true);
+            emuStatus = emuStatus_Running;
 
-                        emuStatus = emuStatus_Paused;
-                        QString filePath = QString::fromUtf8(path.c_str());
-                        emit windowStartBgmMusic(bgm, bShouldStoreResumePos, filePath);
-                    });
-                }
-            }
+            u16 bgm = plugin->getCurrentBackgroundMusic();
+            std::string path = plugin->getReplacementBackgroundMusicFilePath(bgm);
+
+            u8 previousPlayingBgm = plugin->getLastBackgroundMusic();
+            bool bShouldStoreResumePos = plugin->isBgmOfBattleType(previousPlayingBgm)
+                                            && plugin->isBgmOfFieldType(bgm);
+            u8 volume = plugin->getCurrentBgmMusicVolume();
+            u32 delayAtStart = plugin->getBgmDelayAtStart();
+    
+            QString filePath = QString::fromUtf8(path.c_str());
+            emit windowStartBgmMusic(bgm, volume, bShouldStoreResumePos, delayAtStart, filePath);
+            break;
+        }
+        case Plugins::Plugin::EMusicRequest::Stop:
+        {
+            u16 bgm = plugin->getBackgroundMusicToStop();
+            bool bShouldStoreResumePos = plugin->isBgmOfFieldType(bgm);
+            bool bShouldForceStopMusic = plugin->shouldForceStopMusic();
+            emit windowStopBgmMusic(bgm, bShouldStoreResumePos, bShouldForceStopMusic);
+            break;
+        }
+        case Plugins::Plugin::EMusicRequest::Pause:
+        {
+            emit windowPauseBgmMusic();
+            break;
+        }
+        case Plugins::Plugin::EMusicRequest::Resume:
+        {
+            emit windowUnpauseBgmMusic();
+            break;
+        }
+        }
+
+        if (plugin->getShouldUpdateBackgroundMusicVolume()) {
+            u8 volume = plugin->getCurrentBgmMusicVolume();
+            emit windowUpdateBgmMusicVolume(volume);
         }
     }
-
-    if (emuInstance->plugin->StartedReplacementBgmMusic()) {
-        emuStatus = emuStatus_Running;
-    }
-
-    if (emuInstance->plugin->ShouldPauseReplacementBgmMusic()) {
-        emit windowPauseBgmMusic();
-    }
-
-    if (emuInstance->plugin->ShouldUnpauseReplacementBgmMusic()) {
-        emit windowUnpauseBgmMusic();
-    }
-
 
     if (emuInstance->plugin->isMouseCursorGrabbed()) {
         QPoint point = mainWindow->panel->mapToGlobal(mainWindow->panel->rect().center());

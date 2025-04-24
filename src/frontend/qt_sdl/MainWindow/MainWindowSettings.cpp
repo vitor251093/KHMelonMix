@@ -62,12 +62,30 @@ void MainWindowSettings::initWidgets()
     createVideoPlayer();
 }
 
-void MainWindowSettings::asyncStartBgmMusic(quint16 bgmId, bool bStoreResumePos, QString bgmMusicFilePath)
+void MainWindowSettings::asyncStartBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, quint32 delayAtStart, QString bgmMusicFilePath)
 {
-    QMetaObject::invokeMethod(this, "startBgmMusic", Qt::QueuedConnection, Q_ARG(quint16, bgmId), Q_ARG(bool, bStoreResumePos), Q_ARG(QString, bgmMusicFilePath));
+    if (delayAtStart == 0) {
+        QMetaObject::invokeMethod(this, "startBgmMusic", Qt::QueuedConnection,
+            Q_ARG(quint16, bgmId), Q_ARG(quint8, volume),
+            Q_ARG(bool, bResumePos), Q_ARG(QString, bgmMusicFilePath));
+    } else {
+        QTimer* timer = new QTimer(this);
+        timer->setInterval(delayAtStart);
+        timer->setSingleShot(true);
+
+        printf("Delay to start replacement song %d (%dms)\n", bgmId, delayAtStart);
+
+        QObject::connect(timer, &QTimer::timeout, [this, bgmId, volume, bResumePos, bgmMusicFilePath](){
+            QMetaObject::invokeMethod(this, "startBgmMusic", Qt::QueuedConnection,
+                Q_ARG(quint16, bgmId), Q_ARG(quint8, volume),
+                Q_ARG(bool, bResumePos), Q_ARG(QString, bgmMusicFilePath));
+        });
+        timer->start();
+        delayedBgmStart.reset(timer);
+    }
 }
 
-void MainWindowSettings::startBgmMusic(quint16 bgmId, bool bStoreResumePos, QString bgmMusicFilePath)
+void MainWindowSettings::startBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, QString bgmMusicFilePath)
 {
     if (bgmMusicFilePath.isEmpty())
         return;
@@ -75,48 +93,77 @@ void MainWindowSettings::startBgmMusic(quint16 bgmId, bool bStoreResumePos, QStr
     melonMix::AudioPlayer* bgmPlayer = new melonMix::AudioPlayer(this, bgmId);
     bgmPlayer->loadFile(bgmMusicFilePath);
 
-    int volume = localCfg.GetInt("Audio.BGMVolume");
-    if (volume == 0) {
-        volume = (localCfg.GetInt("Audio.Volume") * 100) / 256;
-        localCfg.SetInt("Audio.BGMVolume", volume);
-    }
-    bgmPlayer->setVolume(volume / 256.0);
-
     quint64 startPosition = 0;
-    if (bStoreResumePos) {
-        if (bgmId != bgmToResumeId) {
-            startPosition = 0;
-            bgmToResumePosition = 0;
-        } else {
-            startPosition = bgmToResumePosition;
-        }
-
-        bgmToResumeId = bgmId;
+    if (bResumePos && bgmId == bgmToResumeId) {
+        startPosition = bgmToResumePosition;
     }
 
     static constexpr int kFadeInDurationMs = 600;
     int fadeIn = (startPosition > 0) ? kFadeInDurationMs : 0;
-    bgmPlayer->play(startPosition, fadeIn);
+    qreal initialVolume = getBgmMusicVolume(volume);
+    bgmPlayer->play(startPosition, initialVolume, fadeIn);
+    printf("Starting replacement song %d %svolume: %.3f\n", bgmId, (bResumePos ? "(Resumed with fadein) " : ""), initialVolume);
 
     emuInstance->plugin->onReplacementBackgroundMusicStarted();
 
     bgmPlayers.append(bgmPlayer);
 }
 
-void MainWindowSettings::asyncStopBgmMusic(quint16 bgmId)
+void MainWindowSettings::startBgmMusicDelayed(quint16 bgmId, quint8 volume, bool bResumePos, QString bgmMusicFilePath)
 {
-    QMetaObject::invokeMethod(this, "stopBgmMusic", Qt::QueuedConnection, Q_ARG(quint16, bgmId));
+    startBgmMusic(bgmId, volume, bResumePos, bgmMusicFilePath);
+    delayedBgmStart.reset(nullptr);
 }
 
-void MainWindowSettings::stopBgmMusic(quint16 bgmId)
+void MainWindowSettings::asyncUpdateBgmMusicVolume(quint8 ramVolume)
 {
+    QMetaObject::invokeMethod(this, "updateBgmMusicVolume", Qt::QueuedConnection, Q_ARG(quint8, ramVolume));
+}
+
+void MainWindowSettings::updateBgmMusicVolume(quint8 ramVolume)
+{
+    qreal volume = getBgmMusicVolume(ramVolume);
+
+    for(auto* player : bgmPlayers) {
+        player->setVolume(volume, 1000); // 1 sec transition
+    }
+}
+
+qreal MainWindowSettings::getBgmMusicVolume(quint8 ramVolume)
+{
+    int volume = localCfg.GetInt("Audio.BGMVolume");
+    if (volume == 0) {
+        volume = (localCfg.GetInt("Audio.Volume") * 100) / 256;
+        localCfg.SetInt("Audio.BGMVolume", volume);
+    }
+
+    if (ramVolume == 0x40) {
+        // Volume is decreased when paused or during cutscenes
+        volume *= 0.7;
+    }
+
+    return (volume / 256.0);
+}
+
+void MainWindowSettings::asyncStopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop)
+{
+    QMetaObject::invokeMethod(this, "stopBgmMusic", Qt::QueuedConnection, Q_ARG(quint16, bgmId), Q_ARG(bool, bStoreResumePos), Q_ARG(bool, bShouldForceStop));
+}
+
+void MainWindowSettings::stopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop)
+{
+    if (delayedBgmStart)
+        delayedBgmStart.reset();
+
     for(auto* player : bgmPlayers) {
         if (player->getBgmId() == bgmId && player->isPlaying()) {
-            static constexpr int kFadeOutDurationMs = 600;
-            printf("Stopping replacement song with %d fadeout\n", kFadeOutDurationMs);
-            player->stop(kFadeOutDurationMs);
-    
-            if (bgmId == bgmToResumeId) {
+            static constexpr int kFadeOutDurationMs = 1800;
+            int fadeOut = bShouldForceStop ? 0 : kFadeOutDurationMs;
+            printf("Stopping replacement song %d with %dms fadeout\n", bgmId, fadeOut);
+            player->stop(fadeOut);
+
+            if (bStoreResumePos) {
+                bgmToResumeId = bgmId;
                 bgmToResumePosition = player->getCurrentPlayingPos();
             }
         }
@@ -130,6 +177,8 @@ void MainWindowSettings::asyncPauseBgmMusic()
 
 void MainWindowSettings::pauseBgmMusic()
 {
+    printf("Pausing bgm music\n");
+
     for(auto* player : bgmPlayers) {
         player->pause();
     }
@@ -142,6 +191,8 @@ void MainWindowSettings::asyncUnpauseBgmMusic()
 
 void MainWindowSettings::unpauseBgmMusic()
 {
+    printf("Resuming bgm music\n");
+
     for(auto* player : bgmPlayers) {
         player->resume();
     }

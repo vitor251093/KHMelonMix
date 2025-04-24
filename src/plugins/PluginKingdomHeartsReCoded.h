@@ -56,8 +56,6 @@ public:
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene);
 
-    std::string replacementBackgroundMusicFilePath(std::string name);
-
     const char* getGameSceneName();
 
     bool shouldRenderFrame();

@@ -124,10 +124,15 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MAP_FROM_WORLD_JP      0x02187FC6
 #define CURRENT_MAP_FROM_WORLD_JP_REV1 0x02188046
 
-#define SONG_ADDRESS_US      0x02191D5E
-#define SONG_ADDRESS_EU      0x02192B3E
-#define SONG_ADDRESS_JP      0x02191D5E // TODO: KH
-#define SONG_ADDRESS_JP_REV1 0x02191D5E // TODO: KH
+#define SONG_ID_ADDRESS_US      0x02191D5E
+#define SONG_ID_ADDRESS_EU      0x02192B3E
+#define SONG_ID_ADDRESS_JP      0x02190EBE
+#define SONG_ID_ADDRESS_JP_REV1 0x02190E3E
+
+#define SSEQ_TABLE_ADDRESS_US      0x020E51A0
+#define SSEQ_TABLE_ADDRESS_EU      0x020E5F80
+#define SSEQ_TABLE_ADDRESS_JP      0x020E4300
+#define SSEQ_TABLE_ADDRESS_JP_REV1 0x020E4280
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
@@ -374,6 +379,8 @@ void PluginKingdomHeartsDays::loadLocalization() {
 }
 
 void PluginKingdomHeartsDays::onLoadROM() {
+    stopBackgroundMusic(true);
+
     loadLocalization();
 
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
@@ -387,7 +394,7 @@ void PluginKingdomHeartsDays::onLoadState()
 
     GameScene = gameScene_InGameWithMap;
 
-    _CurrentBackgroundMusic = 0x101;
+    stopBackgroundMusic(true);
 }
 
 std::string PluginKingdomHeartsDays::assetsFolder() {
@@ -2065,28 +2072,104 @@ bool PluginKingdomHeartsDays::isUnskippableMobiCutscene(CutsceneEntry* cutscene)
 }
 
 u16 PluginKingdomHeartsDays::detectMidiBackgroundMusic() {
-    u16 soundtrack = nds->ARM7Read16(getAnyByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1));
+    u16 soundtrack = nds->ARM7Read16(getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1));
     if (soundtrack > 0) {
         return soundtrack;
     }
     return 0;
 }
 
-std::string PluginKingdomHeartsDays::replacementBackgroundMusicFilePath(std::string name) {
-    std::string filename = name + ".wav";
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
-    std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
+Plugin::EMusicRequest PluginKingdomHeartsDays::getMusicReplacementRequest() {
+    if (_ShouldStopReplacementBgmMusic) {
+        _ShouldStopReplacementBgmMusic = false;
+        return EMusicRequest::Stop;
     }
 
-    filename = name + ".mp3";
-    fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
+    if (_ShouldStartReplacementBgmMusic) {
+        _ShouldStartReplacementBgmMusic = false;
+        u16 bgm = getCurrentBackgroundMusic();
+        if (bgm != 0) {
+            std::string path = getReplacementBackgroundMusicFilePath(bgm);
+            if (path != "") {
+                return EMusicRequest::Start;
+            }
+        }
     }
 
-    return "";
+    if (_ShouldPauseReplacementBgmMusic) {
+        _ShouldPauseReplacementBgmMusic = false;
+        _PausedReplacementBgmMusic = true;
+        return EMusicRequest::Pause;
+    }
+
+    if (_ShouldUnpauseReplacementBgmMusic) {
+        _ShouldUnpauseReplacementBgmMusic = false;
+        _PausedReplacementBgmMusic = false;
+        return EMusicRequest::Resume;
+    }
+
+    return EMusicRequest::Nothing;
+}
+
+void PluginKingdomHeartsDays::muteSongSequence(u16 bgmId) {
+
+    if (bgmId == 0 || bgmId == 0xFFFF) {
+        return;
+    }
+
+    const u32 songTableAddr = getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
+
+    u32 idInTable = getSongIdInSongTable(bgmId);
+    const u32 entryAddress = songTableAddr + (idInTable * 16);
+
+    u32 songSize = nds->ARM9Read32(entryAddress);
+    u32 songAddress = nds->ARM9Read32(entryAddress + 4);
+    if (songAddress == 0) {
+        return;
+    }
+
+    u32 sseqTag = nds->ARM9Read32(songAddress);
+    u32 sseqMagic = nds->ARM9Read32(songAddress + 4);
+    u32 sseqFileSize = nds->ARM9Read32(songAddress + 8);
+
+    if (sseqTag != 0x51455353) { // SSEQ
+        printf("Error: Invalid SSEQ: incorrect header tag\n");
+        return;
+    }
+
+    if (sseqMagic != 0x0100feff) {
+        printf("Error: Invalid SSEQ: incorrect magic number\n");
+        return;
+    }
+
+    if (sseqFileSize != songSize) {
+        printf("Error: Invalid SSEQ: incorrect file size\n");
+        return;
+    }
+
+    u32 firstValue = nds->ARM9Read32(songAddress + 32);
+    if (firstValue != 0) {
+        constexpr const u32 headerSize = 32;
+        u32 sizeToErase = songSize - headerSize;
+
+        u32 startErase = songAddress + headerSize;
+        u32 endErase = songAddress + songSize;
+        for (u32 addr = startErase; addr < endErase; addr+=4) {
+            nds->ARM7Write32(addr, 0x00);
+        }
+
+        //printf("Music SSEQ: Muted bgm %d (erased %d bytes)\n", bgmId, endErase - startErase);
+    }
+}
+
+void PluginKingdomHeartsDays::stopBackgroundMusic(bool bImmediateStop) {
+    if (_CurrentBackgroundMusic > 0) {
+        _ShouldStopReplacementBgmMusic = true;
+        _BackgroundMusicToStop = _CurrentBackgroundMusic;
+        _ForceStopMusic = bImmediateStop;
+        _LastBackgroundMusic = _CurrentBackgroundMusic;
+        _CurrentBackgroundMusic = 0;
+    }
 }
 
 void PluginKingdomHeartsDays::refreshBackgroundMusic() {
@@ -2094,63 +2177,110 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     return;
 #endif
 
-    u16 fakeSoundtrackId = 0x100;
-    u16 soundtrackId = detectMidiBackgroundMusic();
+    static constexpr u16 STOP_BGM_ID = 0xFFFF;
+    u16 bgmId = detectMidiBackgroundMusic();
 
-    std::string soundtrackPath = replacementBackgroundMusicFilePath("bgm" + std::to_string(soundtrackId));
-    bool replacementAvailable = (soundtrackPath != "");
+    if (bgmId != _LastSoundtrackId) {
+        if (bgmId == STOP_BGM_ID) {
+            stopBackgroundMusic(false);
 
-    if (soundtrackId != _CurrentBackgroundMusic) {
-        if (soundtrackId == fakeSoundtrackId) {
-            _LastSoundtrackId = soundtrackId;
-        }
-        else if (soundtrackId == 0xFFFF) {
-            if (_LastSoundtrackId != fakeSoundtrackId && _CurrentBackgroundMusic != 0) {
-                _ShouldStopReplacementBgmMusic = true;
-                _BackgroundMusicToStop = _CurrentBackgroundMusic;
-                printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
-    
-                _CurrentBackgroundMusic = soundtrackId;
-                _LastSoundtrackId = soundtrackId;
+            _LastSoundtrackId = bgmId;
+            _MuteSeqBgm = false;
+        } else {
+            if (bgmId != _CurrentBackgroundMusic) {
+                stopBackgroundMusic(false);
+
+                std::string replacementBgmPath = getReplacementBackgroundMusicFilePath(bgmId);
+                if (replacementBgmPath != "") {
+                    _ShouldStartReplacementBgmMusic = true;
+                    _CurrentBackgroundMusic = bgmId;
+                    _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic();
+                }
+
+                _MuteSeqBgm = (replacementBgmPath != "");
             }
-        }
-        else {
-            _ShouldStopReplacementBgmMusic = true;
-            _BackgroundMusicToStop = _CurrentBackgroundMusic;
 
-            if (replacementAvailable) {
-                u32 address = getAnyByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-                nds->ARM7Write16(address, fakeSoundtrackId);
-
-                _ShouldStartReplacementBgmMusic = replacementAvailable;
-                printf("Starting replacement song %d\n", soundtrackId);
-        
-                _CurrentBackgroundMusic = soundtrackId;
-                _LastSoundtrackId = soundtrackId;
-            }
-            else
-            {
-                // No replacement available, resetting
-                _CurrentBackgroundMusic = soundtrackId;
-                _LastSoundtrackId = soundtrackId;
-            }
+            _LastSoundtrackId = bgmId;
         }
     }
-    else {
-        if (replacementAvailable) {
-            u32 address = getAnyByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-            nds->ARM7Write16(address, fakeSoundtrackId);
-        }
-    
-        _CurrentBackgroundMusic = soundtrackId;
-        _LastSoundtrackId = soundtrackId;
+
+    u32 SONG_VOLUME_QUIET_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x07;
+    u8 currVolume = nds->ARM7Read8(SONG_VOLUME_QUIET_ADDRESS);
+
+    if (_BackgroundMusicVolume != currVolume) {
+        _BackgroundMusicVolume = currVolume;
+        _ShouldUpdateReplacementBgmMusicVolume = true;
+    }
+
+    if (_MuteSeqBgm) {
+        muteSongSequence(bgmId);
     }
 }
 
-bool PluginKingdomHeartsDays::shouldStoreBgmResumePosition(u16 soundtrackId) const
+bool PluginKingdomHeartsDays::isBgmOfFieldType(u16 soundtrackId) const
 {
-    static std::vector<u16> ids = { 2, 5, 7, 9, 11, 15, 16, 33 };
+    static std::vector<u16> ids = { 2, 5, 7, 9, 11, 16, 33 };
     return (std::find(ids.begin(), ids.end(), soundtrackId) != ids.end());
+}
+
+bool PluginKingdomHeartsDays::isBgmOfBattleType(u16 soundtrackId) const
+{
+    static std::vector<u16> ids = { 1, 6, 8, 10, 12, 17, 34 };
+    return (std::find(ids.begin(), ids.end(), soundtrackId) != ids.end());
+}
+
+std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 soundtrackId) const
+{
+    switch(soundtrackId)
+    {
+        case 1 : return "Sinister Sundown";
+        case 2 : return "Lazy Afternoons";
+        case 3 : return "Destiny's Force";
+        case 4 : return "Results and Rewards";
+        case 5 : return "Welcome to Wonderland";
+        case 6 : return "To Our Surprise";
+        case 7 : return "Olympus Coliseum";
+        case 8 : return "Go for It!";
+        case 9 : return "This is Halloween";
+        case 10 : return "Spooks of Halloween Town";
+        case 11 : return "A Day in Agrabah";
+        case 12 : return "Arabian Dream";
+        case 13 : return "Sacred Moon";
+        case 14 : return "Critical Drive";
+        case 15 : return "Mystic Moon";
+        case 16 : return "Waltz of the Damned";
+        case 17 : return "Dance of the Daring";
+        case 18 : return "Organization XIII";
+        case 19 : return "Roxas";
+        case 20 : return "Tension Rising";
+        case 21 : return "Rowdy Rumble";
+        case 22 : return "Musique pour la tristesse de Xion";
+        case 23 : return "Shrouding Dark Cloud";
+        case 24 : return "Vim and Vigor";
+        case 25 : return "Riku";
+        case 26 : return "Strange Whispers";
+        // no Id 27! gap needs to be removed when calling getSongIdInSongTable
+        case 28 : return "Theme of Friends";
+        case 29 : return "Missing You";
+        case 30 : return "Crossing the Finish Line";
+        case 31 : return "Cavern of Remembrance";
+        case 32 : return "Xemnas";
+        case 33 : return "Secret of Neverland";
+        case 34 : return "Crossing to Neverland";
+        case 35 : return "At dusk I will think of you";
+        case 36 : return "Fight and Away";
+        case 37 : return "Another Side Battle Version";
+        case 38 : return "Vector to the Heavens";
+        default: return "Unknown BGM";
+    }
+}
+
+u16 PluginKingdomHeartsDays::getSongIdInSongTable(u16 bgmId)
+{
+    if (bgmId > 0 && bgmId < 28)
+        return bgmId;
+    else
+        return bgmId - 1;
 }
 
 int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
