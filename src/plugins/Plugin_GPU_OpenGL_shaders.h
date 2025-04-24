@@ -53,7 +53,7 @@ uniform float forcedAspectRatio;
 uniform int hudScale;
 uniform bool showOriginalHud;
 uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
-uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = no brightness
+uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = horizontal, 4 = no brightness
 
 uniform int shapeCount;
 
@@ -224,24 +224,11 @@ ivec4 getForcedAspectRatioScreen3DColor(float xpos, float ypos)
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    float sourceScreenHeight = 192.0;
     float sourceScreenWidth = 256.0;
-    float sourceScreenTopMargin = 0;
-    float sourceScreenLeftMargin = 0;
-    float screenHeight = sourceScreenHeight;
-    float screenWidth = sourceScreenWidth*heightScale;
-    float screenTopMargin = 0;
-    float screenLeftMargin = (256.0 - screenWidth)/2;
-    if (texPosition3d.x >= screenLeftMargin &&
-        texPosition3d.x < (screenWidth + screenLeftMargin) && 
-        texPosition3d.y <= (screenHeight + screenTopMargin) && 
-        texPosition3d.y >= screenTopMargin) {
-        ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(screenLeftMargin, screenTopMargin)) +
-            vec2(sourceScreenLeftMargin, sourceScreenTopMargin))*u3DScale);
-        return ivec4(texelFetch(_3DTex, position3d, 0).bgra
-            * vec4(63,63,63,31));
-    }
-    return ivec4(63,63,63,0);
+    float screenLeftMargin = (sourceScreenWidth - sourceScreenWidth*heightScale)/2;
+    
+    ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(screenLeftMargin, 0)))*u3DScale);
+    return ivec4(texelFetch(_3DTex, position3d, 0).bgra * vec4(63,63,63,31));
 }
 
 ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
@@ -442,16 +429,20 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     if (screenLayout == 3) { // horizontal
         ivec2 textureBeginning = ivec2(getHorizontalDualScreen2DTextureCoordinates(xpos, ypos));
         if (textureBeginning.x == -1 && textureBeginning.y == -1) {
-            ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, 96), 0));
+            textureBeginning = ivec2(128, 0);
 
+            int yOffset = (xpos < 128) ? 96 : (192 + 96);
+            ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset), 0));
             if ((mbright.b & 0x3) != 1 || ((mbright.g >> 6) == 2 && mbright.r >= 16))
             {
                 // black screen due to brightness
                 textureBeginning = ivec2(-1, -1);
             }
-            else
-            {
-                textureBeginning = ivec2(128, 0);
+        }
+
+        if (textureBeginning.x == -1 && textureBeginning.y == -1) {
+            if (index == 2) {
+                return ivec4(255, 255, 255, 0);
             }
         }
 
@@ -610,16 +601,18 @@ ivec4 brightness()
     if (brightnessMode == 2) { // bottom screen brightness
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192 + int(fTexcoord.y)), 0));
     }
-    if (brightnessMode == 3) { // no brightness
-        return ivec4(0x1F, 2 << 6, 0x2, 0);
-    }
-
-    // brightnessMode == 0
-    if (screenLayout == 3) { // horizontal
+    if (brightnessMode == 3) { // horizontal
         int yOffset = (fTexcoord.x < 128) ? 96 : (192 + 96);
         return ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset), 0));
     }
+    if (brightnessMode == 4) { // black screen
+        return ivec4(0x1F, 2 << 6, 0x2, 0);
+    }
+    if (brightnessMode == 5) { // regular brightness
+        return ivec4(0, 2 << 6, 0x2, 0);
+    }
 
+    // brightnessMode == 0
     ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     int brightmode = mbright.g >> 6;
     if ((mbright.b & 0x3) != 0 && brightmode == 2) {

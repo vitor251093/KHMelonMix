@@ -8,12 +8,61 @@
 namespace Plugins
 {
 
+enum
+{
+    shape_Square
+};
+
+enum
+{
+    corner_PreservePosition,
+    corner_Center,
+    corner_TopLeft,
+    corner_Top,
+    corner_TopRight,
+    corner_Right,
+    corner_BottomRight,
+    corner_Bottom,
+    corner_BottomLeft,
+    corner_Left
+};
+
+enum
+{
+    screenLayout_Top,
+    screenLayout_Bottom,
+    screenLayout_BothVertical,
+    screenLayout_BothHorizontal
+};
+
+enum
+{
+    brightnessMode_Default,
+    brightnessMode_TopScreen,
+    brightnessMode_BottomScreen,
+    brightnessMode_Horizontal,
+    brightnessMode_BlackScreen,
+    brightnessMode_RegularBrightness
+};
+
+enum
+{
+    mirror_None = 0x00,
+    mirror_X    = 0x08,
+    mirror_Y    = 0x10,
+    mirror_XY   = 0x18
+};
+
 struct vec2 {
     float x, y;
 };
 
 struct ivec2 {
     int x, y;
+};
+
+struct vec3 {
+    float x, y, z;
 };
 
 struct ivec3 {
@@ -80,49 +129,152 @@ struct alignas(16) ShapeData3D {
     int colorCount = 0;
     int negatedColorCount = 0;
     int _pad0, _pad1;
-};
 
-enum
-{
-    shape_Square
-};
+    bool doesAttributeMatch(int polygonAttr) {
+        bool attrMatchEqual = false;
+        bool attrMatchEqual2 = false;
+        bool attrMatchNeg = false;
+        for (int i = 0; i < 4; i++) {
+            if (polygonAttributes[i] != 0) {
+                attrMatchEqual = true;
+                if (polygonAttributes[i] == polygonAttr) {
+                    attrMatchEqual2 = true;
+                    break;
+                }
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            if (negatedPolygonAttributes[i] != 0 && negatedPolygonAttributes[i] == polygonAttr) {
+                attrMatchNeg = true;
+                break;
+            }
+        }
+        return (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
+    }
 
-enum
-{
-    corner_PreservePosition,
-    corner_Center,
-    corner_TopLeft,
-    corner_Top,
-    corner_TopRight,
-    corner_Right,
-    corner_BottomRight,
-    corner_Bottom,
-    corner_BottomLeft,
-    corner_Left
-};
+    bool doesColorMatch(int* rgb)
+    {
+        bool colorMatchEqual = false;
+        bool colorMatchEqual2 = false;
+        bool colorMatchNeg = false;
+        for (int i = 0; i < colorCount; i++) {
+            colorMatchEqual = true;
+            if ((((color[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+            && (((color[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+            && (((color[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                colorMatchEqual2 = true;
+                break;
+            }
+        }
+        for (int i = 0; i < negatedColorCount; i++) {
+            if ((((negatedColor[i] >> 8) & 0xFF) == (rgb[0] >> 1))
+            && (((negatedColor[i] >> 4) & 0xFF) == (rgb[1] >> 1))
+            && (((negatedColor[i] >> 0) & 0xFF) == (rgb[2] >> 1))) {
+                colorMatchNeg = true;
+                break;
+            }
+        }
+        return (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
+    }
 
-enum
-{
-    screenLayout_Top,
-    screenLayout_Bottom,
-    screenLayout_BothVertical,
-    screenLayout_BothHorizontal
-};
+    vec3 compute3DCoordinatesOf3DSquareShapeInVertexMode(float _x, float _y, float _z, int polygonAttr, int* rgb, float resolutionScale, float aspectRatio)
+    {
+        float updated = 0;
 
-enum
-{
-    brightnessMode_Default,
-    brightnessMode_TopScreen,
-    brightnessMode_BottomScreen,
-    brightnessMode_Off
-};
+        bool loggerModeEnabled = (effects & 0x4) != 0;
 
-enum
-{
-    mirror_None = 0x00,
-    mirror_X    = 0x08,
-    mirror_Y    = 0x10,
-    mirror_XY   = 0x18
+        bool attrMatch = doesAttributeMatch(polygonAttr);
+        if (!attrMatch) {
+            return vec3{_x, _y, updated};
+        }
+
+        bool colorMatch = doesColorMatch(rgb);
+        if (!colorMatch) {
+            return vec3{_x, _y, updated};
+        }
+
+        float iuTexScale = SCREEN_SCALE/hudScale;
+
+        float ScreenWidth = 256.0*resolutionScale;
+        float ScreenHeight = 192.0*resolutionScale;
+
+        float scaleX = sourceScale.x;
+        float scaleY = sourceScale.y;
+        
+        float heightScale = 1.0/aspectRatio;
+
+        float squareFinalWidth = (squareInitialCoords.z*scaleX*resolutionScale*heightScale)/iuTexScale;
+        float squareFinalHeight = (squareInitialCoords.w*scaleY*resolutionScale)/iuTexScale;
+
+        if (_x >= squareInitialCoords.x*resolutionScale && _x <= (squareInitialCoords.x + squareInitialCoords.z)*resolutionScale &&
+            _y >= squareInitialCoords.y*resolutionScale && _y <= (squareInitialCoords.y + squareInitialCoords.w)*resolutionScale &&
+            _z >= zRange.x && _z <= zRange.y)
+        {
+            updated = 1;
+
+            // hide vertex
+            if ((effects & 0x2) != 0)
+            {
+                _x = 0;
+                _y = 0;
+            }
+            else {
+                float squareFinalX1 = 0.0;
+                float squareFinalY1 = 0.0;
+
+                switch (corner)
+                {
+                    case corner_PreservePosition:
+                        squareFinalX1 = (squareInitialCoords.x + squareInitialCoords.z/2)*scaleX - squareFinalWidth/2;
+                        squareFinalY1 = (squareInitialCoords.y + squareInitialCoords.w/2)*scaleY - squareFinalHeight/2;
+                        break;
+
+                    case corner_Center:
+                        squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
+                        squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
+                        break;
+                    
+                    case corner_TopLeft:
+                        break;
+                    
+                    case corner_Top:
+                        squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
+                        break;
+
+                    case corner_TopRight:
+                        squareFinalX1 = ScreenWidth - squareFinalWidth;
+                        break;
+
+                    case corner_Right:
+                        squareFinalX1 = ScreenWidth - squareFinalWidth;
+                        squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
+                        break;
+
+                    case corner_BottomRight:
+                        squareFinalX1 = ScreenWidth - squareFinalWidth;
+                        squareFinalY1 = ScreenHeight - squareFinalHeight;
+                        break;
+
+                    case corner_Bottom:
+                        squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
+                        squareFinalY1 = ScreenHeight - squareFinalHeight;
+                        break;
+
+                    case corner_BottomLeft:
+                        squareFinalY1 = ScreenHeight - squareFinalHeight;
+                        break;
+
+                    case corner_Left:
+                        squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
+                }
+
+                _x = ((_x - squareInitialCoords.x*resolutionScale)/iuTexScale)*scaleX*heightScale + squareFinalX1 + (margin.x - margin.z)*(resolutionScale/(iuTexScale*aspectRatio));
+                _y = ((_y - squareInitialCoords.y*resolutionScale)/iuTexScale)*scaleY             + squareFinalY1 + (margin.y - margin.w)*(resolutionScale/iuTexScale);
+            }
+        }
+
+        return vec3{_x, _y, updated};
+    }
 };
 
 class ShapeBuilder2D
@@ -257,6 +409,10 @@ public:
     void precompute3DCoordinatesOf2DSquareShape(float aspectRatio)
     {
         float iuTexScale = SCREEN_SCALE/_hudScale;
+
+        float ScreenWidth = 256.0*iuTexScale;
+        float ScreenHeight = 192.0*iuTexScale;
+
         float scaleX = shapeData.sourceScale.x;
         float scaleY = shapeData.sourceScale.y;
         
@@ -276,46 +432,46 @@ public:
                 break;
 
             case corner_Center:
-                squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-                squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+                squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
+                squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
                 break;
             
             case corner_TopLeft:
                 break;
             
             case corner_Top:
-                squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
+                squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
                 break;
 
             case corner_TopRight:
-                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
+                squareFinalX1 = ScreenWidth - squareFinalWidth;
                 break;
 
             case corner_Right:
-                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
-                squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+                squareFinalX1 = ScreenWidth - squareFinalWidth;
+                squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
                 break;
 
             case corner_BottomRight:
-                squareFinalX1 = 256.0*iuTexScale - squareFinalWidth;
-                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
+                squareFinalX1 = ScreenWidth - squareFinalWidth;
+                squareFinalY1 = ScreenHeight - squareFinalHeight;
                 break;
 
             case corner_Bottom:
-                squareFinalX1 = (256.0*iuTexScale - squareFinalWidth)/2;
-                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
+                squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
+                squareFinalY1 = ScreenHeight - squareFinalHeight;
                 break;
 
             case corner_BottomLeft:
-                squareFinalY1 = 192.0*iuTexScale - squareFinalHeight;
+                squareFinalY1 = ScreenHeight - squareFinalHeight;
                 break;
 
             case corner_Left:
-                squareFinalY1 = (192.0*iuTexScale - squareFinalHeight)/2;
+                squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
         }
 
-        squareFinalX1 = squareFinalX1 + _margin.x*heightScale - _margin.z*heightScale;
-        squareFinalY1 = squareFinalY1 + _margin.y - _margin.w;
+        squareFinalX1 = squareFinalX1 + (_margin.x - _margin.z)*heightScale;
+        squareFinalY1 = squareFinalY1 + (_margin.y - _margin.w);
 
         float squareFinalX2 = squareFinalX1 + squareFinalWidth;
         float squareFinalY2 = squareFinalY1 + squareFinalHeight;

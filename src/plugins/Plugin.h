@@ -101,6 +101,67 @@ struct CutsceneEntry
     int dsScreensState;
 };
 
+struct TextureEntryScene
+{
+    std::string path;
+    std::string fullPath;
+    u32 time;
+};
+
+struct TextureEntry
+{
+    std::string type;
+    u32 totalScenes;
+    TextureEntryScene scenes[1000];
+
+    u32 sceneIndex;
+
+    void setPath(std::string _path) {
+        type = "static";
+        totalScenes = 1;
+        sceneIndex = 0;
+        scenes[0].path = _path;
+    }
+
+    void setFullPath(std::string _path) {
+        scenes[0].fullPath = _path;
+    }
+
+    void setType(std::string _type) {
+        type = _type;
+        sceneIndex = 0;
+    }
+
+    void setFramePath(int index, std::string _path) {
+        totalScenes = totalScenes > (index + 1) ? totalScenes : (index + 1);
+        scenes[index].path = _path;
+    }
+
+    void setFrameFullPath(int index, std::string _path) {
+        totalScenes = totalScenes > (index + 1) ? totalScenes : (index + 1);
+        scenes[index].fullPath = _path;
+    }
+
+    void setFrameTime(int index, u32 _time) {
+        totalScenes = totalScenes > (index + 1) ? totalScenes : (index + 1);
+        scenes[index].time = (_time * 60) / 1000;
+    }
+
+    TextureEntryScene& getLastScene() {
+        return scenes[sceneIndex];
+    }
+
+    TextureEntryScene& getNextScene() {
+        if (type == "animation") {
+            if (totalScenes == ++sceneIndex) {
+                sceneIndex = 0;
+            }
+            return scenes[sceneIndex];
+        }
+        return scenes[sceneIndex];
+    }
+};
+
 class Plugin
 {
 protected:
@@ -167,8 +228,8 @@ public:
     virtual std::string localizationFilePath(std::string language) {return "";}
 
     virtual std::string textureIndexFilePath();
-    virtual std::map<std::string, std::string> getTexturesIndex();
-    virtual std::string textureFilePath(std::string texture);
+    virtual std::map<std::string, TextureEntry>& getTexturesIndex();
+    virtual TextureEntry& textureById(std::string texture);
     virtual std::string tmpTextureFilePath(std::string texture);
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
@@ -214,12 +275,14 @@ public:
     bool ShouldUnpauseReplacementBgmMusic();
     bool ShouldStopReplacementBgmMusic();
     u16 CurrentBackgroundMusic();
+    u16 BackgroundMusicToStop();
 
     virtual std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
 
     void onReplacementBackgroundMusicStarted();
 
     virtual void refreshBackgroundMusic() {}
+    virtual bool shouldStoreBgmResumePosition(u16 soundtrackId) const { return false; }
 
 
     virtual void refreshMouseStatus() {}
@@ -288,7 +351,7 @@ protected:
 
     bool _LastTouchScreenMovementWasByPlugin = false;
 
-    std::map<std::string, std::string> texturesIndex;
+    std::map<std::string, TextureEntry> texturesIndex;
 
     int _StartPressCount = 0;
     int _ReplayLimitCount = 0;
@@ -321,6 +384,7 @@ protected:
     bool _ShouldStopReplacementBgmMusic = false;
     u16 _CurrentBackgroundMusic = 0;
     u16 _LastSoundtrackId = 0;
+    u16 _BackgroundMusicToStop = 0;
 
 
     bool _ShouldGrabMouseCursor = false;

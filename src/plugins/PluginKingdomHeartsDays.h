@@ -24,7 +24,7 @@ public:
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
-    bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROMLength() == 268435456; };
+    bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROM()[0x1E] == 1; };
 
     void loadLocalization();
     void onLoadROM();
@@ -149,7 +149,8 @@ private:
     bool canReturnToGameAfterReplacementCutscene();
 
     u16 detectMidiBackgroundMusic();
-    void refreshBackgroundMusic();
+    void refreshBackgroundMusic() override;
+    bool shouldStoreBgmResumePosition(u16 soundtrackId) const override;
 
     void refreshMouseStatus();
 
