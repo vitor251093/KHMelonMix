@@ -198,6 +198,20 @@ void MainWindowSettings::unpauseBgmMusic()
     }
 }
 
+void MainWindowSettings::asyncStopAllBgm()
+{
+    QMetaObject::invokeMethod(this, "stopAllBgm", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::stopAllBgm()
+{
+    printf("Stop all bgm\n");
+
+    for(auto* player : bgmPlayers) {
+        player->stop(0);
+    }
+}
+
 void MainWindowSettings::onBgmFadeOutCompleted(melonMix::AudioPlayer* playerStopped)
 {
     for(auto it = bgmPlayers.begin(); it != bgmPlayers.end();) {

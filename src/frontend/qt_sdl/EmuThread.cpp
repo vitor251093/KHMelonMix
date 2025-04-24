@@ -94,7 +94,8 @@ void EmuThread::attachWindow(MainWindow* window)
     connect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
     connect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
     connect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
-    
+    connect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
+
     connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
     connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
@@ -123,6 +124,7 @@ void EmuThread::detachWindow(MainWindow* window)
     disconnect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
     disconnect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
     disconnect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
+    disconnect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
 
     disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
     disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
@@ -193,6 +195,7 @@ void EmuThread::run()
                 lastVideoRenderer = -1;
                 videoSettingsDirty = true;
 
+                emit windowStopAllBgm();
                 emuInstance->plugin = Plugins::PluginManager::load(gamecode);
                 emuInstance->plugin->setNds(emuInstance->getNDS());
                 emuInstance->plugin->onLoadROM();

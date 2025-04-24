@@ -162,6 +162,7 @@ signals:
     void windowPauseBgmMusic();
     void windowUnpauseBgmMusic();
     void windowUpdateBgmMusicVolume(quint8 volume);
+    void windowStopAllBgm();
 
     void windowStartVideo(QString videoFilePath);
     void windowStopVideo();

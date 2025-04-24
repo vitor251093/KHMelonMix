@@ -52,11 +52,13 @@ public slots:
     void asyncPauseBgmMusic();
     void asyncUnpauseBgmMusic();
     void asyncUpdateBgmMusicVolume(quint8 ramVolume);
+    void asyncStopAllBgm();
 
     void startBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, QString bgmMusicFilePath);
     void stopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop);
     void pauseBgmMusic();
     void unpauseBgmMusic();
+    void stopAllBgm();
 
     void updateBgmMusicVolume(quint8 ramVolume);
 
