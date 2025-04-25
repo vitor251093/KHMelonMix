@@ -266,27 +266,33 @@ public:
     void onReplacementCutsceneEnd();
     void onReturnToGameAfterCutscene();
 
-    enum EMusicRequest : u8 { Nothing, Start, Stop, Pause, Resume };
-    virtual EMusicRequest getMusicReplacementRequest() { return EMusicRequest::Nothing; }
-    bool getShouldUpdateBackgroundMusicVolume();
+    inline bool shouldStartBackgroundMusic() { return checkAndResetBool(_ShouldStartReplacementBgmMusic); }
+    inline bool shouldStopBackgroundMusic() { return checkAndResetBool(_ShouldStopReplacementBgmMusic); }
+    inline bool shouldPauseBackgroundMusic() { return checkAndResetBool(_ShouldPauseReplacementBgmMusic); _PausedReplacementBgmMusic = true; }
+    inline bool shouldResumeBackgroundMusic() { return checkAndResetBool(_ShouldUnpauseReplacementBgmMusic); _PausedReplacementBgmMusic = false; }
+    inline bool shouldUpdateBackgroundMusicVolume() { return checkAndResetBool(_ShouldUpdateReplacementBgmMusicVolume); }
+
+    inline bool checkAndResetBool(bool& val) {
+        if (val) {
+            val = false;
+            return true;
+        }
+        return false;
+    }
 
     int delayBeforeStartReplacementBackgroundMusic();
     bool isBackgroundMusicPlaying() const { return _CurrentBackgroundMusic > 0; }
     u16 getCurrentBackgroundMusic() const { return _CurrentBackgroundMusic; }
-    u16 getLastBackgroundMusic() const { return _LastBackgroundMusic; }
     u16 getBackgroundMusicToStop() const { return _BackgroundMusicToStop; }
     bool shouldForceStopMusic() const { return _ForceStopMusic; }
-    u16 getMusicFadeOutDuration() const { return _BackgroundMusicToStop; }
     u8 getCurrentBgmMusicVolume() const { return _BackgroundMusicVolume; }
     u32 getBgmDelayAtStart() const { return _BackgroundMusicDelayAtStart; }
+    bool getStoreBackgroundMusicPosition() const { return _StoreBackgroundMusicPosition; }
+    bool getResumeFromPositionBackgroundMusic() const { return _ResumeBackgroundMusicPosition; }
 
     std::string getReplacementBackgroundMusicFilePath(u16 id);
 
-    void onReplacementBackgroundMusicStarted();
-
     virtual void refreshBackgroundMusic() {}
-    virtual bool isBgmOfFieldType(u16 soundtrackId) const { return false; }
-    virtual bool isBgmOfBattleType(u16 soundtrackId) const { return false; }
     virtual std::string getBackgroundMusicName(u16 soundtrackId) const { return ""; }
 
     virtual void refreshMouseStatus() {}
@@ -393,7 +399,8 @@ protected:
     bool _ForceStopMusic = false;
     bool _MuteSeqBgm = false;
     u8 _BackgroundMusicVolume = 0x7f;
-
+    bool _StoreBackgroundMusicPosition = false;
+    bool _ResumeBackgroundMusicPosition = false;
 
     bool _ShouldGrabMouseCursor = false;
     bool _ShouldReleaseMouseCursor = false;

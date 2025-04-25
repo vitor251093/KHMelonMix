@@ -776,15 +776,11 @@ void EmuThread::refreshPluginState()
     bool enableInvisibleFastMode = false;
     bool disableInvisibleFastMode = false;
 
-    if (true)
+     // Background music replacement
     {
         auto* plugin = emuInstance->plugin;
 
-        auto request = plugin->getMusicReplacementRequest();
-        switch(request)
-        {
-        case Plugins::Plugin::EMusicRequest::Start:
-        {
+        if (plugin->shouldStartBackgroundMusic()) {
             // disabling fast-forward, otherwise it will affect the cutscenes
             emuInstance->setVSyncGL(true);
 
@@ -793,37 +789,30 @@ void EmuThread::refreshPluginState()
             u16 bgm = plugin->getCurrentBackgroundMusic();
             std::string path = plugin->getReplacementBackgroundMusicFilePath(bgm);
 
-            u8 previousPlayingBgm = plugin->getLastBackgroundMusic();
-            bool bShouldStoreResumePos = plugin->isBgmOfBattleType(previousPlayingBgm)
-                                            && plugin->isBgmOfFieldType(bgm);
+            bool bShouldStoreResumePos = plugin->getResumeFromPositionBackgroundMusic();
             u8 volume = plugin->getCurrentBgmMusicVolume();
             u32 delayAtStart = plugin->getBgmDelayAtStart();
     
             QString filePath = QString::fromUtf8(path.c_str());
             emit windowStartBgmMusic(bgm, volume, bShouldStoreResumePos, delayAtStart, filePath);
-            break;
-        }
-        case Plugins::Plugin::EMusicRequest::Stop:
-        {
-            u16 bgm = plugin->getBackgroundMusicToStop();
-            bool bShouldStoreResumePos = plugin->isBgmOfFieldType(bgm);
-            bool bShouldForceStopMusic = plugin->shouldForceStopMusic();
-            emit windowStopBgmMusic(bgm, bShouldStoreResumePos, bShouldForceStopMusic);
-            break;
-        }
-        case Plugins::Plugin::EMusicRequest::Pause:
-        {
-            emit windowPauseBgmMusic();
-            break;
-        }
-        case Plugins::Plugin::EMusicRequest::Resume:
-        {
-            emit windowUnpauseBgmMusic();
-            break;
-        }
         }
 
-        if (plugin->getShouldUpdateBackgroundMusicVolume()) {
+        if (plugin->shouldStopBackgroundMusic()) {
+            u16 bgm = plugin->getBackgroundMusicToStop();
+            bool bShouldStoreResumePos = plugin->getStoreBackgroundMusicPosition();
+            bool bShouldForceStopMusic = plugin->shouldForceStopMusic();
+            emit windowStopBgmMusic(bgm, bShouldStoreResumePos, bShouldForceStopMusic);
+        }
+
+        if (plugin->shouldPauseBackgroundMusic()) {
+            emit windowPauseBgmMusic();
+        }
+
+        if (plugin->shouldResumeBackgroundMusic()) {
+            emit windowUnpauseBgmMusic();
+        }
+
+        if (plugin->shouldUpdateBackgroundMusicVolume()) {
             u8 volume = plugin->getCurrentBgmMusicVolume();
             emit windowUpdateBgmMusicVolume(volume);
         }

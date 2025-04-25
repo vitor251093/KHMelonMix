@@ -104,8 +104,6 @@ void MainWindowSettings::startBgmMusic(quint16 bgmId, quint8 volume, bool bResum
     bgmPlayer->play(startPosition, initialVolume, fadeIn);
     printf("Starting replacement song %d %svolume: %.3f\n", bgmId, (bResumePos ? "(Resumed with fadein) " : ""), initialVolume);
 
-    emuInstance->plugin->onReplacementBackgroundMusicStarted();
-
     bgmPlayers.append(bgmPlayer);
 }
 

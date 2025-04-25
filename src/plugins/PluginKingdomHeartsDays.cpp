@@ -2079,44 +2079,18 @@ u16 PluginKingdomHeartsDays::detectMidiBackgroundMusic() {
     return 0;
 }
 
-Plugin::EMusicRequest PluginKingdomHeartsDays::getMusicReplacementRequest() {
-    if (_ShouldStopReplacementBgmMusic) {
-        _ShouldStopReplacementBgmMusic = false;
-        return EMusicRequest::Stop;
-    }
-
-    if (_ShouldStartReplacementBgmMusic) {
-        _ShouldStartReplacementBgmMusic = false;
-        u16 bgm = getCurrentBackgroundMusic();
-        if (bgm != 0) {
-            std::string path = getReplacementBackgroundMusicFilePath(bgm);
-            if (path != "") {
-                return EMusicRequest::Start;
-            }
-        }
-    }
-
-    if (_ShouldPauseReplacementBgmMusic) {
-        _ShouldPauseReplacementBgmMusic = false;
-        _PausedReplacementBgmMusic = true;
-        return EMusicRequest::Pause;
-    }
-
-    if (_ShouldUnpauseReplacementBgmMusic) {
-        _ShouldUnpauseReplacementBgmMusic = false;
-        _PausedReplacementBgmMusic = false;
-        return EMusicRequest::Resume;
-    }
-
-    return EMusicRequest::Nothing;
-}
-
 void PluginKingdomHeartsDays::muteSongSequence(u16 bgmId) {
 
     if (bgmId == 0 || bgmId == 0xFFFF) {
         return;
     }
 
+    // The game stores a table of entries in RAM, containing addresses of where the SSEQ is loaded
+    // The table's length is equal to the total number of tracks.
+    // Only one SSEQ is loaded at all times! And its address can be found using the BgmId (from SONG_ID_ADDRESS)
+    // First u32 in a table row corresponds to the size of the loaded SSEQ, and the second u32 is the address in RAM.
+    // Caution: in Days, there is no track 27! Meaning that every song starting from 28 needs to be "-1" to get the correct address
+    // (otherwise you'll just get a nullptr entry in the table). See call to getSongIdInSongTable().
     const u32 songTableAddr = getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
 
     u32 idInTable = getSongIdInSongTable(bgmId);
@@ -2164,6 +2138,7 @@ void PluginKingdomHeartsDays::muteSongSequence(u16 bgmId) {
 
 void PluginKingdomHeartsDays::stopBackgroundMusic(bool bImmediateStop) {
     if (_CurrentBackgroundMusic > 0) {
+        _StoreBackgroundMusicPosition = isBgmOfFieldType(_CurrentBackgroundMusic);
         _ShouldStopReplacementBgmMusic = true;
         _BackgroundMusicToStop = _CurrentBackgroundMusic;
         _ForceStopMusic = bImmediateStop;
@@ -2194,6 +2169,7 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
                 if (replacementBgmPath != "") {
                     _ShouldStartReplacementBgmMusic = true;
                     _CurrentBackgroundMusic = bgmId;
+                    _ResumeBackgroundMusicPosition = isBgmOfBattleType(_LastBackgroundMusic) && isBgmOfFieldType(bgmId);
                     _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic();
                 }
 

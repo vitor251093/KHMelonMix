@@ -864,20 +864,6 @@ std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
     return "";
 }
 
-
-void Plugin::onReplacementBackgroundMusicStarted() {
-    //printf("Background music started\n");
-    _ShouldStartReplacementBgmMusic = false;
-}
-
-bool Plugin::getShouldUpdateBackgroundMusicVolume() {
-    if (_ShouldUpdateReplacementBgmMusicVolume) {
-        _ShouldUpdateReplacementBgmMusicVolume = false;
-        return true;
-    }
-    return false;
-}
-
 bool Plugin::ShouldGrabMouseCursor() {
     if (_ShouldGrabMouseCursor) {
         _ShouldGrabMouseCursor = false;
