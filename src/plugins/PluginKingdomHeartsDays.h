@@ -159,6 +159,7 @@ private:
     bool isMissionInformationVisibleOnBottomScreen();
     bool isCutsceneFromChallengeMissionVisible();
     bool isDialogPortraitLabelVisible();
+    bool isLoadScreenDeletePromptVisible();
     bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 
     void hudToggle();

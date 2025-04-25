@@ -168,6 +168,7 @@ enum
     gameSceneState_cutsceneFromChallengeMission,
     gameSceneState_topScreenMissionInformationVisible,
     gameSceneState_showBottomScreenMissionInformation,
+    gameSceneState_loadScreenDeletePrompt,
     gameSceneState_bottomScreenSora,
     gameSceneState_bottomScreenCutscene,
     gameSceneState_topScreenCutscene
@@ -453,6 +454,9 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
 
     switch (gameScene) {
         case gameScene_IntroLoadMenu:
+        {
+            bool showDeletePrompt = ((gameSceneState & (1 << gameSceneState_loadScreenDeletePrompt)) > 0);
+
             // load label
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
@@ -477,8 +481,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             // footer
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
-                    .fromPosition(0, 144)
-                    .withSize(256, 48)
+                    .fromPosition(0, showDeletePrompt ? 128 : 144)
+                    .withSize(256, showDeletePrompt ? 64 : 48)
                     .placeAtCorner(corner_BottomLeft)
                     .hudScale(hudScale)
                     .preserveDsScale()
@@ -487,8 +491,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             // rest of footer
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
-                    .fromPosition(251, 144)
-                    .withSize(5, 48)
+                    .fromPosition(251, showDeletePrompt ? 128 : 144)
+                    .withSize(5, showDeletePrompt ? 64 : 48)
                     .placeAtCorner(corner_BottomRight)
                     .sourceScale(1000.0, 1.0)
                     .hudScale(hudScale)
@@ -504,6 +508,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     .build(aspectRatio));
 
             break;
+        }
 
         case gameScene_DayCounter:
         case gameScene_RoxasThoughts:
@@ -1032,6 +1037,9 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
 
     switch (GameScene) {
         case gameScene_IntroLoadMenu:
+            if (isLoadScreenDeletePromptVisible()) {
+                state |= (1 << gameSceneState_loadScreenDeletePrompt);
+            }
             break;
 
         case gameScene_DayCounter:
@@ -1631,6 +1639,12 @@ bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 {
     u32 pixel = getPixel(topScreen2DTexture(), 250, 183, 0);
+    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
+}
+
+bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
+{
+    u32 pixel = getPixel(bottomScreen2DTexture(), 206, 134, 0);
     return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
 }
 
