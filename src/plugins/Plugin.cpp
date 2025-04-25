@@ -238,7 +238,7 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
         // polygon mode
         if ((shape.effects & 0x1) != 0) {
             if (shape.polygonVertexesCount == 0 || shape.polygonVertexesCount == polygon->NumVertices) {
-                if (shape.doesAttributeMatch(polygon->Attr)) {
+                if (shape.doesAttributeMatch(polygon->Attr) && shape.doesTextureParamMatch(polygon->TexParam)) {
                     u32 x0 = (int)scaledPositions[0][0];
                     u32 x1 = (int)scaledPositions[0][0];
                     u32 y0 = (int)scaledPositions[0][1];
@@ -294,7 +294,7 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
 
             // vertex mode
             if ((shape.effects & 0x1) == 0) {
-                vec3 newValues = shape.compute3DCoordinatesOf3DSquareShapeInVertexMode(_x, _y, _z, polygon->Attr, rgb, resolutionScale, aspectRatio);
+                vec3 newValues = shape.compute3DCoordinatesOf3DSquareShapeInVertexMode(_x, _y, _z, polygon->Attr, polygon->TexParam, rgb, resolutionScale, aspectRatio);
                 if (newValues.z == 1) {
                     if (loggerModeEnabled) {
                         atLeastOneLog = true;

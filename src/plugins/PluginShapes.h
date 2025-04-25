@@ -126,9 +126,13 @@ struct alignas(16) ShapeData3D {
     int color[4];
     int negatedColor[4];
 
+    int textureParams[4];
+    int negatedTextureParams[4];
+
     int colorCount = 0;
     int negatedColorCount = 0;
-    int _pad0, _pad1;
+    int textureParamCount = 0;
+    int negatedTextureParamCount = 0;
 
     bool doesAttributeMatch(int polygonAttr) {
         bool attrMatchEqual = false;
@@ -145,6 +149,28 @@ struct alignas(16) ShapeData3D {
         }
         for (int i = 0; i < 4; i++) {
             if (negatedPolygonAttributes[i] != 0 && negatedPolygonAttributes[i] == polygonAttr) {
+                attrMatchNeg = true;
+                break;
+            }
+        }
+        return (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
+    }
+
+    bool doesTextureParamMatch(int texParam) {
+        bool attrMatchEqual = false;
+        bool attrMatchEqual2 = false;
+        bool attrMatchNeg = false;
+        for (int i = 0; i < 4; i++) {
+            if (textureParams[i] != 0) {
+                attrMatchEqual = true;
+                if (textureParams[i] == texParam) {
+                    attrMatchEqual2 = true;
+                    break;
+                }
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            if (negatedTextureParams[i] != 0 && negatedTextureParams[i] == texParam) {
                 attrMatchNeg = true;
                 break;
             }
@@ -177,7 +203,7 @@ struct alignas(16) ShapeData3D {
         return (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
     }
 
-    vec3 compute3DCoordinatesOf3DSquareShapeInVertexMode(float _x, float _y, float _z, int polygonAttr, int* rgb, float resolutionScale, float aspectRatio)
+    vec3 compute3DCoordinatesOf3DSquareShapeInVertexMode(float _x, float _y, float _z, int polygonAttr, int texParam, int* rgb, float resolutionScale, float aspectRatio)
     {
         float updated = 0;
 
@@ -185,6 +211,11 @@ struct alignas(16) ShapeData3D {
 
         bool attrMatch = doesAttributeMatch(polygonAttr);
         if (!attrMatch) {
+            return vec3{_x, _y, updated};
+        }
+
+        bool texParamMatch = doesTextureParamMatch(texParam);
+        if (!texParamMatch) {
             return vec3{_x, _y, updated};
         }
 
@@ -537,6 +568,14 @@ public:
     }
     ShapeBuilder3D& negateColor(int _color) {
         shapeData.negatedColor[shapeData.negatedColorCount++] = _color;
+        return *this;
+    }
+    ShapeBuilder3D& textureParam(int _textureParam) {
+        shapeData.textureParams[shapeData.textureParamCount++] = _textureParam;
+        return *this;
+    }
+    ShapeBuilder3D& negatedTextureParam(int _textureParam) {
+        shapeData.negatedTextureParams[shapeData.negatedTextureParamCount++] = _textureParam;
         return *this;
     }
     ShapeBuilder3D& polygonMode() {

@@ -1102,7 +1102,8 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
 
-    if (gameScene == gameScene_InGameWithMap || gameScene == gameScene_InGameDialog || gameScene == gameScene_InGameOlympusBattle)
+    if (gameScene == gameScene_InGameWithMap       || gameScene == gameScene_InGameDialog ||
+        gameScene == gameScene_InGameOlympusBattle || gameScene == gameScene_PauseMenu)
     {
         if (HideAllHUD || ((gameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0))
         {
@@ -1126,6 +1127,8 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                     .sourceScale(1.5)
                     .zRange(-1.0, -1.0)
                     .hudScale(UIScale)
+                    .negatedTextureParam(942331720) // aim
+                    .negatedTextureParam(949999400) // aim (lock on)
                     .build(aspectRatio));
         }
 
