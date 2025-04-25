@@ -1137,8 +1137,6 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1058996416)
-                .fromPosition(0, 60)
-                .withSize(256, 132)
                 .zRange(-1.0, -0.5)
                 .build(aspectRatio));
 
@@ -1147,8 +1145,6 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1042219200)
-                .fromPosition(0, 60)
-                .withSize(256, 132)
                 .zRange(-1.0, -0.5)
                 .build(aspectRatio));
 
