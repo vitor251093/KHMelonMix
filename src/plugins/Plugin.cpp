@@ -47,6 +47,8 @@
 namespace Plugins
 {
 
+u16 Plugin::BGM_INVALID_ID = 0xFFFF;
+
 void Plugin::onLoadROM() {
     stopBackgroundMusic(true);
     _SoundtrackState = EMidiState::Stopped;
@@ -873,13 +875,13 @@ std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
 }
 
 void Plugin::stopBackgroundMusic(bool bImmediateStop) {
-    if (_CurrentBackgroundMusic > 0) {
+    if (_CurrentBackgroundMusic != BGM_INVALID_ID) {
         u16 resumeSlot = getMidiBgmToResumeId();
-        _StoreBackgroundMusicPosition = (resumeSlot == _CurrentBackgroundMusic && resumeSlot != 0xFFFF);
+        _StoreBackgroundMusicPosition = (resumeSlot == _CurrentBackgroundMusic && resumeSlot != BGM_INVALID_ID);
         _ShouldStopReplacementBgmMusic = true;
         _BackgroundMusicToStop = _CurrentBackgroundMusic;
         _ForceStopMusic = bImmediateStop;
-        _CurrentBackgroundMusic = 0;
+        _CurrentBackgroundMusic = BGM_INVALID_ID;
     }
     _MuteSeqBgm = false;
 }
@@ -928,11 +930,11 @@ void Plugin::refreshBackgroundMusic() {
                     _ShouldStartReplacementBgmMusic = true;
                     _CurrentBackgroundMusic = bgmId;
                     u16 bgmResumeId = getMidiBgmToResumeId();
-                    _ResumeBackgroundMusicPosition = (bgmResumeId == _CurrentBackgroundMusic && bgmResumeId != 0xFFFF);
+                    _ResumeBackgroundMusicPosition = (bgmResumeId == _CurrentBackgroundMusic && bgmResumeId != BGM_INVALID_ID);
                     _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic();
                     _MuteSeqBgm = true;
                 } else {
-                    _CurrentBackgroundMusic = 0;
+                    _CurrentBackgroundMusic = BGM_INVALID_ID;
                 }
             }
             break;
@@ -958,7 +960,7 @@ void Plugin::refreshBackgroundMusic() {
         _ShouldUpdateReplacementBgmMusicVolume = true;
     }
 
-    if (_MuteSeqBgm && _CurrentBackgroundMusic > 0) {
+    if (_MuteSeqBgm && _CurrentBackgroundMusic != BGM_INVALID_ID) {
         muteSongSequence(_CurrentBackgroundMusic);
     }
 }
@@ -985,7 +987,7 @@ void Plugin::muteSongSequence(u16 bgmId) {
     u32 songSize = nds->ARM9Read32(entryAddress);
     u32 songAddress = nds->ARM9Read32(entryAddress + 4);
     if (songAddress == 0) {
-        printf("Error: SSEQ %d is not loaded!!!\n", bgmId);
+        //printf("Error: SSEQ %d is not loaded!!!\n", bgmId);
         return;
     }
 
@@ -1019,7 +1021,7 @@ void Plugin::muteSongSequence(u16 bgmId) {
             nds->ARM7Write32(addr, 0x00);
         }
 
-        printf("Music SSEQ: Muted bgm %d (erased %d bytes)\n", bgmId, endErase - startErase);
+        //printf("Music SSEQ: Muted bgm %d (erased %d bytes)\n", bgmId, endErase - startErase);
     }
 }
 

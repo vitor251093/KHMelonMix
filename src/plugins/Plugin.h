@@ -296,7 +296,8 @@ public:
         return false;
     }
 
-    bool isBackgroundMusicPlaying() const { return _CurrentBackgroundMusic > 0; }
+    static u16 BGM_INVALID_ID;
+    bool isBackgroundMusicPlaying() const { return _CurrentBackgroundMusic != BGM_INVALID_ID; }
     u16 getCurrentBackgroundMusic() const { return _CurrentBackgroundMusic; }
     u16 getBackgroundMusicToStop() const { return _BackgroundMusicToStop; }
     bool shouldForceStopMusic() const { return _ForceStopMusic; }
@@ -309,7 +310,7 @@ public:
 
     virtual bool isBackgroundMusicReplacementImplemented() const { return false; }
     virtual u16 getMidiBgmId() { return 0; }
-    virtual u16 getMidiBgmToResumeId() { return 0xFFFF; }
+    virtual u16 getMidiBgmToResumeId() { return BGM_INVALID_ID; }
     virtual u32 getMidiSongTableAddress() { return 0; }
     virtual u8 getMidiBgmState() { return 0; }
     virtual u8 getMidiBgmVolume() { return 0; }
@@ -418,7 +419,7 @@ protected:
     bool _ShouldStartReplacementBgmMusic = false;
     bool _ShouldStopReplacementBgmMusic = false;
     bool _ShouldUpdateReplacementBgmMusicVolume = false;
-    u16 _CurrentBackgroundMusic = 0;
+    u16 _CurrentBackgroundMusic = BGM_INVALID_ID;
     u32 _BackgroundMusicDelayAtStart = 0;
     u16 _BackgroundMusicToStop = 0;
     u8 _SoundtrackState = 0;

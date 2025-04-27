@@ -1493,8 +1493,9 @@ bool PluginKingdomHeartsReCoded::renderer_showOriginalUI() {
     return false;
 }
 
-void PluginKingdomHeartsReCoded::onLoadState()
-{
+void PluginKingdomHeartsReCoded::onLoadState() {
+    Plugin::onLoadState();
+
     texturesIndex.clear();
 
     loadLocalization();
