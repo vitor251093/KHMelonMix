@@ -135,11 +135,12 @@ private:
     bool didMobiCutsceneEnded();
     bool canReturnToGameAfterReplacementCutscene();
 
-    u16 detectMidiBackgroundMusic();
+    u16 getMidiBgmId();
+    u16 getMidiBgmToResumeId();
+    u8 getMidiBgmState();
+    u8 getMidiBgmVolume();
 
     void refreshBackgroundMusic() override;
-    bool isBgmOfFieldType(u16 soundtrackId) const;
-    bool isBgmOfBattleType(u16 soundtrackId) const;
     std::string getBackgroundMusicName(u16 soundtrackId) const override;
     void muteSongSequence(u16 bgmId);
     u16 getSongIdInSongTable(u16 bgmId);

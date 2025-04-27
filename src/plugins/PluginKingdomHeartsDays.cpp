@@ -380,6 +380,7 @@ void PluginKingdomHeartsDays::loadLocalization() {
 
 void PluginKingdomHeartsDays::onLoadROM() {
     stopBackgroundMusic(true);
+    _SoundtrackState = EMidiState::Stopped;
 
     loadLocalization();
 
@@ -395,6 +396,7 @@ void PluginKingdomHeartsDays::onLoadState()
     GameScene = gameScene_InGameWithMap;
 
     stopBackgroundMusic(true);
+    _SoundtrackState = EMidiState::Stopped;
 }
 
 std::string PluginKingdomHeartsDays::assetsFolder() {
@@ -2071,12 +2073,31 @@ bool PluginKingdomHeartsDays::isUnskippableMobiCutscene(CutsceneEntry* cutscene)
     return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 
-u16 PluginKingdomHeartsDays::detectMidiBackgroundMusic() {
+u16 PluginKingdomHeartsDays::getMidiBgmId() {
     u16 soundtrack = nds->ARM7Read16(getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1));
     if (soundtrack > 0) {
         return soundtrack;
     }
     return 0;
+}
+
+u8 PluginKingdomHeartsDays::getMidiBgmState() {
+    u32 SONG_STATE_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x06;
+    // See enum EMidiState for details of the state
+    return nds->ARM7Read8(SONG_STATE_ADDRESS);
+}
+
+u16 PluginKingdomHeartsDays::getMidiBgmToResumeId() {
+    // This byte is set by the audio engine when a "Field" track is getting stopped and we are playing a "Battle" track.
+    // This tells us that the "Field" track will resume playing when the "Battle" track ends.
+    u32 SONG_SECOND_SLOT_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x02;
+    return nds->ARM7Read8(SONG_SECOND_SLOT_ADDRESS);
+}
+
+u8 PluginKingdomHeartsDays::getMidiBgmVolume() {
+    u32 SONG_MASTER_VOLUME_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x07;
+    // Usually 0x7F during gameplay and 0x40 when game is paused
+    return nds->ARM7Read8(SONG_MASTER_VOLUME_ADDRESS);
 }
 
 void PluginKingdomHeartsDays::muteSongSequence(u16 bgmId) {
@@ -2088,6 +2109,8 @@ void PluginKingdomHeartsDays::muteSongSequence(u16 bgmId) {
     // The game stores a table of entries in RAM, containing addresses of where the SSEQ is loaded
     // The table's length is equal to the total number of tracks.
     // Only one SSEQ is loaded at all times! And its address can be found using the BgmId (from SONG_ID_ADDRESS)
+    // Important: the EMidiState needs to be checked! When the status is "LoadSequence", the SSEQ is not loaded yet.
+    // When "PrePlay" or "Playing", the SSEQ is in RAM and its address is available.
     // First u32 in a table row corresponds to the size of the loaded SSEQ, and the second u32 is the address in RAM.
     // Caution: in Days, there is no track 27! Meaning that every song starting from 28 needs to be "-1" to get the correct address
     // (otherwise you'll just get a nullptr entry in the table). See call to getSongIdInSongTable().
@@ -2138,13 +2161,14 @@ void PluginKingdomHeartsDays::muteSongSequence(u16 bgmId) {
 
 void PluginKingdomHeartsDays::stopBackgroundMusic(bool bImmediateStop) {
     if (_CurrentBackgroundMusic > 0) {
-        _StoreBackgroundMusicPosition = isBgmOfFieldType(_CurrentBackgroundMusic);
+        u16 resumeSlot = getMidiBgmToResumeId();
+        _StoreBackgroundMusicPosition = (resumeSlot == _CurrentBackgroundMusic);
         _ShouldStopReplacementBgmMusic = true;
         _BackgroundMusicToStop = _CurrentBackgroundMusic;
         _ForceStopMusic = bImmediateStop;
-        _LastBackgroundMusic = _CurrentBackgroundMusic;
         _CurrentBackgroundMusic = 0;
     }
+    _MuteSeqBgm = false;
 }
 
 void PluginKingdomHeartsDays::refreshBackgroundMusic() {
@@ -2152,37 +2176,55 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     return;
 #endif
 
-    static constexpr u16 STOP_BGM_ID = 0xFFFF;
-    u16 bgmId = detectMidiBackgroundMusic();
+    u16 bgmId = getMidiBgmId();
+    u8 state = getMidiBgmState();
 
-    if (bgmId != _LastSoundtrackId) {
-        if (bgmId == STOP_BGM_ID) {
-            stopBackgroundMusic(false);
-
-            _LastSoundtrackId = bgmId;
-            _MuteSeqBgm = false;
-        } else {
+    if (state != _SoundtrackState) {
+        switch(state) {
+        case EMidiState::Stopped: {
+            break;
+        }
+        case EMidiState::LoadSequence: {
+            // Do nothing (used by the NDS to load the SSEQ MIDI into RAM)
+            break;
+        }
+        case EMidiState::PrePlay:
+        case EMidiState::Playing: {
+            // SSEQ is loaded and ready to play
             if (bgmId != _CurrentBackgroundMusic) {
+                // Previous bgm should have already been stopped, but just in case:
                 stopBackgroundMusic(false);
 
                 std::string replacementBgmPath = getReplacementBackgroundMusicFilePath(bgmId);
                 if (replacementBgmPath != "") {
                     _ShouldStartReplacementBgmMusic = true;
                     _CurrentBackgroundMusic = bgmId;
-                    _ResumeBackgroundMusicPosition = isBgmOfBattleType(_LastBackgroundMusic) && isBgmOfFieldType(bgmId);
+                    u16 bgmResumeId = getMidiBgmToResumeId();
+                    _ResumeBackgroundMusicPosition = (bgmResumeId == _CurrentBackgroundMusic);
                     _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic();
+                    _MuteSeqBgm = true;
+                } else {
+                    _CurrentBackgroundMusic = 0;
                 }
-
-                _MuteSeqBgm = (replacementBgmPath != "");
             }
-
-            _LastSoundtrackId = bgmId;
+            break;
+            // TODO: handle difference between PrePlay and Play. Some songs are kept in "PrePlay" state (like Paused)
+            // This cannot be implement just yet because when playing HD cutscenes, the game clock's speed is increased
+            // And the switch to "Playing" happens way too early
         }
+        case EMidiState::Stopping: {
+            // Note: bgmId is already 0xFFFF at this point
+            stopBackgroundMusic(false);
+            break;
+        }
+        default: {
+            break;
+        }
+        }
+        _SoundtrackState = state;
     }
 
-    u32 SONG_VOLUME_QUIET_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x07;
-    u8 currVolume = nds->ARM7Read8(SONG_VOLUME_QUIET_ADDRESS);
-
+    u8 currVolume = getMidiBgmVolume();
     if (_BackgroundMusicVolume != currVolume) {
         _BackgroundMusicVolume = currVolume;
         _ShouldUpdateReplacementBgmMusicVolume = true;
@@ -2191,18 +2233,6 @@ void PluginKingdomHeartsDays::refreshBackgroundMusic() {
     if (_MuteSeqBgm) {
         muteSongSequence(bgmId);
     }
-}
-
-bool PluginKingdomHeartsDays::isBgmOfFieldType(u16 soundtrackId) const
-{
-    static std::vector<u16> ids = { 2, 5, 7, 9, 11, 16, 33 };
-    return (std::find(ids.begin(), ids.end(), soundtrackId) != ids.end());
-}
-
-bool PluginKingdomHeartsDays::isBgmOfBattleType(u16 soundtrackId) const
-{
-    static std::vector<u16> ids = { 1, 6, 8, 10, 12, 17, 34 };
-    return (std::find(ids.begin(), ids.end(), soundtrackId) != ids.end());
 }
 
 std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 soundtrackId) const

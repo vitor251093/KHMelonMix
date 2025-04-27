@@ -101,6 +101,15 @@ struct CutsceneEntry
     int dsScreensState;
 };
 
+enum EMidiState : u8 {
+    Stopped = 0x00,
+    LoadSequence  = 0x01,
+    PrePlay  = 0x02,
+    Playing = 0x03,
+    Stopping = 0x04
+};
+
+
 struct TextureEntryScene
 {
     std::string path;
@@ -161,6 +170,7 @@ struct TextureEntry
         return scenes[sceneIndex];
     }
 };
+
 
 class Plugin
 {
@@ -392,10 +402,9 @@ protected:
     bool _ShouldStopReplacementBgmMusic = false;
     bool _ShouldUpdateReplacementBgmMusicVolume = false;
     u16 _CurrentBackgroundMusic = 0;
-    u16 _LastBackgroundMusic = 0;
     u32 _BackgroundMusicDelayAtStart = 0;
-    u16 _LastSoundtrackId = 0;
     u16 _BackgroundMusicToStop = 0;
+    u8 _SoundtrackState = 0;
     bool _ForceStopMusic = false;
     bool _MuteSeqBgm = false;
     u8 _BackgroundMusicVolume = 0x7f;
