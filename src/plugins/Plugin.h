@@ -101,6 +101,14 @@ struct CutsceneEntry
     int dsScreensState;
 };
 
+struct BgmEntry
+{
+    u8 dsId = 0;
+    u8 loadingTableId = 0;
+    char DsName[16];
+    char Name[40];
+};
+
 enum EMidiState : u8 {
     Stopped = 0x00,
     LoadSequence  = 0x01,
@@ -187,10 +195,8 @@ public:
     static bool isCart(u32 gameCode) {return true;};
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
-    virtual void onLoadROM() {};
-    virtual void onLoadState() {
-        texturesIndex.clear();
-    };
+    virtual void onLoadROM();
+    virtual void onLoadState();
 
     virtual std::string assetsFolder() {return std::to_string(GameCode);}
     std::filesystem::path assetsFolderPath();
@@ -290,7 +296,6 @@ public:
         return false;
     }
 
-    int delayBeforeStartReplacementBackgroundMusic();
     bool isBackgroundMusicPlaying() const { return _CurrentBackgroundMusic > 0; }
     u16 getCurrentBackgroundMusic() const { return _CurrentBackgroundMusic; }
     u16 getBackgroundMusicToStop() const { return _BackgroundMusicToStop; }
@@ -302,8 +307,20 @@ public:
 
     std::string getReplacementBackgroundMusicFilePath(u16 id);
 
-    virtual void refreshBackgroundMusic() {}
-    virtual std::string getBackgroundMusicName(u16 soundtrackId) const { return ""; }
+    virtual bool isBackgroundMusicReplacementImplemented() const { return false; }
+    virtual u16 getMidiBgmId() { return 0; }
+    virtual u16 getMidiBgmToResumeId() { return 0xFFFF; }
+    virtual u32 getMidiSongTableAddress() { return 0; }
+    virtual u8 getMidiBgmState() { return 0; }
+    virtual u8 getMidiBgmVolume() { return 0; }
+    virtual u16 getSongIdInSongTable(u16 bgmId) { return 0; }
+    virtual std::string getBackgroundMusicName(u16 soundtrackId) { return ""; }
+    virtual int delayBeforeStartReplacementBackgroundMusic() { return 0; }
+
+    void refreshBackgroundMusic();
+    std::string getBackgroundMusicName(u16 soundtrackId) const;
+    void muteSongSequence(u16 bgmId);
+    void stopBackgroundMusic(bool bImmediateStop);
 
     virtual void refreshMouseStatus() {}
 

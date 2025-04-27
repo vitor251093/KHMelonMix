@@ -24,7 +24,7 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
     void loadLocalization();
-    void onLoadROM();
+    void onLoadROM() override;
 
     std::string assetsFolder();
     std::string tomlUniqueIdentifier();
@@ -126,6 +126,17 @@ private:
     u32 getCurrentMainMenuView();
     u32 getCurrentMap();
     bool isSaveLoaded();
+
+    // Music replacement system
+    std::array<BgmEntry, 41> BgmEntries;
+
+    bool isBackgroundMusicReplacementImplemented() const override { return true; }
+    u16 getMidiBgmId() override;
+    u32 getMidiSongTableAddress() override;
+    u8 getMidiBgmState() override;
+    u8 getMidiBgmVolume() override;
+    u16 getSongIdInSongTable(u16 bgmId) override;
+    std::string getBackgroundMusicName(u16 bgmId) override;
 
     bool isBufferBlack(unsigned int* buffer);
     u32* topScreen2DTexture();

@@ -47,6 +47,18 @@
 namespace Plugins
 {
 
+void Plugin::onLoadROM() {
+    stopBackgroundMusic(true);
+    _SoundtrackState = EMidiState::Stopped;
+}
+
+void Plugin::onLoadState() {
+    texturesIndex.clear();
+
+    stopBackgroundMusic(true);
+    _SoundtrackState = EMidiState::Stopped;
+};
+
 std::filesystem::path Plugin::assetsFolderPath()
 {
     std::string assetsFolderName = assetsFolder();
@@ -843,10 +855,6 @@ void Plugin::onReturnToGameAfterCutscene() {
     }
 }
 
-int Plugin::delayBeforeStartReplacementBackgroundMusic() {
-    return 0;
-}
-
 std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
     std::string filename = "bgm" + std::to_string(id) + ".wav";
     std::filesystem::path _assetsFolderPath = assetsFolderPath();
@@ -862,6 +870,157 @@ std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
     }
 
     return "";
+}
+
+void Plugin::stopBackgroundMusic(bool bImmediateStop) {
+    if (_CurrentBackgroundMusic > 0) {
+        u16 resumeSlot = getMidiBgmToResumeId();
+        _StoreBackgroundMusicPosition = (resumeSlot == _CurrentBackgroundMusic && resumeSlot != 0xFFFF);
+        _ShouldStopReplacementBgmMusic = true;
+        _BackgroundMusicToStop = _CurrentBackgroundMusic;
+        _ForceStopMusic = bImmediateStop;
+        _CurrentBackgroundMusic = 0;
+    }
+    _MuteSeqBgm = false;
+}
+
+std::string getMidiStateName(EMidiState state) {
+    switch(state) {
+    case EMidiState::Stopped: return "Stopped";
+    case EMidiState::LoadSequence: return "LoadSequence";
+    case EMidiState::PrePlay: return "PrePlay";
+    case EMidiState::Playing: return "Playing";
+    case EMidiState::Stopping: return "Stopping";
+    default: return "Invalid";
+    }
+}
+
+void Plugin::refreshBackgroundMusic() {
+#if !REPLACEMENT_BGM_ENABLED
+    return;
+#endif
+
+    if (!isBackgroundMusicReplacementImplemented()) {
+        return;
+    }
+
+    u8 state = getMidiBgmState();
+
+    if (state != _SoundtrackState) {
+        switch(state) {
+        case EMidiState::Stopped: {
+            break;
+        }
+        case EMidiState::LoadSequence: {
+            // Do nothing (used by the NDS to load the SSEQ MIDI into RAM)
+            break;
+        }
+        case EMidiState::PrePlay:
+        case EMidiState::Playing: {
+            // SSEQ is loaded and ready to play
+            u16 bgmId = getMidiBgmId();
+            if (bgmId != _CurrentBackgroundMusic) {
+                // Previous bgm should have already been stopped, but just in case:
+                stopBackgroundMusic(false);
+
+                std::string replacementBgmPath = getReplacementBackgroundMusicFilePath(bgmId);
+                if (replacementBgmPath != "") {
+                    _ShouldStartReplacementBgmMusic = true;
+                    _CurrentBackgroundMusic = bgmId;
+                    u16 bgmResumeId = getMidiBgmToResumeId();
+                    _ResumeBackgroundMusicPosition = (bgmResumeId == _CurrentBackgroundMusic && bgmResumeId != 0xFFFF);
+                    _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic();
+                    _MuteSeqBgm = true;
+                } else {
+                    _CurrentBackgroundMusic = 0;
+                }
+            }
+            break;
+            // TODO: handle difference between PrePlay and Play. Some songs are kept in "PrePlay" state (like Paused)
+            // This cannot be implement just yet because when playing HD cutscenes, the game clock's speed is increased
+            // And the switch to "Playing" happens way too early
+        }
+        case EMidiState::Stopping: {
+            // Note: bgmId is already 0xFFFF at this point
+            stopBackgroundMusic(false);
+            break;
+        }
+        default: {
+            break;
+        }
+        }
+        _SoundtrackState = state;
+    }
+
+    u8 currVolume = getMidiBgmVolume();
+    if (_BackgroundMusicVolume != currVolume) {
+        _BackgroundMusicVolume = currVolume;
+        _ShouldUpdateReplacementBgmMusicVolume = true;
+    }
+
+    if (_MuteSeqBgm && _CurrentBackgroundMusic > 0) {
+        muteSongSequence(_CurrentBackgroundMusic);
+    }
+}
+
+void Plugin::muteSongSequence(u16 bgmId) {
+
+    if (bgmId == 0 || bgmId == 0xFFFF) {
+        return;
+    }
+
+    // The game stores a table of entries in RAM, containing addresses of where the SSEQ is loaded
+    // The table's length is equal to the total number of tracks.
+    // Only one SSEQ is loaded at all times! And its address can be found using the BgmId (from SONG_ID_ADDRESS)
+    // Important: the EMidiState needs to be checked! When the status is "LoadSequence", the SSEQ is not loaded yet.
+    // When "PrePlay" or "Playing", the SSEQ is in RAM and its address is available.
+    // First u32 in a table row corresponds to the size of the loaded SSEQ, and the second u32 is the address in RAM.
+    // Caution: in Days, there is no track 27! Meaning that every song starting from 28 needs to be "-1" to get the correct address
+    // (otherwise you'll just get a nullptr entry in the table). See call to getSongIdInSongTable().
+    const u32 songTableAddr = getMidiSongTableAddress();
+
+    u32 idInTable = getSongIdInSongTable(bgmId);
+    const u32 entryAddress = songTableAddr + (idInTable * 16);
+
+    u32 songSize = nds->ARM9Read32(entryAddress);
+    u32 songAddress = nds->ARM9Read32(entryAddress + 4);
+    if (songAddress == 0) {
+        printf("Error: SSEQ %d is not loaded!!!\n", bgmId);
+        return;
+    }
+
+    u32 sseqTag = nds->ARM9Read32(songAddress);
+    u32 sseqMagic = nds->ARM9Read32(songAddress + 4);
+    u32 sseqFileSize = nds->ARM9Read32(songAddress + 8);
+
+    if (sseqTag != 0x51455353) { // SSEQ
+        printf("Error: Invalid SSEQ: incorrect header tag\n");
+        return;
+    }
+
+    if (sseqMagic != 0x0100feff) {
+        printf("Error: Invalid SSEQ: incorrect magic number\n");
+        return;
+    }
+
+    if (sseqFileSize != songSize) {
+        printf("Error: Invalid SSEQ: incorrect file size\n");
+        return;
+    }
+
+    u32 firstValue = nds->ARM9Read32(songAddress + 32);
+    if (firstValue != 0) {
+        constexpr const u32 headerSize = 32;
+        u32 sizeToErase = songSize - headerSize;
+
+        u32 startErase = songAddress + headerSize;
+        u32 endErase = songAddress + songSize;
+        for (u32 addr = startErase; addr < endErase; addr+=4) {
+            nds->ARM7Write32(addr, 0x00);
+        }
+
+        printf("Music SSEQ: Muted bgm %d (erased %d bytes)\n", bgmId, endErase - startErase);
+    }
 }
 
 bool Plugin::ShouldGrabMouseCursor() {

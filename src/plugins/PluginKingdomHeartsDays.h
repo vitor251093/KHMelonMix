@@ -27,8 +27,8 @@ public:
     bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROM()[0x1E] == 1; };
 
     void loadLocalization();
-    void onLoadROM();
-    void onLoadState();
+    void onLoadROM() override;
+    void onLoadState() override;
 
     std::string assetsFolder();
     std::string assetsRegionSubfolder();
@@ -60,8 +60,6 @@ public:
     std::string localizationFilePath(std::string language);
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene);
-
-    int delayBeforeStartReplacementBackgroundMusic();
 
     const char* getGameSceneName();
 
@@ -135,16 +133,19 @@ private:
     bool didMobiCutsceneEnded();
     bool canReturnToGameAfterReplacementCutscene();
 
-    u16 getMidiBgmId();
-    u16 getMidiBgmToResumeId();
-    u8 getMidiBgmState();
-    u8 getMidiBgmVolume();
+    // Music replacement system
+    std::array<BgmEntry, 38> BgmEntries;
 
-    void refreshBackgroundMusic() override;
-    std::string getBackgroundMusicName(u16 soundtrackId) const override;
-    void muteSongSequence(u16 bgmId);
-    u16 getSongIdInSongTable(u16 bgmId);
-    void stopBackgroundMusic(bool bImmediateStop);
+    bool isBackgroundMusicReplacementImplemented() const override { return true; }
+    u16 getMidiBgmId() override;
+    u16 getMidiBgmToResumeId() override;
+    u32 getMidiSongTableAddress() override;
+    u8 getMidiBgmState() override;
+    u8 getMidiBgmVolume() override;
+    u16 getSongIdInSongTable(u16 bgmId) override;
+    std::string getBackgroundMusicName(u16 bgmId) override;
+    int delayBeforeStartReplacementBackgroundMusic() override;
+
 
     void refreshMouseStatus();
 

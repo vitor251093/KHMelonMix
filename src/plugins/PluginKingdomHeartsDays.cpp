@@ -129,10 +129,10 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define SONG_ID_ADDRESS_JP      0x02190EBE
 #define SONG_ID_ADDRESS_JP_REV1 0x02190E3E
 
-#define SSEQ_TABLE_ADDRESS_US      0x020E51A0
-#define SSEQ_TABLE_ADDRESS_EU      0x020E5F80
-#define SSEQ_TABLE_ADDRESS_JP      0x020E4300
-#define SSEQ_TABLE_ADDRESS_JP_REV1 0x020E4280
+#define SSEQ_TABLE_ADDRESS_US      0x020E51B0
+#define SSEQ_TABLE_ADDRESS_EU      0x020E5F90
+#define SSEQ_TABLE_ADDRESS_JP      0x020E4310
+#define SSEQ_TABLE_ADDRESS_JP_REV1 0x020E4290
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
@@ -269,6 +269,47 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         {"847",    "847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0ec4c600, 0x0ec12c00, 0},
         {"848",    "848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600, 0},
     }};
+
+    BgmEntries = std::array<BgmEntry, 38> {{
+        { 1,  0,    "TwilightR_B",      "Sinister Sundown" },
+        { 2,  1,    "TwilightR_F",      "Lazy Afternoons" },
+        { 3,  2,    "DestinysForce",    "Destiny's Force" },
+        { 4,  3,    "Result",           "Results and Rewards" },
+        { 5,  4,    "Alice_F",          "Welcome to Wonderland" },
+        { 6,  5,    "Alice_B",          "To Our Surprise" },
+        { 7,  6,    "Herc_F",           "Olympus Coliseum" },
+        { 8,  7,    "Herc_B",           "Go for It!" },
+        { 9,  8,    "Halloween_F",      "This is Halloween" },
+        { 10, 9,    "Halloween_B",      "Spooks of Halloween Town" },
+        { 11, 10,   "Alasin_F",         "A Day in Agrabah" },
+        { 12, 11,   "Alasin_B",         "Arabian Dream" },
+        { 13, 12,   "Existence_F",      "Sacred Moon" },
+        { 14, 13,   "Existence_B",      "Critical Drive" },
+        { 15, 14,   "SacredMoon",       "Mystic Moon" },
+        { 16, 15,   "Beast_F",          "Waltz of the Damned" },
+        { 17, 16,   "Beast_B",          "Dance of the Daring" },
+        { 18, 17,   "ThemeXIII",        "Organization XIII" },
+        { 19, 18,   "ThemeRoxas",       "Roxas" },
+        { 20, 19,   "MissionBoss1",     "Tension Rising" },
+        { 21, 20,   "DisneyBoss1",      "Rowdy Rumble" },
+        { 22, 21,   "XIVtheme",         "Musique pour la tristesse de Xion" },
+        { 23, 22,   "ShorodingDark",    "Shrouding Dark Cloud" },
+        { 24, 23,   "Boss3",            "Vim and Vigor" },
+        { 25, 24,   "Riku",             "Riku" },
+        { 26, 25,   "StrangeWhispers",  "Strange Whispers" },
+        // note: no Song 27 in the DS IDs!
+        { 28, 26,   "ThemeOfFriends",   "Theme of Friends" },
+        { 29, 27,   "MissingYou",       "Missing You" },
+        { 30, 28,   "Resultsingle",     "Crossing the Finish Line" },
+        { 31, 29,   "Entrymulti",       "Cavern of Remembrance" },
+        { 32, 30,   "XIIItheme2",       "Xemnas" },
+        { 33, 31,   "Neverland_F",      "Secret of Neverland" },
+        { 34, 32,   "Neverland_B",      "Crossing to Neverland" },
+        { 35, 33,   "Icetime",          "At dusk I will think of you" },
+        { 36, 34,   "Boss4",            "Fight and Away" },
+        { 37, 35,   "RikuBattle",       "Another Side Battle Version" },
+        { 38, 36,   "Xionbattle",       "Vector to the Heavens" }
+    }};
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
@@ -379,24 +420,19 @@ void PluginKingdomHeartsDays::loadLocalization() {
 }
 
 void PluginKingdomHeartsDays::onLoadROM() {
-    stopBackgroundMusic(true);
-    _SoundtrackState = EMidiState::Stopped;
+    Plugin::onLoadROM();
 
     loadLocalization();
 
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 }
 
-void PluginKingdomHeartsDays::onLoadState()
-{
-    texturesIndex.clear();
+void PluginKingdomHeartsDays::onLoadState() {
+    Plugin::onLoadState();
 
     loadLocalization();
 
     GameScene = gameScene_InGameWithMap;
-
-    stopBackgroundMusic(true);
-    _SoundtrackState = EMidiState::Stopped;
 }
 
 std::string PluginKingdomHeartsDays::assetsFolder() {
@@ -2094,199 +2130,35 @@ u16 PluginKingdomHeartsDays::getMidiBgmToResumeId() {
     return nds->ARM7Read8(SONG_SECOND_SLOT_ADDRESS);
 }
 
+u32 PluginKingdomHeartsDays::getMidiSongTableAddress() {
+    return getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
+}
+
 u8 PluginKingdomHeartsDays::getMidiBgmVolume() {
     u32 SONG_MASTER_VOLUME_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x07;
     // Usually 0x7F during gameplay and 0x40 when game is paused
     return nds->ARM7Read8(SONG_MASTER_VOLUME_ADDRESS);
 }
 
-void PluginKingdomHeartsDays::muteSongSequence(u16 bgmId) {
 
-    if (bgmId == 0 || bgmId == 0xFFFF) {
-        return;
+u16 PluginKingdomHeartsDays::getSongIdInSongTable(u16 bgmId) {
+    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
+        return e.dsId == bgmId; });
+    if(found != BgmEntries.end()) {
+        return found->loadingTableId;
     }
 
-    // The game stores a table of entries in RAM, containing addresses of where the SSEQ is loaded
-    // The table's length is equal to the total number of tracks.
-    // Only one SSEQ is loaded at all times! And its address can be found using the BgmId (from SONG_ID_ADDRESS)
-    // Important: the EMidiState needs to be checked! When the status is "LoadSequence", the SSEQ is not loaded yet.
-    // When "PrePlay" or "Playing", the SSEQ is in RAM and its address is available.
-    // First u32 in a table row corresponds to the size of the loaded SSEQ, and the second u32 is the address in RAM.
-    // Caution: in Days, there is no track 27! Meaning that every song starting from 28 needs to be "-1" to get the correct address
-    // (otherwise you'll just get a nullptr entry in the table). See call to getSongIdInSongTable().
-    const u32 songTableAddr = getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
-
-    u32 idInTable = getSongIdInSongTable(bgmId);
-    const u32 entryAddress = songTableAddr + (idInTable * 16);
-
-    u32 songSize = nds->ARM9Read32(entryAddress);
-    u32 songAddress = nds->ARM9Read32(entryAddress + 4);
-    if (songAddress == 0) {
-        return;
-    }
-
-    u32 sseqTag = nds->ARM9Read32(songAddress);
-    u32 sseqMagic = nds->ARM9Read32(songAddress + 4);
-    u32 sseqFileSize = nds->ARM9Read32(songAddress + 8);
-
-    if (sseqTag != 0x51455353) { // SSEQ
-        printf("Error: Invalid SSEQ: incorrect header tag\n");
-        return;
-    }
-
-    if (sseqMagic != 0x0100feff) {
-        printf("Error: Invalid SSEQ: incorrect magic number\n");
-        return;
-    }
-
-    if (sseqFileSize != songSize) {
-        printf("Error: Invalid SSEQ: incorrect file size\n");
-        return;
-    }
-
-    u32 firstValue = nds->ARM9Read32(songAddress + 32);
-    if (firstValue != 0) {
-        constexpr const u32 headerSize = 32;
-        u32 sizeToErase = songSize - headerSize;
-
-        u32 startErase = songAddress + headerSize;
-        u32 endErase = songAddress + songSize;
-        for (u32 addr = startErase; addr < endErase; addr+=4) {
-            nds->ARM7Write32(addr, 0x00);
-        }
-
-        //printf("Music SSEQ: Muted bgm %d (erased %d bytes)\n", bgmId, endErase - startErase);
-    }
+    return 0;
 }
 
-void PluginKingdomHeartsDays::stopBackgroundMusic(bool bImmediateStop) {
-    if (_CurrentBackgroundMusic > 0) {
-        u16 resumeSlot = getMidiBgmToResumeId();
-        _StoreBackgroundMusicPosition = (resumeSlot == _CurrentBackgroundMusic);
-        _ShouldStopReplacementBgmMusic = true;
-        _BackgroundMusicToStop = _CurrentBackgroundMusic;
-        _ForceStopMusic = bImmediateStop;
-        _CurrentBackgroundMusic = 0;
-    }
-    _MuteSeqBgm = false;
-}
-
-void PluginKingdomHeartsDays::refreshBackgroundMusic() {
-#if !REPLACEMENT_BGM_ENABLED
-    return;
-#endif
-
-    u16 bgmId = getMidiBgmId();
-    u8 state = getMidiBgmState();
-
-    if (state != _SoundtrackState) {
-        switch(state) {
-        case EMidiState::Stopped: {
-            break;
-        }
-        case EMidiState::LoadSequence: {
-            // Do nothing (used by the NDS to load the SSEQ MIDI into RAM)
-            break;
-        }
-        case EMidiState::PrePlay:
-        case EMidiState::Playing: {
-            // SSEQ is loaded and ready to play
-            if (bgmId != _CurrentBackgroundMusic) {
-                // Previous bgm should have already been stopped, but just in case:
-                stopBackgroundMusic(false);
-
-                std::string replacementBgmPath = getReplacementBackgroundMusicFilePath(bgmId);
-                if (replacementBgmPath != "") {
-                    _ShouldStartReplacementBgmMusic = true;
-                    _CurrentBackgroundMusic = bgmId;
-                    u16 bgmResumeId = getMidiBgmToResumeId();
-                    _ResumeBackgroundMusicPosition = (bgmResumeId == _CurrentBackgroundMusic);
-                    _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic();
-                    _MuteSeqBgm = true;
-                } else {
-                    _CurrentBackgroundMusic = 0;
-                }
-            }
-            break;
-            // TODO: handle difference between PrePlay and Play. Some songs are kept in "PrePlay" state (like Paused)
-            // This cannot be implement just yet because when playing HD cutscenes, the game clock's speed is increased
-            // And the switch to "Playing" happens way too early
-        }
-        case EMidiState::Stopping: {
-            // Note: bgmId is already 0xFFFF at this point
-            stopBackgroundMusic(false);
-            break;
-        }
-        default: {
-            break;
-        }
-        }
-        _SoundtrackState = state;
+std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 bgmId) {
+    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
+        return e.dsId == bgmId; });
+    if(found != BgmEntries.end()) {
+        return found->Name;
     }
 
-    u8 currVolume = getMidiBgmVolume();
-    if (_BackgroundMusicVolume != currVolume) {
-        _BackgroundMusicVolume = currVolume;
-        _ShouldUpdateReplacementBgmMusicVolume = true;
-    }
-
-    if (_MuteSeqBgm) {
-        muteSongSequence(bgmId);
-    }
-}
-
-std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 soundtrackId) const
-{
-    switch(soundtrackId)
-    {
-        case 1 : return "Sinister Sundown";
-        case 2 : return "Lazy Afternoons";
-        case 3 : return "Destiny's Force";
-        case 4 : return "Results and Rewards";
-        case 5 : return "Welcome to Wonderland";
-        case 6 : return "To Our Surprise";
-        case 7 : return "Olympus Coliseum";
-        case 8 : return "Go for It!";
-        case 9 : return "This is Halloween";
-        case 10 : return "Spooks of Halloween Town";
-        case 11 : return "A Day in Agrabah";
-        case 12 : return "Arabian Dream";
-        case 13 : return "Sacred Moon";
-        case 14 : return "Critical Drive";
-        case 15 : return "Mystic Moon";
-        case 16 : return "Waltz of the Damned";
-        case 17 : return "Dance of the Daring";
-        case 18 : return "Organization XIII";
-        case 19 : return "Roxas";
-        case 20 : return "Tension Rising";
-        case 21 : return "Rowdy Rumble";
-        case 22 : return "Musique pour la tristesse de Xion";
-        case 23 : return "Shrouding Dark Cloud";
-        case 24 : return "Vim and Vigor";
-        case 25 : return "Riku";
-        case 26 : return "Strange Whispers";
-        // no Id 27! gap needs to be removed when calling getSongIdInSongTable
-        case 28 : return "Theme of Friends";
-        case 29 : return "Missing You";
-        case 30 : return "Crossing the Finish Line";
-        case 31 : return "Cavern of Remembrance";
-        case 32 : return "Xemnas";
-        case 33 : return "Secret of Neverland";
-        case 34 : return "Crossing to Neverland";
-        case 35 : return "At dusk I will think of you";
-        case 36 : return "Fight and Away";
-        case 37 : return "Another Side Battle Version";
-        case 38 : return "Vector to the Heavens";
-        default: return "Unknown BGM";
-    }
-}
-
-u16 PluginKingdomHeartsDays::getSongIdInSongTable(u16 bgmId)
-{
-    if (bgmId > 0 && bgmId < 28)
-        return bgmId;
-    else
-        return bgmId - 1;
+    return 0;
 }
 
 int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
