@@ -32,7 +32,9 @@ jobs:
         update: true
         pacboy: cmake:p ninja:p make:p
     - name: Installing GCC
-      run: pacman -S mingw-w64-ucrt-x86_64-gcc-14.2.0-3
+      run: |
+        pacman -Ss mingw-w64-ucrt-x86_64-gcc
+        pacman -S mingw-w64-ucrt-x86_64-gcc-14.2.0-3
     - name: Set up vcpkg
       uses: lukka/run-vcpkg@v11
       with:
