@@ -126,12 +126,12 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define DIALOG_SCREEN_VALUE_JP 0x00000000 // TODO: KH probably correct, but didn't check
 
 #define SONG_ID_ADDRESS_US      0x02192012
-#define SONG_ID_ADDRESS_EU      0x02192012 // TODO: KH wrong
-#define SONG_ID_ADDRESS_JP      0x02192012 // TODO: KH wrong
+#define SONG_ID_ADDRESS_EU      0x02192EB2
+#define SONG_ID_ADDRESS_JP      0x02190CB2
 
 #define SSEQ_TABLE_ADDRESS_US      0x020E1E70
-#define SSEQ_TABLE_ADDRESS_EU      0x020E1E70 // TODO: KH wrong
-#define SSEQ_TABLE_ADDRESS_JP      0x020E1E70 // TODO: KH wrong
+#define SSEQ_TABLE_ADDRESS_EU      0x020E2D10
+#define SSEQ_TABLE_ADDRESS_JP      0x020E0B10
 
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
