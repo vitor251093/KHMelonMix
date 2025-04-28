@@ -284,8 +284,20 @@ public:
 
     inline bool shouldStartBackgroundMusic() { return checkAndResetBool(_ShouldStartReplacementBgmMusic); }
     inline bool shouldStopBackgroundMusic() { return checkAndResetBool(_ShouldStopReplacementBgmMusic); }
-    inline bool shouldPauseBackgroundMusic() { return checkAndResetBool(_ShouldPauseReplacementBgmMusic); _PausedReplacementBgmMusic = true; }
-    inline bool shouldResumeBackgroundMusic() { return checkAndResetBool(_ShouldUnpauseReplacementBgmMusic); _PausedReplacementBgmMusic = false; }
+    inline bool shouldPauseBackgroundMusic() {
+        if (checkAndResetBool(_ShouldPauseReplacementBgmMusic)) {
+            _PausedReplacementBgmMusic = true;
+            return true;
+        }
+        return false;
+    }
+    inline bool shouldResumeBackgroundMusic() {
+        if (checkAndResetBool(_ShouldUnpauseReplacementBgmMusic)) {
+            _PausedReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
     inline bool shouldUpdateBackgroundMusicVolume() { return checkAndResetBool(_ShouldUpdateReplacementBgmMusicVolume); }
 
     inline bool checkAndResetBool(bool& val) {
