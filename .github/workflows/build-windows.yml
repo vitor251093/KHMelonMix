@@ -30,14 +30,7 @@ jobs:
       with:
         msystem: ucrt64
         update: true
-        #pacboy: gcc:p cmake:p ninja:p make:p
-        pacboy: ninja:p make:p wget:p
-    - name: Installing GCC 14.2.0-3
-      run: |
-        wget https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-gcc-libs-14.2.0-3-any.pkg.tar.zst
-        wget https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-gcc-14.2.0-3-any.pkg.tar.zst
-        pacman -U mingw-w64-ucrt-x86_64-gcc-libs-14.2.0-3-any.pkg.tar.zst
-        pacman -U mingw-w64-ucrt-x86_64-gcc-14.2.0-3-any.pkg.tar.zst
+        pacboy: gcc:p cmake:p ninja:p make:p
     - name: Set up vcpkg
       uses: lukka/run-vcpkg@v11
       with:
