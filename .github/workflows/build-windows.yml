@@ -30,7 +30,7 @@ jobs:
       with:
         msystem: ucrt64
         update: true
-        pacboy: gcc:p cmake:p ninja:p make:p
+        pacboy: gcc=mingw-w64-ucrt-x86_64-gcc-14.2.0-3 cmake:p ninja:p make:p
     - name: Set up vcpkg
       uses: lukka/run-vcpkg@v11
       with:
