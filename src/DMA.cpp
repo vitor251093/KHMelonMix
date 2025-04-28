@@ -550,6 +550,14 @@ u32 DMA::UnitTimings7_32(bool burststart)
     }
 }
 
+// The pragma below fixes the following compilation error
+// In member function 'UnitTimings9_16',
+//     inlined from '_ZN7melonDS3DMA4Run9Ev.part.0' at D:/a/KHMelonMix/KHMelonMix/src/DMA.cpp:567:50:
+// D:/a/KHMelonMix/KHMelonMix/src/DMA.cpp:229:40: internal compiler error: in expand_expr_real_2, at expr.cc:9779
+//   229 |                         MRAMBurstTable = DMATiming::MRAMRead16Bursts[2];
+//       |                                        ^
+
+#pragma GCC optimize ("no-inline")
 void DMA::Run9()
 {
     if (NDS.ARM9Timestamp >= NDS.ARM9Target) return;
