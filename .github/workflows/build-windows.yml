@@ -31,7 +31,7 @@ jobs:
         msystem: ucrt64
         update: true
         #pacboy: gcc:p cmake:p ninja:p make:p
-        pacboy: ninja:p make:p wget:p
+        pacboy: cmake:p ninja:p make:p wget:p
     - name: Installing GCC 14.2.0-3
       run: |
         # Download specific GCC version 14.2.0-3
