@@ -781,11 +781,6 @@ void EmuThread::refreshPluginState()
         auto* plugin = emuInstance->plugin;
 
         if (plugin->shouldStartBackgroundMusic()) {
-            // disabling fast-forward, otherwise it will affect the cutscenes
-            emuInstance->setVSyncGL(true);
-
-            emuStatus = emuStatus_Running;
-
             u16 bgm = plugin->getCurrentBackgroundMusic();
             std::string path = plugin->getReplacementBackgroundMusicFilePath(bgm);
 
