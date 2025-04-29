@@ -1072,6 +1072,13 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
                         .build(aspectRatio));
             }
             break;
+
+        case gameScene_DeathScreen:
+            shapes.push_back(ShapeBuilder3D::square()
+                    .placeAtCorner(corner_Center)
+                    .zRange(-1.0, -0.0007)
+                    .build(aspectRatio));
+            break;
     }
 
     return shapes;
