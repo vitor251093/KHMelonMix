@@ -47,15 +47,20 @@ public:
     ~MainWindowSettings();
 
 public slots:
-    void asyncStartBgmMusic(quint16 bgmId, bool bStoreResumePos, QString bgmMusicFilePath);
-    void asyncStopBgmMusic(quint16 bgmId);
+    void asyncStartBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, quint32 delayAtStart, QString bgmMusicFilePath);
+    void asyncStopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop);
     void asyncPauseBgmMusic();
     void asyncUnpauseBgmMusic();
+    void asyncUpdateBgmMusicVolume(quint8 ramVolume);
+    void asyncStopAllBgm();
 
-    void startBgmMusic(quint16 bgmId, bool bStoreResumePos, QString bgmMusicFilePath);
-    void stopBgmMusic(quint16 bgmId);
+    void startBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, QString bgmMusicFilePath);
+    void stopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop);
     void pauseBgmMusic();
     void unpauseBgmMusic();
+    void stopAllBgm();
+
+    void updateBgmMusicVolume(quint8 ramVolume);
 
     void asyncStartVideo(QString videoFilePath);
     void asyncStopVideo();
@@ -69,6 +74,7 @@ public slots:
 
 private slots:
     void onBgmFadeOutCompleted(melonMix::AudioPlayer* playerStopped);
+    void startBgmMusicDelayed(quint16 bgmId, quint8 volume, bool bResumePos, QString bgmMusicFilePath);
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -91,11 +97,12 @@ private:
     QScopedPointer<QMediaPlayer> player;
 
     QList<melonMix::AudioPlayer*> bgmPlayers;
+    QScopedPointer<QTimer> delayedBgmStart;
     quint16 bgmToResumeId = 0;
     quint64 bgmToResumePosition = 0;
 
     void createVideoPlayer();
-
+    qreal getBgmMusicVolume(quint8 ramVolume);
 };
 
 #endif // MAINWINDOWSETTINGS_H

@@ -24,7 +24,7 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
     void loadLocalization();
-    void onLoadROM();
+    void onLoadROM() override;
 
     std::string assetsFolder();
     std::string tomlUniqueIdentifier();
@@ -41,7 +41,7 @@ public:
     void gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags);
     void gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags);
 
-    void onLoadState();
+    void onLoadState() override;
 
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
@@ -55,8 +55,6 @@ public:
     std::string localizationFilePath(std::string language);
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene);
-
-    std::string replacementBackgroundMusicFilePath(std::string name);
 
     const char* getGameSceneName();
 
@@ -128,6 +126,17 @@ private:
     u32 getCurrentMainMenuView();
     u32 getCurrentMap();
     bool isSaveLoaded();
+
+    // Music replacement system
+    std::array<BgmEntry, 41> BgmEntries;
+
+    bool isBackgroundMusicReplacementImplemented() const override { return true; }
+    u16 getMidiBgmId() override;
+    u32 getMidiSongTableAddress() override;
+    u8 getMidiBgmState() override;
+    u8 getMidiBgmVolume() override;
+    u16 getSongIdInSongTable(u16 bgmId) override;
+    std::string getBackgroundMusicName(u16 bgmId) override;
 
     bool isBufferBlack(unsigned int* buffer);
     u32* topScreen2DTexture();

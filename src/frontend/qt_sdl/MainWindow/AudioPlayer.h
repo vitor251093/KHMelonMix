@@ -17,13 +17,13 @@ public:
 
     bool loadFile(const QString &fileName);
 
-    void play(qint64 resumePosition, int fadeInMs = 0);
-    void stop(int fadeOutMs = 0);
+    void play(qint64 resumePosition, qreal volume, int fadeInMs);
+    void stop(int fadeOutMs);
 
     void pause();
     void resume();
 
-    void setVolume(qreal value);
+    void setVolume(qreal value, int durationInMs);
 
     quint16 getBgmId() const { return m_bgmId; }
     bool isPlaying() const { return m_playing; }

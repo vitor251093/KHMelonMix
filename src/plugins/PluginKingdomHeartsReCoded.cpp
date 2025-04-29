@@ -125,6 +125,15 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define DIALOG_SCREEN_VALUE_EU 0x00000000
 #define DIALOG_SCREEN_VALUE_JP 0x00000000 // TODO: KH probably correct, but didn't check
 
+#define SONG_ID_ADDRESS_US      0x02192012
+#define SONG_ID_ADDRESS_EU      0x02192EB2
+#define SONG_ID_ADDRESS_JP      0x02190CB2
+
+#define SSEQ_TABLE_ADDRESS_US      0x020E1E70
+#define SSEQ_TABLE_ADDRESS_EU      0x020E2D10
+#define SSEQ_TABLE_ADDRESS_JP      0x020E0B10
+
+
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
@@ -256,6 +265,50 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         {"w8_ED3", "576_PLUS_mm", "576_",                       0x0c216800, 0x0c27ec00, 0x0c12cc00, 2},
         {"w8_OP",  "573_PLUS_mm", "573_",                       0x0c426000, 0x0c48e400, 0x0c33c400, 2},
     }};
+
+    BgmEntries = std::array<BgmEntry, 41> {{
+        { 0,  0,    "WorldSelect", "" },
+        { 1,  1,    "Avatar", "" },
+        { 2,  2,    "ShroudingDark", "" },
+        { 3,  3,    "Dest_F", "" },
+        { 4,  4,    "Night_B", "" },
+        { 5,  5,    "Destati", "" },
+        { 6,  6,    "StrangeWhispers", "" },
+        { 7,  7,    "Andante", "" },
+        { 8,  8,    "Ttown_F", "" },
+        { 9,  9,    "Alice_F", "" },
+        { 10, 10,   "Alice_B", "" },
+        { 11, 11,   "Herc_F", "" },
+        { 12, 12,   "Herc_F2", "" },
+        { 13, 13,   "Herc_B", "" },
+        { 14, 14,   "Aladdin_F", "" },
+        { 15, 15,   "Aladdin_B", "" },
+        { 16, 16,   "Hollow_F", "" },
+        { 17, 17,   "Hollow_B", "" },
+        { 18, 18,   "Hollow_B2", "" },
+        { 19, 19,   "Castle_F", "" },
+        { 20, 20,   "Castle_B", "" },
+        { 21, 21,   "Namine", "" },
+        { 22, 22,   "Sysnormal_F", "" },
+        { 23, 23,   "Sysnormal_B", "" },
+        { 24, 24,   "Sysbug_F", "" },
+        { 25, 25,   "Sysbug_B", "" },
+        { 26, 26,   "Ability", "" },
+        { 27, 27,   "Destiny_B", "" },
+        { 28, 28,   "Roxas_B", "" },
+        { 29, 29,   "Missionboss1_B", "" },
+        { 30, 30,   "DisneyBoss1_B", "" },
+        { 31, 31,   "Boss3_B", "" },
+        { 32, 32,   "Boss4_B", "" },
+        { 33, 33,   "End_B", "" },
+        { 34, 34,   "Villains", "" },
+        { 35, 35,   "Riku", "" },
+        { 36, 36,   "Laughter", "" },
+        { 37, 37,   "Courage", "" },
+        { 38, 38,   "LastBoss", "" },
+        { 39, 39,   "Debug", "" },
+        { 40, 40,   "Rik_BG", "" }
+    }};
 }
 
 void PluginKingdomHeartsReCoded::loadLocalization() {
@@ -366,6 +419,8 @@ void PluginKingdomHeartsReCoded::loadLocalization() {
 }
 
 void PluginKingdomHeartsReCoded::onLoadROM() {
+    Plugin::onLoadROM();
+    
     loadLocalization();
 
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
@@ -1102,7 +1157,8 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
 
-    if (gameScene == gameScene_InGameWithMap || gameScene == gameScene_InGameDialog || gameScene == gameScene_InGameOlympusBattle)
+    if (gameScene == gameScene_InGameWithMap       || gameScene == gameScene_InGameDialog ||
+        gameScene == gameScene_InGameOlympusBattle || gameScene == gameScene_PauseMenu)
     {
         if (HideAllHUD || ((gameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0))
         {
@@ -1126,6 +1182,8 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                     .sourceScale(1.5)
                     .zRange(-1.0, -1.0)
                     .hudScale(UIScale)
+                    .negatedTextureParam(942331720) // aim
+                    .negatedTextureParam(949999400) // aim (lock on)
                     .build(aspectRatio));
         }
 
@@ -1134,8 +1192,6 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1058996416)
-                .fromPosition(0, 60)
-                .withSize(256, 132)
                 .zRange(-1.0, -0.5)
                 .build(aspectRatio));
 
@@ -1144,8 +1200,6 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1042219200)
-                .fromPosition(0, 60)
-                .withSize(256, 132)
                 .zRange(-1.0, -0.5)
                 .build(aspectRatio));
 
@@ -1439,8 +1493,9 @@ bool PluginKingdomHeartsReCoded::renderer_showOriginalUI() {
     return false;
 }
 
-void PluginKingdomHeartsReCoded::onLoadState()
-{
+void PluginKingdomHeartsReCoded::onLoadState() {
+    Plugin::onLoadState();
+
     texturesIndex.clear();
 
     loadLocalization();
@@ -2323,23 +2378,6 @@ bool PluginKingdomHeartsReCoded::isUnskippableMobiCutscene(CutsceneEntry* cutsce
     // return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 
-std::string PluginKingdomHeartsReCoded::replacementBackgroundMusicFilePath(std::string name) {
-    std::string filename = name + ".wav";
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
-    std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
-    }
-
-    filename = name + ".mp3";
-    fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
-    }
-
-    return "";
-}
-
 std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::filesystem::path _assetsFolderPath = assetsFolderPath();
@@ -2467,6 +2505,53 @@ bool PluginKingdomHeartsReCoded::isSaveLoaded()
 {
     return getCurrentMap() != 0;
 }
+
+
+u16 PluginKingdomHeartsReCoded::getMidiBgmId() {
+    u16 soundtrack = nds->ARM7Read16(getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP));
+    if (soundtrack > 0) {
+        return soundtrack;
+    }
+    return 0;
+}
+
+u8 PluginKingdomHeartsReCoded::getMidiBgmState() {
+    u32 SONG_STATE_ADDRESS = getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x04;
+    // See enum EMidiState for details of the state
+    return nds->ARM7Read8(SONG_STATE_ADDRESS);
+}
+
+u32 PluginKingdomHeartsReCoded::getMidiSongTableAddress() {
+    return getU32ByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
+}
+
+u8 PluginKingdomHeartsReCoded::getMidiBgmVolume() {
+    u32 SONG_MASTER_VOLUME_ADDRESS = getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x05;
+    // Usually 0x7F during gameplay and 0x40 when game is paused
+    return nds->ARM7Read8(SONG_MASTER_VOLUME_ADDRESS);
+}
+
+
+u16 PluginKingdomHeartsReCoded::getSongIdInSongTable(u16 bgmId) {
+    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
+        return e.dsId == bgmId; });
+    if(found != BgmEntries.end()) {
+        return found->loadingTableId;
+    }
+
+    return 0;
+}
+
+std::string PluginKingdomHeartsReCoded::getBackgroundMusicName(u16 bgmId) {
+    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
+        return e.dsId == bgmId; });
+    if(found != BgmEntries.end()) {
+        return found->Name;
+    }
+
+    return 0;
+}
+
 
 void PluginKingdomHeartsReCoded::debugLogs(int gameScene)
 {
