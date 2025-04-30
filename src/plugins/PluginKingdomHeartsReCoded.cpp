@@ -2508,11 +2508,7 @@ bool PluginKingdomHeartsReCoded::isSaveLoaded()
 
 
 u16 PluginKingdomHeartsReCoded::getMidiBgmId() {
-    u16 soundtrack = nds->ARM7Read16(getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP));
-    if (soundtrack > 0) {
-        return soundtrack;
-    }
-    return 0;
+    return nds->ARM7Read16(getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP));
 }
 
 u8 PluginKingdomHeartsReCoded::getMidiBgmState() {
@@ -2549,7 +2545,7 @@ std::string PluginKingdomHeartsReCoded::getBackgroundMusicName(u16 bgmId) {
         return found->Name;
     }
 
-    return 0;
+    return "Unknown";
 }
 
 
