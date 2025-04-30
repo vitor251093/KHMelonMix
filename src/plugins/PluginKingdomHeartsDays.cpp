@@ -2160,7 +2160,7 @@ std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 bgmId) {
 int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
     u32 currentMission = getCurrentMission();
     if (currentMission == 92 && _CurrentBackgroundMusic == 22) {
-        return 12500;
+        return 13000;
     }
     return 0;
 }
