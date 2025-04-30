@@ -971,7 +971,7 @@ void Plugin::refreshBackgroundMusic() {
 
 void Plugin::muteSongSequence(u16 bgmId) {
 
-    if (bgmId == 0 || bgmId == 0xFFFF) {
+    if (bgmId == 0xFFFF) {
         return;
     }
 
