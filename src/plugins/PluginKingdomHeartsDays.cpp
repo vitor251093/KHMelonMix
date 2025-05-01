@@ -2117,11 +2117,7 @@ bool PluginKingdomHeartsDays::isUnskippableMobiCutscene(CutsceneEntry* cutscene)
 }
 
 u16 PluginKingdomHeartsDays::getMidiBgmId() {
-    u16 soundtrack = nds->ARM7Read16(getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1));
-    if (soundtrack > 0) {
-        return soundtrack;
-    }
-    return 0;
+    return nds->ARM7Read16(getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1));
 }
 
 u8 PluginKingdomHeartsDays::getMidiBgmState() {
@@ -2165,13 +2161,13 @@ std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 bgmId) {
         return found->Name;
     }
 
-    return 0;
+    return "Unknown";
 }
 
 int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
     u32 currentMission = getCurrentMission();
     if (currentMission == 92 && _CurrentBackgroundMusic == 22) {
-        return 12500;
+        return 13000;
     }
     return 0;
 }

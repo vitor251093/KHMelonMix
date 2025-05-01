@@ -911,6 +911,10 @@ void Plugin::refreshBackgroundMusic() {
     if (state != _SoundtrackState) {
         switch(state) {
         case EMidiState::Stopped: {
+            if (_SoundtrackState == EMidiState::Playing
+                && _CurrentBackgroundMusic != BGM_INVALID_ID) {
+                stopBackgroundMusic(true);
+            }
             break;
         }
         case EMidiState::LoadSequence: {
@@ -967,7 +971,7 @@ void Plugin::refreshBackgroundMusic() {
 
 void Plugin::muteSongSequence(u16 bgmId) {
 
-    if (bgmId == 0 || bgmId == 0xFFFF) {
+    if (bgmId == 0xFFFF) {
         return;
     }
 
