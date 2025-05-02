@@ -158,7 +158,7 @@ signals:
     void syncVolumeLevel();
 
     void windowStartBgmMusic(quint16 bgmId, quint8 volume, bool bStoreResumePos, quint32 delayAtStart, QString filePath);
-    void windowStopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop);
+    void windowStopBgmMusic(quint16 bgmId, bool bStoreResumePos, quint32 fadeOutDuration);
     void windowPauseBgmMusic();
     void windowUnpauseBgmMusic();
     void windowUpdateBgmMusicVolume(quint8 volume);

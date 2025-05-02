@@ -90,7 +90,7 @@ void EmuThread::attachWindow(MainWindow* window)
     }
 
     connect(this, SIGNAL(windowStartBgmMusic(quint16, quint8, bool, quint32, QString)), window, SLOT(asyncStartBgmMusic(quint16, quint8, bool, quint32, QString)));
-    connect(this, SIGNAL(windowStopBgmMusic(quint16, bool, bool)), window, SLOT(asyncStopBgmMusic(quint16, bool, bool)));
+    connect(this, SIGNAL(windowStopBgmMusic(quint16, bool, quint32)), window, SLOT(asyncStopBgmMusic(quint16, bool, quint32)));
     connect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
     connect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
     connect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
@@ -120,7 +120,7 @@ void EmuThread::detachWindow(MainWindow* window)
     }
 
     disconnect(this, SIGNAL(windowStartBgmMusic(quint16, quint8, bool, quint32, QString)), window, SLOT(asyncStartBgmMusic(quint16, quint8, bool, quint32, QString)));
-    disconnect(this, SIGNAL(windowStopBgmMusic(quint16, bool, bool)), window, SLOT(asyncStopBgmMusic(quint16, bool, bool)));
+    disconnect(this, SIGNAL(windowStopBgmMusic(quint16, bool, quint32)), window, SLOT(asyncStopBgmMusic(quint16, bool, quint32)));
     disconnect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
     disconnect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
     disconnect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
@@ -795,8 +795,8 @@ void EmuThread::refreshPluginState()
         if (plugin->shouldStopBackgroundMusic()) {
             u16 bgm = plugin->getBackgroundMusicToStop();
             bool bShouldStoreResumePos = plugin->getStoreBackgroundMusicPosition();
-            bool bShouldForceStopMusic = plugin->shouldForceStopMusic();
-            emit windowStopBgmMusic(bgm, bShouldStoreResumePos, bShouldForceStopMusic);
+            u32 fadeOutDuration = plugin->getBackgroundMusicFadeOutToApply();
+            emit windowStopBgmMusic(bgm, bShouldStoreResumePos, fadeOutDuration);
         }
 
         if (plugin->shouldPauseBackgroundMusic()) {

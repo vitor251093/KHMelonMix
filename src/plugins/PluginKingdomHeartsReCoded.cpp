@@ -2527,6 +2527,10 @@ u8 PluginKingdomHeartsReCoded::getMidiBgmVolume() {
     return nds->ARM7Read8(SONG_MASTER_VOLUME_ADDRESS);
 }
 
+u32 PluginKingdomHeartsReCoded::getBgmFadeOutDuration() {
+    // TODO find bgm fade counter in RAM
+    return 1000;
+}
 
 u16 PluginKingdomHeartsReCoded::getSongIdInSongTable(u16 bgmId) {
     auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {

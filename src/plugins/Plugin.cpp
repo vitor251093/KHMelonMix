@@ -50,14 +50,14 @@ namespace Plugins
 u16 Plugin::BGM_INVALID_ID = 0xFFFF;
 
 void Plugin::onLoadROM() {
-    stopBackgroundMusic(true);
+    stopBackgroundMusic(0);
     _SoundtrackState = EMidiState::Stopped;
 }
 
 void Plugin::onLoadState() {
     texturesIndex.clear();
 
-    stopBackgroundMusic(true);
+    stopBackgroundMusic(0);
     _SoundtrackState = EMidiState::Stopped;
 };
 
@@ -874,13 +874,13 @@ std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
     return "";
 }
 
-void Plugin::stopBackgroundMusic(bool bImmediateStop) {
+void Plugin::stopBackgroundMusic(u16 fadeOutDuration) {
     if (_CurrentBackgroundMusic != BGM_INVALID_ID) {
         u16 resumeSlot = getMidiBgmToResumeId();
         _StoreBackgroundMusicPosition = (resumeSlot == _CurrentBackgroundMusic && resumeSlot != BGM_INVALID_ID);
         _ShouldStopReplacementBgmMusic = true;
         _BackgroundMusicToStop = _CurrentBackgroundMusic;
-        _ForceStopMusic = bImmediateStop;
+        _BgmFadeOutDurationMs = fadeOutDuration;
         _CurrentBackgroundMusic = BGM_INVALID_ID;
     }
     _MuteSeqBgm = false;
@@ -907,13 +907,14 @@ void Plugin::refreshBackgroundMusic() {
     }
 
     u8 state = getMidiBgmState();
+    u16 bgmId = getMidiBgmId();
 
     if (state != _SoundtrackState) {
         switch(state) {
         case EMidiState::Stopped: {
             if (_SoundtrackState == EMidiState::Playing
                 && _CurrentBackgroundMusic != BGM_INVALID_ID) {
-                stopBackgroundMusic(true);
+                stopBackgroundMusic(0);
             }
             break;
         }
@@ -924,10 +925,9 @@ void Plugin::refreshBackgroundMusic() {
         case EMidiState::PrePlay:
         case EMidiState::Playing: {
             // SSEQ is loaded and ready to play
-            u16 bgmId = getMidiBgmId();
             if (bgmId != _CurrentBackgroundMusic) {
                 // Previous bgm should have already been stopped, but just in case:
-                stopBackgroundMusic(false);
+                stopBackgroundMusic(1000);
 
                 std::string replacementBgmPath = getReplacementBackgroundMusicFilePath(bgmId);
                 if (replacementBgmPath != "") {
@@ -948,7 +948,8 @@ void Plugin::refreshBackgroundMusic() {
         }
         case EMidiState::Stopping: {
             // Note: bgmId is already 0xFFFF at this point
-            stopBackgroundMusic(false);
+            u32 fadeOutProgress = getBgmFadeOutDuration();
+            stopBackgroundMusic(fadeOutProgress);
             break;
         }
         default: {

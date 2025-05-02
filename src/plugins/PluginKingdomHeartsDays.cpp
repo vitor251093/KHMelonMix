@@ -2136,6 +2136,18 @@ u8 PluginKingdomHeartsDays::getMidiBgmVolume() {
     return nds->ARM7Read8(SONG_MASTER_VOLUME_ADDRESS);
 }
 
+u32 PluginKingdomHeartsDays::getBgmFadeOutDuration() {
+    // Caution: this RAM value should be queried on the first frame when the "Stopping" state was set, otherwise fadeout is already in progress!
+    u32 SONG_FADE_OUT_PROGRESS_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x0A;
+    u8 progress = nds->ARM7Read8(SONG_FADE_OUT_PROGRESS_ADDRESS);
+    // converts value in game frames to milliseconds + some smoothing
+    float valueMs = (progress / 30.0f);
+    if (progress >= 59) { valueMs *= 1.2; }
+    else if (progress >= 29) { valueMs *= 1.5; }
+    else { valueMs *= 2; }
+
+    return std::round(valueMs * 1000);
+}
 
 u16 PluginKingdomHeartsDays::getSongIdInSongTable(u16 bgmId) {
     auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {

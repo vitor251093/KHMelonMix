@@ -312,7 +312,7 @@ public:
     bool isBackgroundMusicPlaying() const { return _CurrentBackgroundMusic != BGM_INVALID_ID; }
     u16 getCurrentBackgroundMusic() const { return _CurrentBackgroundMusic; }
     u16 getBackgroundMusicToStop() const { return _BackgroundMusicToStop; }
-    bool shouldForceStopMusic() const { return _ForceStopMusic; }
+    u32 getBackgroundMusicFadeOutToApply() const { return _BgmFadeOutDurationMs; }
     u8 getCurrentBgmMusicVolume() const { return _BackgroundMusicVolume; }
     u32 getBgmDelayAtStart() const { return _BackgroundMusicDelayAtStart; }
     bool getStoreBackgroundMusicPosition() const { return _StoreBackgroundMusicPosition; }
@@ -326,6 +326,7 @@ public:
     virtual u32 getMidiSongTableAddress() { return 0; }
     virtual u8 getMidiBgmState() { return 0; }
     virtual u8 getMidiBgmVolume() { return 0; }
+    virtual u32 getBgmFadeOutDuration() { return 0; }
     virtual u16 getSongIdInSongTable(u16 bgmId) { return 0; }
     virtual std::string getBackgroundMusicName(u16 soundtrackId) { return ""; }
     virtual int delayBeforeStartReplacementBackgroundMusic() { return 0; }
@@ -333,7 +334,7 @@ public:
     void refreshBackgroundMusic();
     std::string getBackgroundMusicName(u16 soundtrackId) const;
     void muteSongSequence(u16 bgmId);
-    void stopBackgroundMusic(bool bImmediateStop);
+    void stopBackgroundMusic(u16 fadeOutDuration);
 
     virtual void refreshMouseStatus() {}
 
@@ -435,7 +436,7 @@ protected:
     u32 _BackgroundMusicDelayAtStart = 0;
     u16 _BackgroundMusicToStop = 0;
     u8 _SoundtrackState = 0;
-    bool _ForceStopMusic = false;
+    u32 _BgmFadeOutDurationMs = 0;
     bool _MuteSeqBgm = false;
     u8 _BackgroundMusicVolume = 0x7f;
     bool _StoreBackgroundMusicPosition = false;
