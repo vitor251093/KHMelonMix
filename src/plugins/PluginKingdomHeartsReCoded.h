@@ -132,6 +132,7 @@ private:
 
     bool isBackgroundMusicReplacementImplemented() const override { return true; }
     u16 getMidiBgmId() override;
+    u16 getMidiBgmToResumeId() override;
     u32 getMidiSongTableAddress() override;
     u8 getMidiBgmState() override;
     u8 getMidiBgmVolume() override;

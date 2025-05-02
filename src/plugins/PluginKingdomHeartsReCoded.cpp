@@ -2517,6 +2517,13 @@ u8 PluginKingdomHeartsReCoded::getMidiBgmState() {
     return nds->ARM7Read8(SONG_STATE_ADDRESS);
 }
 
+u16 PluginKingdomHeartsReCoded::getMidiBgmToResumeId() {
+    // This byte is set by the audio engine when a "Field" track is getting stopped and we are playing a "Battle" track.
+    // This tells us that the "Field" track will resume playing when the "Battle" track ends.
+    u32 SONG_SECOND_SLOT_ADDRESS = getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x0C;
+    return nds->ARM7Read8(SONG_SECOND_SLOT_ADDRESS);
+}
+
 u32 PluginKingdomHeartsReCoded::getMidiSongTableAddress() {
     return getU32ByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
 }
