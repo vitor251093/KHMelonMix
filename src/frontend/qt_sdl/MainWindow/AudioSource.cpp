@@ -235,7 +235,7 @@ QAudioFormat::SampleFormat AudioSourceWav::bitsPerSampleToSampleFormat(quint16 b
     {
         case 8: return QAudioFormat::UInt8;
         case 16: return QAudioFormat::Int16;
-        case 24: return QAudioFormat::Int32;
+        //case 24: return QAudioFormat::Int32; // Unhandled
         case 32: return QAudioFormat::Int32;
         default: return QAudioFormat::Unknown; // Unhandled
     }
@@ -277,9 +277,10 @@ bool AudioSourceWav::readWavHeader()
             m_format.setChannelCount(m_numChannels);
             
             auto sampleFormat = bitsPerSampleToSampleFormat(m_bitsPerSample);
-            m_format.setSampleFormat(sampleFormat);
-
-            foundFormat = true;
+            if (sampleFormat != QAudioFormat::Unknown) {
+                m_format.setSampleFormat(sampleFormat);
+                foundFormat = true;
+            }
         } else if (memcmp(chunkId, "data", 4) == 0) {
             m_dataStart = m_file.pos();
             m_currentPos = m_dataStart;
