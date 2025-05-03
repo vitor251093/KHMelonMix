@@ -7,6 +7,7 @@
 #include <string>
 #include <cstdarg>
 #include <cstdio>
+#include <fstream>
 
 #ifdef __APPLE__
 #include <objc/objc.h>
@@ -865,10 +866,18 @@ std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
         return fullPath.string();
     }
 
-    filename = "bgm" + std::to_string(id) + ".mp3";
+    // File redirector (.txt file should only contain the filename, not the fullpath, example: "bgm4.wav")
+    filename = "bgm" + std::to_string(id) + ".txt";
     fullPath = _assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
+
+        std::ifstream ifs(fullPath);
+        std::string redirector((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
+
+        std::filesystem::path redirector_fullpath = fullPath = _assetsFolderPath / "audio" / redirector;
+        if (std::filesystem::exists(redirector_fullpath)) {
+            return redirector_fullpath.string();
+        }
     }
 
     return "";
