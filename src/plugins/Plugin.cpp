@@ -921,8 +921,7 @@ void Plugin::refreshBackgroundMusic() {
     if (state != _SoundtrackState) {
         switch(state) {
         case EMidiState::Stopped: {
-            if (_SoundtrackState == EMidiState::Playing
-                && _CurrentBackgroundMusic != BGM_INVALID_ID) {
+            if (_CurrentBackgroundMusic != BGM_INVALID_ID) {
                 stopBackgroundMusic(0);
             }
             break;
@@ -941,10 +940,12 @@ void Plugin::refreshBackgroundMusic() {
                 std::string replacementBgmPath = getReplacementBackgroundMusicFilePath(bgmId);
                 if (replacementBgmPath != "") {
                     _ShouldStartReplacementBgmMusic = true;
+                    _CurrentBackgroundMusicFilepath = replacementBgmPath;
                     _CurrentBackgroundMusic = bgmId;
                     u16 bgmResumeId = getMidiBgmToResumeId();
                     _ResumeBackgroundMusicPosition = (bgmResumeId == _CurrentBackgroundMusic && bgmResumeId != BGM_INVALID_ID);
                     _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic();
+                    _CurrentBgmIsStream = false;
                     _MuteSeqBgm = true;
                 } else {
                     _CurrentBackgroundMusic = BGM_INVALID_ID;
@@ -1039,6 +1040,74 @@ void Plugin::muteSongSequence(u16 bgmId) {
     }
 }
 
+void Plugin::refreshStreamedMusic() {
+    const u32 streamPtrAddress = getStreamTargetAddress();
+    if (streamPtrAddress == 0) {
+        return;
+    }
+
+    const u32 strmHeaderAddress = nds->ARM9Read32(streamPtrAddress);
+    if (strmHeaderAddress == _CurrentStreamAddress)
+        return;
+
+    _CurrentStreamAddress = strmHeaderAddress;
+ 
+    bool bStopAndReturn = false;
+
+    u32 strmTag = nds->ARM9Read32(strmHeaderAddress);
+    if (strmTag != 0x4D525453) { // STRM
+        bStopAndReturn = true;
+    }
+
+    u16 streamBgmId = getStreamBgmIdFromAddress(strmHeaderAddress);
+    if (streamBgmId == BGM_INVALID_ID) {
+        bStopAndReturn = true;
+    }
+
+    if (bStopAndReturn) {
+        if (_CurrentBgmIsStream && _CurrentBackgroundMusic != BGM_INVALID_ID) {
+            _ShouldStopReplacementBgmMusic = true;
+            _BackgroundMusicToStop = _CurrentBackgroundMusic;
+            _BgmFadeOutDurationMs = 1000;
+            _CurrentBackgroundMusic = BGM_INVALID_ID;
+            _CurrentBgmIsStream = false;
+        }
+        return;
+    }
+
+    bool bMuteStream = false;
+
+    std::string replacementStrmPath = getReplacementBackgroundMusicFilePath(streamBgmId);
+    if (replacementStrmPath != "") {
+        _ShouldStartReplacementBgmMusic = true;
+        _CurrentBackgroundMusicFilepath = replacementStrmPath;
+        _CurrentBackgroundMusic = 0;
+        _CurrentBgmIsStream = true;
+        bMuteStream = true;
+    } else {
+        _CurrentBackgroundMusic = BGM_INVALID_ID;
+        bMuteStream = false;
+    }
+
+    if (bMuteStream) {
+        u32 numSamples = nds->ARM9Read32(strmHeaderAddress + 0x24);
+        if (numSamples > 0) {
+            nds->ARM7Write32(strmHeaderAddress + 0x24, 0x00);
+        }
+    
+        u32 numBlocks = nds->ARM9Read32(strmHeaderAddress + 0x2c);
+        if (numBlocks > 0) {
+            nds->ARM7Write32(strmHeaderAddress + 0x2c, 0x00);
+        }
+
+        u32 startErase = strmHeaderAddress + 0x30;
+        u32 endErase = startErase + 0x10;
+        for (u32 addr = startErase; addr < endErase; addr+=4) {
+            nds->ARM7Write32(addr, 0x00);
+        }
+    }
+}
+
 bool Plugin::ShouldGrabMouseCursor() {
     if (_ShouldGrabMouseCursor) {
         _ShouldGrabMouseCursor = false;
@@ -1095,6 +1164,7 @@ bool Plugin::refreshGameScene()
     refreshCutscene();
 
     refreshBackgroundMusic();
+    refreshStreamedMusic();
 
     refreshMouseStatus();
 

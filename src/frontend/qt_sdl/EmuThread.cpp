@@ -782,7 +782,7 @@ void EmuThread::refreshPluginState()
 
         if (plugin->shouldStartBackgroundMusic()) {
             u16 bgm = plugin->getCurrentBackgroundMusic();
-            std::string path = plugin->getReplacementBackgroundMusicFilePath(bgm);
+            const std::string& path = plugin->getCurrentBackgroundMusicFilePath();
 
             bool bShouldStoreResumePos = plugin->getResumeFromPositionBackgroundMusic();
             u8 volume = plugin->getCurrentBgmMusicVolume();

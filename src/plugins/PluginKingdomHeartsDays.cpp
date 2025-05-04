@@ -134,6 +134,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define SSEQ_TABLE_ADDRESS_JP      0x020E4310
 #define SSEQ_TABLE_ADDRESS_JP_REV1 0x020E4290
 
+#define STRM_TARGET_ADDRESS_US      0x020DD6CC
+#define STRM_TARGET_ADDRESS_EU      0x020DE4AC
+#define STRM_TARGET_ADDRESS_JP      0x020DC82C
+#define STRM_TARGET_ADDRESS_JP_REV1 0x020DC7AC
+
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
@@ -309,6 +314,10 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         { 36, 34,   "Boss4",            "Fight and Away" },
         { 37, 35,   "RikuBattle",       "Another Side Battle Version" },
         { 38, 36,   "Xionbattle",       "Vector to the Heavens" }
+    }};
+
+    StreamedBgmEntries = std::array<StreamedBgmEntry, 1> {{
+        { 0, "Dearly Beloved", 0x0204b6b4,  0x0204b6d4, 0x0204bb14, 0x0204bad4 }
     }};
 }
 
@@ -2129,6 +2138,22 @@ u16 PluginKingdomHeartsDays::getMidiBgmToResumeId() {
 u32 PluginKingdomHeartsDays::getMidiSongTableAddress() {
     return getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
 }
+
+u32 PluginKingdomHeartsDays::getStreamTargetAddress() {
+    return getAnyByCart(STRM_TARGET_ADDRESS_US, STRM_TARGET_ADDRESS_EU, STRM_TARGET_ADDRESS_JP, STRM_TARGET_ADDRESS_JP_REV1);
+}
+
+u16 PluginKingdomHeartsDays::getStreamBgmIdFromAddress(u32 address) {
+    auto found = std::find_if(StreamedBgmEntries.begin(), StreamedBgmEntries.end(), [&](const auto& e) {
+        u32 cartAddress = getAnyByCart(e.usAddress, e.euAddress, e.jpAddress, e.jprev1Address);
+        return cartAddress == address; });
+    if(found != StreamedBgmEntries.end()) {
+        return found->customId;
+    }
+
+    return BGM_INVALID_ID;
+}
+
 
 u8 PluginKingdomHeartsDays::getMidiBgmVolume() {
     u32 SONG_MASTER_VOLUME_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x07;
