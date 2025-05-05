@@ -38,10 +38,10 @@ int MakeShape(std::vector<ShapeBuilderCall> calls,float aRatio);
 int SetShapes(std::vector<int> shapes);
 void setLuaGameScene(int gamescene);
 
-class PluginTemplate : public Plugin
+class PluginTemplateLua : public Plugin
 {
 public:
-    PluginTemplate(u32 gameCode);
+    PluginTemplateLua(u32 gameCode);
     static u32 usGamecode;
     static u32 euGamecode;
     static u32 jpGamecode;

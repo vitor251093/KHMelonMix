@@ -3,13 +3,13 @@
 #include "PluginKingdomHeartsDays.h"
 #include "PluginKingdomHeartsReCoded.h"
 #include "PluginMetroidPrimeHunters.h"
-#include "PluginTemplate.h"
+#include "PluginTemplateLua.h"
 
 #define LOAD_PLUGINS \
     LOAD_PLUGIN(PluginKingdomHeartsDays) \
     LOAD_PLUGIN(PluginKingdomHeartsReCoded) \
     LOAD_PLUGIN(PluginMetroidPrimeHunters) \
-    LOAD_PLUGIN(PluginTemplate)
+    LOAD_PLUGIN(PluginTemplateLua)
 namespace Plugins
 {
 

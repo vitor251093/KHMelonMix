@@ -11,7 +11,7 @@
 #include <SDL_joystick.h>
 #include <NDS_Header.h>
 #include "main.h"
-#include "../plugins/PluginTemplate.h"
+#include "../plugins/PluginTemplateLua.h"
 
 
 LuaBundle::LuaBundle(LuaConsoleDialog* dialog, EmuInstance* inst)

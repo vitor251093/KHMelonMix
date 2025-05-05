@@ -1,4 +1,4 @@
-#include "PluginTemplate.h"
+#include "PluginTemplateLua.h"
 
 #define ASPECT_RATIO_ADDRESS_US      0
 #define ASPECT_RATIO_ADDRESS_EU      0
@@ -7,13 +7,13 @@
 namespace Plugins
 {
 
-u32 PluginTemplate::usGamecode = 0;
-u32 PluginTemplate::euGamecode = 0;
-u32 PluginTemplate::jpGamecode = 0;
+u32 PluginTemplateLua::usGamecode = 0;
+u32 PluginTemplateLua::euGamecode = 0;
+u32 PluginTemplateLua::jpGamecode = 0;
 
 #define getAnyByCart(usAddress,euAddress,jpAddress) (isUsaCart() ? (usAddress) : (isEuropeCart() ? (euAddress) : (jpAddress)))
 
-PluginTemplate::PluginTemplate(u32 gameCode)
+PluginTemplateLua::PluginTemplateLua(u32 gameCode)
 {
     GameCode = gameCode;
 
@@ -23,7 +23,7 @@ PluginTemplate::PluginTemplate(u32 gameCode)
 
 static int luaGameScene;
 
-int PluginTemplate::detectGameScene()
+int PluginTemplateLua::detectGameScene()
 {
     if (nds == nullptr)
     {
@@ -78,12 +78,12 @@ void setLuaGameScene(int gamescene){
     luaGameScene = gamescene;   
 }
 
-int PluginTemplate::renderer_gameSceneState(){
+int PluginTemplateLua::renderer_gameSceneState(){
     int gamescene = luaGameScene;
     return gamescene;
 }
 
-std::vector<ShapeData2D> PluginTemplate::renderer_2DShapes(int gameScene, int gameSceneState) {    
+std::vector<ShapeData2D> PluginTemplateLua::renderer_2DShapes(int gameScene, int gameSceneState) {    
     std::vector<ShapeData2D> shapes = CurrentShapes;
     /*
     for(int i =0;i<shapes.size();i++){
@@ -101,26 +101,26 @@ std::vector<ShapeData2D> PluginTemplate::renderer_2DShapes(int gameScene, int ga
     return shapes;
 }
 
-int PluginTemplate::renderer_screenLayout() {
+int PluginTemplateLua::renderer_screenLayout() {
     return screenLayout_Top;
 };
 
-int PluginTemplate::renderer_brightnessMode() {
+int PluginTemplateLua::renderer_brightnessMode() {
     return brightnessMode_TopScreen;
 }
 
-bool PluginTemplate::renderer_showOriginalUI() {
+bool PluginTemplateLua::renderer_showOriginalUI() {
     return false;
 }
 
-void PluginTemplate::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {
+void PluginTemplateLua::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {
     
 }
-void PluginTemplate::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) {
+void PluginTemplateLua::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) {
     _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, true);
 }
 
-u32 PluginTemplate::getAspectRatioAddress() {
+u32 PluginTemplateLua::getAspectRatioAddress() {
     return getAnyByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
 }
 
