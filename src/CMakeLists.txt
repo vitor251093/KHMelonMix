@@ -69,7 +69,6 @@ add_library(core STATIC
     plugins/PluginKingdomHeartsDays.cpp
     plugins/PluginKingdomHeartsReCoded.cpp
     plugins/PluginMetroidPrimeHunters.cpp
-    plugins/PluginTemplate.cpp
 
     sha1/sha1.c
     tiny-AES-c/aes.c
