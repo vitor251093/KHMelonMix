@@ -16,7 +16,7 @@ class AudioSourceWav : public QIODevice
 public:
     AudioSourceWav(QObject *parent = nullptr);
 
-    void onStarted(qint64 resumePosition, int fadeInMs);
+    void onStarted(qint64 resumePosition, qreal volume, int fadeInMs);
     void onStopped();
 
     bool load(const QString &fileName);
@@ -35,14 +35,14 @@ public:
     quint32 getBitsPerSample() const { return m_bitsPerSample; }
 
     qint64 getCurrentPlayingPos() const { return m_currentPos; }
-    void startFadeIn(int durationMs);
+    void startFadeIn(qreal volume, int durationMs);
     void startFadeOut(int durationMs);
+    void setVolume(double newVolume, int durationMs);
 
     static QAudioFormat::SampleFormat bitsPerSampleToSampleFormat(quint16 bitsPerSample);
 
 private:
-    enum EFadeType : quint8 { FadeIn, FadeOut };
-    void applyFade(EFadeType type, char* data, qint64 bytesRead);
+    void applyVolume(char* buffer, int64_t numSamples);
 
     bool readWavHeader();
 
@@ -62,13 +62,14 @@ private:
 
     qint64 m_currentPos = 0;
 
-    bool m_fadeInActive = false;
-    int m_fadeInRemainingSamples = 0;
-    int m_fadeInTotalSamples = 0;
+    enum class EStatus : quint8 { Playing, Stopping, Stopped };
+    EStatus m_status = EStatus::Stopped;
 
-    bool m_fadeOutActive = false;
-    int m_fadeOutRemainingSamples = 0;
-    int m_fadeOutTotalSamples = 0;
+    double m_currentVolume = 1.0;
+    double m_targetVolume = 1.0;
+    double m_volumeIncrement = 0.0;
+    int64_t m_samplesRemaining = 0;
+    int64_t m_totalTransitionSamples = 0;
 };
 
 } // namespace melonMix

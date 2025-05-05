@@ -42,22 +42,31 @@ bool AudioSourceWav::load(const QString &fileName)
     return true;
 }
 
-void AudioSourceWav::onStarted(qint64 resumePosition, int fadeInMs)
+void AudioSourceWav::onStarted(qint64 resumePosition, qreal volume, int fadeInMs)
 {
-    m_fadeOutActive = false;
-    m_fadeOutRemainingSamples = 0;
+    m_samplesRemaining = 0;
+    m_totalTransitionSamples = 0;
+    m_status = EStatus::Playing;
+    volume = std::clamp(volume, 0.0, 1.0);
+
     m_currentPos = m_dataStart + resumePosition;
 
-    if (fadeInMs) {
-        startFadeIn(fadeInMs);
+    if (fadeInMs > 0) {
+        m_currentVolume = 0.0;
+        startFadeIn(volume, fadeInMs);
+    } else {
+        m_targetVolume = m_currentVolume = volume;
     }
 }
 
 void AudioSourceWav::onStopped()
 {
     m_currentPos = m_dataStart;
-    m_fadeInActive = false;
-    m_fadeInRemainingSamples = 0;
+    m_status = EStatus::Stopped;
+
+    m_currentVolume = 0.0;
+    m_samplesRemaining = 0;
+    m_totalTransitionSamples = 0;
 }
 
 qint64 AudioSourceWav::readData(char *data, qint64 maxSize)
@@ -105,103 +114,118 @@ qint64 AudioSourceWav::readData(char *data, qint64 maxSize)
 
     m_currentPos = m_file.pos();
 
-    if (m_fadeInActive && bytesRead > 0) {
-        applyFade(EFadeType::FadeIn, data, bytesRead);
-    }
+    applyVolume(data, bytesRead);
 
-    if (m_fadeOutActive && bytesRead > 0) {
-        applyFade(EFadeType::FadeOut, data, bytesRead);
+    if (m_samplesRemaining <= 0 && m_status == EStatus::Stopping) {
+        QMetaObject::invokeMethod(parent(), "onFadeOutCompleted", Qt::QueuedConnection);
+        m_status = EStatus::Stopped;
     }
 
     return bytesRead;
 }
 
-void AudioSourceWav::startFadeIn(int durationMs)
+void AudioSourceWav::startFadeIn(qreal volume, int durationMs)
 {
-    m_fadeInActive = true;
-    m_fadeInTotalSamples = (durationMs * m_sampleRate) / 1000;
-    m_fadeInRemainingSamples = m_fadeInTotalSamples;
+    setVolume(volume, durationMs);
 }
 
 void AudioSourceWav::startFadeOut(int durationMs)
 {
-    m_fadeOutActive = true;
-    m_fadeOutTotalSamples = (durationMs * m_sampleRate) / 1000;
-    m_fadeOutRemainingSamples = m_fadeOutTotalSamples;
+    setVolume(0.0, durationMs);
+    m_status = EStatus::Stopping;
 }
 
-void AudioSourceWav::applyFade(EFadeType type, char* data, qint64 bytesRead)
+void AudioSourceWav::applyVolume(char* buffer, int64_t numBytes)
 {
-    int samplesPerFrame = m_numChannels;
-    int bytesPerFrame = m_bytesPerFrame;
-    int framesInBuffer = bytesRead / bytesPerFrame;
+    float targetForCalculation = (m_targetVolume <= 0.0f) ? 0.000001f : m_targetVolume;
 
-    int& remainingSamples = (type == EFadeType::FadeIn) ? m_fadeInRemainingSamples : m_fadeOutRemainingSamples;
+    char* samplePtr = buffer;
 
-    for (int frame = 0; frame < framesInBuffer; frame++) {
-        float fadeProgress;
+    int channel = 0;
+    int remainingBytes = numBytes;
+    while (remainingBytes > 0)
+    {
+        float gain = m_currentVolume;
+        if (m_samplesRemaining > 0) {
+            float position = ((m_totalTransitionSamples - m_samplesRemaining) / (float)m_totalTransitionSamples);
 
-        if (remainingSamples <= 0) {
-            fadeProgress = (type == EFadeType::FadeIn) ? 1.0f : 0.0f;
-        } else {
-            if (type == EFadeType::FadeIn) {
-                fadeProgress = 1.0f - static_cast<float>(m_fadeInRemainingSamples) / m_fadeInTotalSamples;
-                fadeProgress = fadeProgress * fadeProgress;
-            } else  {
-                fadeProgress = static_cast<float>(m_fadeOutRemainingSamples) / m_fadeOutTotalSamples;
-                fadeProgress = fadeProgress * fadeProgress;
+            if (m_targetVolume <= 0.0f) {
+                gain = m_currentVolume * std::exp(-6.0f * position);
+            } else {
+                float dbCurrent = 20.0f * std::log10(m_currentVolume);
+                float dbTarget = 20.0f * std::log10(targetForCalculation);
+                float dbCurrent_i = dbCurrent + position * (dbTarget - dbCurrent);
+                gain = std::pow(10.0f, dbCurrent_i / 20.0f);
             }
         }
 
-        for (int ch = 0; ch < m_numChannels; ch++) {
-            char* samplePtr = data + (frame * bytesPerFrame) + (ch * (m_bitsPerSample / 8));
-            
-            if (m_bitsPerSample == 16) {
-                int16_t* sample = reinterpret_cast<int16_t*>(samplePtr);
-                *sample = static_cast<int16_t>(*sample * fadeProgress);
-            } 
-            else if (m_bitsPerSample == 24) {
-                int32_t value = 0;
-                value = (static_cast<uint8_t>(samplePtr[0])) |
-                        (static_cast<uint8_t>(samplePtr[1]) << 8) |
-                        (static_cast<int8_t>(samplePtr[2]) << 16);
+        if (m_bitsPerSample == 16) {
+            int16_t value = (static_cast<uint8_t>(samplePtr[0])) |
+                            (static_cast<int8_t>(samplePtr[1]) << 8);
 
-                value = static_cast<int32_t>(value * fadeProgress);
+            value *= gain;
 
-                samplePtr[0] = value & 0xFF;
-                samplePtr[1] = (value >> 8) & 0xFF;
-                samplePtr[2] = (value >> 16) & 0xFF;
-            }
-            else if (m_bitsPerSample == 32) {
-                int32_t* sample = reinterpret_cast<int32_t*>(samplePtr);
-                *sample = static_cast<int32_t>(*sample * fadeProgress);
-            }
-            else if (m_bitsPerSample == 8) {
-                uint8_t* sample = reinterpret_cast<uint8_t*>(samplePtr);
-                *sample = 128 + static_cast<uint8_t>((*sample - 128) * fadeProgress);
-            }
+            samplePtr[0] = value & 0xFF;
+            samplePtr[1] = (value >> 8) & 0xFF;
+        } 
+        else if (m_bitsPerSample == 24) {
+            int32_t value = 0;
+            value = (static_cast<uint8_t>(samplePtr[0])) |
+                    (static_cast<uint8_t>(samplePtr[1]) << 8) |
+                    (static_cast<int8_t>(samplePtr[2]) << 16);
+
+            value = static_cast<int32_t>(value * gain);
+
+            samplePtr[0] = value & 0xFF;
+            samplePtr[1] = (value >> 8) & 0xFF;
+            samplePtr[2] = (value >> 16) & 0xFF;
+        }
+        else if (m_bitsPerSample == 32) {
+            int32_t* sample = reinterpret_cast<int32_t*>(samplePtr);
+            *sample = static_cast<int32_t>(*sample * gain);
+        } else if (m_bitsPerSample == 8) {
+            uint8_t* sample = reinterpret_cast<uint8_t*>(samplePtr);
+            *sample = 128 + static_cast<uint8_t>((*sample - 128) * gain);
         }
 
-        if (remainingSamples > 0)
-            remainingSamples--;
+        int sampleSize = m_bitsPerSample / 8;
+        samplePtr += sampleSize;
+        remainingBytes -= sampleSize;
+
+        channel++;
+        if (channel == m_numChannels)
+        {
+            if (m_samplesRemaining > 0) {
+                m_currentVolume += m_volumeIncrement;
+                m_samplesRemaining--;
+            }  else {
+                m_currentVolume = m_targetVolume;
+            }
+            channel = 0;
+        }
+    }
+}
+
+void AudioSourceWav::setVolume(double newVolume, int durationMs)
+{
+    if (m_status != EStatus::Playing) {
+        return;
     }
 
-    if (type == EFadeType::FadeIn)
-    {
-        if (m_fadeInRemainingSamples <= 0 && m_fadeInActive)
-        {
-            m_fadeInActive = false;
-            printf("bgm fade in completed\n");
-        }
-    }
-    else
-    {
-        if (m_fadeOutRemainingSamples <= 0 && m_fadeOutActive)
-        {
-            m_fadeOutActive = false;
-            QMetaObject::invokeMethod(parent(), "onFadeOutCompleted", Qt::QueuedConnection);
-            printf("bgm fade out completed: stopped\n");
-        }
+    newVolume = std::clamp(newVolume, 0.0, 1.0);
+    m_targetVolume = newVolume;
+
+    int64_t totalSamples = static_cast<int64_t>(durationMs * m_sampleRate / 1000);
+    
+    if (totalSamples <= 0 || m_currentVolume == m_targetVolume) {
+        m_currentVolume = m_targetVolume;
+        m_samplesRemaining = 0;
+        m_totalTransitionSamples = 0;
+        m_volumeIncrement = 0.0;
+    } else {
+        m_volumeIncrement = (m_targetVolume - m_currentVolume) / totalSamples;
+        m_samplesRemaining = totalSamples;
+        m_totalTransitionSamples = totalSamples;
     }
 }
 

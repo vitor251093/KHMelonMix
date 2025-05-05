@@ -124,10 +124,15 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MAP_FROM_WORLD_JP      0x02187FC6
 #define CURRENT_MAP_FROM_WORLD_JP_REV1 0x02188046
 
-#define SONG_ADDRESS_US      0x02191D5E
-#define SONG_ADDRESS_EU      0x02192B3E
-#define SONG_ADDRESS_JP      0x02191D5E // TODO: KH
-#define SONG_ADDRESS_JP_REV1 0x02191D5E // TODO: KH
+#define SONG_ID_ADDRESS_US      0x02191D5E
+#define SONG_ID_ADDRESS_EU      0x02192B3E
+#define SONG_ID_ADDRESS_JP      0x02190EBE
+#define SONG_ID_ADDRESS_JP_REV1 0x02190E3E
+
+#define SSEQ_TABLE_ADDRESS_US      0x020E51B0
+#define SSEQ_TABLE_ADDRESS_EU      0x020E5F90
+#define SSEQ_TABLE_ADDRESS_JP      0x020E4310
+#define SSEQ_TABLE_ADDRESS_JP_REV1 0x020E4290
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
@@ -168,6 +173,7 @@ enum
     gameSceneState_cutsceneFromChallengeMission,
     gameSceneState_topScreenMissionInformationVisible,
     gameSceneState_showBottomScreenMissionInformation,
+    gameSceneState_loadScreenDeletePrompt,
     gameSceneState_bottomScreenSora,
     gameSceneState_bottomScreenCutscene,
     gameSceneState_topScreenCutscene
@@ -262,6 +268,47 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         {"846",    "846",    "846_axel_and_saix",                 0x0e75bc00, 0x0e9e6200, 0x0e99ee00, 0},
         {"847",    "847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0ec4c600, 0x0ec12c00, 0},
         {"848",    "848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600, 0},
+    }};
+
+    BgmEntries = std::array<BgmEntry, 38> {{
+        { 1,  0,    "TwilightR_B",      "Sinister Sundown" },
+        { 2,  1,    "TwilightR_F",      "Lazy Afternoons" },
+        { 3,  2,    "DestinysForce",    "Destiny's Force" },
+        { 4,  3,    "Result",           "Results and Rewards" },
+        { 5,  4,    "Alice_F",          "Welcome to Wonderland" },
+        { 6,  5,    "Alice_B",          "To Our Surprise" },
+        { 7,  6,    "Herc_F",           "Olympus Coliseum" },
+        { 8,  7,    "Herc_B",           "Go for It!" },
+        { 9,  8,    "Halloween_F",      "This is Halloween" },
+        { 10, 9,    "Halloween_B",      "Spooks of Halloween Town" },
+        { 11, 10,   "Alasin_F",         "A Day in Agrabah" },
+        { 12, 11,   "Alasin_B",         "Arabian Dream" },
+        { 13, 12,   "Existence_F",      "Sacred Moon" },
+        { 14, 13,   "Existence_B",      "Critical Drive" },
+        { 15, 14,   "SacredMoon",       "Mystic Moon" },
+        { 16, 15,   "Beast_F",          "Waltz of the Damned" },
+        { 17, 16,   "Beast_B",          "Dance of the Daring" },
+        { 18, 17,   "ThemeXIII",        "Organization XIII" },
+        { 19, 18,   "ThemeRoxas",       "Roxas" },
+        { 20, 19,   "MissionBoss1",     "Tension Rising" },
+        { 21, 20,   "DisneyBoss1",      "Rowdy Rumble" },
+        { 22, 21,   "XIVtheme",         "Musique pour la tristesse de Xion" },
+        { 23, 22,   "ShorodingDark",    "Shrouding Dark Cloud" },
+        { 24, 23,   "Boss3",            "Vim and Vigor" },
+        { 25, 24,   "Riku",             "Riku" },
+        { 26, 25,   "StrangeWhispers",  "Strange Whispers" },
+        // note: no Song 27 in the DS IDs!
+        { 28, 26,   "ThemeOfFriends",   "Theme of Friends" },
+        { 29, 27,   "MissingYou",       "Missing You" },
+        { 30, 28,   "Resultsingle",     "Crossing the Finish Line" },
+        { 31, 29,   "Entrymulti",       "Cavern of Remembrance" },
+        { 32, 30,   "XIIItheme2",       "Xemnas" },
+        { 33, 31,   "Neverland_F",      "Secret of Neverland" },
+        { 34, 32,   "Neverland_B",      "Crossing to Neverland" },
+        { 35, 33,   "Icetime",          "At dusk I will think of you" },
+        { 36, 34,   "Boss4",            "Fight and Away" },
+        { 37, 35,   "RikuBattle",       "Another Side Battle Version" },
+        { 38, 36,   "Xionbattle",       "Vector to the Heavens" }
     }};
 }
 
@@ -373,20 +420,19 @@ void PluginKingdomHeartsDays::loadLocalization() {
 }
 
 void PluginKingdomHeartsDays::onLoadROM() {
+    Plugin::onLoadROM();
+
     loadLocalization();
 
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 }
 
-void PluginKingdomHeartsDays::onLoadState()
-{
-    texturesIndex.clear();
+void PluginKingdomHeartsDays::onLoadState() {
+    Plugin::onLoadState();
 
     loadLocalization();
 
     GameScene = gameScene_InGameWithMap;
-
-    _CurrentBackgroundMusic = 0x101;
 }
 
 std::string PluginKingdomHeartsDays::assetsFolder() {
@@ -453,6 +499,9 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
 
     switch (gameScene) {
         case gameScene_IntroLoadMenu:
+        {
+            bool showDeletePrompt = ((gameSceneState & (1 << gameSceneState_loadScreenDeletePrompt)) > 0);
+
             // load label
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
@@ -477,8 +526,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             // footer
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
-                    .fromPosition(0, 144)
-                    .withSize(256, 48)
+                    .fromPosition(0, showDeletePrompt ? 128 : 144)
+                    .withSize(256, showDeletePrompt ? 64 : 48)
                     .placeAtCorner(corner_BottomLeft)
                     .hudScale(hudScale)
                     .preserveDsScale()
@@ -487,8 +536,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             // rest of footer
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
-                    .fromPosition(251, 144)
-                    .withSize(5, 48)
+                    .fromPosition(251, showDeletePrompt ? 128 : 144)
+                    .withSize(5, showDeletePrompt ? 64 : 48)
                     .placeAtCorner(corner_BottomRight)
                     .sourceScale(1000.0, 1.0)
                     .hudScale(hudScale)
@@ -504,6 +553,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     .build(aspectRatio));
 
             break;
+        }
 
         case gameScene_DayCounter:
         case gameScene_RoxasThoughts:
@@ -1022,6 +1072,13 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
                         .build(aspectRatio));
             }
             break;
+
+        case gameScene_DeathScreen:
+            shapes.push_back(ShapeBuilder3D::square()
+                    .placeAtCorner(corner_Center)
+                    .zRange(-1.0, -0.0007)
+                    .build(aspectRatio));
+            break;
     }
 
     return shapes;
@@ -1032,6 +1089,9 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
 
     switch (GameScene) {
         case gameScene_IntroLoadMenu:
+            if (isLoadScreenDeletePromptVisible()) {
+                state |= (1 << gameSceneState_loadScreenDeletePrompt);
+            }
             break;
 
         case gameScene_DayCounter:
@@ -1634,6 +1694,12 @@ bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
     return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
 }
 
+bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
+{
+    u32 pixel = getPixel(bottomScreen2DTexture(), 206, 134, 0);
+    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
+}
+
 bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 {
     u32 pixel = getPixel(buffer, x, y, 2);
@@ -2050,99 +2116,58 @@ bool PluginKingdomHeartsDays::isUnskippableMobiCutscene(CutsceneEntry* cutscene)
     return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 
-u16 PluginKingdomHeartsDays::detectMidiBackgroundMusic() {
-    u16 soundtrack = nds->ARM7Read16(getAnyByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1));
-    if (soundtrack > 0) {
-        return soundtrack;
+u16 PluginKingdomHeartsDays::getMidiBgmId() {
+    return nds->ARM7Read16(getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1));
+}
+
+u8 PluginKingdomHeartsDays::getMidiBgmState() {
+    u32 SONG_STATE_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x06;
+    // See enum EMidiState for details of the state
+    return nds->ARM7Read8(SONG_STATE_ADDRESS);
+}
+
+u16 PluginKingdomHeartsDays::getMidiBgmToResumeId() {
+    // This byte is set by the audio engine when a "Field" track is getting stopped and we are playing a "Battle" track.
+    // This tells us that the "Field" track will resume playing when the "Battle" track ends.
+    u32 SONG_SECOND_SLOT_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x02;
+    return nds->ARM7Read8(SONG_SECOND_SLOT_ADDRESS);
+}
+
+u32 PluginKingdomHeartsDays::getMidiSongTableAddress() {
+    return getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
+}
+
+u8 PluginKingdomHeartsDays::getMidiBgmVolume() {
+    u32 SONG_MASTER_VOLUME_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1) + 0x07;
+    // Usually 0x7F during gameplay and 0x40 when game is paused
+    return nds->ARM7Read8(SONG_MASTER_VOLUME_ADDRESS);
+}
+
+
+u16 PluginKingdomHeartsDays::getSongIdInSongTable(u16 bgmId) {
+    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
+        return e.dsId == bgmId; });
+    if(found != BgmEntries.end()) {
+        return found->loadingTableId;
     }
+
     return 0;
 }
 
-std::string PluginKingdomHeartsDays::replacementBackgroundMusicFilePath(std::string name) {
-    std::string filename = name + ".wav";
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
-    std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
+std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 bgmId) {
+    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
+        return e.dsId == bgmId; });
+    if(found != BgmEntries.end()) {
+        return found->Name;
     }
 
-    filename = name + ".mp3";
-    fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
-    }
-
-    return "";
-}
-
-void PluginKingdomHeartsDays::refreshBackgroundMusic() {
-#if !REPLACEMENT_BGM_ENABLED
-    return;
-#endif
-
-    u16 fakeSoundtrackId = 0x100;
-    u16 soundtrackId = detectMidiBackgroundMusic();
-
-    std::string soundtrackPath = replacementBackgroundMusicFilePath("bgm" + std::to_string(soundtrackId));
-    bool replacementAvailable = (soundtrackPath != "");
-
-    if (soundtrackId != _CurrentBackgroundMusic) {
-        if (soundtrackId == fakeSoundtrackId) {
-            _LastSoundtrackId = soundtrackId;
-        }
-        else if (soundtrackId == 0xFFFF) {
-            if (_LastSoundtrackId != fakeSoundtrackId && _CurrentBackgroundMusic != 0) {
-                _ShouldStopReplacementBgmMusic = true;
-                _BackgroundMusicToStop = _CurrentBackgroundMusic;
-                printf("Stopping replacement song %d\n", _CurrentBackgroundMusic);
-    
-                _CurrentBackgroundMusic = soundtrackId;
-                _LastSoundtrackId = soundtrackId;
-            }
-        }
-        else {
-            _ShouldStopReplacementBgmMusic = true;
-            _BackgroundMusicToStop = _CurrentBackgroundMusic;
-
-            if (replacementAvailable) {
-                u32 address = getAnyByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-                nds->ARM7Write16(address, fakeSoundtrackId);
-
-                _ShouldStartReplacementBgmMusic = replacementAvailable;
-                printf("Starting replacement song %d\n", soundtrackId);
-        
-                _CurrentBackgroundMusic = soundtrackId;
-                _LastSoundtrackId = soundtrackId;
-            }
-            else
-            {
-                // No replacement available, resetting
-                _CurrentBackgroundMusic = soundtrackId;
-                _LastSoundtrackId = soundtrackId;
-            }
-        }
-    }
-    else {
-        if (replacementAvailable) {
-            u32 address = getAnyByCart(SONG_ADDRESS_US, SONG_ADDRESS_EU, SONG_ADDRESS_JP, SONG_ADDRESS_JP_REV1);
-            nds->ARM7Write16(address, fakeSoundtrackId);
-        }
-    
-        _CurrentBackgroundMusic = soundtrackId;
-        _LastSoundtrackId = soundtrackId;
-    }
-}
-
-bool PluginKingdomHeartsDays::shouldStoreBgmResumePosition(u16 soundtrackId) const
-{
-    static std::vector<u16> ids = { 2, 5, 7, 9, 11, 15, 16, 33 };
-    return (std::find(ids.begin(), ids.end(), soundtrackId) != ids.end());
+    return "Unknown";
 }
 
 int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
     u32 currentMission = getCurrentMission();
     if (currentMission == 92 && _CurrentBackgroundMusic == 22) {
-        return 12500;
+        return 13000;
     }
     return 0;
 }

@@ -33,17 +33,17 @@ bool AudioPlayer::loadFile(const QString &fileName)
     return true;
 }
 
-void AudioPlayer::setVolume(qreal value)
+void AudioPlayer::setVolume(qreal value, int durationInMs)
 {
     if (m_audioOutput) {
-        m_audioOutput->setVolume(value);
+        m_audioSource->setVolume(value, durationInMs);
     }
 }
 
-void AudioPlayer::play(qint64 resumePosition, int fadeInMs)
+void AudioPlayer::play(qint64 resumePosition, qreal volume, int fadeInMs)
 {
     if (m_audioOutput) {
-        m_audioSource->onStarted(resumePosition, fadeInMs);
+        m_audioSource->onStarted(resumePosition, volume, fadeInMs);
         m_audioOutput->start(m_audioSource.get());
         m_playing = true;
     }

@@ -101,6 +101,23 @@ struct CutsceneEntry
     int dsScreensState;
 };
 
+struct BgmEntry
+{
+    u8 dsId = 0;
+    u8 loadingTableId = 0;
+    char DsName[16];
+    char Name[40];
+};
+
+enum EMidiState : u8 {
+    Stopped = 0x00,
+    LoadSequence  = 0x01,
+    PrePlay  = 0x02,
+    Playing = 0x03,
+    Stopping = 0x04
+};
+
+
 struct TextureEntryScene
 {
     std::string path;
@@ -162,6 +179,7 @@ struct TextureEntry
     }
 };
 
+
 class Plugin
 {
 protected:
@@ -177,10 +195,8 @@ public:
     static bool isCart(u32 gameCode) {return true;};
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
-    virtual void onLoadROM() {};
-    virtual void onLoadState() {
-        texturesIndex.clear();
-    };
+    virtual void onLoadROM();
+    virtual void onLoadState();
 
     virtual std::string assetsFolder() {return std::to_string(GameCode);}
     std::filesystem::path assetsFolderPath();
@@ -266,24 +282,58 @@ public:
     void onReplacementCutsceneEnd();
     void onReturnToGameAfterCutscene();
 
+    inline bool shouldStartBackgroundMusic() { return checkAndResetBool(_ShouldStartReplacementBgmMusic); }
+    inline bool shouldStopBackgroundMusic() { return checkAndResetBool(_ShouldStopReplacementBgmMusic); }
+    inline bool shouldPauseBackgroundMusic() {
+        if (checkAndResetBool(_ShouldPauseReplacementBgmMusic)) {
+            _PausedReplacementBgmMusic = true;
+            return true;
+        }
+        return false;
+    }
+    inline bool shouldResumeBackgroundMusic() {
+        if (checkAndResetBool(_ShouldUnpauseReplacementBgmMusic)) {
+            _PausedReplacementBgmMusic = false;
+            return true;
+        }
+        return false;
+    }
+    inline bool shouldUpdateBackgroundMusicVolume() { return checkAndResetBool(_ShouldUpdateReplacementBgmMusicVolume); }
 
-    bool ShouldStartReplacementBgmMusic();
-    int delayBeforeStartReplacementBackgroundMusic();
-    bool StartedReplacementBgmMusic();
-    bool RunningReplacementBgmMusic();
-    bool ShouldPauseReplacementBgmMusic();
-    bool ShouldUnpauseReplacementBgmMusic();
-    bool ShouldStopReplacementBgmMusic();
-    u16 CurrentBackgroundMusic();
-    u16 BackgroundMusicToStop();
+    inline bool checkAndResetBool(bool& val) {
+        if (val) {
+            val = false;
+            return true;
+        }
+        return false;
+    }
 
-    virtual std::string replacementBackgroundMusicFilePath(std::string name) {return "";}
+    static u16 BGM_INVALID_ID;
+    bool isBackgroundMusicPlaying() const { return _CurrentBackgroundMusic != BGM_INVALID_ID; }
+    u16 getCurrentBackgroundMusic() const { return _CurrentBackgroundMusic; }
+    u16 getBackgroundMusicToStop() const { return _BackgroundMusicToStop; }
+    bool shouldForceStopMusic() const { return _ForceStopMusic; }
+    u8 getCurrentBgmMusicVolume() const { return _BackgroundMusicVolume; }
+    u32 getBgmDelayAtStart() const { return _BackgroundMusicDelayAtStart; }
+    bool getStoreBackgroundMusicPosition() const { return _StoreBackgroundMusicPosition; }
+    bool getResumeFromPositionBackgroundMusic() const { return _ResumeBackgroundMusicPosition; }
 
-    void onReplacementBackgroundMusicStarted();
+    std::string getReplacementBackgroundMusicFilePath(u16 id);
 
-    virtual void refreshBackgroundMusic() {}
-    virtual bool shouldStoreBgmResumePosition(u16 soundtrackId) const { return false; }
+    virtual bool isBackgroundMusicReplacementImplemented() const { return false; }
+    virtual u16 getMidiBgmId() { return 0; }
+    virtual u16 getMidiBgmToResumeId() { return BGM_INVALID_ID; }
+    virtual u32 getMidiSongTableAddress() { return 0; }
+    virtual u8 getMidiBgmState() { return 0; }
+    virtual u8 getMidiBgmVolume() { return 0; }
+    virtual u16 getSongIdInSongTable(u16 bgmId) { return 0; }
+    virtual std::string getBackgroundMusicName(u16 soundtrackId) { return ""; }
+    virtual int delayBeforeStartReplacementBackgroundMusic() { return 0; }
 
+    void refreshBackgroundMusic();
+    std::string getBackgroundMusicName(u16 soundtrackId) const;
+    void muteSongSequence(u16 bgmId);
+    void stopBackgroundMusic(bool bImmediateStop);
 
     virtual void refreshMouseStatus() {}
 
@@ -375,17 +425,21 @@ protected:
     CutsceneEntry* _LastCutscene = nullptr;
 
 
-    bool _StartedReplacementBgmMusic = false;
-    bool _RunningReplacementBgmMusic = false;
     bool _PausedReplacementBgmMusic = false;
     bool _ShouldPauseReplacementBgmMusic = false;
     bool _ShouldUnpauseReplacementBgmMusic = false;
     bool _ShouldStartReplacementBgmMusic = false;
     bool _ShouldStopReplacementBgmMusic = false;
-    u16 _CurrentBackgroundMusic = 0;
-    u16 _LastSoundtrackId = 0;
+    bool _ShouldUpdateReplacementBgmMusicVolume = false;
+    u16 _CurrentBackgroundMusic = BGM_INVALID_ID;
+    u32 _BackgroundMusicDelayAtStart = 0;
     u16 _BackgroundMusicToStop = 0;
-
+    u8 _SoundtrackState = 0;
+    bool _ForceStopMusic = false;
+    bool _MuteSeqBgm = false;
+    u8 _BackgroundMusicVolume = 0x7f;
+    bool _StoreBackgroundMusicPosition = false;
+    bool _ResumeBackgroundMusicPosition = false;
 
     bool _ShouldGrabMouseCursor = false;
     bool _ShouldReleaseMouseCursor = false;
