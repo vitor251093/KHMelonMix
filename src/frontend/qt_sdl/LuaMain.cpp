@@ -11,6 +11,8 @@
 #include <SDL_joystick.h>
 #include <NDS_Header.h>
 #include "main.h"
+#include "../plugins/PluginTemplate.h"
+
 
 LuaBundle::LuaBundle(LuaConsoleDialog* dialog, EmuInstance* inst)
 {
@@ -422,6 +424,99 @@ int Lua_HeldKeys(lua_State* L)
     return 1;//returns table of currently held keys.
 }
 AddLuaFunction(Lua_HeldKeys,HeldKeys);
+
+int Lua_MakeShape(lua_State* L)
+{
+    LuaBundle* bundle = get_bundle(L);
+    Plugins::Plugin* myPlugin = bundle->getEmuInstance()->plugin;
+    std::vector<Plugins::ShapeBuilderCall> calls;
+    //get calls from lua
+
+    luaL_checktype(L, 1, LUA_TTABLE);
+
+    int callnum = 1;
+    lua_pushnumber(L,callnum);
+    lua_gettable(L,-2);
+
+    while(lua_istable(L,-1)){
+        //Get callID
+        lua_pushnumber(L,1);
+        lua_gettable(L,-2);
+        if (!lua_isinteger(L,-1)) {
+            lua_pop(L,1);
+            break;
+        }
+        int callID = lua_tointeger(L,-1);
+        lua_pop(L,1);
+
+        //Get (optional) 4 arguments for shapeCall
+        float args[4]={0.0,0.0,0.0,0.0};
+        for (int i =2;i<6;i++){
+            lua_pushnumber(L,i);
+            lua_gettable(L,-2);
+
+            if (lua_isnumber(L,-1)){
+                args[i-2] = lua_tonumber(L,-1);
+                lua_pop(L,1);
+            } else { 
+                lua_pop(L,1);
+                break; 
+            }
+        }
+        lua_pop(L,1);
+        //Push shape call onto queue
+        calls.push_back({callID,args[0],args[1],args[2],args[3]});
+        //(try to) pull next call from lua
+        lua_pushnumber(L,callnum++);
+        lua_gettable(L,-2);
+    }
+    lua_pop(L,2);
+    //Build shape using the calls queue
+    int id = Plugins::MakeShape(calls,myPlugin->GetCurrentAspectRatio());
+    //Return index of the shape to lua script
+    lua_pushinteger(L,id);
+    return 1;
+}
+AddLuaFunction(Lua_MakeShape,MakeShape);
+
+int Lua_SetShapes(lua_State* L)
+{
+    luaL_checktype(L, 1, LUA_TTABLE);
+    std::vector<int> shapes;
+    int shapeNum = 1;
+    lua_pushnumber(L,shapeNum++);
+    lua_gettable(L,-2);
+    //Pull list of shape index from lua
+    while(lua_isinteger(L,-1)){
+        shapes.push_back(lua_tointeger(L,-1));
+        lua_pop(L,1);
+        lua_pushnumber(L,shapeNum++);
+        lua_gettable(L,-2);
+    }
+    lua_pop(L,2);
+    int isgood = Plugins::SetShapes(shapes);
+    lua_pushinteger(L,isgood);
+    return 1;//Returns succsess of SetShapes
+}
+AddLuaFunction(Lua_SetShapes,SetShapes);
+
+int Lua_SetGameScene(lua_State* L)
+{
+    int gamescene = luaL_checkinteger(L,1);
+    Plugins::setLuaGameScene(gamescene);
+    return 0;
+}
+AddLuaFunction(Lua_SetGameScene,SetGameScene);
+
+int Lua_getJoyStick(lua_State* L)
+{
+    LuaBundle* bundle = get_bundle(L);
+    int axisNum = luaL_checknumber(L,1);
+    int val = bundle->getEmuInstance()->getJoyStickAxis(axisNum);
+    lua_pushinteger(L,val);
+    return 1;
+}
+AddLuaFunction(Lua_getJoyStick,GetJoyStick);
 
 /*--------------------------------------------------------------------------------------------------
                             Front-end lua function definitions --Commented out for now...
