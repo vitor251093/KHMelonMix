@@ -301,6 +301,8 @@ public:
     bool doAudioSync;
 
     melonDS::u32 getInputMask(){return inputMask;}
+    Sint16 getJoyStickAxis(int axisNum);
+
 private:
 
     std::unique_ptr<melonDS::Savestate> backupState;
