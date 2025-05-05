@@ -64,6 +64,7 @@ private:
 
     enum class EStatus : quint8 { Playing, Stopping, Stopped };
     EStatus m_status = EStatus::Stopped;
+    quint64 m_stoppingDelay = 0;
 
     double m_currentVolume = 1.0;
     double m_targetVolume = 1.0;

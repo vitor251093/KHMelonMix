@@ -48,14 +48,14 @@ public:
 
 public slots:
     void asyncStartBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, quint32 delayAtStart, QString bgmMusicFilePath);
-    void asyncStopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop);
+    void asyncStopBgmMusic(quint16 bgmId, bool bStoreResumePos, quint32 fadeOutDuration);
     void asyncPauseBgmMusic();
     void asyncUnpauseBgmMusic();
     void asyncUpdateBgmMusicVolume(quint8 ramVolume);
     void asyncStopAllBgm();
 
     void startBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, QString bgmMusicFilePath);
-    void stopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop);
+    void stopBgmMusic(quint16 bgmId, bool bStoreResumePos, quint32 fadeOutDuration);
     void pauseBgmMusic();
     void unpauseBgmMusic();
     void stopAllBgm();

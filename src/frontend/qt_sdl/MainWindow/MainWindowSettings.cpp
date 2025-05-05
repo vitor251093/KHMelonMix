@@ -143,22 +143,20 @@ qreal MainWindowSettings::getBgmMusicVolume(quint8 ramVolume)
     return (volume / 256.0);
 }
 
-void MainWindowSettings::asyncStopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop)
+void MainWindowSettings::asyncStopBgmMusic(quint16 bgmId, bool bStoreResumePos, quint32 fadeOutDuration)
 {
-    QMetaObject::invokeMethod(this, "stopBgmMusic", Qt::QueuedConnection, Q_ARG(quint16, bgmId), Q_ARG(bool, bStoreResumePos), Q_ARG(bool, bShouldForceStop));
+    QMetaObject::invokeMethod(this, "stopBgmMusic", Qt::QueuedConnection, Q_ARG(quint16, bgmId), Q_ARG(bool, bStoreResumePos), Q_ARG(quint32, fadeOutDuration));
 }
 
-void MainWindowSettings::stopBgmMusic(quint16 bgmId, bool bStoreResumePos, bool bShouldForceStop)
+void MainWindowSettings::stopBgmMusic(quint16 bgmId, bool bStoreResumePos, quint32 fadeOutDuration)
 {
     if (delayedBgmStart)
         delayedBgmStart.reset();
 
     for(auto* player : bgmPlayers) {
         if (player->getBgmId() == bgmId && player->isPlaying()) {
-            static constexpr int kFadeOutDurationMs = 1800;
-            int fadeOut = bShouldForceStop ? 0 : kFadeOutDurationMs;
-            printf("Stopping replacement song %d with %dms fadeout\n", bgmId, fadeOut);
-            player->stop(fadeOut);
+            printf("Stopping replacement song %d with %dms fadeout\n", bgmId, fadeOutDuration);
+            player->stop(fadeOutDuration);
 
             if (bStoreResumePos) {
                 bgmToResumeId = bgmId;

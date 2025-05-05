@@ -55,13 +55,7 @@ void AudioPlayer::stop(int fadeOutMs)
         return;
     }
 
-    if (fadeOutMs == 0) {
-        m_audioOutput->stop();
-        m_audioSource->onStopped();
-        m_playing = false;
-    } else {
-        m_audioSource->startFadeOut(fadeOutMs);
-    }
+    m_audioSource->startFadeOut(fadeOutMs);
 }
 
 qint64 AudioPlayer::getCurrentPlayingPos() const

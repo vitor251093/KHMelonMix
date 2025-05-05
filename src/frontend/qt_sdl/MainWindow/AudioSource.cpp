@@ -47,6 +47,7 @@ void AudioSourceWav::onStarted(qint64 resumePosition, qreal volume, int fadeInMs
     m_samplesRemaining = 0;
     m_totalTransitionSamples = 0;
     m_status = EStatus::Playing;
+    m_stoppingDelay = 0;
     volume = std::clamp(volume, 0.0, 1.0);
 
     m_currentPos = m_dataStart + resumePosition;
@@ -63,6 +64,7 @@ void AudioSourceWav::onStopped()
 {
     m_currentPos = m_dataStart;
     m_status = EStatus::Stopped;
+    m_stoppingDelay = 0;
 
     m_currentVolume = 0.0;
     m_samplesRemaining = 0;
@@ -114,12 +116,16 @@ qint64 AudioSourceWav::readData(char *data, qint64 maxSize)
 
     m_currentPos = m_file.pos();
 
-    applyVolume(data, bytesRead);
-
     if (m_samplesRemaining <= 0 && m_status == EStatus::Stopping) {
-        QMetaObject::invokeMethod(parent(), "onFadeOutCompleted", Qt::QueuedConnection);
-        m_status = EStatus::Stopped;
+        if (m_stoppingDelay > 0) {
+            m_stoppingDelay -= maxSize;
+        } else {
+            QMetaObject::invokeMethod(parent(), "onFadeOutCompleted", Qt::QueuedConnection);
+            m_status = EStatus::Stopped;
+        }
     }
+
+    applyVolume(data, bytesRead);
 
     return bytesRead;
 }
@@ -133,6 +139,7 @@ void AudioSourceWav::startFadeOut(int durationMs)
 {
     setVolume(0.0, durationMs);
     m_status = EStatus::Stopping;
+    m_stoppingDelay = m_sampleRate; // 1 sec delay before destroying source
 }
 
 void AudioSourceWav::applyVolume(char* buffer, int64_t numBytes)
@@ -146,18 +153,6 @@ void AudioSourceWav::applyVolume(char* buffer, int64_t numBytes)
     while (remainingBytes > 0)
     {
         float gain = m_currentVolume;
-        if (m_samplesRemaining > 0) {
-            float position = ((m_totalTransitionSamples - m_samplesRemaining) / (float)m_totalTransitionSamples);
-
-            if (m_targetVolume <= 0.0f) {
-                gain = m_currentVolume * std::exp(-6.0f * position);
-            } else {
-                float dbCurrent = 20.0f * std::log10(m_currentVolume);
-                float dbTarget = 20.0f * std::log10(targetForCalculation);
-                float dbCurrent_i = dbCurrent + position * (dbTarget - dbCurrent);
-                gain = std::pow(10.0f, dbCurrent_i / 20.0f);
-            }
-        }
 
         if (m_bitsPerSample == 16) {
             int16_t value = (static_cast<uint8_t>(samplePtr[0])) |
@@ -240,7 +235,7 @@ QAudioFormat::SampleFormat AudioSourceWav::bitsPerSampleToSampleFormat(quint16 b
     {
         case 8: return QAudioFormat::UInt8;
         case 16: return QAudioFormat::Int16;
-        case 24: return QAudioFormat::Int32;
+        //case 24: return QAudioFormat::Int32; // Unhandled
         case 32: return QAudioFormat::Int32;
         default: return QAudioFormat::Unknown; // Unhandled
     }
@@ -282,9 +277,10 @@ bool AudioSourceWav::readWavHeader()
             m_format.setChannelCount(m_numChannels);
             
             auto sampleFormat = bitsPerSampleToSampleFormat(m_bitsPerSample);
-            m_format.setSampleFormat(sampleFormat);
-
-            foundFormat = true;
+            if (sampleFormat != QAudioFormat::Unknown) {
+                m_format.setSampleFormat(sampleFormat);
+                foundFormat = true;
+            }
         } else if (memcmp(chunkId, "data", 4) == 0) {
             m_dataStart = m_file.pos();
             m_currentPos = m_dataStart;
