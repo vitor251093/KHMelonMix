@@ -141,7 +141,7 @@ private:
     u16 getMidiBgmToResumeId() override;
     u32 getMidiSongTableAddress() override;
     u32 getStreamTargetAddress() override;
-    u16 getStreamBgmIdFromAddress(u32 address) override;
+    u16 getStreamBgmIdFromAddress(u32 address, u32 numSamples) override;
     u8 getMidiBgmState() override;
     u8 getMidiBgmVolume() override;
     u32 getBgmFadeOutDuration() override;
@@ -153,6 +153,7 @@ private:
     {
         u8 customId = 0;
         char Name[40];
+        u32 numSamples = 0;
         int usAddress;
         int euAddress;
         int jpAddress;

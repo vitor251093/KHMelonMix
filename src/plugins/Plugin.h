@@ -326,7 +326,7 @@ public:
     virtual u16 getMidiBgmToResumeId() { return BGM_INVALID_ID; }
     virtual u32 getMidiSongTableAddress() { return 0; }
     virtual u32 getStreamTargetAddress() { return 0; }
-    virtual u16 getStreamBgmIdFromAddress(u32 address) { return BGM_INVALID_ID; }
+    virtual u16 getStreamBgmIdFromAddress(u32 address, u32 numSamples) { return BGM_INVALID_ID; }
     virtual u8 getMidiBgmState() { return 0; }
     virtual u8 getMidiBgmVolume() { return 0; }
     virtual u32 getBgmFadeOutDuration() { return 0; }

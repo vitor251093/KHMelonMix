@@ -1059,7 +1059,8 @@ void Plugin::refreshStreamedMusic() {
         bStopAndReturn = true;
     }
 
-    u16 streamBgmId = getStreamBgmIdFromAddress(strmHeaderAddress);
+    u32 numSamples = nds->ARM9Read32(strmHeaderAddress + 0x24);
+    u16 streamBgmId = getStreamBgmIdFromAddress(strmHeaderAddress, numSamples);
     if (streamBgmId == BGM_INVALID_ID) {
         bStopAndReturn = true;
     }

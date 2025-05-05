@@ -317,7 +317,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     }};
 
     StreamedBgmEntries = std::array<StreamedBgmEntry, 1> {{
-        { 0, "Dearly Beloved", 0x0204b6b4,  0x0204b6d4, 0x0204bb14, 0x0204bad4 }
+        { 0, "Dearly Beloved", 2900195, 0x0204b6b4,  0x0204b6d4, 0x0204bb14, 0x0204bad4 }
     }};
 }
 
@@ -2143,10 +2143,10 @@ u32 PluginKingdomHeartsDays::getStreamTargetAddress() {
     return getAnyByCart(STRM_TARGET_ADDRESS_US, STRM_TARGET_ADDRESS_EU, STRM_TARGET_ADDRESS_JP, STRM_TARGET_ADDRESS_JP_REV1);
 }
 
-u16 PluginKingdomHeartsDays::getStreamBgmIdFromAddress(u32 address) {
+u16 PluginKingdomHeartsDays::getStreamBgmIdFromAddress(u32 address, u32 numSamples) {
     auto found = std::find_if(StreamedBgmEntries.begin(), StreamedBgmEntries.end(), [&](const auto& e) {
         u32 cartAddress = getAnyByCart(e.usAddress, e.euAddress, e.jpAddress, e.jprev1Address);
-        return cartAddress == address; });
+        return cartAddress == address && e.numSamples == numSamples; });
     if(found != StreamedBgmEntries.end()) {
         return found->customId;
     }
