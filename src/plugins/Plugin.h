@@ -334,6 +334,7 @@ public:
     virtual std::string getBackgroundMusicName(u16 soundtrackId) { return ""; }
     virtual int delayBeforeStartReplacementBackgroundMusic() { return 0; }
 
+    void loadBgmRedirections();
     void refreshBackgroundMusic();
     std::string getBackgroundMusicName(u16 soundtrackId) const;
     void muteSongSequence(u16 bgmId);
@@ -447,6 +448,7 @@ protected:
     u8 _BackgroundMusicVolume = 0x7f;
     bool _StoreBackgroundMusicPosition = false;
     bool _ResumeBackgroundMusicPosition = false;
+    std::map<std::string, std::string> _BgmRedirectors;
 
     u32 _CurrentStreamAddress = 0;
     bool _CurrentBgmIsStream = false;

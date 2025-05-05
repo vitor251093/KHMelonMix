@@ -7,7 +7,6 @@
 #include <string>
 #include <cstdarg>
 #include <cstdio>
-#include <fstream>
 
 #ifdef __APPLE__
 #include <objc/objc.h>
@@ -51,6 +50,8 @@ namespace Plugins
 u16 Plugin::BGM_INVALID_ID = 0xFFFF;
 
 void Plugin::onLoadROM() {
+    loadBgmRedirections();
+
     stopBackgroundMusic(0);
     _SoundtrackState = EMidiState::Stopped;
 }
@@ -859,28 +860,83 @@ void Plugin::onReturnToGameAfterCutscene() {
 }
 
 std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
-    std::string filename = "bgm" + std::to_string(id) + ".wav";
+    std::string filekey = "bgm" + std::to_string(id);
+
+    std::string filename;
+    auto redirector = _BgmRedirectors.find(filekey);
+    if (redirector != _BgmRedirectors.end()) {
+        filename = redirector->second;
+    } else {
+        filename = filekey + ".wav";
+    }
+
     std::filesystem::path _assetsFolderPath = assetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
 
-    // File redirector (.txt file should only contain the filename, not the fullpath, example: "bgm4.wav")
-    filename = "bgm" + std::to_string(id) + ".txt";
-    fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-
-        std::ifstream ifs(fullPath);
-        std::string redirector((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-
-        std::filesystem::path redirector_fullpath = fullPath = _assetsFolderPath / "audio" / redirector;
-        if (std::filesystem::exists(redirector_fullpath)) {
-            return redirector_fullpath.string();
-        }
-    }
-
     return "";
+}
+
+
+void Plugin::loadBgmRedirections() {
+    std::filesystem::path iniFilePath = assetsFolderPath() / "audio" / "bgm.ini";
+    Platform::FileHandle* file = Platform::OpenLocalFile(iniFilePath.string().c_str(), Platform::FileMode::ReadText);
+    if (file) {
+        _BgmRedirectors.clear();
+
+        char linebuf[1024];
+        char entryname[1024];
+        char entryval[1024];
+
+        auto trim_str = [](const char* str) -> std::string {
+            if (!str)
+                return "";
+
+            const char* start = str;
+            while (*start && (*start == ' ' || *start == '\t')) {
+                start++;
+            }
+
+            if (!*start)
+                return "";
+
+            const char* end = str + strlen(str) - 1;
+            while (end > start && (*end == ' ' || *end == '\t')) {
+                end--;
+            }
+
+            return std::string(start, end - start + 1);
+        };
+
+        while (!Platform::IsEndOfFile(file))
+        {
+            if (!Platform::FileReadLine(linebuf, 1024, file))
+                break;
+
+            size_t len = strlen(linebuf);
+            if (len > 0 && (linebuf[len-1] == '\n' || linebuf[len-1] == '\r')) {
+                linebuf[len-1] = '\0';
+
+                if (len > 1 && linebuf[len-2] == '\r') {
+                    linebuf[len-2] = '\0';
+                }
+            }
+
+            if (strlen(linebuf) == 0
+                || linebuf[0] == '#'
+                || linebuf[0] == ';') {
+                continue;
+            }
+
+            if (sscanf(linebuf, "%[^=]=%[^\n]", entryname, entryval) == 2) {
+                _BgmRedirectors[trim_str(entryname)] = trim_str(entryval);
+            }
+        }
+
+        CloseFile(file);
+    }
 }
 
 void Plugin::stopBackgroundMusic(u16 fadeOutDuration) {
