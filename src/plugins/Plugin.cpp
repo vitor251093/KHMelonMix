@@ -977,7 +977,7 @@ void Plugin::refreshBackgroundMusic() {
     if (state != _SoundtrackState) {
         switch(state) {
         case EMidiState::Stopped: {
-            if (_CurrentBackgroundMusic != BGM_INVALID_ID) {
+            if (!_CurrentBgmIsStream && _CurrentBackgroundMusic != BGM_INVALID_ID) {
                 stopBackgroundMusic(0);
             }
             break;
