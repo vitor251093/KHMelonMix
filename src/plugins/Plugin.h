@@ -325,8 +325,8 @@ public:
     virtual u16 getMidiBgmId() { return 0; }
     virtual u16 getMidiBgmToResumeId() { return BGM_INVALID_ID; }
     virtual u32 getMidiSongTableAddress() { return 0; }
-    virtual u32 getStreamTargetAddress() { return 0; }
-    virtual u16 getStreamBgmIdFromAddress(u32 address, u32 numSamples) { return BGM_INVALID_ID; }
+    virtual u32 getStreamBgmAddress() { return 0; }
+    virtual u16 getStreamBgmCustomIdFromDsId(u8 dsId, u32 numSamples) { return BGM_INVALID_ID; }
     virtual u8 getMidiBgmState() { return 0; }
     virtual u8 getMidiBgmVolume() { return 0; }
     virtual u32 getBgmFadeOutDuration() { return 0; }
@@ -341,6 +341,7 @@ public:
     void stopBackgroundMusic(u16 fadeOutDuration);
 
     void refreshStreamedMusic();
+    void stopBgmStream();
 
     virtual void refreshMouseStatus() {}
 
@@ -450,6 +451,8 @@ protected:
     bool _ResumeBackgroundMusicPosition = false;
     std::map<std::string, std::string> _BgmRedirectors;
 
+    u8 _BgmStreamState = 0;
+    bool _BgmStreamMuted = false;
     u32 _CurrentStreamAddress = 0;
     bool _CurrentBgmIsStream = false;
 

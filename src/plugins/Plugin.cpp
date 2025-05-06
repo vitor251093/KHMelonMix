@@ -1096,71 +1096,82 @@ void Plugin::muteSongSequence(u16 bgmId) {
     }
 }
 
+enum EBgmStreamState : u8 {
+    StrmStopped = 0x00,
+    StrmPlaying = 0x03,
+    StrmStopping = 0x0B,
+    StrmEnded = 0x08,
+};
+
+void Plugin::stopBgmStream() {
+    if (_CurrentBgmIsStream && _CurrentBackgroundMusic != BGM_INVALID_ID) {
+        _ShouldStopReplacementBgmMusic = true;
+        _BackgroundMusicToStop = _CurrentBackgroundMusic;
+        _BgmFadeOutDurationMs = 1000;
+        _CurrentBackgroundMusic = BGM_INVALID_ID;
+        _CurrentBgmIsStream = false;
+        _BgmStreamMuted = false;
+    }
+}
+
 void Plugin::refreshStreamedMusic() {
-    const u32 streamPtrAddress = getStreamTargetAddress();
-    if (streamPtrAddress == 0) {
+    const u32 strmHeaderAddress = getStreamBgmAddress();
+    if (strmHeaderAddress == 0) {
         return;
     }
-
-    const u32 strmHeaderAddress = nds->ARM9Read32(streamPtrAddress);
-    if (strmHeaderAddress == _CurrentStreamAddress)
-        return;
-
-    _CurrentStreamAddress = strmHeaderAddress;
- 
-    bool bStopAndReturn = false;
 
     u32 strmTag = nds->ARM9Read32(strmHeaderAddress);
     if (strmTag != 0x4D525453) { // STRM
-        bStopAndReturn = true;
-    }
-
-    u32 numSamples = nds->ARM9Read32(strmHeaderAddress + 0x24);
-    u16 streamBgmId = getStreamBgmIdFromAddress(strmHeaderAddress, numSamples);
-    if (streamBgmId == BGM_INVALID_ID) {
-        bStopAndReturn = true;
-    }
-
-    if (bStopAndReturn) {
-        if (_CurrentBgmIsStream && _CurrentBackgroundMusic != BGM_INVALID_ID) {
-            _ShouldStopReplacementBgmMusic = true;
-            _BackgroundMusicToStop = _CurrentBackgroundMusic;
-            _BgmFadeOutDurationMs = 1000;
-            _CurrentBackgroundMusic = BGM_INVALID_ID;
-            _CurrentBgmIsStream = false;
-        }
+        stopBgmStream();
         return;
     }
 
-    bool bMuteStream = false;
-
-    std::string replacementStrmPath = getReplacementBackgroundMusicFilePath(streamBgmId);
-    if (replacementStrmPath != "") {
-        _ShouldStartReplacementBgmMusic = true;
-        _CurrentBackgroundMusicFilepath = replacementStrmPath;
-        _CurrentBackgroundMusic = 0;
-        _CurrentBgmIsStream = true;
-        bMuteStream = true;
-    } else {
-        _CurrentBackgroundMusic = BGM_INVALID_ID;
-        bMuteStream = false;
+    u8 streamDsId = nds->ARM9Read8(strmHeaderAddress + 0xAC);
+    u8 streamState = nds->ARM9Read8(strmHeaderAddress + 0x68);
+    if (streamState != _BgmStreamState) {
+        switch(streamState) {
+        case EBgmStreamState::StrmStopped: {
+            stopBgmStream();
+            break;
+        }
+        case EBgmStreamState::StrmPlaying: {
+            u32 numSamples = nds->ARM9Read32(strmHeaderAddress + 0x24);
+            u16 streamBgmId = getStreamBgmCustomIdFromDsId(streamDsId, numSamples);
+            if (streamBgmId != BGM_INVALID_ID) {
+                std::string replacementStrmPath = getReplacementBackgroundMusicFilePath(streamBgmId);
+                if (replacementStrmPath != "") {
+                    _ShouldStartReplacementBgmMusic = true;
+                    _CurrentBackgroundMusicFilepath = replacementStrmPath;
+                    _CurrentBackgroundMusic = 0;
+                    _CurrentBgmIsStream = true;
+                    _BgmStreamMuted = true;
+                } else {
+                    _CurrentBackgroundMusic = BGM_INVALID_ID;
+                    _BgmStreamMuted = false;
+                }
+            } else {
+                _BgmStreamMuted = false;
+            }
+            break;
+        }
+        case EBgmStreamState::StrmStopping:
+        case EBgmStreamState::StrmEnded: {
+            stopBgmStream();
+            break;
+        }
+        default: {
+            _BgmStreamMuted = false;
+            break;
+        }
+        }
+        _BgmStreamState = streamState;
     }
 
-    if (bMuteStream) {
-        u32 numSamples = nds->ARM9Read32(strmHeaderAddress + 0x24);
-        if (numSamples > 0) {
-            nds->ARM7Write32(strmHeaderAddress + 0x24, 0x00);
-        }
-    
-        u32 numBlocks = nds->ARM9Read32(strmHeaderAddress + 0x2c);
-        if (numBlocks > 0) {
-            nds->ARM7Write32(strmHeaderAddress + 0x2c, 0x00);
-        }
-
-        u32 startErase = strmHeaderAddress + 0x30;
-        u32 endErase = startErase + 0x10;
-        for (u32 addr = startErase; addr < endErase; addr+=4) {
-            nds->ARM7Write32(addr, 0x00);
+    if (_BgmStreamMuted) {
+        u32 volumeControlAddress = strmHeaderAddress + 0xB0;
+        u8 currentVolume = nds->ARM9Read8(volumeControlAddress);
+        if (currentVolume > 0) {
+            nds->ARM7Write8(volumeControlAddress, 0);
         }
     }
 }
