@@ -1103,11 +1103,11 @@ enum EBgmStreamState : u8 {
     StrmEnded = 0x08,
 };
 
-void Plugin::stopBgmStream() {
+void Plugin::stopBgmStream(u32 fadeOutDuration) {
     if (_CurrentBgmIsStream && _CurrentBackgroundMusic != BGM_INVALID_ID) {
         _ShouldStopReplacementBgmMusic = true;
         _BackgroundMusicToStop = _CurrentBackgroundMusic;
-        _BgmFadeOutDurationMs = 1000;
+        _BgmFadeOutDurationMs = fadeOutDuration;
         _CurrentBackgroundMusic = BGM_INVALID_ID;
         _CurrentBgmIsStream = false;
         _BgmStreamMuted = false;
@@ -1122,7 +1122,7 @@ void Plugin::refreshStreamedMusic() {
 
     u32 strmTag = nds->ARM9Read32(strmHeaderAddress);
     if (strmTag != 0x4D525453) { // STRM
-        stopBgmStream();
+        stopBgmStream(800);
         return;
     }
 
@@ -1131,7 +1131,7 @@ void Plugin::refreshStreamedMusic() {
     if (streamState != _BgmStreamState) {
         switch(streamState) {
         case EBgmStreamState::StrmStopped: {
-            stopBgmStream();
+            stopBgmStream(0);
             break;
         }
         case EBgmStreamState::StrmPlaying: {
@@ -1140,10 +1140,16 @@ void Plugin::refreshStreamedMusic() {
             if (streamBgmId != BGM_INVALID_ID) {
                 std::string replacementStrmPath = getReplacementBackgroundMusicFilePath(streamBgmId);
                 if (replacementStrmPath != "") {
-                    _ShouldStartReplacementBgmMusic = true;
-                    _CurrentBackgroundMusicFilepath = replacementStrmPath;
-                    _CurrentBackgroundMusic = 0;
-                    _CurrentBgmIsStream = true;
+                    bool bShouldPlay = (!_CurrentBgmIsStream
+                        || _CurrentBackgroundMusic == BGM_INVALID_ID
+                        || _CurrentBackgroundMusic != streamBgmId);
+                    if (bShouldPlay) {
+                        stopBgmStream(0);
+                        _ShouldStartReplacementBgmMusic = true;
+                        _CurrentBackgroundMusicFilepath = replacementStrmPath;
+                        _CurrentBackgroundMusic = streamBgmId;
+                        _CurrentBgmIsStream = true;
+                    }
                     _BgmStreamMuted = true;
                 } else {
                     _CurrentBackgroundMusic = BGM_INVALID_ID;
@@ -1156,7 +1162,7 @@ void Plugin::refreshStreamedMusic() {
         }
         case EBgmStreamState::StrmStopping:
         case EBgmStreamState::StrmEnded: {
-            stopBgmStream();
+            stopBgmStream(800);
             break;
         }
         default: {
