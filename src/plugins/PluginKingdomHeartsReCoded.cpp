@@ -133,6 +133,9 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define SSEQ_TABLE_ADDRESS_EU      0x020E2D10
 #define SSEQ_TABLE_ADDRESS_JP      0x020E0B10
 
+#define STRM_ADDRESS_US      0x0205E790
+#define STRM_ADDRESS_EU      0x0205E790
+#define STRM_ADDRESS_JP      0x0205E5B0
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
@@ -308,6 +311,10 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         { 38, 38,   "LastBoss", "" },
         { 39, 39,   "Debug", "" },
         { 40, 40,   "Rik_BG", "" }
+    }};
+
+    StreamedBgmEntries = std::array<StreamedBgmEntry, 1> {{
+        { 0X64, 41, "Dearly Beloved", 3212253 }
     }};
 }
 
@@ -2526,6 +2533,20 @@ u16 PluginKingdomHeartsReCoded::getMidiBgmToResumeId() {
 
 u32 PluginKingdomHeartsReCoded::getMidiSongTableAddress() {
     return getU32ByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
+}
+
+u32 PluginKingdomHeartsReCoded::getStreamBgmAddress() {
+    return getU32ByCart(STRM_ADDRESS_US, STRM_ADDRESS_EU, STRM_ADDRESS_JP);
+}
+
+u16 PluginKingdomHeartsReCoded::getStreamBgmCustomIdFromDsId(u8 dsId, u32 numSamples) {
+    auto found = std::find_if(StreamedBgmEntries.begin(), StreamedBgmEntries.end(), [&](const auto& e) {
+        return e.dsId == dsId && e.numSamples == numSamples; });
+    if(found != StreamedBgmEntries.end()) {
+        return found->customId;
+    }
+
+    return BGM_INVALID_ID;
 }
 
 u8 PluginKingdomHeartsReCoded::getMidiBgmVolume() {

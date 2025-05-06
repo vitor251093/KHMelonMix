@@ -134,11 +134,24 @@ private:
     u16 getMidiBgmId() override;
     u16 getMidiBgmToResumeId() override;
     u32 getMidiSongTableAddress() override;
+    u32 getStreamBgmAddress() override;
+    u16 getStreamBgmCustomIdFromDsId(u8 dsId, u32 numSamples) override;
     u8 getMidiBgmState() override;
     u8 getMidiBgmVolume() override;
     u32 getBgmFadeOutDuration() override;
     u16 getSongIdInSongTable(u16 bgmId) override;
     std::string getBackgroundMusicName(u16 bgmId) override;
+
+    struct StreamedBgmEntry
+    {
+        u8 dsId = 0;
+        u8 customId = 0;
+        char Name[40];
+        u32 numSamples = 0;
+    };
+
+    std::array<StreamedBgmEntry, 1> StreamedBgmEntries;
+
 
     bool isBufferBlack(unsigned int* buffer);
     u32* topScreen2DTexture();
