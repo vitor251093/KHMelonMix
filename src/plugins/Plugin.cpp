@@ -1103,7 +1103,7 @@ enum EBgmStreamState : u8 {
     StrmEnded = 0x08,
 };
 
-void Plugin::stopBgmStream(u32 fadeOutDuration) {
+void Plugin::stopReplacementStreamBgm(u32 fadeOutDuration) {
     if (_CurrentBgmIsStream && _CurrentBackgroundMusic != BGM_INVALID_ID) {
         _ShouldStopReplacementBgmMusic = true;
         _BackgroundMusicToStop = _CurrentBackgroundMusic;
@@ -1122,7 +1122,7 @@ void Plugin::refreshStreamedMusic() {
 
     u32 strmTag = nds->ARM9Read32(strmHeaderAddress);
     if (strmTag != 0x4D525453) { // STRM
-        stopBgmStream(800);
+        stopReplacementStreamBgm(800);
         return;
     }
 
@@ -1131,7 +1131,7 @@ void Plugin::refreshStreamedMusic() {
     if (streamState != _BgmStreamState) {
         switch(streamState) {
         case EBgmStreamState::StrmStopped: {
-            stopBgmStream(0);
+            stopReplacementStreamBgm(0);
             break;
         }
         case EBgmStreamState::StrmPlaying: {
@@ -1144,11 +1144,12 @@ void Plugin::refreshStreamedMusic() {
                         || _CurrentBackgroundMusic == BGM_INVALID_ID
                         || _CurrentBackgroundMusic != streamBgmId);
                     if (bShouldPlay) {
-                        stopBgmStream(0);
+                        stopReplacementStreamBgm(0);
                         _ShouldStartReplacementBgmMusic = true;
                         _CurrentBackgroundMusicFilepath = replacementStrmPath;
                         _CurrentBackgroundMusic = streamBgmId;
                         _CurrentBgmIsStream = true;
+                        onStreamBgmReplacementStarted();
                     }
                     _BgmStreamMuted = true;
                 } else {
@@ -1162,7 +1163,7 @@ void Plugin::refreshStreamedMusic() {
         }
         case EBgmStreamState::StrmStopping:
         case EBgmStreamState::StrmEnded: {
-            stopBgmStream(800);
+            stopReplacementStreamBgm(800);
             break;
         }
         default: {
@@ -1174,11 +1175,16 @@ void Plugin::refreshStreamedMusic() {
     }
 
     if (_BgmStreamMuted) {
-        u32 volumeControlAddress = strmHeaderAddress + 0xB0;
-        u8 currentVolume = nds->ARM9Read8(volumeControlAddress);
-        if (currentVolume > 0) {
-            nds->ARM7Write8(volumeControlAddress, 0);
-        }
+        muteStreamedMusic();
+    }
+}
+
+void Plugin::muteStreamedMusic() {
+    const u32 strmHeaderAddress = getStreamBgmAddress();
+    u32 volumeControlAddress = strmHeaderAddress + 0xB0;
+    u8 currentVolume = nds->ARM9Read8(volumeControlAddress);
+    if (currentVolume > 0) {
+        nds->ARM7Write8(volumeControlAddress, 0);
     }
 }
 

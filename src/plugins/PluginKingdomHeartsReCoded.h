@@ -151,7 +151,9 @@ private:
     };
 
     std::array<StreamedBgmEntry, 1> StreamedBgmEntries;
-
+    u8 _MutedStreamBlocksCount = 0;
+    void onStreamBgmReplacementStarted() override;
+    void muteStreamedMusic() override;
 
     bool isBufferBlack(unsigned int* buffer);
     u32* topScreen2DTexture();

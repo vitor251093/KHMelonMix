@@ -2588,6 +2588,37 @@ std::string PluginKingdomHeartsReCoded::getBackgroundMusicName(u16 bgmId) {
     return "Unknown";
 }
 
+void PluginKingdomHeartsReCoded::onStreamBgmReplacementStarted() {
+    Plugin::onStreamBgmReplacementStarted();
+
+    // Reset the number of muted blocks
+    _MutedStreamBlocksCount = 0;
+}
+
+void PluginKingdomHeartsReCoded::muteStreamedMusic() {
+    Plugin::muteStreamedMusic();
+
+    if (_MutedStreamBlocksCount == 0) {
+        // We only need to mute the first streamed block in the audio buffer, to fix
+        // a small audio glitch. Then, muting "normally" by setting volume to O is enough
+        const u32 strmHeaderAddress = getStreamBgmAddress();
+        const u32 streamBufferAddress = nds->ARM9Read32(strmHeaderAddress + 0x84);
+        const u32 streamBufferSize = nds->ARM9Read32(strmHeaderAddress + 0x88);
+    
+        u32 firstValue = nds->ARM9Read32(streamBufferAddress);
+        if (firstValue != 0) {
+            u32 startErase = streamBufferAddress;
+            u32 endErase = streamBufferAddress + streamBufferSize;
+            for (u32 addr = startErase; addr < endErase; addr+=4) {
+                nds->ARM7Write32(addr, 0x00);
+            }
+        }
+
+        //printf("Erased stream block! Address: 0x%08x Size: %d\n", streamBufferAddress, streamBufferSize);
+        _MutedStreamBlocksCount++;
+    }
+}
+
 
 void PluginKingdomHeartsReCoded::debugLogs(int gameScene)
 {

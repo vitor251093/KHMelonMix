@@ -341,7 +341,9 @@ public:
     void stopBackgroundMusic(u16 fadeOutDuration);
 
     void refreshStreamedMusic();
-    void stopBgmStream(u32 fadeOutDuration);
+    virtual void onStreamBgmReplacementStarted() {}
+    virtual void muteStreamedMusic();
+    void stopReplacementStreamBgm(u32 fadeOutDuration);
 
     virtual void refreshMouseStatus() {}
 
