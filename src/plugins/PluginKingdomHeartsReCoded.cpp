@@ -133,6 +133,9 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define SSEQ_TABLE_ADDRESS_EU      0x020E2D10
 #define SSEQ_TABLE_ADDRESS_JP      0x020E0B10
 
+#define STRM_ADDRESS_US      0x0205E790
+#define STRM_ADDRESS_EU      0x0205E790
+#define STRM_ADDRESS_JP      0x0205E5B0
 
 #define SWITCH_TARGET_PRESS_FRAME_LIMIT   100
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
@@ -308,6 +311,10 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         { 38, 38,   "LastBoss", "" },
         { 39, 39,   "Debug", "" },
         { 40, 40,   "Rik_BG", "" }
+    }};
+
+    StreamedBgmEntries = std::array<StreamedBgmEntry, 1> {{
+        { 0X64, 41, "Dearly Beloved", 3212253 }
     }};
 }
 
@@ -2528,6 +2535,20 @@ u32 PluginKingdomHeartsReCoded::getMidiSongTableAddress() {
     return getU32ByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
 }
 
+u32 PluginKingdomHeartsReCoded::getStreamBgmAddress() {
+    return getU32ByCart(STRM_ADDRESS_US, STRM_ADDRESS_EU, STRM_ADDRESS_JP);
+}
+
+u16 PluginKingdomHeartsReCoded::getStreamBgmCustomIdFromDsId(u8 dsId, u32 numSamples) {
+    auto found = std::find_if(StreamedBgmEntries.begin(), StreamedBgmEntries.end(), [&](const auto& e) {
+        return e.dsId == dsId && e.numSamples == numSamples; });
+    if(found != StreamedBgmEntries.end()) {
+        return found->customId;
+    }
+
+    return BGM_INVALID_ID;
+}
+
 u8 PluginKingdomHeartsReCoded::getMidiBgmVolume() {
     u32 SONG_MASTER_VOLUME_ADDRESS = getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x05;
     // Usually 0x7F during gameplay and 0x40 when game is paused
@@ -2565,6 +2586,37 @@ std::string PluginKingdomHeartsReCoded::getBackgroundMusicName(u16 bgmId) {
     }
 
     return "Unknown";
+}
+
+void PluginKingdomHeartsReCoded::onStreamBgmReplacementStarted() {
+    Plugin::onStreamBgmReplacementStarted();
+
+    // Reset the number of muted blocks
+    _MutedStreamBlocksCount = 0;
+}
+
+void PluginKingdomHeartsReCoded::muteStreamedMusic() {
+    Plugin::muteStreamedMusic();
+
+    if (_MutedStreamBlocksCount == 0) {
+        // We only need to mute the first streamed block in the audio buffer, to fix
+        // a small audio glitch. Then, muting "normally" by setting volume to O is enough
+        const u32 strmHeaderAddress = getStreamBgmAddress();
+        const u32 streamBufferAddress = nds->ARM9Read32(strmHeaderAddress + 0x84);
+        const u32 streamBufferSize = nds->ARM9Read32(strmHeaderAddress + 0x88);
+    
+        u32 firstValue = nds->ARM9Read32(streamBufferAddress);
+        if (firstValue != 0) {
+            u32 startErase = streamBufferAddress;
+            u32 endErase = streamBufferAddress + streamBufferSize;
+            for (u32 addr = startErase; addr < endErase; addr+=4) {
+                nds->ARM7Write32(addr, 0x00);
+            }
+        }
+
+        //printf("Erased stream block! Address: 0x%08x Size: %d\n", streamBufferAddress, streamBufferSize);
+        _MutedStreamBlocksCount++;
+    }
 }
 
 
