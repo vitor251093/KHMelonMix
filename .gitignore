@@ -1,21 +1,5 @@
 # Assets
-assets/*/cutscenes/cinematics/*
-assets/*/audio/*
-assets/*/localization/*/*
-assets/*/sprites/*
-assets/*/sprites_tmp/*
-assets/*/textures/*
-assets/*/textures_tmp/*
-
-!assets/*/localization/*/en-US.ini
-
-!assets/*/cutscenes/cinematics/.keep
-!assets/*/audio/.keep
-!assets/*/localization/*/.keep
-!assets/*/sprites/.keep
-!assets/*/sprites_tmp/.keep
-!assets/*/textures/.keep
-!assets/*/textures_tmp/.keep
+assets/
 
 # ROMs
 roms/*
