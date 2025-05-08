@@ -134,10 +134,10 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define SSEQ_TABLE_ADDRESS_JP      0x020E4310
 #define SSEQ_TABLE_ADDRESS_JP_REV1 0x020E4290
 
-#define STRM_TARGET_ADDRESS_US      0x020DD6CC
-#define STRM_TARGET_ADDRESS_EU      0x020DE4AC
-#define STRM_TARGET_ADDRESS_JP      0x020DC82C
-#define STRM_TARGET_ADDRESS_JP_REV1 0x020DC7AC
+#define STRM_ADDRESS_US      0x0204B6B4
+#define STRM_ADDRESS_EU      0x0204B6D4
+#define STRM_ADDRESS_JP      0x0204BB14
+#define STRM_ADDRESS_JP_REV1 0x0204BAD4
 
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
@@ -317,7 +317,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     }};
 
     StreamedBgmEntries = std::array<StreamedBgmEntry, 1> {{
-        { 0, "Dearly Beloved", 2900195, 0x0204b6b4,  0x0204b6d4, 0x0204bb14, 0x0204bad4 }
+        { 0x5a, 0, "Dearly Beloved", 2900195 }
     }};
 }
 
@@ -2146,14 +2146,13 @@ u32 PluginKingdomHeartsDays::getMidiSongTableAddress() {
     return getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
 }
 
-u32 PluginKingdomHeartsDays::getStreamTargetAddress() {
-    return getAnyByCart(STRM_TARGET_ADDRESS_US, STRM_TARGET_ADDRESS_EU, STRM_TARGET_ADDRESS_JP, STRM_TARGET_ADDRESS_JP_REV1);
+u32 PluginKingdomHeartsDays::getStreamBgmAddress() {
+    return getAnyByCart(STRM_ADDRESS_US, STRM_ADDRESS_EU, STRM_ADDRESS_JP, STRM_ADDRESS_JP_REV1);
 }
 
-u16 PluginKingdomHeartsDays::getStreamBgmIdFromAddress(u32 address, u32 numSamples) {
-    auto found = std::find_if(StreamedBgmEntries.begin(), StreamedBgmEntries.end(), [&](const auto& e) {
-        u32 cartAddress = getAnyByCart(e.usAddress, e.euAddress, e.jpAddress, e.jprev1Address);
-        return cartAddress == address && e.numSamples == numSamples; });
+u16 PluginKingdomHeartsDays::getStreamBgmCustomIdFromDsId(u8 dsId, u32 numSamples) {
+    auto found = std::find_if(StreamedBgmEntries.begin(), StreamedBgmEntries.end(), [&dsId, &numSamples](const auto& e) {
+        return e.dsId == dsId && e.numSamples == numSamples; });
     if(found != StreamedBgmEntries.end()) {
         return found->customId;
     }
