@@ -30,7 +30,7 @@
 
 **Note:** The Linux steps are also applicable on the Steam Deck.
 
-### Recommended Controller Binds
+## Recommended Controller Binds
 * (DS Keypad tab) Map the DS D-Pad to your controller's left analog stick
 * (DS Keypad tab) Map the Select/Start buttons to the equivalent keys in your controller
 * (DS Keypad tab) Map the A/B/X/Y buttons to the equivalent keys in your controller
@@ -42,3 +42,8 @@
 * (Add-ons tab) Map "HUD Toggle" to an available button of your preference
 * (Add-ons tab) Map "Fullscreen Map Toggle" to an available button of your preference (Re:Coded only)
 * (General hotkeys) Map "Toggle fullscreen" to an available button of your preference
+
+## How to dump DS cart into an NDS file
+There are multiple ways to do so. Those are some of them:
+- Using a DSi: https://dsi.cfw.guide/dumping-game-cards.html
+- Using a 3DS: https://3ds.hacks.guide/dumping-titles-and-game-cartridges.html
