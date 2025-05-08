@@ -120,21 +120,21 @@ struct alignas(16) ShapeData3D {
     // 0x01 => polygon mode
     // 0x02 => hide
 
-    int polygonAttributes[4];
-    int negatedPolygonAttributes[4];
+    unsigned int polygonAttributes[4];
+    unsigned int negatedPolygonAttributes[4];
 
     int color[4];
     int negatedColor[4];
 
-    int textureParams[4];
-    int negatedTextureParams[4];
+    unsigned int textureParams[4];
+    unsigned int negatedTextureParams[4];
 
     int colorCount = 0;
     int negatedColorCount = 0;
     int textureParamCount = 0;
     int negatedTextureParamCount = 0;
 
-    bool doesAttributeMatch(int polygonAttr) {
+    bool doesAttributeMatch(unsigned int polygonAttr) {
         bool attrMatchEqual = false;
         bool attrMatchEqual2 = false;
         bool attrMatchNeg = false;
@@ -156,7 +156,7 @@ struct alignas(16) ShapeData3D {
         return (attrMatchEqual ? attrMatchEqual2 : true) && !attrMatchNeg;
     }
 
-    bool doesTextureParamMatch(int texParam) {
+    bool doesTextureParamMatch(unsigned int texParam) {
         bool attrMatchEqual = false;
         bool attrMatchEqual2 = false;
         bool attrMatchNeg = false;
@@ -203,7 +203,7 @@ struct alignas(16) ShapeData3D {
         return (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
     }
 
-    vec3 compute3DCoordinatesOf3DSquareShapeInVertexMode(float _x, float _y, float _z, int polygonAttr, int texParam, int* rgb, float resolutionScale, float aspectRatio)
+    vec3 compute3DCoordinatesOf3DSquareShapeInVertexMode(float _x, float _y, float _z, unsigned int polygonAttr, unsigned int texParam, int* rgb, float resolutionScale, float aspectRatio)
     {
         float updated = 0;
 

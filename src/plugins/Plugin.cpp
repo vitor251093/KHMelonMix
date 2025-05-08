@@ -246,9 +246,8 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
     std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
 
     bool atLeastOneLog = false;
-    for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
+    for (auto shape : shapes)
     {
-        ShapeData3D shape = shapes[shapeIndex];
         bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
         // polygon mode
@@ -299,13 +298,12 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
         s32 z = polygon->Vertices[vertexIndex]->Position[2];
         s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
 
-        float _x = (float)(*x);
-        float _y = (float)(*y);
+        auto _x = (float)(*x);
+        auto _y = (float)(*y);
         float _z = ((float)z)/(1 << 22);
 
-        for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
+        for (auto shape : shapes)
         {
-            ShapeData3D shape = shapes[shapeIndex];
             bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
             // vertex mode
@@ -1292,7 +1290,7 @@ void Plugin::errorLog(const char* format, ...) {
     const char* log = result.c_str();
     printf("%s\n", log);
 
-    if (ERROR_LOG_FILE_ENABLED) {
+    if constexpr (ERROR_LOG_FILE_ENABLED) {
         std::string fileName = std::string("error.log");
         Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::Append);
         Platform::FileWrite(log, strlen(log), 1, logf);
@@ -1310,7 +1308,7 @@ void Plugin::ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
     u32 limitMin = RAM_SEARCH_LIMIT_MIN;
     u32 limitMax = RAM_SEARCH_LIMIT_MAX;
     if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
-        if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
+        if constexpr (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
             printf("Resetting RAM search\n");
         }
         for (u32 index = limitMin; index < limitMax; index+=byteSize) {
@@ -1407,7 +1405,7 @@ void Plugin::ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
                 printf("\n");
             }
         }
-        if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
+        if constexpr (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
             printf("Addresses matching the search: %d\n", total);
         }
     }

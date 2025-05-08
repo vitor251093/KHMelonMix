@@ -379,7 +379,7 @@ public:
 
     virtual void debugLogs(int gameScene) {}
 
-    void errorLog(const char* format, ...);
+    static void errorLog(const char* format, ...);
 
     u32 LastMainRAM[0xFFFFFF];
     bool MainRAMState[0xFFFFFF];
