@@ -1,7 +1,7 @@
 /*
     Copyright 2016-2024 VitorMM
 
-    This file is part of KhDays Melox Mix, which is based on melonDS.
+    This file is part of Melox Mix, which is based on melonDS.
 
     melonDS is free software: you can redistribute it and/or modify it under
     the terms of the GNU General Public License as published by the Free

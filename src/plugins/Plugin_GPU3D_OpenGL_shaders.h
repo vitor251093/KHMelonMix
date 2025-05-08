@@ -1,7 +1,7 @@
 /*
     Copyright 2016-2024 VitorMM
 
-    This file is part of KhDays Melox Mix, which is based on melonDS.
+    This file is part of Melox Mix, which is based on melonDS.
 
     melonDS is free software: you can redistribute it and/or modify it under
     the terms of the GNU General Public License as published by the Free
@@ -43,15 +43,19 @@ struct ShapeData3D {
 
     int effects;
 
-    int polygonAttributes[4];
-    int negatedPolygonAttributes[4];
+    uint polygonAttributes[4];
+    uint negatedPolygonAttributes[4];
 
     int color[4];
     int negatedColor[4];
 
+    uint textureParams[4];
+    uint negatedTextureParams[4];
+
     int colorCount;
     int negatedColorCount;
-    int _pad0, _pad1;
+    int textureParamCount;
+    int negatedTextureParamCount;
 };
 
 layout(std140) uniform ShapeBlock3D {
