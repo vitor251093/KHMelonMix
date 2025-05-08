@@ -63,7 +63,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
  * All people that supported and developed [melonDS](https://github.com/melonDS-emu/melonDS) (seriously, support them if possible; this project wouldn't exist without melonDS)
  * Logo of the project by JackSilverson
  * Logo of Days Melon Mix and ReCoded Melon Mix by DiabeticMedic
- * sandwichwater and DaniKH, for the innumerous amount of tests and for the hi-res textures
+ * sandwichwater and DaniKH, for the innumerous amount of tests and for the hi-res textures and sprites
  * All the members from our Discord server that helped testing and developing the Melon Mix!
  * Michael Lipinski, for the [documentation](https://pdfs.semanticscholar.org/657d/adf4888f6302701095055b0d7a066e42b36f.pdf) regarding the way a NDS works
  * Datel Design & Development Ltd, for the [documentation](https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf) regarding how to write AR Codes
