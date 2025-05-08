@@ -21,6 +21,7 @@
 
 namespace Plugins
 {
+// language=GLSL
 const char* kRenderVS_Z_Plugin = R"(
 
 #define SCREEN_SCALE 6.0

@@ -21,6 +21,7 @@
 
 namespace Plugins
 {
+// language=GLSL
 const char* kCompositorFS_Plugin = R"(#version 140
 
 #define SHAPES_DATA_ARRAY_SIZE 32

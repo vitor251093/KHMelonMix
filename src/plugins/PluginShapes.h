@@ -255,11 +255,6 @@ struct alignas(16) ShapeData3D {
 
                 switch (corner)
                 {
-                    case corner_PreservePosition:
-                        squareFinalX1 = (squareInitialCoords.x + squareInitialCoords.z/2)*scaleX - squareFinalWidth/2;
-                        squareFinalY1 = (squareInitialCoords.y + squareInitialCoords.w/2)*scaleY - squareFinalHeight/2;
-                        break;
-
                     case corner_Center:
                         squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
                         squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
@@ -297,6 +292,13 @@ struct alignas(16) ShapeData3D {
 
                     case corner_Left:
                         squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
+                        break;
+
+                    case corner_PreservePosition:
+                    default:
+                        squareFinalX1 = (squareInitialCoords.x + squareInitialCoords.z/2)*scaleX - squareFinalWidth/2;
+                        squareFinalY1 = (squareInitialCoords.y + squareInitialCoords.w/2)*scaleY - squareFinalHeight/2;
+                        break;
                 }
 
                 _x = ((_x - squareInitialCoords.x*resolutionScale)/iuTexScale)*scaleX*heightScale + squareFinalX1 + (margin.x - margin.z)*(resolutionScale/(iuTexScale*aspectRatio));
@@ -457,11 +459,6 @@ public:
 
         switch (_corner)
         {
-            case corner_PreservePosition:
-                squareFinalX1 = (shapeData.squareInitialCoords.x + shapeData.squareInitialCoords.z/2)*scaleX - squareFinalWidth/2;
-                squareFinalY1 = (shapeData.squareInitialCoords.y + shapeData.squareInitialCoords.w/2)*scaleY - squareFinalHeight/2;
-                break;
-
             case corner_Center:
                 squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
                 squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
@@ -499,6 +496,13 @@ public:
 
             case corner_Left:
                 squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
+                break;
+
+            case corner_PreservePosition:
+            default:
+                squareFinalX1 = (shapeData.squareInitialCoords.x + shapeData.squareInitialCoords.z/2)*scaleX - squareFinalWidth/2;
+                squareFinalY1 = (shapeData.squareInitialCoords.y + shapeData.squareInitialCoords.w/2)*scaleY - squareFinalHeight/2;
+                break;
         }
 
         squareFinalX1 = squareFinalX1 + (_margin.x - _margin.z)*heightScale;
