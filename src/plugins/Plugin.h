@@ -323,7 +323,10 @@ public:
 
     virtual void hudToggle() {}
 
-    void replacementTexturesToggle() {DisableReplacementTextures = !DisableReplacementTextures;}
+    void replacementTexturesToggle() {
+        DisableReplacementTextures = !DisableReplacementTextures;
+        texturesIndex.clear();
+    }
     bool areReplacementTexturesDisabled() {return DisableReplacementTextures;}
 
     virtual void debugLogs(int gameScene) {}
