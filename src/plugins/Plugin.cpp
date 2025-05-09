@@ -1123,6 +1123,7 @@ void Plugin::refreshStreamedMusic() {
     u32 strmTag = nds->ARM9Read32(strmHeaderAddress);
     if (strmTag != 0x4D525453) { // STRM
         stopReplacementStreamBgm(800);
+        _BgmStreamState = 0;
         return;
     }
 
