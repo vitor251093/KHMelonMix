@@ -275,7 +275,7 @@ public:
     virtual u32 getBgmFadeOutDuration() { return 0; }
     virtual u16 getSongIdInSongTable(u16 bgmId) { return 0; }
     virtual std::string getBackgroundMusicName(u16 soundtrackId) { return ""; }
-    virtual int delayBeforeStartReplacementBackgroundMusic() { return 0; }
+    virtual int delayBeforeStartReplacementBackgroundMusic(u16 bgmId) { return 0; }
 
     void loadBgmRedirections();
     void refreshBackgroundMusic();

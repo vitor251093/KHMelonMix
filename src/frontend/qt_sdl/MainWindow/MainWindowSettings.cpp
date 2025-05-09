@@ -70,10 +70,13 @@ void MainWindowSettings::asyncStartBgmMusic(quint16 bgmId, quint8 volume, bool b
             Q_ARG(bool, bResumePos), Q_ARG(QString, bgmMusicFilePath));
     } else {
         QTimer* timer = new QTimer(this);
-        timer->setInterval(delayAtStart);
+
+        // The delay is expressed as offset from the beginning of the currently playing movie
+        qint32 delayFromMovieStart = qMax(0, delayAtStart - player->position());
+        timer->setInterval(delayFromMovieStart);
         timer->setSingleShot(true);
 
-        printf("Delay to start replacement song %d (%dms)\n", bgmId, delayAtStart);
+        printf("Delay to start replacement song %d (%dms)\n", bgmId, delayFromMovieStart);
 
         QObject::connect(timer, &QTimer::timeout, [this, bgmId, volume, bResumePos, bgmMusicFilePath](){
             QMetaObject::invokeMethod(this, "startBgmMusic", Qt::QueuedConnection,

@@ -984,7 +984,10 @@ void Plugin::refreshBackgroundMusic() {
             // Do nothing (used by the NDS to load the SSEQ MIDI into RAM)
             break;
         }
-        case EMidiState::PrePlay:
+        case EMidiState::PrePlay: {
+            // Loaded has finished but bgm is not marked as "Playing" yet
+            break;
+        }
         case EMidiState::Playing: {
             // SSEQ is loaded and ready to play
             if (bgmId != _CurrentBackgroundMusic) {
@@ -998,7 +1001,7 @@ void Plugin::refreshBackgroundMusic() {
                     _CurrentBackgroundMusic = bgmId;
                     u16 bgmResumeId = getMidiBgmToResumeId();
                     _ResumeBackgroundMusicPosition = (bgmResumeId == _CurrentBackgroundMusic && bgmResumeId != BGM_INVALID_ID);
-                    _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic();
+                    _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic(bgmId);
                     _CurrentBgmIsStream = false;
                     _MuteSeqBgm = true;
                 } else {
@@ -1006,9 +1009,6 @@ void Plugin::refreshBackgroundMusic() {
                 }
             }
             break;
-            // TODO: handle difference between PrePlay and Play. Some songs are kept in "PrePlay" state (like Paused)
-            // This cannot be implement just yet because when playing HD cutscenes, the game clock's speed is increased
-            // And the switch to "Playing" happens way too early
         }
         case EMidiState::Stopping: {
             // Note: bgmId is already 0xFFFF at this point
@@ -1121,6 +1121,7 @@ void Plugin::refreshStreamedMusic() {
     u32 strmTag = nds->ARM9Read32(strmHeaderAddress);
     if (strmTag != 0x4D525453) { // STRM
         stopReplacementStreamBgm(800);
+        _BgmStreamState = 0;
         return;
     }
 
@@ -1146,6 +1147,7 @@ void Plugin::refreshStreamedMusic() {
                         _ShouldStartReplacementBgmMusic = true;
                         _CurrentBackgroundMusicFilepath = replacementStrmPath;
                         _CurrentBackgroundMusic = streamBgmId;
+                        _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic(streamBgmId);
                         _CurrentBgmIsStream = true;
                         onStreamBgmReplacementStarted();
                     }

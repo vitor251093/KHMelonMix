@@ -319,8 +319,9 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         { 38, 36,   "Xionbattle",       "Vector to the Heavens" }
     }};
 
-    StreamedBgmEntries = std::array<StreamedBgmEntry, 1> {{
-        { 0x5a, 0, "Dearly Beloved", 2900195 }
+    StreamedBgmEntries = std::array<StreamedBgmEntry, 2> {{
+        { 0x5a, 0, "Dearly Beloved", 2900195 },
+        { 0x78, 39, "Dearly Beloved (Reprise)", 2459033 }
     }};
 }
 
@@ -2206,10 +2207,21 @@ std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 bgmId) {
     return "Unknown";
 }
 
-int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
-    u32 currentMission = getCurrentMission();
-    if (currentMission == 92 && _CurrentBackgroundMusic == 22) {
-        return 13000;
+int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic(u16 bgmId) {
+    // Delay patch only required with HD cutscene replacement
+    if (_RunningReplacementCutscene) {
+        if (bgmId == 22 || bgmId == 39) {
+            if (CutsceneEntry* topCutscene = detectTopScreenMobiCutscene()) {
+                std::string cutsceneId(topCutscene->DsName);
+                if (bgmId == 22 && cutsceneId == "848") {
+                    // Delay for "Musique pour la tristesse de Xion" during the "Xion's End" cutscene
+                    return 12800;
+                } else if (bgmId == 39 && cutsceneId == "843") {
+                    // Delay for "Dearly Beloved (Reprise)" at the end of "End credits"
+                    return 376000;
+                }
+            }
+        }
     }
     return 0;
 }
