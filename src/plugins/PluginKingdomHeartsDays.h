@@ -147,7 +147,7 @@ private:
     u32 getBgmFadeOutDuration() override;
     u16 getSongIdInSongTable(u16 bgmId) override;
     std::string getBackgroundMusicName(u16 bgmId) override;
-    int delayBeforeStartReplacementBackgroundMusic() override;
+    int delayBeforeStartReplacementBackgroundMusic(u16 bgmId) override;
 
     struct StreamedBgmEntry
     {

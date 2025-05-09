@@ -2193,10 +2193,14 @@ std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 bgmId) {
     return "Unknown";
 }
 
-int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic() {
-    u32 currentMission = getCurrentMission();
-    if (currentMission == 92 && _CurrentBackgroundMusic == 22) {
-        return 13000;
+int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic(u16 bgmId) {
+    if (_RunningReplacementCutscene && bgmId == 22) {
+        // Delay for "Musique pour la tristesse de Xion" during the "Xion's End" cutscene
+        if (CutsceneEntry* topCutscene = detectTopScreenMobiCutscene()) {
+            if (std::string(topCutscene->DsName) == "848") {
+                return 12800;
+            }
+        }
     }
     return 0;
 }
