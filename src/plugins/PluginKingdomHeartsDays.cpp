@@ -193,7 +193,8 @@ enum
     HK_CommandMenuLeft,
     HK_CommandMenuRight,
     HK_CommandMenuUp,
-    HK_CommandMenuDown
+    HK_CommandMenuDown,
+    HK_ReplacementTexturesToggle
 };
 
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
@@ -213,7 +214,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "HK_CommandMenuLeft",
         "HK_CommandMenuRight",
         "HK_CommandMenuUp",
-        "HK_CommandMenuDown"
+        "HK_CommandMenuDown",
+        "HK_ReplacementTexturesToggle"
     };
     customKeyMappingLabels = {
         "[KH] HUD Toggle",
@@ -223,7 +225,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "[KH] Command Menu - Left",
         "[KH] Command Menu - Right",
         "[KH] Command Menu - Up",
-        "[KH] Command Menu - Down"
+        "[KH] Command Menu - Down",
+        "Toggle Replacement Textures"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 46> {{
@@ -1328,6 +1331,9 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
 
     if ((*AddonPress) & (1 << HK_HUDToggle)) {
         hudToggle();
+    }
+    if ((*AddonPress) & (1 << HK_ReplacementTexturesToggle)) {
+        replacementTexturesToggle();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {

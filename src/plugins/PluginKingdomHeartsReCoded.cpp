@@ -201,7 +201,8 @@ enum
     HK_CommandMenuLeft,
     HK_CommandMenuRight,
     HK_CommandMenuUp,
-    HK_CommandMenuDown
+    HK_CommandMenuDown,
+    HK_ReplacementTexturesToggle
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -237,7 +238,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         "HK_CommandMenuLeft",
         "HK_CommandMenuRight",
         "HK_CommandMenuUp",
-        "HK_CommandMenuDown"
+        "HK_CommandMenuDown",
+        "HK_ReplacementTexturesToggle"
     };
     customKeyMappingLabels = {
         "[KH] HUD Toggle",
@@ -248,7 +250,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         "[KH] Command Menu - Left",
         "[KH] Command Menu - Right",
         "[KH] Command Menu - Up",
-        "[KH] Command Menu - Down"
+        "[KH] Command Menu - Down",
+        "Toggle Replacement Textures"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
@@ -1534,6 +1537,9 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
 
     if ((*AddonPress) & (1 << HK_HUDToggle)) {
         hudToggle();
+    }
+    if ((*AddonPress) & (1 << HK_ReplacementTexturesToggle)) {
+        replacementTexturesToggle();
     }
     if ((*AddonPress) & (1 << HK_FullscreenMapToggle)) {
         toggleFullscreenMap();

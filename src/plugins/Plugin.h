@@ -323,6 +323,9 @@ public:
 
     virtual void hudToggle() {}
 
+    void replacementTexturesToggle() {DisableReplacementTextures = !DisableReplacementTextures;}
+    bool areReplacementTexturesDisabled() {return DisableReplacementTextures;}
+
     virtual void debugLogs(int gameScene) {}
 
     static void errorLog(const char* format, ...);
@@ -349,6 +352,7 @@ protected:
     int UIScale = 4;
 
     bool DisableEnhancedGraphics = false;
+    bool DisableReplacementTextures = false;
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
 

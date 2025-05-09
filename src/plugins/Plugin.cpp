@@ -1277,6 +1277,7 @@ void Plugin::_superLoadConfigs(
 {
     std::string root = tomlUniqueIdentifier();
     DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
+    DisableReplacementTextures = false;
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     UIScale = getIntConfig(root + ".HUDScale");

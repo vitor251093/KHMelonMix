@@ -176,24 +176,32 @@ public:
 
         auto it = Cache.find(key);
 
+        bool textureReplacementEnabled = !GamePlugin->areReplacementTexturesDisabled();
+
         if (it != Cache.end())
         {
             bool requiresLoading = false;
-            auto index = it->second.Texture.CurrentIndex;
-            if (it->second.Texture.Countdown > 0 && it->second.Texture.Countdown-- == 1) {
-                index++;
-                
-                if (it->second.Texture.TimePerIndex.size() == it->second.Texture.TotalScenes) {
-                    if (it->second.Texture.TimePerIndex.find(index) == it->second.Texture.TimePerIndex.end()) {
-                        index = 0; 
-                    }
-                    it->second.Texture.Countdown = it->second.Texture.TimePerIndex[index] + 1;
-                }
-                else {
-                    requiresLoading = true;
-                }
+            if (textureReplacementEnabled != it->second.Texture.WasReplacementEnabled) {
+                requiresLoading = true;
             }
-            it->second.Texture.CurrentIndex = index;
+
+            auto index = it->second.Texture.CurrentIndex;
+            if (!requiresLoading) {
+                if (it->second.Texture.Countdown > 0 && it->second.Texture.Countdown-- == 1) {
+                    index++;
+
+                    if (it->second.Texture.TimePerIndex.size() == it->second.Texture.TotalScenes) {
+                        if (it->second.Texture.TimePerIndex.find(index) == it->second.Texture.TimePerIndex.end()) {
+                            index = 0;
+                        }
+                        it->second.Texture.Countdown = it->second.Texture.TimePerIndex[index] + 1;
+                    }
+                    else {
+                        requiresLoading = true;
+                    }
+                }
+                it->second.Texture.CurrentIndex = index;
+            }
 
             if (!requiresLoading) {
                 textureHandle = it->second.Texture.TextureIDs[index];
@@ -287,7 +295,6 @@ public:
         int oldWidth = width;
         int oldHeight = height;
         unsigned char* imageData = (unsigned char*)DecodingBuffer;
-        bool textureReplacementEnabled = true;
         Plugins::TextureEntry* texturePtr = nullptr;
         if (textureReplacementEnabled) {
             std::ostringstream oss0;
@@ -390,6 +397,7 @@ public:
             storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time + 1);
             storagePlace.TimePerIndex[storagePlace.CurrentIndex] = storagePlace.Countdown;
             storagePlace.LayerByIndex[storagePlace.CurrentIndex] = newStoragePlace.LayerByIndex[0];
+            storagePlace.WasReplacementEnabled = textureReplacementEnabled;
             
             entry.Texture = storagePlace;
 
@@ -410,6 +418,7 @@ public:
             storagePlace.Height = oldHeight;
             storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time + 1);
             storagePlace.TimePerIndex[storagePlace.CurrentIndex] = storagePlace.Countdown;
+            storagePlace.WasReplacementEnabled = textureReplacementEnabled;
             
             entry.Texture = storagePlace;
 
@@ -448,6 +457,7 @@ private:
         u32 TotalScenes;
         u32 CurrentIndex;
         u32 Countdown;
+        bool WasReplacementEnabled;
     };
 
     struct TexCacheEntry
