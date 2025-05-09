@@ -157,7 +157,7 @@ private:
         u32 numSamples = 0;
     };
 
-    std::array<StreamedBgmEntry, 1> StreamedBgmEntries;
+    std::array<StreamedBgmEntry, 2> StreamedBgmEntries;
 
     void refreshMouseStatus();
 
