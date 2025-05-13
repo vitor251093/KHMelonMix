@@ -186,7 +186,9 @@ enum
 
 enum
 {
-    HK_HUDToggle,
+    HK_AttackInteract,
+    HK_Jump,
+    HK_GuardCombo,
     HK_LSwitchTarget,
     HK_RLockOn,
     HK_RSwitchTarget,
@@ -194,10 +196,8 @@ enum
     HK_CommandMenuRight,
     HK_CommandMenuUp,
     HK_CommandMenuDown,
-    HK_ReplacementTexturesToggle,
-    HK_AttackInteract,
-    HK_Jump,
-    HK_GuardCombo
+    HK_HUDToggle,
+    HK_ReplacementTexturesToggle
 };
 
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
@@ -210,7 +210,9 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     Map = 0;
 
     customKeyMappingNames = {
-        "HK_HUDToggle",
+        "HK_AttackInteract",
+        "HK_Jump",
+        "HK_GuardCombo",
         "HK_LSwitchTarget",
         "HK_RLockOn",
         "HK_RSwitchTarget",
@@ -218,24 +220,22 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "HK_CommandMenuRight",
         "HK_CommandMenuUp",
         "HK_CommandMenuDown",
-        "HK_ReplacementTexturesToggle",
-        "HK_AttackInteract",
-        "HK_Jump",
-        "HK_GuardCombo"
+        "HK_HUDToggle",
+        "HK_ReplacementTexturesToggle"
     };
     customKeyMappingLabels = {
-        "[KH] HUD Toggle",
-        "[KH] (L2) Switch Target",
-        "[KH] (R1) Lock On",
-        "[KH] (R2) Switch Target",
-        "[KH] Command Menu - Left",
-        "[KH] Command Menu - Right",
-        "[KH] Command Menu - Up",
-        "[KH] Command Menu - Down",
-        "Toggle Replacement Textures",
-        "[KH] Attack / Interact",
-        "[KH] Jump",
-        "[KH] Guard / Combo"
+        "Attack / Interact",
+        "Jump",
+        "Guard / Combo",
+        "Switch Target",
+        "Lock On",
+        "Switch Target",
+        "Command Menu - Back",
+        "Command Menu - Select",
+        "Command Menu - Up",
+        "Command Menu - Down",
+        "HUD Toggle",
+        "Toggle Replacement Textures"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 46> {{
