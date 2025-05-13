@@ -194,8 +194,8 @@ enum
 enum
 {
     HK_LSwitchTarget,
-    HK_RLockOn,
     HK_RSwitchTarget,
+    HK_RLockOn,
     HK_CommandMenuLeft,
     HK_CommandMenuRight,
     HK_CommandMenuUp,
@@ -231,8 +231,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 
     customKeyMappingNames = {
         "HK_LSwitchTarget",
-        "HK_RLockOn",
         "HK_RSwitchTarget",
+        "HK_RLockOn",
         "HK_CommandMenuLeft",
         "HK_CommandMenuRight",
         "HK_CommandMenuUp",
@@ -242,9 +242,9 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         "HK_ReplacementTexturesToggle"
     };
     customKeyMappingLabels = {
-        "Switch Target",
+        "Switch Target - Left",
+        "Switch Target - Right",
         "Lock On",
-        "Switch Target",
         "Command Menu - Back",
         "Command Menu - Select",
         "Command Menu - Up",
