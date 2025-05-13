@@ -1731,8 +1731,11 @@ bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 {
-    u32 pixel = getPixel(bottomScreen2DTexture(), 206, 134, 0);
-    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
+    u32* buffer = bottomScreen2DTexture();
+    u32 pixel1 = getPixel(buffer, 206, 134, 0);
+    u32 pixel2 = getPixel(buffer, 206, 140, 0);
+    return ((pixel1 >> 0) & 0x3F) < 5 && ((pixel1 >> 8) & 0x3F) < 5 && ((pixel1 >> 16) & 0x3F) < 5 &&
+           ((pixel2 >> 0) & 0x3F) < 5 && ((pixel2 >> 8) & 0x3F) < 5 && ((pixel2 >> 16) & 0x3F) < 5;
 }
 
 bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
