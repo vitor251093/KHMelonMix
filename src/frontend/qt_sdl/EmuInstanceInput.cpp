@@ -396,7 +396,7 @@ void EmuInstance::onKeyRelease(QKeyEvent* event)
     if (plugin != nullptr && plugin->isReady())
     {
         for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
-            if (keyKP == pluginKeyMapping[i])
+            if (keyHK == pluginKeyMapping[i])
                 keyPluginMask &= ~(1<<i);
     }
 
