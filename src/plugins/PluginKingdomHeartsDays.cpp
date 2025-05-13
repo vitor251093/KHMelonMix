@@ -194,7 +194,10 @@ enum
     HK_CommandMenuRight,
     HK_CommandMenuUp,
     HK_CommandMenuDown,
-    HK_ReplacementTexturesToggle
+    HK_ReplacementTexturesToggle,
+    HK_AttackInteract,
+    HK_Jump,
+    HK_GuardCombo
 };
 
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
@@ -215,7 +218,10 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "HK_CommandMenuRight",
         "HK_CommandMenuUp",
         "HK_CommandMenuDown",
-        "HK_ReplacementTexturesToggle"
+        "HK_ReplacementTexturesToggle",
+        "HK_AttackInteract",
+        "HK_Jump",
+        "HK_GuardCombo"
     };
     customKeyMappingLabels = {
         "[KH] HUD Toggle",
@@ -226,7 +232,10 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "[KH] Command Menu - Right",
         "[KH] Command Menu - Up",
         "[KH] Command Menu - Down",
-        "Toggle Replacement Textures"
+        "Toggle Replacement Textures",
+        "[KH] Attack / Interact",
+        "[KH] Jump",
+        "[KH] Guard / Combo"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 46> {{
@@ -1338,6 +1347,16 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
+        if ((*AddonMask) & (1 << HK_AttackInteract)) {
+            *InputMask &= ~(1<<0); // A
+        }
+        if ((*AddonMask) & (1 << HK_Jump)) {
+            *InputMask &= ~(1<<1); // B
+        }
+        if ((*AddonMask) & (1 << HK_GuardCombo)) {
+            *InputMask &= ~(1<<11); // Y
+        }
+
         // Enabling X + D-Pad
         if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
         {
@@ -1351,7 +1370,7 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
             }
         }
 
-        // So the arrow keys can be used to control the command menu
+        // So the DS arrow keys can be used to control the command menu
         if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
         {
             *InputMask &= ~(1<<10); // X
