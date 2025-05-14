@@ -574,6 +574,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     .preserveDsScale()
                     .build(aspectRatio));
 
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 16)
+                    .withSize(3, 80)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+
             break;
         }
 
