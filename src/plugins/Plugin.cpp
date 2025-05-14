@@ -212,21 +212,18 @@ void Plugin::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flag
     UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][3], gameSceneState, updated);
 
     if (updated) {
-        std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
-
 #if DEBUG_MODE_ENABLED
         printf("Updating 3D shapes. New shape count: %d\n", shapes.size());
 #endif
 
         glUniform1f(CompGpu3DLoc[CompShader][flags][0], aspectRatio);
         glUniform1i(CompGpu3DLoc[CompShader][flags][1], CompGpu3DLastValues[CompShader][flags][1]);
-        glUniform1i(CompGpu3DLoc[CompShader][flags][2], shapes.size());
+        glUniform1i(CompGpu3DLoc[CompShader][flags][2], current3DShapes.size());
 
-        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
-        auto shadersData = shapes.data();
+        auto shadersData = current3DShapes.data();
         glBindBuffer(GL_UNIFORM_BUFFER, CompUbo3DLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData3D) * shapes.size());
+        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData3D) * current3DShapes.size());
         glUnmapBuffer(GL_UNIFORM_BUFFER);
     }
 }
@@ -242,11 +239,8 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
     float aspectRatio = AspectRatio / (4.f / 3.f);
     int resolutionScale = ScreenWidth/256;
 
-    int gameSceneState = renderer_gameSceneState();
-    std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
-
     bool atLeastOneLog = false;
-    for (auto shape : shapes)
+    for (auto shape : current3DShapes)
     {
         bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
@@ -302,7 +296,7 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
         auto _y = (float)(*y);
         float _z = ((float)z)/(1 << 22);
 
-        for (auto shape : shapes)
+        for (auto shape : current3DShapes)
         {
             bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
@@ -1240,6 +1234,7 @@ bool Plugin::refreshGameScene()
     debugLogs(newGameScene);
 
     bool updated = setGameScene(newGameScene);
+    current3DShapes = renderer_3DShapes(GameScene, renderer_gameSceneState());
 
     refreshCutscene();
 

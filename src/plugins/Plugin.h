@@ -354,6 +354,8 @@ protected:
     int HUDState = -1;
     int UIScale = 4;
 
+    std::vector<ShapeData3D> current3DShapes;
+
     bool DisableEnhancedGraphics = false;
     bool DisableReplacementTextures = false;
     bool ExportTextures = false;
