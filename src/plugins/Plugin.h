@@ -306,6 +306,8 @@ public:
     bool setGameScene(int newGameScene);
     bool refreshGameScene();
 
+    void refreshShapes();
+
     virtual u32 getAspectRatioAddress() {return 0;}
     virtual void setAspectRatio(float aspectRatio);
     virtual void setInternalResolutionScale(int scale);

@@ -1234,7 +1234,7 @@ bool Plugin::refreshGameScene()
     debugLogs(newGameScene);
 
     bool updated = setGameScene(newGameScene);
-    current3DShapes = renderer_3DShapes(GameScene, renderer_gameSceneState());
+    refreshShapes();
 
     refreshCutscene();
 
@@ -1244,6 +1244,11 @@ bool Plugin::refreshGameScene()
     refreshMouseStatus();
 
     return updated;
+}
+
+void Plugin::refreshShapes()
+{
+    current3DShapes = renderer_3DShapes(GameScene, renderer_gameSceneState());
 }
 
 void Plugin::setAspectRatio(float aspectRatio)

@@ -1043,6 +1043,46 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
 
+    if (gameScene == gameScene_InGameWithDouble3D)
+    {
+        u32 currentMap = getCurrentMap();
+        bool alternateSecondScreenDetection = (currentMap == 346);
+
+        if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
+        {
+            _hasVisible3DOnBottomScreen = alternateSecondScreenDetection ? true : !IsBottomScreen2DTextureBlack;
+
+            if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
+                _hasVisible3DOnBottomScreen = false;
+            }
+
+            if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 14)) { // fade to white, on "Mission Complete"
+                _hasVisible3DOnBottomScreen = false;
+            }
+        }
+        else // 3D on bottom screen
+        {
+            IsBottomScreen2DTextureBlack = isBottomScreen2DTextureBlack();
+
+            _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
+            _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
+            _ignore3DOnBottomScreen = false;
+
+            if (!alternateSecondScreenDetection && _hasVisible3DOnBottomScreen) {
+                int FrontBuffer = nds->GPU.FrontBuffer;
+                u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
+                if (bottomBuffer) {
+                    unsigned int color = bottomBuffer[(192*256)/2 + 96] & 0xFFFFFF;
+                    if (color == 0) {
+                        _ignore3DOnBottomScreen = true;
+                    }
+                }
+            }
+        }
+
+        ShouldShowBottomScreen = _hasVisible3DOnBottomScreen && !(_ignore3DOnBottomScreen && _priorIgnore3DOnBottomScreen && _priorPriorIgnore3DOnBottomScreen);
+    }
+
     switch (gameScene) {
         case gameScene_PauseMenu:
             shapes.push_back(ShapeBuilder3D::square()
@@ -1778,46 +1818,7 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
     }
     if (GameScene == gameScene_InGameWithDouble3D)
     {
-        u32 currentMap = getCurrentMap();
-        bool alternateSecondScreenDetection = (currentMap == 346);
-
-        if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
-        {
-            _hasVisible3DOnBottomScreen = alternateSecondScreenDetection ? true : !IsBottomScreen2DTextureBlack;
-
-            if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
-                _hasVisible3DOnBottomScreen = false;
-            }
-
-            if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 14)) { // fade to white, on "Mission Complete"
-                _hasVisible3DOnBottomScreen = false;
-            }
-        }
-        else // 3D on bottom screen
-        {
-            IsBottomScreen2DTextureBlack = isBottomScreen2DTextureBlack();
-
-            _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
-            _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
-            _ignore3DOnBottomScreen = false;
-
-            if (!alternateSecondScreenDetection && _hasVisible3DOnBottomScreen) {
-                int FrontBuffer = nds->GPU.FrontBuffer;
-                u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
-                if (bottomBuffer) {
-                    unsigned int color = bottomBuffer[(192*256)/2 + 96] & 0xFFFFFF;
-                    if (color == 0) {
-                        _ignore3DOnBottomScreen = true;
-                    }
-                }
-            }
-        }
-
-        bool showBottomScreen = _hasVisible3DOnBottomScreen && !(_ignore3DOnBottomScreen && _priorIgnore3DOnBottomScreen && _priorPriorIgnore3DOnBottomScreen);
-        if (ShouldShowBottomScreen != showBottomScreen) {
-            ShouldShowBottomScreen = showBottomScreen;
-        }
-        return (nds->PowerControl9 >> 15 != 0) ? !showBottomScreen : showBottomScreen;
+        return (nds->PowerControl9 >> 15 != 0) ? !ShouldShowBottomScreen : ShouldShowBottomScreen;
     }
 
     return true;
