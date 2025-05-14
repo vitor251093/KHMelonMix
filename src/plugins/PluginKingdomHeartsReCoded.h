@@ -76,7 +76,6 @@ public:
         TextLanguage = getStringConfig(root + ".Language");
     }
 private:
-    bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
