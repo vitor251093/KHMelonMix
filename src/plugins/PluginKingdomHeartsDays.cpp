@@ -577,7 +577,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             // background
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
-                    .fromPosition(0, 16)
+                    .fromPosition(252, 16)
                     .withSize(3, 80)
                     .placeAtCorner(corner_Center)
                     .sourceScale(1000.0)
