@@ -9,7 +9,7 @@
 <a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-ubuntu.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-ubuntu.yml/badge.svg" /></a>
 <a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-macos.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-macos.yml/badge.svg" /></a>
 </p>
-melonDS, sorta
+melonDS, sorta 
 
 This project aims to turn the KH DS games into playable PC games with a single screen and controls suited for a regular controller.
 

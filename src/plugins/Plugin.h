@@ -13,7 +13,8 @@
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
 
-#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
+#define getPixel(buffer, x, y, layer) buffer[(256*3*MODIFIER_2D_TEXTURE_SCALE + 1)*(y) + (x) + 256*MODIFIER_2D_TEXTURE_SCALE*(layer)]
+#define getDsPixel(buffer, x, y, layer) buffer[(256*3*MODIFIER_2D_TEXTURE_SCALE + 1)*(y)*MODIFIER_2D_TEXTURE_SCALE + (x)*MODIFIER_2D_TEXTURE_SCALE + 256*MODIFIER_2D_TEXTURE_SCALE*(layer)]
 
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 #define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
@@ -66,6 +67,10 @@ struct TextureEntryScene
     std::string path;
     std::string fullPath;
     u32 time;
+    u16 posX;
+    u16 posY;
+    u16 sizeX;
+    u16 sizeY;
 };
 
 struct TextureEntry
