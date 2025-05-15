@@ -438,6 +438,7 @@ protected:
     bool _PausedReplacementBgmMusic = false;
     bool _ShouldPauseReplacementBgmMusic = false;
     bool _ShouldUnpauseReplacementBgmMusic = false;
+    bool _PendingReplacmentBgmMusicStart = false;
     bool _ShouldStartReplacementBgmMusic = false;
     bool _ShouldStopReplacementBgmMusic = false;
     bool _ShouldUpdateReplacementBgmMusicVolume = false;
