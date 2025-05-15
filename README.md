@@ -36,9 +36,9 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 - Camera controls (analog stick)
 - Lock On and Switch target as separate controls
 - DS cutscene to HD cutscene replacement (Days only, for now)
+- Remastered BGM replacement
 
 ## Which other features are being worked on?
-- Remastered BGM replacement
 - Texture replacement
 - Camera Mode
 - In-engine cutscene with HD cutscene replacement
@@ -64,6 +64,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
  * Logo of the project by JackSilverson
  * Logo of Days Melon Mix and ReCoded Melon Mix by DiabeticMedic
  * sandwichwater and DaniKH, for the innumerous amount of tests and for the hi-res textures and sprites
+ * justedni, for introducing BGM replacement
  * All the members from our Discord server that helped testing and developing the Melon Mix!
  * Michael Lipinski, for the [documentation](https://pdfs.semanticscholar.org/657d/adf4888f6302701095055b0d7a066e42b36f.pdf) regarding the way a NDS works
  * Datel Design & Development Ltd, for the [documentation](https://uk.codejunkies.com/support_downloads/Trainer-Toolkit-for-Nintendo-DS-User-Manual.pdf) regarding how to write AR Codes
