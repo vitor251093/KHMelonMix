@@ -1,56 +1,36 @@
 #include "AudioSource.h"
-#include "AudioWavParser.h"
 
 namespace melonMix {
 
-AudioSourceWav::AudioSourceWav(QObject *parent)
+AudioSource::AudioSource(QObject *parent)
     : QIODevice(parent)
 {
 }
 
-bool AudioSourceWav::load(const QString &fileName)
-{
-    m_file.setFileName(fileName);
-    if (!m_file.open(QIODevice::ReadOnly)) {
-        return false;
-    }
-    
-    if (!readWavHeader()) {
-        m_file.close();
-        return false;
-    }
-
-    bool bFoundMarkers = false;
-
-    AudioWavParser cueReader;
-    if (cueReader.readCuePoints(fileName.toStdString())) {
-        auto loopStartSample = cueReader.getLoopMarkerSample(AudioWavParser::EMarker::Begin);
-        auto loopEndSample = cueReader.getLoopMarkerSample(AudioWavParser::EMarker::End);
-        if (loopStartSample >= 0 && loopEndSample >= 0 && loopEndSample > loopStartSample) {
-            m_loopStartByte = m_dataStart + (loopStartSample * m_bytesPerFrame);
-            m_loopEndByte = m_dataStart + (loopEndSample * m_bytesPerFrame);
-            bFoundMarkers = true;
-        }
-    }
-
-    if (!bFoundMarkers) {
-        m_loopStartByte = m_dataStart;
-        m_loopEndByte = m_dataStart + m_dataSize;
-    }
-
-    open(QIODevice::ReadOnly);
-    return true;
+qint64 AudioSource::byte_pos_to_sample_pos(qint64 byte_pos) const {
+    return byte_pos / (m_numChannels * (m_bitsPerSample / 8));
 }
 
-void AudioSourceWav::onStarted(qint64 resumePosition, qreal volume, int fadeInMs)
-{
+qint64 AudioSource::sample_pos_to_byte_pos(qint64 sample_pos) const {
+    return sample_pos * (m_numChannels * (m_bitsPerSample / 8));
+}
+
+qint64 AudioSource::pos_ms_to_byte_pos(qint64 pos_ms) const {
+    qint64 sample_pos = m_sampleRate * pos_ms / 1000;
+    return sample_pos_to_byte_pos(sample_pos);
+}
+
+qint64 AudioSource::byte_pos_to_pos_ms(qint64 byte_pos) const {
+    qint64 sample_pos = byte_pos_to_sample_pos(byte_pos);
+    return (sample_pos * 1000) / m_sampleRate;
+}
+
+void AudioSource::onStarted(qint64 resumePosition, qreal volume, int fadeInMs) {
     m_samplesRemaining = 0;
     m_totalTransitionSamples = 0;
     m_status = EStatus::Playing;
     m_stoppingDelay = 0;
     volume = std::clamp(volume, 0.0, 1.0);
-
-    m_currentPos = m_dataStart + resumePosition;
 
     if (fadeInMs > 0) {
         m_currentVolume = 0.0;
@@ -60,9 +40,7 @@ void AudioSourceWav::onStarted(qint64 resumePosition, qreal volume, int fadeInMs
     }
 }
 
-void AudioSourceWav::onStopped()
-{
-    m_currentPos = m_dataStart;
+void AudioSource::onStopped() {
     m_status = EStatus::Stopped;
     m_stoppingDelay = 0;
 
@@ -71,85 +49,33 @@ void AudioSourceWav::onStopped()
     m_totalTransitionSamples = 0;
 }
 
-qint64 AudioSourceWav::readData(char *data, qint64 maxSize)
-{
-    if (!m_file.isOpen()) {
-        return 0;
-    }
 
-    qint64 currentPos = m_file.pos();
+void AudioSource::startFadeIn(qreal volume, int durationMs) {
+    setVolume(volume, durationMs);
+}
 
-    if (currentPos > 0 && currentPos != m_currentPos) {
-        m_file.seek(m_currentPos);
-    }
+void AudioSource::startFadeOut(int durationMs) {
+    setVolume(0.0, durationMs);
+    m_status = EStatus::Stopping;
+    m_stoppingDelay = m_sampleRate; // 1 sec delay before destroying source
+}
 
-    qint64 bytesToRead = maxSize;
-
-    qint64 bytesRead = 0;
-
-    if (currentPos <= m_loopEndByte && currentPos + bytesToRead > m_loopEndByte) {
-        qint64 bytesBeforeLoop = m_loopEndByte - currentPos;
-
-        bytesRead = m_file.read(data, bytesBeforeLoop);
-        
-        if (bytesRead != bytesBeforeLoop) {
-            printf("Error or end of file\n");
-            return bytesRead;
-        }
-
-        printf("Loop bgm to start sample: %d\n", m_loopStartByte);
-
-        m_file.seek(m_loopStartByte);
-        currentPos = m_file.pos();
-
-        qint64 bytesAfterLoop = maxSize - bytesBeforeLoop;
-        auto additionalRead = m_file.read(data + bytesBeforeLoop, bytesAfterLoop);
-        bytesRead += additionalRead;
-    } else {
-        bytesRead = m_file.read(data, maxSize);
-
-        if (bytesRead < maxSize) {
-            m_file.seek(m_loopStartByte);
-            bytesRead += m_file.read(data + bytesRead, maxSize - bytesRead);
-        }
-    }
-
-    m_currentPos = m_file.pos();
-
+void AudioSource::applyVolume(char* buffer, int64_t numSamples) {
     if (m_samplesRemaining <= 0 && m_status == EStatus::Stopping) {
         if (m_stoppingDelay > 0) {
-            m_stoppingDelay -= maxSize;
+            m_stoppingDelay -= numSamples;
         } else {
             QMetaObject::invokeMethod(parent(), "onFadeOutCompleted", Qt::QueuedConnection);
             m_status = EStatus::Stopped;
         }
     }
 
-    applyVolume(data, bytesRead);
-
-    return bytesRead;
-}
-
-void AudioSourceWav::startFadeIn(qreal volume, int durationMs)
-{
-    setVolume(volume, durationMs);
-}
-
-void AudioSourceWav::startFadeOut(int durationMs)
-{
-    setVolume(0.0, durationMs);
-    m_status = EStatus::Stopping;
-    m_stoppingDelay = m_sampleRate; // 1 sec delay before destroying source
-}
-
-void AudioSourceWav::applyVolume(char* buffer, int64_t numBytes)
-{
     float targetForCalculation = (m_targetVolume <= 0.0f) ? 0.000001f : m_targetVolume;
 
     char* samplePtr = buffer;
 
     int channel = 0;
-    int remainingBytes = numBytes;
+    int remainingBytes = numSamples;
     while (remainingBytes > 0)
     {
         float gain = m_currentVolume;
@@ -201,8 +127,7 @@ void AudioSourceWav::applyVolume(char* buffer, int64_t numBytes)
     }
 }
 
-void AudioSourceWav::setVolume(double newVolume, int durationMs)
-{
+void AudioSource::setVolume(double newVolume, int durationMs) {
     if (m_status != EStatus::Playing) {
         return;
     }
@@ -224,13 +149,7 @@ void AudioSourceWav::setVolume(double newVolume, int durationMs)
     }
 }
 
-qint64 AudioSourceWav::bytesAvailable() const
-{
-    return m_file.bytesAvailable() + QIODevice::bytesAvailable() + m_sampleRate; 
-}
-
-QAudioFormat::SampleFormat AudioSourceWav::bitsPerSampleToSampleFormat(quint16 bitsPerSample)
-{
+QAudioFormat::SampleFormat AudioSource::bitsPerSampleToSampleFormat(quint16 bitsPerSample) {
     switch(bitsPerSample)
     {
         case 8: return QAudioFormat::UInt8;
@@ -239,63 +158,6 @@ QAudioFormat::SampleFormat AudioSourceWav::bitsPerSampleToSampleFormat(quint16 b
         case 32: return QAudioFormat::Int32;
         default: return QAudioFormat::Unknown; // Unhandled
     }
-}
-
-bool AudioSourceWav::readWavHeader()
-{
-    char riffHeader[12];
-    if (m_file.read(riffHeader, 12) != 12) {
-        return false;
-    }
-
-    if (memcmp(riffHeader, "RIFF", 4) != 0 || memcmp(riffHeader + 8, "WAVE", 4) != 0) {
-        return false;
-    }
-
-    bool foundFormat = false;
-    bool foundData = false;
-    
-    while (!foundData) {
-        char chunkHeader[8];
-        if (m_file.read(chunkHeader, 8) != 8) return false;
-        
-        char* chunkId = chunkHeader;
-        qint32 chunkSize = *reinterpret_cast<qint32*>(chunkHeader + 4);
-        
-        if (memcmp(chunkId, "fmt ", 4) == 0) {
-            QByteArray fmtData = m_file.read(chunkSize);
-            if (fmtData.size() != chunkSize) return false;
-
-            quint16 audioFormat = *reinterpret_cast<const quint16*>(fmtData.constData());
-            m_numChannels = *reinterpret_cast<const quint16*>(fmtData.constData() + 2);
-            m_sampleRate = *reinterpret_cast<const quint32*>(fmtData.constData() + 4);
-            m_bitsPerSample = *reinterpret_cast<const quint16*>(fmtData.constData() + 14);
-
-            m_bytesPerFrame = m_numChannels * (m_bitsPerSample / 8);
-
-            m_format.setSampleRate(m_sampleRate);
-            m_format.setChannelCount(m_numChannels);
-            
-            auto sampleFormat = bitsPerSampleToSampleFormat(m_bitsPerSample);
-            if (sampleFormat != QAudioFormat::Unknown) {
-                m_format.setSampleFormat(sampleFormat);
-                foundFormat = true;
-            }
-        } else if (memcmp(chunkId, "data", 4) == 0) {
-            m_dataStart = m_file.pos();
-            m_currentPos = m_dataStart;
-            m_dataSize = chunkSize;
-            foundData = true;
-        } else {
-            m_file.skip(chunkSize);
-        }
-
-        if (chunkSize % 2 != 0) {
-            m_file.skip(1);
-        }
-    }
-    
-    return foundFormat && foundData;
 }
 
 } // namespace melonMix

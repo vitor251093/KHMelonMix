@@ -105,7 +105,11 @@ void MainWindowSettings::startBgmMusic(quint16 bgmId, quint8 volume, bool bResum
     int fadeIn = (startPosition > 0) ? kFadeInDurationMs : 0;
     qreal initialVolume = getBgmMusicVolume(volume);
     bgmPlayer->play(startPosition, initialVolume, fadeIn);
-    printf("Starting replacement song %d %svolume: %.3f\n", bgmId, (bResumePos ? "(Resumed with fadein) " : ""), initialVolume);
+    if (bResumePos) {
+        printf("Starting replacement song %d (Resumed with fadein at pos %lld) volume: %.3f\n", bgmId, startPosition, initialVolume);
+    } else {
+        printf("Starting replacement song %d volume: %.3f\n", bgmId, initialVolume);
+    }
 
     bgmPlayers.append(bgmPlayer);
 }

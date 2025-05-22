@@ -863,18 +863,27 @@ void Plugin::onReturnToGameAfterCutscene() {
 std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
     std::string filekey = "bgm" + std::to_string(id);
 
-    std::string filename;
+    auto getFilepathIfExists = [&](auto& filename) -> std::string {
+        std::filesystem::path _assetsFolderPath = assetsFolderPath();
+        std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
+        if (std::filesystem::exists(fullPath)) {
+            return fullPath.string();
+        }
+        return "";
+    };
+
     auto redirector = _BgmRedirectors.find(filekey);
     if (redirector != _BgmRedirectors.end()) {
-        filename = redirector->second;
+        return getFilepathIfExists(redirector->second);
     } else {
-        filename = filekey + ".wav";
-    }
-
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
-    std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
-    if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
+        static std::vector<std::string> handledFormats = { "wav", "flac"};
+        for(auto& format : handledFormats) {
+            std::string filename = filekey + "." + format;
+            auto foundFile = getFilepathIfExists(filename);
+            if (foundFile != "") {
+                return foundFile;
+            }
+        }
     }
 
     return "";
