@@ -980,27 +980,31 @@ void Plugin::refreshBackgroundMusic() {
         }
         case EMidiState::PrePlay: {
             // Loaded has finished but bgm is not marked as "Playing" yet
-            break;
-        }
-        case EMidiState::Playing: {
-            // SSEQ is loaded and ready to play
             if (bgmId != _CurrentBackgroundMusic) {
                 // Previous bgm should have already been stopped, but just in case:
                 stopBackgroundMusic(1000);
 
                 std::string replacementBgmPath = getReplacementBackgroundMusicFilePath(bgmId);
                 if (replacementBgmPath != "") {
-                    _ShouldStartReplacementBgmMusic = true;
+                    _PendingReplacmentBgmMusicStart = true;
                     _CurrentBackgroundMusicFilepath = replacementBgmPath;
                     _CurrentBackgroundMusic = bgmId;
                     u16 bgmResumeId = getMidiBgmToResumeId();
                     _ResumeBackgroundMusicPosition = (bgmResumeId == _CurrentBackgroundMusic && bgmResumeId != BGM_INVALID_ID);
-                    _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic(bgmId);
                     _CurrentBgmIsStream = false;
                     _MuteSeqBgm = true;
                 } else {
                     _CurrentBackgroundMusic = BGM_INVALID_ID;
                 }
+            }
+            break;
+        }
+        case EMidiState::Playing: {
+            // SSEQ is loaded and ready to play
+            if (_PendingReplacmentBgmMusicStart) {
+                _ShouldStartReplacementBgmMusic = true;
+                _BackgroundMusicDelayAtStart = delayBeforeStartReplacementBackgroundMusic(bgmId);
+                _PendingReplacmentBgmMusicStart = false;
             }
             break;
         }
