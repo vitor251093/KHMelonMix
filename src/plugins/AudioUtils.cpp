@@ -1,6 +1,6 @@
 #include "AudioUtils.h"
 
-#include "..\NDS.h"
+#include "../NDS.h"
 #include <cstdio>
 
 namespace Plugins {
