@@ -6,11 +6,11 @@
 namespace Plugins {
 namespace AudioUtils {
 
-SSEQMuter::SSEQMuter(melonDS::NDS* in_nds, u16 bgmId, const u32 sseqTableAddress, const u32 sseqId)
+SSEQMuter::SSEQMuter(melonDS::NDS* in_nds, u16 bgmId, u32 songAddress, u32 songSize)
     : nds(in_nds)
     , m_bgmId(bgmId)
-    , m_sseqTableAddress(sseqTableAddress)
-    , m_sseqId(sseqId)
+    , m_songAddress(songAddress)
+    , m_songSize(songSize)
 {
     parseSequenceHeader();
 }
@@ -30,12 +30,13 @@ void SSEQMuter::parseSequenceHeader() {
     // First u32 in a table row corresponds to the size of the loaded SSEQ, and the second u32 is the address in RAM.
     // Caution: in Days, there is no track 27! Meaning that every song starting from 28 needs to be "-1" to get the correct address
     // (otherwise you'll just get a nullptr entry in the table). See call to getSongIdInSongTable().
-    const u32 entryAddress = m_sseqTableAddress + (m_sseqId * 16);
-
-    m_songSize = nds->ARM9Read32(entryAddress);
-    m_songAddress = nds->ARM9Read32(entryAddress + 4);
     if (m_songAddress == 0) {
         printf("Error: SSEQ %d is not loaded!!!\n", m_bgmId);
+        return;
+    }
+
+    if (m_songSize == 0) {
+        printf("Error: Invalid SSEQ size for %d\n", m_bgmId);
         return;
     }
 

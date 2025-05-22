@@ -953,8 +953,7 @@ void Plugin::startBackgroundMusic(u16 bgmId, u8 bgmState) {
             u16 bgmResumeId = getMidiBgmToResumeId();
             _ResumeBackgroundMusicPosition = (bgmResumeId == _CurrentBackgroundMusic && bgmResumeId != BGM_INVALID_ID);
             _CurrentBgmIsStream = false;
-
-            auto muter = AudioUtils::SSEQMuter(nds, bgmId, getMidiSongTableAddress(), getSongIdInSongTable(bgmId));
+            auto muter = AudioUtils::SSEQMuter(nds, bgmId, getMidiSequenceAddress(bgmId), getMidiSequenceSize(bgmId));
             if (bgmState == EMidiState::PrePlay) {
                 // "Safe" muting: the sequence was loaded but is not currently being read: it's safe to erase all the bytes
                 muter.muteSongSequence();

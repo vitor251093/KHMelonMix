@@ -2136,8 +2136,38 @@ u16 PluginKingdomHeartsDays::getMidiBgmToResumeId() {
     return nds->ARM7Read8(SONG_SECOND_SLOT_ADDRESS);
 }
 
-u32 PluginKingdomHeartsDays::getMidiSongTableAddress() {
-    return getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
+s16 PluginKingdomHeartsDays::getSongIdInSongTable(u16 bgmId) {
+    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
+        return e.dsId == bgmId; });
+    if(found != BgmEntries.end()) {
+        return found->loadingTableId;
+    }
+
+    return -1;
+}
+
+u32 PluginKingdomHeartsDays::getMidiSequenceAddress(u16 bgmId) {
+    const u32 songTableAddr = getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
+
+    s16 idInTable = getSongIdInSongTable(bgmId);
+    if (idInTable >= 0) {
+        const u32 entryAddr = songTableAddr + (idInTable * 16) + 4;
+        return nds->ARM9Read32(entryAddr);
+    }
+
+    return 0;
+}
+
+u16 PluginKingdomHeartsDays::getMidiSequenceSize(u16 bgmId) {
+    const u32 songTableAddr = getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
+
+    s16 idInTable = getSongIdInSongTable(bgmId);
+    if (idInTable >= 0) {
+        const u32 songSizeAddr = songTableAddr + (idInTable * 16);
+        return nds->ARM9Read32(songSizeAddr);
+    }
+
+    return 0;
 }
 
 u32 PluginKingdomHeartsDays::getStreamBgmAddress() {
@@ -2172,16 +2202,6 @@ u32 PluginKingdomHeartsDays::getBgmFadeOutDuration() {
     else { valueMs *= 2; }
 
     return std::round(valueMs * 1000);
-}
-
-u16 PluginKingdomHeartsDays::getSongIdInSongTable(u16 bgmId) {
-    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
-        return e.dsId == bgmId; });
-    if(found != BgmEntries.end()) {
-        return found->loadingTableId;
-    }
-
-    return 0;
 }
 
 std::string PluginKingdomHeartsDays::getBackgroundMusicName(u16 bgmId) {

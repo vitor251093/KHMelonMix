@@ -13,7 +13,7 @@ using namespace melonDS;
 
 class SSEQMuter {
 public:
-    SSEQMuter(melonDS::NDS* in_nds, u16 bgmId, const u32 sseqTableAddress, const u32 sseqId);
+    SSEQMuter(melonDS::NDS* in_nds, u16 bgmId, u32 songAddress, u32 songSize);
 
     void muteSongSequence();
     void muteSongSequenceV2();
@@ -28,11 +28,8 @@ private:
 private:
     melonDS::NDS* nds = nullptr;
     const u16 m_bgmId = 0;
-    const u32 m_sseqTableAddress = 0;
-    const u32 m_sseqId = 0;
-
-    u32 m_songSize = 0;
-    u32 m_songAddress = 0;
+    const u32 m_songAddress = 0;
+    const u32 m_songSize = 0;
 
     bool m_bSequenceIsValid = false;
 };
