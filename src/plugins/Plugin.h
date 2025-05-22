@@ -337,7 +337,7 @@ public:
     void loadBgmRedirections();
     void refreshBackgroundMusic();
     std::string getBackgroundMusicName(u16 soundtrackId) const;
-    void muteSongSequence(u16 bgmId);
+    void startBackgroundMusic(u16 bgmId, u8 bgmState);
     void stopBackgroundMusic(u16 fadeOutDuration);
 
     void refreshStreamedMusic();
@@ -448,7 +448,6 @@ protected:
     u16 _BackgroundMusicToStop = 0;
     u8 _SoundtrackState = 0;
     u32 _BgmFadeOutDurationMs = 0;
-    bool _MuteSeqBgm = false;
     u8 _BackgroundMusicVolume = 0x7f;
     bool _StoreBackgroundMusicPosition = false;
     bool _ResumeBackgroundMusicPosition = false;
