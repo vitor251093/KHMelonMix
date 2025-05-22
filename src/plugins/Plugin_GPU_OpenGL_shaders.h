@@ -642,8 +642,10 @@ void main()
         }
         else // bottom screen
         {
-            oColor = vec4(0.0, 0.0, 0.0, 1.0);
-            return;
+            ivec4 val1 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord), 0));
+            ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(256,0), 0));
+            ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(512,0), 0));
+            pixel = combineLayers(_3dpix, val1, val2, val3);
         }
     }
 
