@@ -37,6 +37,7 @@
           SDL2
           zstd
           libarchive
+          flac
           libGL
           libslirp
           enet
