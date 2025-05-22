@@ -2,11 +2,13 @@
 
 #include "PluginKingdomHeartsDays.h"
 #include "PluginKingdomHeartsReCoded.h"
+#include "PluginHarvestMoonDsCute.h"
 #include "PluginMetroidPrimeHunters.h"
 
 #define LOAD_PLUGINS \
     LOAD_PLUGIN(PluginKingdomHeartsDays) \
     LOAD_PLUGIN(PluginKingdomHeartsReCoded) \
+    LOAD_PLUGIN(PluginHarvestMoonDsCute) \
     LOAD_PLUGIN(PluginMetroidPrimeHunters)
 
 namespace Plugins

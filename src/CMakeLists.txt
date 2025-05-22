@@ -68,6 +68,7 @@ add_library(core STATIC
     plugins/PluginManager.cpp
     plugins/PluginKingdomHeartsDays.cpp
     plugins/PluginKingdomHeartsReCoded.cpp
+    plugins/PluginHarvestMoonDsCute.cpp
     plugins/PluginMetroidPrimeHunters.cpp
 
     sha1/sha1.c
