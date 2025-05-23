@@ -82,7 +82,7 @@ void SSEQMuter::muteSongSequence() {
             nds->ARM7Write32(addr, 0x00);
         }
 
-        printf("Music SSEQ: Muted bgm %d (erased %d bytes)\n", m_bgmId, endErase - startErase);
+        //printf("Music SSEQ: Muted bgm %d (erased %d bytes)\n", m_bgmId, endErase - startErase);
     }
 }
 
