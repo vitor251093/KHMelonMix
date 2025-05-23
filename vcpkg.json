@@ -8,6 +8,7 @@
 			"features": [ "alsa" ]
 		},
 		"libarchive",
+		"libflac",
 		"zstd",
 		"enet",
 		{

@@ -2537,8 +2537,38 @@ u16 PluginKingdomHeartsReCoded::getMidiBgmToResumeId() {
     return nds->ARM7Read8(SONG_SECOND_SLOT_ADDRESS);
 }
 
-u32 PluginKingdomHeartsReCoded::getMidiSongTableAddress() {
-    return getU32ByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
+s16 PluginKingdomHeartsReCoded::getSongIdInSongTable(u16 bgmId) {
+    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
+        return e.dsId == bgmId; });
+    if(found != BgmEntries.end()) {
+        return found->loadingTableId;
+    }
+
+    return 0;
+}
+
+u32 PluginKingdomHeartsReCoded::getMidiSequenceAddress(u16 bgmId) {
+    const u32 songTableAddr = getU32ByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
+
+    s16 idInTable = getSongIdInSongTable(bgmId);
+    if (idInTable >= 0) {
+        const u32 entryAddr = songTableAddr + (idInTable * 16) + 4;
+        return nds->ARM9Read32(entryAddr);
+    }
+
+    return 0;
+}
+
+u16 PluginKingdomHeartsReCoded::getMidiSequenceSize(u16 bgmId) {
+    const u32 songTableAddr = getU32ByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
+
+    s16 idInTable = getSongIdInSongTable(bgmId);
+    if (idInTable >= 0) {
+        const u32 songSizeAddr = songTableAddr + (idInTable * 16);
+        return nds->ARM9Read32(songSizeAddr);
+    }
+
+    return 0;
 }
 
 u32 PluginKingdomHeartsReCoded::getStreamBgmAddress() {
@@ -2572,16 +2602,6 @@ u32 PluginKingdomHeartsReCoded::getBgmFadeOutDuration() {
     else { valueMs *= 2; }
 
     return std::round(valueMs * 1000);
-}
-
-u16 PluginKingdomHeartsReCoded::getSongIdInSongTable(u16 bgmId) {
-    auto found = std::find_if(BgmEntries.begin(), BgmEntries.end(), [&bgmId](const auto& e) {
-        return e.dsId == bgmId; });
-    if(found != BgmEntries.end()) {
-        return found->loadingTableId;
-    }
-
-    return 0;
 }
 
 std::string PluginKingdomHeartsReCoded::getBackgroundMusicName(u16 bgmId) {

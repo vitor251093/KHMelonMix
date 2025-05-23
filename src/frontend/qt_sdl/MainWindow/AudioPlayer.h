@@ -2,12 +2,11 @@
 #define AUDIOPLAYER_H
 
 #include <QObject>
-
-class QAudioSink;
+#include <QAudioSink>
 
 namespace melonMix {
 
-class AudioSourceWav;
+class AudioSource;
 
 class AudioPlayer : public QObject
 {
@@ -33,7 +32,7 @@ private slots:
     void onFadeOutCompleted();
 
 private:
-    QScopedPointer<AudioSourceWav> m_audioSource;
+    QScopedPointer<AudioSource> m_audioSource;
     QScopedPointer<QAudioSink> m_audioOutput;
 
     quint16 m_bgmId = 0;
