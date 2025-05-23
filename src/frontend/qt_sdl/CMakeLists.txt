@@ -276,5 +276,7 @@ if (ENABLE_AUDIO_FLAC)
     pkg_check_modules(FLAC REQUIRED flac)
 
     target_compile_definitions(melonDS PUBLIC AUDIO_FLAC_ENABLED)
-    target_link_libraries(melonDS PRIVATE FLAC)
+
+    target_include_directories(melonDS PRIVATE ${FLAC_INCLUDE_DIRS})
+    target_link_libraries(melonDS PRIVATE ${FLAC_LIBRARIES})
 endif()
