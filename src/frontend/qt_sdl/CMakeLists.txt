@@ -273,7 +273,7 @@ endif()
 
 option(ENABLE_AUDIO_FLAC "Enable audio flac format" ON)
 if (ENABLE_AUDIO_FLAC)
-    pkg_check_modules(FLAC REQUIRED flac)
+    pkg_check_modules(FLAC REQUIRED IMPORTED_TARGET flac)
 
     target_compile_definitions(melonDS PUBLIC AUDIO_FLAC_ENABLED)
 
