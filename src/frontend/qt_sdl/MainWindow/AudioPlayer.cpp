@@ -7,6 +7,7 @@
 #include <QAudioFormat>
 #include <QAudioSink>
 #include <QFileInfo>
+#include <QMediaDevices>
 
 namespace melonMix {
 
@@ -35,18 +36,29 @@ bool AudioPlayer::loadFile(const QString &fileName)
 #endif
 
     if (m_audioSource && m_audioSource->load(fileName)) {
-        QAudioFormat format;
-        format.setSampleRate(m_audioSource->getSampleRate());
-        format.setChannelCount(m_audioSource->getNumChannels());
-    
-        auto sampleFormat = AudioSourceWav::bitsPerSampleToSampleFormat(m_audioSource->getBitsPerSample());
-        format.setSampleFormat(sampleFormat);
-
-        m_audioOutput.reset(new QAudioSink(format, this));
-
+        createAudioSink(QMediaDevices::defaultAudioOutput());
         return true;
     } else {
         return false;
+    }
+}
+
+void AudioPlayer::createAudioSink(const QAudioDevice& audioOutput) {
+    QAudioFormat format;
+    format.setSampleRate(m_audioSource->getSampleRate());
+    format.setChannelCount(m_audioSource->getNumChannels());
+
+    auto sampleFormat = AudioSourceWav::bitsPerSampleToSampleFormat(m_audioSource->getBitsPerSample());
+    format.setSampleFormat(sampleFormat);
+
+    m_audioOutput.reset(new QAudioSink(audioOutput, format, this));
+}
+
+void AudioPlayer::restartAudioSink(const QAudioDevice& audioOutput) {
+    if (m_playing && m_audioSource) {
+        m_audioOutput->stop();
+        createAudioSink(audioOutput);
+        m_audioOutput->start(m_audioSource.get());
     }
 }
 

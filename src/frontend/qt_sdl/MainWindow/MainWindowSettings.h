@@ -24,6 +24,8 @@
 #include <QMediaPlayer>
 #include <QVideoWidget>
 #include <QAudioOutput>
+#include <QMediaDevices>
+#include <QAudioDevice>
 #include <QPushButton>
 #include <initializer_list>
 
@@ -77,6 +79,7 @@ private slots:
     void startBgmMusicDelayed(quint16 bgmId, quint8 volume, bool bResumePos, QString bgmMusicFilePath);
 
 protected:
+    void onAudioOutputsChanged();
     void keyPressEvent(QKeyEvent* event) override;
 
     QWidget* settingsWidget;
@@ -91,6 +94,9 @@ private:
     QScopedPointer<Ui::MainWindowSettings> ui;
     Config::Table& localCfg;
     EmuInstance* emuInstance;
+
+    QScopedPointer<QMediaDevices> mediaDevices;
+    QAudioDevice currentOutputDevice;
 
     QScopedPointer<QVideoWidget> playerWidget;
     QScopedPointer<QAudioOutput> playerAudioOutput;

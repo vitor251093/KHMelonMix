@@ -28,10 +28,14 @@ public:
     bool isPlaying() const { return m_playing; }
     qint64 getCurrentPlayingPos() const;
 
+    void restartAudioSink(const QAudioDevice& audioOutput);
+
 private slots:
     void onFadeOutCompleted();
 
 private:
+    void createAudioSink(const QAudioDevice& audioOutput);
+
     QScopedPointer<AudioSource> m_audioSource;
     QScopedPointer<QAudioSink> m_audioOutput;
 

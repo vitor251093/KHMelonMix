@@ -42,6 +42,7 @@ MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
     emuInstance(inst),
     localCfg(inst->getLocalConfig()),
     ui(new Ui::MainWindowSettings),
+    mediaDevices(new QMediaDevices()),
     playerWidget(new QVideoWidget(this)),
     playerAudioOutput(new QAudioOutput(this)),
     player(new QMediaPlayer(this))
@@ -51,10 +52,13 @@ MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
     settingsWidget = findChild<QWidget*>("settingsWidget");
     settingWidgetOptions = findChild<QStackedWidget*>("settingWidgetOptions");
     showingSettings = false;
+
+    connect(mediaDevices.get(), QMediaDevices::audioOutputsChanged, this, &MainWindowSettings::onAudioOutputsChanged);
 }
 
 MainWindowSettings::~MainWindowSettings()
 {
+    disconnect(mediaDevices.get(), QMediaDevices::audioOutputsChanged, this, &MainWindowSettings::onAudioOutputsChanged);
 }
 
 void MainWindowSettings::initWidgets()
@@ -212,6 +216,23 @@ void MainWindowSettings::stopAllBgm()
 
     for(auto* player : bgmPlayers) {
         player->stop(0);
+    }
+}
+
+void MainWindowSettings::onAudioOutputsChanged() {
+    auto output = QMediaDevices::defaultAudioOutput();
+    if (currentOutputDevice != output) {
+        for(auto* bgmPlayer : bgmPlayers) {
+            bgmPlayer->restartAudioSink(output);
+        }
+
+        if (player->isPlaying()) {
+            player->setAudioOutput(nullptr);
+            playerAudioOutput.reset(new QAudioOutput(output, this));
+            player->setAudioOutput(playerAudioOutput.get());
+        }
+
+        currentOutputDevice = output;
     }
 }
 
