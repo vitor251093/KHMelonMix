@@ -278,5 +278,5 @@ if (ENABLE_AUDIO_FLAC)
     target_compile_definitions(melonDS PUBLIC AUDIO_FLAC_ENABLED)
 
     target_include_directories(melonDS PRIVATE ${FLAC_INCLUDE_DIRS})
-    target_link_libraries(melonDS PRIVATE ${FLAC_LIBRARIES})
+    target_link_libraries(melonDS PRIVATE PkgConfig::FLAC)
 endif()
