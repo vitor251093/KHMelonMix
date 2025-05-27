@@ -53,12 +53,12 @@ MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
     settingWidgetOptions = findChild<QStackedWidget*>("settingWidgetOptions");
     showingSettings = false;
 
-    connect(mediaDevices.get(), QMediaDevices::audioOutputsChanged, this, &MainWindowSettings::onAudioOutputsChanged);
+    connect(mediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &MainWindowSettings::onAudioOutputsChanged);
 }
 
 MainWindowSettings::~MainWindowSettings()
 {
-    disconnect(mediaDevices.get(), QMediaDevices::audioOutputsChanged, this, &MainWindowSettings::onAudioOutputsChanged);
+    disconnect(mediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &MainWindowSettings::onAudioOutputsChanged);
 }
 
 void MainWindowSettings::initWidgets()
