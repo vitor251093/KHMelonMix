@@ -92,6 +92,7 @@
             cmake
             cups.dev # Needed by qtbase despite not enabling print support
             git
+            flac
             iconv.dev
             libtool
             ninja
