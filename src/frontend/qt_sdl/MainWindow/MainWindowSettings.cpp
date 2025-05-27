@@ -226,7 +226,11 @@ void MainWindowSettings::onAudioOutputsChanged() {
             bgmPlayer->restartAudioSink(output);
         }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        if (player->state() != QMediaPlayer::State::StoppedState) {
+#else
         if (player->isPlaying()) {
+#endif
             player->setAudioOutput(nullptr);
             playerAudioOutput.reset(new QAudioOutput(output, this));
             player->setAudioOutput(playerAudioOutput.get());
