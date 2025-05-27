@@ -1,7 +1,7 @@
 /*
     Copyright 2016-2024 VitorMM
 
-    This file is part of KhDays Melox Mix, which is based on melonDS.
+    This file is part of Melox Mix, which is based on melonDS.
 
     melonDS is free software: you can redistribute it and/or modify it under
     the terms of the GNU General Public License as published by the Free
@@ -21,6 +21,7 @@
 
 namespace Plugins
 {
+// language=GLSL
 const char* kCompositorFS_Plugin = R"(#version 140
 
 #define SHAPES_DATA_ARRAY_SIZE 32
@@ -641,8 +642,10 @@ void main()
         }
         else // bottom screen
         {
-            oColor = vec4(0.0, 0.0, 0.0, 1.0);
-            return;
+            ivec4 val1 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord), 0));
+            ivec4 val2 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(256,0), 0));
+            ivec4 val3 = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord) + ivec2(512,0), 0));
+            pixel = combineLayers(_3dpix, val1, val2, val3);
         }
     }
 

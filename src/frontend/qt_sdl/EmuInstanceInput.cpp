@@ -173,11 +173,11 @@ void EmuInstance::setAutoJoystickConfig(int a, int b, int select, int start, int
                                         int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
                                         int pause, int fullscreen)
 {
-    bool shouldUpdate = (joyMapping[0] == -1) && (joyMapping[1]  && -1) || (joyMapping[2]  && -1) ||
-                        (joyMapping[3] == -1) && (joyMapping[4]  && -1) || (joyMapping[5]  && -1) ||
-                        (joyMapping[6] == -1) && (joyMapping[7]  && -1) || (joyMapping[8]  && -1) ||
-                        (joyMapping[9] == -1) && (joyMapping[10] && -1) || (joyMapping[11] && -1);
-    if (!shouldUpdate) {
+    bool shouldNotUpdate = (joyMapping[0] == -1) && (joyMapping[1]  == -1) && (joyMapping[2]  == -1) &&
+                           (joyMapping[3] == -1) && (joyMapping[4]  == -1) && (joyMapping[5]  == -1) &&
+                           (joyMapping[6] == -1) && (joyMapping[7]  == -1) && (joyMapping[8]  == -1) &&
+                           (joyMapping[9] == -1) && (joyMapping[10] == -1) && (joyMapping[11] == -1);
+    if (shouldNotUpdate) {
         return;
     }
 
@@ -396,7 +396,7 @@ void EmuInstance::onKeyRelease(QKeyEvent* event)
     if (plugin != nullptr && plugin->isReady())
     {
         for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
-            if (keyKP == pluginKeyMapping[i])
+            if (keyHK == pluginKeyMapping[i])
                 keyPluginMask &= ~(1<<i);
     }
 

@@ -21,6 +21,7 @@
 
 namespace Plugins
 {
+// language=GLSL
 const char* kRenderVS_Z_KhReCoded = R"(
 
 uniform int KHUIScale;

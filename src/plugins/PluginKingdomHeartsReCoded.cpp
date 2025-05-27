@@ -193,15 +193,16 @@ enum
 
 enum
 {
-    HK_HUDToggle,
-    HK_FullscreenMapToggle,
     HK_LSwitchTarget,
-    HK_RLockOn,
     HK_RSwitchTarget,
+    HK_RLockOn,
     HK_CommandMenuLeft,
     HK_CommandMenuRight,
     HK_CommandMenuUp,
-    HK_CommandMenuDown
+    HK_CommandMenuDown,
+    HK_HUDToggle,
+    HK_FullscreenMapToggle,
+    HK_ReplacementTexturesToggle
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -229,26 +230,28 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
 
     customKeyMappingNames = {
-        "HK_HUDToggle",
-        "HK_FullscreenMapToggle",
         "HK_LSwitchTarget",
-        "HK_RLockOn",
         "HK_RSwitchTarget",
+        "HK_RLockOn",
         "HK_CommandMenuLeft",
         "HK_CommandMenuRight",
         "HK_CommandMenuUp",
-        "HK_CommandMenuDown"
+        "HK_CommandMenuDown",
+        "HK_HUDToggle",
+        "HK_FullscreenMapToggle",
+        "HK_ReplacementTexturesToggle"
     };
     customKeyMappingLabels = {
-        "[KH] HUD Toggle",
-        "[KH] Fullscreen Map Toggle",
-        "[KH] (L2) Switch Target",
-        "[KH] (R1) Lock On",
-        "[KH] (R2) Switch Target",
-        "[KH] Command Menu - Left",
-        "[KH] Command Menu - Right",
-        "[KH] Command Menu - Up",
-        "[KH] Command Menu - Down"
+        "Switch Target - Left",
+        "Switch Target - Right",
+        "Lock On",
+        "Command Menu - Back",
+        "Command Menu - Select",
+        "Command Menu - Up",
+        "Command Menu - Down",
+        "HUD Toggle",
+        "Fullscreen Map Toggle",
+        "Toggle Replacement Textures"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
@@ -1534,6 +1537,9 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
 
     if ((*AddonPress) & (1 << HK_HUDToggle)) {
         hudToggle();
+    }
+    if ((*AddonPress) & (1 << HK_ReplacementTexturesToggle)) {
+        replacementTexturesToggle();
     }
     if ((*AddonPress) & (1 << HK_FullscreenMapToggle)) {
         toggleFullscreenMap();

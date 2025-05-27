@@ -1,15 +1,6 @@
 # Assets
-assets/days/cutscenes/cinematics/*.mp4
-assets/days/textures/*.png
-assets/days/textures_tmp/*.png
-assets/days/2d_textures/*.png
-assets/days/2d_textures_tmp/*.png
-
-assets/recoded/cutscenes/cinematics/*.mp4
-assets/recoded/textures/*.png
-assets/recoded/textures_tmp/*.png
-assets/recoded/2d_textures/*.png
-assets/recoded/2d_textures_tmp/*.png
+assets/
+!assets/.keep
 
 # ROMs
 roms/*

@@ -95,7 +95,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MAIN_MENU_VIEW_JP_REV1 0x0205a5a5
 
 #define LOAD_MENU_MAIN_MENU_VIEW_US      0xB0
-#define LOAD_MENU_MAIN_MENU_VIEW_EU      0xD0
+#define LOAD_MENU_MAIN_MENU_VIEW_EU      0xF0
 #define LOAD_MENU_MAIN_MENU_VIEW_JP      0xD0
 #define LOAD_MENU_MAIN_MENU_VIEW_JP_REV1 0x36
 
@@ -186,14 +186,18 @@ enum
 
 enum
 {
-    HK_HUDToggle,
+    HK_AttackInteract,
+    HK_Jump,
+    HK_GuardCombo,
     HK_LSwitchTarget,
-    HK_RLockOn,
     HK_RSwitchTarget,
+    HK_RLockOn,
     HK_CommandMenuLeft,
     HK_CommandMenuRight,
     HK_CommandMenuUp,
-    HK_CommandMenuDown
+    HK_CommandMenuDown,
+    HK_HUDToggle,
+    HK_ReplacementTexturesToggle
 };
 
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
@@ -206,24 +210,32 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     Map = 0;
 
     customKeyMappingNames = {
-        "HK_HUDToggle",
+        "HK_AttackInteract",
+        "HK_Jump",
+        "HK_GuardCombo",
         "HK_LSwitchTarget",
-        "HK_RLockOn",
         "HK_RSwitchTarget",
+        "HK_RLockOn",
         "HK_CommandMenuLeft",
         "HK_CommandMenuRight",
         "HK_CommandMenuUp",
-        "HK_CommandMenuDown"
+        "HK_CommandMenuDown",
+        "HK_HUDToggle",
+        "HK_ReplacementTexturesToggle"
     };
     customKeyMappingLabels = {
-        "[KH] HUD Toggle",
-        "[KH] (L2) Switch Target",
-        "[KH] (R1) Lock On",
-        "[KH] (R2) Switch Target",
-        "[KH] Command Menu - Left",
-        "[KH] Command Menu - Right",
-        "[KH] Command Menu - Up",
-        "[KH] Command Menu - Down"
+        "Attack / Interact",
+        "Jump",
+        "Guard / Combo",
+        "Switch Target - Left",
+        "Switch Target - Right",
+        "Lock On",
+        "Command Menu - Back",
+        "Command Menu - Select",
+        "Command Menu - Up",
+        "Command Menu - Down",
+        "HUD Toggle",
+        "Toggle Replacement Textures"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 46> {{
@@ -560,6 +572,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     .placeAtCorner(corner_Center)
                     .hudScale(hudScale)
                     .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(252, 16)
+                    .withSize(3, 80)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
 
             break;
@@ -1021,6 +1043,31 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
 
+    if (gameScene == gameScene_InGameWithDouble3D)
+    {
+        bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
+
+        u16 bottomScreenMasterBrightness = has3DOnTopScreen ? nds->GPU.GPU2D_B.MasterBrightness : nds->GPU.GPU2D_A.MasterBrightness;
+        _hasVisible3DOnBottomScreen = true;
+
+        // fade from/to white, on "Mission Complete"
+        if (bottomScreenMasterBrightness & (1 << 14)) {
+            _hasVisible3DOnBottomScreen = false;
+        }
+        // fade from/to black, on victory pose
+        // cheshire cat dialog
+        if ((bottomScreenMasterBrightness & (1 << 15)) &&
+            ((bottomScreenMasterBrightness & 0x10) == 1 || (bottomScreenMasterBrightness & 0xF) < 4)) {
+            _hasVisible3DOnBottomScreen = false;
+        }
+
+        _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
+        _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
+        _ignore3DOnBottomScreen = isBottomScreen2DTextureBlack();
+
+        ShouldShowBottomScreen = _hasVisible3DOnBottomScreen && (!_ignore3DOnBottomScreen || !_priorIgnore3DOnBottomScreen || !_priorPriorIgnore3DOnBottomScreen);
+    }
+
     switch (gameScene) {
         case gameScene_PauseMenu:
             shapes.push_back(ShapeBuilder3D::square()
@@ -1081,6 +1128,13 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
                         .hide()
                         .build(aspectRatio));
             }
+            break;
+
+        case gameScene_DeathScreen:
+            shapes.push_back(ShapeBuilder3D::square()
+                    .placeAtCorner(corner_Center)
+                    .zRange(-1.0, -0.0007)
+                    .build(aspectRatio));
             break;
     }
 
@@ -1323,8 +1377,21 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
     if ((*AddonPress) & (1 << HK_HUDToggle)) {
         hudToggle();
     }
+    if ((*AddonPress) & (1 << HK_ReplacementTexturesToggle)) {
+        replacementTexturesToggle();
+    }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
+        if ((*AddonMask) & (1 << HK_AttackInteract)) {
+            *InputMask &= ~(1<<0); // A
+        }
+        if ((*AddonMask) & (1 << HK_Jump)) {
+            *InputMask &= ~(1<<1); // B
+        }
+        if ((*AddonMask) & (1 << HK_GuardCombo)) {
+            *InputMask &= ~(1<<11); // Y
+        }
+
         // Enabling X + D-Pad
         if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
         {
@@ -1338,7 +1405,7 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
             }
         }
 
-        // So the arrow keys can be used to control the command menu
+        // So the DS arrow keys can be used to control the command menu
         if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
         {
             *InputMask &= ~(1<<10); // X
@@ -1511,6 +1578,10 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords_horizontalDualScreen(int 
         Y1 = Y0 + trueHeight;
     }
 
+    if (trueWidth == 0 || trueHeight == 0) {
+        return false;
+    }
+
     x = (255*(x - X0))/trueWidth;
     y = (191*(y - Y0))/trueHeight;
     if (x < 0 || x > 255 || y < 0 || y > 191) {
@@ -1599,26 +1670,26 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
     }
 }
 
-// TODO: KH UI This function doesn't work as expected
 bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
 {
     if (!buffer) {
         return true;
     }
 
-    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
-    bool newIsNullScreen = true;
-    bool newIsBlackScreen = true;
-    for (int i = 0; i < 192*256; i++) {
-        unsigned int color = buffer[i] & 0xFFFFFF;
-        newIsNullScreen = newIsNullScreen && color == 0;
-        newIsBlackScreen = newIsBlackScreen &&
-                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
-        if (!newIsBlackScreen) {
-            break;
+    bool foundAny = false;
+    for (int x = 0; x < 256; x+=4) {
+        for (int y = 0; y < 192; y+=4) {
+            if (has2DOnTopOf3DAt(buffer, x, y)) {
+                foundAny = true;
+                u32 color = getPixel(buffer, x, y, 0) & 0xFFFFFF;
+                if (!(color == 0 || color == 0x000080 || color == 0x010000 || (color & 0xFFFFE0) == 0x018000)) {
+                    return false;
+                }
+            }
         }
     }
-    return !newIsNullScreen && newIsBlackScreen;
+
+    return foundAny;
 }
 
 u32* PluginKingdomHeartsDays::topScreen2DTexture()
@@ -1699,8 +1770,11 @@ bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 {
-    u32 pixel = getPixel(bottomScreen2DTexture(), 206, 134, 0);
-    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
+    u32* buffer = bottomScreen2DTexture();
+    u32 pixel1 = getPixel(buffer, 206, 134, 0);
+    u32 pixel2 = getPixel(buffer, 206, 140, 0);
+    return ((pixel1 >> 0) & 0x3F) < 5 && ((pixel1 >> 8) & 0x3F) < 5 && ((pixel1 >> 16) & 0x3F) < 5 &&
+           ((pixel2 >> 0) & 0x3F) < 5 && ((pixel2 >> 8) & 0x3F) < 5 && ((pixel2 >> 16) & 0x3F) < 5;
 }
 
 bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
@@ -1722,6 +1796,12 @@ bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
     if (colorPixelAlpha == 0x20) {
         return false;
     }
+    if (colorPixelAlpha == 0x04) {
+        return false;
+    }
+    if (colorPixelAlpha == 0x07) {
+        return false;
+    }
     return true;
 }
 
@@ -1733,46 +1813,7 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
     }
     if (GameScene == gameScene_InGameWithDouble3D)
     {
-        u32 currentMap = getCurrentMap();
-        bool alternateSecondScreenDetection = (currentMap == 346);
-
-        if (nds->PowerControl9 >> 15 != 0) // 3D on top screen
-        {
-            _hasVisible3DOnBottomScreen = alternateSecondScreenDetection ? true : !IsBottomScreen2DTextureBlack;
-
-            if (nds->GPU.GPU2D_A.MasterBrightness == 0 && nds->GPU.GPU2D_B.MasterBrightness == 32784) {
-                _hasVisible3DOnBottomScreen = false;
-            }
-
-            if (nds->GPU.GPU2D_B.MasterBrightness & (1 << 14)) { // fade to white, on "Mission Complete"
-                _hasVisible3DOnBottomScreen = false;
-            }
-        }
-        else // 3D on bottom screen
-        {
-            IsBottomScreen2DTextureBlack = isBottomScreen2DTextureBlack();
-
-            _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
-            _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
-            _ignore3DOnBottomScreen = false;
-
-            if (!alternateSecondScreenDetection && _hasVisible3DOnBottomScreen) {
-                int FrontBuffer = nds->GPU.FrontBuffer;
-                u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
-                if (bottomBuffer) {
-                    unsigned int color = bottomBuffer[(192*256)/2 + 96] & 0xFFFFFF;
-                    if (color == 0) {
-                        _ignore3DOnBottomScreen = true;
-                    }
-                }
-            }
-        }
-
-        bool showBottomScreen = _hasVisible3DOnBottomScreen && !(_ignore3DOnBottomScreen && _priorIgnore3DOnBottomScreen && _priorPriorIgnore3DOnBottomScreen);
-        if (ShouldShowBottomScreen != showBottomScreen) {
-            ShouldShowBottomScreen = showBottomScreen;
-        }
-        return (nds->PowerControl9 >> 15 != 0) ? !showBottomScreen : showBottomScreen;
+        return (nds->PowerControl9 >> 15 != 0) ? !ShouldShowBottomScreen : ShouldShowBottomScreen;
     }
 
     return true;

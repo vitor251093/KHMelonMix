@@ -213,21 +213,18 @@ void Plugin::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flag
     UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][3], gameSceneState, updated);
 
     if (updated) {
-        std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
-
 #if DEBUG_MODE_ENABLED
         printf("Updating 3D shapes. New shape count: %d\n", shapes.size());
 #endif
 
         glUniform1f(CompGpu3DLoc[CompShader][flags][0], aspectRatio);
         glUniform1i(CompGpu3DLoc[CompShader][flags][1], CompGpu3DLastValues[CompShader][flags][1]);
-        glUniform1i(CompGpu3DLoc[CompShader][flags][2], shapes.size());
+        glUniform1i(CompGpu3DLoc[CompShader][flags][2], current3DShapes.size());
 
-        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
-        auto shadersData = shapes.data();
+        auto shadersData = current3DShapes.data();
         glBindBuffer(GL_UNIFORM_BUFFER, CompUbo3DLoc[CompShader]);
         void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData3D) * shapes.size());
+        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData3D) * current3DShapes.size());
         glUnmapBuffer(GL_UNIFORM_BUFFER);
     }
 }
@@ -243,13 +240,9 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
     float aspectRatio = AspectRatio / (4.f / 3.f);
     int resolutionScale = ScreenWidth/256;
 
-    int gameSceneState = renderer_gameSceneState();
-    std::vector<ShapeData3D> shapes = renderer_3DShapes(GameScene, gameSceneState);
-
     bool atLeastOneLog = false;
-    for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
+    for (auto shape : current3DShapes)
     {
-        ShapeData3D shape = shapes[shapeIndex];
         bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
         // polygon mode
@@ -300,13 +293,12 @@ void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int Scree
         s32 z = polygon->Vertices[vertexIndex]->Position[2];
         s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
 
-        float _x = (float)(*x);
-        float _y = (float)(*y);
+        auto _x = (float)(*x);
+        auto _y = (float)(*y);
         float _z = ((float)z)/(1 << 22);
 
-        for (int shapeIndex = 0; shapeIndex < shapes.size(); shapeIndex++)
+        for (auto shape : current3DShapes)
         {
-            ShapeData3D shape = shapes[shapeIndex];
             bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
             // vertex mode
@@ -1205,6 +1197,7 @@ bool Plugin::refreshGameScene()
     debugLogs(newGameScene);
 
     bool updated = setGameScene(newGameScene);
+    refreshShapes();
 
     refreshCutscene();
 
@@ -1214,6 +1207,11 @@ bool Plugin::refreshGameScene()
     refreshMouseStatus();
 
     return updated;
+}
+
+void Plugin::refreshShapes()
+{
+    current3DShapes = renderer_3DShapes(GameScene, renderer_gameSceneState());
 }
 
 void Plugin::setAspectRatio(float aspectRatio)
@@ -1244,6 +1242,7 @@ void Plugin::_superLoadConfigs(
 {
     std::string root = tomlUniqueIdentifier();
     DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
+    DisableReplacementTextures = false;
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     UIScale = getIntConfig(root + ".HUDScale");
@@ -1280,7 +1279,7 @@ void Plugin::errorLog(const char* format, ...) {
     const char* log = result.c_str();
     printf("%s\n", log);
 
-    if (ERROR_LOG_FILE_ENABLED) {
+    if constexpr (ERROR_LOG_FILE_ENABLED) {
         std::string fileName = std::string("error.log");
         Platform::FileHandle* logf = Platform::OpenFile(fileName, Platform::FileMode::Append);
         Platform::FileWrite(log, strlen(log), 1, logf);
@@ -1298,7 +1297,7 @@ void Plugin::ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
     u32 limitMin = RAM_SEARCH_LIMIT_MIN;
     u32 limitMax = RAM_SEARCH_LIMIT_MAX;
     if (RAM_SEARCH_EVERY_SINGLE_FRAME || HotkeyPress & (1 << 12)) { // HK_PowerButton (reset RAM search)
-        if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
+        if constexpr (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
             printf("Resetting RAM search\n");
         }
         for (u32 index = limitMin; index < limitMax; index+=byteSize) {
@@ -1395,7 +1394,7 @@ void Plugin::ramSearch(melonDS::NDS* nds, u32 HotkeyPress) {
                 printf("\n");
             }
         }
-        if (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
+        if constexpr (!RAM_SEARCH_EVERY_SINGLE_FRAME) {
             printf("Addresses matching the search: %d\n", total);
         }
     }
