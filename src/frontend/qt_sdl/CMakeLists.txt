@@ -24,6 +24,8 @@ set(SOURCES_QT_SDL
     MainWindow/MapButton.h
     MainWindow/resources/ds.qrc
     MainWindow/AudioSource.cpp
+    MainWindow/AudioSourceWav.cpp
+    MainWindow/AudioSourceFlac.cpp
     MainWindow/AudioPlayer.cpp
     MainWindow/AudioWavParser.cpp
     VideoSettingsDialog.cpp
@@ -267,4 +269,14 @@ if (ENABLE_OGLRENDERER)
     target_compile_definitions(melonDS PUBLIC OGLRENDERER_ENABLED)
     target_compile_definitions(melonDS PUBLIC MELONDS_GL_HEADER=${MELONDS_GL_HEADER})
     target_compile_definitions(core PUBLIC MELONDS_GL_HEADER=${MELONDS_GL_HEADER})
+endif()
+
+option(ENABLE_AUDIO_FLAC "Enable audio flac format" ON)
+if (ENABLE_AUDIO_FLAC)
+    pkg_check_modules(FLAC REQUIRED IMPORTED_TARGET flac)
+
+    target_compile_definitions(melonDS PUBLIC AUDIO_FLAC_ENABLED)
+
+    target_include_directories(melonDS PRIVATE ${FLAC_INCLUDE_DIRS})
+    target_link_libraries(melonDS PRIVATE PkgConfig::FLAC)
 endif()

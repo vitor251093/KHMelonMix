@@ -132,14 +132,16 @@ private:
     bool isBackgroundMusicReplacementImplemented() const override { return true; }
     u16 getMidiBgmId() override;
     u16 getMidiBgmToResumeId() override;
-    u32 getMidiSongTableAddress() override;
+    u32 getMidiSequenceAddress(u16 bgmId) override;
+    u16 getMidiSequenceSize(u16 bgmId) override;
     u32 getStreamBgmAddress() override;
     u16 getStreamBgmCustomIdFromDsId(u8 dsId, u32 numSamples) override;
     u8 getMidiBgmState() override;
     u8 getMidiBgmVolume() override;
     u32 getBgmFadeOutDuration() override;
-    u16 getSongIdInSongTable(u16 bgmId) override;
     std::string getBackgroundMusicName(u16 bgmId) override;
+
+    s16 getSongIdInSongTable(u16 bgmId);
 
     struct StreamedBgmEntry
     {

@@ -780,6 +780,13 @@ void EmuThread::refreshPluginState()
     {
         auto* plugin = emuInstance->plugin;
 
+        if (plugin->shouldStopBackgroundMusic()) {
+            u16 bgm = plugin->getBackgroundMusicToStop();
+            bool bShouldStoreResumePos = plugin->getStoreBackgroundMusicPosition();
+            u32 fadeOutDuration = plugin->getBackgroundMusicFadeOutToApply();
+            emit windowStopBgmMusic(bgm, bShouldStoreResumePos, fadeOutDuration);
+        }
+
         if (plugin->shouldStartBackgroundMusic()) {
             u16 bgm = plugin->getCurrentBackgroundMusic();
             const std::string& path = plugin->getCurrentBackgroundMusicFilePath();
@@ -790,13 +797,6 @@ void EmuThread::refreshPluginState()
     
             QString filePath = QString::fromUtf8(path.c_str());
             emit windowStartBgmMusic(bgm, volume, bShouldStoreResumePos, delayAtStart, filePath);
-        }
-
-        if (plugin->shouldStopBackgroundMusic()) {
-            u16 bgm = plugin->getBackgroundMusicToStop();
-            bool bShouldStoreResumePos = plugin->getStoreBackgroundMusicPosition();
-            u32 fadeOutDuration = plugin->getBackgroundMusicFadeOutToApply();
-            emit windowStopBgmMusic(bgm, bShouldStoreResumePos, fadeOutDuration);
         }
 
         if (plugin->shouldPauseBackgroundMusic()) {

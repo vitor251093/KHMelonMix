@@ -1,26 +1,49 @@
 #include "AudioPlayer.h"
 
-#include "AudioSource.h"
+#include "AudioSourceWav.h"
+#include "AudioSourceFlac.h"
 
 #include <QAudioSink>
 #include <QAudioFormat>
 #include <QAudioSink>
+#include <QFileInfo>
+#include <QMediaDevices>
 
 namespace melonMix {
 
 AudioPlayer::AudioPlayer(QObject *parent, quint16 bgmId)
     : QObject(parent)
-    , m_audioSource(new AudioSourceWav(this))
     , m_bgmId(bgmId)
 {
 }
 
 bool AudioPlayer::loadFile(const QString &fileName)
 {
-    if (!m_audioSource->load(fileName)) {
+    QFileInfo fileInfo(fileName);
+    if (!fileInfo.exists()) {
         return false;
     }
 
+    m_audioSource.reset();
+
+    if (fileInfo.suffix().toLower() == "wav") {
+        m_audioSource.reset(new AudioSourceWav(this));
+    }
+#ifdef AUDIO_FLAC_ENABLED
+    else if (fileInfo.suffix().toLower() == "flac") {
+        m_audioSource.reset(new AudioSourceFlac(this));
+    }
+#endif
+
+    if (m_audioSource && m_audioSource->load(fileName)) {
+        createAudioSink(QMediaDevices::defaultAudioOutput());
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void AudioPlayer::createAudioSink(const QAudioDevice& audioOutput) {
     QAudioFormat format;
     format.setSampleRate(m_audioSource->getSampleRate());
     format.setChannelCount(m_audioSource->getNumChannels());
@@ -28,9 +51,15 @@ bool AudioPlayer::loadFile(const QString &fileName)
     auto sampleFormat = AudioSourceWav::bitsPerSampleToSampleFormat(m_audioSource->getBitsPerSample());
     format.setSampleFormat(sampleFormat);
 
-    m_audioOutput.reset(new QAudioSink(format, this));
+    m_audioOutput.reset(new QAudioSink(audioOutput, format, this));
+}
 
-    return true;
+void AudioPlayer::restartAudioSink(const QAudioDevice& audioOutput) {
+    if (m_playing && m_audioSource) {
+        m_audioOutput->stop();
+        createAudioSink(audioOutput);
+        m_audioOutput->start(m_audioSource.get());
+    }
 }
 
 void AudioPlayer::setVolume(qreal value, int durationInMs)
@@ -54,13 +83,17 @@ void AudioPlayer::stop(int fadeOutMs)
     if (!m_audioOutput) {
         return;
     }
-
-    m_audioSource->startFadeOut(fadeOutMs);
+    if (fadeOutMs == 0) {
+        onFadeOutCompleted();
+    } else {
+        m_audioSource->startFadeOut(fadeOutMs);
+    }
 }
 
 qint64 AudioPlayer::getCurrentPlayingPos() const
 {
-    return m_audioSource->getCurrentPlayingPos();
+    qint64 playTimeMs = m_audioOutput->elapsedUSecs() / 1000;
+    return m_audioSource->getCurrentPlayingPos(playTimeMs);
 }
 
 void AudioPlayer::onFadeOutCompleted()
