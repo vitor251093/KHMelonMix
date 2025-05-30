@@ -36,7 +36,7 @@ jobs:
       with:
         vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
     - name: Configure
-      run: cmake --preset=release-mingw-x86_64 -DMELONDS_EMBED_BUILD_INFO=ON
+      run: cmake --preset=release-mingw-x86_64 -DCMAKE_IGNORE_PATH=/ucrt64 -DMELONDS_EMBED_BUILD_INFO=ON
     - name: Search for injected libiconv
       run: grep -R "/ucrt64/lib/libiconv.dll.a" build/
     - name: Build
