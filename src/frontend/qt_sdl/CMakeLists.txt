@@ -189,6 +189,14 @@ else()
 endif()
 target_link_libraries(melonDS PRIVATE core)
 target_link_libraries(melonDS PRIVATE PkgConfig::SDL2 PkgConfig::LibArchive PkgConfig::Zstd)
+
+if (WIN32 AND MINGW)
+    # Strip bad libiconv injected by MSYS2's broken .pc file
+    get_target_property(LIBARCHIVE_LINK_LIBS PkgConfig::LibArchive INTERFACE_LINK_LIBRARIES)
+    list(REMOVE_ITEM LIBARCHIVE_LINK_LIBS "/ucrt64/lib/libiconv.dll.a")
+    set_target_properties(PkgConfig::LibArchive PROPERTIES INTERFACE_LINK_LIBRARIES "${LIBARCHIVE_LINK_LIBS}")
+endif()
+
 target_link_libraries(melonDS PRIVATE ${QT_LINK_LIBS} ${CMAKE_DL_LIBS})
 
 if (WIN32)
