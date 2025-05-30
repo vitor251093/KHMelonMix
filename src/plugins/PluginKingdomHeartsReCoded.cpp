@@ -1880,7 +1880,7 @@ bool PluginKingdomHeartsReCoded::isDialogVisible()
 bool PluginKingdomHeartsReCoded::isMinimapVisible()
 {
     u32* buffer = bottomScreen2DTexture();
-    u32 pixel = getPixel(buffer, 1, 190, 0);
+    u32 pixel = getPixel(buffer, 1*MODIFIER_2D_TEXTURE_SCALE, 190*MODIFIER_2D_TEXTURE_SCALE, 0);
     return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) > 39;
 }
 
@@ -1943,11 +1943,11 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
     u32* buffer = bottomScreen2DTexture();
     for (int y = minY; y < maxY; y++) {
         for (int x = minX; x < maxX; x++) {
-            if ((getPixel(buffer, x, y, 0) == 0x1000343e) || (getPixel(buffer, x, y, 0) == 0x1000383e)) {
+            if ((getDsPixel(buffer, x, y, 0) == 0x1000343e) || (getDsPixel(buffer, x, y, 0) == 0x1000383e)) {
                 bool valid = true;
                 for (int subY = 0; subY < 6; subY ++) {
                     for (int subX = 0; subX < 6; subX ++) {
-                        u32 pixel = getPixel(buffer, x + subX - 2, y + subY - 2, 0);
+                        u32 pixel = getDsPixel(buffer, x + subX - 2, y + subY - 2, 0);
                         valid = valid && (targetColorMap1[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
                         if (!valid) break;
                     }
@@ -1962,7 +1962,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
                     valid = true;
                     for (int subY = 0; subY < 4; subY ++) {
                         for (int subX = 0; subX < 4; subX ++) {
-                            u32 pixel = getPixel(buffer, x + subX - 1, y + subY - 1, 0);
+                            u32 pixel = getDsPixel(buffer, x + subX - 1, y + subY - 1, 0);
                             valid = valid && (targetColorMap2[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
                             if (!valid) break;
                         }
@@ -1977,7 +1977,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
                         valid = true;
                         for (int subY = 0; subY < 5; subY ++) {
                             for (int subX = 0; subX < 3; subX ++) {
-                                u32 pixel = getPixel(buffer, x + subX - 1, y + subY - 2, 0);
+                                u32 pixel = getDsPixel(buffer, x + subX - 1, y + subY - 2, 0);
                                 valid = valid && (targetColorMap3[subY][subX] ? (pixel == 0x1000383e) : (pixel != 0x1000383e));
                                 if (!valid) break;
                             }
@@ -2025,7 +2025,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
 
 bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 {
-    u32 pixel = getPixel(buffer, x, y, 2);
+    u32 pixel = getPixel(buffer, x*MODIFIER_2D_TEXTURE_SCALE, y*MODIFIER_2D_TEXTURE_SCALE, 2);
     u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
     if (pixelAlpha > 0x4) {
         return true;
@@ -2037,7 +2037,7 @@ bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
         return false;
     }
 
-    u32 colorPixel = getPixel(buffer, x, y, 0);
+    u32 colorPixel = getPixel(buffer, x*MODIFIER_2D_TEXTURE_SCALE, y*MODIFIER_2D_TEXTURE_SCALE, 0);
     u32 colorPixelAlpha = (colorPixel >> (8*3)) & 0xFF;
     if (colorPixelAlpha == 0x20) {
         return false;

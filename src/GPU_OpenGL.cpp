@@ -112,7 +112,7 @@ GLCompositor::GLCompositor(GLuint compShader, Plugins::Plugin* plugin) noexcept 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8UI, 256*3 + 1, 192*2, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8UI, 256*3*MODIFIER_2D_TEXTURE_SCALE + 1, 192*2*MODIFIER_2D_TEXTURE_SCALE, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, NULL);
 
     glGenTextures(CompScreenOutputTex.size(), &CompScreenOutputTex[0]);
     for (GLuint i : CompScreenOutputTex)
@@ -273,9 +273,9 @@ void GLCompositor::RenderFrame(const GPU& gpu, Renderer3D& renderer) noexcept
 
     if (gpu.Framebuffer[backbuf][0] && gpu.Framebuffer[backbuf][1])
     {
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256*3 + 1, 192, GL_RGBA_INTEGER,
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256*3*MODIFIER_2D_TEXTURE_SCALE + 1, 192*MODIFIER_2D_TEXTURE_SCALE, GL_RGBA_INTEGER,
                         GL_UNSIGNED_BYTE, gpu.Framebuffer[backbuf][0].get());
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192, 256*3 + 1, 192, GL_RGBA_INTEGER,
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192*MODIFIER_2D_TEXTURE_SCALE, 256*3*MODIFIER_2D_TEXTURE_SCALE + 1, 192*MODIFIER_2D_TEXTURE_SCALE, GL_RGBA_INTEGER,
                         GL_UNSIGNED_BYTE, gpu.Framebuffer[backbuf][1].get());
     }
 

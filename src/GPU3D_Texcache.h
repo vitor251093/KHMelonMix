@@ -330,7 +330,7 @@ public:
                 auto& scene = texture->getNextScene();
                 const char* path = scene.fullPath.c_str();
                 if (imageData == nullptr && strlen(path) > 0) {
-                    imageData = Texreplace::LoadTextureFromFile(path, &r_width, &r_height, &r_channels);
+                    imageData = Texreplace::LoadRGB6TextureFromFile(path, &r_width, &r_height, &r_channels);
                     if (imageData != nullptr) {
                         if (isValidWidthOrHeight(r_width) && isValidWidthOrHeight(r_height)) {
                             printf("Loading texture %s\n", path);
@@ -355,7 +355,7 @@ public:
                     const char* pathTmp = fullPathTmp.c_str();
 
                     printf("Saving texture %s\n", pathTmp);
-                    Texreplace::ExportTextureAsFile(imageData, pathTmp, width, height, channels);
+                    Texreplace::ExportRGB6TextureAsFile(imageData, pathTmp, width, height, channels);
                 }
             }
 

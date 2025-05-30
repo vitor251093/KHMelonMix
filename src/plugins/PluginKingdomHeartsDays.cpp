@@ -1727,7 +1727,7 @@ bool PluginKingdomHeartsDays::isDialogVisible()
 }
 
 bool PluginKingdomHeartsDays::isMinimapVisible() {
-    u32 pixel = getPixel(bottomScreen2DTexture(), 99, 53, 0);
+    u32 pixel = getPixel(bottomScreen2DTexture(), 99*MODIFIER_2D_TEXTURE_SCALE, 53*MODIFIER_2D_TEXTURE_SCALE, 0);
     if (GameScene == gameScene_PauseMenu) {
         return ((pixel >> 0) & 0x3F) == 0x1F && ((pixel >> 8) & 0x3F) == 0x1F && ((pixel >> 16) & 0x3F) == 0x1F;
     }
@@ -1744,7 +1744,7 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 {
     u32* buffer = bottomScreen2DTexture();
-    u32 pixel = getPixel(buffer, 5, 4, 0);
+    u32 pixel = getPixel(buffer, 5*MODIFIER_2D_TEXTURE_SCALE, 4*MODIFIER_2D_TEXTURE_SCALE, 0);
     return ((pixel >> 0) & 0x3F) >= 15 && ((pixel >> 8) & 0x3F) >= 15 && ((pixel >> 16) & 0x3F) >= 15;
 }
 
@@ -1764,7 +1764,7 @@ bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 
 bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 {
-    u32 pixel = getPixel(topScreen2DTexture(), 250, 183, 0);
+    u32 pixel = getPixel(topScreen2DTexture(), 250*MODIFIER_2D_TEXTURE_SCALE, 183*MODIFIER_2D_TEXTURE_SCALE, 0);
     return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
 }
 
@@ -1779,7 +1779,7 @@ bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 
 bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 {
-    u32 pixel = getPixel(buffer, x, y, 2);
+    u32 pixel = getPixel(buffer, x*MODIFIER_2D_TEXTURE_SCALE, y*MODIFIER_2D_TEXTURE_SCALE, 2);
     u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
     if (pixelAlpha > 0x4) {
         return true;
@@ -1791,7 +1791,7 @@ bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
         return false;
     }
 
-    u32 colorPixel = getPixel(buffer, x, y, 0);
+    u32 colorPixel = getPixel(buffer, x*MODIFIER_2D_TEXTURE_SCALE, y*MODIFIER_2D_TEXTURE_SCALE, 0);
     u32 colorPixelAlpha = (colorPixel >> (8*3)) & 0xFF;
     if (colorPixelAlpha == 0x20) {
         return false;

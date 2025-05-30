@@ -35,6 +35,8 @@ add_library(core STATIC
     GPU_Texreplace.h
     GPU2D.cpp
     GPU2D_Soft.cpp
+    GPU2D_Texcache.cpp
+    GPU2D_Texcache.h
     GPU3D.cpp
     GPU3D_Soft.cpp
     GPU3D_Texcache.cpp

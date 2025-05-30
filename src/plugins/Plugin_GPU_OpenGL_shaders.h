@@ -24,6 +24,8 @@ namespace Plugins
 // language=GLSL
 const char* kCompositorFS_Plugin = R"(#version 140
 
+#define MODIFIER_2D_TEXTURE_SCALE 4
+
 #define SHAPES_DATA_ARRAY_SIZE 32
 
 struct ShapeData2D {
@@ -234,7 +236,7 @@ ivec4 getForcedAspectRatioScreen3DColor(float xpos, float ypos)
 
 ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
 {
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y))*MODIFIER_2D_TEXTURE_SCALE, 0));
     float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
 
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
@@ -283,7 +285,7 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
 
 ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
 {
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y))*MODIFIER_2D_TEXTURE_SCALE, 0));
     float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
 
     vec2 texPosition3d = vec2(xpos - _3dxpos, ypos)*u3DScale;
@@ -339,7 +341,7 @@ ivec4 getTopScreen3DColor()
         yCoord = int(mod(yCoord + 192, 192*2));
     }
 
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yCoord), 0));
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yCoord)*MODIFIER_2D_TEXTURE_SCALE, 0));
     float _3dxpos = float(mbright.a - ((mbright.b & 0x80) * 2));
 
     float xpos = fTexcoord.x + _3dxpos;
@@ -418,7 +420,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         }
 
         ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
-        ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+        ivec4 color = ivec4(texelFetch(ScreenTex, coordinates*MODIFIER_2D_TEXTURE_SCALE, 0));
         if (index == 2) {
             // provides full transparency support to the transparency layer
             color.g = color.g << 2;
@@ -448,7 +450,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
         }
 
         ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
-        ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+        ivec4 color = ivec4(texelFetch(ScreenTex, coordinates*MODIFIER_2D_TEXTURE_SCALE, 0));
         if (index == 2) {
             // provides full transparency support to the transparency layer
             color.g = color.g << 2;
@@ -458,9 +460,9 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     }
 
     if (showOriginalHud) {
-        ivec2 textureBeginning = (screenLayout == 1) ? (ivec2(fTexcoord) + ivec2(0, 192)) : ivec2(fTexcoord);
-        ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
-        ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+        vec2 textureBeginning = (screenLayout == 1) ? (fTexcoord + vec2(0, 192)) : fTexcoord;
+        vec2 coordinates = textureBeginning + vec2(256,0)*index;
+        ivec4 color = ivec4(texelFetch(ScreenTex, ivec2(coordinates*MODIFIER_2D_TEXTURE_SCALE), 0));
         if (index == 2) {
             // provides full transparency support to the transparency layer
             color.g = color.g << 2;
@@ -506,7 +508,7 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 }
 
                 if (index == 0) {
-                    ivec2 coordinates = ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy;
+                    ivec2 coordinates = ivec2((finalPos + vec2(shapes[shapeIndex].squareInitialCoords.xy))*MODIFIER_2D_TEXTURE_SCALE);
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
                     // invert gray scale colors
@@ -520,12 +522,12 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     return color;
                 }
                 else if (index == 1) {
-                    ivec2 coordinates = ivec2(finalPos + shapes[shapeIndex].squareInitialCoords.xy + vec2(256,0));
+                    ivec2 coordinates = ivec2((finalPos + vec2(shapes[shapeIndex].squareInitialCoords.xy) + vec2(256,0))*MODIFIER_2D_TEXTURE_SCALE);
                     return ivec4(texelFetch(ScreenTex, coordinates, 0));
                 }
                 else { // index == 2
-                    ivec2 textureBeginning = ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy;
-                    ivec2 coordinates = textureBeginning + ivec2(512,0);
+                    ivec2 textureBeginning = ivec2((finalPos + vec2(shapes[shapeIndex].squareInitialCoords.xy))*MODIFIER_2D_TEXTURE_SCALE);
+                    ivec2 coordinates = textureBeginning + ivec2(512,0)*MODIFIER_2D_TEXTURE_SCALE;
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
                     // provides full transparency support to the transparency layer
@@ -597,14 +599,14 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 ivec4 brightness()
 {
     if (brightnessMode == 1) { // top screen brightness
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y))*MODIFIER_2D_TEXTURE_SCALE, 0));
     }
     if (brightnessMode == 2) { // bottom screen brightness
-        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192 + int(fTexcoord.y)), 0));
+        return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192 + int(fTexcoord.y))*MODIFIER_2D_TEXTURE_SCALE, 0));
     }
     if (brightnessMode == 3) { // horizontal
         int yOffset = (fTexcoord.x < 128) ? 96 : (192 + 96);
-        return ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset), 0));
+        return ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset)*MODIFIER_2D_TEXTURE_SCALE, 0));
     }
     if (brightnessMode == 4) { // black screen
         return ivec4(0x1F, 2 << 6, 0x2, 0);
@@ -614,17 +616,17 @@ ivec4 brightness()
     }
 
     // brightnessMode == 0
-    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
+    ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192)*MODIFIER_2D_TEXTURE_SCALE, 0));
     int brightmode = mbright.g >> 6;
     if ((mbright.b & 0x3) != 0 && brightmode == 2) {
         return mbright;
     }
-    return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
+    return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y))*MODIFIER_2D_TEXTURE_SCALE, 0));
 }
 
 void main()
 {
-    ivec4 pixel = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord), 0));
+    ivec4 pixel = ivec4(texelFetch(ScreenTex, ivec2(fTexcoord*MODIFIER_2D_TEXTURE_SCALE), 0));
 
     ivec4 mbright = brightness();
     int dispmode = mbright.b & 0x3;

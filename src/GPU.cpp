@@ -169,9 +169,9 @@ void GPU::Reset() noexcept
 
     size_t fbsize;
     if (GPU3D.IsRendererAccelerated())
-        fbsize = (256*3 + 1) * 192;
+        fbsize = (256*3*MODIFIER_2D_TEXTURE_SCALE + 1) * 192*MODIFIER_2D_TEXTURE_SCALE;
     else
-        fbsize = 256 * 192;
+        fbsize = 256*MODIFIER_2D_TEXTURE_SCALE * 192*MODIFIER_2D_TEXTURE_SCALE;
 
     for (size_t i = 0; i < fbsize; i++)
     {
@@ -201,9 +201,9 @@ void GPU::Stop() noexcept
 {
     int fbsize;
     if (GPU3D.IsRendererAccelerated())
-        fbsize = (256*3 + 1) * 192;
+        fbsize = (256*3*MODIFIER_2D_TEXTURE_SCALE + 1) * 192*MODIFIER_2D_TEXTURE_SCALE;
     else
-        fbsize = 256 * 192;
+        fbsize = 256*MODIFIER_2D_TEXTURE_SCALE * 192*MODIFIER_2D_TEXTURE_SCALE;
 
     memset(Framebuffer[0][0].get(), 0, fbsize*4);
     memset(Framebuffer[0][1].get(), 0, fbsize*4);
@@ -307,9 +307,9 @@ void GPU::InitFramebuffers() noexcept
 {
     int fbsize;
     if (GPU3D.IsRendererAccelerated())
-        fbsize = (256*3 + 1) * 192;
+        fbsize = (256*3*MODIFIER_2D_TEXTURE_SCALE + 1) * 192*MODIFIER_2D_TEXTURE_SCALE;
     else
-        fbsize = 256 * 192;
+        fbsize = 256*MODIFIER_2D_TEXTURE_SCALE * 192*MODIFIER_2D_TEXTURE_SCALE;
 
     Framebuffer[0][0] = std::make_unique<u32[]>(fbsize);
     Framebuffer[1][0] = std::make_unique<u32[]>(fbsize);
@@ -937,9 +937,9 @@ void GPU::BlankFrame() noexcept
     int backbuf = FrontBuffer ? 0 : 1;
     int fbsize;
     if (GPU3D.IsRendererAccelerated())
-        fbsize = (256*3 + 1) * 192;
+        fbsize = (256*3*MODIFIER_2D_TEXTURE_SCALE + 1) * 192*MODIFIER_2D_TEXTURE_SCALE;
     else
-        fbsize = 256 * 192;
+        fbsize = 256*MODIFIER_2D_TEXTURE_SCALE * 192*MODIFIER_2D_TEXTURE_SCALE;
 
     memset(Framebuffer[backbuf][0].get(), 0, fbsize*4);
     memset(Framebuffer[backbuf][1].get(), 0, fbsize*4);

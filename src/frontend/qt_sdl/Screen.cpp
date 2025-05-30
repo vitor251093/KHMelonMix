@@ -807,8 +807,8 @@ void ScreenPanel::calcSplashLayout()
 
 ScreenPanelNative::ScreenPanelNative(QWidget* parent) : ScreenPanel(parent)
 {
-    screen[0] = QImage(256, 192, QImage::Format_RGB32);
-    screen[1] = QImage(256, 192, QImage::Format_RGB32);
+    screen[0] = QImage(256*MODIFIER_2D_TEXTURE_SCALE, 192*MODIFIER_2D_TEXTURE_SCALE, QImage::Format_RGB32);
+    screen[1] = QImage(256*MODIFIER_2D_TEXTURE_SCALE, 192*MODIFIER_2D_TEXTURE_SCALE, QImage::Format_RGB32);
 
     screenTrans[0].reset();
     screenTrans[1].reset();
@@ -854,11 +854,11 @@ void ScreenPanelNative::paintEvent(QPaintEvent* event)
             return;
         }
 
-        memcpy(screen[0].scanLine(0), nds->GPU.Framebuffer[frontbuf][0].get(), 256 * 192 * 4);
-        memcpy(screen[1].scanLine(0), nds->GPU.Framebuffer[frontbuf][1].get(), 256 * 192 * 4);
+        memcpy(screen[0].scanLine(0), nds->GPU.Framebuffer[frontbuf][0].get(), 256 * 192 * 4 * MODIFIER_2D_TEXTURE_SCALE * MODIFIER_2D_TEXTURE_SCALE);
+        memcpy(screen[1].scanLine(0), nds->GPU.Framebuffer[frontbuf][1].get(), 256 * 192 * 4 * MODIFIER_2D_TEXTURE_SCALE * MODIFIER_2D_TEXTURE_SCALE);
         emuThread->frontBufferLock.unlock();
 
-        QRect screenrc(0, 0, 256, 192);
+        QRect screenrc(0, 0, 256*MODIFIER_2D_TEXTURE_SCALE, 192*MODIFIER_2D_TEXTURE_SCALE);
 
         for (int i = 0; i < numScreens; i++)
         {
@@ -1019,9 +1019,9 @@ void ScreenPanelGL::initOpenGL()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, paddedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     // fill the padding
-    u8 zeroData[256*4*4];
+    u8 zeroData[256*4*4*MODIFIER_2D_TEXTURE_SCALE];
     memset(zeroData, 0, sizeof(zeroData));
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192, 256, 2, GL_RGBA, GL_UNSIGNED_BYTE, zeroData);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192*MODIFIER_2D_TEXTURE_SCALE, 256*MODIFIER_2D_TEXTURE_SCALE, 2, GL_RGBA, GL_UNSIGNED_BYTE, zeroData);
 
 
     OpenGL::CompileVertexFragmentProgram(osdShader,
@@ -1189,9 +1189,9 @@ void ScreenPanelGL::drawScreenGL()
 
             if (nds->GPU.Framebuffer[frontbuf][0] && nds->GPU.Framebuffer[frontbuf][1])
             {
-                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 192, GL_RGBA,
+                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256*MODIFIER_2D_TEXTURE_SCALE, 192*MODIFIER_2D_TEXTURE_SCALE, GL_RGBA,
                                 GL_UNSIGNED_BYTE, nds->GPU.Framebuffer[frontbuf][0].get());
-                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192 + 2, 256, 192, GL_RGBA,
+                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 192*MODIFIER_2D_TEXTURE_SCALE + 2, 256*MODIFIER_2D_TEXTURE_SCALE, 192*MODIFIER_2D_TEXTURE_SCALE, GL_RGBA,
                                 GL_UNSIGNED_BYTE, nds->GPU.Framebuffer[frontbuf][1].get());
             }
         }

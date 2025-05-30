@@ -554,9 +554,32 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
                 auto& texture = _texturesIndex[uniqueId];
 
                 if (entrynameStr == uniqueId) {
-                    texture.setPath(entryvalStr);
+                    std::string s = entryvalStr;
+                    std::string delimiter = ";";
+                    std::string delimiter2 = ",";
 
-                    std::filesystem::path fullPath = texturesFolder / entryvalStr;
+                    texture.setPath(entryvalStr);
+                    if (s.find(delimiter) != std::string::npos) {
+                        std::vector<std::string> tokens;
+                        size_t last = 0;
+                        size_t next = 0;
+                        while ((next = s.find(delimiter, last)) != std::string::npos) {
+                            tokens.push_back(s.substr(last, next-last));
+                            last = next + 1;
+                        }
+                        tokens.push_back(s.substr(last));
+
+                        if (tokens.size() == 3) {
+                            auto& textureObj = texture.getLastScene();
+                            textureObj.path = tokens[0];
+                            textureObj.posX = (u16)std::stoi(tokens[1].substr(0, tokens[1].find(delimiter2)));
+                            textureObj.posY = (u16)std::stoi(tokens[1].substr(tokens[1].find(delimiter2) + 1));
+                            textureObj.sizeX = (u16)std::stoi(tokens[2].substr(0, tokens[2].find(delimiter2)));
+                            textureObj.sizeY = (u16)std::stoi(tokens[2].substr(tokens[2].find(delimiter2) + 1));
+                        }
+                    }
+
+                    std::filesystem::path fullPath = texturesFolder / texture.getLastScene().path;
                     if (!std::filesystem::exists(fullPath)) {
                         errorLog("Texture %s was supposed to be replaced by %s, but it doesn't exist", uniqueId.c_str(), fullPath.string().c_str());
                     }
