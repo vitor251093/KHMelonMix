@@ -6,7 +6,7 @@
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Dump an original copy of "358/2 Days" and copy the NDS file to your computer;
 4. Rename that NDS file to "days.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
-5. Place [this days folder](https://github.com/KHAssetsHD/days/releases/latest/download/release.7z) inside the assets folder (optional; only if you want to upgrade the audio / cutscenes / textures / sprites) (on macOS, the assets folder is inside the bundle's Contents folder);
+5. Place [this days folder](https://mega.nz/folder/lpgykK5Y#HPJuOSceHSzncDjQh0DUtw) inside the assets folder (optional; only if you want to upgrade the audio / cutscenes / textures / sprites) (on macOS, the assets folder is inside the bundle's Contents folder);
 6. (Windows) Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat";
 7. (Linux) Right-click the AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Repeat those steps for MelonMix_KHReCoded.sh as well;
 8. (Linux) Now you just need to launch the Melon Mix using "MelonMix_KHDays.sh";
@@ -21,7 +21,7 @@
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Dump an original copy of "Re:Coded" and copy the NDS file to your computer;
 4. Rename that NDS file to "recoded.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
-5. Place [this recoded folder](https://github.com/KHAssetsHD/recoded/releases/latest/download/release.7z) inside the assets folder (optional; only if you want to upgrade the audio / cutscenes / textures / sprites) (on macOS, the assets folder is inside the bundle's Contents folder);
+5. Place [this recoded folder](https://github.com/KHAssetsHD/recoded/archive/refs/heads/main.zip) inside the assets folder (optional; only if you want to upgrade the audio / cutscenes / textures / sprites) (on macOS, the assets folder is inside the bundle's Contents folder);
 6. (Windows) Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.bat";
 7. (Linux) Right-click the AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Repeat those steps for MelonMix_KHDays.sh as well;
 8. (Linux) Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.sh";
