@@ -596,24 +596,24 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
 
 ivec4 brightness()
 {
-    if (brightnessMode == 1) { // top screen brightness
+    if (brightnessMode == 1) { // brightnessMode_TopScreen
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, int(fTexcoord.y)), 0));
     }
-    if (brightnessMode == 2) { // bottom screen brightness
+    if (brightnessMode == 2) { // brightnessMode_BottomScreen
         return ivec4(texelFetch(ScreenTex, ivec2(256*3, 192 + int(fTexcoord.y)), 0));
     }
-    if (brightnessMode == 3) { // horizontal
+    if (brightnessMode == 3) { // brightnessMode_Horizontal
         int yOffset = (fTexcoord.x < 128) ? 96 : (192 + 96);
         return ivec4(texelFetch(ScreenTex, ivec2(256 * 3, yOffset), 0));
     }
-    if (brightnessMode == 4) { // black screen
+    if (brightnessMode == 4) { // brightnessMode_BlackScreen
         return ivec4(0x1F, 2 << 6, 0x2, 0);
     }
-    if (brightnessMode == 5) { // regular brightness
+    if (brightnessMode == 5) { // brightnessMode_RegularBrightness
         return ivec4(0, 2 << 6, 0x2, 0);
     }
 
-    // brightnessMode == 0
+    // brightnessMode_Default
     ivec4 mbright = ivec4(texelFetch(ScreenTex, ivec2(256*3, 192), 0));
     int brightmode = mbright.g >> 6;
     if ((mbright.b & 0x3) != 0 && brightmode == 2) {
