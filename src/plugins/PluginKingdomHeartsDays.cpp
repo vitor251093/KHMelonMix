@@ -968,9 +968,79 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
         case gameScene_InGameMenu:
         {
             u32 curMenu = getCurrentMainMenuView();
-            // config and save; the others are in horizontal style
+            // the others are in horizontal style
 
-            if (curMenu == 8) { // world selector
+            if (curMenu == 4) { // roxas's diary / enemy profile
+                float doubleScreenScale = 2.0/3;
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .placeAtCorner(corner_Left)
+                        .sourceScale(doubleScreenScale, doubleScreenScale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Right)
+                        .sourceScale(doubleScreenScale, doubleScreenScale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            }
+            else if (curMenu == 6) { // config
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            }
+            else if (curMenu == 7) { // save
+                // save label
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(100, 16)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of save label header
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(100, 0)
+                        .withSize(20, 16)
+                        .placeAtCorner(corner_TopRight)
+                        .sourceScale(1000.0, 1.0)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 144)
+                        .withSize(256, 48)
+                        .placeAtCorner(corner_BottomLeft)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // rest of footer
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(251, 144)
+                        .withSize(5, 48)
+                        .placeAtCorner(corner_BottomRight)
+                        .sourceScale(1000.0, 1.0)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // main content
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            }
+            else if (curMenu == 8) { // world selector
                 // header left corner
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromPosition(0, 0)
@@ -1017,64 +1087,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .opacity(1.0)
                         .hudScale(hudScale)
                         .build(aspectRatio));
-                break;
             }
-
-            if (curMenu == 7) { // save
-                // save label
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 0)
-                        .withSize(100, 16)
-                        .placeAtCorner(corner_TopLeft)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-
-                // rest of save label header
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(100, 0)
-                        .withSize(20, 16)
-                        .placeAtCorner(corner_TopRight)
-                        .sourceScale(1000.0, 1.0)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-
-                // footer
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 144)
-                        .withSize(256, 48)
-                        .placeAtCorner(corner_BottomLeft)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-
-                // rest of footer
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(251, 144)
-                        .withSize(5, 48)
-                        .placeAtCorner(corner_BottomRight)
-                        .sourceScale(1000.0, 1.0)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-
-                // main content
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-
-                break;
-            }
-        
-            // 6 - config
-            shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
             break;
         }
 
@@ -1358,13 +1371,11 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
         u32 mainMenuView = getCurrentMainMenuView();
         switch (mainMenuView) {
             case 3: // holo-mission / challenges
-            case 4: // roxas's diary / enemy profile
                 return screenLayout_BothHorizontal;
             
+            case 4: // roxas's diary / enemy profile
             case 6: // config
             case 7: // save
-                return screenLayout_Top;
-
             case 8: // world selector
                 return screenLayout_Top;
 
