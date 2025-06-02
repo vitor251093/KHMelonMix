@@ -970,159 +970,172 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             u32 curMenu = getCurrentMainMenuView();
             // the others are in horizontal style
 
-            if (curMenu == 4) { // roxas's diary / enemy profile
-                // header left corner
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 0)
-                        .withSize(128, 16)
-                        .placeAtCorner(corner_TopLeft)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+            switch (curMenu) {
+                case 4: { // roxas's diary / enemy profile
+                    // header left corner
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 0)
+                            .withSize(128, 16)
+                            .placeAtCorner(corner_TopLeft)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
 
-                // header right corner
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(128, 0)
-                        .withSize(128, 16)
-                        .placeAtCorner(corner_TopRight)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+                    // header right corner
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(128, 0)
+                            .withSize(128, 16)
+                            .placeAtCorner(corner_TopRight)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
 
-                // header middle
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(123, 0)
-                        .withSize(10, 16)
-                        .placeAtCorner(corner_Top)
-                        .sourceScale(1000.0, 1.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+                    // header middle
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(123, 0)
+                            .withSize(10, 16)
+                            .placeAtCorner(corner_Top)
+                            .sourceScale(1000.0, 1.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
 
-                float doubleScreenScale = 2.0/3;
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromBottomScreen()
-                        .placeAtCorner(corner_Left)
-                        .sourceScale(doubleScreenScale, doubleScreenScale)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
+                    float doubleScreenScale = 2.0/3;
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .placeAtCorner(corner_Left)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
 
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 16)
-                        .withSize(256, 176)
-                        .placeAtCorner(corner_Right)
-                        .sourceScale(doubleScreenScale, doubleScreenScale)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 16)
+                            .withSize(256, 176)
+                            .placeAtCorner(corner_Right)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
 
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromBottomScreen()
-                        .withSize(256, 8)
-                        .sourceScale(doubleScreenScale, doubleScreenScale)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .repeatAsBackground()
-                        .build(aspectRatio));
-            }
-            else if (curMenu == 6) { // config
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-            }
-            else if (curMenu == 7) { // save
-                // save label
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 0)
-                        .withSize(100, 16)
-                        .placeAtCorner(corner_TopLeft)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
+                    // background
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .withSize(256, 8)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .repeatAsBackground()
+                            .build(aspectRatio));
 
-                // rest of save label header
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(100, 0)
-                        .withSize(20, 16)
-                        .placeAtCorner(corner_TopRight)
-                        .sourceScale(1000.0, 1.0)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
+                    break;
+                }
+                case 6: { // config
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .placeAtCorner(corner_Center)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
 
-                // footer
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 144)
-                        .withSize(256, 48)
-                        .placeAtCorner(corner_BottomLeft)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
+                    break;
+                }
+                case 7: { // save
+                    // save label
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 0)
+                            .withSize(100, 16)
+                            .placeAtCorner(corner_TopLeft)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
 
-                // rest of footer
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(251, 144)
-                        .withSize(5, 48)
-                        .placeAtCorner(corner_BottomRight)
-                        .sourceScale(1000.0, 1.0)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
+                    // rest of save label header
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(100, 0)
+                            .withSize(20, 16)
+                            .placeAtCorner(corner_TopRight)
+                            .sourceScale(1000.0, 1.0)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
 
-                // main content
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-            }
-            else if (curMenu == 8) { // world selector
-                // header left corner
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 0)
-                        .withSize(128, 25)
-                        .placeAtCorner(corner_TopLeft)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+                    // footer
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 144)
+                            .withSize(256, 48)
+                            .placeAtCorner(corner_BottomLeft)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
 
-                // header right corner
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(128, 0)
-                        .withSize(128, 25)
-                        .placeAtCorner(corner_TopRight)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+                    // rest of footer
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(251, 144)
+                            .withSize(5, 48)
+                            .placeAtCorner(corner_BottomRight)
+                            .sourceScale(1000.0, 1.0)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
 
-                // header middle
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(123, 0)
-                        .withSize(10, 25)
-                        .placeAtCorner(corner_Top)
-                        .sourceScale(1000.0, 1.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+                    // main content
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .placeAtCorner(corner_Center)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
 
-                // world name and rank
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 167)
-                        .withSize(256, 25)
-                        .placeAtCorner(corner_BottomLeft)
-                        .singleColorToAlpha(0, 0, 0)
-                        .withMargin(20.0, 0.0, 0.0, 10.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+                    break;
+                }
+                case 8: { // world selector
+                    // header left corner
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 0)
+                            .withSize(128, 25)
+                            .placeAtCorner(corner_TopLeft)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
 
-                // mission selector
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromBottomScreen()
-                        .fromPosition(0, 0)
-                        .withSize(256, 192)
-                        .placeAtCorner(corner_Right)
-                        .sourceScale(0.7)
-                        .cropSquareCorners(5.0, 0.0, 5.0, 0.0)
-                        .opacity(1.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+                    // header right corner
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(128, 0)
+                            .withSize(128, 25)
+                            .placeAtCorner(corner_TopRight)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // header middle
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(123, 0)
+                            .withSize(10, 25)
+                            .placeAtCorner(corner_Top)
+                            .sourceScale(1000.0, 1.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // world name and rank
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 167)
+                            .withSize(256, 25)
+                            .placeAtCorner(corner_BottomLeft)
+                            .singleColorToAlpha(0, 0, 0)
+                            .withMargin(20.0, 0.0, 0.0, 10.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // mission selector
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(0, 0)
+                            .withSize(256, 192)
+                            .placeAtCorner(corner_Right)
+                            .sourceScale(0.7)
+                            .cropSquareCorners(5.0, 0.0, 5.0, 0.0)
+                            .opacity(1.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    break;
+                }
+                default:
+                    break;
             }
             break;
         }
