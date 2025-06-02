@@ -971,6 +971,31 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
             // the others are in horizontal style
 
             if (curMenu == 4) { // roxas's diary / enemy profile
+                // header left corner
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(128, 16)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // header right corner
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(128, 0)
+                        .withSize(128, 16)
+                        .placeAtCorner(corner_TopRight)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // header middle
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(123, 0)
+                        .withSize(10, 16)
+                        .placeAtCorner(corner_Top)
+                        .sourceScale(1000.0, 1.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
                 float doubleScreenScale = 2.0/3;
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
@@ -981,10 +1006,21 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                         .build(aspectRatio));
 
                 shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 16)
+                        .withSize(256, 176)
                         .placeAtCorner(corner_Right)
                         .sourceScale(doubleScreenScale, doubleScreenScale)
                         .hudScale(hudScale)
                         .preserveDsScale()
+                        .build(aspectRatio));
+
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .withSize(256, 8)
+                        .sourceScale(doubleScreenScale, doubleScreenScale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .repeatAsBackground()
                         .build(aspectRatio));
             }
             else if (curMenu == 6) { // config

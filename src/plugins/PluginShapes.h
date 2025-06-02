@@ -89,18 +89,19 @@ struct alignas(16) ShapeData2D { // 112 bytes
     // 0x08 => mirror X
     // 0x10 => mirror Y
     // 0x20 => manipulate transparency
+    // 0x40 => repeat as background
 
     float opacity;
 
-    ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
-    vec4 squareFinalCoords;    // 16 bytes (X, Y, Width, Height)
+    ivec4 squareInitialCoords;  // 16 bytes (X, Y, Width, Height)
+    vec4 squareFinalCoords;     // 16 bytes (X, Y, Width, Height)
 
-    vec4 fadeBorderSize;       // 16 bytes (left fade, top fade, right fade, down fade)
+    vec4 fadeBorderSize;        // 16 bytes (left fade, top fade, right fade, down fade)
 
-    vec4 squareCornersModifier;    // 16 bytes (top left, top right, bottom left, bottom right)
+    vec4 squareCornersModifier; // 16 bytes (top left, top right, bottom left, bottom right)
 
-    ivec4 colorToAlpha;        // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
-    ivec4 singleColorToAlpha;  // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
+    ivec4 colorToAlpha;         // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
+    ivec4 singleColorToAlpha;   // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
 };
 
 // UBO-compatible struct with proper padding
@@ -395,6 +396,10 @@ public:
         shapeData.effects |= 0x1;
         return *this;
     }
+    ShapeBuilder2D& repeatAsBackground() {
+        shapeData.effects |= 0x40;
+        return *this;
+    }
     ShapeBuilder2D& mirror(int mirror) {
         shapeData.effects |= mirror;
         return *this;
@@ -449,6 +454,11 @@ public:
 
         float scaleX = shapeData.sourceScale.x;
         float scaleY = shapeData.sourceScale.y;
+        int corner = _corner;
+
+        if ((shapeData.effects & 0x40) != 0) {
+            corner = corner_TopLeft;
+        }
         
         float heightScale = 1.0/aspectRatio;
 
@@ -458,7 +468,7 @@ public:
         float squareFinalX1 = 0.0;
         float squareFinalY1 = 0.0;
 
-        switch (_corner)
+        switch (corner)
         {
             case corner_Center:
                 squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;

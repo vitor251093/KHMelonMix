@@ -423,6 +423,19 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
     return validArea;
 }
 
+vec2 mod_vec2(vec2 vector1, vec2 vector2)
+{
+    float x = vector1.x;
+    float y = vector1.y;
+    while (x >= vector2.x) {
+        x -= vector2.x;
+    }
+    while (y >= vector2.y) {
+        y -= vector2.y;
+    }
+    return vec2(x, y);
+}
+
 ivec4 getTopScreenColor(float xpos, float ypos, int index)
 {
     if (screenLayout == 2) { // vertical
@@ -501,12 +514,23 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
         vec4 squareFinalCoords = shapes[shapeIndex].squareFinalCoords;
 
-        if (all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) && 
-               all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) {
+        if ((all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) &&
+                all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) || ((shapes[shapeIndex].effects & 0x40) != 0)) {
             int effects = shapes[shapeIndex].effects;
 
             vec2 finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
             bool validArea = true;
+
+            if ((effects & 0x40) != 0) {
+                finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
+                vec2 limits = (fixStretch/shapes[shapeIndex].sourceScale)*(squareFinalCoords.zw - squareFinalCoords.xy);
+                while (finalPos.x >= limits.x) {
+                    finalPos.x -= limits.x;
+                }
+                while (finalPos.y >= limits.y) {
+                    finalPos.y -= limits.y;
+                }
+            }
 
             // crop corner as triangle
             if ((effects & 0x2) != 0) {
