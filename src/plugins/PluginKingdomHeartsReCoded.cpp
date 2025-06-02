@@ -1477,7 +1477,7 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
         return brightnessMode_Horizontal;
     }
     if (GameScene == gameScene_Cutscene) {
-        return brightnessMode_RegularBrightness;
+        return brightnessMode_DisableBrightnessControl;
     }
     if (GameScene == gameScene_InGameMenu) {
         u32 mainMenuView = getCurrentMainMenuView();

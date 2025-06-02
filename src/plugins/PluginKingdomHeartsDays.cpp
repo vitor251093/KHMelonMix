@@ -1399,13 +1399,12 @@ int PluginKingdomHeartsDays::renderer_brightnessMode() {
         return brightnessMode_Horizontal;
     }
     if (GameScene == gameScene_Cutscene) {
-        return brightnessMode_RegularBrightness;
+        return brightnessMode_DisableBrightnessControl;
     }
     if (GameScene == gameScene_InGameMenu) {
         u32 mainMenuView = getCurrentMainMenuView();
         if (mainMenuView == 8) { // world selector
-            // TODO: It's currently breaking the 2D shapes somehow
-            //return brightnessMode_RegularBrightness;
+            return brightnessMode_Auto;
         }
     }
     return brightnessMode_Default;
