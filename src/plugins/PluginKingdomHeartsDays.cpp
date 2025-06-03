@@ -1019,6 +1019,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromBottomScreen()
                             .withSize(256, 8)
+                            .placeAtCorner(corner_TopLeft)
                             .sourceScale(doubleScreenScale, doubleScreenScale)
                             .hudScale(hudScale)
                             .preserveDsScale()
@@ -1112,10 +1113,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
 
                     // world name and rank
                     shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(0, 167)
-                            .withSize(256, 25)
+                            .fromPosition(0, 176)
+                            .withSize(256, 16)
                             .placeAtCorner(corner_BottomLeft)
-                            .singleColorToAlpha(0, 0, 0)
+                            .squareBorderRadius(5.0, 5.0, 5.0, 5.0)
                             .withMargin(20.0, 0.0, 0.0, 10.0)
                             .hudScale(hudScale)
                             .build(aspectRatio));

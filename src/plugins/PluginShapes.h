@@ -89,7 +89,8 @@ struct alignas(16) ShapeData2D { // 112 bytes
     // 0x08 => mirror X
     // 0x10 => mirror Y
     // 0x20 => manipulate transparency
-    // 0x40 => repeat as background
+    // 0x40 => repeat as background (X axis)
+    // 0x80 => repeat as background (Y axis)
 
     float opacity;
 
@@ -398,6 +399,15 @@ public:
     }
     ShapeBuilder2D& repeatAsBackground() {
         shapeData.effects |= 0x40;
+        shapeData.effects |= 0x80;
+        return *this;
+    }
+    ShapeBuilder2D& repeatAsBackgroundHorizontally() {
+        shapeData.effects |= 0x40;
+        return *this;
+    }
+    ShapeBuilder2D& repeatAsBackgroundVertically() {
+        shapeData.effects |= 0x80;
         return *this;
     }
     ShapeBuilder2D& mirror(int mirror) {
@@ -444,6 +454,14 @@ public:
         shapeData.singleColorToAlpha.w = 1;
         return *this;
     }
+    ShapeBuilder2D& singleColorToAlpha(int red, int green, int blue, float alpha) {
+        shapeData.effects |= 0x20;
+        shapeData.singleColorToAlpha.x = red >> 2;
+        shapeData.singleColorToAlpha.y = green >> 2;
+        shapeData.singleColorToAlpha.z = blue >> 2;
+        shapeData.singleColorToAlpha.w = (int)(alpha * 64);
+        return *this;
+    }
 
     void precompute3DCoordinatesOf2DSquareShape(float aspectRatio)
     {
@@ -456,10 +474,6 @@ public:
         float scaleY = shapeData.sourceScale.y;
         int corner = _corner;
 
-        if ((shapeData.effects & 0x40) != 0) {
-            corner = corner_TopLeft;
-        }
-        
         float heightScale = 1.0/aspectRatio;
 
         float squareFinalWidth = shapeData.squareInitialCoords.z*scaleX*heightScale;

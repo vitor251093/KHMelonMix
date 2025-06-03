@@ -521,14 +521,18 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
             vec2 finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
             bool validArea = true;
 
-            if ((effects & 0x40) != 0) {
+            if ((effects & 0x40) != 0 || (effects & 0x80) != 0) {
                 finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
                 vec2 limits = (fixStretch/shapes[shapeIndex].sourceScale)*(squareFinalCoords.zw - squareFinalCoords.xy);
-                while (finalPos.x >= limits.x) {
-                    finalPos.x -= limits.x;
+                if ((effects & 0x40) != 0) {
+                    while (finalPos.x >= limits.x) {
+                        finalPos.x -= limits.x;
+                    }
                 }
-                while (finalPos.y >= limits.y) {
-                    finalPos.y -= limits.y;
+                if ((effects & 0x80) != 0) {
+                    while (finalPos.y >= limits.y) {
+                        finalPos.y -= limits.y;
+                    }
                 }
             }
 
@@ -621,13 +625,13 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                         }
 
                         ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha;
-                        if (singleColorToAlpha.a == 1)
+                        if (singleColorToAlpha.a > 0)
                         {
                             ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
                             if (colorZero.r == singleColorToAlpha.r &&
                                 colorZero.g == singleColorToAlpha.g &&
                                 colorZero.b == singleColorToAlpha.b) {
-                                color = ivec4(color.r, 0, 64, 0x01);
+                                color = ivec4(color.r, singleColorToAlpha.a - 1, 65 - singleColorToAlpha.a, 0x01);
                             }
                         }
                     }
