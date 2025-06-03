@@ -29,7 +29,8 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: ucrt64
-        update: true
+        update: false
+        path-type: inherit
         pacboy: gcc:p cmake:p ninja:p make:p
     - name: Set up vcpkg
       uses: lukka/run-vcpkg@v11
@@ -37,8 +38,14 @@ jobs:
         vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
     - name: Configure
       run: cmake --preset=release-mingw-x86_64 -DMELONDS_EMBED_BUILD_INFO=ON
+      env:
+        NINJA_STATUS: "[%f/%t %o/s %es] "
+        VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg_binary_cache,readwrite"
     - name: Build
       run: cmake --build --preset=release-mingw-x86_64
+      env:
+        NINJA_STATUS: "[%f/%t %o/s %es] "
+        VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg_binary_cache,readwrite"
     - name: Preparing artifacts
       working-directory: ${{runner.workspace}}\KHMelonMix\build
       run: |
