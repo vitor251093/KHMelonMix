@@ -1989,6 +1989,11 @@ int PluginKingdomHeartsDays::detectGameScene()
 
     isCharacterControllable = nds->ARM7Read8(getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
 
+    if (nds->GPU.GPU3D.NumPolygons == 0 && isBufferBlack(topScreen2DTexture()) && isBufferBlack(bottomScreen2DTexture()))
+    {
+        return gameScene_Other;
+    }
+
     if (isCredits)
     {
         if (isTheEnd)
@@ -2050,6 +2055,10 @@ int PluginKingdomHeartsDays::detectGameScene()
     if (!wasSaveLoaded && (GameScene == -1 || GameScene == gameScene_Intro))
     {
         return gameScene_Intro;
+    }
+    if (isMainMenuOrIntroOrLoadMenu)
+    {
+        return gameScene_TitleScreen;
     }
 
     if (has3DOnBothScreens)
@@ -2448,15 +2457,17 @@ u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
         return 0;
     }
 
-    u8 worldSelector = nds->ARM7Read8(getAnyByCart(IS_WORLD_SELECTOR_US, IS_WORLD_SELECTOR_EU, IS_WORLD_SELECTOR_JP, IS_WORLD_SELECTOR_JP_REV1));
-    if (worldSelector == 0x01) return 8;
-
     u8 val = nds->ARM7Read8(getAnyByCart(CURRENT_INGAME_MENU_VIEW_US, CURRENT_INGAME_MENU_VIEW_EU, CURRENT_INGAME_MENU_VIEW_JP, CURRENT_INGAME_MENU_VIEW_JP_REV1));
     if (val == 0x00) return 1;
     if (val == 0x02) return 2;
     if (val == 0x01) return 3;
     if (val == 0x07) return 4;
-    if (val == 0x06) return 5;
+    if (val == 0x06)
+    {
+        u8 worldSelector = nds->ARM7Read8(getAnyByCart(IS_WORLD_SELECTOR_US, IS_WORLD_SELECTOR_EU, IS_WORLD_SELECTOR_JP, IS_WORLD_SELECTOR_JP_REV1));
+        if (worldSelector == 0x01) return 8;
+        return 5;
+    }
     if (val == 0x05) return 6;
     if (val == 0x04) return 7;
     return 0;
