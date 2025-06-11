@@ -66,6 +66,7 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
     ui->cbFFLoadingScreens->setChecked(oldFFLoadingScreens != 0);
 
     auto audioPackNames = plugin->audioPackNames();
+    ui->cbxAudioPack->addItem(QString::fromStdString("None"));
     for (const std::string& name : audioPackNames) {
         ui->cbxAudioPack->addItem(QString::fromStdString(name));
     }

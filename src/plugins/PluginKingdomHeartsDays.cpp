@@ -1491,7 +1491,7 @@ void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMa
         return;
     }
 
-    if (GameScene == gameScene_LoadingScreen) {
+    if (GameScene == gameScene_LoadingScreen && FastForwardLoadingScreens) {
         *HotkeyMask |= (1<<4); // Fast Forward (skip loading screen)
     }
 }
