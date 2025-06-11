@@ -857,6 +857,12 @@ std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
 
     auto getFilepathIfExists = [&](auto& filename) -> std::string {
         std::filesystem::path _assetsFolderPath = assetsFolderPath();
+        if (SelectedAudioPack != "") {
+            std::filesystem::path fullPath0 = _assetsFolderPath / "audio" / SelectedAudioPack / filename;
+            if (std::filesystem::exists(fullPath0)) {
+                return fullPath0.string();
+            }
+        }
         std::filesystem::path fullPath = _assetsFolderPath / "audio" / filename;
         if (std::filesystem::exists(fullPath)) {
             return fullPath.string();
@@ -883,7 +889,14 @@ std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
 
 
 void Plugin::loadBgmRedirections() {
-    std::filesystem::path iniFilePath = assetsFolderPath() / "audio" / "bgm.ini";
+    auto _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path iniFilePath = _assetsFolderPath / "audio" / "bgm.ini";
+    if (SelectedAudioPack != "") {
+        std::filesystem::path fullPath0 = _assetsFolderPath / "audio" / SelectedAudioPack / "bgm.ini";
+        if (std::filesystem::exists(fullPath0)) {
+            iniFilePath = fullPath0;
+        }
+    }
     Platform::FileHandle* file = Platform::OpenLocalFile(iniFilePath.string().c_str(), Platform::FileMode::ReadText);
     if (file) {
         _BgmRedirectors.clear();
