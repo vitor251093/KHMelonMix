@@ -300,6 +300,27 @@ u64 FileLength(FileHandle* file)
     return len;
 }
 
+std::vector<std::string> ContentsOfFolder(const std::string& path, bool includeFolders, bool includeFiles)
+{
+    std::vector<std::string> contents;
+
+    try {
+        for (const auto& entry : std::filesystem::directory_iterator(path)) {
+            const auto& p = entry.path();
+            if ((includeFiles && std::filesystem::is_regular_file(entry)) ||
+                (includeFolders && std::filesystem::is_directory(entry))) {
+                contents.push_back(p.filename().string());
+            }
+        }
+    } catch (const std::filesystem::filesystem_error& e) {
+        Log(LogLevel::Warn, "Failed to list contents of folder \"%s\"\n", path.c_str());
+    } catch (const std::exception& e) {
+        Log(LogLevel::Warn, "Failed to list contents of folder \"%s\"\n", path.c_str());
+    }
+
+    return contents;
+}
+
 void Log(LogLevel level, const char* fmt, ...)
 {
     if (fmt == nullptr)

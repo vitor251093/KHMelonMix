@@ -136,6 +136,8 @@ private:
     // Music replacement system
     std::array<BgmEntry, 38> BgmEntries;
 
+    std::vector<std::string> audioPackNames();
+
     bool isBackgroundMusicReplacementImplemented() const override { return true; }
     u16 getMidiBgmId() override;
     u16 getMidiBgmToResumeId() override;

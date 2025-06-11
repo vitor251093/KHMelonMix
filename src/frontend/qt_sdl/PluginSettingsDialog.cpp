@@ -64,10 +64,15 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
     ui->cbSingleScreenMode->setChecked(oldSingleScreenMode != 0);
     ui->cbFFLoadingScreens->setChecked(oldFFLoadingScreens != 0);
 
-    // TODO: KH audio pack
-    //for (int i = 1; i <= 16; i++)
-    //    ui->cbxAudioPack->addItem(QString("%1x native (%2x%3)").arg(i).arg(256*i).arg(192*i));
-    //ui->cbxAudioPack->setCurrentIndex(oldAudioPack);
+    auto audioPackNames = plugin->audioPackNames();
+    for (const std::string& name : audioPackNames) {
+        ui->cbxAudioPack->addItem(QString::fromStdString(name));
+    }
+    QString qSelected = QString::fromStdString(oldAudioPack);
+    int index = ui->cbxAudioPack->findText(qSelected);
+    if (index >= 0) {
+        ui->cbxAudioPack->setCurrentIndex(index);
+    }
 
     ui->sbHUDSize->setValue(oldHUDSize);
     ui->sbCameraSensitivity->setValue(oldCameraSensitivity);
@@ -138,8 +143,8 @@ void PluginSettingsDialog::on_cbxAudioPack_currentIndexChanged(int idx)
     std::string root = plugin->tomlUniqueIdentifier();
 
     auto& cfg = emuInstance->getGlobalConfig();
-    // TODO: KH Audio pack
-    //cfg.SetString(root + ".AudioPack", oldAudioPack);
+    auto audioPackNames = plugin->audioPackNames();
+    cfg.SetString(root + ".AudioPack", audioPackNames[idx]);
 
     emit updatePluginSettings();
 }

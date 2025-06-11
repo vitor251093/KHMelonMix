@@ -236,6 +236,8 @@ u64 FileWriteFormatted(FileHandle* file, const char* fmt, ...);
 /// (or local equivalents), it must leave the stream position as it was found.
 u64 FileLength(FileHandle* file);
 
+std::vector<std::string> ContentsOfFolder(const std::string& path, bool includeFolders, bool includeFiles);
+
 enum LogLevel
 {
     Debug,

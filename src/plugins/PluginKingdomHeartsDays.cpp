@@ -2297,6 +2297,16 @@ bool PluginKingdomHeartsDays::isUnskippableMobiCutscene(CutsceneEntry* cutscene)
     return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 
+std::vector<std::string> PluginKingdomHeartsDays::audioPackNames() {
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "audio";
+    if (!std::filesystem::exists(fullPath)) {
+        return {};
+    }
+
+    return Platform::ContentsOfFolder(fullPath.string(), true, false);
+}
+
 u16 PluginKingdomHeartsDays::getMidiBgmId() {
     return nds->ARM7Read16(getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP, SONG_ID_ADDRESS_JP_REV1));
 }
