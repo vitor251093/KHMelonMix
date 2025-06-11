@@ -190,7 +190,7 @@ void EmuThread::run()
         auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
         if (rom != nullptr) {
             u32 gamecode = rom->GetHeader().GameCodeAsU32();
-            if (emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode)
+            if (emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode || emuInstance->plugin->shouldInvalidatePlugin)
             {
                 lastVideoRenderer = -1;
                 videoSettingsDirty = true;

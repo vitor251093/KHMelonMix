@@ -198,6 +198,7 @@ private slots:
     void onEmuSettingsDialogFinished(int res);
     void onOpenInputConfig();
     void onInputConfigFinished(int res);
+    void onOpenPluginSettings();
     void onOpenVideoSettings();
     void onOpenCameraSettings();
     void onCameraSettingsFinished(int res);
@@ -237,6 +238,8 @@ private slots:
     void onEmuStop();
     void onEmuPause(bool pause);
     void onEmuReset();
+
+    void onUpdatePluginSettings();
 
     void onUpdateVideoSettings(bool glchange);
 
@@ -319,6 +322,7 @@ public:
     QAction* actNPStartClient;
     QAction* actNPTest;
 
+    QAction* actPluginSettings;
     QAction* actEmuSettings;
 #ifdef __APPLE__
     QAction* actPreferences;

@@ -28,6 +28,7 @@ set(SOURCES_QT_SDL
     MainWindow/AudioSourceFlac.cpp
     MainWindow/AudioPlayer.cpp
     MainWindow/AudioWavParser.cpp
+    PluginSettingsDialog.cpp
     VideoSettingsDialog.cpp
     CameraSettingsDialog.cpp
     AudioSettingsDialog.cpp

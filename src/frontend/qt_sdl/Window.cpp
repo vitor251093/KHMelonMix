@@ -58,6 +58,7 @@
 #include "EmuSettingsDialog.h"
 #include "InputConfig/InputConfigDialog.h"
 #include "MainWindow/MainWindowSettings.h"
+#include "PluginSettingsDialog.h"
 #include "VideoSettingsDialog.h"
 #include "CameraSettingsDialog.h"
 #include "AudioSettingsDialog.h"
@@ -609,6 +610,9 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
         {
             QMenu * menu = menubar->addMenu("Config");
 
+            actPluginSettings = menu->addAction("Plugin settings");
+            connect(actPluginSettings, &QAction::triggered, this, &MainWindow::onOpenPluginSettings);
+
             actEmuSettings = menu->addAction("Emu settings");
             connect(actEmuSettings, &QAction::triggered, this, &MainWindow::onOpenEmuSettings);
 
@@ -776,6 +780,7 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
 
         if (emuInstance->instanceID > 0)
         {
+            actPluginSettings->setEnabled(false);
             actEmuSettings->setEnabled(false);
             actVideoSettings->setEnabled(false);
             actMPSettings->setEnabled(false);
@@ -1872,6 +1877,12 @@ void MainWindow::onInputConfigFinished(int res)
     emuThread->emuUnpause();
 }
 
+void MainWindow::onOpenPluginSettings()
+{
+    PluginSettingsDialog* dlg = PluginSettingsDialog::openDlg(this);
+    connect(dlg, &PluginSettingsDialog::updatePluginSettings, this, &MainWindow::onUpdatePluginSettings);
+}
+
 void MainWindow::onOpenVideoSettings()
 {
     VideoSettingsDialog* dlg = VideoSettingsDialog::openDlg(this);
@@ -2253,6 +2264,33 @@ void MainWindow::onEmuReset()
     if (!hasMenu) return;
 
     actUndoStateLoad->setEnabled(false);
+}
+
+void MainWindow::onUpdatePluginSettings()
+{
+    if (!emuInstance) return;
+
+    emuInstance->plugin->invalidate();
+
+    // if we have a parent window: pass the message over to the parent
+    // the topmost parent takes care of updating all the windows
+    MainWindow* parentwin = (MainWindow*)parentWidget();
+    if (parentwin)
+        return parentwin->onUpdatePluginSettings();
+
+    emuThread->updateVideoSettings();
+
+    // update any child windows we have
+    auto childwins = findChildren<MainWindow *>(nullptr, Qt::FindDirectChildrenOnly);
+    for (auto child: childwins)
+    {
+        // child windows may belong to a different instance
+        // in that case we need to signal their thread appropriately
+        auto thread = child->getEmuInstance()->getEmuThread();
+
+        if (child->getWindowID() == 0)
+            thread->updateVideoSettings();
+    }
 }
 
 void MainWindow::onUpdateVideoSettings(bool glchange)

@@ -137,6 +137,11 @@ public:
     };
     static bool isCart(u32 gameCode) {return true;};
 
+    bool shouldInvalidatePlugin = false;
+    void invalidate() {
+        shouldInvalidatePlugin = true;
+    }
+
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
     virtual void onLoadROM();
     virtual void onLoadState();
