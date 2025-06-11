@@ -489,7 +489,7 @@ void Plugin::_superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bo
 }
 
 void Plugin::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) {
-    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, true);
+    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, true);
 }
 
 std::string trim(const std::string& str) {
@@ -1241,12 +1241,16 @@ void Plugin::_superLoadConfigs(
 )
 {
     std::string root = tomlUniqueIdentifier();
+    CameraSensitivity = getIntConfig(root + ".CameraSensitivity");
+    CameraSensitivity = (CameraSensitivity == 0) ? DefaultCameraSensitivity : CameraSensitivity;
     DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
     DisableReplacementTextures = false;
+    FastForwardLoadingScreens = getBoolConfig(root + ".FastForwardLoadingScreens");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     UIScale = getIntConfig(root + ".HUDScale");
     UIScale = (UIScale == 0) ? 4 : UIScale;
+    SelectedAudioPack = getStringConfig(root + ".AudioPack");
 }
 void Plugin::loadConfigs(
     std::function<bool(std::string)> getBoolConfig,

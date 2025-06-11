@@ -67,7 +67,7 @@ void PluginTemplate::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u1
     
 }
 void PluginTemplate::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) {
-    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, true);
+    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, true);
 }
 
 u32 PluginTemplate::getAspectRatioAddress() {

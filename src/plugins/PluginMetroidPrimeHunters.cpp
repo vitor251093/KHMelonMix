@@ -23,7 +23,7 @@ void PluginMetroidPrimeHunters::applyAddonKeysToInputMaskOrTouchControls(u32* In
     
 }
 void PluginMetroidPrimeHunters::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) {
-    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 1, true);
+    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, true);
 }
 
 u32 PluginMetroidPrimeHunters::getAspectRatioAddress() {

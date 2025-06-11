@@ -1733,7 +1733,7 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords(int width, int height, in
 void PluginKingdomHeartsDays::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
-        _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, false);
+        _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, false);
     }
 }
 

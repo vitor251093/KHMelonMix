@@ -1752,7 +1752,7 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u
         return;
     }
 
-    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, 3, true);
+    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, true);
 }
 
 void PluginKingdomHeartsReCoded::hudToggle()

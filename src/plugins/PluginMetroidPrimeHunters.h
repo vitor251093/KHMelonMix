@@ -22,6 +22,8 @@ public:
     bool isEuropeRev1Cart() { return GameCode == euGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROMLength() == 67108864; };
     bool isJapanCart()      { return GameCode == jpGamecode; };
 
+    int DefaultCameraSensitivity = 1;
+
     std::string assetsFolder() {
         return std::to_string(GameCode);
     }

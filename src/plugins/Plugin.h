@@ -137,6 +137,8 @@ public:
     };
     static bool isCart(u32 gameCode) {return true;};
 
+    int DefaultCameraSensitivity = 3;
+
     bool shouldInvalidatePlugin = false;
     void invalidate() {
         shouldInvalidatePlugin = true;
@@ -364,10 +366,13 @@ protected:
 
     std::vector<ShapeData3D> current3DShapes;
 
+    int CameraSensitivity = 0;
     bool DisableEnhancedGraphics = false;
     bool DisableReplacementTextures = false;
+    bool FastForwardLoadingScreens = false;
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
+    std::string SelectedAudioPack = "";
 
     bool _LastTouchScreenMovementWasByPlugin = false;
 

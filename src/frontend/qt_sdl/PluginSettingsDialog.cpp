@@ -60,6 +60,7 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
     oldHUDSize = cfg.GetInt(root + ".HUDScale");
     oldHUDSize = (oldHUDSize == 0) ? 4 : oldHUDSize;
     oldCameraSensitivity = cfg.GetInt(root + ".CameraSensitivity");
+    oldCameraSensitivity = (oldCameraSensitivity == 0) ? plugin->DefaultCameraSensitivity : oldCameraSensitivity;
 
     ui->cbSingleScreenMode->setChecked(oldSingleScreenMode != 0);
     ui->cbFFLoadingScreens->setChecked(oldFFLoadingScreens != 0);
