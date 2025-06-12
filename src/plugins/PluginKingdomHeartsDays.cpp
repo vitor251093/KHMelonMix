@@ -2405,12 +2405,12 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
 
 // The states below also happen in multiple other places outside the main menu menus
 // 0 -> none
-// 1 -> main menu root / character selection
+// 1 -> main menu root / character selection / world selector
 // 2 -> panel
 // 3 -> holo-mission / challenges
 // 4 -> roxas's diary / enemy profile
-// 5 -> tutorials / mission review / world selector
-// 6 -> config
+// 5 -> tutorials / mission review
+// 6 -> config / world selector
 // 7 -> save
 // 8 -> world selector
 u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
@@ -2423,7 +2423,12 @@ u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
     u8 val = nds->ARM7Read8(getAnyByCart(CURRENT_INGAME_MENU_VIEW_US, CURRENT_INGAME_MENU_VIEW_EU, CURRENT_INGAME_MENU_VIEW_JP, CURRENT_INGAME_MENU_VIEW_JP_REV1));
     if (val == 0x00) return 1;
     if (val == 0x02) return 2;
-    if (val == 0x01) return 3;
+    if (val == 0x01)
+    {
+        u8 worldSelector = nds->ARM7Read8(getAnyByCart(IS_WORLD_SELECTOR_US, IS_WORLD_SELECTOR_EU, IS_WORLD_SELECTOR_JP, IS_WORLD_SELECTOR_JP_REV1));
+        if (worldSelector == 0x01) return 8;
+        return 3;
+    }
     if (val == 0x07) return 4;
     if (val == 0x06)
     {
