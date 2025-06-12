@@ -231,14 +231,13 @@ void Plugin::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flag
 
 #undef UPDATE_GPU_VAR
 
-void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int ScreenWidth, int ScreenHeight, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
+void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return;
     }
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    int resolutionScale = ScreenWidth/256;
 
     bool atLeastOneLog = false;
     for (auto shape : current3DShapes)

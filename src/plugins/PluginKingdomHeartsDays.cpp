@@ -480,12 +480,12 @@ const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
         return nullptr;
     }
 
-    return kRenderVS_Z_KhDays;
+    return nullptr; // kRenderVS_Z_KhDays;
 };
 
 void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags)
 {
-    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    /*CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
     CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
     CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
     CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
@@ -493,14 +493,14 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog,
 
     for (int index = 0; index <= 4; index ++) {
         CompGpu3DLastValues[flags][index] = -1;
-    }
+    }*/
 }
 
 #define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
 
 void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags)
 {
-    float aspectRatio = AspectRatio / (4.f / 3.f);
+    /*float aspectRatio = AspectRatio / (4.f / 3.f);
     
     bool updated = false;
     UPDATE_GPU_VAR(CompGpu3DLastValues[flags][0], (int)(aspectRatio*1000), updated);
@@ -514,7 +514,7 @@ void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint Com
         for (int index = 1; index <= 4; index ++) {
             glUniform1i(CompGpu3DLoc[flags][index], CompGpu3DLastValues[flags][index]);
         }
-    }
+    }*/
 }
 
 #undef UPDATE_GPU_VAR

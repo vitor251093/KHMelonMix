@@ -500,6 +500,7 @@ void GLRenderer::BuildPolygons(GLRenderer::RendererPolygon* polygons, int npolys
     {
         RendererPolygon* rp = &polygons[i];
         Polygon* poly = rp->PolyData;
+        u32* polyVptr = vptr;
 
         rp->IndicesOffset = iidx;
         rp->NumIndices = 0;
@@ -703,6 +704,26 @@ void GLRenderer::BuildPolygons(GLRenderer::RendererPolygon* polygons, int npolys
         IndexBuffer[eidx++] = vidx_cur;
         IndexBuffer[eidx++] = vidx_first;
         rp->NumEdgeIndices += 2;
+
+        {
+            int indexOffset = (poly->Type != 1 && poly->NumVertices != 3 && BetterPolygons) ? 7 : 0;
+
+            s32 scaledPositions[10][2];
+            for (int i = 0; i < poly->NumVertices + indexOffset; i++)
+            {
+                u32 polyXY = polyVptr[i*7];
+                scaledPositions[i][0] = polyXY & 0xFFFF;
+                scaledPositions[i][1] = (polyXY >> 16) & 0xFFFF;
+            }
+
+            GamePlugin->gpu3DOpenGLCompute_applyChangesToPolygon(ScaleFactor, scaledPositions, poly);
+
+            for (int i = 0; i < poly->NumVertices + indexOffset; i++)
+            {
+                u32 polyXY = scaledPositions[i][0] | (scaledPositions[i][1] << 16);
+                polyVptr[i*7] = polyXY;
+            }
+        }
     }
 
     NumVertices = vidx;

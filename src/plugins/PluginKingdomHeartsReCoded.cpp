@@ -450,25 +450,25 @@ const char* PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z() {
         return nullptr;
     }
 
-    return kRenderVS_Z_KhReCoded;
+    return nullptr; // kRenderVS_Z_KhReCoded;
 };
 
 void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags)
 {
-    CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
+    /*CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
     CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
     CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
 
     for (int index = 0; index <= 2; index ++) {
         CompGpu3DLastValues[flags][index] = -1;
-    }
+    }*/
 }
 
 #define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
 
 void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags)
 {
-    float aspectRatio = AspectRatio / (4.f / 3.f);
+    /*float aspectRatio = AspectRatio / (4.f / 3.f);
 
     bool updated = false;
     UPDATE_GPU_VAR(CompGpu3DLoc[flags][0], (int)(aspectRatio*1000), updated);
@@ -480,7 +480,7 @@ void PluginKingdomHeartsReCoded::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint 
         for (int index = 1; index <= 2; index ++) {
             glUniform1i(CompGpu3DLoc[flags][index], CompGpu3DLastValues[flags][index]);
         }
-    }
+    }*/
 }
 
 #undef UPDATE_GPU_VAR
