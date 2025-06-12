@@ -64,10 +64,6 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     uni_id = glGetUniformLocation(prog, "TexPalMem");
     glUniform1i(uni_id, 1);
 
-    if (GamePlugin != nullptr) {
-        GamePlugin->gpu3DOpenGLClassic_VS_Z_initVariables(prog, flags);
-    }
-
     RenderShader[flags] = prog;
 
     return true;
@@ -78,10 +74,6 @@ void GLRenderer::UseRenderShader(u32 flags)
     if (CurShaderID == flags) return;
     glUseProgram(RenderShader[flags]);
     CurShaderID = flags;
-
-    if (GamePlugin != nullptr) {
-        GamePlugin->gpu3DOpenGLClassic_VS_Z_updateVariables(RenderShader[flags], flags);
-    }
 }
 
 void SetupDefaultTexParams(GLuint tex)
@@ -136,28 +128,25 @@ std::unique_ptr<GLRenderer> GLRenderer::New(Plugins::Plugin* plugin) noexcept
 
     memset(result->RenderShader, 0, sizeof(RenderShader));
 
-    const char* renderVS_Z_Custom = result->GamePlugin == nullptr ? nullptr : result->GamePlugin->gpu3DOpenGLClassic_VS_Z();
-    const char* renderVS_Z = renderVS_Z_Custom == nullptr ? kRenderVS_Z : renderVS_Z_Custom;
-
-    if (!result->BuildRenderShader(0, renderVS_Z, kRenderFS_ZO))
+    if (!result->BuildRenderShader(0, kRenderVS_Z, kRenderFS_ZO))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WO))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_Edge, renderVS_Z, kRenderFS_ZE))
+    if (!result->BuildRenderShader(RenderFlag_Edge, kRenderVS_Z, kRenderFS_ZE))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_Edge | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WE))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_Trans, renderVS_Z, kRenderFS_ZT))
+    if (!result->BuildRenderShader(RenderFlag_Trans, kRenderVS_Z, kRenderFS_ZT))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_Trans | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WT))
         return nullptr;
 
-    if (!result->BuildRenderShader(RenderFlag_ShadowMask, renderVS_Z, kRenderFS_ZSM))
+    if (!result->BuildRenderShader(RenderFlag_ShadowMask, kRenderVS_Z, kRenderFS_ZSM))
         return nullptr;
 
     if (!result->BuildRenderShader(RenderFlag_ShadowMask | RenderFlag_WBuffer, kRenderVS_W, kRenderFS_WSM))
@@ -716,7 +705,7 @@ void GLRenderer::BuildPolygons(GLRenderer::RendererPolygon* polygons, int npolys
                 scaledPositions[i][1] = (polyXY >> 16) & 0xFFFF;
             }
 
-            GamePlugin->gpu3DOpenGLCompute_applyChangesToPolygon(ScaleFactor, scaledPositions, poly);
+            GamePlugin->gpuOpenGL_applyChangesToPolygon(ScaleFactor, scaledPositions, poly);
 
             for (int i = 0; i < poly->NumVertices + indexOffset; i++)
             {

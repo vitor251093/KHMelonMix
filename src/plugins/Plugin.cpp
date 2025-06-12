@@ -1,7 +1,6 @@
 #include "Plugin.h"
 
 #include "Plugin_GPU_OpenGL_shaders.h"
-#include "Plugin_GPU3D_OpenGL_shaders.h"
 #include "AudioUtils.h"
 
 #include <iostream>
@@ -164,74 +163,9 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     }
 }
 
-const char* Plugin::gpu3DOpenGLClassic_VS_Z() {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return nullptr;
-    }
-
-    return kRenderVS_Z_Plugin;
-};
-
-void Plugin::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint CompShader, u32 flags)
-{
-    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock3D");
-    glUniformBlockBinding(CompShader, blockIndex, 2);
-
-    if (CompUbo3DLocInit != true) {
-#if DEBUG_MODE_ENABLED
-        printf("Initializing 3D shapes UBO\n");
-#endif
-        GLuint uboBuffer;
-        glGenBuffers(1, &uboBuffer);
-        glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData3D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboBuffer);
-        CompUbo3DLoc[CompShader] = uboBuffer;
-        CompUbo3DLocInit = true;
-    }
-
-    CompGpu3DLoc[CompShader][flags][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
-    CompGpu3DLoc[CompShader][flags][1] = glGetUniformLocation(CompShader, "hudScale");
-    CompGpu3DLoc[CompShader][flags][2] = glGetUniformLocation(CompShader, "shapeCount");
-
-    for (int index = 0; index <= 2; index ++) {
-        CompGpu3DLastValues[CompShader][flags][index] = -1;
-    }
-}
-
-void Plugin::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags)
-{
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    int gameSceneState = renderer_gameSceneState();
-    
-    bool updated = false;
-    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][1], UIScale, updated);
-
-    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][2], GameScene, updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[CompShader][flags][3], gameSceneState, updated);
-
-    if (updated) {
-#if DEBUG_MODE_ENABLED
-        printf("Updating 3D shapes. New shape count: %d\n", shapes.size());
-#endif
-
-        glUniform1f(CompGpu3DLoc[CompShader][flags][0], aspectRatio);
-        glUniform1i(CompGpu3DLoc[CompShader][flags][1], CompGpu3DLastValues[CompShader][flags][1]);
-        glUniform1i(CompGpu3DLoc[CompShader][flags][2], current3DShapes.size());
-
-        auto shadersData = current3DShapes.data();
-        glBindBuffer(GL_UNIFORM_BUFFER, CompUbo3DLoc[CompShader]);
-        void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData3D) * current3DShapes.size());
-        glUnmapBuffer(GL_UNIFORM_BUFFER);
-    }
-}
-
 #undef UPDATE_GPU_VAR
 
-void Plugin::gpu3DOpenGLCompute_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
+void Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
         return;

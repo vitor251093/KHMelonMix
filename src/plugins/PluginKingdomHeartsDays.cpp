@@ -1,7 +1,5 @@
 #include "PluginKingdomHeartsDays.h"
 
-#include "PluginKingdomHeartsDays_GPU3D_OpenGL_shaders.h"
-
 namespace Plugins
 {
 
@@ -473,51 +471,6 @@ std::string PluginKingdomHeartsDays::assetsRegionSubfolder() {
 std::string PluginKingdomHeartsDays::tomlUniqueIdentifier() {
     return getAnyByCart("KHDays_US", "KHDays_EU", "KHDays_JP", "KHDays_JPRev1");
 }
-
-const char* PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z() {
-    bool disable = DisableEnhancedGraphics;
-    if (disable) {
-        return nullptr;
-    }
-
-    return nullptr; // kRenderVS_Z_KhDays;
-};
-
-void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_initVariables(GLuint prog, u32 flags)
-{
-    /*CompGpu3DLoc[flags][0] = glGetUniformLocation(prog, "TopScreenAspectRatio");
-    CompGpu3DLoc[flags][1] = glGetUniformLocation(prog, "GameScene");
-    CompGpu3DLoc[flags][2] = glGetUniformLocation(prog, "KHUIScale");
-    CompGpu3DLoc[flags][3] = glGetUniformLocation(prog, "ShowMissionInfo");
-    CompGpu3DLoc[flags][4] = glGetUniformLocation(prog, "HideAllHUD");
-
-    for (int index = 0; index <= 4; index ++) {
-        CompGpu3DLastValues[flags][index] = -1;
-    }*/
-}
-
-#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
-
-void PluginKingdomHeartsDays::gpu3DOpenGLClassic_VS_Z_updateVariables(GLuint CompShader, u32 flags)
-{
-    /*float aspectRatio = AspectRatio / (4.f / 3.f);
-    
-    bool updated = false;
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][1], GameScene, updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][2], UIScale, updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][3], ShowMissionInfo ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpu3DLastValues[flags][4], HideAllHUD ? 1 : 0, updated);
-
-    if (updated) {
-        glUniform1f(CompGpu3DLoc[flags][0], aspectRatio);
-        for (int index = 1; index <= 4; index ++) {
-            glUniform1i(CompGpu3DLoc[flags][index], CompGpu3DLastValues[flags][index]);
-        }
-    }*/
-}
-
-#undef UPDATE_GPU_VAR
 
 std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScene, int gameSceneState) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
