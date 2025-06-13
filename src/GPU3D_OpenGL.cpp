@@ -695,7 +695,7 @@ void GLRenderer::BuildPolygons(GLRenderer::RendererPolygon* polygons, int npolys
         rp->NumEdgeIndices += 2;
 
         {
-            int indexOffset = (poly->Type != 1 && poly->NumVertices != 3 && BetterPolygons) ? 7 : 0;
+            int indexOffset = (poly->Type != 1 && poly->NumVertices != 3 && BetterPolygons) ? 1 : 0;
 
             s32 scaledPositions[10][2];
             for (int i = 0; i < poly->NumVertices + indexOffset; i++)

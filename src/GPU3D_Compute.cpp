@@ -755,7 +755,7 @@ void ComputeRenderer::RenderFrame(GPU& gpu)
             }
         }
 
-        GamePlugin->gpuOpenGL_applyChangesToPolygon(ScreenWidth/256, scaledPositions, polygon);
+        GamePlugin->gpuOpenGL_applyChangesToPolygon(ScaleFactor, scaledPositions, polygon);
 
         for (int i = 0; i < polygon->NumVertices; i++)
         {
