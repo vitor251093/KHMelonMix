@@ -1936,11 +1936,6 @@ int PluginKingdomHeartsDays::detectGameScene()
 
     isCharacterControllable = nds->ARM7Read8(getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
 
-    if (nds->GPU.GPU3D.NumPolygons == 0 && isBufferBlack(topScreen2DTexture()) && isBufferBlack(bottomScreen2DTexture()))
-    {
-        return gameScene_Other;
-    }
-
     if (isCredits)
     {
         if (isTheEnd)
