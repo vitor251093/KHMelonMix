@@ -34,6 +34,16 @@ PluginSettingsDialog* PluginSettingsDialog::currentDlg = nullptr;
 
 void PluginSettingsDialog::setEnabled()
 {
+    if (!isPluginLoaded)
+    {
+        ui->cbSingleScreenMode->setEnabled(false);
+        ui->cbFFLoadingScreens->setEnabled(false);
+        ui->cbxAudioPack->setEnabled(false);
+        ui->sbHUDSize->setEnabled(false);
+        ui->sbCameraSensitivity->setEnabled(false);
+        return;
+    }
+
     auto plugin = emuInstance->plugin;
     std::string root = plugin->tomlUniqueIdentifier();
 
@@ -51,33 +61,38 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
     emuInstance = ((MainWindow*)parent)->getEmuInstance();
 
     auto plugin = emuInstance->plugin;
-    std::string root = plugin->tomlUniqueIdentifier();
+    isPluginLoaded = plugin != nullptr;
 
-    auto& cfg = emuInstance->getGlobalConfig();
-    oldSingleScreenMode = !cfg.GetBool(root + ".DisableEnhancedGraphics");
-    oldFFLoadingScreens = cfg.GetBool(root + ".FastForwardLoadingScreens");
-    oldAudioPack = cfg.GetString(root + ".AudioPack");
-    oldHUDSize = cfg.GetInt(root + ".HUDScale");
-    oldHUDSize = (oldHUDSize == 0) ? 4 : oldHUDSize;
-    oldCameraSensitivity = cfg.GetInt(root + ".CameraSensitivity");
-    oldCameraSensitivity = (oldCameraSensitivity == 0) ? plugin->DefaultCameraSensitivity : oldCameraSensitivity;
+    if (isPluginLoaded)
+    {
+        std::string root = plugin->tomlUniqueIdentifier();
 
-    ui->cbSingleScreenMode->setChecked(oldSingleScreenMode != 0);
-    ui->cbFFLoadingScreens->setChecked(oldFFLoadingScreens != 0);
+        auto& cfg = emuInstance->getGlobalConfig();
+        oldSingleScreenMode = !cfg.GetBool(root + ".DisableEnhancedGraphics");
+        oldFFLoadingScreens = cfg.GetBool(root + ".FastForwardLoadingScreens");
+        oldAudioPack = cfg.GetString(root + ".AudioPack");
+        oldHUDSize = cfg.GetInt(root + ".HUDScale");
+        oldHUDSize = (oldHUDSize == 0) ? 4 : oldHUDSize;
+        oldCameraSensitivity = cfg.GetInt(root + ".CameraSensitivity");
+        oldCameraSensitivity = (oldCameraSensitivity == 0) ? plugin->DefaultCameraSensitivity : oldCameraSensitivity;
 
-    auto audioPackNames = plugin->audioPackNames();
-    ui->cbxAudioPack->addItem(QString::fromStdString("None"));
-    for (const std::string& name : audioPackNames) {
-        ui->cbxAudioPack->addItem(QString::fromStdString(name));
+        ui->cbSingleScreenMode->setChecked(oldSingleScreenMode != 0);
+        ui->cbFFLoadingScreens->setChecked(oldFFLoadingScreens != 0);
+
+        auto audioPackNames = plugin->audioPackNames();
+        ui->cbxAudioPack->addItem(QString::fromStdString("None"));
+        for (const std::string& name : audioPackNames) {
+            ui->cbxAudioPack->addItem(QString::fromStdString(name));
+        }
+        QString qSelected = QString::fromStdString(oldAudioPack);
+        int index = ui->cbxAudioPack->findText(qSelected);
+        if (index >= 0) {
+            ui->cbxAudioPack->setCurrentIndex(index);
+        }
+
+        ui->sbHUDSize->setValue(oldHUDSize);
+        ui->sbCameraSensitivity->setValue(oldCameraSensitivity);
     }
-    QString qSelected = QString::fromStdString(oldAudioPack);
-    int index = ui->cbxAudioPack->findText(qSelected);
-    if (index >= 0) {
-        ui->cbxAudioPack->setCurrentIndex(index);
-    }
-
-    ui->sbHUDSize->setValue(oldHUDSize);
-    ui->sbCameraSensitivity->setValue(oldCameraSensitivity);
 
     setEnabled();
 }
@@ -97,6 +112,12 @@ void PluginSettingsDialog::on_PluginSettingsDialog_accepted()
 void PluginSettingsDialog::on_PluginSettingsDialog_rejected()
 {
     if (!((MainWindow*)parent())->getEmuInstance())
+    {
+        closeDlg();
+        return;
+    }
+
+    if (!isPluginLoaded)
     {
         closeDlg();
         return;
@@ -139,14 +160,13 @@ void PluginSettingsDialog::on_cbFFLoadingScreens_stateChanged(int state)
     emit updatePluginSettings();
 }
 
-void PluginSettingsDialog::on_cbxAudioPack_currentIndexChanged(int idx)
+void PluginSettingsDialog::on_cbxAudioPack_currentTextChanged(const QString &text)
 {
     auto plugin = emuInstance->plugin;
     std::string root = plugin->tomlUniqueIdentifier();
 
     auto& cfg = emuInstance->getGlobalConfig();
-    auto audioPackNames = plugin->audioPackNames();
-    cfg.SetString(root + ".AudioPack", audioPackNames[idx]);
+    cfg.SetString(root + ".AudioPack", text.toStdString());
 
     emit updatePluginSettings();
 }

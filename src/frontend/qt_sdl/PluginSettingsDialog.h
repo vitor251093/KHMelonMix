@@ -61,7 +61,7 @@ private slots:
 
     void on_cbSingleScreenMode_stateChanged(int state);
     void on_cbFFLoadingScreens_stateChanged(int state);
-    void on_cbxAudioPack_currentIndexChanged(int idx);
+    void on_cbxAudioPack_currentTextChanged(const QString &text);
 
     void on_sbHUDSize_valueChanged(int value);
     void on_sbCameraSensitivity_valueChanged(int value);
@@ -71,6 +71,7 @@ private:
     Ui::PluginSettingsDialog* ui;
     EmuInstance* emuInstance;
 
+    bool isPluginLoaded;
     int oldSingleScreenMode;
     int oldFFLoadingScreens;
     std::string oldAudioPack;
