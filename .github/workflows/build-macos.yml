@@ -51,7 +51,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macOS-${{ matrix.arch }}
+          name: MelonMix-macOS-${{ matrix.arch }}
           path: macOS-${{ matrix.arch }}.zip
           retention-days: 1
 
@@ -85,5 +85,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macOS-universal
+          name: MelonMix-macOS-universal
           path: macOS-universal.zip
