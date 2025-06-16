@@ -88,6 +88,7 @@ jobs:
     - name: Preparing artifacts
       working-directory: ${{runner.workspace}}\KHMelonMix\build
       run: |
+        rm -rf dist || true
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
