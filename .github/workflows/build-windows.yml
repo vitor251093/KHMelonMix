@@ -25,6 +25,19 @@ jobs:
     steps:
     - name: Check out sources
       uses: actions/checkout@v3
+
+    - name: Cache MSYS2 packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          C:/msys64/var/cache/pacman/pkg
+          C:/msys64/etc/pacman.d/gnupg
+          D:/a/_temp/msys64/var/cache/pacman/pkg
+          D:/a/KHMelonMix/KHMelonMix/vcpkg/downloads/tools/msys2
+        key: ${{ runner.os }}-msys2-pacman-${{ hashFiles('**/*.cmake') }}
+        restore-keys: |
+          ${{ runner.os }}-msys2-pacman-
+
     - name: Set up MSYS2
       uses: msys2/setup-msys2@v2
       with:
@@ -32,10 +45,36 @@ jobs:
         update: false
         path-type: inherit
         pacboy: gcc:p cmake:p ninja:p make:p
+
+    - name: Cache vcpkg
+      uses: actions/cache@v3
+      with:
+        path: |
+          ${{ github.workspace }}/vcpkg
+          ${{ github.workspace }}/vcpkg_installed
+          ${{ github.workspace }}/vcpkg/buildtrees
+          ${{ github.workspace }}/vcpkg/downloads
+          ${{ github.workspace }}/vcpkg/packages
+        # キーの計算に使用するファイルを増やして、より正確なキャッシュ検出を実現
+        key: ${{ runner.os }}-vcpkg-${{ env.VCPKG_COMMIT }}-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'cmake/overlay-triplets/*.cmake') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-${{ env.VCPKG_COMMIT }}-${{ hashFiles('CMakeLists.txt') }}
+          ${{ runner.os }}-vcpkg-${{ env.VCPKG_COMMIT }}-
+
     - name: Set up vcpkg
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+
+    - name: Cache CMake build directory
+      uses: actions/cache@v3
+      with:
+        path: ${{ github.workspace }}/build
+        key: ${{ runner.os }}-cmake-build-${{ hashFiles('CMakeLists.txt', 'src/**', 'include/**', 'cmake/**') }}
+        restore-keys: |
+          ${{ runner.os }}-cmake-build-${{ hashFiles('CMakeLists.txt') }}
+          ${{ runner.os }}-cmake-build-
+
     - name: Configure
       run: cmake --preset=release-mingw-x86_64 -DMELONDS_EMBED_BUILD_INFO=ON
       env:
