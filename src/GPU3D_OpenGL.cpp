@@ -730,7 +730,9 @@ void GLRenderer::BuildPolygons(GLRenderer::RendererPolygon* polygons, int npolys
 
             for (int i = 0; i < poly->NumVertices + indexOffset; i++)
             {
-                u32 polyXY = scaledPositions[i][0] | (scaledPositions[i][1] << 16);
+                s32 x = std::min(std::max(scaledPositions[i][0], 0), 256*ScaleFactor);
+                s32 y = std::min(std::max(scaledPositions[i][1], 0), 192*ScaleFactor);
+                u32 polyXY = x | (y << 16);
                 polyVptr[i*7] = polyXY;
             }
         }

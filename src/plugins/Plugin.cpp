@@ -241,7 +241,7 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
                 if (newValues.z == 1) {
                     if (loggerModeEnabled) {
                         atLeastOneLog = true;
-                        printf("Position: %f - %f -- Attribute: %d\n", _x, _y, polygon->Attr);
+                        printf("Old Position: %f - %f -- Attribute: %d -- New Position: %f - %f\n", _x, _y, polygon->Attr, newValues.x, newValues.y);
                     }
 
                     *x = (s32)(newValues.x);
