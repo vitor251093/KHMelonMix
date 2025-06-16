@@ -789,6 +789,16 @@ void Plugin::onReturnToGameAfterCutscene() {
     }
 }
 
+std::vector<std::string> Plugin::audioPackNames() {
+    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "audio";
+    if (!std::filesystem::exists(fullPath)) {
+        return {};
+    }
+
+    return Platform::ContentsOfFolder(fullPath.string(), true, false);
+}
+
 std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
     std::string filekey = "bgm" + std::to_string(id);
 

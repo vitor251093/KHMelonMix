@@ -264,7 +264,7 @@ public:
     u32 getBgmDelayAtStart() const { return _BackgroundMusicDelayAtStart; }
     bool getStoreBackgroundMusicPosition() const { return _StoreBackgroundMusicPosition; }
     bool getResumeFromPositionBackgroundMusic() const { return _ResumeBackgroundMusicPosition; }
-    virtual std::vector<std::string> audioPackNames() {return {};}
+    std::vector<std::string> audioPackNames();
 
     std::string getReplacementBackgroundMusicFilePath(u16 id);
 
