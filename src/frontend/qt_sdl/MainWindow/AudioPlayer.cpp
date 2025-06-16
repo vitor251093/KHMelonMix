@@ -15,6 +15,7 @@ AudioPlayer::AudioPlayer(QObject *parent, quint16 bgmId)
     : QObject(parent)
     , m_bgmId(bgmId)
 {
+    qRegisterMetaType<melonMix::AudioPlayer*>("melonMix::AudioPlayer*");
 }
 
 bool AudioPlayer::loadFile(const QString &fileName)
@@ -104,7 +105,7 @@ void AudioPlayer::onFadeOutCompleted()
         m_playing = false;
     }
 
-    QMetaObject::invokeMethod(parent(), "onBgmFadeOutCompleted", Qt::QueuedConnection, Q_ARG(AudioPlayer*, this));
+    QMetaObject::invokeMethod(parent(), "onBgmFadeOutCompleted", Qt::QueuedConnection, Q_ARG(melonMix::AudioPlayer*, this));
 }
 
 void AudioPlayer::pause()
