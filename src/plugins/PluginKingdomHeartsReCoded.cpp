@@ -1654,6 +1654,11 @@ bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_singleScreen(int width
     return true;
 }
 bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching) {
+    if (AspectRatio == 0)
+    {
+        return false;
+    }
+
     int X0 = 0;
     int Y0 = 0;
     int X1 = width;
