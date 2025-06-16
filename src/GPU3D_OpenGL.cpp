@@ -490,6 +490,7 @@ void GLRenderer::BuildPolygons(GLRenderer::RendererPolygon* polygons, int npolys
         RendererPolygon* rp = &polygons[i];
         Polygon* poly = rp->PolyData;
         u32* polyVptr = vptr;
+        bool betterPolygons = BetterPolygons;
 
         rp->IndicesOffset = iidx;
         rp->NumIndices = 0;
@@ -556,7 +557,27 @@ void GLRenderer::BuildPolygons(GLRenderer::RendererPolygon* polygons, int npolys
         {
             rp->PrimType = GL_TRIANGLES;
 
-            if (!BetterPolygons)
+            if (betterPolygons)
+            {
+                u32* tmpVptr = vptr;
+                for (u32 j = 0; j < poly->NumVertices; j++)
+                {
+                    Vertex* vtx = poly->Vertices[j];
+                    tmpVptr = SetupVertex(poly, j, vtx, vtxattr, tmpVptr);
+                }
+
+                s32 scaledPositions[10][2];
+                for (int i = 0; i < poly->NumVertices; i++)
+                {
+                    u32 polyXY = polyVptr[i*7];
+                    scaledPositions[i][0] = polyXY & 0xFFFF;
+                    scaledPositions[i][1] = (polyXY >> 16) & 0xFFFF;
+                }
+
+                betterPolygons = !GamePlugin->gpuOpenGL_applyChangesToPolygon(ScaleFactor, scaledPositions, poly);
+            }
+
+            if (!betterPolygons)
             {
                 // regular triangle-splitting
 
@@ -695,7 +716,7 @@ void GLRenderer::BuildPolygons(GLRenderer::RendererPolygon* polygons, int npolys
         rp->NumEdgeIndices += 2;
 
         {
-            int indexOffset = (poly->Type != 1 && poly->NumVertices != 3 && BetterPolygons) ? 1 : 0;
+            int indexOffset = (poly->Type != 1 && poly->NumVertices != 3 && betterPolygons) ? 1 : 0;
 
             s32 scaledPositions[10][2];
             for (int i = 0; i < poly->NumVertices + indexOffset; i++)

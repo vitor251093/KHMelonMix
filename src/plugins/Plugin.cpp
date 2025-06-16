@@ -165,10 +165,10 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 
 #undef UPDATE_GPU_VAR
 
-void Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
+bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
-        return;
+        return false;
     }
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
@@ -211,7 +211,7 @@ void Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
                                 scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
                             }
 
-                            return;
+                            return true;
                         }
                     }
                 }
@@ -219,6 +219,7 @@ void Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
         }
     }
 
+    bool changed = false;
     for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
     {
         s32* x = &scaledPositions[vertexIndex][0];
@@ -245,6 +246,7 @@ void Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
 
                     *x = (s32)(newValues.x);
                     *y = (s32)(newValues.y);
+                    changed = true;
                     break;
                 }
             }
@@ -253,7 +255,9 @@ void Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
     if (atLeastOneLog) {
         printf("\n");
     }
-};
+
+    return changed;
+}
 
 bool Plugin::togglePause()
 {
