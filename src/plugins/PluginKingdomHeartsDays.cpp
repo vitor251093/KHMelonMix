@@ -1100,6 +1100,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes(int gameScen
         case gameScene_DeathScreen:
             shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
+                    .force()
                     .hudScale(hudScale)
                     .build(aspectRatio));
             break;

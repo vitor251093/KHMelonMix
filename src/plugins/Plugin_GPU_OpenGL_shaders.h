@@ -555,6 +555,11 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                     finalPos.y = shapes[shapeIndex].squareInitialCoords.w - finalPos.y;
                 }
 
+                ivec4 alphaColor = ivec4(texelFetch(ScreenTex, ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy + ivec2(512,0), 0));
+                if ((effects & 0x100) == 0 && (alphaColor.a == 0x4 || (alphaColor.a < 0x4 && alphaColor.g == 0))) {
+                    continue;
+                }
+
                 if (index == 0) {
                     ivec2 coordinates = ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy;
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));

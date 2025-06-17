@@ -410,6 +410,10 @@ public:
         shapeData.effects |= 0x80;
         return *this;
     }
+    ShapeBuilder2D& force() {
+        shapeData.effects |= 0x100;
+        return *this;
+    }
     ShapeBuilder2D& mirror(int mirror) {
         shapeData.effects |= mirror;
         return *this;
