@@ -64,12 +64,12 @@ jobs:
       - name: Download x86_64
         uses: actions/download-artifact@v4
         with:
-          name: macOS-x86_64
+          name: MelonMix-macOS-x86_64
           path: x86_64
       - name: Download arm64
         uses: actions/download-artifact@v4
         with:
-          name: macOS-arm64
+          name: MelonMix-macOS-arm64
           path: arm64
       - name: Combine app bundles
         shell: bash
