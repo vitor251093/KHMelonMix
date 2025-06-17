@@ -830,6 +830,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .withSize(3, 3)
                             .placeAtCorner(corner_TopLeft)
                             .withMargin(247.0, 6.0, 0.0, 0.0)
+                            .force()
                             .hudScale(hudScale)
                             .build(aspectRatio));
 
@@ -1000,6 +1001,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .placeAtCorner(corner_Top)
                             .sourceScale(aspectRatio*13, 1.0*4)
                             .hudScale(hudScale)
+                            .force()
                             .preserveDsScale()
                             .build(aspectRatio));
                 }
