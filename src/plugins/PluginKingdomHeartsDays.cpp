@@ -1157,6 +1157,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
                         .polygonVertexesCount(4)
                         .polygonAttributes(1058996416)
                         .zRange(-10000.0, -0.00000)
+                        .adjustAspectRatioOnly()
                         .build(aspectRatio));
 
                 // aim
@@ -1165,6 +1166,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes(int gameScen
                         .polygonVertexesCount(4)
                         .polygonAttributes(1042219200)
                         .zRange(-10000.0, -0.00000)
+                        .adjustAspectRatioOnly()
                         .build(aspectRatio));
 
                 float heartTopMargin = (ShowMissionInfo ? 24.0 : 0.0);

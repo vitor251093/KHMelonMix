@@ -1162,6 +1162,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonVertexesCount(4)
                 .polygonAttributes(1058996416)
                 .zRange(-1.0, -0.5)
+                .adjustAspectRatioOnly()
                 .build(aspectRatio));
 
         // aim
@@ -1170,6 +1171,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .polygonVertexesCount(4)
                 .polygonAttributes(1042219200)
                 .zRange(-1.0, -0.5)
+                .adjustAspectRatioOnly()
                 .build(aspectRatio));
 
         // green aim small square
@@ -1180,6 +1182,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .fromPosition(0, 60)
                 .withSize(256, 136)
                 .zRange(-1.0, -0.5)
+                .adjustAspectRatioOnly()
                 .build(aspectRatio));
 
         // green aim big square
@@ -1190,6 +1193,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .fromPosition(0, 60)
                 .withSize(256, 136)
                 .zRange(-1.0, -0.5)
+                .adjustAspectRatioOnly()
                 .build(aspectRatio));
 
         // pickup license notification
@@ -1205,13 +1209,14 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
 
         // command menu
         shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
+                .polygonAttributes(2031808)
                 .fromPosition(0, 69)
                 .withSize(80, 124)
                 .placeAtCorner(corner_BottomLeft)
                 .withMargin(10.0, 0.0, 0.0, 0.5)
                 .zRange(-1.0, -1.0)
                 .negateColor(0xFFFFFF)
-                .polygonAttributes(2031808)
                 .hudScale(UIScale)
                 .build(aspectRatio));
 

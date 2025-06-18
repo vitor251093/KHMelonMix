@@ -615,6 +615,10 @@ public:
         shapeData.effects |= 0x1;
         return *this;
     }
+    ShapeBuilder3D& adjustAspectRatioOnly() {
+        shapeData.effects |= 0x8;
+        return *this;
+    }
     ShapeBuilder3D& polygonVertexesCount(int _polygonVertexesCount) {
         shapeData.polygonVertexesCount = _polygonVertexesCount;
         return *this;

@@ -165,6 +165,35 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
 
 #undef UPDATE_GPU_VAR
 
+bool Plugin::gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, ShapeData3D shape, int vertexIndex)
+{
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+
+    s32* x = &scaledPositions[vertexIndex][0];
+    s32* y = &scaledPositions[vertexIndex][1];
+    s32 z = polygon->Vertices[vertexIndex]->Position[2];
+    s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
+
+    auto _x = (float)(*x);
+    auto _y = (float)(*y);
+    float _z = ((float)z)/(1 << 22);
+
+    bool loggerModeEnabled = (shape.effects & 0x4) != 0;
+
+    vec3 newValues = shape.compute3DCoordinatesOf3DSquareShapeInVertexMode(_x, _y, _z, polygon->Attr, polygon->TexParam, rgb, resolutionScale, aspectRatio);
+    if (newValues.z == 1) {
+        if (loggerModeEnabled) {
+            printf("Old Position: %f - %f -- Attribute: %d -- New Position: %f - %f\n", _x, _y, polygon->Attr, newValues.x, newValues.y);
+        }
+
+        *x = (s32)(newValues.x);
+        *y = (s32)(newValues.y);
+        return true;
+    }
+
+    return false;
+}
+
 bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
     bool disable = DisableEnhancedGraphics;
     if (disable) {
@@ -205,10 +234,18 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
                                 printf("Position: %d - %d -- Size: %d - %d\n", x0, y0, x1 - x0, y1 - y0);
                             }
 
-                            float xCenter = (x0 + x1)/2.0;
-
-                            for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
-                                scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
+                            if ((shape.effects & 0x8) != 0)
+                            {
+                                float xCenter = (x0 + x1)/2.0;
+                                for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
+                                    scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
+                                }
+                            }
+                            else
+                            {
+                                for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
+                                    gpuOpenGL_applyChangesToPolygonVertex(resolutionScale, scaledPositions, polygon, shape, vIndex);
+                                }
                             }
 
                             return true;
@@ -222,33 +259,14 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
     bool changed = false;
     for (int vertexIndex = 0; vertexIndex < polygon->NumVertices; vertexIndex++)
     {
-        s32* x = &scaledPositions[vertexIndex][0];
-        s32* y = &scaledPositions[vertexIndex][1];
-        s32 z = polygon->Vertices[vertexIndex]->Position[2];
-        s32* rgb = polygon->Vertices[vertexIndex]->FinalColor;
-
-        auto _x = (float)(*x);
-        auto _y = (float)(*y);
-        float _z = ((float)z)/(1 << 22);
-
         for (auto shape : current3DShapes)
         {
-            bool loggerModeEnabled = (shape.effects & 0x4) != 0;
-
             // vertex mode
-            if ((shape.effects & 0x1) == 0) {
-                vec3 newValues = shape.compute3DCoordinatesOf3DSquareShapeInVertexMode(_x, _y, _z, polygon->Attr, polygon->TexParam, rgb, resolutionScale, aspectRatio);
-                if (newValues.z == 1) {
-                    if (loggerModeEnabled) {
-                        atLeastOneLog = true;
-                        printf("Old Position: %f - %f -- Attribute: %d -- New Position: %f - %f\n", _x, _y, polygon->Attr, newValues.x, newValues.y);
-                    }
-
-                    *x = (s32)(newValues.x);
-                    *y = (s32)(newValues.y);
-                    changed = true;
-                    break;
-                }
+            if ((shape.effects & 0x1) == 0)
+            {
+                bool loggerModeEnabled = (shape.effects & 0x4) != 0;
+                changed = gpuOpenGL_applyChangesToPolygonVertex(resolutionScale, scaledPositions, polygon, shape, vertexIndex);
+                atLeastOneLog = atLeastOneLog || (loggerModeEnabled && changed);
             }
         }
     }

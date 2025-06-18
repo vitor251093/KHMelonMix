@@ -156,6 +156,7 @@ public:
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
     virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
 
+    virtual bool gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, ShapeData3D shape, int vertexIndex);
     virtual bool gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
 
     virtual std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData2D>(); };
