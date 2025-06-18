@@ -2278,7 +2278,7 @@ void MainWindow::onUpdatePluginSettings()
     if (parentwin)
         return parentwin->onUpdatePluginSettings();
 
-    emuThread->updateVideoSettings();
+    emuThread->updateVideoRenderer();
 
     // update any child windows we have
     auto childwins = findChildren<MainWindow *>(nullptr, Qt::FindDirectChildrenOnly);
@@ -2289,7 +2289,7 @@ void MainWindow::onUpdatePluginSettings()
         auto thread = child->getEmuInstance()->getEmuThread();
 
         if (child->getWindowID() == 0)
-            thread->updateVideoSettings();
+            thread->updateVideoRenderer();
     }
 }
 
