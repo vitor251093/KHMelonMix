@@ -1211,6 +1211,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .withMargin(10.0, 0.0, 0.0, 0.5)
                 .zRange(-1.0, -1.0)
                 .negateColor(0xFFFFFF)
+                .polygonAttributes(2031808)
                 .hudScale(UIScale)
                 .build(aspectRatio));
 
