@@ -1829,7 +1829,12 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 {
     u32* buffer = bottomScreen2DTexture();
     u32 pixel = getPixel(buffer, 5, 4, 0);
-    return ((pixel >> 0) & 0x3F) >= 15 && ((pixel >> 8) & 0x3F) >= 15 && ((pixel >> 16) & 0x3F) >= 15;
+    if (((pixel >> 0) & 0x3F) >= 15 && ((pixel >> 8) & 0x3F) >= 15 && ((pixel >> 16) & 0x3F) >= 15)
+    {
+        u32 pixel2 = getPixel(buffer, 128, 4, 0);
+        return !(((pixel2 >> 0) & 0x3F) >= 15 && ((pixel2 >> 8) & 0x3F) >= 15 && ((pixel2 >> 16) & 0x3F) >= 15);
+    }
+    return false;
 }
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
