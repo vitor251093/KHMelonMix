@@ -139,9 +139,9 @@ public:
 
     int DefaultCameraSensitivity = 3;
 
-    bool shouldInvalidatePlugin = false;
-    void invalidate() {
-        shouldInvalidatePlugin = true;
+    bool shouldInvalidateConfigs = false;
+    void invalidateConfigs() {
+        shouldInvalidateConfigs = true;
     }
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};

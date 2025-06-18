@@ -2270,7 +2270,7 @@ void MainWindow::onUpdatePluginSettings()
 {
     if (!emuInstance) return;
 
-    emuInstance->plugin->invalidate();
+    emuInstance->plugin->invalidateConfigs();
 
     // if we have a parent window: pass the message over to the parent
     // the topmost parent takes care of updating all the windows

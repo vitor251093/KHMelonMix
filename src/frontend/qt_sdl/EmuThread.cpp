@@ -190,7 +190,8 @@ void EmuThread::run()
         auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
         if (rom != nullptr) {
             u32 gamecode = rom->GetHeader().GameCodeAsU32();
-            if (emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode || emuInstance->plugin->shouldInvalidatePlugin)
+            bool shouldLoadPlugin = emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode;
+            if (shouldLoadPlugin)
             {
                 lastVideoRenderer = -1;
                 videoSettingsDirty = true;
@@ -199,6 +200,11 @@ void EmuThread::run()
                 emuInstance->plugin = Plugins::PluginManager::load(gamecode);
                 emuInstance->plugin->setNds(emuInstance->getNDS());
                 emuInstance->plugin->onLoadROM();
+                emuInstance->plugin->shouldInvalidateConfigs = true;
+            }
+            if (emuInstance->plugin->shouldInvalidateConfigs)
+            {
+                emuInstance->plugin->shouldInvalidateConfigs = false;
                 emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetBool(path);
@@ -211,7 +217,9 @@ void EmuThread::run()
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetString(path);
                 });
-
+            }
+            if (shouldLoadPlugin)
+            {
                 if (emuInstance->plugin->shouldStartInFullscreen()) {
                     emit windowFullscreenToggle();
                 }
