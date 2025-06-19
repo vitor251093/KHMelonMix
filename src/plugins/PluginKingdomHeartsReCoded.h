@@ -84,7 +84,6 @@ private:
     u32 lastMainMenuView;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
-    std::map<GLuint, int[10]> CompGpuLastValues{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};
     std::map<u32, int[3]> CompGpu3DLastValues{};
 

@@ -111,13 +111,7 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
     CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
-
-    for (int index = 0; index <= 6; index ++) {
-        CompGpuLastValues[CompShader][index] = -1;
-    }
 }
-
-#define UPDATE_GPU_VAR(storage,value,updated) if (storage != (value)) { storage = (value); updated = true; }
 
 void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
@@ -125,45 +119,24 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     bool showOriginalHud = renderer_showOriginalUI();
     int screenLayout = renderer_screenLayout();
     int brightnessMode = renderer_brightnessMode();
-    int gameSceneState = renderer_gameSceneState();
 
-    bool updated = false;
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][0], (int)(aspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][1], (int)(forcedAspectRatio*1000), updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][2], UIScale, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][3], showOriginalHud ? 1 : 0, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][4], screenLayout, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][5], brightnessMode, updated);
+    std::vector<ShapeData2D> shapes = renderer_2DShapes(GameScene, renderer_gameSceneState());
 
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][6], GameScene, updated);
-    UPDATE_GPU_VAR(CompGpuLastValues[CompShader][7], gameSceneState, updated);
+    glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
+    glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
+    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
+    glUniform1i(CompGpuLoc[CompShader][3], showOriginalHud ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][4], screenLayout);
+    glUniform1i(CompGpuLoc[CompShader][5], brightnessMode);
+    glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
 
-    if (updated) {
-        std::vector<ShapeData2D> shapes = renderer_2DShapes(GameScene, gameSceneState);
-
-#if DEBUG_MODE_ENABLED
-        printf("Updating shapes. New shape count: %d\n", shapes.size());
-        printf("Updated conditions: scene %d - state %d\n", GameScene, gameSceneState);
-#endif
-
-        glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
-        glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
-        glUniform1i(CompGpuLoc[CompShader][2], CompGpuLastValues[CompShader][2]);
-        glUniform1i(CompGpuLoc[CompShader][3], CompGpuLastValues[CompShader][3]);
-        glUniform1i(CompGpuLoc[CompShader][4], CompGpuLastValues[CompShader][4]);
-        glUniform1i(CompGpuLoc[CompShader][5], CompGpuLastValues[CompShader][5]);
-        glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
-
-        shapes.resize(SHAPES_DATA_ARRAY_SIZE);
-        auto shadersData = shapes.data();
-        glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
-        void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-        if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * shapes.size());
-        glUnmapBuffer(GL_UNIFORM_BUFFER);
-    }
+    shapes.resize(SHAPES_DATA_ARRAY_SIZE);
+    auto shadersData = shapes.data();
+    glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
+    void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * shapes.size());
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
-
-#undef UPDATE_GPU_VAR
 
 bool Plugin::gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, ShapeData3D shape, int vertexIndex)
 {
@@ -201,6 +174,7 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
     }
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
+    std::vector<ShapeData3D> current3DShapes = renderer_3DShapes(GameScene, renderer_gameSceneState());
 
     bool atLeastOneLog = false;
     for (auto shape : current3DShapes)
@@ -1175,7 +1149,6 @@ bool Plugin::refreshGameScene()
     debugLogs(newGameScene);
 
     bool updated = setGameScene(newGameScene);
-    refreshShapes();
 
     refreshCutscene();
 
@@ -1185,11 +1158,6 @@ bool Plugin::refreshGameScene()
     refreshMouseStatus();
 
     return updated;
-}
-
-void Plugin::refreshShapes()
-{
-    current3DShapes = renderer_3DShapes(GameScene, renderer_gameSceneState());
 }
 
 void Plugin::setAspectRatio(float aspectRatio)

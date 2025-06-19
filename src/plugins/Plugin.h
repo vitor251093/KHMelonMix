@@ -311,8 +311,6 @@ public:
     bool setGameScene(int newGameScene);
     bool refreshGameScene();
 
-    void refreshShapes();
-
     virtual u32 getAspectRatioAddress() {return 0;}
     virtual void setAspectRatio(float aspectRatio);
     virtual void setInternalResolutionScale(int scale);
@@ -346,7 +344,6 @@ public:
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
-    std::map<GLuint, int[20]> CompGpuLastValues{};
     std::map<GLuint, GLuint> CompUboLoc{};
 
     std::map<u32, std::map<u32, GLuint[20]>> CompGpu3DLoc{};
@@ -360,8 +357,6 @@ protected:
     int GameScene = -1;
     int HUDState = -1;
     int UIScale = 4;
-
-    std::vector<ShapeData3D> current3DShapes;
 
     int CameraSensitivity = 0;
     bool DisableEnhancedGraphics = false;
