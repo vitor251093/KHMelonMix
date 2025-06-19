@@ -79,7 +79,6 @@ private:
     bool ShowFullscreenMap;
     int MinimapCenterX = 128;
     int MinimapCenterY = 96;
-    int MinimapFrameTick;
     bool HideAllHUD;
     u32 lastMainMenuView;
 

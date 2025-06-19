@@ -185,8 +185,7 @@ enum
     gameSceneState_showBottomScreenMissionInformation,
     gameSceneState_showChallengeMeter,
     gameSceneState_bottomScreenCutscene,
-    gameSceneState_topScreenCutscene,
-    gameSceneState_minimapCenterTick
+    gameSceneState_topScreenCutscene
 };
 
 enum
@@ -1311,12 +1310,6 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
 
                 if (ShowMap) {
                     state |= (1 << gameSceneState_showMinimap);
-
-                    int framesPerTick = 48;
-                    MinimapFrameTick = (MinimapFrameTick + 1) % (framesPerTick*2);
-                    if (MinimapFrameTick < framesPerTick) {
-                        state |= (1 << gameSceneState_minimapCenterTick);
-                    }
 
                     if (isBugSector())
                     {
