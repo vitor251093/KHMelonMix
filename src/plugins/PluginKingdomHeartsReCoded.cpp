@@ -534,6 +534,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
         case gameScene_CutsceneWithStaticImages:
             shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
+                        .force()
                         .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
