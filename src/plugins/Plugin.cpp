@@ -239,8 +239,13 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
             if ((shape.effects & 0x1) == 0)
             {
                 bool loggerModeEnabled = (shape.effects & 0x4) != 0;
-                changed = gpuOpenGL_applyChangesToPolygonVertex(resolutionScale, scaledPositions, polygon, shape, vertexIndex);
-                atLeastOneLog = atLeastOneLog || (loggerModeEnabled && changed);
+                bool thisChanged = gpuOpenGL_applyChangesToPolygonVertex(resolutionScale, scaledPositions, polygon, shape, vertexIndex);
+                changed |= thisChanged;
+                atLeastOneLog = atLeastOneLog || (loggerModeEnabled && thisChanged);
+                if (thisChanged)
+                {
+                    break;
+                }
             }
         }
     }
