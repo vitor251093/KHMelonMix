@@ -120,21 +120,19 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     int screenLayout = renderer_screenLayout();
     int brightnessMode = renderer_brightnessMode();
 
-    std::vector<ShapeData2D> shapes = renderer_2DShapes(GameScene, renderer_gameSceneState());
-
     glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
     glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
     glUniform1i(CompGpuLoc[CompShader][2], UIScale);
     glUniform1i(CompGpuLoc[CompShader][3], showOriginalHud ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][4], screenLayout);
     glUniform1i(CompGpuLoc[CompShader][5], brightnessMode);
-    glUniform1i(CompGpuLoc[CompShader][6], shapes.size());
+    glUniform1i(CompGpuLoc[CompShader][6], current2DShapes.size());
 
-    shapes.resize(SHAPES_DATA_ARRAY_SIZE);
-    auto shadersData = shapes.data();
+    current2DShapes.resize(SHAPES_DATA_ARRAY_SIZE);
+    auto shadersData = current2DShapes.data();
     glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
     void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
-    if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * shapes.size());
+    if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * current2DShapes.size());
     glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
 
@@ -174,7 +172,6 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
     }
 
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    std::vector<ShapeData3D> current3DShapes = renderer_3DShapes(GameScene, renderer_gameSceneState());
 
     bool atLeastOneLog = false;
     for (auto shape : current3DShapes)
@@ -1210,6 +1207,15 @@ void Plugin::loadConfigs(
 )
 {
     _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
+}
+
+void Plugin::buildShapes()
+{
+    renderer_beforeBuildingShapes();
+    GameSceneState = renderer_gameSceneState();
+    current2DShapes = renderer_2DShapes();
+    current3DShapes = renderer_3DShapes();
+    renderer_afterBuildingShapes();
 }
 
 void Plugin::errorLog(const char* format, ...) {

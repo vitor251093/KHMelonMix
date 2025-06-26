@@ -29,7 +29,7 @@ public:
     std::string assetsFolder();
     std::string assetsRegionSubfolder();
 
-    std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState);
+    std::vector<ShapeData2D> renderer_2DShapes();
     int renderer_screenLayout();
     int renderer_brightnessMode();
     bool renderer_showOriginalUI();

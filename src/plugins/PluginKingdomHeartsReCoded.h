@@ -29,8 +29,8 @@ public:
     std::string assetsFolder();
     std::string tomlUniqueIdentifier();
 
-    std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState);
-    std::vector<ShapeData3D> renderer_3DShapes(int gameScene, int gameSceneState);
+    std::vector<ShapeData2D> renderer_2DShapes();
+    std::vector<ShapeData3D> renderer_3DShapes();
     int renderer_gameSceneState();
     int renderer_screenLayout();
     int renderer_brightnessMode();

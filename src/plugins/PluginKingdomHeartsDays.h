@@ -34,8 +34,10 @@ public:
     std::string assetsRegionSubfolder();
     std::string tomlUniqueIdentifier();
 
-    std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState);
-    std::vector<ShapeData3D> renderer_3DShapes(int gameScene, int gameSceneState);
+    void renderer_beforeBuildingShapes();
+    std::vector<ShapeData2D> renderer_2DShapes();
+    std::vector<ShapeData3D> renderer_3DShapes();
+    void renderer_afterBuildingShapes();
     int renderer_gameSceneState();
     int renderer_screenLayout();
     int renderer_brightnessMode();
@@ -93,6 +95,8 @@ private:
 
     std::map<u32, GLuint[5]> CompGpu3DLoc{};
     std::map<u32, int[5]> CompGpu3DLastValues{};
+    /*bool _double3DTopScreen2DTextureEnabled = false;
+    u32 _double3DTopScreen2DTexture[256 * 192 * 4] = {};*/
 
     // game scene detection utils
     bool _muchOlderHad3DOnTopScreen = false;

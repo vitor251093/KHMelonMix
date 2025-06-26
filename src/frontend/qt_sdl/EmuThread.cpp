@@ -419,6 +419,7 @@ void EmuThread::run()
 
                 if (shouldRenderFrame)
                 {
+                    emuInstance->plugin->buildShapes();
                     emuInstance->drawScreenGL();
                 }
             }

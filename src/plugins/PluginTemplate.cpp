@@ -30,7 +30,7 @@ int PluginTemplate::detectGameScene()
     return 0;
 }
 
-std::vector<ShapeData2D> PluginTemplate::renderer_2DShapes(int gameScene, int gameSceneState) {
+std::vector<ShapeData2D> PluginTemplate::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
     int hudScale = UIScale;

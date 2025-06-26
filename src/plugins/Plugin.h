@@ -159,8 +159,11 @@ public:
     virtual bool gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, ShapeData3D shape, int vertexIndex);
     virtual bool gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
 
-    virtual std::vector<ShapeData2D> renderer_2DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData2D>(); };
-    virtual std::vector<ShapeData3D> renderer_3DShapes(int gameScene, int gameSceneState) { return std::vector<ShapeData3D>(); };
+    void buildShapes();
+    virtual void renderer_beforeBuildingShapes() { };
+    virtual std::vector<ShapeData2D> renderer_2DShapes() { return std::vector<ShapeData2D>(); };
+    virtual std::vector<ShapeData3D> renderer_3DShapes() { return std::vector<ShapeData3D>(); };
+    virtual void renderer_afterBuildingShapes() { };
     virtual int renderer_gameSceneState() { return 0; };
     virtual int renderer_screenLayout() { return 0; };
     virtual int renderer_brightnessMode() { return 0; };
@@ -351,10 +354,14 @@ protected:
     std::map<u32, GLuint> CompUbo3DLoc{};
     bool CompUbo3DLocInit = false;
 
+    std::vector<ShapeData2D> current2DShapes;
+    std::vector<ShapeData3D> current3DShapes;
+
     int InternalResolutionScale = 1;
     float AspectRatio = 0;
     int PriorGameScene = -1;
     int GameScene = -1;
+    int GameSceneState = -1;
     int HUDState = -1;
     int UIScale = 4;
 

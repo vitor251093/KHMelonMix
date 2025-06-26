@@ -441,7 +441,7 @@ std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
     return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 }
 
-std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameScene, int gameSceneState) {
+std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
     int hudScale = UIScale;
@@ -514,7 +514,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
             break;
 
         case gameScene_Cutscene:
-            if ((gameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
+            if ((GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
                         .placeAtCorner(corner_Center)
@@ -522,7 +522,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .preserveDsScale()
                         .build(aspectRatio));
             }
-            if ((gameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
+            if ((GameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
                         .hudScale(hudScale)
@@ -655,7 +655,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                     .build(aspectRatio));
 
         case gameScene_InGameDialog:
-            if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
+            if ((GameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
                         .hudScale(hudScale)
@@ -665,7 +665,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
             }
 
         case gameScene_InGameWithMap:
-            if ((gameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0)
+            if ((GameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0)
             {
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
@@ -680,7 +680,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 break;
             }
 
-            if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
+            if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
             {
                 // top mission information
                 shapes.push_back(ShapeBuilder2D::square()
@@ -691,7 +691,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                         .build(aspectRatio));
             }
 
-            if ((gameSceneState & (1 << gameSceneState_textOverScreen)) > 0)
+            if ((GameSceneState & (1 << gameSceneState_textOverScreen)) > 0)
             {
                 // texts over screen, like in the tutorial
                 shapes.push_back(ShapeBuilder2D::square()
@@ -702,7 +702,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 break;
             }
 
-            if ((gameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
+            if ((GameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
                         .hudScale(hudScale)
@@ -711,9 +711,9 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                 break;
             }
 
-            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0)
+            if ((GameSceneState & (1 << gameSceneState_showHud)) > 0)
             {
-                if ((gameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
+                if ((GameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
                     // minimap
                     ivec2 _minimapCenter = minimapCenter();
                     shapes.push_back(ShapeBuilder2D::square()
@@ -729,7 +729,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .build(aspectRatio));
                 }
 
-                if ((gameSceneState & (1 << gameSceneState_showFloorCounter)) > 0)
+                if ((GameSceneState & (1 << gameSceneState_showFloorCounter)) > 0)
                 {
                     // floor label
                     shapes.push_back(ShapeBuilder2D::square()
@@ -756,7 +756,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .build(aspectRatio));
                 }
 
-                if ((gameSceneState & (1 << gameSceneState_showEnemiesCounter)) > 0)
+                if ((GameSceneState & (1 << gameSceneState_showEnemiesCounter)) > 0)
                 {
                     float enemiesCounterDiagonalMergeFactor = 5.0;
 
@@ -786,9 +786,9 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .build(aspectRatio));
                 }
 
-                if ((gameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0)
+                if ((GameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0)
                 {
-                    bool showChallengeMeter = (gameSceneState & (1 << gameSceneState_showChallengeMeter)) > 0;
+                    bool showChallengeMeter = (GameSceneState & (1 << gameSceneState_showChallengeMeter)) > 0;
                     int challengeMeterHeight = showChallengeMeter ? 7 : 0;
                     if (showChallengeMeter)
                     {
@@ -923,7 +923,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .build(aspectRatio));
                 }
 
-                if ((gameSceneState & (1 << gameSceneState_showOlympusBattlePlayerHealth)) > 0)
+                if ((GameSceneState & (1 << gameSceneState_showOlympusBattlePlayerHealth)) > 0)
                 {
                     // player health
                     shapes.push_back(ShapeBuilder2D::square()
@@ -934,7 +934,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .build(aspectRatio));
                 }
 
-                if ((gameSceneState & (1 << gameSceneState_showRegularPlayerHealth)) > 0)
+                if ((GameSceneState & (1 << gameSceneState_showRegularPlayerHealth)) > 0)
                 {
                     // player health (green bar)
                     shapes.push_back(ShapeBuilder2D::square()
@@ -967,7 +967,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .build(aspectRatio));
                 }
 
-                if ((gameSceneState & (1 << gameSceneState_showCommandMenu)) > 0)
+                if ((GameSceneState & (1 << gameSceneState_showCommandMenu)) > 0)
                 {
                     // command menu
                     shapes.push_back(ShapeBuilder2D::square()
@@ -979,7 +979,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .build(aspectRatio));
                 }
 
-                if ((gameSceneState & (1 << gameSceneState_showNextAreaName)) > 0)
+                if ((GameSceneState & (1 << gameSceneState_showNextAreaName)) > 0)
                 {
                     // next area name
                     shapes.push_back(ShapeBuilder2D::square()
@@ -992,7 +992,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
                             .build(aspectRatio));
                 }
 
-                if ((gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
+                if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
                 {
                     // cleaning the rest of the upper area of the screen
                     shapes.push_back(ShapeBuilder2D::square()
@@ -1122,12 +1122,13 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes(int gameS
     return shapes;
 }
 
-std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameScene, int gameSceneState) {
+std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
 
-    if (gameScene == gameScene_InGameWithMap       || gameScene == gameScene_InGameDialog ||
-        gameScene == gameScene_InGameOlympusBattle || gameScene == gameScene_PauseMenu)
+    int gameSceneState = renderer_gameSceneState();
+    if (GameScene == gameScene_InGameWithMap       || GameScene == gameScene_InGameDialog ||
+        GameScene == gameScene_InGameOlympusBattle || GameScene == gameScene_PauseMenu)
     {
         if (HideAllHUD || ((gameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0))
         {
@@ -1140,7 +1141,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
             return shapes;
         }
 
-        if (gameScene != gameScene_InGameOlympusBattle) {
+        if (GameScene != gameScene_InGameOlympusBattle) {
             // SP score
             shapes.push_back(ShapeBuilder3D::square()
                     .negatePolygonAttributes(2031808) // pickup license notification
@@ -1220,7 +1221,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
                 .hudScale(UIScale)
                 .build(aspectRatio));
 
-        if (gameScene == gameScene_InGameOlympusBattle) {
+        if (GameScene == gameScene_InGameOlympusBattle) {
             // olympus hand pointers
             shapes.push_back(ShapeBuilder3D::square()
                     .placeAtCorner(corner_Center)
@@ -1247,7 +1248,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes(int gameS
         }
     }
 
-    if (gameScene == gameScene_WorldSelection)
+    if (GameScene == gameScene_WorldSelection)
     {
         shapes.push_back(ShapeBuilder3D::square()
                 .withSize(256, 192)

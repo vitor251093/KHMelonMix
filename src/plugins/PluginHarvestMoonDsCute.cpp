@@ -170,7 +170,7 @@ int PluginHarvestMoonDsCute::detectGameScene()
     return 0;
 }
 
-std::vector<ShapeData2D> PluginHarvestMoonDsCute::renderer_2DShapes(int gameScene, int gameSceneState) {
+std::vector<ShapeData2D> PluginHarvestMoonDsCute::renderer_2DShapes() {
     auto shapes = std::vector<ShapeData2D>();
     return shapes;
 }
