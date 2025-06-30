@@ -36,7 +36,7 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 
 // 0x00 => intro and main menu
 #define IS_MAIN_MENU_US 0x02060c94
-#define IS_MAIN_MENU_EU 0x0205fdc4
+#define IS_MAIN_MENU_EU 0x02060407 // may also be 0x02060417, 0x02060423, 0x0206042b, 0x0206042f, 0x02060433, 0x0206043b, 0x02060443, 0x02060447, or 0x0206044b
 #define IS_MAIN_MENU_JP 0x02060aa0
 
 #define PAUSE_SCREEN_ADDRESS_US 0x020569d0
@@ -50,8 +50,12 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_CUTSCENE_JP 0x02056cb0
 
 #define IS_LOAD_SCREEN_US 0x02056f4c // may also be 0x02056f48, 0x02056f50, 0x02056f58 or 0x02056f5c
-#define IS_LOAD_SCREEN_EU 0x02056f4c
+#define IS_LOAD_SCREEN_EU 0x0205ffd0
 #define IS_LOAD_SCREEN_JP 0x02056d6c
+
+#define IS_LOAD_SCREEN_VALUE_US 0x10
+#define IS_LOAD_SCREEN_VALUE_EU 0x00010004
+#define IS_LOAD_SCREEN_VALUE_JP 0x10
 
 // 0x01 => cutscene with skip button
 // 0x03 => regular cutscene
@@ -2049,7 +2053,8 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getU32ByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
     bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
     bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
-    bool isIntroLoadMenu = nds->ARM7Read32(getU32ByCart(IS_LOAD_SCREEN_US, IS_LOAD_SCREEN_EU, IS_LOAD_SCREEN_JP)) == 0x10;
+    bool isIntroLoadMenu = nds->ARM7Read32(getU32ByCart(IS_LOAD_SCREEN_US, IS_LOAD_SCREEN_EU, IS_LOAD_SCREEN_JP)) ==
+        getU32ByCart(IS_LOAD_SCREEN_VALUE_US, IS_LOAD_SCREEN_VALUE_EU, IS_LOAD_SCREEN_VALUE_JP);
     bool isInGameDialog = nds->ARM7Read32(getU32ByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
         getU32ByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
     bool isDeathScreen = nds->ARM7Read32(getU32ByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP)) == 0;
@@ -2084,7 +2089,36 @@ int PluginKingdomHeartsReCoded::detectGameScene()
             return gameScene_IntroLoadMenu;
         }
 
-        return gameScene_TitleScreen;
+        bool mayBeTitleScreen = nds->GPU.GPU3D.NumVertices == 4 && nds->GPU.GPU3D.NumPolygons == 1 && nds->GPU.GPU3D.RenderNumPolygons == 1;
+
+        if (GameScene == gameScene_IntroLoadMenu)
+        {
+            if (mayBeTitleScreen)
+            {
+                return gameScene_TitleScreen;
+            }
+        }
+
+        if (GameScene == gameScene_TitleScreen)
+        {
+            mayBeTitleScreen = nds->GPU.GPU3D.NumVertices < 15 && nds->GPU.GPU3D.NumPolygons < 15;
+            if (mayBeTitleScreen) {
+                return gameScene_TitleScreen;
+            }
+        }
+
+        // Main menu
+        if (mayBeTitleScreen)
+        {
+            return gameScene_TitleScreen;
+        }
+
+        // Intro
+        if (GameScene == -1 || GameScene == gameScene_Intro)
+        {
+            mayBeTitleScreen = nds->GPU.GPU3D.NumVertices > 0 && nds->GPU.GPU3D.NumPolygons > 0;
+            return mayBeTitleScreen ? gameScene_TitleScreen : gameScene_Intro;
+        }
     }
 
     if (has3DOnBothScreens)
@@ -2621,7 +2655,8 @@ void PluginKingdomHeartsReCoded::debugLogs(int gameScene)
         return;
     }
 
-    printf("Game scene: %d\n", gameScene);
+    printf("Game scene: %d\n", GameScene);
+    printf("Game scene state: %d\n", GameSceneState);
     printf("Current map: %d\n", getCurrentMap());
     printf("Is save loaded: %d\n", isSaveLoaded() ? 1 : 0);
     printf("\n");
