@@ -764,7 +764,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
-                if ((GameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
+                bool showMinimap = (GameSceneState & (1 << gameSceneState_showMinimap)) > 0;
+                if (showMinimap) {
                     // minimap
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromBottomScreen()
@@ -784,6 +785,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                     float targetScale = 0.666;
                     int targetLabelMargin = 12;
                     int targetWidth = 64;
+                    int targetRightMargin = showMinimap ? 70 : 0;
 
                     // target label (part 1)
                     shapes.push_back(ShapeBuilder2D::square()
@@ -791,7 +793,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                             .fromPosition(32, 51)
                             .withSize(targetLabelMargin, 9)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale, 0.0)
+                            .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale + targetRightMargin, 0.0)
                             .sourceScale(targetScale)
                             .colorToAlpha(248, 248, 248)
                             .hudScale(hudScale)
@@ -803,7 +805,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                             .fromPosition(32 + targetLabelMargin, 51)
                             .withSize(targetWidth - targetLabelMargin*2, 9)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale, 0.0)
+                            .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale + targetRightMargin, 0.0)
                             .sourceScale(targetScale)
                             .hudScale(hudScale)
                             .build(aspectRatio));
@@ -814,7 +816,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                             .fromPosition(32 + targetWidth - targetLabelMargin, 51)
                             .withSize(targetLabelMargin, 9)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 30.0, 9.0, 0.0)
+                            .withMargin(0.0, 30.0, 9.0 + targetRightMargin, 0.0)
                             .sourceScale(targetScale)
                             .colorToAlpha(248, 248, 248)
                             .hudScale(hudScale)
@@ -826,7 +828,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                             .fromPosition(32, 64)
                             .withSize(targetWidth, 76)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 38.0, 9.0, 0.0)
+                            .withMargin(0.0, 38.0, 9.0 + targetRightMargin, 0.0)
                             .sourceScale(targetScale)
                             .hudScale(hudScale)
                             .build(aspectRatio));
@@ -1215,7 +1217,9 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
                         .adjustAspectRatioOnly()
                         .build(aspectRatio));
 
-                float heartTopMargin = (ShowMissionInfo ? 24.0 : 0.0);
+                bool showMissionInfo = (gameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0 ||
+                                       (gameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0;
+                float heartTopMargin = (showMissionInfo ? 24.0 : 0.0);
 
                 // blue shine behind the heart counter and "CHAIN" label
                 shapes.push_back(ShapeBuilder3D::square()
@@ -1298,6 +1302,7 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                 bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
                 bool _isMissionInformationVisibleOnBottomScreen = isMissionInformationVisibleOnBottomScreen();
                 bool _isMissionGaugeVisibleOnBottomScreen = isMissionGaugeVisibleOnBottomScreen();
+                bool _isTargetVisibleOnBottomScreen = isTargetVisibleOnBottomScreen();
                 bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
                 bool _isDialogPortraitLabelVisible = isDialogPortraitLabelVisible();
 
@@ -1344,7 +1349,7 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                         state |= (1 << gameSceneState_showMinimap);
                     }
 
-                    if (ShowTarget) {
+                    if (ShowTarget && _isTargetVisibleOnBottomScreen) {
                         state |= (1 << gameSceneState_showTarget);
                     }
 
@@ -1746,7 +1751,7 @@ bool PluginKingdomHeartsDays::shouldRumble() {
 
 void PluginKingdomHeartsDays::hudToggle()
 {
-    HUDState = (HUDState + 1) % 4;
+    HUDState = (HUDState + 1) % 3;
     if (HUDState == 0) { // exploration mode
         ShowMap = true;
         ShowTarget = false;
@@ -1754,18 +1759,11 @@ void PluginKingdomHeartsDays::hudToggle()
         ShowMissionInfo = false;
         HideAllHUD = false;
     }
-    else if (HUDState == 1) { // mission mode
-        ShowMap = false;
-        ShowTarget = false;
-        ShowMissionGauge = false;
-        ShowMissionInfo = true;
-        HideAllHUD = false;
-    }
-    else if (HUDState == 2) { // mission details mode
-        ShowMap = false;
+    else if (HUDState == 1) { // complete mode
+        ShowMap = true;
         ShowTarget = true;
         ShowMissionGauge = true;
-        ShowMissionInfo = false;
+        ShowMissionInfo = true;
         HideAllHUD = false;
     }
     else { // zero hud
@@ -1908,6 +1906,27 @@ bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
     }
     return !onlyBlack;
 }
+
+#define DIFF(val1, val2) ((val1 > val2) ? (val1 - val2) : (val2 - val1))
+
+bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
+{
+    u32* buffer = bottomScreen2DTexture();
+    bool onlyGrayscale = true;
+    for (int x = 48; x < 88; x++) {
+        u32 pixel3 = getPixel(buffer, x, 56, 0);
+        u32 r = (pixel3 >> 0) & 0x3F;
+        u32 g = (pixel3 >> 8) & 0x3F;
+        u32 b = (pixel3 >> 16) & 0x3F;
+        if (!((DIFF(r, g) < 5) && (DIFF(r, b) < 5) && (DIFF(g, b) < 5)))
+        {
+            onlyGrayscale = false;
+        }
+    }
+    return !onlyGrayscale;
+}
+
+#undef DIFF(val1, val2)
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 {
