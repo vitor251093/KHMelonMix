@@ -647,6 +647,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .sourceScale(10.0, 1.0)
                         .hudScale(hudScale)
                         .build(aspectRatio));
+
+                // 'any player can press start to skip'
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 152)
+                        .withSize(256, 40)
+                        .placeAtCorner(corner_Bottom)
+                        .withMargin(0.0, 0.0, 0.0, 7.0)
+                        .sourceScale(1.5)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
             }
 
             if ((GameSceneState & (1 << gameSceneState_dialogVisible)) > 0)
@@ -898,7 +908,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
 
             // background
             shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(118, 182)
+                    .fromPosition(118, 162)
                     .withSize(20, 10)
                     .placeAtCorner(corner_Center)
                     .sourceScale(1000.0)
