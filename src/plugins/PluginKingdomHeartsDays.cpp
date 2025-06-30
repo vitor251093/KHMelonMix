@@ -444,6 +444,18 @@ void PluginKingdomHeartsDays::onLoadROM() {
 
     loadLocalization();
 
+    int fbsize;
+    if (nds->GPU.GPU3D.IsRendererAccelerated())
+        fbsize = (256*3 + 1) * 192;
+    else
+        fbsize = 256 * 192;
+
+    for (size_t i = 0; i < fbsize; i++)
+    {
+        _double3DTopScreen2DTexture[i] = 0xFFFFFFFF;
+        _double3DTopScreen2DTexture[i] = 0xFFFFFFFF;
+    }
+
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 }
 
@@ -497,16 +509,22 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
 
 void PluginKingdomHeartsDays::renderer_afterBuildingShapes()
 {
-    /*if (GameScene == gameScene_InGameWithDouble3D)
+    if (GameScene == gameScene_InGameWithDouble3D)
     {
         bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
         bool has3DOnBottomScreen = (nds->PowerControl9 >> 9) == 1;
+
+        int fbsize;
+        if (nds->GPU.GPU3D.IsRendererAccelerated())
+            fbsize = (256*3 + 1) * 192;
+        else
+            fbsize = 256 * 192;
 
         if (has3DOnTopScreen)
         {
             int FrontBuffer = nds->GPU.FrontBuffer ? 0 : 1;
             u32* topScreen = nds->GPU.Framebuffer[FrontBuffer][1].get();
-            memcpy(&_double3DTopScreen2DTexture[0], &topScreen[0], 256 * 192 * 4);
+            memcpy(_double3DTopScreen2DTexture.get(), topScreen, fbsize * 4);
             _double3DTopScreen2DTextureEnabled = true;
         }
         else if (has3DOnBottomScreen && _double3DTopScreen2DTextureEnabled)
@@ -514,14 +532,13 @@ void PluginKingdomHeartsDays::renderer_afterBuildingShapes()
             int FrontBuffer = nds->GPU.FrontBuffer ? 0 : 1;
             u32* topScreen = nds->GPU.Framebuffer[FrontBuffer][0].get();
             u32* bottomScreen = nds->GPU.Framebuffer[FrontBuffer][1].get();
-            memcpy(&bottomScreen[0], &_double3DTopScreen2DTexture[0], 256 * 192 * 4);
-            nds->GPU.GetRenderer2D().SetFramebuffer(topScreen, bottomScreen);
+            nds->GPU.GetRenderer2D().SetFramebuffer(_double3DTopScreen2DTexture.get(), bottomScreen);
         }
     }
     else
     {
         _double3DTopScreen2DTextureEnabled = false;
-    }*/
+    }
 }
 
 std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
@@ -625,9 +642,9 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
             break;
 
         case gameScene_InGameWithDouble3D:
-            if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
+            /*if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
                 break;
-            }
+            }*/
 
         case gameScene_InGameWithMap:
 
@@ -881,7 +898,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .build(aspectRatio));
             }
 
-            /*if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
+            if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
                 // background
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
@@ -892,7 +909,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .build(aspectRatio));
 
                 break;
-            }*/
+            }
 
             // background
             shapes.push_back(ShapeBuilder2D::square()

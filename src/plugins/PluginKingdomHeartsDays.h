@@ -95,8 +95,8 @@ private:
 
     std::map<u32, GLuint[5]> CompGpu3DLoc{};
     std::map<u32, int[5]> CompGpu3DLastValues{};
-    /*bool _double3DTopScreen2DTextureEnabled = false;
-    u32 _double3DTopScreen2DTexture[256 * 192 * 4] = {};*/
+    bool _double3DTopScreen2DTextureEnabled = false;
+    std::unique_ptr<u32[]> _double3DTopScreen2DTexture {};
 
     // game scene detection utils
     bool _muchOlderHad3DOnTopScreen = false;

@@ -1211,11 +1211,11 @@ void Plugin::loadConfigs(
 
 void Plugin::buildShapes()
 {
-    renderer_beforeBuildingShapes();
+    //renderer_beforeBuildingShapes();
     GameSceneState = renderer_gameSceneState();
     current2DShapes = renderer_2DShapes();
     current3DShapes = renderer_3DShapes();
-    renderer_afterBuildingShapes();
+    //renderer_afterBuildingShapes();
 }
 
 void Plugin::errorLog(const char* format, ...) {

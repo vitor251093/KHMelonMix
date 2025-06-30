@@ -398,6 +398,13 @@ void EmuThread::run()
 
             refreshPluginState();
 
+            emuInstance->plugin->renderer_beforeBuildingShapes();
+            if (shouldRenderFrame)
+            {
+                emuInstance->plugin->buildShapes();
+            }
+            emuInstance->plugin->renderer_afterBuildingShapes();
+
             if (emuInstance->ndsSave)
                 emuInstance->ndsSave->CheckFlush();
 
@@ -419,7 +426,6 @@ void EmuThread::run()
 
                 if (shouldRenderFrame)
                 {
-                    emuInstance->plugin->buildShapes();
                     emuInstance->drawScreenGL();
                 }
             }
