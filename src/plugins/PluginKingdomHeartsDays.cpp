@@ -1878,7 +1878,18 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
     if (((pixel >> 0) & 0x3F) >= 15 && ((pixel >> 8) & 0x3F) >= 15 && ((pixel >> 16) & 0x3F) >= 15)
     {
         u32 pixel2 = getPixel(buffer, 128, 4, 0);
-        return !(((pixel2 >> 0) & 0x3F) >= 15 && ((pixel2 >> 8) & 0x3F) >= 15 && ((pixel2 >> 16) & 0x3F) >= 15);
+        if (!(((pixel2 >> 0) & 0x3F) >= 15 && ((pixel2 >> 8) & 0x3F) >= 15 && ((pixel2 >> 16) & 0x3F) >= 15))
+        {
+            bool onlyBlack = true;
+            for (int x = 0; x < 128; x++) {
+                u32 pixel3 = getPixel(buffer, x, 16, 0);
+                if (!(((pixel3 >> 0) & 0x3F) < 5 && ((pixel3 >> 8) & 0x3F) < 5 && ((pixel3 >> 16) & 0x3F) < 5))
+                {
+                    onlyBlack = false;
+                }
+            }
+            return !onlyBlack;
+        }
     }
     return false;
 }
