@@ -1297,6 +1297,7 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                 bool _isDialogVisible = isDialogVisible();
                 bool _isMissionInformationVisibleOnTopScreen = isMissionInformationVisibleOnTopScreen();
                 bool _isMissionInformationVisibleOnBottomScreen = isMissionInformationVisibleOnBottomScreen();
+                bool _isMissionGaugeVisibleOnBottomScreen = isMissionGaugeVisibleOnBottomScreen();
                 bool _isCutsceneFromChallengeMissionVisible = isCutsceneFromChallengeMissionVisible();
                 bool _isDialogPortraitLabelVisible = isDialogPortraitLabelVisible();
 
@@ -1347,7 +1348,7 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                         state |= (1 << gameSceneState_showTarget);
                     }
 
-                    if (ShowMissionGauge) {
+                    if (ShowMissionGauge && _isMissionGaugeVisibleOnBottomScreen) {
                         state |= (1 << gameSceneState_showMissionGauge);
                     }
                 }
@@ -1892,6 +1893,20 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
         }
     }
     return false;
+}
+
+bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
+{
+    u32* buffer = bottomScreen2DTexture();
+    bool onlyBlack = true;
+    for (int x = 10; x < 128; x++) {
+        u32 pixel3 = getPixel(buffer, x, 188, 0);
+        if (!(((pixel3 >> 0) & 0x3F) < 5 && ((pixel3 >> 8) & 0x3F) < 5 && ((pixel3 >> 16) & 0x3F) < 5))
+        {
+            onlyBlack = false;
+        }
+    }
+    return !onlyBlack;
 }
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()

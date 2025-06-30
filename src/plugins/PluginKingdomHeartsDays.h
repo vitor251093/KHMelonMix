@@ -178,6 +178,7 @@ private:
     bool isMinimapVisible();
     bool isMissionInformationVisibleOnTopScreen();
     bool isMissionInformationVisibleOnBottomScreen();
+    bool isMissionGaugeVisibleOnBottomScreen();
     bool isCutsceneFromChallengeMissionVisible();
     bool isDialogPortraitLabelVisible();
     bool isLoadScreenDeletePromptVisible();
