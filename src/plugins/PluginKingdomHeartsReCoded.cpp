@@ -538,7 +538,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
         case gameScene_CutsceneWithStaticImages:
             shapes.push_back(ShapeBuilder2D::square()
                         .placeAtCorner(corner_Center)
-                        .force()
                         .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
@@ -717,6 +716,32 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
             if ((GameSceneState & (1 << gameSceneState_showHud)) > 0)
             {
+                bool deweyDialogVisible = has2DOnTopOf3DAt(topScreen2DTexture(), 140, 40);
+
+                if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) == 0)
+                {
+                    if (deweyDialogVisible) {
+                        // enemy health (and dewey dialog when visiting the alleyway for the first time)
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(112, 0)
+                                .withSize(144, 48)
+                                .placeAtCorner(corner_TopRight)
+                                .withMargin(0.0, 7.5, 9.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
+                    else {
+                        // enemy health
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(163, 0)
+                                .withSize(93, 22)
+                                .placeAtCorner(corner_TopRight)
+                                .withMargin(0.0, 7.5, 9.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
+                }
+
                 if ((GameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
                     // minimap
                     ivec2 _minimapCenter = minimapCenter();
@@ -1037,23 +1062,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
-                // level up notification
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(161, 39)
-                        .withSize(95, 32)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 115.0, 0.0, 0.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
-
-                // enemy health
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(163, 0)
-                        .withSize(93, 22)
-                        .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 7.5, 9.0, 0.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+                if (!deweyDialogVisible) {
+                    // level up notification
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(161, 39)
+                            .withSize(95, 32)
+                            .placeAtCorner(corner_TopRight)
+                            .withMargin(0.0, 115.0, 0.0, 0.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
 
                 // background
                 shapes.push_back(ShapeBuilder2D::square()
