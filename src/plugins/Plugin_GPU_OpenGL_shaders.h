@@ -436,7 +436,7 @@ vec2 mod_vec2(vec2 vector1, vec2 vector2)
     return vec2(x, y);
 }
 
-ivec4 getTopScreenColor(float xpos, float ypos, int index)
+ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
 {
     if (screenLayout == 2) { // vertical
         ivec2 textureBeginning = ivec2(getVerticalDualScreen2DTextureCoordinates(xpos, ypos));
@@ -556,8 +556,14 @@ ivec4 getTopScreenColor(float xpos, float ypos, int index)
                 }
 
                 ivec4 alphaColor = ivec4(texelFetch(ScreenTex, ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy + ivec2(512,0), 0));
-                if ((effects & 0x100) == 0 && (alphaColor.a == 0x4 || (alphaColor.a < 0x4 && alphaColor.g == 0))) {
-                    continue;
+                if ((effects & 0x100) == 0 && (
+                        (alphaColor.a == 0x0) ||
+                        (alphaColor.a == 0x1 && _3dpix.a > 0 && alphaColor.g == 0) ||
+                        (alphaColor.a == 0x2 && _3dpix.a > 0 && alphaColor.g < 4) ||
+                        //(alphaColor.a == 0x3 && _3dpix.a > 0) ||
+                        (alphaColor.a == 0x4 && _3dpix.a > 0)
+                )) {
+                    continue; // invisible pixel; ignore it
                 }
 
                 if (index == 0) {
@@ -697,9 +703,9 @@ void main()
 
         if (fTexcoord.y <= 192) // top screen
         {
-            ivec4 val1 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 0);
-            ivec4 val2 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 1);
-            ivec4 val3 = getTopScreenColor(fTexcoord.x, fTexcoord.y, 2);
+            ivec4 val1 = getTopScreenColor(_3dpix, fTexcoord.x, fTexcoord.y, 0);
+            ivec4 val2 = getTopScreenColor(_3dpix, fTexcoord.x, fTexcoord.y, 1);
+            ivec4 val3 = getTopScreenColor(_3dpix, fTexcoord.x, fTexcoord.y, 2);
             pixel = combineLayers(_3dpix, val1, val2, val3);
         }
         else // bottom screen
