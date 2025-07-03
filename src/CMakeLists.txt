@@ -30,6 +30,7 @@ add_library(core STATIC
     FATStorage.cpp
     FIFO.h
     GBACart.cpp
+    GBACartMotionPak.cpp
     GPU.cpp
     GPU_Texreplace.cpp
     GPU_Texreplace.h

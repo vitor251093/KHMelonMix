@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2024 melonDS team
+    Copyright 2016-2025 melonDS team
 
     This file is part of melonDS.
 
@@ -1079,6 +1079,8 @@ void ScreenPanelGL::deinitOpenGL()
     if (!glContext) return;
     if (!glInited) return;
 
+    glContext->MakeCurrent();
+
     glDeleteTextures(1, &screenTexture);
 
     glDeleteVertexArrays(1, &screenVertexArray);
@@ -1112,6 +1114,13 @@ void ScreenPanelGL::makeCurrentGL()
     if (!glContext) return;
 
     glContext->MakeCurrent();
+}
+
+void ScreenPanelGL::releaseGL()
+{
+    if (!glContext) return;
+
+    glContext->DoneCurrent();
 }
 
 void ScreenPanelGL::osdRenderItem(OSDItem* item)

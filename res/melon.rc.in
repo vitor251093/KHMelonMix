@@ -18,7 +18,7 @@ FILETYPE VFT_APP
 			VALUE "FileVersion", "${melonDS_VERSION}"
 			VALUE "FileDescription", "MelonMix emulator"
 			VALUE "InternalName", "SDnolem"
-			VALUE "LegalCopyright", "2022-2024 VitorMM"
+			VALUE "LegalCopyright", "2022-2025 Melon Mix team"
 			VALUE "LegalTrademarks", ""
 			VALUE "OriginalFilename", "MelonMix.exe"
 			VALUE "ProductName", "MelonMix"
