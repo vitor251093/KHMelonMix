@@ -189,7 +189,8 @@ enum
     gameSceneState_showBottomScreenMissionInformation,
     gameSceneState_showChallengeMeter,
     gameSceneState_bottomScreenCutscene,
-    gameSceneState_topScreenCutscene
+    gameSceneState_topScreenCutscene,
+    gameSceneState_deweyDialogVisible
 };
 
 enum
@@ -716,12 +717,9 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
             if ((GameSceneState & (1 << gameSceneState_showHud)) > 0)
             {
-                bool deweyDialogVisible = has2DOnTopOf3DAt(topScreen2DTexture(), 140, 40) ||
-                                          has2DOnTopOf3DAt(topScreen2DTexture(), 140, 60);
-
                 if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) == 0)
                 {
-                    if (deweyDialogVisible) {
+                    if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) > 0) {
                         // enemy health (and dewey dialog when visiting the alleyway for the first time)
                         shapes.push_back(ShapeBuilder2D::square()
                                 .fromPosition(96, 0)
@@ -987,7 +985,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     // TODO: KH UI implement cropped corner
                     // if (finalPos.x*1.7 + finalPos.y > 64.0) {
 
-                    if (!deweyDialogVisible) {
+                    if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) == 0) {
                         // player allies health
                         shapes.push_back(ShapeBuilder2D::square()
                                 .fromPosition(220, 74)
@@ -1038,7 +1036,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .build(aspectRatio));
                 }
 
-                if (!deweyDialogVisible) {
+                if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) == 0) {
                     // overclock notification
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(0, 81)
@@ -1313,6 +1311,12 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
 
         case gameScene_InGameOlympusBattle:
         case gameScene_InGameWithMap:
+            if (has2DOnTopOf3DAt(topScreen2DTexture(), 140, 40) ||
+                has2DOnTopOf3DAt(topScreen2DTexture(), 140, 60))
+            {
+                state |= (1 << gameSceneState_deweyDialogVisible);
+            }
+
             if (isMissionInformationVisibleOnTopScreen())
             {
                 state |= (1 << gameSceneState_topScreenMissionInformationVisible);
