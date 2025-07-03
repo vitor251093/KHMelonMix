@@ -1969,6 +1969,15 @@ bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 
 bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 {
+    /*
+     * If it matches that condition, there is no 2D on top of 3D
+        (alphaColor.a == 0x0) ||
+        (alphaColor.a == 0x1 && _3dpix.a > 0 && alphaColor.g == 0) ||
+        (alphaColor.a == 0x2 && _3dpix.a > 0 && alphaColor.g < 4) ||
+        (alphaColor.a == 0x3 && _3dpix.a > 0 && alphaColor.g < 4) ||
+        (alphaColor.a == 0x4 && (_3dpix.a & 0x1F) == 0x1F)
+    */
+
     u32 pixel = getPixel(buffer, x, y, 2);
     u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
     if (pixelAlpha > 0x4) {

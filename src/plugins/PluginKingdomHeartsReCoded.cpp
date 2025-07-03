@@ -720,12 +720,22 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) == 0)
                 {
                     if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) > 0) {
-                        // enemy health (and dewey dialog when visiting the alleyway for the first time)
+                        // dewey dialog when visiting the alleyway for the first time, while walking backwards
+                        // Note: the workaround below avoids duplicating the enemy health
+
                         shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(96, 0)
-                                .withSize(160, 95)
-                                .placeAtCorner(corner_TopRight)
-                                .withMargin(0.0, 7.5, 9.0, 0.0)
+                                .fromPosition(36, 0)
+                                .withSize(184, 16)
+                                .placeAtCorner(corner_Top)
+                                .withMargin(0.0, 7.5, 0.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(0, 16)
+                                .withSize(256, 79)
+                                .placeAtCorner(corner_Top)
+                                .withMargin(0.0, 23.5, 0.0, 0.0)
                                 .hudScale(hudScale)
                                 .build(aspectRatio));
                     }
@@ -1311,8 +1321,7 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
 
         case gameScene_InGameOlympusBattle:
         case gameScene_InGameWithMap:
-            if (has2DOnTopOf3DAt(topScreen2DTexture(), 140, 40) ||
-                has2DOnTopOf3DAt(topScreen2DTexture(), 140, 60))
+            if (isDeweyDialogVisible())
             {
                 state |= (1 << gameSceneState_deweyDialogVisible);
             }
@@ -1859,6 +1868,15 @@ bool PluginKingdomHeartsReCoded::isResultScreenVisible()
     return value != 0;
 }
 
+bool PluginKingdomHeartsReCoded::isDeweyDialogVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return (has2DOnTopOf3DAt(buffer, 50, 40) && has2DOnTopOf3DAt(buffer, 140, 40)) ||
+           (has2DOnTopOf3DAt(buffer, 50, 70) && has2DOnTopOf3DAt(buffer, 140, 70)) ||
+           (has2DOnTopOf3DAt(buffer, 140, 40) && has2DOnTopOf3DAt(buffer, 190, 40)) ||
+           (has2DOnTopOf3DAt(buffer, 140, 60) && has2DOnTopOf3DAt(buffer, 190, 60));
+}
+
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
 {
     u32* buffer = topScreen2DTexture();
@@ -2019,20 +2037,37 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
 
 bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
 {
+    /*
+     * If it matches that condition, there is no 2D on top of 3D
+        (alphaColor.a == 0x0) ||
+        (alphaColor.a == 0x1 && _3dpix.a > 0 && alphaColor.g == 0) ||
+        (alphaColor.a == 0x2 && _3dpix.a > 0 && alphaColor.g < 4) ||
+        (alphaColor.a == 0x3 && _3dpix.a > 0 && alphaColor.g < 4) ||
+        (alphaColor.a == 0x4 && (_3dpix.a & 0x1F) == 0x1F)
+    */
+
     u32 pixel = getPixel(buffer, x, y, 2);
-    u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
-    if (pixelAlpha > 0x4) {
+    u32 pixelG = (pixel >> 8) & 0xFF;
+    u32 pixelAlpha = (pixel >> (8 * 3)) & 0xFF;
+    if (pixelAlpha > 0x4)
+    {
         return true;
     }
-    if (pixelAlpha == 0x4) {
+    if (pixelAlpha == 0x4)
+    {
         return false;
     }
-    if (((pixel >> 8) & 0xFF) == 0) {
+    if (pixelAlpha == 0x1 && pixelG == 0)
+    {
+        return false;
+    }
+    if ((pixelAlpha == 0x2 || pixelAlpha == 0x3) && pixelG < 4)
+    {
         return false;
     }
 
     u32 colorPixel = getPixel(buffer, x, y, 0);
-    u32 colorPixelAlpha = (colorPixel >> (8*3)) & 0xFF;
+    u32 colorPixelAlpha = (colorPixel >> (8 * 3)) & 0xFF;
     if (colorPixelAlpha == 0x20) {
         return false;
     }

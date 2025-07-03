@@ -157,6 +157,7 @@ private:
     bool isBottomScreen2DTextureBlack();
 
     bool isResultScreenVisible();
+    bool isDeweyDialogVisible();
     bool isMissionInformationVisibleOnTopScreen();
     bool isDialogVisible();
     bool isMinimapVisible();
