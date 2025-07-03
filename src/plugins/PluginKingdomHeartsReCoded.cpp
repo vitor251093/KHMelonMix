@@ -716,17 +716,18 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
             if ((GameSceneState & (1 << gameSceneState_showHud)) > 0)
             {
-                bool deweyDialogVisible = has2DOnTopOf3DAt(topScreen2DTexture(), 140, 40);
+                bool deweyDialogVisible = has2DOnTopOf3DAt(topScreen2DTexture(), 140, 40) ||
+                                          has2DOnTopOf3DAt(topScreen2DTexture(), 140, 60);
 
                 if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) == 0)
                 {
                     if (deweyDialogVisible) {
                         // enemy health (and dewey dialog when visiting the alleyway for the first time)
                         shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(112, 0)
-                                .withSize(144, 48)
+                                .fromPosition(96, 0)
+                                .withSize(160, 95)
                                 .placeAtCorner(corner_TopRight)
-                                .withMargin(0.0, 7.5, 9.0, 0.0)
+                                .withMargin(0.0, 3.5, 5.0, 0.0)
                                 .hudScale(hudScale)
                                 .build(aspectRatio));
                     }
@@ -986,14 +987,16 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     // TODO: KH UI implement cropped corner
                     // if (finalPos.x*1.7 + finalPos.y > 64.0) {
 
-                    // player allies health
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(220, 74)
-                            .withSize(36, 118)
-                            .placeAtCorner(corner_BottomRight)
-                            .withMargin(0.0, 0.0, 8.0, 3.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
+                    if (!deweyDialogVisible) {
+                        // player allies health
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(220, 74)
+                                .withSize(36, 118)
+                                .placeAtCorner(corner_BottomRight)
+                                .withMargin(0.0, 0.0, 8.0, 3.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
                 }
 
                 if ((GameSceneState & (1 << gameSceneState_showCommandMenu)) > 0)
@@ -1035,34 +1038,34 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .build(aspectRatio));
                 }
 
-                // overclock notification
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 81)
-                        .withSize(95, 27)
-                        .placeAtCorner(corner_BottomLeft)
-                        .withMargin(0.0, 0.0, 0.0, 84.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
-
-                // item notification
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 39)
-                        .withSize(95, 32)
-                        .placeAtCorner(corner_BottomLeft)
-                        .withMargin(0.0, 0.0, 0.0, 84.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
-
-                // pickup notification
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 44)
-                        .withSize(102, 24)
-                        .placeAtCorner(corner_BottomLeft)
-                        .withMargin(0.0, 0.0, 0.0, 124.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
-
                 if (!deweyDialogVisible) {
+                    // overclock notification
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 81)
+                            .withSize(95, 27)
+                            .placeAtCorner(corner_BottomLeft)
+                            .withMargin(0.0, 0.0, 0.0, 84.0)
+                            .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                    // item notification
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 39)
+                            .withSize(95, 32)
+                            .placeAtCorner(corner_BottomLeft)
+                            .withMargin(0.0, 0.0, 0.0, 84.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // pickup notification
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 44)
+                            .withSize(102, 24)
+                            .placeAtCorner(corner_BottomLeft)
+                            .withMargin(0.0, 0.0, 0.0, 124.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
                     // level up notification
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(161, 39)
