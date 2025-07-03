@@ -725,7 +725,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                                 .fromPosition(96, 0)
                                 .withSize(160, 95)
                                 .placeAtCorner(corner_TopRight)
-                                .withMargin(0.0, 3.5, 5.0, 0.0)
+                                .withMargin(0.0, 7.5, 9.0, 0.0)
                                 .hudScale(hudScale)
                                 .build(aspectRatio));
                     }
