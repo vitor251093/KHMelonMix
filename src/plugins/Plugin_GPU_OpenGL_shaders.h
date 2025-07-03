@@ -560,7 +560,7 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
                         (alphaColor.a == 0x0) ||
                         (alphaColor.a == 0x1 && _3dpix.a > 0 && alphaColor.g == 0) ||
                         (alphaColor.a == 0x2 && _3dpix.a > 0 && alphaColor.g < 4) ||
-                        //(alphaColor.a == 0x3 && _3dpix.a > 0) ||
+                        (alphaColor.a == 0x3 && _3dpix.a > 0 && alphaColor.g < 4) ||
                         (alphaColor.a == 0x4 && (_3dpix.a & 0x1F) == 0x1F)
                 )) {
                     continue; // invisible pixel; ignore it
