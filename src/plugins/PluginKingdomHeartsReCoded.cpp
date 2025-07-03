@@ -738,6 +738,15 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                                 .withMargin(0.0, 23.5, 0.0, 0.0)
                                 .hudScale(hudScale)
                                 .build(aspectRatio));
+
+                        // enemy health, if any
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(220, 0)
+                                .withSize(36, 16)
+                                .placeAtCorner(corner_TopRight)
+                                .withMargin(0.0, 7.5, 9.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
                     }
                     else {
                         // enemy health
