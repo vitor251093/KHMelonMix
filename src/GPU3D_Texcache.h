@@ -373,7 +373,7 @@ public:
             texArrays.resize(texArrays.size()+1);
             TexHandleT& array = texArrays[texArrays.size()-1];
 
-            u32 layers = 1;
+            u32 layers = (texturePtr != nullptr) ? 1 : std::min<u32>((8*1024*1024) / (width*height*4), 64);
 
             // allocate new array texture
             //printf("allocating new layer set for %d %d %d %d\n", width, height, texArrays.size()-1, array.ImageDescriptor);
@@ -391,7 +391,7 @@ public:
 
             TexArrayEntry& storagePlace = it->second.Texture;
 
-            u32 layers = 1;
+            u32 layers = (texturePtr != nullptr) ? 1 : std::min<u32>((8*1024*1024) / (width*height*4), 64);
             auto array = TexLoader.GenerateTexture(width, height, layers);
             storagePlace.TextureIDs[storagePlace.CurrentIndex] = array;
             storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time + 1);
