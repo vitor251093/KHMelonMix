@@ -34,31 +34,11 @@ int PluginTemplateLua::detectGameScene()
 }
 
 static std::vector<ShapeData2D> BuiltShapes;
-int MakeShape(std::vector<ShapeBuilderCall> calls,float AspectRatio){
-    ShapeBuilder2D builder = ShapeBuilder2D::square();
-    for (auto const& call : calls){
-        //Hacky way to implement this, need to refactor ShapeBuilder class so it's easier for lua scripts to accsess...
-        #define callCase_(call,...) case Shape_##call: builder = builder.call(__VA_ARGS__); break
-        switch(call.callNo){
-            callCase_(fromPosition,(int)call.arg1,(int)call.arg2);
-            callCase_(withSize,(int)call.arg1,(int)call.arg2);
-            callCase_(placeAtCorner,(int)call.arg1);
-            callCase_(withMargin,call.arg1,call.arg2,call.arg3,call.arg4);
-            callCase_(sourceScale,call.arg1);
-            callCase_(fadeBorderSize,call.arg1,call.arg2,call.arg3,call.arg4);
-            callCase_(opacity,call.arg1);
-            callCase_(invertGrayScaleColors,);
-            callCase_(hudScale,call.arg1);
-            callCase_(fromBottomScreen);
-            default: return -1;//Return error code if unrecognized callNo
-        }
-    }
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    BuiltShapes.push_back(builder.build(aspectRatio));
-    return BuiltShapes.size()-1; // Returns the index of the built shape...
+//Push shape data onto the global BuiltShapes array
+int PushShape(ShapeData2D shape){
+    BuiltShapes.push_back(shape);
+    return BuiltShapes.size()-1;
 }
-
-
 
 static std::vector<ShapeData2D> CurrentShapes;
 int SetShapes(std::vector<int> shapes){
@@ -68,6 +48,8 @@ int SetShapes(std::vector<int> shapes){
             CurrentShapes.push_back(BuiltShapes[index]);
         } else {
             CurrentShapes.clear();
+            printf("Shape Index not found..."); // This can happen if the lua script uses an invalid index by mistake 
+            //TODO: throw error to LUA console...
             return -1;
         }
     }

@@ -9,32 +9,7 @@ namespace Plugins
 {
 using namespace melonDS;
 
-
-
-enum {
-    Shape_fromPosition,
-    Shape_withSize,
-    Shape_placeAtCorner,
-    Shape_withMargin,
-    Shape_sourceScale,
-    Shape_fadeBorderSize,
-    Shape_opacity,
-    Shape_invertGrayScaleColors,
-    Shape_hudScale,
-    Shape_build,
-    Shape_fromBottomScreen
-};
-
-struct ShapeBuilderCall
-{
-    int callNo;
-    float arg1=0.0;
-    float arg2=0.0;
-    float arg3=0.0;
-    float arg4=0.0;
-};
-
-int MakeShape(std::vector<ShapeBuilderCall> calls,float aRatio);
+int PushShape(ShapeData2D shape);
 int SetShapes(std::vector<int> shapes);
 void setLuaGameScene(int gamescene);
 

@@ -13,7 +13,6 @@
 #include "main.h"
 #include "../plugins/PluginTemplateLua.h"
 
-
 LuaBundle::LuaBundle(LuaConsoleDialog* dialog, EmuInstance* inst)
 {
     emuInstance = inst;
@@ -425,59 +424,34 @@ int Lua_HeldKeys(lua_State* L)
 }
 AddLuaFunction(Lua_HeldKeys,HeldKeys);
 
-int Lua_MakeShape(lua_State* L)
+int Lua_PushShapeData(lua_State* L)
+{
+    size_t len;
+    //Pointer to string data on the lua Stack
+    const char* bytes = luaL_checklstring(L,1,&len);
+    if (len!=112){
+        luaL_error(L, "BuildShape Error, given shapeString is not 112 bytes in len");
+        return 1;
+    }
+    //Need to copy bytes from the lua Stack into local memory
+    std::string shapeString = std::string(bytes,len);
+    //Cast from 112 byte string into a 112 byte ShapeData2D UBO struct
+    Plugins::ShapeData2D shape = *(Plugins::ShapeData2D*)shapeString.c_str();
+    int index = Plugins::PushShape(shape);
+    lua_pushinteger(L,index);
+    return 1;
+}
+AddLuaFunction(Lua_PushShapeData,PushShapeData);
+
+int Lua_GetCurrentAspectRatio(lua_State* L)
 {
     LuaBundle* bundle = get_bundle(L);
     Plugins::Plugin* myPlugin = bundle->getEmuInstance()->plugin;
-    std::vector<Plugins::ShapeBuilderCall> calls;
-    //get calls from lua
-
-    luaL_checktype(L, 1, LUA_TTABLE);
-
-    int callnum = 1;
-    lua_pushnumber(L,callnum);
-    lua_gettable(L,-2);
-
-    while(lua_istable(L,-1)){
-        //Get callID
-        lua_pushnumber(L,1);
-        lua_gettable(L,-2);
-        if (!lua_isinteger(L,-1)) {
-            lua_pop(L,1);
-            break;
-        }
-        int callID = lua_tointeger(L,-1);
-        lua_pop(L,1);
-
-        //Get (optional) 4 arguments for shapeCall
-        float args[4]={0.0,0.0,0.0,0.0};
-        for (int i =2;i<6;i++){
-            lua_pushnumber(L,i);
-            lua_gettable(L,-2);
-
-            if (lua_isnumber(L,-1)){
-                args[i-2] = lua_tonumber(L,-1);
-                lua_pop(L,1);
-            } else { 
-                lua_pop(L,1);
-                break; 
-            }
-        }
-        lua_pop(L,1);
-        //Push shape call onto queue
-        calls.push_back({callID,args[0],args[1],args[2],args[3]});
-        //(try to) pull next call from lua
-        lua_pushnumber(L,callnum++);
-        lua_gettable(L,-2);
-    }
-    lua_pop(L,2);
-    //Build shape using the calls queue
-    int id = Plugins::MakeShape(calls,myPlugin->GetCurrentAspectRatio());
-    //Return index of the shape to lua script
-    lua_pushinteger(L,id);
+    float aspectRatio = myPlugin->GetCurrentAspectRatio();
+    lua_pushnumber(L,aspectRatio);
     return 1;
 }
-AddLuaFunction(Lua_MakeShape,MakeShape);
+AddLuaFunction(Lua_GetCurrentAspectRatio,GetCurrentAspectRatio);
 
 int Lua_SetShapes(lua_State* L)
 {
