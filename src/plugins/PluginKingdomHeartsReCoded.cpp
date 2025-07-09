@@ -1291,6 +1291,17 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
         }
     }
 
+    if (GameScene == gameScene_InGameMenu)
+    {
+        u32 mainMenuView = getCurrentMainMenuView();
+        switch (mainMenuView) {
+            case 17: // challenge view
+                shapes.push_back(ShapeBuilder3D::square()
+                        .placeAtCorner(corner_Center)
+                        .build(aspectRatio));
+        }
+    }
+
     if (GameScene == gameScene_WorldSelection)
     {
         shapes.push_back(ShapeBuilder3D::square()
