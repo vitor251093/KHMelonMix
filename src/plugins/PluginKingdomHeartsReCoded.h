@@ -80,6 +80,7 @@ private:
     int MinimapCenterX = 128;
     int MinimapCenterY = 96;
     bool HideAllHUD;
+    u32 lastMainMenuView;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};

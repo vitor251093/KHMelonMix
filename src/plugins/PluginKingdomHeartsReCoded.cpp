@@ -1448,6 +1448,7 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
         switch (mainMenuView) {
             case 6:  // config
             case 13: // quest list
+            case 17: // challenge view
                 return screenLayout_Top;
             
             default:
@@ -1493,6 +1494,7 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
             case 2:  // main menu root (save menu)
             case 6:  // config
             case 13: // quest list
+            case 17: // challenge view
                 return brightnessMode_TopScreen;
             
             default:
@@ -2505,6 +2507,7 @@ u32 PluginKingdomHeartsReCoded::getCurrentMission()
 // 14 -> tutorials
 // 15 -> save menu
 // 16 -> world selection
+// 17 -> challenge view before system sector
 u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
 {
     if (GameScene == -1)
@@ -2520,7 +2523,7 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
         case 0x0040: mainMenuView = 3; break;
         case 0x0380: mainMenuView = 4; break;
         case 0x5f40: mainMenuView = 5; break;
-         
+        case 0x7b00: mainMenuView = 17; break;
     }
 
     if (mainMenuView == 0) {
@@ -2550,7 +2553,11 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
         }
     }
 
-    return mainMenuView;
+    if (mainMenuView != 0) {
+        lastMainMenuView = mainMenuView;
+    }
+
+    return lastMainMenuView;
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMap()
