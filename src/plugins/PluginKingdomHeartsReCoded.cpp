@@ -627,6 +627,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     .placeAtCorner(corner_Center)
                     .hudScale(hudScale)
                     .preserveDsScale()
+                    .force()
                     .build(aspectRatio));
             break;
 
@@ -2549,11 +2550,7 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
         }
     }
 
-    if (mainMenuView != 0) {
-        lastMainMenuView = mainMenuView;
-    }
-
-    return lastMainMenuView;
+    return mainMenuView;
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMap()
@@ -2727,6 +2724,7 @@ void PluginKingdomHeartsReCoded::debugLogs(int gameScene)
     printf("Game scene: %d\n", GameScene);
     printf("Game scene state: %d\n", GameSceneState);
     printf("Current map: %d\n", getCurrentMap());
+    printf("Current main menu view: %d\n", getCurrentMainMenuView());
     printf("Is save loaded: %d\n", isSaveLoaded() ? 1 : 0);
     printf("\n");
 }
