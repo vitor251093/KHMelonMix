@@ -4,14 +4,14 @@
 #include "PluginKingdomHeartsReCoded.h"
 #include "PluginHarvestMoonDsCute.h"
 #include "PluginMetroidPrimeHunters.h"
-#include "PluginTemplate.h"
+//#include "PluginTemplate.h"
 
 #define LOAD_PLUGINS \
     LOAD_PLUGIN(PluginKingdomHeartsDays) \
     LOAD_PLUGIN(PluginKingdomHeartsReCoded) \
     LOAD_PLUGIN(PluginHarvestMoonDsCute) \
     LOAD_PLUGIN(PluginMetroidPrimeHunters) \
-    LOAD_PLUGIN(PluginTemplate)
+//  LOAD_PLUGIN(PluginTemplate)
 
 namespace Plugins
 {
