@@ -1220,6 +1220,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
                         .polygonMode()
                         .polygonVertexesCount(4)
                         .polygonAttributes(1058996416)
+                        .includeOutOfBoundsPolygons()
                         .zRange(-10000.0, -0.00000)
                         .adjustAspectRatioOnly()
                         .build(aspectRatio));
@@ -1229,6 +1230,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
                         .polygonMode()
                         .polygonVertexesCount(4)
                         .polygonAttributes(1042219200)
+                        .includeOutOfBoundsPolygons()
                         .zRange(-10000.0, -0.00000)
                         .adjustAspectRatioOnly()
                         .build(aspectRatio));

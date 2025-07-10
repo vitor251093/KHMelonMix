@@ -1187,6 +1187,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
         if (GameScene != gameScene_InGameOlympusBattle) {
             // SP score
             shapes.push_back(ShapeBuilder3D::square()
+                    .polygonMode()
                     .negatePolygonAttributes(2031808) // pickup license notification
                     .fromPosition(0, 0)
                     .withSize(120, 60)
@@ -1205,6 +1206,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1058996416)
+                .includeOutOfBoundsPolygons()
                 .zRange(-1.0, -0.5)
                 .adjustAspectRatioOnly()
                 .build(aspectRatio));
@@ -1214,6 +1216,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1042219200)
+                .includeOutOfBoundsPolygons()
                 .zRange(-1.0, -0.5)
                 .adjustAspectRatioOnly()
                 .build(aspectRatio));
@@ -1242,53 +1245,56 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
 
         // pickup license notification
         shapes.push_back(ShapeBuilder3D::square()
+                .polygonMode()
                 .fromPosition(0, 24)
                 .withSize(80, 44)
                 .placeAtCorner(corner_BottomLeft)
-                .withMargin(0.0, 0.0, 0.0, 124.0 + 1.0)
+                .withMargin(0.0, 0.0, 0.0, 125.0)
                 .zRange(-1.0, -1.0)
                 .negateColor(0xFFFFFF)
                 .hudScale(UIScale)
                 .build(aspectRatio));
 
-        // command menu
-        shapes.push_back(ShapeBuilder3D::square()
-                .polygonMode()
-                .polygonAttributes(2031808)
-                .fromPosition(0, 69)
-                .withSize(80, 124)
-                .placeAtCorner(corner_BottomLeft)
-                .withMargin(10.0, 0.0, 0.0, 0.5)
-                .zRange(-1.0, -1.0)
-                .negateColor(0xFFFFFF)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-        if (GameScene == gameScene_InGameOlympusBattle) {
-            // olympus hand pointers
+        if (GameScene != gameScene_PauseMenu) {
+            // command menu
             shapes.push_back(ShapeBuilder3D::square()
-                    .placeAtCorner(corner_Center)
+                    .polygonMode()
+                    .polygonAttributes(2031808)
+                    .fromPosition(0, 69)
+                    .withSize(80, 124)
+                    .placeAtCorner(corner_BottomLeft)
+                    .withMargin(10.0, 0.0, 0.0, 0.5)
                     .zRange(-1.0, -1.0)
-                    .build(aspectRatio));
-
-            // player health
-            shapes.push_back(ShapeBuilder3D::square()
-                    .fromPosition(128, 140)
-                    .withSize(128, 52)
-                    .placeAtCorner(corner_BottomRight)
-                    .zRange(-1.0, 0.0)
-                    .hudScale(UIScale)
-                    .build(aspectRatio));
-
-            // player health (red part)
-            shapes.push_back(ShapeBuilder3D::square()
-                    .fromPosition(128, 140)
-                    .withSize(128, 52)
-                    .placeAtCorner(corner_BottomRight)
-                    .zRange(0.25, 0.50)
+                    .negateColor(0xFFFFFF)
                     .hudScale(UIScale)
                     .build(aspectRatio));
         }
+    }
+
+    if (GameScene == gameScene_InGameOlympusBattle) {
+        // olympus hand pointers
+        shapes.push_back(ShapeBuilder3D::square()
+                .placeAtCorner(corner_Center)
+                .zRange(-1.0, -1.0)
+                .build(aspectRatio));
+
+        // player health
+        shapes.push_back(ShapeBuilder3D::square()
+                .fromPosition(128, 140)
+                .withSize(128, 52)
+                .placeAtCorner(corner_BottomRight)
+                .zRange(-1.0, 0.0)
+                .hudScale(UIScale)
+                .build(aspectRatio));
+
+        // player health (red part)
+        shapes.push_back(ShapeBuilder3D::square()
+                .fromPosition(128, 140)
+                .withSize(128, 52)
+                .placeAtCorner(corner_BottomRight)
+                .zRange(0.25, 0.50)
+                .hudScale(UIScale)
+                .build(aspectRatio));
     }
 
     if (GameScene == gameScene_InGameMenu)
