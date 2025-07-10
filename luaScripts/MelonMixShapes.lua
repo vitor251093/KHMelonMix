@@ -64,6 +64,16 @@ function vec4:bytes()
     return string.pack("ffff",self.x,self.y,self.z,self.w)
 end
 
+local iarr4 = vector:new({[0]=0,0,0,0}) --NOTE: 0 indexed
+function iarr4:bytes()
+    return string.pack("iiii",self[0],self[1],self[2],self[3])
+end
+
+local uiarr4 = vector:new({[0]=0,0,0,0}) --NOTE: 0 indexed
+function uiarr4:bytes()
+    return string.pack("IIII",self[0],self[1],self[2],self[3])
+end
+
 local ShapeData2D = {}
 function ShapeData2D:new()
     local init = {
@@ -107,6 +117,66 @@ function ShapeData2D:bytes()
     })
 end
 
+
+local ShapeData3D = {}
+function ShapeData3D:new()
+    local init = {
+        sourceScale = vec2:new({x=1.0,y=1.0}),
+        
+        corner = _corner.PreservePosition,
+        hudScale = SCREEN_SCALE,
+        
+        squareInitialCoords = ivec4:new({x=0,y=0,z=256,w=192}),
+        
+        margin = vec4:new(),
+        
+        zRange = vec2:new({x=-1.0,y=1.0}),
+        polygonVertexesCount = 0,
+        
+        effects = 0,
+        -- 0x01 => polygon mode
+        -- 0x02 => hide
+
+        polygonAttributes = uiarr4:new(),
+        negatedPolygonAttributes = uiarr4:new(),
+
+        color = iarr4:new(),
+        negatedColor = iarr4:new(),
+
+        textureParams = uiarr4:new(),
+        negatedTextureParams = uiarr4:new(),
+
+        colorCount = 0,
+        negatedColorCount = 0,
+        textureParamCount = 0,
+        negatedTextureParamCount =0
+    } 
+    return newStruct(self,init)
+end
+
+function ShapeData3D:bytes() 
+    return table.concat({
+        self.sourceScale:bytes(), -- 8 bytes (X factor, Y factor)
+        string.pack("i",self.corner), -- 4 bytes
+        string.pack("f",self.hudScale), -- 4 bytes
+        self.squareInitialCoords:bytes(), -- 16 bytes (X, Y, Width, Height)
+        self.margin:bytes(), -- 16 bytes (left, top, right, bottom)
+        self.zRange:bytes(), -- 8 bytes
+        string.pack("i",self.polygonVertexesCount), -- 4 bytes
+        string.pack("i",self.effects), -- 4 bytes
+        self.polygonAttributes:bytes(), -- 16 bytes
+        self.negatedPolygonAttributes:bytes(), -- 16 bytes
+        self.color:bytes(), -- 16 bytes
+        self.negatedColor:bytes(), -- 16 bytes
+        self.textureParams:bytes(), --16 bytes
+        self.negatedTextureParams:bytes(), -- 16 bytes
+        string.pack("i",self.colorCount), -- 4 bytes
+        string.pack("i",self.negatedColorCount), -- 4 bytes
+        string.pack("i",self.textureParamCount), -- 4 bytes
+        string.pack("i",self.negatedTextureParamCount)
+    })
+end
+
 ShapeBuilder2D ={}
 function ShapeBuilder2D:square()
     return newStruct(self,{
@@ -120,12 +190,12 @@ function ShapeBuilder2D:square()
 end
 
 function ShapeBuilder2D:fromBottomScreen()
-    self._fromBottomScreen = true;
+    self._fromBottomScreen = true
     return self
 end
 
 function ShapeBuilder2D:placeAtCorner(corner)
-    self._corner = corner;
+    self._corner = corner
     return self
 end
 
@@ -136,7 +206,7 @@ function ShapeBuilder2D:sourceScale(scale)
 end
 
 function ShapeBuilder2D:hudScale(hudScale)
-    self._hudScale = hudScale;
+    self._hudScale = hudScale
     return self
 end
 
@@ -315,3 +385,116 @@ function ShapeBuilder2D:build(aspectRatio)
     return self.shapeData
 end
 
+ShapeBuilder3D = {}
+function ShapeBuilder3D:square()
+    return newStruct(self,{
+        shapeData = ShapeData3D:new(),
+        _shape = _shape.Square,
+        _aspectRatio = 0.0,
+        _polygonAttributesIndex = 0,
+        _negatedPolygonAttributesIndex = 0
+    })
+end
+
+function ShapeBuilder3D:polygonAttributes(_polygonAttributes)
+    self.shapeData.polygonAttributes[self._polygonAttributesIndex] = _polygonAttributes
+    self._polygonAttributesIndex = self._polygonAttributesIndex+1
+    return self
+end
+function ShapeBuilder3D:negatePolygonAttributes(_polygonAttributes)
+    self.shapeData.negatedPolygonAttributes[self._negatedPolygonAttributesIndex] = _polygonAttributes
+    self._negatedPolygonAttributesIndex = self._negatedPolygonAttributesIndex+1
+    return self
+end
+function ShapeBuilder3D:color(_color)
+    self.shapeData.color[self.shapeData.colorCount] = _color
+    self.shapeData.colorCount = self.shapeData.colorCount+1
+    return self
+end
+function ShapeBuilder3D:negateColor(_color)
+    self.shapeData.negatedColor[self.shapeData.negatedColorCount] = _color
+    self.shapeData.negatedColorCount = self.shapeData.negatedColorCount+1
+    return self
+end
+function ShapeBuilder3D:textureParam(_textureParam) 
+    self.shapeData.textureParams[self.shapeData.textureParamCount] = _textureParam
+    self.shapeData.textureParamCount = self.shapeData.textureParamCount+1
+    return self
+end
+function ShapeBuilder3D:negatedTextureParam(_textureParam)
+    self.shapeData.negatedTextureParams[self.shapeData.negatedTextureParamCount] = _textureParam
+    self.shapeData.negatedTextureParamCount = self.shapeData.negatedTextureParamCount+1
+    return self
+end
+function ShapeBuilder3D:polygonMode()
+    self.shapeData.effects = self.shapeData.effects | 0x1
+    return self
+end
+function ShapeBuilder3D:polygonVertexesCount(_polygonVertexesCount)
+    self.shapeData.polygonVertexesCount = _polygonVertexesCount
+    return self
+end
+function ShapeBuilder3D:placeAtCorner(corner)
+    self.shapeData.corner = corner
+    return self
+end
+function ShapeBuilder3D:zRange(_minZ, _maxZ)
+    self.shapeData.zRange.x = _minZ
+    self.shapeData.zRange.y = _maxZ
+    return self
+end
+function ShapeBuilder3D:zValue(z)
+    self.shapeData.zRange.x = z
+    self.shapeData.zRange.y = z
+    return self
+end
+function ShapeBuilder3D:sourceScale(_scaleX, _scaleY)
+    _scaleY = _scaleY or _scaleX --_scaleY is optional
+    self.shapeData.sourceScale.x = _scaleX
+    self.shapeData.sourceScale.y = _scaleY
+    return self
+end
+function ShapeBuilder3D:hudScale(hudScale)
+    self.shapeData.hudScale = hudScale
+    return self
+end
+function ShapeBuilder3D:preserveDsScale()
+    local mulScale = SCREEN_SCALE/self.shapeData.hudScale
+    self.shapeData.sourceScale.x = self.shapeData.sourceScale.x * mulScale
+    self.shapeData.sourceScale.y = self.shapeData.sourceScale.y * mulScale
+    return self
+end
+function ShapeBuilder3D:fromPosition(x, y)
+    if _shape == _shape.Square then 
+        self.shapeData.squareInitialCoords.x = x
+        self.shapeData.squareInitialCoords.y = y
+    end
+    return self
+end
+function ShapeBuilder3D:withSize(width, height)
+    if _shape == _shape.Square then 
+        self.shapeData.squareInitialCoords.z = width
+        self.shapeData.squareInitialCoords.w = height
+    end
+    return self
+end
+function ShapeBuilder3D:withMargin(left, top, right, bottom)
+    self.shapeData.margin.x = left
+    self.shapeData.margin.y = top
+    self.shapeData.margin.z = right
+    self.shapeData.margin.w = bottom
+    return self
+end
+function ShapeBuilder3D:hide()
+    self.shapeData.effects = self.shapeData.effects | 0x2
+    return self
+end
+function ShapeBuilder3D:logger()
+    self.shapeData.effects = self.shapeData.effects | 0x4
+    return self
+end
+
+function ShapeBuilder3D:build(aspectRatio)
+    self._aspectRatio = aspectRatio
+    return self.shapeData
+end

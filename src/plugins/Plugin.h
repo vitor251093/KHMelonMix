@@ -10,7 +10,7 @@
 #define MOUSE_CURSOR_AS_CAMERA_ENABLED false
 
 #define SHOW_GAME_SCENE false
-#define DEBUG_MODE_ENABLED false
+#define DEBUG_MODE_ENABLED true
 #define ERROR_LOG_FILE_ENABLED true
 
 #define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]

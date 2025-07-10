@@ -9,8 +9,10 @@ namespace Plugins
 {
 using namespace melonDS;
 
-int PushShape(ShapeData2D shape);
-int SetShapes(std::vector<int> shapes);
+int Push2DShape(ShapeData2D shape);
+int Push3DShape(ShapeData3D shape);
+int Set2DShapes(std::vector<int> shapes);
+int Set3DShapes(std::vector<int> shapes);
 void setLuaGameScene(int gamescene);
 
 class PluginTemplateLua : public Plugin
@@ -21,6 +23,7 @@ public:
     static u32 euGamecode;
     static u32 jpGamecode;
     static bool isCart(u32 gameCode) {return true;};
+    //static bool isCart(u32 gameCode) {return false;};
     bool isUsaCart()        { return GameCode == usGamecode; };
     bool isEuropeCart()     { return GameCode == euGamecode; };
     bool isJapanCart()      { return GameCode == jpGamecode; };
@@ -30,6 +33,7 @@ public:
     }
     int renderer_gameSceneState();
     std::vector<ShapeData2D> renderer_2DShapes();
+    std::vector<ShapeData3D> renderer_3DShapes();
     int renderer_screenLayout();
     int renderer_brightnessMode();
     bool renderer_showOriginalUI();

@@ -17,7 +17,7 @@ public:
     static u32 euGamecode;
     static u32 jpGamecode;
     static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
-    //static bool isCart(u32 gameCode) {return true};
+    //static bool isCart(u32 gameCode) {return true;};
     bool isUsaCart()        { return GameCode == usGamecode; };
     bool isEuropeCart()     { return GameCode == euGamecode; };
     bool isJapanCart()      { return GameCode == jpGamecode; };
@@ -27,6 +27,7 @@ public:
     }
 
     std::vector<ShapeData2D> renderer_2DShapes();
+    std::vector<ShapeData3D> renderer_3DShapes();
     int renderer_screenLayout();
     int renderer_brightnessMode();
     bool renderer_showOriginalUI();

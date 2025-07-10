@@ -17,17 +17,27 @@ local shapeData_B = ShapeBuilder2D:square()
     :fromPosition(0,0)
     :withSize(256,192)
     :placeAtCorner(_corner.TopLeft)
-    :sourceScale(0.5)
+    :sourceScale(0.75)
     :fadeBorderSize(0,0,2.5,2.5)
     :opacity(0.66)
     :hudScale(hudScale)
     :build(1)
 
-local ScreenShape = PushShapeData(shapeData_A:bytes())
-local MiniMapShape = PushShapeData(shapeData_B:bytes())
+local shapeData_C = ShapeBuilder3D:square()
+    :fromPosition(0,0)
+    :withSize(256,192)
+    :placeAtCorner(_corner.Center)
+    :sourceScale(0.75)
+    :hudScale(hudScale)
+    :build(1)
 
+local HUDShape = Push2DShapeData(shapeData_A:bytes())
+local MiniMapShape = Push2DShapeData(shapeData_B:bytes())
+local Shape3D = Push3DShapeData(shapeData_C:bytes())
+print(Shape3D)
 -- Set current shapes that should be loaded
-SetShapes{MiniMapShape,ScreenShape}
+Set2DShapes{MiniMapShape,HUDShape}
+print(Set3DShapes{Shape3D})
 
 --Update Game scene to signal the shader to update
 SetGameScene(3)
@@ -36,11 +46,12 @@ local miniMapIsup = true
 
 function toggleMiniMap() --Function to toggle showing the bottom Screen as a miniMap
     miniMapIsup = not miniMapIsup 
+    print("hi")
     if miniMapIsup then
-        SetShapes{MiniMapShape,ScreenShape}
+        Set2DShapes{MiniMapShape,HUDShape}
         SetGameScene(3)
     else
-        SetShapes{ScreenShape}
+        Set2DShapes{HUDShape}
         SetGameScene(2)
     end
 end

@@ -424,12 +424,12 @@ int Lua_HeldKeys(lua_State* L)
 }
 AddLuaFunction(Lua_HeldKeys,HeldKeys);
 
-int Lua_PushShapeData(lua_State* L)
+int Lua_Push2DShapeData(lua_State* L)
 {
     size_t len;
     //Pointer to string data on the lua Stack
     const char* bytes = luaL_checklstring(L,1,&len);
-    if (len!=112){
+    if (len!=sizeof Plugins::ShapeData2D()){
         luaL_error(L, "BuildShape Error, given shapeString is not 112 bytes in len");
         return 1;
     }
@@ -437,11 +437,27 @@ int Lua_PushShapeData(lua_State* L)
     std::string shapeString = std::string(bytes,len);
     //Cast from 112 byte string into a 112 byte ShapeData2D UBO struct
     Plugins::ShapeData2D shape = *(Plugins::ShapeData2D*)shapeString.c_str();
-    int index = Plugins::PushShape(shape);
+    int index = Plugins::Push2DShape(shape);
     lua_pushinteger(L,index);
     return 1;
 }
-AddLuaFunction(Lua_PushShapeData,PushShapeData);
+AddLuaFunction(Lua_Push2DShapeData,Push2DShapeData);
+
+int Lua_Push3DShapeData(lua_State* L)
+{
+    size_t len;
+    const char* bytes = luaL_checklstring(L,1,&len);
+    if (len!=sizeof Plugins::ShapeData3D()){
+        luaL_error(L,"3D Shape Data error, given shapeString is not 176 bytes in len");
+        return 1;
+    }
+    std::string shapeString = std::string(bytes,len);
+    Plugins::ShapeData3D shape = *(Plugins::ShapeData3D*)shapeString.c_str();
+    int index = Plugins::Push3DShape(shape);
+    lua_pushinteger(L,index);
+    return 1;
+}
+AddLuaFunction(Lua_Push3DShapeData,Push3DShapeData);
 
 int Lua_GetCurrentAspectRatio(lua_State* L)
 {
@@ -453,7 +469,7 @@ int Lua_GetCurrentAspectRatio(lua_State* L)
 }
 AddLuaFunction(Lua_GetCurrentAspectRatio,GetCurrentAspectRatio);
 
-int Lua_SetShapes(lua_State* L)
+int Lua_Set2DShapes(lua_State* L)
 {
     luaL_checktype(L, 1, LUA_TTABLE);
     std::vector<int> shapes;
@@ -468,11 +484,32 @@ int Lua_SetShapes(lua_State* L)
         lua_gettable(L,-2);
     }
     lua_pop(L,2);
-    int isgood = Plugins::SetShapes(shapes);
+    int isgood = Plugins::Set2DShapes(shapes);
     lua_pushinteger(L,isgood);
     return 1;//Returns succsess of SetShapes
 }
-AddLuaFunction(Lua_SetShapes,SetShapes);
+AddLuaFunction(Lua_Set2DShapes,Set2DShapes);
+
+int Lua_Set3DShapes(lua_State* L)
+{
+    luaL_checktype(L, 1, LUA_TTABLE);
+    std::vector<int> shapes;
+    int shapeNum = 1;
+    lua_pushnumber(L,shapeNum++);
+    lua_gettable(L,-2);
+    //Pull list of shape index from lua
+    while(lua_isinteger(L,-1)){
+        shapes.push_back(lua_tointeger(L,-1));
+        lua_pop(L,1);
+        lua_pushnumber(L,shapeNum++);
+        lua_gettable(L,-2);
+    }
+    lua_pop(L,2);
+    int isgood = Plugins::Set3DShapes(shapes);
+    lua_pushinteger(L,isgood);
+    return 1;//Returns succsess of SetShapes
+}
+AddLuaFunction(Lua_Set3DShapes,Set3DShapes);
 
 int Lua_SetGameScene(lua_State* L)
 {
