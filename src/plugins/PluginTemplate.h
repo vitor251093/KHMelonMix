@@ -1,5 +1,5 @@
-#ifndef PLUGIN_METROID_PRIME_HUNTERS_H
-#define PLUGIN_METROID_PRIME_HUNTERS_H
+#ifndef PLUGIN_TEMPLATE_H
+#define PLUGIN_TEMPLATE_H
 
 #include "Plugin.h"
 #include "../NDS.h"
@@ -16,7 +16,8 @@ public:
     static u32 usGamecode;
     static u32 euGamecode;
     static u32 jpGamecode;
-    static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
+    //static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
+    static bool isCart(u32 gameCode) {return true};
     bool isUsaCart()        { return GameCode == usGamecode; };
     bool isEuropeCart()     { return GameCode == euGamecode; };
     bool isJapanCart()      { return GameCode == jpGamecode; };
