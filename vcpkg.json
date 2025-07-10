@@ -18,7 +18,8 @@
 		{
 			"name": "libslirp",
 			"platform": "linux"
-		}
+		},
+		"lua"
 	],
 	"features": {
 		"qt6": {
