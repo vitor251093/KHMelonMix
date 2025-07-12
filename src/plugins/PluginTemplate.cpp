@@ -37,7 +37,7 @@ std::vector<ShapeData2D> PluginTemplate::renderer_2DShapes() {
 
     shapes.push_back(ShapeBuilder2D::square()
             //.fromBottomScreen()
-            .fromPosition(128, 60)
+            .fromPosition(0,0)
             .withSize(72, 72)
             .placeAtCorner(corner_TopRight)
             .withMargin(0.0, 30.0, 9.0, 0.0)
@@ -48,6 +48,22 @@ std::vector<ShapeData2D> PluginTemplate::renderer_2DShapes() {
             .hudScale(hudScale)
             .build(aspectRatio));
     
+    return shapes;
+}
+
+std::vector<ShapeData3D> PluginTemplate::renderer_3DShapes() {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    std::vector<ShapeData3D> shapes;
+    shapes.push_back(ShapeBuilder3D::square()
+                    .fromBottomScreen()
+                    .fromPosition(0,0)
+                    .withSize(256,192)
+                    .placeAtCorner(corner_TopRight)
+                    .sourceScale(0.5)
+                    .fadeBorderSize(2.5,2.5,0,0)
+                    .opacity(0.66)
+                    .hudScale(hudScale)
+                    .build(1)
     return shapes;
 }
 
