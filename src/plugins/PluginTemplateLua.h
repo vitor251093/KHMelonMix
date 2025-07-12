@@ -19,6 +19,7 @@ class PluginTemplateLua : public Plugin
 {
 public:
     PluginTemplateLua(u32 gameCode);
+    int run_ShapeBuilderTests();
     static u32 usGamecode;
     static u32 euGamecode;
     static u32 jpGamecode;

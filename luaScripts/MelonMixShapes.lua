@@ -199,9 +199,10 @@ function ShapeBuilder2D:placeAtCorner(corner)
     return self
 end
 
-function ShapeBuilder2D:sourceScale(scale)
-    self.shapeData.sourceScale.x = scale
-    self.shapeData.sourceScale.y = scale
+function ShapeBuilder2D:sourceScale(scalex,scaley)
+    if scaley == nil then scaley = scalex end
+    self.shapeData.sourceScale.x = scalex
+    self.shapeData.sourceScale.y = scaley
     return self
 end
 
@@ -255,6 +256,26 @@ function ShapeBuilder2D:invertGrayScaleColors()
     return self
 end
 
+function ShapeBuilder2D:repeatAsBackground()
+    self.shapeData.effects = self.shapeData.effects | 0x40 | 0x80
+    return self
+end
+
+function ShapeBuilder2D:repeatAsBackgroundHorizontally()
+    self.shapeData.effects = self.shapeData.effects | 0x40
+    return self
+end
+
+function ShapeBuilder2D:repeatAsBackgroundVertically()
+    self.shapeData.effects = self.shapeData.effects | 0x80
+    return self
+end
+
+function ShapeBuilder2D:force()
+    self.shapeData.effects = self.shapeData.effects | 0x100
+    return self
+end
+
 function ShapeBuilder2D:mirror(mirror)
     self.shapeData.effects = self.shapeData.effects | mirror
     return self
@@ -270,16 +291,17 @@ function ShapeBuilder2D:cropSquareCorners(topLeft,topRight,bottomLeft,bottomRigh
 end
 
 function ShapeBuilder2D:squareBorderRadius(topLeft,topRight,bottomLeft,bottomRight)
+    --if only first argument given set all other arguments to the first one...
+    if topRight == nil then topRight = topLeft end
+    if bottomLeft == nil then bottomLeft = topLeft end
+    if bottomRight == nil then bottomRight = topLeft end
+
     self.shapeData.effects = self.shapeData.effects | 0x4
     self.shapeData.squareCornersModifier.x = topLeft
     self.shapeData.squareCornersModifier.y = topRight
     self.shapeData.squareCornersModifier.z = bottomLeft
     self.shapeData.squareCornersModifier.w = bottomRight
     return self
-end
-
-function ShapeBuilder2D:squareBorderRadius(radius)
-    return self:squareBorderRadius(radius, radius, radius, radius)
 end
 
 function ShapeBuilder2D:opacity(opacity)
@@ -430,6 +452,10 @@ function ShapeBuilder3D:polygonMode()
     self.shapeData.effects = self.shapeData.effects | 0x1
     return self
 end
+function ShapeBuilder3D:adjustAspectRatioOnly()
+    self.shapeData.effects = self.shapeData.effects | 0x8
+    return self
+end
 function ShapeBuilder3D:polygonVertexesCount(_polygonVertexesCount)
     self.shapeData.polygonVertexesCount = _polygonVertexesCount
     return self
@@ -449,7 +475,7 @@ function ShapeBuilder3D:zValue(z)
     return self
 end
 function ShapeBuilder3D:sourceScale(_scaleX, _scaleY)
-    _scaleY = _scaleY or _scaleX --_scaleY is optional
+    if _scaleY == nil then _scaleY = _scaleX end --_scaleY is optional
     self.shapeData.sourceScale.x = _scaleX
     self.shapeData.sourceScale.y = _scaleY
     return self

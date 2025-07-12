@@ -529,6 +529,16 @@ int Lua_getJoyStick(lua_State* L)
 }
 AddLuaFunction(Lua_getJoyStick,GetJoyStick);
 
+int Lua_Test_run_ShapeBuilderTests(lua_State* L)
+{
+    LuaBundle* bundle = get_bundle(L);
+    Plugins::PluginTemplateLua* myPlugin = (Plugins::PluginTemplateLua*)bundle->getEmuInstance()->plugin;
+    int result = myPlugin -> run_ShapeBuilderTests();
+    lua_pushinteger(L,result);
+    return 1;
+}
+AddLuaFunction(Lua_Test_run_ShapeBuilderTests,Test_run_ShapeBuilderTests);
+
 /*--------------------------------------------------------------------------------------------------
                             Front-end lua function definitions --Commented out for now...
 --------------------------------------------------------------------------------------------------*/
