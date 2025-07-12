@@ -4,7 +4,7 @@ dofile "MelonMixShapes.lua"
 local hudScale = 5
 local aspectRatio = GetCurrentAspectRatio()
 
-local shapeData_A = ShapeBuilder2D:square()
+local HUDShape = Push2DShapeData(ShapeBuilder2D:square()
     :fromBottomScreen()
     :fromPosition(0,0)
     :withSize(256,192)
@@ -12,8 +12,8 @@ local shapeData_A = ShapeBuilder2D:square()
     :sourceScale(1.5)
     :hudScale(hudScale)
     :build(1)
-
-local shapeData_B = ShapeBuilder2D:square()
+)
+local MiniMapShape = Push2DShapeData(ShapeBuilder2D:square()
     :fromPosition(0,0)
     :withSize(256,192)
     :placeAtCorner(_corner.TopLeft)
@@ -22,22 +22,19 @@ local shapeData_B = ShapeBuilder2D:square()
     :opacity(0.66)
     :hudScale(hudScale)
     :build(1)
-
-local shapeData_C = ShapeBuilder3D:square()
+)
+local Screen3D  = Push3DShapeData(ShapeBuilder3D:square()
     :fromPosition(0,0)
     :withSize(256,192)
     :placeAtCorner(_corner.Center)
     :sourceScale(0.75)
     :hudScale(hudScale)
     :build(1)
+)
 
-local HUDShape = Push2DShapeData(shapeData_A:bytes())
-local MiniMapShape = Push2DShapeData(shapeData_B:bytes())
-local Shape3D = Push3DShapeData(shapeData_C:bytes())
-print(Shape3D)
 -- Set current shapes that should be loaded
 Set2DShapes{MiniMapShape,HUDShape}
-print(Set3DShapes{Shape3D})
+Set3DShapes{Screen3D}
 
 --Update Game scene to signal the shader to update
 SetGameScene(3)

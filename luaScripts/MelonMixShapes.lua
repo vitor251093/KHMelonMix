@@ -404,7 +404,7 @@ function ShapeBuilder2D:build(aspectRatio)
     if self._shape == _shape.Square then 
         self:precompute3DCoordinatesOf2DSquareShape(aspectRatio)
     end
-    return self.shapeData
+    return self.shapeData:bytes()
 end
 
 ShapeBuilder3D = {}
@@ -522,5 +522,5 @@ end
 
 function ShapeBuilder3D:build(aspectRatio)
     self._aspectRatio = aspectRatio
-    return self.shapeData
+    return self.shapeData:bytes()
 end
