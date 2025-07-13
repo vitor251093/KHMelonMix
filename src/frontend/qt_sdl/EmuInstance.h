@@ -252,7 +252,6 @@ private:
 
     void openJoystick();
     void closeJoystick();
-    Sint16 joystickButtonDown(int val);
 
     void inputProcess();
 
@@ -310,7 +309,7 @@ public:
     bool doAudioSync;
 
     melonDS::u32 getInputMask(){return inputMask;}
-    Sint16 getJoyStickAxis(int axisNum);
+    Sint16 joystickButtonDown(int val);
 private:
 
     std::unique_ptr<melonDS::Savestate> backupState;

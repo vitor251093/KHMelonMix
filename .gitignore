@@ -36,3 +36,4 @@ CMakeCache.txt
 # Visual Studio artifacts
 .vs
 .vscode
+luaScripts/scratch.lua

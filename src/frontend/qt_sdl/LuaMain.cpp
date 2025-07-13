@@ -12,6 +12,7 @@
 #include <NDS_Header.h>
 #include "main.h"
 #include "../plugins/PluginTemplateLua.h"
+#include "../plugins/PluginManager.h"
 
 LuaBundle::LuaBundle(LuaConsoleDialog* dialog, EmuInstance* inst)
 {
@@ -443,6 +444,50 @@ int Lua_Push2DShapeData(lua_State* L)
 }
 AddLuaFunction(Lua_Push2DShapeData,Push2DShapeData);
 
+int Lua_AddGameCode(lua_State* L)
+{
+    uint32_t gameCode = luaL_checkinteger(L,1);
+    Plugins::addGameCode(gameCode);
+    Plugins::resetShapeBuffers();
+    LuaBundle* bundle = get_bundle(L);
+    auto emuInstance = bundle->getEmuInstance();
+    auto nds = emuInstance->getNDS();
+    auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
+    if (rom != nullptr){
+        uint32_t CurGameCode = rom->GetHeader().GameCodeAsU32();
+        emuInstance->plugin = Plugins::PluginManager::load(CurGameCode);
+        emuInstance->plugin->setNds(emuInstance->getNDS());
+        emuInstance->plugin->onLoadROM();
+        emuInstance->plugin->shouldInvalidateConfigs = true;
+    }
+    return 0;
+}
+AddLuaFunction(Lua_AddGameCode,AddGameCode);
+
+int Lua_GetGameCode(lua_State* L)
+{
+    LuaBundle* bundle = get_bundle(L);
+    auto nds = bundle->getEmuInstance()->getNDS();
+    auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
+    if(rom == nullptr){
+        lua_pushnil(L);
+        return 1;
+    }
+    uint32_t gamecode = rom->GetHeader().GameCodeAsU32();
+    lua_pushinteger(L,gamecode);
+    return 1;
+}
+AddLuaFunction(Lua_GetGameCode,GetGameCode);
+
+int Lua_ClearGameCodes(lua_State* L)
+{
+    
+    Plugins::resetShapeBuffers();
+    Plugins::clearGameCodes();
+    return 0;
+}
+AddLuaFunction(Lua_ClearGameCodes,ClearGameCodes);
+
 int Lua_Push3DShapeData(lua_State* L)
 {
     size_t len;
@@ -459,15 +504,15 @@ int Lua_Push3DShapeData(lua_State* L)
 }
 AddLuaFunction(Lua_Push3DShapeData,Push3DShapeData);
 
-int Lua_GetCurrentAspectRatio(lua_State* L)
-{
-    LuaBundle* bundle = get_bundle(L);
-    Plugins::Plugin* myPlugin = bundle->getEmuInstance()->plugin;
-    float aspectRatio = myPlugin->GetCurrentAspectRatio();
-    lua_pushnumber(L,aspectRatio);
-    return 1;
-}
-AddLuaFunction(Lua_GetCurrentAspectRatio,GetCurrentAspectRatio);
+// int Lua_GetCurrentAspectRatio(lua_State* L)
+// {
+//     LuaBundle* bundle = get_bundle(L);
+//     Plugins::Plugin* myPlugin = bundle->getEmuInstance()->plugin;
+//     float aspectRatio = myPlugin->GetCurrentAspectRatio();
+//     lua_pushnumber(L,aspectRatio);
+//     return 1;
+// }
+// AddLuaFunction(Lua_GetCurrentAspectRatio,GetCurrentAspectRatio);
 
 int Lua_Set2DShapes(lua_State* L)
 {
@@ -511,6 +556,13 @@ int Lua_Set3DShapes(lua_State* L)
 }
 AddLuaFunction(Lua_Set3DShapes,Set3DShapes);
 
+int Lua_ResetShapeBuffers(lua_State* L)
+{
+    Plugins::resetShapeBuffers();
+    return 0;
+}
+AddLuaFunction(Lua_ResetShapeBuffers,ResetShapeBuffers);
+
 int Lua_SetGameScene(lua_State* L)
 {
     int gamescene = luaL_checkinteger(L,1);
@@ -522,8 +574,8 @@ AddLuaFunction(Lua_SetGameScene,SetGameScene);
 int Lua_getJoyStick(lua_State* L)
 {
     LuaBundle* bundle = get_bundle(L);
-    int axisNum = luaL_checknumber(L,1);
-    int val = bundle->getEmuInstance()->getJoyStickAxis(axisNum);
+    int num = luaL_checknumber(L,1);
+    int val = bundle->getEmuInstance()->joystickButtonDown(num);
     lua_pushinteger(L,val);
     return 1;
 }
@@ -532,8 +584,7 @@ AddLuaFunction(Lua_getJoyStick,GetJoyStick);
 int Lua_Test_run_ShapeBuilderTests(lua_State* L)
 {
     LuaBundle* bundle = get_bundle(L);
-    Plugins::PluginTemplateLua* myPlugin = (Plugins::PluginTemplateLua*)bundle->getEmuInstance()->plugin;
-    int result = myPlugin -> run_ShapeBuilderTests();
+    int result = Plugins::run_ShapeBuilderTests();
     lua_pushinteger(L,result);
     return 1;
 }

@@ -106,8 +106,8 @@ end
 function ShapeData2D:bytes() 
     return table.concat({
         self.sourceScale:bytes(),-- 8 bytes (X factor, Y factor)
-        string.pack("i",self.effects),
-        string.pack("f",self.opacity),
+        string.pack("i",self.effects),-- 4 bytes
+        string.pack("f",self.opacity),-- 4 bytes
         self.squareInitialCoords:bytes(),-- 16 bytes (X, Y, Width, Height)
         self.squareFinalCoords:bytes(),-- 16 bytes (X, Y, Width, Height)
         self.fadeBorderSize:bytes(),-- 16 bytes (left fade, top fade, right fade, down fade)
@@ -168,12 +168,12 @@ function ShapeData3D:bytes()
         self.negatedPolygonAttributes:bytes(), -- 16 bytes
         self.color:bytes(), -- 16 bytes
         self.negatedColor:bytes(), -- 16 bytes
-        self.textureParams:bytes(), --16 bytes
+        self.textureParams:bytes(), -- 16 bytes
         self.negatedTextureParams:bytes(), -- 16 bytes
         string.pack("i",self.colorCount), -- 4 bytes
         string.pack("i",self.negatedColorCount), -- 4 bytes
         string.pack("i",self.textureParamCount), -- 4 bytes
-        string.pack("i",self.negatedTextureParamCount)
+        string.pack("i",self.negatedTextureParamCount)-- 4 bytes
     })
 end
 

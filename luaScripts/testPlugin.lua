@@ -1,9 +1,11 @@
 
-dofile "MelonMixShapes.lua"
+dofile "MelonMixLibrary.lua"
+
+--AddGameCode appends the given u32 gamecode to the list of roms that the plugin manager will load the luaPlugins shader for.
+AddGameCode(0xFFFFFFFF) --gamecode 0xFFFFFFFF means *any* game
 
 local hudScale = 5
-local aspectRatio = GetCurrentAspectRatio()
-
+local aspectRatio = 1.0
 local HUDShape = Push2DShapeData(ShapeBuilder2D:square()
     :fromBottomScreen()
     :fromPosition(0,0)
@@ -11,7 +13,7 @@ local HUDShape = Push2DShapeData(ShapeBuilder2D:square()
     :placeAtCorner(_corner.TopLeft)
     :sourceScale(1.5)
     :hudScale(hudScale)
-    :build(1)
+    :build(aspectRatio)
 )
 local MiniMapShape = Push2DShapeData(ShapeBuilder2D:square()
     :fromPosition(0,0)
@@ -21,7 +23,7 @@ local MiniMapShape = Push2DShapeData(ShapeBuilder2D:square()
     :fadeBorderSize(0,0,2.5,2.5)
     :opacity(0.66)
     :hudScale(hudScale)
-    :build(1)
+    :build(aspectRatio)
 )
 local Screen3D  = Push3DShapeData(ShapeBuilder3D:square()
     :fromPosition(0,0)
@@ -29,7 +31,7 @@ local Screen3D  = Push3DShapeData(ShapeBuilder3D:square()
     :placeAtCorner(_corner.Center)
     :sourceScale(0.75)
     :hudScale(hudScale)
-    :build(1)
+    :build(aspectRatio)
 )
 
 -- Set current shapes that should be loaded
@@ -40,10 +42,8 @@ Set3DShapes{Screen3D}
 SetGameScene(3)
 local miniMapIsup = true
 
-
 function toggleMiniMap() --Function to toggle showing the bottom Screen as a miniMap
     miniMapIsup = not miniMapIsup 
-    print("hi")
     if miniMapIsup then
         Set2DShapes{MiniMapShape,HUDShape}
         SetGameScene(3)
@@ -53,44 +53,15 @@ function toggleMiniMap() --Function to toggle showing the bottom Screen as a min
     end
 end
 
-local updateFlags = {}
---_Update is called once every frame by MelonDS    
-function _Update() 
-    updateFlags = {}
+--_Update is called once every frame by MelonDS
+function Update()
     if KeyPress("K") then 
         toggleMiniMap() 
     end
-end
-
-
---TODO: write this logic directly into the backend so it dosen't need to be added in lua...
-
---true if key is currently held down
-function KeyHeld(keyStr)
-    if not updateFlags.HeldMask then updateFlags.HeldMask = HeldKeys() end
-    return updateFlags.HeldMask[string.byte(keyStr:sub(1,1))]
-end
-
-local PressedKeys = {}
---check if key is held on this frame but was not last frame
-function KeyPress(keyStr)
-    if not updateFlags.PressedMask then updateFlags.PressedMask = {} end
-
-    if updateFlags.PressedMask[keyStr] == nil then 
-        if KeyHeld(keyStr) then 
-            local allreadyPressed = PressedKeys[keyStr]
-            PressedKeys[keyStr] = true
-            updateFlags.PressedMask[keyStr] = not allreadyPressed
-        else
-            PressedKeys[keyStr] = false
-            updateFlags.PressedMask[keyStr] = false
-        end
+    if KeyPress("Q") then 
+        print(GetGameCode() or "none") --Prints the currently loaded rom's gamecode 
     end
-
-    return updateFlags.PressedMask[keyStr]
 end
-
-local PressedKeys = {}
 
 
 

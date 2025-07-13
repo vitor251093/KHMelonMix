@@ -13,6 +13,7 @@ u32 PluginTemplateLua::jpGamecode = 0;
 
 #define getAnyByCart(usAddress,euAddress,jpAddress) (isUsaCart() ? (usAddress) : (isEuropeCart() ? (euAddress) : (jpAddress)))
 
+
 PluginTemplateLua::PluginTemplateLua(u32 gameCode)
 {
     GameCode = gameCode;
@@ -20,6 +21,34 @@ PluginTemplateLua::PluginTemplateLua(u32 gameCode)
     hudToggle();
 }
 
+static std::vector<u32> luaGameCodes;
+void addGameCode(u32 gameCode)
+{
+    luaGameCodes.push_back(gameCode);
+    printf("CodesSize:%i\n",luaGameCodes.size());
+}
+
+void clearGameCodes()
+{
+    printf("ClearingCodes!\n");
+    luaGameCodes.clear();
+}
+
+bool checkGameCodes(u32 gameCode)
+{
+    printf("Test:%i\n",gameCode);
+    if (luaGameCodes.size()<=0) {
+        printf("No Codes\n");
+        return false;
+    }
+    if (luaGameCodes[0] == 0xFFFFFFFF) {
+        printf("AllCodes\n");
+        return true; // GameCode "0xFFFFFFFF" means any game
+    }
+    bool found = std::find(std::begin(luaGameCodes), std::end(luaGameCodes), gameCode) != std::end(luaGameCodes);
+    printf("Found:%i\n",found);
+    return found;
+}
 
 static int luaGameScene;
 
@@ -78,6 +107,13 @@ int Set3DShapes(std::vector<int> shapes){
     return 0;
 }
 
+void resetShapeBuffers(){
+    Current3DShapes.clear();
+    Current2DShapes.clear();
+    _3DShapeBuffer.clear();
+    _2DShapeBuffer.clear();
+}
+
 void setLuaGameScene(int gamescene){
     luaGameScene = gamescene;   
 }
@@ -97,9 +133,9 @@ std::vector<ShapeData3D> PluginTemplateLua::renderer_3DShapes() {
     return shapes;
 }
 
-int PluginTemplateLua::run_ShapeBuilderTests(){
+int run_ShapeBuilderTests(){
     float aspectRatio = 1.1;
-    int hudScale = UIScale;
+    int hudScale = 5;
     float scale = 192.0/(192 - 31 + 48);
     std::vector<ShapeData2D> shapes;
     std::vector<ShapeData3D> shapes3D;

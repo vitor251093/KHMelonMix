@@ -346,7 +346,7 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 
-    float GetCurrentAspectRatio() {return AspectRatio;}
+    //float GetCurrentAspectRatio() {return AspectRatio;}
     
 protected:
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
