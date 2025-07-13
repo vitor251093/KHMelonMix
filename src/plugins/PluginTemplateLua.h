@@ -1,6 +1,6 @@
 
-#ifndef PLUGIN_TEMPLATE_H
-#define PLUGIN_TEMPLATE_H
+#ifndef PLUGIN_TEMPLATE_LUA_H
+#define PLUGIN_TEMPLATE_LUA_H
 
 #include "Plugin.h"
 #include "../NDS.h"
