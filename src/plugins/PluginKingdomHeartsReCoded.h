@@ -29,6 +29,8 @@ public:
     std::string assetsFolder();
     std::string tomlUniqueIdentifier();
 
+    void renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
+
     std::vector<ShapeData2D> renderer_2DShapes();
     std::vector<ShapeData3D> renderer_3DShapes();
     int renderer_gameSceneState();
