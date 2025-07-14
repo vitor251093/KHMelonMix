@@ -34,6 +34,11 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define MAIN_MENU_SCREEN_1_EU 0x02055cac
 #define MAIN_MENU_SCREEN_1_JP 0x02055acc
 
+// 0x0540 => save menu
+#define MAIN_MENU_SCREEN_3_US 0x02055e20
+#define MAIN_MENU_SCREEN_3_EU 0x02055e20
+#define MAIN_MENU_SCREEN_3_JP 0x02055c40
+
 // 0x00 => intro and main menu
 #define IS_MAIN_MENU_US 0x02060c94
 #define IS_MAIN_MENU_EU 0x02060407 // may also be 0x02060417, 0x02060423, 0x0206042b, 0x0206042f, 0x02060433, 0x0206043b, 0x02060443, 0x02060447, or 0x0206044b
@@ -2566,7 +2571,12 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
             case 0x00158200: mainMenuView = 12; break;
             case 0x0da15000: mainMenuView = 13; break;
             case 0x0da82800: mainMenuView = 14; break;
-            case 0x0d8ba800: mainMenuView = 15; break;
+            case 0x0d8ba800: {
+                u32 val4 = nds->ARM7Read16(getU32ByCart(MAIN_MENU_SCREEN_3_US, MAIN_MENU_SCREEN_3_EU, MAIN_MENU_SCREEN_3_JP));
+                if (val4 == 0x020a0580) {
+                    mainMenuView = 15; break;
+                };
+            }
         }
     }
 
