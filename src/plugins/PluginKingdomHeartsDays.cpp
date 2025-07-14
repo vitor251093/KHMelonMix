@@ -529,6 +529,59 @@ void PluginKingdomHeartsDays::renderer_afterBuildingShapes()
     }*/
 }
 
+void PluginKingdomHeartsDays::renderer_2DShapes_mainMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale)
+{
+    // save label
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromPosition(0, 0)
+            .withSize(100, 16)
+            .placeAtCorner(corner_TopLeft)
+            .hudScale(hudScale)
+            .preserveDsScale()
+            .force()
+            .build(aspectRatio));
+
+    // rest of save label header
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromPosition(100, 0)
+            .withSize(20, 16)
+            .placeAtCorner(corner_TopRight)
+            .sourceScale(1000.0, 1.0)
+            .hudScale(hudScale)
+            .preserveDsScale()
+            .force()
+            .build(aspectRatio));
+
+    // footer
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromPosition(0, 144)
+            .withSize(256, 48)
+            .placeAtCorner(corner_BottomLeft)
+            .hudScale(hudScale)
+            .preserveDsScale()
+            .force()
+            .build(aspectRatio));
+
+    // rest of footer
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromPosition(251, 144)
+            .withSize(5, 48)
+            .placeAtCorner(corner_BottomRight)
+            .sourceScale(1000.0, 1.0)
+            .hudScale(hudScale)
+            .preserveDsScale()
+            .force()
+            .build(aspectRatio));
+
+    // main content
+    shapes->push_back(ShapeBuilder2D::square()
+            .placeAtCorner(corner_Center)
+            .hudScale(hudScale)
+            .preserveDsScale()
+            .force()
+            .build(aspectRatio));
+}
+
 void PluginKingdomHeartsDays::renderer_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale)
 {
     // save label
@@ -1056,6 +1109,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
             // the others are in horizontal style
 
             switch (curMenu) {
+                case 1: { // main menu
+                    renderer_2DShapes_mainMenu(&shapes, aspectRatio, hudScale);
+                    break;
+                }
                 case 3:   // roxas's diary
                 case 4: { // enemy profile
                     // header left corner
@@ -1449,6 +1506,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
     if (GameScene == gameScene_InGameMenu) {
         u32 mainMenuView = getCurrentMainMenuView();
         switch (mainMenuView) {
+            case 1: // main menu
             case 3: // roxas's diary
             case 4: // enemy profile
             case 6: // config
