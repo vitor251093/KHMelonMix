@@ -31,7 +31,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 - Support to any aspect ratio
 - Support to any resolution
 - Floating dialog boxes (Days only)
-- In-game HUD adapted to a single screen (completed for Days, WIP for Re:Coded)
+- In-game HUD adapted to a single screen
 - Command menu controls
 - Camera controls (analog stick)
 - Lock On and Switch target as separate controls
