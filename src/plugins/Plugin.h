@@ -345,7 +345,6 @@ public:
     bool MainRAMState[0xFFFFFF];
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
-    
 protected:
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
     std::map<GLuint, GLuint> CompUboLoc{};
