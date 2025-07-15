@@ -160,6 +160,9 @@ public:
     SDL_Joystick* getJoystick() { return joystick; }
     void autoMapJoystick();
 
+    std::vector<int> heldKeys;
+    std::vector<int> keyStrokes;
+
     Plugins::Plugin* plugin = nullptr;
 
     void touchScreen(int x, int y);
@@ -249,7 +252,6 @@ private:
 
     void openJoystick();
     void closeJoystick();
-    Sint16 joystickButtonDown(int val);
 
     void inputProcess();
 
@@ -305,6 +307,9 @@ public:
     bool fastForwardToggled;
     bool slowmoToggled;
     bool doAudioSync;
+
+    melonDS::u32 getInputMask(){return inputMask;}
+    Sint16 joystickButtonDown(int val);
 private:
 
     std::unique_ptr<melonDS::Savestate> backupState;

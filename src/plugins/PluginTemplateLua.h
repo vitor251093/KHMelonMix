@@ -1,5 +1,6 @@
-#ifndef PLUGIN_TEMPLATE_H
-#define PLUGIN_TEMPLATE_H
+
+#ifndef PLUGIN_TEMPLATE_LUA_H
+#define PLUGIN_TEMPLATE_LUA_H
 
 #include "Plugin.h"
 #include "../NDS.h"
@@ -8,16 +9,26 @@ namespace Plugins
 {
 using namespace melonDS;
 
-class PluginTemplate : public Plugin
+int Push2DShape(ShapeData2D shape);
+int Push3DShape(ShapeData3D shape);
+int Set2DShapes(std::vector<int> shapes);
+int Set3DShapes(std::vector<int> shapes);
+void resetShapeBuffers();
+void addGameCode(u32 gameCode);
+void clearGameCodes();
+void setLuaGameScene(int gamescene);
+bool checkGameCodes(u32 gameCode);
+int run_ShapeBuilderTests();
+
+class PluginTemplateLua : public Plugin
 {
 public:
-    PluginTemplate(u32 gameCode);
-
+    PluginTemplateLua(u32 gameCode);
     static u32 usGamecode;
     static u32 euGamecode;
     static u32 jpGamecode;
-    static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
-    //static bool isCart(u32 gameCode) {return true;};
+    static bool isCart(u32 gameCode) { return checkGameCodes(gameCode);};
+    //static bool isCart(u32 gameCode) {return false;};
     bool isUsaCart()        { return GameCode == usGamecode; };
     bool isEuropeCart()     { return GameCode == euGamecode; };
     bool isJapanCart()      { return GameCode == jpGamecode; };
@@ -25,7 +36,7 @@ public:
     std::string assetsFolder() {
         return std::to_string(GameCode);
     }
-
+    int renderer_gameSceneState();
     std::vector<ShapeData2D> renderer_2DShapes();
     std::vector<ShapeData3D> renderer_3DShapes();
     int renderer_screenLayout();
