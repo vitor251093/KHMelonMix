@@ -5,15 +5,13 @@
 #include "PluginHarvestMoonDsCute.h"
 #include "PluginMetroidPrimeHunters.h"
 #include "PluginTemplateLua.h"
-//#include "PluginTemplate.h"
 
 #define LOAD_PLUGINS \
     LOAD_PLUGIN(PluginKingdomHeartsDays) \
     LOAD_PLUGIN(PluginKingdomHeartsReCoded) \
     LOAD_PLUGIN(PluginHarvestMoonDsCute) \
     LOAD_PLUGIN(PluginMetroidPrimeHunters) \
-    LOAD_PLUGIN(PluginTemplateLua) \
-//  LOAD_PLUGIN(PluginTemplate)
+    LOAD_PLUGIN(PluginTemplateLua)
 
 namespace Plugins
 {
