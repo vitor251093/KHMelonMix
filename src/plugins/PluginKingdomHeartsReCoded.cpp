@@ -2238,15 +2238,6 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         return gameScene_Other2D;
     }
 
-    // Shop has 2D and 3D segments, which is why it's on the top
-    bool isShop = (nds->GPU.GPU3D.RenderNumPolygons == 264 && nds->GPU.GPU2D_A.BlendCnt == 0 && 
-                   nds->GPU.GPU2D_B.BlendCnt == 0 && nds->GPU.GPU2D_B.BlendAlpha == 16) ||
-            (GameScene == gameScene_Shop && nds->GPU.GPU3D.NumVertices == 0 && nds->GPU.GPU3D.NumPolygons == 0);
-    if (isShop)
-    {
-        return gameScene_Shop;
-    }
-
     if (ingameState == 0x07)
     {
         return gameScene_CutsceneWithStaticImages;
@@ -2257,6 +2248,10 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         if (mainMenuView == 15)
         {
             return gameScene_InGameSaveMenu;
+        }
+        if (mainMenuView == 18)
+        {
+            return gameScene_Shop;
         }
 
         return gameScene_InGameMenu;
@@ -2525,6 +2520,7 @@ u32 PluginKingdomHeartsReCoded::getCurrentMission()
 // 15 -> save menu
 // 16 -> world selection
 // 17 -> challenge view before system sector
+// 18 -> shop
 u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
 {
     if (GameScene == -1)
@@ -2541,6 +2537,10 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
 
     if (pixel_2_8 == 0x083a3818) {
         return 17; // challenge view before system sector
+    }
+
+    if (pixel_2_8 == 0x0802022c) {
+        return 18; // shop
     }
 
     if (pixel_2_8 == 0x08081a00) { // alt main menu, save menu, world selection
