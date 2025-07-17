@@ -278,7 +278,7 @@ int run_ShapeBuilderTests(){
         }
         ShapeData2D cppShape = shapes[i];
         ShapeData2D luaShape = _2DShapeBuffer[i];
-        int cmpr = memcmp(&cppShape, &luaShape, sizeof(ShapeData2D()));
+        int cmpr = memcmp(&cppShape, &luaShape, sizeof(ShapeData2D));
         if (cmpr!=0){
             printf("2DShapeBuilder Test number %i failed...\n",i);
             allGood = -1;
@@ -409,7 +409,7 @@ int run_ShapeBuilderTests(){
         }
         ShapeData3D cppShape = shapes3D[i];
         ShapeData3D luaShape = _3DShapeBuffer[i];
-        int cmpr = memcmp(&cppShape, &luaShape, sizeof(ShapeData3D()));
+        int cmpr = memcmp(&cppShape, &luaShape, sizeof(ShapeData3D));
         if (cmpr!=0){
             printf("3DShapeBuilder Test number %i failed...\n",i);
             allGood = -1;
