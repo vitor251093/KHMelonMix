@@ -444,8 +444,10 @@ void EmuInstance::onKeyPress(QKeyEvent* event)
 
 void EmuInstance::onKeyRelease(QKeyEvent* event)
 {
-    if (!heldKeys.empty()) {
-        heldKeys.erase(std::find(heldKeys.begin(),heldKeys.end(),event->key()));
+    //If the released key is in heldKeys, remove it from heldKeys.
+    auto iterator = std::find(heldKeys.begin(),heldKeys.end(),event->key());
+    if (iterator != heldKeys.end()) {
+        heldKeys.erase(iterator);
     }
 
     int keyHK = getEventKeyVal(event);
