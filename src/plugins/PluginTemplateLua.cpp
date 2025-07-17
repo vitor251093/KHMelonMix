@@ -25,28 +25,28 @@ static std::vector<u32> luaGameCodes;
 void addGameCode(u32 gameCode)
 {
     luaGameCodes.push_back(gameCode);
-    printf("CodesSize:%i\n",luaGameCodes.size());
+    printf("Codes Size:%i\n",luaGameCodes.size());
 }
 
 void clearGameCodes()
 {
-    printf("ClearingCodes!\n");
+    printf("Clearing Codes!\n");
     luaGameCodes.clear();
 }
 
 bool checkGameCodes(u32 gameCode)
 {
-    printf("Test:%i\n",gameCode);
-    if (luaGameCodes.size()<=0) {
+    printf("Test: %i\n",gameCode);
+    if (luaGameCodes.size() == 0) {
         printf("No Codes\n");
         return false;
     }
     if (luaGameCodes[0] == 0xFFFFFFFF) {
-        printf("AllCodes\n");
+        printf("All Codes\n");
         return true; // GameCode "0xFFFFFFFF" means any game
     }
     bool found = std::find(std::begin(luaGameCodes), std::end(luaGameCodes), gameCode) != std::end(luaGameCodes);
-    printf("Found:%i\n",found);
+    printf("Found: %i\n",found);
     return found;
 }
 

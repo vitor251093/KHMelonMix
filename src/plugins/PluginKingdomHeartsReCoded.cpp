@@ -34,6 +34,11 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define MAIN_MENU_SCREEN_1_EU 0x02055cac
 #define MAIN_MENU_SCREEN_1_JP 0x02055acc
 
+// 0x0540 => save menu
+#define MAIN_MENU_SCREEN_3_US 0x02055e20
+#define MAIN_MENU_SCREEN_3_EU 0x02055e20
+#define MAIN_MENU_SCREEN_3_JP 0x02055c40
+
 // 0x00 => intro and main menu
 #define IS_MAIN_MENU_US 0x02060c94
 #define IS_MAIN_MENU_EU 0x02060407 // may also be 0x02060417, 0x02060423, 0x0206042b, 0x0206042f, 0x02060433, 0x0206043b, 0x02060443, 0x02060447, or 0x0206044b
@@ -446,6 +451,142 @@ std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
     return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 }
 
+void PluginKingdomHeartsReCoded::renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale) {
+    bool showChallengeMeter = (GameSceneState & (1 << gameSceneState_showChallengeMeter)) > 0;
+    int challengeMeterHeight = showChallengeMeter ? 7 : 0;
+    if (showChallengeMeter)
+    {
+        // challenge meter icon
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(10, 9)
+                .withSize(13, challengeMeterHeight)
+                .placeAtCorner(corner_TopLeft)
+                .withMargin(21.0, 32.0, 0.0, 0.0)
+                .hudScale(hudScale)
+                .build(aspectRatio));
+
+        // challenge meter bar
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(24, 10)
+                .withSize(87, challengeMeterHeight - 2)
+                .placeAtCorner(corner_TopLeft)
+                .withMargin(35.0, 34.0, 0.0, 0.0)
+                .sourceScale(2.25, 0.6)
+                .hudScale(hudScale)
+                .build(aspectRatio));
+    }
+
+    // bottom mission information (top right corner)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromBottomScreen()
+            .fromPosition(5, 166)
+            .withSize(119, 3)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(131.0, 6.0, 0.0, 0.0)
+            .cropSquareCorners(0.0, 4.0, 0.0, 0.0)
+            .mirror(mirror_X)
+            .hudScale(hudScale)
+            .build(aspectRatio));
+
+    // bottom mission information (top right corner transparent BG)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromPosition(118, 162)
+            .withSize(3, 3)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(247.0, 6.0, 0.0, 0.0)
+            .force()
+            .hudScale(hudScale)
+            .build(aspectRatio));
+
+    // bottom mission information (bottom center black-blue separation)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromBottomScreen()
+            .fromPosition(10, 175)
+            .withSize(237, 4)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(8.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
+            .mirror(mirror_Y)
+            .sourceScale(1.0, 0.5)
+            .hudScale(hudScale)
+            .build(aspectRatio));
+
+    // bottom mission information (bottom left black-blue separation)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromBottomScreen()
+            .fromPosition(5, 175)
+            .withSize(10, 6)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(3.0, 31.0 + challengeMeterHeight, 0.0, 0.0)
+            .cropSquareCorners(0.0, 0.0, 2.25, 0.0)
+            .mirror(mirror_Y)
+            .sourceScale(1.0, 0.5)
+            .hudScale(hudScale)
+            .build(aspectRatio));
+
+    // bottom mission information (bottom right black-blue separation)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromBottomScreen()
+            .fromPosition(242, 175)
+            .withSize(10, 6)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(240.0, 31.0 + challengeMeterHeight, 0.0, 0.0)
+            .mirror(mirror_Y)
+            .sourceScale(1.0, 0.5)
+            .hudScale(hudScale)
+            .build(aspectRatio));
+
+    // bottom mission information (bigger area)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromBottomScreen()
+            .fromPosition(5, 166)
+            .withSize(247, 26)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(3.0, 6.0, 0.0, 0.0)
+            .cropSquareCorners(4.0, 0.0, 0.0, 0.0)
+            .hudScale(hudScale)
+            .build(aspectRatio));
+
+    if (showChallengeMeter)
+    {
+        // bottom mission information (side areas)
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromBottomScreen()
+                .fromPosition(5, 190)
+                .withSize(247, 2)
+                .placeAtCorner(corner_TopLeft)
+                .withMargin(3.0, 32.0, 0.0, 0.0)
+                .sourceScale(1.0, 4.0)
+                .hudScale(hudScale)
+                .build(aspectRatio));
+    }
+
+    // bottom mission information (bottom right corner)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromBottomScreen()
+            .fromPosition(5, 166)
+            .withSize(119, 5)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(131.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
+            .cropSquareCorners(0.0, 0.0, 0.0, 4.0)
+            .mirror(mirror_XY)
+            .sourceScale(1.0, 0.5)
+            .hudScale(hudScale)
+            .build(aspectRatio));
+
+    // bottom mission information (bottom left corner)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromBottomScreen()
+            .fromPosition(5, 166)
+            .withSize(128, 5)
+            .placeAtCorner(corner_TopLeft)
+            .withMargin(3.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
+            .cropSquareCorners(0.0, 0.0, 4.0, 0.0)
+            .mirror(mirror_Y)
+            .sourceScale(1.0, 0.5)
+            .hudScale(hudScale)
+            .build(aspectRatio));
+}
+
 std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
@@ -836,139 +977,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
                 if ((GameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0)
                 {
-                    bool showChallengeMeter = (GameSceneState & (1 << gameSceneState_showChallengeMeter)) > 0;
-                    int challengeMeterHeight = showChallengeMeter ? 7 : 0;
-                    if (showChallengeMeter)
-                    {
-                        // challenge meter icon
-                        shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(10, 9)
-                                .withSize(13, challengeMeterHeight)
-                                .placeAtCorner(corner_TopLeft)
-                                .withMargin(21.0, 32.0, 0.0, 0.0)
-                                .hudScale(hudScale)
-                                .build(aspectRatio));
-
-                        // challenge meter bar
-                        shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(24, 10)
-                                .withSize(87, challengeMeterHeight - 2)
-                                .placeAtCorner(corner_TopLeft)
-                                .withMargin(35.0, 34.0, 0.0, 0.0)
-                                .sourceScale(2.25, 0.6)
-                                .hudScale(hudScale)
-                                .build(aspectRatio));
-                    }
-
-                    // bottom mission information (top right corner)
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(5, 166)
-                            .withSize(119, 3)
-                            .placeAtCorner(corner_TopLeft)
-                            .withMargin(131.0, 6.0, 0.0, 0.0)
-                            .cropSquareCorners(0.0, 4.0, 0.0, 0.0)
-                            .mirror(mirror_X)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // bottom mission information (top right corner transparent BG)
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(118, 162)
-                            .withSize(3, 3)
-                            .placeAtCorner(corner_TopLeft)
-                            .withMargin(247.0, 6.0, 0.0, 0.0)
-                            .force()
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // bottom mission information (bottom center black-blue separation)
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(10, 175)
-                            .withSize(237, 4)
-                            .placeAtCorner(corner_TopLeft)
-                            .withMargin(8.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
-                            .mirror(mirror_Y)
-                            .sourceScale(1.0, 0.5)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // bottom mission information (bottom left black-blue separation)
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(5, 175)
-                            .withSize(10, 6)
-                            .placeAtCorner(corner_TopLeft)
-                            .withMargin(3.0, 31.0 + challengeMeterHeight, 0.0, 0.0)
-                            .cropSquareCorners(0.0, 0.0, 2.25, 0.0)
-                            .mirror(mirror_Y)
-                            .sourceScale(1.0, 0.5)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // bottom mission information (bottom right black-blue separation)
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(242, 175)
-                            .withSize(10, 6)
-                            .placeAtCorner(corner_TopLeft)
-                            .withMargin(240.0, 31.0 + challengeMeterHeight, 0.0, 0.0)
-                            .mirror(mirror_Y)
-                            .sourceScale(1.0, 0.5)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // bottom mission information (bigger area)
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(5, 166)
-                            .withSize(247, 26)
-                            .placeAtCorner(corner_TopLeft)
-                            .withMargin(3.0, 6.0, 0.0, 0.0)
-                            .cropSquareCorners(4.0, 0.0, 0.0, 0.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    if (showChallengeMeter)
-                    {
-                        // bottom mission information (side areas)
-                        shapes.push_back(ShapeBuilder2D::square()
-                                .fromBottomScreen()
-                                .fromPosition(5, 190)
-                                .withSize(247, 2)
-                                .placeAtCorner(corner_TopLeft)
-                                .withMargin(3.0, 32.0, 0.0, 0.0)
-                                .sourceScale(1.0, 4.0)
-                                .hudScale(hudScale)
-                                .build(aspectRatio));
-                    }
-
-                    // bottom mission information (bottom right corner)
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(5, 166)
-                            .withSize(119, 5)
-                            .placeAtCorner(corner_TopLeft)
-                            .withMargin(131.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
-                            .cropSquareCorners(0.0, 0.0, 0.0, 4.0)
-                            .mirror(mirror_XY)
-                            .sourceScale(1.0, 0.5)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // bottom mission information (bottom left corner)
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(5, 166)
-                            .withSize(128, 5)
-                            .placeAtCorner(corner_TopLeft)
-                            .withMargin(3.0, 32.0 + challengeMeterHeight, 0.0, 0.0)
-                            .cropSquareCorners(0.0, 0.0, 4.0, 0.0)
-                            .mirror(mirror_Y)
-                            .sourceScale(1.0, 0.5)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
+                    renderer_2DShapes_component_missionInformationFromBottomScreen(&shapes, aspectRatio, hudScale);
                 }
 
                 if ((GameSceneState & (1 << gameSceneState_showOlympusBattlePlayerHealth)) > 0)
@@ -1066,19 +1075,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .hudScale(hudScale)
                         .build(aspectRatio));
 
-                    // item notification
+                    // pickup / item notification
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(0, 39)
-                            .withSize(95, 32)
-                            .placeAtCorner(corner_BottomLeft)
-                            .withMargin(0.0, 0.0, 0.0, 84.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // pickup notification
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(0, 44)
-                            .withSize(102, 24)
+                            .withSize(102, 32)
                             .placeAtCorner(corner_BottomLeft)
                             .withMargin(0.0, 0.0, 0.0, 124.0)
                             .hudScale(hudScale)
@@ -1187,6 +1187,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
         if (GameScene != gameScene_InGameOlympusBattle) {
             // SP score
             shapes.push_back(ShapeBuilder3D::square()
+                    .polygonMode()
                     .negatePolygonAttributes(2031808) // pickup license notification
                     .fromPosition(0, 0)
                     .withSize(120, 60)
@@ -1205,6 +1206,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1058996416)
+                .includeOutOfBoundsPolygons()
                 .zRange(-1.0, -0.5)
                 .adjustAspectRatioOnly()
                 .build(aspectRatio));
@@ -1214,6 +1216,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                 .polygonMode()
                 .polygonVertexesCount(4)
                 .polygonAttributes(1042219200)
+                .includeOutOfBoundsPolygons()
                 .zRange(-1.0, -0.5)
                 .adjustAspectRatioOnly()
                 .build(aspectRatio));
@@ -1242,53 +1245,56 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
 
         // pickup license notification
         shapes.push_back(ShapeBuilder3D::square()
-                .fromPosition(0, 24)
+                .polygonMode()
+                .fromPosition(0, 27)
                 .withSize(80, 44)
                 .placeAtCorner(corner_BottomLeft)
-                .withMargin(0.0, 0.0, 0.0, 124.0 + 1.0)
+                .withMargin(0.0, 0.0, 0.0, 125.0)
                 .zRange(-1.0, -1.0)
                 .negateColor(0xFFFFFF)
                 .hudScale(UIScale)
                 .build(aspectRatio));
 
-        // command menu
-        shapes.push_back(ShapeBuilder3D::square()
-                .polygonMode()
-                .polygonAttributes(2031808)
-                .fromPosition(0, 69)
-                .withSize(80, 124)
-                .placeAtCorner(corner_BottomLeft)
-                .withMargin(10.0, 0.0, 0.0, 0.5)
-                .zRange(-1.0, -1.0)
-                .negateColor(0xFFFFFF)
-                .hudScale(UIScale)
-                .build(aspectRatio));
-
-        if (GameScene == gameScene_InGameOlympusBattle) {
-            // olympus hand pointers
+        if (GameScene != gameScene_PauseMenu) {
+            // command menu
             shapes.push_back(ShapeBuilder3D::square()
-                    .placeAtCorner(corner_Center)
+                    .polygonMode()
+                    .polygonAttributes(2031808)
+                    .fromPosition(0, 69)
+                    .withSize(80, 124)
+                    .placeAtCorner(corner_BottomLeft)
+                    .withMargin(10.0, 0.0, 0.0, 0.5)
                     .zRange(-1.0, -1.0)
-                    .build(aspectRatio));
-
-            // player health
-            shapes.push_back(ShapeBuilder3D::square()
-                    .fromPosition(128, 140)
-                    .withSize(128, 52)
-                    .placeAtCorner(corner_BottomRight)
-                    .zRange(-1.0, 0.0)
-                    .hudScale(UIScale)
-                    .build(aspectRatio));
-
-            // player health (red part)
-            shapes.push_back(ShapeBuilder3D::square()
-                    .fromPosition(128, 140)
-                    .withSize(128, 52)
-                    .placeAtCorner(corner_BottomRight)
-                    .zRange(0.25, 0.50)
+                    .negateColor(0xFFFFFF)
                     .hudScale(UIScale)
                     .build(aspectRatio));
         }
+    }
+
+    if (GameScene == gameScene_InGameOlympusBattle) {
+        // olympus hand pointers
+        shapes.push_back(ShapeBuilder3D::square()
+                .placeAtCorner(corner_Center)
+                .zRange(-1.0, -1.0)
+                .build(aspectRatio));
+
+        // player health
+        shapes.push_back(ShapeBuilder3D::square()
+                .fromPosition(128, 140)
+                .withSize(128, 52)
+                .placeAtCorner(corner_BottomRight)
+                .zRange(-1.0, 0.0)
+                .hudScale(UIScale)
+                .build(aspectRatio));
+
+        // player health (red part)
+        shapes.push_back(ShapeBuilder3D::square()
+                .fromPosition(128, 140)
+                .withSize(128, 52)
+                .placeAtCorner(corner_BottomRight)
+                .zRange(0.25, 0.50)
+                .hudScale(UIScale)
+                .build(aspectRatio));
     }
 
     if (GameScene == gameScene_InGameMenu)
@@ -2560,7 +2566,12 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
             case 0x00158200: mainMenuView = 12; break;
             case 0x0da15000: mainMenuView = 13; break;
             case 0x0da82800: mainMenuView = 14; break;
-            case 0x0d8ba800: mainMenuView = 15; break;
+            case 0x0d8ba800: {
+                u32 val4 = nds->ARM7Read16(getU32ByCart(MAIN_MENU_SCREEN_3_US, MAIN_MENU_SCREEN_3_EU, MAIN_MENU_SCREEN_3_JP));
+                if (val4 == 0x020a0580) {
+                    mainMenuView = 15; break;
+                };
+            }
         }
     }
 

@@ -30,46 +30,46 @@ public:
     void onLoadROM() override;
     void onLoadState() override;
 
-    std::string assetsFolder();
+    std::string assetsFolder() override;
     std::string assetsRegionSubfolder();
-    std::string tomlUniqueIdentifier();
+    std::string tomlUniqueIdentifier() override;
 
-    void renderer_beforeBuildingShapes();
-    std::vector<ShapeData2D> renderer_2DShapes();
-    std::vector<ShapeData3D> renderer_3DShapes();
-    void renderer_afterBuildingShapes();
-    int renderer_gameSceneState();
-    int renderer_screenLayout();
-    int renderer_brightnessMode();
-    float renderer_forcedAspectRatio();
-    bool renderer_showOriginalUI();
+    void renderer_beforeBuildingShapes() override;
+    std::vector<ShapeData2D> renderer_2DShapes() override;
+    std::vector<ShapeData3D> renderer_3DShapes() override;
+    void renderer_afterBuildingShapes() override;
+    int renderer_gameSceneState() override;
+    int renderer_screenLayout() override;
+    int renderer_brightnessMode() override;
+    float renderer_forcedAspectRatio() override;
+    bool renderer_showOriginalUI() override;
 
-    void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
-    void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
-    bool shouldRumble();
+    void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
+    void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
+    bool shouldRumble() override;
 
     bool overrideMouseTouchCoords_cameraControl(int width, int height, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching);
-    bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching);
-    void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask);
+    bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) override;
+    void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) override;
 
-    std::string replacementCutsceneFilePath(CutsceneEntry* cutscene);
-    std::string localizationFilePath(std::string language);
+    std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) override;
+    std::string localizationFilePath(std::string language) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
-    bool isUnskippableMobiCutscene(CutsceneEntry* cutscene);
+    bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) override;
 
-    const char* getGameSceneName();
+    const char* getGameSceneName() override;
 
-    bool shouldRenderFrame();
+    bool shouldRenderFrame() override;
 
-    u32 getAspectRatioAddress();
+    u32 getAspectRatioAddress() override;
 
     void loadConfigs(
         std::function<bool(std::string)> getBoolConfig,
         std::function<int(std::string)> getIntConfig,
         std::function<std::string(std::string)> getStringConfig
-    )
+    ) override
     {
         _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
 
@@ -123,15 +123,15 @@ private:
     std::string KH_15_25_Remix_Location = "";
     std::string TextLanguage = "";
 
-    int detectGameScene();
+    int detectGameScene() override;
 
     u32 getMobiCutsceneAddress(CutsceneEntry* entry);
-    CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue);
-    u32 detectTopScreenMobiCutsceneAddress();
-    u32 detectBottomScreenMobiCutsceneAddress();
-    bool isCutsceneGameScene();
-    bool didMobiCutsceneEnded();
-    bool canReturnToGameAfterReplacementCutscene();
+    CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) override;
+    u32 detectTopScreenMobiCutsceneAddress() override;
+    u32 detectBottomScreenMobiCutsceneAddress() override;
+    bool isCutsceneGameScene() override;
+    bool didMobiCutsceneEnded() override;
+    bool canReturnToGameAfterReplacementCutscene() override;
 
     // Music replacement system
     std::array<BgmEntry, 38> BgmEntries;
@@ -161,7 +161,7 @@ private:
 
     std::array<StreamedBgmEntry, 2> StreamedBgmEntries;
 
-    void refreshMouseStatus();
+    void refreshMouseStatus() override;
 
     u32 getCurrentMission();
     u32 getCurrentMainMenuView();
@@ -191,8 +191,8 @@ private:
     void renderer_2DShapes_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
     void renderer_2DShapes_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
 
-    void hudToggle();
-    void debugLogs(int gameScene);
+    void hudToggle() override;
+    void debugLogs(int gameScene) override;
 };
 }
 

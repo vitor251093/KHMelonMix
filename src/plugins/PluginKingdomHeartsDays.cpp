@@ -12,11 +12,6 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C6C
 
-#define IS_WORLD_SELECTOR_US      0x02042418 // it may be 0x02042430 as well
-#define IS_WORLD_SELECTOR_EU      0x02042438
-#define IS_WORLD_SELECTOR_JP      0x02042878
-#define IS_WORLD_SELECTOR_JP_REV1 0x02042838
-
 // 0x2C => intro and main menu
 #define IS_MAIN_MENU_US      0x0204242d
 #define IS_MAIN_MENU_EU      0x0204244d
@@ -40,6 +35,16 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_CREDITS_EU      0x020446e2 // TODO: KH Unconfirmed (calculated)
 #define IS_CREDITS_JP      0x02044b22 // TODO: KH Unconfirmed (calculated)
 #define IS_CREDITS_JP_REV1 0x02044ae2 // TODO: KH Unconfirmed (calculated)
+
+#define CURRENT_INGAME_MENU_VIEW_1_US      0x020446b6
+#define CURRENT_INGAME_MENU_VIEW_1_EU      0x020446d6 // TODO: KH Unconfirmed (calculated)
+#define CURRENT_INGAME_MENU_VIEW_1_JP      0x02044b16 // TODO: KH Unconfirmed (calculated)
+#define CURRENT_INGAME_MENU_VIEW_1_JP_REV1 0x02044ad6 // TODO: KH Unconfirmed (calculated)
+
+#define CURRENT_INGAME_MENU_VIEW_2_US      0x020446b8
+#define CURRENT_INGAME_MENU_VIEW_2_EU      0x020446d8 // TODO: KH Unconfirmed (calculated)
+#define CURRENT_INGAME_MENU_VIEW_2_JP      0x02044b18 // TODO: KH Unconfirmed (calculated)
+#define CURRENT_INGAME_MENU_VIEW_2_JP_REV1 0x02044ad8 // TODO: KH Unconfirmed (calculated)
 
 // 0x80 => playable (example: ingame); 0x04 => not playable (menus and credits)
 #define IS_PLAYABLE_AREA_US      0x020446c6
@@ -1051,7 +1056,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
             // the others are in horizontal style
 
             switch (curMenu) {
-                case 4: { // roxas's diary / enemy profile
+                case 3:   // roxas's diary
+                case 4: { // enemy profile
                     // header left corner
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(0, 0)
@@ -1220,6 +1226,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
                         .polygonMode()
                         .polygonVertexesCount(4)
                         .polygonAttributes(1058996416)
+                        .includeOutOfBoundsPolygons()
                         .zRange(-10000.0, -0.00000)
                         .adjustAspectRatioOnly()
                         .build(aspectRatio));
@@ -1229,6 +1236,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
                         .polygonMode()
                         .polygonVertexesCount(4)
                         .polygonAttributes(1042219200)
+                        .includeOutOfBoundsPolygons()
                         .zRange(-10000.0, -0.00000)
                         .adjustAspectRatioOnly()
                         .build(aspectRatio));
@@ -1441,10 +1449,8 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
     if (GameScene == gameScene_InGameMenu) {
         u32 mainMenuView = getCurrentMainMenuView();
         switch (mainMenuView) {
-            case 3: // holo-mission / challenges
-                return screenLayout_BothHorizontal;
-            
-            case 4: // roxas's diary / enemy profile
+            case 3: // roxas's diary
+            case 4: // enemy profile
             case 6: // config
             case 7: // save
             case 8: // world selector
@@ -2515,14 +2521,16 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
 
 // The states below also happen in multiple other places outside the main menu menus
 // 0 -> none
-// 1 -> main menu root / character selection / world selector
+// 1 -> main menu root
 // 2 -> panel
-// 3 -> holo-mission / challenges
-// 4 -> roxas's diary / enemy profile
-// 5 -> tutorials / mission review
-// 6 -> config / world selector
+// 3 -> roxas's diary
+// 4 -> enemy profile
+// 5 -> tutorials
+// 6 -> config
 // 7 -> save
 // 8 -> world selector
+// 9 -> character selection
+// 10 -> mission review
 u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
 {
     if (GameScene == -1)
@@ -2530,24 +2538,34 @@ u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
         return 0;
     }
 
-    u8 val = nds->ARM7Read8(getAnyByCart(CURRENT_INGAME_MENU_VIEW_US, CURRENT_INGAME_MENU_VIEW_EU, CURRENT_INGAME_MENU_VIEW_JP, CURRENT_INGAME_MENU_VIEW_JP_REV1));
-    if (val == 0x00) return 1;
-    if (val == 0x02) return 2;
-    if (val == 0x01)
-    {
-        u8 worldSelector = nds->ARM7Read8(getAnyByCart(IS_WORLD_SELECTOR_US, IS_WORLD_SELECTOR_EU, IS_WORLD_SELECTOR_JP, IS_WORLD_SELECTOR_JP_REV1));
-        if (worldSelector == 0x01) return 8;
-        return 3;
+    u8 val1 = nds->ARM7Read8(getAnyByCart(CURRENT_INGAME_MENU_VIEW_1_US, CURRENT_INGAME_MENU_VIEW_1_EU, CURRENT_INGAME_MENU_VIEW_1_JP, CURRENT_INGAME_MENU_VIEW_1_JP_REV1));
+    u8 val2 = nds->ARM7Read8(getAnyByCart(CURRENT_INGAME_MENU_VIEW_2_US, CURRENT_INGAME_MENU_VIEW_2_EU, CURRENT_INGAME_MENU_VIEW_2_JP, CURRENT_INGAME_MENU_VIEW_2_JP_REV1));
+    if (val1 == 0x10 && val2 == 0x01) {
+        return 1; // main menu root
     }
-    if (val == 0x07) return 4;
-    if (val == 0x06)
-    {
-        u8 worldSelector = nds->ARM7Read8(getAnyByCart(IS_WORLD_SELECTOR_US, IS_WORLD_SELECTOR_EU, IS_WORLD_SELECTOR_JP, IS_WORLD_SELECTOR_JP_REV1));
-        if (worldSelector == 0x01) return 8;
-        return 5;
+    if (val1 == 0x02 && val2 == 0x10) {
+        return 2; // panel
     }
-    if (val == 0x05) return 6;
-    if (val == 0x04) return 7;
+    if (val1 == 0x01 && val2 == 0x02) {
+        // TODO: That specific part probably can be improved
+        u8 val3 = nds->ARM7Read8(getAnyByCart(CURRENT_INGAME_MENU_VIEW_US, CURRENT_INGAME_MENU_VIEW_EU, CURRENT_INGAME_MENU_VIEW_JP, CURRENT_INGAME_MENU_VIEW_JP_REV1));
+        if (val3 == 0x07) return 4; // roxas's diary / enemy profile
+        if (val3 == 0x06) return 5; // tutorials
+        return 6; // config
+    }
+    if (val1 == 0x02 && val2 == 0x01) {
+        return 7; // save
+    }
+    if (val1 == 0x20 && val2 == 0x40) {
+        return 8; // world selector
+    }
+    if (val1 == 0x03 && val2 == 0x70) {
+        return 9; // character selection
+    }
+    if (val1 == 0x01 && val2 == 0x10) {
+        return 10; // mission review
+    }
+
     return 0;
 }
 

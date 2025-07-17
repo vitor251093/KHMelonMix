@@ -194,8 +194,8 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
                     }
                     s32 z = polygon->Vertices[0]->Position[2];
                     float _z = ((float)z)/(1 << 22);
-                    if (x1 >= shape.squareInitialCoords.x*resolutionScale && x0 <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
-                        y1 >= shape.squareInitialCoords.y*resolutionScale && y0 <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
+                    if (shape.squareInitialCoords.x*resolutionScale <= x0 && x1 <= (shape.squareInitialCoords.x + shape.squareInitialCoords.z)*resolutionScale &&
+                        shape.squareInitialCoords.y*resolutionScale <= y0 && y1 <= (shape.squareInitialCoords.y + shape.squareInitialCoords.w)*resolutionScale &&
                         _z >= shape.zRange.x && _z <= shape.zRange.y)
                     {
                         if (shape.doesColorMatch(polygon->Vertices[0]->FinalColor))

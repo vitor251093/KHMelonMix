@@ -671,6 +671,16 @@ public:
         }
         return *this;
     }
+    ShapeBuilder3D& includeOutOfBoundsPolygons() {
+        if (_shape == shape_Square) {
+            int margin = 20;
+            shapeData.squareInitialCoords.x = -margin;
+            shapeData.squareInitialCoords.y = -margin;
+            shapeData.squareInitialCoords.z = 256 + margin*2;
+            shapeData.squareInitialCoords.w = 192 + margin*2;
+        }
+        return *this;
+    }
     ShapeBuilder3D& withMargin(float left, float top, float right, float bottom) {
         shapeData.margin.x = left;
         shapeData.margin.y = top;
