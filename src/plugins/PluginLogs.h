@@ -53,7 +53,7 @@
 
 #define log_getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
 
-#define PRINT_PIXEL_COLOR(buffer,x,y) printf("PIXEL %d-%d: rgb(0x%02x, 0x%02x, 0x%02x)\n", x,y,((log_getPixel(buffer,x,y,0) >> 0) & 0x3F), ((log_getPixel(buffer,x,y,0) >> 8) & 0x3F), ((log_getPixel(buffer,x,y,0) >> 16) & 0x3F))
+#define PRINT_PIXEL_COLOR(buffer,x,y) printf("PIXEL %d-%d: rgb(0x%02x, 0x%02x, 0x%02x) => 0x%08x\n", x,y,((log_getPixel(buffer,x,y,0) >> 0) & 0x3F), ((log_getPixel(buffer,x,y,0) >> 8) & 0x3F), ((log_getPixel(buffer,x,y,0) >> 16) & 0x3F), log_getPixel(buffer,x,y,0))
 
 #else
 

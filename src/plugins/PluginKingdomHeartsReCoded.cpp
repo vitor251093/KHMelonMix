@@ -2509,7 +2509,7 @@ u32 PluginKingdomHeartsReCoded::getCurrentMission()
 
 // 0 -> none
 // 1 -> main menu root
-// 2 -> main menu root (save menu)
+// 2 -> alt main menu root (also known as save menu)
 // 3 -> stat matrix
 // 4 -> command matrix
 // 5 -> gear matrix
@@ -2532,54 +2532,59 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
         return 0;
     }
 
-    u32 mainMenuView = 0;
-
-    u32 val = nds->ARM7Read32(getU32ByCart(MAIN_MENU_SCREEN_1_US, MAIN_MENU_SCREEN_1_EU, MAIN_MENU_SCREEN_1_JP));
-    switch(val) {
-        case 0x6780: mainMenuView = 1; break;
-        case 0x0040: mainMenuView = 3; break;
-        case 0x0380: mainMenuView = 4; break;
-        case 0x5f40: mainMenuView = 5; break;
-        case 0x7b00: mainMenuView = 17; break;
+    u32* topScreen = topScreen2DTexture();
+    u32* bottomScreen = bottomScreen2DTexture();
+    u32 pixel_2_8 = getPixel(topScreen, 2, 8, 0);
+    if (pixel_2_8 == 0x04020e1e) { // debug reports
+        return 10; // 7, 8, 9, 10, 11, 12
     }
 
-    if (mainMenuView == 0) {
-        u16 val2 = nds->ARM7Read16(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
-        switch(val2) {
-            case 0x0001: mainMenuView = 11; break;
-            case 0x0009: mainMenuView = 12; break;
-            case 0x000b: mainMenuView = 16; break;
+    if (pixel_2_8 == 0x083a3818) {
+        return 17; // challenge view before system sector
+    }
+
+    if (pixel_2_8 == 0x08081a00) { // alt main menu, save menu, world selection
+        if (nds->GPU.GPU3D.RenderNumPolygons > 0) {
+            return 16; // world selection
         }
-    }
-
-    if (mainMenuView == 0) {
-        // TODO: KH This method is very unstable, and causes issues during transitions
-        u32 val3 = nds->ARM7Read32(getU32ByCart(MAIN_MENU_SCREEN_2_US, MAIN_MENU_SCREEN_2_EU, MAIN_MENU_SCREEN_2_JP));
-        switch(val3) {
-            case 0x0d9eaa00: case 0x0da75800: mainMenuView = 2; break;
-            case 0x0da75400: mainMenuView = 6; break;
-            case 0x00149600: mainMenuView = 7; break;
-            case 0x0014c800: mainMenuView = 8; break;
-            case 0x00150800: mainMenuView = 9; break;
-            case 0x0e098800: mainMenuView = 10; break;
-            case 0x0df58400: mainMenuView = 11; break;
-            case 0x00158200: mainMenuView = 12; break;
-            case 0x0da15000: mainMenuView = 13; break;
-            case 0x0da82800: mainMenuView = 14; break;
-            case 0x0d8ba800: {
-                u32 val4 = nds->ARM7Read16(getU32ByCart(MAIN_MENU_SCREEN_3_US, MAIN_MENU_SCREEN_3_EU, MAIN_MENU_SCREEN_3_JP));
-                if (val4 == 0x020a0580) {
-                    mainMenuView = 15; break;
-                };
-            }
+        if (getPixel(topScreen, 10, 25, 0) == 0x08062602) {
+            return 2; // alt main menu
         }
+        return 15; // save menu
     }
 
-    if (mainMenuView != 0) {
-        lastMainMenuView = mainMenuView;
+    if (getPixel(topScreen, 4, 8, 0) == 0x082a0c02) { // main menu root, config, quest list, tutorials
+        if (nds->GPU.GPU3D.RenderNumPolygons > 0) {
+            return 1; // main menu root
+        }
+        if (getPixel(topScreen, 60, 33, 0) == 0x083c180e) {
+            return 13; // quest list
+        }
+        if (getPixel(topScreen, 252, 190, 0) == 0x08000000) {
+            return 6; // config
+        }
+        return 14; // tutorials
     }
 
-    return lastMainMenuView;
+    u32 pixel_11_10 = getPixel(topScreen, 11, 10, 0);
+    if (pixel_11_10 == 0x1016142c) {
+        return 3; // stat matrix
+    }
+
+    u32 pixel_200_4 = getPixel(bottomScreen, 200, 4, 0);
+    u32 pixel_215_4 = getPixel(bottomScreen, 215, 4, 0);
+    u32 pixel_230_4 = getPixel(bottomScreen, 230, 4, 0);
+    if (pixel_215_4 == 0x10000000 && pixel_230_4 == 0x10000000) {
+        return 3; // stat matrix
+    }
+    if (pixel_200_4 == 0x10000000 && pixel_230_4 == 0x10000000) {
+        return 4; // command matrix
+    }
+    if (pixel_200_4 == 0x10000000 && pixel_215_4 == 0x10000000) {
+        return 5; // gear matrix
+    }
+
+    return 0; // none
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMap()
