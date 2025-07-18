@@ -26,25 +26,25 @@ public:
     void onLoadROM() override;
     void onLoadState() override;
 
-    std::string assetsFolder();
+    std::string assetsFolder() override;
     std::string assetsRegionSubfolder();
 
-    std::vector<ShapeData2D> renderer_2DShapes();
-    int renderer_screenLayout();
-    int renderer_brightnessMode();
-    bool renderer_showOriginalUI();
+    std::vector<ShapeData2D> renderer_2DShapes() override;
+    int renderer_screenLayout() override;
+    int renderer_brightnessMode() override;
+    bool renderer_showOriginalUI() override;
 
-    void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
-    void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask);
+    void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
+    void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) override;
 
-    const char* getGameSceneName() {
+    const char* getGameSceneName() override {
         return "";
     }
 
-    u32 getAspectRatioAddress();
+    u32 getAspectRatioAddress() override;
 
 private:
-    int detectGameScene();
+    int detectGameScene() override;
 };
 }
 
