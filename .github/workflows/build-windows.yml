@@ -1,3 +1,6 @@
+# Caching based on this workflow:
+# https://github.com/ag-advania/melonPrimeDS/blob/master/.github/workflows/build-windows.yml
+
 name: Windows
 
 on:
@@ -32,11 +35,16 @@ jobs:
         path: |
           C:/msys64/var/cache/pacman/pkg
           C:/msys64/etc/pacman.d/gnupg
-          D:/a/_temp/msys64/var/cache/pacman/pkg
-          D:/a/KHMelonMix/KHMelonMix/vcpkg/downloads/tools/msys2
+          ${{ github.workspace }}/vcpkg/downloads/tools/msys2
         key: ${{ runner.os }}-msys2-pacman-${{ hashFiles('**/*.cmake') }}
         restore-keys: |
           ${{ runner.os }}-msys2-pacman-
+
+    - name: Purge temp msys64 (cache safety)
+      shell: pwsh
+      run: |
+        $p = Join-Path $env:RUNNER_TEMP 'msys64'
+        if (Test-Path $p) { Remove-Item -Recurse -Force $p }
 
     - name: Set up MSYS2
       uses: msys2/setup-msys2@v2
@@ -46,7 +54,19 @@ jobs:
         path-type: inherit
         pacboy: gcc:p cmake:p ninja:p make:p
 
-    - name: Cache vcpkg
+    - name: Ensure vcpkg overlay directories exist
+      run: |
+        mkdir -p ./cmake/overlay-ports
+        mkdir -p ./cmake/overlay-triplets
+        [ -f ./cmake/overlay-ports/.keep ] || echo keep > ./cmake/overlay-ports/.keep
+        [ -f ./cmake/overlay-triplets/.keep ] || echo keep > ./cmake/overlay-triplets/.keep
+
+    - name: Ensure vcpkg binary cache directory exists
+      run: |
+        mkdir -p "${{ github.workspace }}/vcpkg_binary_cache"
+        ls -la "${{ github.workspace }}/vcpkg_binary_cache" || true
+
+    - name: Cache vcpkg directories
       uses: actions/cache@v3
       with:
         path: |
@@ -55,16 +75,21 @@ jobs:
           ${{ github.workspace }}/vcpkg/buildtrees
           ${{ github.workspace }}/vcpkg/downloads
           ${{ github.workspace }}/vcpkg/packages
-        # キーの計算に使用するファイルを増やして、より正確なキャッシュ検出を実現
-        key: ${{ runner.os }}-vcpkg-${{ env.VCPKG_COMMIT }}-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'cmake/overlay-triplets/*.cmake') }}
+          ${{ github.workspace }}/vcpkg_binary_cache
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json', 'cmake/overlay-triplets/**', 'cmake/overlay-ports/**', 'triplets/**') }}
         restore-keys: |
-          ${{ runner.os }}-vcpkg-${{ env.VCPKG_COMMIT }}-${{ hashFiles('CMakeLists.txt') }}
-          ${{ runner.os }}-vcpkg-${{ env.VCPKG_COMMIT }}-
+          ${{ runner.os }}-vcpkg-
 
-    - name: Set up vcpkg
+    - name: Set up vcpkg (manifest)
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+        vcpkgJsonGlob: vcpkg.json
+
+    - name: Show vcpkg manifest log (head)
+      run: |
+        if [ -f build/release-mingw-x86_64/vcpkg-manifest-install.log ]; then
+          sed -n '1,160p' build/release-mingw-x86_64/vcpkg-manifest-install.log || true
+        fi
 
     - name: Cache CMake build directory
       uses: actions/cache@v3
