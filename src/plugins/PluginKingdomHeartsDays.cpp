@@ -1083,7 +1083,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                             .hudScale(hudScale)
                             .build(aspectRatio));
 
-                    float doubleScreenScale = 2.0/3;
+                    float doubleScreenScale = aspectRatio * 0.5;
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromBottomScreen()
                             .placeAtCorner(corner_Left)
