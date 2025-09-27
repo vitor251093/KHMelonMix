@@ -126,6 +126,8 @@ std::vector<LuaFunction*> definedLuaFunctions;//List of all defined lua function
 
 void LuaBundle::createLuaState()
 {
+    // TODO: Set aspect ratio and stuff like that
+
     if (!flagNewLua) return;
     overlays->clear();
     flagNewLua = false;
@@ -168,6 +170,7 @@ void LuaConsoleDialog::onLuaUpdate()
 }
 
 //Gets Called once a frame
+// TODO: Should be split among the plugin functions
 void LuaBundle::luaUpdate()
 {
     if (!luaState || flagPause) return;
