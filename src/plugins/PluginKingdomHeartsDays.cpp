@@ -12,7 +12,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define ASPECT_RATIO_ADDRESS_JP      0x02023C9C
 #define ASPECT_RATIO_ADDRESS_JP_REV1 0x02023C6C
 
-// 0x2C => intro and main menu
+// 0x2C00 => intro and main menu
 #define IS_MAIN_MENU_US      0x0204242d
 #define IS_MAIN_MENU_EU      0x0204244d
 #define IS_MAIN_MENU_JP      0x0204288d
@@ -2057,8 +2057,8 @@ int PluginKingdomHeartsDays::detectGameScene()
     bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
-    u8 mainMenuOrIntroOrLoadMenuVal = nds->ARM7Read8(getAnyByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP, IS_MAIN_MENU_JP_REV1));
-    bool isMainMenuOrIntroOrLoadMenu = mainMenuOrIntroOrLoadMenuVal == 0x28 || mainMenuOrIntroOrLoadMenuVal == 0x2C;
+    u16 mainMenuOrIntroOrLoadMenuVal = nds->ARM7Read16(getAnyByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP, IS_MAIN_MENU_JP_REV1));
+    bool isMainMenuOrIntroOrLoadMenu = mainMenuOrIntroOrLoadMenuVal == 0x2800 || mainMenuOrIntroOrLoadMenuVal == 0x2C00;
     bool isCutscene = nds->ARM7Read8(getAnyByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP, IS_CUTSCENE_JP_REV1)) == 0x03;
     bool isCredits = nds->ARM7Read8(getAnyByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10;
     bool isUnplayableArea = nds->ARM7Read8(getAnyByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP, IS_PLAYABLE_AREA_JP_REV1)) == 0x04;
