@@ -32,6 +32,12 @@ jobs:
           brew install autoconf automake autoconf-archive libtool python-setuptools flac
       - name: Set up CMake
         uses: lukka/get-cmake@latest
+      - name: Restore vcpkg cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg_cache
+          key: vcpkg-${{ matrix.arch }}-osx-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-${{ matrix.arch }}-osx-
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
         with:
@@ -54,6 +60,11 @@ jobs:
           name: MelonMix-macOS-${{ matrix.arch }}
           path: macOS-${{ matrix.arch }}.zip
           retention-days: 1
+      - name: Save vcpkg cache
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg_cache
+          key: vcpkg-${{ matrix.arch }}-osx-${{ hashFiles('vcpkg.json') }}
 
   universal-binary:
     name: Universal binary

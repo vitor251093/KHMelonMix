@@ -83,7 +83,7 @@ jobs:
     - name: Set up vcpkg (manifest)
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgJsonGlob: vcpkg.json
+        vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
 
     - name: Show vcpkg manifest log (head)
       run: |
