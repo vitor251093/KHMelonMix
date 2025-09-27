@@ -713,7 +713,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromPosition(0, 164)
                         .withSize(256, 28)
-                        .withMargin(128.0, 0.0, 0.0, 10.0)
+                        .withMargin(128.0 * (4.0 / hudScale), 0.0, 0.0, 10.0 * (4.0 / hudScale))
                         .placeAtCorner(corner_BottomLeft)
                         .sourceScale(scale, scale)
                         .hudScale(hudScale)
