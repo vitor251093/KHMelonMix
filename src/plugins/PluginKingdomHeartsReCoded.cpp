@@ -1508,6 +1508,7 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
     if (GameScene == gameScene_InGameMenu) {
         u32 mainMenuView = getCurrentMainMenuView();
         switch (mainMenuView) {
+            case 0:  // nothing
             case 2:  // main menu root (save menu)
             case 6:  // config
             case 13: // quest list
@@ -2521,6 +2522,7 @@ u32 PluginKingdomHeartsReCoded::getCurrentMission()
 // 16 -> world selection
 // 17 -> challenge view before system sector
 // 18 -> shop
+// 19 -> stat/command/gear matrix submenu
 u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
 {
     if (GameScene == -1)
@@ -2571,17 +2573,20 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
         return 3; // stat matrix
     }
 
-    u32 pixel_200_4 = getPixel(bottomScreen, 200, 4, 0);
-    u32 pixel_215_4 = getPixel(bottomScreen, 215, 4, 0);
-    u32 pixel_230_4 = getPixel(bottomScreen, 230, 4, 0);
-    if (pixel_215_4 == 0x10000000 && pixel_230_4 == 0x10000000) {
-        return 3; // stat matrix
-    }
-    if (pixel_200_4 == 0x10000000 && pixel_230_4 == 0x10000000) {
-        return 4; // command matrix
-    }
-    if (pixel_200_4 == 0x10000000 && pixel_215_4 == 0x10000000) {
-        return 5; // gear matrix
+    if (pixel_2_8 == 0x081E0802 || pixel_2_8 == 0x08240A02) {
+        u32 pixel_200_4 = getPixel(bottomScreen, 200, 4, 0);
+        u32 pixel_215_4 = getPixel(bottomScreen, 215, 4, 0);
+        u32 pixel_230_4 = getPixel(bottomScreen, 230, 4, 0);
+        if (pixel_215_4 == 0x10000000 && pixel_230_4 == 0x10000000) {
+            return 3; // stat matrix
+        }
+        if (pixel_200_4 == 0x10000000 && pixel_230_4 == 0x10000000) {
+            return 4; // command matrix
+        }
+        if (pixel_200_4 == 0x10000000 && pixel_215_4 == 0x10000000) {
+            return 5; // gear matrix
+        }
+        return 19; // stat/command/gear matrix submenu
     }
 
     return 0; // none
