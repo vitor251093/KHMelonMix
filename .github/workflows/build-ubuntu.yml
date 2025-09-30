@@ -57,8 +57,9 @@ jobs:
         touch ./dist/roms/DELETE_ME
         cp -r ./assets ./dist/assets
         cp AppDir/usr/bin/MelonMix ./dist/MelonMix
-        cp ./res/scripts/MelonMix_KHDays.sh    ./dist/MelonMix_KHDays.sh
-        cp ./res/scripts/MelonMix_KHReCoded.sh ./dist/MelonMix_KHReCoded.sh
+        cp ./res/scripts/MelonMix_KHDays.sh       ./dist/MelonMix_KHDays.sh
+        cp ./res/scripts/MelonMix_KHReCoded.sh    ./dist/MelonMix_KHReCoded.sh
+        cp ./res/scripts/MelonMix_GameSelector.sh ./dist/MelonMix_GameSelector.sh
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-ubuntu-${{ matrix.arch.name }}
