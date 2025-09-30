@@ -1185,12 +1185,12 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
         }
 
         if (GameScene != gameScene_InGameOlympusBattle) {
-            // SP score
+            // SP score, and Inside Riku Data Percent
             shapes.push_back(ShapeBuilder3D::square()
                     .polygonMode()
                     .negatePolygonAttributes(2031808) // pickup license notification
                     .fromPosition(0, 0)
-                    .withSize(120, 60)
+                    .withSize(130, 60)
                     .placeAtCorner(corner_TopLeft)
                     .withMargin(0.0, 30.0, 0.0, 0.0)
                     .sourceScale(1.5)
