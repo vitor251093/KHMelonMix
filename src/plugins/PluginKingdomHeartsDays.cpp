@@ -165,9 +165,10 @@ enum
     gameScene_Shop,                     // 11
     gameScene_LoadingScreen,            // 12
     gameScene_RoxasThoughts,            // 13
-    gameScene_DeathScreen,              // 14
-    gameScene_TheEnd,                   // 15
-    gameScene_Other                     // 16
+    gameScene_WorldSelector,            // 14
+    gameScene_DeathScreen,              // 15
+    gameScene_TheEnd,                   // 16
+    gameScene_Other                     // 17
 };
 
 enum
@@ -793,15 +794,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                     .hudScale(hudScale)
                     .preserveDsScale()
                     .build(aspectRatio));
-
-        shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(254, 0)
-                    .withSize(1, 1)
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .sourceScale(10000.0)
-                    .preserveDsScale()
-                    .build(aspectRatio));
         return shapes;
     }
 
@@ -1080,6 +1072,56 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
 
             break;
 
+        case gameScene_WorldSelector:
+            // header left corner
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(0, 0)
+                    .withSize(128, 25)
+                    .placeAtCorner(corner_TopLeft)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+
+            // header right corner
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(128, 0)
+                    .withSize(128, 25)
+                    .placeAtCorner(corner_TopRight)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+
+            // header middle
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(123, 0)
+                    .withSize(10, 25)
+                    .placeAtCorner(corner_Top)
+                    .sourceScale(1000.0, 1.0)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+
+            // world name and rank
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(0, 176)
+                    .withSize(256, 16)
+                    .placeAtCorner(corner_BottomLeft)
+                    .squareBorderRadius(5.0, 5.0, 5.0, 5.0)
+                    .withMargin(20.0, 0.0, 0.0, 10.0)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+
+            // mission selector
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 0)
+                    .withSize(256, 192)
+                    .placeAtCorner(corner_Right)
+                    .sourceScale(0.7)
+                    .cropSquareCorners(5.0, 0.0, 5.0, 0.0)
+                    .opacity(1.0)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+
+            break;
+
         case gameScene_InGameMenu:
         {
             u32 curMenu = getCurrentMainMenuView();
@@ -1157,56 +1199,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                     renderer_2DShapes_saveScreenMenu(&shapes, aspectRatio, hudScale);
                     break;
                 }
-                case 8: { // world selector
-                    // header left corner
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(0, 0)
-                            .withSize(128, 25)
-                            .placeAtCorner(corner_TopLeft)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // header right corner
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(128, 0)
-                            .withSize(128, 25)
-                            .placeAtCorner(corner_TopRight)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // header middle
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(123, 0)
-                            .withSize(10, 25)
-                            .placeAtCorner(corner_Top)
-                            .sourceScale(1000.0, 1.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // world name and rank
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(0, 176)
-                            .withSize(256, 16)
-                            .placeAtCorner(corner_BottomLeft)
-                            .squareBorderRadius(5.0, 5.0, 5.0, 5.0)
-                            .withMargin(20.0, 0.0, 0.0, 10.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // mission selector
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(0, 0)
-                            .withSize(256, 192)
-                            .placeAtCorner(corner_Right)
-                            .sourceScale(0.7)
-                            .cropSquareCorners(5.0, 0.0, 5.0, 0.0)
-                            .opacity(1.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    break;
-                }
                 default:
                     break;
             }
@@ -1241,9 +1233,10 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
             GameScene != gameScene_InGameWithMap &&
             GameScene != gameScene_DeathScreen &&
             GameScene != gameScene_PauseMenu &&
-            GameScene != gameScene_InGameWithDouble3D) {
+            GameScene != gameScene_InGameWithDouble3D &&
+            GameScene != gameScene_WorldSelector) {
         bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
-        if (has3DOnTopScreen) {
+        if (has3DOnTopScreen && GameScene != gameScene_WorldSelector) {
             shapes.push_back(ShapeBuilder3D::square()
                             .placeAtCorner(corner_Center)
                             .build(aspectRatio));
@@ -1470,6 +1463,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
         case gameScene_PauseMenu:
         case gameScene_InGameWithDouble3D:
         case gameScene_DeathScreen:
+        case gameScene_WorldSelector:
         case gameScene_Other:
             return screenLayout_Top;
         
@@ -1483,6 +1477,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
         
         case gameScene_Intro:
         case gameScene_TitleScreen:
+        case gameScene_InGameMenu:
         case gameScene_Shop:
         case gameScene_TheEnd:
             return screenLayout_BothHorizontal;
@@ -1492,21 +1487,6 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
                 return screenLayout_BothHorizontal;
             }
             return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
-    }
-
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        switch (mainMenuView) {
-            case 3: // roxas's diary
-            case 4: // enemy profile
-            case 6: // config
-            case 7: // save
-            case 8: // world selector
-                return screenLayout_Top;
-
-            default:
-                return screenLayout_BothHorizontal;
-        }
     }
 
     return screenLayout_Top;
@@ -1541,17 +1521,21 @@ int PluginKingdomHeartsDays::renderer_brightnessMode() {
     if (GameScene == gameScene_Cutscene) {
         return brightnessMode_DisableBrightnessControl;
     }
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        if (mainMenuView == 8) { // world selector
-            return brightnessMode_Auto;
-        }
+    if (GameScene == gameScene_WorldSelector) {
+        return brightnessMode_Auto;
     }
     return brightnessMode_Default;
 }
 
 float PluginKingdomHeartsDays::renderer_forcedAspectRatio()
 {
+    if (!SingleScreenMode &&
+            GameScene != gameScene_InGameWithMap &&
+            GameScene != gameScene_DeathScreen &&
+            GameScene != gameScene_PauseMenu &&
+            GameScene != gameScene_InGameWithDouble3D) {
+        return (4.0/3);
+    }
     return (GameScene == gameScene_DayCounter) ? (4.0/3) : AspectRatio;
 };
 
@@ -1869,6 +1853,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_LoadingScreen: return "Game scene: Loading screen";
         case gameScene_RoxasThoughts: return "Game scene: Roxas Thoughts";
         case gameScene_DeathScreen: return "Game scene: Death screen";
+        case gameScene_WorldSelector: return "Game scene: World selector";
         case gameScene_TheEnd: return "Game scene: The End";
         case gameScene_Other: return "Game scene: Unknown";
         default: return "Game scene: REALLY unknown";
@@ -2267,6 +2252,12 @@ int PluginKingdomHeartsDays::detectGameScene()
 
     if (isUnplayableArea)
     {
+        u32 mainMenuView = getCurrentMainMenuView();
+        if (mainMenuView == 8)
+        {
+            return gameScene_WorldSelector;
+        }
+
         return gameScene_InGameMenu;
     }
 
@@ -2583,7 +2574,7 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
 // 5 -> tutorials
 // 6 -> config
 // 7 -> save
-// 8 -> world selector
+// 8 -> world selector (replaced by gameScene_WorldSelector)
 // 9 -> character selection
 // 10 -> mission review
 u32 PluginKingdomHeartsDays::getCurrentMainMenuView()

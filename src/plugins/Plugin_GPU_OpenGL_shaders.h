@@ -370,14 +370,16 @@ ivec4 getTopScreen3DColor()
     ivec2 position3d = ivec2(vec2(xpos, ypos) * u3DScale);
     ivec4 _3dpix = ivec4(texelFetch(_3DTex, position3d, 0).bgra * vec4(63, 63, 63, 31));
 
-    if (screenLayout == 2) { // vertical
-        return getVerticalDualScreen3DColor(xpos, ypos);
-    }
-    if (screenLayout == 3) { // horizontal
-        return getHorizontalDualScreen3DColor(xpos, ypos);
-    }
-    if (currentAspectRatio != forcedAspectRatio) {
-        return getForcedAspectRatioScreen3DColor(xpos, ypos);
+    if (fTexcoord.y <= 192) { // top screen
+        if (screenLayout == 2) { // vertical
+            return getVerticalDualScreen3DColor(xpos, ypos);
+        }
+        if (screenLayout == 3) { // horizontal
+            return getHorizontalDualScreen3DColor(xpos, ypos);
+        }
+        if (currentAspectRatio != forcedAspectRatio) {
+            return getForcedAspectRatioScreen3DColor(xpos, ypos);
+        }
     }
 
     return _3dpix;
