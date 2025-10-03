@@ -36,6 +36,7 @@ void PluginSettingsDialog::setEnabled()
 {
     if (!isPluginLoaded)
     {
+        ui->cbEnhancedGraphics->setEnabled(false);
         ui->cbSingleScreenMode->setEnabled(false);
         ui->cbFFLoadingScreens->setEnabled(false);
         ui->cbxAudioPack->setEnabled(false);
@@ -48,9 +49,10 @@ void PluginSettingsDialog::setEnabled()
     std::string root = plugin->tomlUniqueIdentifier();
 
     auto& cfg = emuInstance->getGlobalConfig();
-    bool singleScreenModeEnabled = !cfg.GetBool(root + ".DisableEnhancedGraphics");
+    bool enhancedGraphicsEnabled = !cfg.GetBool(root + ".DisableEnhancedGraphics");
 
-    ui->sbHUDSize->setEnabled(singleScreenModeEnabled);
+    ui->sbHUDSize->setEnabled(enhancedGraphicsEnabled);
+    ui->cbSingleScreenMode->setEnabled(enhancedGraphicsEnabled);
 }
 
 PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), ui(new Ui::PluginSettingsDialog)
@@ -68,7 +70,8 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
         std::string root = plugin->tomlUniqueIdentifier();
 
         auto& cfg = emuInstance->getGlobalConfig();
-        oldSingleScreenMode = !cfg.GetBool(root + ".DisableEnhancedGraphics");
+        oldEnhancedGraphics = !cfg.GetBool(root + ".DisableEnhancedGraphics");
+        oldSingleScreenMode = !cfg.GetBool(root + ".DisableSingleScreenMode");
         oldFFLoadingScreens = cfg.GetBool(root + ".FastForwardLoadingScreens");
         oldAudioPack = cfg.GetString(root + ".AudioPack");
         oldHUDSize = cfg.GetInt(root + ".HUDScale");
@@ -76,6 +79,7 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
         oldCameraSensitivity = cfg.GetInt(root + ".CameraSensitivity");
         oldCameraSensitivity = (oldCameraSensitivity == 0) ? plugin->DefaultCameraSensitivity : oldCameraSensitivity;
 
+        ui->cbEnhancedGraphics->setChecked(oldEnhancedGraphics != 0);
         ui->cbSingleScreenMode->setChecked(oldSingleScreenMode != 0);
         ui->cbFFLoadingScreens->setChecked(oldFFLoadingScreens != 0);
 
@@ -127,7 +131,8 @@ void PluginSettingsDialog::on_PluginSettingsDialog_rejected()
     std::string root = plugin->tomlUniqueIdentifier();
 
     auto& cfg = emuInstance->getGlobalConfig();
-    cfg.SetBool(root + ".DisableEnhancedGraphics", !oldSingleScreenMode);
+    cfg.SetBool(root + ".DisableEnhancedGraphics", !oldEnhancedGraphics);
+    cfg.SetBool(root + ".DisableSingleScreenMode", !oldSingleScreenMode);
     cfg.SetBool(root + ".FastForwardLoadingScreens", oldFFLoadingScreens);
     cfg.SetString(root + ".AudioPack", oldAudioPack);
     cfg.SetInt(root + ".HUDScale", oldHUDSize);
@@ -138,13 +143,24 @@ void PluginSettingsDialog::on_PluginSettingsDialog_rejected()
     closeDlg();
 }
 
-void PluginSettingsDialog::on_cbSingleScreenMode_stateChanged(int state)
+void PluginSettingsDialog::on_cbEnhancedGraphics_stateChanged(int state)
 {
     auto plugin = emuInstance->plugin;
     std::string root = plugin->tomlUniqueIdentifier();
 
     auto& cfg = emuInstance->getGlobalConfig();
     cfg.SetBool(root + ".DisableEnhancedGraphics", state == 0);
+
+    emit updatePluginSettings();
+}
+
+void PluginSettingsDialog::on_cbSingleScreenMode_stateChanged(int state)
+{
+    auto plugin = emuInstance->plugin;
+    std::string root = plugin->tomlUniqueIdentifier();
+
+    auto& cfg = emuInstance->getGlobalConfig();
+    cfg.SetBool(root + ".DisableSingleScreenMode", state == 0);
 
     emit updatePluginSettings();
 }

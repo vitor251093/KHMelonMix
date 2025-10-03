@@ -366,7 +366,8 @@ protected:
     int UIScale = 4;
 
     int CameraSensitivity = 0;
-    bool DisableEnhancedGraphics = false;
+    bool EnhancedGraphics = true;
+    bool SingleScreenMode = true;
     bool DisableReplacementTextures = false;
     bool FastForwardLoadingScreens = false;
     bool ExportTextures = false;

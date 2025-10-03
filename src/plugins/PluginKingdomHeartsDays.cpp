@@ -783,6 +783,28 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
     auto shapes = std::vector<ShapeData2D>();
     int hudScale = UIScale;
 
+    if (!SingleScreenMode &&
+            GameScene != gameScene_InGameWithMap &&
+            GameScene != gameScene_DeathScreen &&
+            GameScene != gameScene_PauseMenu &&
+            GameScene != gameScene_InGameWithDouble3D) {
+        shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+        shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(254, 0)
+                    .withSize(1, 1)
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .sourceScale(10000.0)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+        return shapes;
+    }
+
     switch (GameScene) {
         case gameScene_IntroLoadMenu:
             renderer_2DShapes_loadScreenMenu(&shapes, aspectRatio, hudScale);
@@ -816,7 +838,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
             break;
 
         case gameScene_InGameWithDouble3D:
-            if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
+            if (SingleScreenMode && (GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
                 break;
             }
 
@@ -873,8 +895,11 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
 
                 return shapes;
             }
-            if ((GameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0) {
-                renderer_2DShapes_component_bottomMissionInformation(&shapes, aspectRatio, hudScale);
+
+            if (SingleScreenMode) {
+                if ((GameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0) {
+                    renderer_2DShapes_component_bottomMissionInformation(&shapes, aspectRatio, hudScale);
+                }
             }
 
             if ((GameSceneState & (1 << gameSceneState_showHud)) > 0)
@@ -897,37 +922,40 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
-                bool showMinimap = (GameSceneState & (1 << gameSceneState_showMinimap)) > 0;
-                if (showMinimap) {
-                    // minimap
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(128, 60)
-                            .withSize(72, 72)
-                            .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 30.0, 9.0, 0.0)
-                            .sourceScale(0.8333)
-                            .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
-                            .opacity(0.85)
-                            .invertGrayScaleColors()
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-                }
+                if (SingleScreenMode)
+                {
+                    bool showMinimap = (GameSceneState & (1 << gameSceneState_showMinimap)) > 0;
+                    if (showMinimap) {
+                        // minimap
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromBottomScreen()
+                                .fromPosition(128, 60)
+                                .withSize(72, 72)
+                                .placeAtCorner(corner_TopRight)
+                                .withMargin(0.0, 30.0, 9.0, 0.0)
+                                .sourceScale(0.8333)
+                                .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                                .opacity(0.85)
+                                .invertGrayScaleColors()
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
 
-                if ((GameSceneState & (1 << gameSceneState_showTarget)) > 0) {
-                    renderer_2DShapes_component_targetView(&shapes, aspectRatio, hudScale);
-                }
+                    if ((GameSceneState & (1 << gameSceneState_showTarget)) > 0) {
+                        renderer_2DShapes_component_targetView(&shapes, aspectRatio, hudScale);
+                    }
 
-                if ((GameSceneState & (1 << gameSceneState_showMissionGauge)) > 0) {
-                    // mission gauge
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .fromPosition(5, 152)
-                            .withSize(246, 40)
-                            .placeAtCorner(corner_Bottom)
-                            .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
+                    if ((GameSceneState & (1 << gameSceneState_showMissionGauge)) > 0) {
+                        // mission gauge
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromBottomScreen()
+                                .fromPosition(5, 152)
+                                .withSize(246, 40)
+                                .placeAtCorner(corner_Bottom)
+                                .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
                 }
 
                 // enemy health
@@ -992,20 +1020,22 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
             break;
 
         case gameScene_PauseMenu:
-            if ((GameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0) {
-                renderer_2DShapes_component_bottomMissionInformation(&shapes, aspectRatio, hudScale);
-            }
+            if (SingleScreenMode) {
+                if ((GameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0) {
+                    renderer_2DShapes_component_bottomMissionInformation(&shapes, aspectRatio, hudScale);
+                }
 
-            if ((GameSceneState & (1 << gameSceneState_showMissionGauge)) > 0) {
-                // mission gauge
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromBottomScreen()
-                        .fromPosition(5, 152)
-                        .withSize(246, 40)
-                        .placeAtCorner(corner_Bottom)
-                        .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
+                if ((GameSceneState & (1 << gameSceneState_showMissionGauge)) > 0) {
+                    // mission gauge
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(5, 152)
+                            .withSize(246, 40)
+                            .placeAtCorner(corner_Bottom)
+                            .cropSquareCorners(6.0, 6.0, 0.0, 0.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
             }
 
             // pause menu
@@ -1206,6 +1236,20 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
 std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
+
+    if (!SingleScreenMode &&
+            GameScene != gameScene_InGameWithMap &&
+            GameScene != gameScene_DeathScreen &&
+            GameScene != gameScene_PauseMenu &&
+            GameScene != gameScene_InGameWithDouble3D) {
+        bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
+        if (has3DOnTopScreen) {
+            shapes.push_back(ShapeBuilder3D::square()
+                            .placeAtCorner(corner_Center)
+                            .build(aspectRatio));
+        }
+        return shapes;
+    }
 
     int gameSceneState = renderer_gameSceneState();
     switch (GameScene) {
@@ -1415,6 +1459,10 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
 };
 
 int PluginKingdomHeartsDays::renderer_screenLayout() {
+    if (!SingleScreenMode) {
+        return screenLayout_Top;
+    }
+
     switch (GameScene) {
         case gameScene_DayCounter:
         case gameScene_RoxasThoughts:
@@ -1465,6 +1513,10 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
 };
 
 int PluginKingdomHeartsDays::renderer_brightnessMode() {
+    if (!SingleScreenMode) {
+        return brightnessMode_TopScreen;
+    }
+
     if (_ShouldHideScreenForTransitions) {
         return brightnessMode_BlackScreen;
     }
@@ -1848,7 +1900,7 @@ bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
 u32* PluginKingdomHeartsDays::topScreen2DTexture()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
-    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 != 0) {
+    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 == 1) {
         FrontBuffer = FrontBuffer ? 0 : 1;
     }
     return nds->GPU.Framebuffer[FrontBuffer][0].get();
@@ -1857,7 +1909,7 @@ u32* PluginKingdomHeartsDays::topScreen2DTexture()
 u32* PluginKingdomHeartsDays::bottomScreen2DTexture()
 {
     int FrontBuffer = nds->GPU.FrontBuffer;
-    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 != 0) {
+    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 == 1) {
         FrontBuffer = FrontBuffer ? 0 : 1;
     }
     return nds->GPU.Framebuffer[FrontBuffer][1].get();
@@ -2026,7 +2078,10 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
     }
     if (GameScene == gameScene_InGameWithDouble3D)
     {
-        return (nds->PowerControl9 >> 15 != 0) ? !ShouldShowBottomScreen : ShouldShowBottomScreen;
+        if (!SingleScreenMode) {
+            return (nds->PowerControl9 >> 15 == 1);
+        }
+        return (nds->PowerControl9 >> 15 == 1) ? !ShouldShowBottomScreen : ShouldShowBottomScreen;
     }
 
     return true;

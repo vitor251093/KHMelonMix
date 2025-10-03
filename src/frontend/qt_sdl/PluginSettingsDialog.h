@@ -59,6 +59,7 @@ private slots:
     void on_PluginSettingsDialog_accepted();
     void on_PluginSettingsDialog_rejected();
 
+    void on_cbEnhancedGraphics_stateChanged(int state);
     void on_cbSingleScreenMode_stateChanged(int state);
     void on_cbFFLoadingScreens_stateChanged(int state);
     void on_cbxAudioPack_currentTextChanged(const QString &text);
@@ -72,6 +73,7 @@ private:
     EmuInstance* emuInstance;
 
     bool isPluginLoaded;
+    int oldEnhancedGraphics;
     int oldSingleScreenMode;
     int oldFFLoadingScreens;
     std::string oldAudioPack;

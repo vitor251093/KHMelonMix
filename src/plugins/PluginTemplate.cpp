@@ -63,7 +63,7 @@ std::vector<ShapeData3D> PluginTemplate::renderer_3DShapes() {
                     .fadeBorderSize(2.5,2.5,0,0)
                     .opacity(0.66)
                     .hudScale(hudScale)
-                    .build(1)
+                    .build(1));
     return shapes;
 }
 

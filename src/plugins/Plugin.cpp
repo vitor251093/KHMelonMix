@@ -85,7 +85,7 @@ std::filesystem::path Plugin::assetsFolderPath()
 
 const char* Plugin::gpuOpenGL_FS()
 {
-    bool disable = DisableEnhancedGraphics;
+    bool disable = !EnhancedGraphics;
     if (disable) {
         return nullptr;
     }
@@ -166,7 +166,7 @@ bool Plugin::gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scal
 }
 
 bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon) {
-    bool disable = DisableEnhancedGraphics;
+    bool disable = !EnhancedGraphics;
     if (disable) {
         return false;
     }
@@ -1191,7 +1191,8 @@ void Plugin::_superLoadConfigs(
     std::string root = tomlUniqueIdentifier();
     CameraSensitivity = getIntConfig(root + ".CameraSensitivity");
     CameraSensitivity = (CameraSensitivity == 0) ? DefaultCameraSensitivity : CameraSensitivity;
-    DisableEnhancedGraphics = getBoolConfig(root + ".DisableEnhancedGraphics");
+    EnhancedGraphics = !getBoolConfig(root + ".DisableEnhancedGraphics");
+    SingleScreenMode = !getBoolConfig(root + ".DisableSingleScreenMode");
     DisableReplacementTextures = false;
     FastForwardLoadingScreens = getBoolConfig(root + ".FastForwardLoadingScreens");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
