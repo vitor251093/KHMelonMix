@@ -622,7 +622,7 @@ bool Plugin::ShouldUnmuteAfterCutscene() {
 }
 CutsceneEntry* Plugin::CurrentCutscene() {return _CurrentCutscene;};
 
-CutsceneEntry* Plugin::detectTopScreenMobiCutscene()
+CutsceneEntry* Plugin::detectTopScreenCutscene()
 {
     if (GameScene == -1)
     {
@@ -638,10 +638,22 @@ CutsceneEntry* Plugin::detectTopScreenMobiCutscene()
         }
     }
 
-    return getMobiCutsceneByAddress(cutsceneAddressValue);
+    CutsceneEntry* cutscene1 = getMobiCutsceneByAddress(cutsceneAddressValue);
+    if (cutscene1 != nullptr)
+    {
+        return cutscene1;
+    }
+
+    cutsceneAddressValue = 0;
+    u32 dialogAddress = detectTopScreenIngameCutsceneAddress();
+    if (dialogAddress != 0) {
+        cutsceneAddressValue = nds->ARM7Read32(dialogAddress);
+    }
+
+    return getIngameCutsceneByAddress(cutsceneAddressValue);
 }
 
-CutsceneEntry* Plugin::detectBottomScreenMobiCutscene()
+CutsceneEntry* Plugin::detectBottomScreenCutscene()
 {
     if (GameScene == -1)
     {
@@ -661,8 +673,8 @@ CutsceneEntry* Plugin::detectBottomScreenMobiCutscene()
 }
 CutsceneEntry* Plugin::detectCutscene()
 {
-    CutsceneEntry* cutscene1 = detectTopScreenMobiCutscene();
-    CutsceneEntry* cutscene2 = detectBottomScreenMobiCutscene();
+    CutsceneEntry* cutscene1 = detectTopScreenCutscene();
+    CutsceneEntry* cutscene2 = detectBottomScreenCutscene();
 
     if (cutscene1 == nullptr && cutscene2 != nullptr) {
         cutscene1 = cutscene2;

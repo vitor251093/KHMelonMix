@@ -1329,10 +1329,10 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
             break;
 
         case gameScene_Cutscene:
-            if (detectTopScreenMobiCutscene() == nullptr) {
+            if (detectTopScreenCutscene() == nullptr) {
                 state |= (1 << gameSceneState_bottomScreenCutscene);
             }
-            else if (detectBottomScreenMobiCutscene() == nullptr) {
+            else if (detectBottomScreenCutscene() == nullptr) {
                 state |= (1 << gameSceneState_topScreenCutscene);
             }
             break;
@@ -1457,7 +1457,7 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
             return screenLayout_BothHorizontal;
         
         case gameScene_Cutscene:
-            return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
+            return detectTopScreenCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
     }
 
     if (GameScene == gameScene_InGameMenu) {
@@ -2301,7 +2301,7 @@ u32 PluginKingdomHeartsReCoded::getAspectRatioAddress()
     return getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
 }
 
-u32 PluginKingdomHeartsReCoded::getMobiCutsceneAddress(CutsceneEntry* entry)
+u32 PluginKingdomHeartsReCoded::getCutsceneAddress(CutsceneEntry* entry)
 {
     return getU32ByCart(entry->usAddress, entry->euAddress, entry->jpAddress);
 }
@@ -2314,12 +2314,17 @@ CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutscene
 
     CutsceneEntry* cutscene1 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {
+        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
             cutscene1 = entry;
         }
     }
 
     return cutscene1;
+}
+
+CutsceneEntry* PluginKingdomHeartsReCoded::getIngameCutsceneByAddress(u32 cutsceneAddressValue)
+{
+    return nullptr;
 }
 
 u8 PluginKingdomHeartsReCoded::getU8ByCart(u8 usAddress, u8 euAddress, u8 jpAddress)
@@ -2385,6 +2390,11 @@ bool PluginKingdomHeartsReCoded::getBoolByCart(bool usAddress, bool euAddress, b
 u32 PluginKingdomHeartsReCoded::detectTopScreenMobiCutsceneAddress()
 {
     return getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+}
+
+u32 PluginKingdomHeartsReCoded::detectTopScreenIngameCutsceneAddress()
+{
+    return 0;
 }
 
 bool PluginKingdomHeartsReCoded::isCutsceneGameScene()

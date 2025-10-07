@@ -18,6 +18,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_MAIN_MENU_JP      0x0204288d
 #define IS_MAIN_MENU_JP_REV1 0x0204284d
 
+#define DIALOG_ADDRESS_US      0x02042444 // may also be 0x020423fc, 0x02047348, 0x0204bc14
+#define DIALOG_ADDRESS_EU      0x02042464 // TODO: KH Unconfirmed (calculated)
+#define DIALOG_ADDRESS_JP      0x020428a4 // TODO: KH Unconfirmed (calculated)
+#define DIALOG_ADDRESS_JP_REV1 0x02042864 // TODO: KH Unconfirmed (calculated)
+
 // 0x00 => cannot control (ingame cutscenes, or not ingame at all); 0x01 => can control
 #define IS_CHARACTER_CONTROLLABLE_US      0x02042460
 #define IS_CHARACTER_CONTROLLABLE_EU      0x02042480 // TODO: KH Unconfirmed (calculated)
@@ -289,6 +294,38 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         {"846",    "846",    "846_axel_and_saix",                 0x0e75bc00, 0x0e9e6200, 0x0e99ee00, 0},
         {"847",    "847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0ec4c600, 0x0ec12c00, 0},
         {"848",    "848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600, 0},
+    }};
+
+    Dialogues = std::array<Plugins::CutsceneEntry, 46> {{
+        {"006" , "006" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"008" , "008" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"010" , "010" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"018" , "018" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"019" , "019" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"020" , "020" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"021" , "021" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"025" , "025" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"034" , "034" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"039" , "039" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"043a", "043a", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"043b", "043b", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"048b", "048b", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"050" , "050" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"054" , "054" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"059" , "059" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"063" , "063" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"065" , "065" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"066b", "066b", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"068" , "068" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"070" , "070" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"071" , "071" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"076" , "076" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"082a", "082a", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"082b", "082b", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"084" , "084" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"087" , "087" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"092" , "092" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
+        {"096" , "096" , "", 0x00000000 , 0x00000000, 0x00000000 , 0}
     }};
 
     BgmEntries = std::array<BgmEntry, 38> {{
@@ -1343,10 +1380,10 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
             break;
 
         case gameScene_Cutscene:
-            if (detectTopScreenMobiCutscene() == nullptr) {
+            if (detectTopScreenCutscene() == nullptr) {
                 state |= (1 << gameSceneState_bottomScreenCutscene);
             }
-            else if (detectBottomScreenMobiCutscene() == nullptr) {
+            else if (detectBottomScreenCutscene() == nullptr) {
                 state |= (1 << gameSceneState_topScreenCutscene);
             }
             break;
@@ -1486,7 +1523,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
             if (nds->ARM7Read8(getAnyByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10) {
                 return screenLayout_BothHorizontal;
             }
-            return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
+            return detectTopScreenCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
     }
 
     return screenLayout_Top;
@@ -2288,7 +2325,7 @@ u32 PluginKingdomHeartsDays::getAspectRatioAddress()
     return getAnyByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
 }
 
-u32 PluginKingdomHeartsDays::getMobiCutsceneAddress(CutsceneEntry* entry)
+u32 PluginKingdomHeartsDays::getCutsceneAddress(CutsceneEntry* entry)
 {
     return getAnyByCart(entry->usAddress, entry->euAddress, entry->jpAddress, entry->jpAddress - 0x200);
 }
@@ -2301,8 +2338,29 @@ CutsceneEntry* PluginKingdomHeartsDays::getMobiCutsceneByAddress(u32 cutsceneAdd
 
     CutsceneEntry* cutscene1 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {
+        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
             cutscene1 = entry;
+        }
+    }
+
+    return cutscene1;
+}
+
+CutsceneEntry* PluginKingdomHeartsDays::getIngameCutsceneByAddress(u32 cutsceneAddressValue)
+{
+    if (cutsceneAddressValue == 0) {
+        return nullptr;
+    }
+
+    CutsceneEntry* cutscene1 = nullptr;
+    bool isCharacterControllable = nds->ARM7Read8(
+            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
+    if (!isCharacterControllable)
+    {
+        for (CutsceneEntry* entry = &Dialogues[0]; entry->usAddress; entry++) {
+            if (getCutsceneAddress(entry) == cutsceneAddressValue) {
+                cutscene1 = entry;
+            }
         }
     }
 
@@ -2312,6 +2370,11 @@ CutsceneEntry* PluginKingdomHeartsDays::getMobiCutsceneByAddress(u32 cutsceneAdd
 u32 PluginKingdomHeartsDays::detectTopScreenMobiCutsceneAddress()
 {
     return getAnyByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
+}
+
+u32 PluginKingdomHeartsDays::detectTopScreenIngameCutsceneAddress()
+{
+    return getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
 }
 
 u32 PluginKingdomHeartsDays::detectBottomScreenMobiCutsceneAddress()
@@ -2521,7 +2584,7 @@ int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic(u16 bgmI
     // Delay patch only required with HD cutscene replacement
     if (_RunningReplacementCutscene) {
         if (bgmId == 22 || bgmId == 39) {
-            if (CutsceneEntry* topCutscene = detectTopScreenMobiCutscene()) {
+            if (CutsceneEntry* topCutscene = detectTopScreenCutscene()) {
                 std::string cutsceneId(topCutscene->DsName);
                 if (bgmId == 22 && cutsceneId == "848") {
                     // Delay for "Musique pour la tristesse de Xion" during the "Xion's End" cutscene
@@ -2657,6 +2720,12 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
 
 void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
+    /*u32 dialogAddress = detectTopScreenIngameCutsceneAddress();
+    if (dialogAddress != 0) {
+        printf("Ingame cutscene: 0x%08x\n", nds->ARM7Read32(dialogAddress));
+        printf("\n");
+    }*/
+
     // PRINT_AS_8_BIT_HEX(0x0204c184);
     // PRINT_AS_8_BIT_HEX(0x0204c185);
     // printf("\n");

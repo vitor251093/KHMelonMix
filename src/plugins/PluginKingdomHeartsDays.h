@@ -119,15 +119,18 @@ private:
     bool SwitchTargetPressOnHold = false;
 
     std::array<CutsceneEntry, 46> Cutscenes;
+    std::array<CutsceneEntry, 46> Dialogues;
 
     std::string KH_15_25_Remix_Location = "";
     std::string TextLanguage = "";
 
     int detectGameScene() override;
 
-    u32 getMobiCutsceneAddress(CutsceneEntry* entry);
+    u32 getCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) override;
+    CutsceneEntry* getIngameCutsceneByAddress(u32 cutsceneAddressValue) override;
     u32 detectTopScreenMobiCutsceneAddress() override;
+    u32 detectTopScreenIngameCutsceneAddress() override;
     u32 detectBottomScreenMobiCutsceneAddress() override;
     bool isCutsceneGameScene() override;
     bool didMobiCutsceneEnded() override;

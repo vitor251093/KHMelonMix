@@ -213,10 +213,12 @@ public:
     CutsceneEntry* CurrentCutscene();
 
     virtual CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
+    virtual CutsceneEntry* getIngameCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
     virtual u32 detectTopScreenMobiCutsceneAddress() {return 0;};
+    virtual u32 detectTopScreenIngameCutsceneAddress() {return 0;};
     virtual u32 detectBottomScreenMobiCutsceneAddress() {return 0;};
-    CutsceneEntry* detectTopScreenMobiCutscene();
-    CutsceneEntry* detectBottomScreenMobiCutscene();
+    CutsceneEntry* detectTopScreenCutscene();
+    CutsceneEntry* detectBottomScreenCutscene();
     CutsceneEntry* detectCutscene();
     virtual bool isCutsceneGameScene() {return false;};
     virtual bool didMobiCutsceneEnded() {return !isCutsceneGameScene();};
