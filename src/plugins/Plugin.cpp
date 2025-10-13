@@ -303,6 +303,16 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
                     _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT;
                 }
             }
+
+            if (_APressCount == 0) {
+                bool requiresSmashingA = (_CurrentCutscene->dsScreensState & 8) == 8;
+                if (requiresSmashingA) {
+                    _APressCount = DIALOG_SKIP_START_FRAMES_COUNT*2 + DIALOG_SKIP_INTERVAL_FRAMES_COUNT;
+                }
+                else {
+                    _APressCount = DIALOG_SKIP_START_FRAMES_COUNT;
+                }
+            }
         }
     }
 
@@ -318,6 +328,22 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
             }
             else {
                 *InputMask &= ~(1<<3); // Start (skip DS cutscene)
+            }
+        }
+    }
+
+    if (_RunningReplacementCutscene) {
+        if (_APressCount > 0) {
+            _APressCount--;
+
+            bool requiresSmashingA = (_CurrentCutscene->dsScreensState & 8) == 8;
+            if (requiresSmashingA) {
+                if (_APressCount < DIALOG_SKIP_START_FRAMES_COUNT || _APressCount > DIALOG_SKIP_START_FRAMES_COUNT + DIALOG_SKIP_INTERVAL_FRAMES_COUNT) {
+                    *InputMask &= ~(1<<0); // A (skip DS cutscene)
+                }
+            }
+            else {
+                *InputMask &= ~(1<<0); // A (skip DS cutscene)
             }
         }
     }
@@ -709,7 +735,7 @@ void Plugin::refreshCutscene()
         _ShouldStartReplacementCutscene = true;
     }
 
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didMobiCutsceneEnded()) {
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && (didMobiCutsceneEnded() || didIngameCutsceneEnded())) {
         onTerminateIngameCutscene();
     }
 
@@ -770,6 +796,7 @@ void Plugin::onReplacementCutsceneEnd() {
 }
 void Plugin::onReturnToGameAfterCutscene() {
     printf("Returning to the game\n");
+    _APressCount = 0;
     _StartPressCount = 0;
     _IsUnskippableCutscene = false;
     _ShouldStartReplacementCutscene = false;

@@ -15,6 +15,9 @@
 
 #define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
 
+#define DIALOG_SKIP_START_FRAMES_COUNT 40
+#define DIALOG_SKIP_INTERVAL_FRAMES_COUNT 40
+
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 #define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
 
@@ -41,6 +44,9 @@ struct CutsceneEntry
     int usAddress;
     int euAddress;
     int jpAddress;
+
+    // 4 -> Requires double Start to skip
+    // 8 -> Requires smashing A to skip
     int dsScreensState;
 };
 
@@ -222,6 +228,7 @@ public:
     CutsceneEntry* detectCutscene();
     virtual bool isCutsceneGameScene() {return false;};
     virtual bool didMobiCutsceneEnded() {return !isCutsceneGameScene();};
+    virtual bool didIngameCutsceneEnded() {return !isCutsceneGameScene();};
     virtual bool canReturnToGameAfterReplacementCutscene() {return true;};
 
     void refreshCutscene();
@@ -380,6 +387,7 @@ protected:
 
     std::map<std::string, TextureEntry> texturesIndex;
 
+    int _APressCount = 0;
     int _StartPressCount = 0;
     int _ReplayLimitCount = 0;
     bool _CanSkipHdCutscene = false;

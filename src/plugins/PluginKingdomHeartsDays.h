@@ -119,7 +119,7 @@ private:
     bool SwitchTargetPressOnHold = false;
 
     std::array<CutsceneEntry, 46> Cutscenes;
-    std::array<CutsceneEntry, 46> Dialogues;
+    std::array<CutsceneEntry, 33> Dialogues;
 
     std::string KH_15_25_Remix_Location = "";
     std::string TextLanguage = "";
@@ -134,6 +134,7 @@ private:
     u32 detectBottomScreenMobiCutsceneAddress() override;
     bool isCutsceneGameScene() override;
     bool didMobiCutsceneEnded() override;
+    bool didIngameCutsceneEnded() override;
     bool canReturnToGameAfterReplacementCutscene() override;
 
     // Music replacement system

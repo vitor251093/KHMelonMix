@@ -296,36 +296,40 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         {"848",    "848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600, 0},
     }};
 
-    Dialogues = std::array<Plugins::CutsceneEntry, 46> {{
-        {"006" , "006" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"008" , "008" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"010" , "010" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"018" , "018" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"019" , "019" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"020" , "020" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"021" , "021" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"025" , "025" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"034" , "034" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"039" , "039" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"043a", "043a", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"043b", "043b", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"048b", "048b", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"050" , "050" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"054" , "054" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"059" , "059" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"063" , "063" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"065" , "065" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"066b", "066b", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"068" , "068" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"070" , "070" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"071" , "071" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"076" , "076" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"082a", "082a", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"082b", "082b", "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"084" , "084" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"087" , "087" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"092" , "092" , "", 0x00000000 , 0x00000000, 0x00000000 , 0},
-        {"096" , "096" , "", 0x00000000 , 0x00000000, 0x00000000 , 0}
+    Dialogues = std::array<Plugins::CutsceneEntry, 33> {{
+        {"000" , "000" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"002" , "002" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"003" , "003" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"004" , "004" , "004_icing_on_the_cake_part_2", 0x000034e0 , 0x00000000, 0x00000000 , 8},
+        {"006" , "006" , "006_icing_on_the_cake_part_3", 0x00000900 , 0x00000000, 0x00000000 , 8},
+        {"008" , "008" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"010" , "010" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"018" , "018" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"019" , "019" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"020" , "020" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"021" , "021" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"025" , "025" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"034" , "034" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"039" , "039" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"043a", "043a", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"043b", "043b", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"048b", "048b", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"050" , "050" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"054" , "054" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"059" , "059" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"063" , "063" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"065" , "065" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"066b", "066b", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"068" , "068" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"070" , "070" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"071" , "071" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"076" , "076" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"082a", "082a", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"082b", "082b", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"084" , "084" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"087" , "087" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"092" , "092" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"096" , "096" , "", 0x07000000 , 0x00000000, 0x00000000 , 8}
     }};
 
     BgmEntries = std::array<BgmEntry, 38> {{
@@ -2384,7 +2388,8 @@ u32 PluginKingdomHeartsDays::detectBottomScreenMobiCutsceneAddress()
 
 bool PluginKingdomHeartsDays::isCutsceneGameScene()
 {
-    return GameScene == gameScene_Cutscene;
+    return GameScene == gameScene_Cutscene || (GameScene == gameScene_InGameWithMap && nds->ARM7Read8(
+                getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) != 0x01);
 }
 
 bool PluginKingdomHeartsDays::didMobiCutsceneEnded()
@@ -2400,6 +2405,24 @@ bool PluginKingdomHeartsDays::didMobiCutsceneEnded()
 
     return false;
 }
+
+bool PluginKingdomHeartsDays::didIngameCutsceneEnded()
+{
+    if (!isCutsceneGameScene()) {
+        if (GameScene == gameScene_InGameWithMap) {
+            bool isCharacterControllable = nds->ARM7Read8(
+                getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
+            if (!isCharacterControllable)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+};
 
 bool PluginKingdomHeartsDays::canReturnToGameAfterReplacementCutscene()
 {
@@ -2456,6 +2479,18 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
 
     filename = "hd" + std::string(cutscene->DsName) + ".mp4";
     fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = "hd" + std::string(cutscene->MmName) + ".mp4";
+    fullPath = _assetsFolderPath / "cutscenes" / "dialogs" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = "hd" + std::string(cutscene->DsName) + ".mp4";
+    fullPath = _assetsFolderPath / "cutscenes" / "dialogs" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
@@ -2720,6 +2755,12 @@ bool PluginKingdomHeartsDays::isSaveLoaded()
 
 void PluginKingdomHeartsDays::debugLogs(int gameScene)
 {
+    CutsceneEntry* cutscene1 = detectTopScreenCutscene();
+    if (cutscene1 != nullptr) {
+        printf("Cutscene: %s\n", cutscene1->DsName);
+        printf("\n");
+    }
+
     /*u32 dialogAddress = detectTopScreenIngameCutsceneAddress();
     if (dialogAddress != 0) {
         printf("Ingame cutscene: 0x%08x\n", nds->ARM7Read32(dialogAddress));
