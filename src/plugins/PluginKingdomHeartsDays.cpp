@@ -2386,15 +2386,25 @@ u32 PluginKingdomHeartsDays::detectBottomScreenMobiCutsceneAddress()
     return getAnyByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
 }
 
+bool PluginKingdomHeartsDays::isMobiCutsceneGameScene()
+{
+    return GameScene == gameScene_Cutscene;
+}
+
+bool PluginKingdomHeartsDays::isIngameCutsceneGameScene()
+{
+    return (GameScene == gameScene_InGameWithMap && nds->ARM7Read8(
+                getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) != 0x01);
+}
+
 bool PluginKingdomHeartsDays::isCutsceneGameScene()
 {
-    return GameScene == gameScene_Cutscene || (GameScene == gameScene_InGameWithMap && nds->ARM7Read8(
-                getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) != 0x01);
+    return isMobiCutsceneGameScene() || isIngameCutsceneGameScene();
 }
 
 bool PluginKingdomHeartsDays::didMobiCutsceneEnded()
 {
-    if (!isCutsceneGameScene()) {
+    if (!isMobiCutsceneGameScene()) {
         return true;
     }
 
@@ -2408,17 +2418,23 @@ bool PluginKingdomHeartsDays::didMobiCutsceneEnded()
 
 bool PluginKingdomHeartsDays::didIngameCutsceneEnded()
 {
-    if (!isCutsceneGameScene()) {
-        if (GameScene == gameScene_InGameWithMap) {
-            bool isCharacterControllable = nds->ARM7Read8(
-                getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
-            if (!isCharacterControllable)
-            {
-                return false;
-            }
-        }
-
+    if (!isIngameCutsceneGameScene()) {
         return true;
+    }
+
+    if (isSaveLoaded()) {
+        // the old cutscene ended, and a new cutscene started
+        return _NextCutscene != nullptr;
+    }
+    return false;
+
+    u32 dialogAddress = detectTopScreenIngameCutsceneAddress();
+    if (dialogAddress != 0) {
+        u32 cutsceneAddressValue = nds->ARM7Read32(dialogAddress);
+        CutsceneEntry* currentCutscene = getIngameCutsceneByAddress(cutsceneAddressValue);
+        if (currentCutscene != nullptr && currentCutscene->usAddress != _CurrentCutscene->usAddress) {
+            return true;
+        }
     }
 
     return false;

@@ -226,6 +226,8 @@ public:
     CutsceneEntry* detectTopScreenCutscene();
     CutsceneEntry* detectBottomScreenCutscene();
     CutsceneEntry* detectCutscene();
+    virtual bool isMobiCutsceneGameScene() {return false;};
+    virtual bool isIngameCutsceneGameScene() {return false;};
     virtual bool isCutsceneGameScene() {return false;};
     virtual bool didMobiCutsceneEnded() {return !isCutsceneGameScene();};
     virtual bool didIngameCutsceneEnded() {return !isCutsceneGameScene();};

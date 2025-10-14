@@ -304,14 +304,8 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
                 }
             }
 
-            if (_APressCount == 0) {
-                bool requiresSmashingA = (_CurrentCutscene->dsScreensState & 8) == 8;
-                if (requiresSmashingA) {
-                    _APressCount = DIALOG_SKIP_START_FRAMES_COUNT*2 + DIALOG_SKIP_INTERVAL_FRAMES_COUNT;
-                }
-                else {
-                    _APressCount = DIALOG_SKIP_START_FRAMES_COUNT;
-                }
+            if (isIngameCutsceneGameScene()) {
+                // Press Start, press down, press A (only for Days)
             }
         }
     }
@@ -330,9 +324,11 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
                 *InputMask &= ~(1<<3); // Start (skip DS cutscene)
             }
         }
-    }
 
-    if (_RunningReplacementCutscene) {
+        if (isIngameCutsceneGameScene() && _APressCount == 0)
+        {
+            _APressCount = DIALOG_SKIP_START_FRAMES_COUNT*2 + DIALOG_SKIP_INTERVAL_FRAMES_COUNT;
+        }
         if (_APressCount > 0) {
             _APressCount--;
 
@@ -715,6 +711,8 @@ void Plugin::refreshCutscene()
     return;
 #endif
 
+    bool isMobiCutsceneScene = isMobiCutsceneGameScene();
+    bool isIngameCutsceneScene = isIngameCutsceneGameScene();
     bool isCutsceneScene = isCutsceneGameScene();
     CutsceneEntry* cutscene = detectCutscene();
 
@@ -735,8 +733,13 @@ void Plugin::refreshCutscene()
         _ShouldStartReplacementCutscene = true;
     }
 
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && (didMobiCutsceneEnded() || didIngameCutsceneEnded())) {
-        onTerminateIngameCutscene();
+    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
+        if (isMobiCutsceneScene && didMobiCutsceneEnded()) {
+            onTerminateIngameCutscene();
+        }
+        if (isIngameCutsceneScene && didIngameCutsceneEnded()) {
+            onTerminateIngameCutscene();
+        }
     }
 
     if (_ShouldReturnToGameAfterCutscene && canReturnToGameAfterReplacementCutscene()) {

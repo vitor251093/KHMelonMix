@@ -132,6 +132,8 @@ private:
     u32 detectTopScreenMobiCutsceneAddress() override;
     u32 detectTopScreenIngameCutsceneAddress() override;
     u32 detectBottomScreenMobiCutsceneAddress() override;
+    bool isMobiCutsceneGameScene() override;
+    bool isIngameCutsceneGameScene() override;
     bool isCutsceneGameScene() override;
     bool didMobiCutsceneEnded() override;
     bool didIngameCutsceneEnded() override;
