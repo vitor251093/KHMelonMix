@@ -177,6 +177,7 @@ enum
     gameSceneState_dialogVisible,
     gameSceneState_dialogPortraitLabelVisible,
     gameSceneState_showMinimap,
+    gameSceneState_showFullscreenMap,
     gameSceneState_showTarget,
     gameSceneState_showMissionGauge,
     gameSceneState_cutsceneFromChallengeMission,
@@ -201,6 +202,7 @@ enum
     HK_CommandMenuUp,
     HK_CommandMenuDown,
     HK_HUDToggle,
+    HK_FullscreenMapToggle,
     HK_ReplacementTexturesToggle
 };
 
@@ -225,6 +227,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "HK_CommandMenuUp",
         "HK_CommandMenuDown",
         "HK_HUDToggle",
+        "HK_FullscreenMapToggle",
         "HK_ReplacementTexturesToggle"
     };
     customKeyMappingLabels = {
@@ -239,6 +242,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "Command Menu - Up",
         "Command Menu - Down",
         "HUD Toggle",
+        "Fullscreen Map Toggle",
         "Toggle Replacement Textures"
     };
 
@@ -862,6 +866,21 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
             }
 
         case gameScene_InGameWithMap:
+            if ((GameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0)
+            {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .fromPosition(103, 56)
+                        .withSize(122, 80)
+                        .placeAtCorner(corner_Center)
+                        .sourceScale(2.2)
+                        .fadeBorderSize(7.0)
+                        .opacity(0.90)
+                        .invertGrayScaleColors()
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+                break;
+            }
 
             if ((GameSceneState & (1 << gameSceneState_cutsceneFromChallengeMission)) > 0)
             {
@@ -1283,7 +1302,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
 
         case gameScene_InGameWithMap:
         case gameScene_InGameWithDouble3D:
-            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0)
+            if ((gameSceneState & (1 << gameSceneState_showHud)) > 0 && ((gameSceneState & (1 << gameSceneState_showFullscreenMap)) == 0))
             {
                 // aim
                 shapes.push_back(ShapeBuilder3D::square()
@@ -1435,6 +1454,11 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                 }
 
                 if (GameScene == gameScene_InGameWithMap && _isMinimapVisible) {
+                    if (ShowFullscreenMap) {
+                        state |= (1 << gameSceneState_showFullscreenMap);
+                        break;
+                    }
+
                     if (ShowMap) {
                         state |= (1 << gameSceneState_showMinimap);
                     }
@@ -1597,6 +1621,9 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
     }
     if ((*AddonPress) & (1 << HK_ReplacementTexturesToggle)) {
         replacementTexturesToggle();
+    }
+    if ((*AddonPress) & (1 << HK_FullscreenMapToggle)) {
+        toggleFullscreenMap();
     }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
@@ -1838,9 +1865,13 @@ bool PluginKingdomHeartsDays::shouldRumble() {
 
 void PluginKingdomHeartsDays::hudToggle()
 {
-    HUDState = (HUDState + 1) % 3;
+    HUDState = HUDState + 1;
+    if (HUDState >= 3) {
+        HUDState = 0;
+    }
     if (HUDState == 0) { // exploration mode
         ShowMap = true;
+        ShowFullscreenMap = false;
         ShowTarget = false;
         ShowMissionGauge = false;
         ShowMissionInfo = false;
@@ -1848,6 +1879,7 @@ void PluginKingdomHeartsDays::hudToggle()
     }
     else if (HUDState == 1) { // complete mode
         ShowMap = true;
+        ShowFullscreenMap = false;
         ShowTarget = true;
         ShowMissionGauge = true;
         ShowMissionInfo = true;
@@ -1855,11 +1887,28 @@ void PluginKingdomHeartsDays::hudToggle()
     }
     else { // zero hud
         ShowMap = false;
+        ShowFullscreenMap = false;
         ShowTarget = false;
         ShowMissionGauge = false;
         ShowMissionInfo = false;
         HideAllHUD = true;
     }
+}
+
+void PluginKingdomHeartsDays::toggleFullscreenMap()
+{
+    if (HUDState == 3) {
+        hudToggle();
+        return;
+    }
+
+    HUDState = 3;
+    ShowMap = false;
+    ShowFullscreenMap = true;
+    ShowTarget = false;
+    ShowMissionGauge = false;
+    ShowMissionInfo = false;
+    HideAllHUD = false;
 }
 
 const char* PluginKingdomHeartsDays::getGameSceneName()

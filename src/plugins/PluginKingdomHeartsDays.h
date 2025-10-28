@@ -88,6 +88,7 @@ private:
     u32 Map;
 
     bool ShowMap;
+    bool ShowFullscreenMap;
     bool ShowTarget;
     bool ShowMissionGauge;
     bool ShowMissionInfo;
@@ -193,6 +194,7 @@ private:
     void renderer_2DShapes_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
 
     void hudToggle() override;
+    void toggleFullscreenMap();
     void debugLogs(int gameScene) override;
 };
 }

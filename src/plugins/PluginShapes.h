@@ -396,6 +396,9 @@ public:
         shapeData.fadeBorderSize.w = bottom;
         return *this;
     }
+    ShapeBuilder2D& fadeBorderSize(float size) {
+        return fadeBorderSize(size, size, size, size);
+    }
     ShapeBuilder2D& invertGrayScaleColors() {
         shapeData.effects |= 0x1;
         return *this;
