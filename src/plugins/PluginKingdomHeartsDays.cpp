@@ -645,6 +645,7 @@ void PluginKingdomHeartsDays::renderer_2DShapes_loadScreenMenu(std::vector<Shape
 
 void PluginKingdomHeartsDays::renderer_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale)
 {
+    float bottomMargin = 7.0;
     float dialogScale = 5.333/hudScale;
 
     if ((GameSceneState & (1 << gameSceneState_dialogPortraitLabelVisible)) > 0)
@@ -655,11 +656,13 @@ void PluginKingdomHeartsDays::renderer_2DShapes_component_characterDialog(std::v
                 .withSize(7, 14)
                 .placeAtCorner(corner_Bottom)
                 .sourceScale(dialogScale)
-                .withMargin(128 * dialogScale, 0.0, 0.0, 7.0 + 8 * dialogScale)
+                .withMargin(128 * dialogScale, 0.0, 0.0, bottomMargin + 8 * dialogScale)
                 .mirror(mirror_X)
                 .hudScale(hudScale)
                 .build(aspectRatio));
     }
+
+    int boxHeight = dialogBoxHeight();
 
     // dialog (biggest part)
     shapes->push_back(ShapeBuilder2D::square()
@@ -667,7 +670,19 @@ void PluginKingdomHeartsDays::renderer_2DShapes_component_characterDialog(std::v
             .withSize(256, 162)
             .placeAtCorner(corner_Bottom)
             .sourceScale(dialogScale)
-            .withMargin(0.0, 0.0, 0.0, 7.0)
+            .withMargin(0.0, 0.0, 0.0, bottomMargin)
+            .hudScale(hudScale)
+            .build(aspectRatio));
+
+    // dialog (left side border)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromPosition(0, 192 - 8 - 4)
+            .withSize(boxHeight, 4)
+            .placeAtCorner(corner_Bottom)
+            .sourceScale(dialogScale)
+            .rotateToTheRight()
+            .cropSquareCorners(0.0, 4.0, 0.0, 4.0)
+            .withMargin(0.0, 0.0, 136 * dialogScale, bottomMargin + 8 * dialogScale)
             .hudScale(hudScale)
             .build(aspectRatio));
 
@@ -676,8 +691,20 @@ void PluginKingdomHeartsDays::renderer_2DShapes_component_characterDialog(std::v
             .fromPosition(0, 30)
             .withSize(3, 162)
             .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale * 4, dialogScale)
-            .withMargin(0.0, 0.0, 128 * dialogScale, 7.0)
+            .sourceScale(dialogScale * 6.5, dialogScale)
+            .withMargin(0.0, 0.0, 128 * dialogScale, bottomMargin)
+            .hudScale(hudScale)
+            .build(aspectRatio));
+
+    // dialog (right side border)
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromPosition(0, 192 - 8 - 4)
+            .withSize(boxHeight, 4)
+            .placeAtCorner(corner_Bottom)
+            .sourceScale(dialogScale)
+            .rotateToTheLeft()
+            .cropSquareCorners(4.0, 0.0, 4.0, 0.0)
+            .withMargin(136 * dialogScale, 0.0, 0.0, bottomMargin + 8 * dialogScale)
             .hudScale(hudScale)
             .build(aspectRatio));
 
@@ -686,8 +713,8 @@ void PluginKingdomHeartsDays::renderer_2DShapes_component_characterDialog(std::v
             .fromPosition(0, 30)
             .withSize(3, 162)
             .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale * 4, dialogScale)
-            .withMargin(128 * dialogScale, 0.0, 0.0, 7.0)
+            .sourceScale(dialogScale * 6.5, dialogScale)
+            .withMargin(128 * dialogScale, 0.0, 0.0, bottomMargin)
             .hudScale(hudScale)
             .build(aspectRatio));
 
@@ -2016,6 +2043,27 @@ bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
     u32 pixel2 = getPixel(buffer, 206, 140, 0);
     return ((pixel1 >> 0) & 0x3F) < 5 && ((pixel1 >> 8) & 0x3F) < 5 && ((pixel1 >> 16) & 0x3F) < 5 &&
            ((pixel2 >> 0) & 0x3F) < 5 && ((pixel2 >> 8) & 0x3F) < 5 && ((pixel2 >> 16) & 0x3F) < 5;
+}
+
+int PluginKingdomHeartsDays::dialogBoxHeight()
+{
+    u32* buffer = topScreen2DTexture();
+    int x = 100;
+    int topY = 0;
+    int bottomY = 0;
+    for (int y = 10; y <= 190; y++) {
+        if (has2DOnTopOf3DAt(buffer, x, y)) {
+            topY = y;
+            break;
+        }
+    }
+    for (int y = 190; y >= 10; y--) {
+        if (has2DOnTopOf3DAt(buffer, x, y)) {
+            bottomY = y + 1;
+            break;
+        }
+    }
+    return bottomY - topY;
 }
 
 bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)

@@ -83,14 +83,17 @@ struct alignas(16) ShapeData2D { // 112 bytes
     vec2 sourceScale;  // 8 bytes (X factor, Y factor)
 
     int effects;
-    // 0x01 => invertGrayScaleColors
-    // 0x02 => crop corner as triangle
-    // 0x04 => rounded corners
-    // 0x08 => mirror X
-    // 0x10 => mirror Y
-    // 0x20 => manipulate transparency
-    // 0x40 => repeat as background (X axis)
-    // 0x80 => repeat as background (Y axis)
+    // 0x001 => invertGrayScaleColors
+    // 0x002 => crop corner as triangle
+    // 0x004 => rounded corners
+    // 0x008 => mirror X
+    // 0x010 => mirror Y
+    // 0x020 => manipulate transparency
+    // 0x040 => repeat as background (X axis)
+    // 0x080 => repeat as background (Y axis)
+    // 0x100 => force drawing
+    // 0x200 => rotate to the left
+    // 0x400 => rotate to the right
 
     float opacity;
 
@@ -414,6 +417,14 @@ public:
         shapeData.effects |= 0x100;
         return *this;
     }
+    ShapeBuilder2D& rotateToTheLeft() {
+        shapeData.effects |= 0x200;
+        return *this;
+    }
+    ShapeBuilder2D& rotateToTheRight() {
+        shapeData.effects |= 0x400;
+        return *this;
+    }
     ShapeBuilder2D& mirror(int mirror) {
         shapeData.effects |= mirror;
         return *this;
@@ -482,6 +493,12 @@ public:
 
         float squareFinalWidth = shapeData.squareInitialCoords.z*scaleX*heightScale;
         float squareFinalHeight = shapeData.squareInitialCoords.w*scaleY;
+
+        if (((shapeData.effects & 0x200) != 0) || ((shapeData.effects & 0x400) != 0))
+        {
+            squareFinalWidth = shapeData.squareInitialCoords.w*scaleY*heightScale;
+            squareFinalHeight = shapeData.squareInitialCoords.z*scaleX;
+        }
 
         float squareFinalX1 = 0.0;
         float squareFinalY1 = 0.0;

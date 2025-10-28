@@ -519,10 +519,12 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
         if ((all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) &&
                 all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) || ((shapes[shapeIndex].effects & 0x40) != 0)) {
             int effects = shapes[shapeIndex].effects;
+            bool shouldRotate = ((effects & 0x200) != 0) || ((effects & 0x400) != 0);
 
             vec2 finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
             bool validArea = true;
 
+            // repeat as background
             if ((effects & 0x40) != 0 || (effects & 0x80) != 0) {
                 finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
                 vec2 limits = (fixStretch/shapes[shapeIndex].sourceScale)*(squareFinalCoords.zw - squareFinalCoords.xy);
@@ -540,11 +542,19 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
 
             // crop corner as triangle
             if ((effects & 0x2) != 0) {
-                validArea = isValidConsideringCropSquareCorners(finalPos, shapes[shapeIndex].squareCornersModifier, shapes[shapeIndex].squareInitialCoords.zw);
+                ivec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
+                if (shouldRotate) {
+                    cropAreaSize = shapes[shapeIndex].squareInitialCoords.wz;
+                }
+                validArea = isValidConsideringCropSquareCorners(finalPos, shapes[shapeIndex].squareCornersModifier, cropAreaSize);
             }
             // rounded corners
             if ((effects & 0x4) != 0) {
-                validArea = isValidConsideringSquareBorderRadius(finalPos, shapes[shapeIndex].squareCornersModifier, shapes[shapeIndex].squareInitialCoords.zw);
+                ivec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
+                if (shouldRotate) {
+                    cropAreaSize = shapes[shapeIndex].squareInitialCoords.wz;
+                }
+                validArea = isValidConsideringSquareBorderRadius(finalPos, shapes[shapeIndex].squareCornersModifier, cropAreaSize);
             }
 
             if (validArea) {
@@ -555,6 +565,22 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
                 // mirror Y
                 if ((effects & 0x10) != 0) {
                     finalPos.y = shapes[shapeIndex].squareInitialCoords.w - finalPos.y;
+                }
+                if (shouldRotate) {
+                    // rotate to the left
+                    if ((effects & 0x200) != 0) {
+                        float newFinalPosX = shapes[shapeIndex].squareInitialCoords.z - finalPos.y;
+                        float newFinalPosY = finalPos.x;
+                        finalPos.x = newFinalPosX;
+                        finalPos.y = newFinalPosY;
+                    }
+                    // rotate to the right
+                    if ((effects & 0x400) != 0) {
+                        float newFinalPosX = finalPos.y;
+                        float newFinalPosY = shapes[shapeIndex].squareInitialCoords.w - finalPos.x;
+                        finalPos.x = newFinalPosX;
+                        finalPos.y = newFinalPosY;
+                    }
                 }
 
                 ivec4 alphaColor = ivec4(texelFetch(ScreenTex, ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy + ivec2(512,0), 0));
