@@ -137,6 +137,19 @@ struct alignas(16) ShapeData2D { // 112 bytes
         squareCornersModifier.y = squareCornersModifier.y * sourcePercentage + finalShape.squareCornersModifier.y * finalPercentage;
         squareCornersModifier.z = squareCornersModifier.z * sourcePercentage + finalShape.squareCornersModifier.z * finalPercentage;
         squareCornersModifier.w = squareCornersModifier.w * sourcePercentage + finalShape.squareCornersModifier.w * finalPercentage;
+
+        if (colorToAlpha.w == 1 && finalShape.colorToAlpha.w == 1) {
+            colorToAlpha.x = (int)(colorToAlpha.x * sourcePercentage + finalShape.colorToAlpha.x * finalPercentage);
+            colorToAlpha.y = (int)(colorToAlpha.y * sourcePercentage + finalShape.colorToAlpha.y * finalPercentage);
+            colorToAlpha.z = (int)(colorToAlpha.z * sourcePercentage + finalShape.colorToAlpha.z * finalPercentage);
+        }
+
+        if (singleColorToAlpha.w > 0 && finalShape.singleColorToAlpha.w > 0) {
+            singleColorToAlpha.x = (int)(singleColorToAlpha.x * sourcePercentage + finalShape.singleColorToAlpha.x * finalPercentage);
+            singleColorToAlpha.y = (int)(singleColorToAlpha.y * sourcePercentage + finalShape.singleColorToAlpha.y * finalPercentage);
+            singleColorToAlpha.z = (int)(singleColorToAlpha.z * sourcePercentage + finalShape.singleColorToAlpha.z * finalPercentage);
+            singleColorToAlpha.w = (int)(singleColorToAlpha.w * sourcePercentage + finalShape.singleColorToAlpha.w * finalPercentage);
+        }
     }
 };
 
