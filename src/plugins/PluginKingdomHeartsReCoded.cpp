@@ -923,8 +923,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     {
                         ShapeData2D bigMapShape = ShapeBuilder2D::square()
                                 .fromBottomScreen()
-                                .fromPosition(8, 32)
-                                .withSize(240, 104)
+                                .fromPosition(12, 32)
+                                .withSize(232, 104)
                                 .placeAtCorner(corner_Center)
                                 .withMargin(0.0, 0.0, 0.0, 25.0)
                                 .sourceScale(1.6)
