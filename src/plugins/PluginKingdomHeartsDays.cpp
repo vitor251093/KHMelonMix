@@ -814,7 +814,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
     int hudScale = UIScale;
-    int fullscreenMapTransitionDuration = 30;
+    int fullscreenMapTransitionDuration = 20;
 
     if (!SingleScreenMode &&
             GameScene != gameScene_InGameWithMap &&
@@ -964,22 +964,38 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                 {
                     bool showMinimap = (GameSceneState & (1 << gameSceneState_showMinimap)) > 0;
                     if (showMinimap) {
-                        float fullscreenDegree = ((float)fullscreenMapTransitionStep) / fullscreenMapTransitionDuration;
-                        float minimapDegree = 1.0 - fullscreenDegree;
-
-                        // minimap
-                        shapes.push_back(ShapeBuilder2D::square()
+                        ShapeData2D minimapShape = ShapeBuilder2D::square()
                                 .fromBottomScreen()
-                                .fromPosition(128*minimapDegree + 103*fullscreenDegree, 60*minimapDegree + 56*fullscreenDegree)
-                                .withSize(72*minimapDegree + 122*fullscreenDegree, 72*minimapDegree + 80*fullscreenDegree)
+                                .fromPosition(128, 60)
+                                .withSize(72, 72)
                                 .placeAtCorner(corner_TopRight)
                                 .withMargin(0.0, 30.0, 9.0, 0.0)
-                                .sourceScale(0.8333*minimapDegree + 2.2*fullscreenDegree)
-                                .fadeBorderSize(5.0*minimapDegree + 7.0*fullscreenDegree)
+                                .sourceScale(0.8333)
+                                .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                                 .opacity(0.85)
                                 .invertGrayScaleColors()
                                 .hudScale(hudScale)
-                                .build(aspectRatio));
+                                .build(aspectRatio);
+
+                        float fullscreenDegree = ((float)fullscreenMapTransitionStep) / fullscreenMapTransitionDuration;
+                        if (fullscreenDegree > 0)
+                        {
+                            ShapeData2D bigMapShape = ShapeBuilder2D::square()
+                                    .fromBottomScreen()
+                                    .fromPosition(103, 56)
+                                    .withSize(122, 80)
+                                    .placeAtCorner(corner_Center)
+                                    .sourceScale(2.2)
+                                    .fadeBorderSize(7.0)
+                                    .opacity(0.90)
+                                    .invertGrayScaleColors()
+                                    .hudScale(hudScale)
+                                    .build(aspectRatio);
+                            minimapShape.transitionTo(bigMapShape, fullscreenDegree);
+                        }
+
+                        // minimap
+                        shapes.push_back(minimapShape);
                     }
 
                     if ((GameSceneState & (1 << gameSceneState_showTarget)) > 0) {

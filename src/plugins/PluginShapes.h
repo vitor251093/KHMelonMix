@@ -106,6 +106,38 @@ struct alignas(16) ShapeData2D { // 112 bytes
 
     ivec4 colorToAlpha;         // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
     ivec4 singleColorToAlpha;   // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
+
+    void transitionTo(ShapeData2D finalShape, float finalPercentage)
+    {
+        float sourcePercentage = 1.0f - finalPercentage;
+
+        sourceScale.x = sourceScale.x * sourcePercentage + finalShape.sourceScale.x * finalPercentage;
+        sourceScale.y = sourceScale.y * sourcePercentage + finalShape.sourceScale.y * finalPercentage;
+
+        effects = effects | finalShape.effects;
+
+        opacity = opacity * sourcePercentage + finalShape.opacity * finalPercentage;
+
+        squareInitialCoords.x = (int)(squareInitialCoords.x * sourcePercentage + finalShape.squareInitialCoords.x * finalPercentage);
+        squareInitialCoords.y = (int)(squareInitialCoords.y * sourcePercentage + finalShape.squareInitialCoords.y * finalPercentage);
+        squareInitialCoords.z = (int)(squareInitialCoords.z * sourcePercentage + finalShape.squareInitialCoords.z * finalPercentage);
+        squareInitialCoords.w = (int)(squareInitialCoords.w * sourcePercentage + finalShape.squareInitialCoords.w * finalPercentage);
+
+        squareFinalCoords.x = squareFinalCoords.x * sourcePercentage + finalShape.squareFinalCoords.x * finalPercentage;
+        squareFinalCoords.y = squareFinalCoords.y * sourcePercentage + finalShape.squareFinalCoords.y * finalPercentage;
+        squareFinalCoords.z = squareFinalCoords.z * sourcePercentage + finalShape.squareFinalCoords.z * finalPercentage;
+        squareFinalCoords.w = squareFinalCoords.w * sourcePercentage + finalShape.squareFinalCoords.w * finalPercentage;
+
+        fadeBorderSize.x = fadeBorderSize.x * sourcePercentage + finalShape.fadeBorderSize.x * finalPercentage;
+        fadeBorderSize.y = fadeBorderSize.y * sourcePercentage + finalShape.fadeBorderSize.y * finalPercentage;
+        fadeBorderSize.z = fadeBorderSize.z * sourcePercentage + finalShape.fadeBorderSize.z * finalPercentage;
+        fadeBorderSize.w = fadeBorderSize.w * sourcePercentage + finalShape.fadeBorderSize.w * finalPercentage;
+
+        squareCornersModifier.x = squareCornersModifier.x * sourcePercentage + finalShape.squareCornersModifier.x * finalPercentage;
+        squareCornersModifier.y = squareCornersModifier.y * sourcePercentage + finalShape.squareCornersModifier.y * finalPercentage;
+        squareCornersModifier.z = squareCornersModifier.z * sourcePercentage + finalShape.squareCornersModifier.z * finalPercentage;
+        squareCornersModifier.w = squareCornersModifier.w * sourcePercentage + finalShape.squareCornersModifier.w * finalPercentage;
+    }
 };
 
 // UBO-compatible struct with proper padding
