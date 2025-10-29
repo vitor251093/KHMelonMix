@@ -85,6 +85,7 @@ private:
     u32 lastMainMenuView;
 
     int fullscreenMapTransitionStep = 0;
+    int overclockMenuClickStep = -1;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};
@@ -169,6 +170,7 @@ private:
     bool isChallengeMeterVisible();
     bool isCommandMenuVisible();
     bool isHealthVisible();
+    bool isOverclockMenuVisible();
     ivec2 minimapCenter();
     bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 

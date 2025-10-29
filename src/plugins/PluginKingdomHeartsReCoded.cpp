@@ -62,6 +62,11 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define IS_LOAD_SCREEN_VALUE_EU 0x00010004
 #define IS_LOAD_SCREEN_VALUE_JP 0x10
 
+// 0x01 => visible; 0x00 => not visible
+#define OVERCLOCK_VIEW_STATE_ADDRESS_US 0x02056a00 // 0x02056a60 is also valid
+#define OVERCLOCK_VIEW_STATE_ADDRESS_EU 0x02056a00
+#define OVERCLOCK_VIEW_STATE_ADDRESS_JP 0x02056820
+
 // 0x01 => cutscene with skip button
 // 0x03 => regular cutscene
 // 0x08 => cutscene with static images (can cause false positives outside of cutscenes)
@@ -195,7 +200,8 @@ enum
     gameSceneState_showChallengeMeter,
     gameSceneState_bottomScreenCutscene,
     gameSceneState_topScreenCutscene,
-    gameSceneState_deweyDialogVisible
+    gameSceneState_deweyDialogVisible,
+    gameSceneState_showOverclockMenu
 };
 
 enum
@@ -207,6 +213,7 @@ enum
     HK_CommandMenuRight,
     HK_CommandMenuUp,
     HK_CommandMenuDown,
+    HK_ToggleOverclockMenu,
     HK_HUDToggle,
     HK_FullscreenMapToggle,
     HK_ReplacementTexturesToggle
@@ -244,6 +251,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         "HK_CommandMenuRight",
         "HK_CommandMenuUp",
         "HK_CommandMenuDown",
+        "HK_ToggleOverclockMenu",
         "HK_HUDToggle",
         "HK_FullscreenMapToggle",
         "HK_ReplacementTexturesToggle"
@@ -256,6 +264,7 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         "Command Menu - Select",
         "Command Menu - Up",
         "Command Menu - Down",
+        "Toggle Overclock Menu",
         "HUD Toggle",
         "Fullscreen Map Toggle",
         "Toggle Replacement Textures"
@@ -1046,7 +1055,22 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     }
                 }
 
-                if ((GameSceneState & (1 << gameSceneState_showCommandMenu)) > 0)
+                if ((GameSceneState & (1 << gameSceneState_showOverclockMenu)) > 0)
+                {
+                    // overclock menu
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .fromPosition(131, 20)
+                            .withSize(125, 115)
+                            .placeAtCorner(corner_BottomLeft)
+                            .withMargin(5.0, 0.0, 0.0, 0.0)
+                            .singleColorToAlpha(0x08, 0x20, 0x79)
+                            .singleColorToAlpha(0x08, 0x30, 0xaa)
+                            .singleColorToAlpha(0x10, 0x20, 0x49)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+                else if ((GameSceneState & (1 << gameSceneState_showCommandMenu)) > 0)
                 {
                     // command menu
                     shapes.push_back(ShapeBuilder2D::square()
@@ -1277,7 +1301,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
 
         if (GameScene != gameScene_PauseMenu) {
             // command menu
-            shapes.push_back(ShapeBuilder3D::square()
+            ShapeBuilder3D commandMenuShapeBuilder = ShapeBuilder3D::square()
                     .polygonMode()
                     .polygonAttributes(2031808)
                     .fromPosition(0, 69)
@@ -1286,8 +1310,13 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                     .withMargin(10.0, 0.0, 0.0, 0.5)
                     .zRange(-1.0, -1.0)
                     .negateColor(0xFFFFFF)
-                    .hudScale(UIScale)
-                    .build(aspectRatio));
+                    .hudScale(UIScale);
+
+            if (isOverclockMenuVisible()) {
+                commandMenuShapeBuilder.hide();
+            }
+
+            shapes.push_back(commandMenuShapeBuilder.build(aspectRatio));
         }
     }
 
@@ -1389,25 +1418,31 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
                 break;
             }
 
-            if (GameScene == gameScene_InGameWithMap && isMinimapVisible()) {
-                if (ShowFullscreenMap) {
-                    state |= (1 << gameSceneState_showFullscreenMap);
-                }
+            if (GameScene == gameScene_InGameWithMap) {
+                if (isMinimapVisible()) {
+                    if (ShowFullscreenMap) {
+                        state |= (1 << gameSceneState_showFullscreenMap);
+                    }
 
-                if (ShowMap) {
-                    state |= (1 << gameSceneState_showMinimap);
+                    if (ShowMap) {
+                        state |= (1 << gameSceneState_showMinimap);
 
-                    if (isBugSector())
-                    {
-                        state |= (1 << gameSceneState_showFloorCounter);
-                        state |= (1 << gameSceneState_showEnemiesCounter);
-                        state |= (1 << gameSceneState_showBottomScreenMissionInformation);
-
-                        if (isChallengeMeterVisible() && !isMissionInformationVisibleOnTopScreen())
+                        if (isBugSector())
                         {
-                            state |= (1 << gameSceneState_showChallengeMeter);
+                            state |= (1 << gameSceneState_showFloorCounter);
+                            state |= (1 << gameSceneState_showEnemiesCounter);
+                            state |= (1 << gameSceneState_showBottomScreenMissionInformation);
+
+                            if (isChallengeMeterVisible() && !isMissionInformationVisibleOnTopScreen())
+                            {
+                                state |= (1 << gameSceneState_showChallengeMeter);
+                            }
                         }
                     }
+                }
+
+                if (isOverclockMenuVisible()) {
+                    state |= (1 << gameSceneState_showOverclockMenu);
                 }
             }
 
@@ -1584,6 +1619,19 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
 
     if ((*AddonPress) & (1 << HK_HUDToggle)) {
         hudToggle();
+    }
+    if (((*AddonPress) & (1 << HK_ToggleOverclockMenu)) || (overclockMenuClickStep > 0)) {
+        if (overclockMenuClickStep == -1) {
+            overclockMenuClickStep = 3;
+        }
+        *touchX = 225;
+        *touchY = 150;
+        *isTouching = true;
+        overclockMenuClickStep--;
+    }
+    else if (overclockMenuClickStep == 0) {
+        *isTouching = false;
+        overclockMenuClickStep = -1;
     }
     if ((*AddonPress) & (1 << HK_ReplacementTexturesToggle)) {
         replacementTexturesToggle();
@@ -1958,6 +2006,13 @@ bool PluginKingdomHeartsReCoded::isHealthVisible()
 {
     u32* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 233, 175);
+}
+
+bool PluginKingdomHeartsReCoded::isOverclockMenuVisible()
+{
+    u32 address = getU32ByCart(OVERCLOCK_VIEW_STATE_ADDRESS_US, OVERCLOCK_VIEW_STATE_ADDRESS_EU, OVERCLOCK_VIEW_STATE_ADDRESS_JP);
+    u32 value = nds->ARM7Read32(address);
+    return value == 1;
 }
 
 #define IS_COLOR(pixel,r,g,b) ((((pixel >> 8) & 0xFF) == b) && (((pixel >> 4) & 0xFF) == g) && (((pixel >> 0) & 0xFF) == r))

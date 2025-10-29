@@ -25,6 +25,7 @@ namespace Plugins
 const char* kCompositorFS_Plugin = R"(#version 140
 
 #define SHAPES_DATA_ARRAY_SIZE 32
+#define SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE 4
 
 struct ShapeData2D {
     vec2 sourceScale;
@@ -41,7 +42,7 @@ struct ShapeData2D {
     vec4 squareCornersModifier;
 
     ivec4 colorToAlpha;
-    ivec4 singleColorToAlpha;
+    ivec4 singleColorToAlpha[SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE];
 };
 
 layout(std140) uniform ShapeBlock2D {
@@ -663,14 +664,16 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
                             color = ivec4(color.r, blur, 64 - blur, 0x01);
                         }
 
-                        ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha;
-                        if (singleColorToAlpha.a > 0)
-                        {
-                            ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                            if (colorZero.r == singleColorToAlpha.r &&
-                                colorZero.g == singleColorToAlpha.g &&
-                                colorZero.b == singleColorToAlpha.b) {
-                                color = ivec4(color.r, singleColorToAlpha.a - 1, 65 - singleColorToAlpha.a, 0x01);
+                        for (int colorIndex = 0; colorIndex < SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE; colorIndex++) {
+                            ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha[colorIndex];
+                            if (singleColorToAlpha.a > 0)
+                            {
+                                ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                                if (colorZero.r == singleColorToAlpha.r &&
+                                    colorZero.g == singleColorToAlpha.g &&
+                                    colorZero.b == singleColorToAlpha.b) {
+                                    color = ivec4(color.r, singleColorToAlpha.a - 1, 65 - singleColorToAlpha.a, 0x01);
+                                }
                             }
                         }
                     }
