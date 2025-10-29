@@ -591,6 +591,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
     int hudScale = UIScale;
+    int fullscreenMapTransitionDuration = 20;
 
     switch (GameScene) {
         case gameScene_IntroLoadMenu:
@@ -813,17 +814,17 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
         case gameScene_InGameWithMap:
             if ((GameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0)
             {
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromBottomScreen()
-                        .fromPosition(8, 32)
-                        .withSize(240, 104)
-                        .placeAtCorner(corner_Center)
-                        .sourceScale(1.7)
-                        .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
-                        .opacity(0.90)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
-                break;
+                fullscreenMapTransitionStep += 1;
+                if (fullscreenMapTransitionStep > fullscreenMapTransitionDuration) {
+                    fullscreenMapTransitionStep = fullscreenMapTransitionDuration;
+                }
+            }
+            else
+            {
+                fullscreenMapTransitionStep -= 1;
+                if (fullscreenMapTransitionStep < 0) {
+                    fullscreenMapTransitionStep = 0;
+                }
             }
 
             if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
@@ -905,7 +906,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 if ((GameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
                     // minimap
                     ivec2 _minimapCenter = minimapCenter();
-                    shapes.push_back(ShapeBuilder2D::square()
+                    ShapeData2D minimapShape = ShapeBuilder2D::square()
                             .fromBottomScreen()
                             .fromPosition(_minimapCenter.x - 54, _minimapCenter.y - 54)
                             .withSize(108, 108)
@@ -915,7 +916,26 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                             .opacity(0.95)
                             .hudScale(hudScale)
-                            .build(aspectRatio));
+                            .build(aspectRatio);
+
+                    float fullscreenDegree = ((float)fullscreenMapTransitionStep) / fullscreenMapTransitionDuration;
+                    if (fullscreenDegree > 0)
+                    {
+                        ShapeData2D bigMapShape = ShapeBuilder2D::square()
+                                .fromBottomScreen()
+                                .fromPosition(8, 32)
+                                .withSize(240, 104)
+                                .placeAtCorner(corner_Center)
+                                .withMargin(0.0, 0.0, 0.0, 25.0)
+                                .sourceScale(1.6)
+                                .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
+                                .opacity(0.80)
+                                .hudScale(hudScale)
+                                .build(aspectRatio);
+                        minimapShape.transitionTo(bigMapShape, fullscreenDegree);
+                    }
+
+                    shapes.push_back(minimapShape);
                 }
 
                 if ((GameSceneState & (1 << gameSceneState_showFloorCounter)) > 0)
@@ -1173,7 +1193,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
     if (GameScene == gameScene_InGameWithMap       || GameScene == gameScene_InGameDialog ||
         GameScene == gameScene_InGameOlympusBattle || GameScene == gameScene_PauseMenu)
     {
-        if (HideAllHUD || ((gameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0))
+        if (HideAllHUD)
         {
             // no HUD
             shapes.push_back(ShapeBuilder3D::square()
@@ -1372,7 +1392,6 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
             if (GameScene == gameScene_InGameWithMap && isMinimapVisible()) {
                 if (ShowFullscreenMap) {
                     state |= (1 << gameSceneState_showFullscreenMap);
-                    break;
                 }
 
                 if (ShowMap) {
@@ -1808,15 +1827,7 @@ void PluginKingdomHeartsReCoded::hudToggle()
 
 void PluginKingdomHeartsReCoded::toggleFullscreenMap()
 {
-    if (HUDState == 2) {
-        hudToggle();
-        return;
-    }
-
-    HUDState = 2;
-    ShowMap = false;
-    ShowFullscreenMap = true;
-    HideAllHUD = false;
+    ShowFullscreenMap = !ShowFullscreenMap;
 }
 
 const char* PluginKingdomHeartsReCoded::getGameSceneName()

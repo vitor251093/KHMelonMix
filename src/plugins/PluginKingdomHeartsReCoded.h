@@ -84,6 +84,8 @@ private:
     bool HideAllHUD;
     u32 lastMainMenuView;
 
+    int fullscreenMapTransitionStep = 0;
+
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};
     std::map<u32, int[3]> CompGpu3DLastValues{};
