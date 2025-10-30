@@ -584,7 +584,8 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
                     }
                 }
 
-                ivec4 alphaColor = ivec4(texelFetch(ScreenTex, ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy + ivec2(512,0), 0));
+                ivec2 textureBeginning = ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy;
+                ivec4 alphaColor = ivec4(texelFetch(ScreenTex, textureBeginning + ivec2(512,0), 0));
                 if ((effects & 0x100) == 0 && (
                         (alphaColor.a == 0x0) ||
                         (alphaColor.a == 0x1 && _3dpix.a > 0 && alphaColor.g == 0) ||
@@ -595,9 +596,27 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
                     continue; // invisible pixel; ignore it
                 }
 
+                // single color to alpha
+                bool shouldSkipColor = false;
+                for (int colorIndex = 0; colorIndex < SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE; colorIndex++) {
+                    ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha[colorIndex];
+                    if (singleColorToAlpha.a > 0)
+                    {
+                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                        if (colorZero.r == singleColorToAlpha.r &&
+                            colorZero.g == singleColorToAlpha.g &&
+                            colorZero.b == singleColorToAlpha.b) {
+                            shouldSkipColor = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSkipColor) {
+                    continue;
+                }
+
                 if (index == 0) {
-                    ivec2 coordinates = ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy;
-                    ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
+                    ivec4 color = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
 
                     // invert gray scale colors
                     if ((effects & 0x1) != 0) {
@@ -608,17 +627,16 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
                     }
 
                     if (brightnessMode == 6) { // brightnessMode_Auto
-                        color = applyBrightness(color, ivec4(texelFetch(ScreenTex, ivec2(256*3, int(coordinates.y)), 0)));
+                        color = applyBrightness(color, ivec4(texelFetch(ScreenTex, ivec2(256*3, int(textureBeginning.y)), 0)));
                     }
 
                     return color;
                 }
                 else if (index == 1) {
-                    ivec2 coordinates = ivec2(finalPos + shapes[shapeIndex].squareInitialCoords.xy + vec2(256,0));
+                    ivec2 coordinates = textureBeginning + ivec2(256,0);
                     return ivec4(texelFetch(ScreenTex, coordinates, 0));
                 }
                 else { // index == 2
-                    ivec2 textureBeginning = ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy;
                     ivec2 coordinates = textureBeginning + ivec2(512,0);
                     ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
 
@@ -662,19 +680,6 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
                                          abs(colorToAlpha.g - colorZero.g) +
                                          abs(colorToAlpha.b - colorZero.b))*2)/3;
                             color = ivec4(color.r, blur, 64 - blur, 0x01);
-                        }
-
-                        for (int colorIndex = 0; colorIndex < SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE; colorIndex++) {
-                            ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha[colorIndex];
-                            if (singleColorToAlpha.a > 0)
-                            {
-                                ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                                if (colorZero.r == singleColorToAlpha.r &&
-                                    colorZero.g == singleColorToAlpha.g &&
-                                    colorZero.b == singleColorToAlpha.b) {
-                                    color = ivec4(color.r, singleColorToAlpha.a - 1, 65 - singleColorToAlpha.a, 0x01);
-                                }
-                            }
                         }
                     }
                     return color;
