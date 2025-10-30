@@ -34,15 +34,16 @@
 
 ## Recommended Controller Binds
 * (DS Keypad tab) Map the DS D-Pad to your controller's left analog stick
-* (DS Keypad tab) Map the Select/Start buttons to the equivalent keys in your controller
+* (DS Keypad tab) Map the Start button to the equivalent key in your controller
 * (DS Keypad tab) Map the A/B/X/Y buttons to the equivalent keys in your controller
 * (DS Keypad tab) Map the L button to the L1/LB button in your controller
 * (Touch Screen tab) Map the DS Touch Screen to your controller's right analog stick
 * (Add-ons tab) Map the command menu to your controller's D-Pad
-* (Add-ons tab) Map the L2 button to the L2/LT button in your controller
-* (Add-ons tab) Map R1 and R2 to the R1/RB and R2/RL buttons in your controller
-* (Add-ons tab) Map "HUD Toggle" to an available button of your preference
-* (Add-ons tab) Map "Fullscreen Map Toggle" to an available button of your preference (Re:Coded only)
+* (Add-ons tab) Map "Switch Target - Left" to the L2/LT button in your controller
+* (Add-ons tab) Map "Lock On" to the R1/RB button in your controller
+* (Add-ons tab) Map "Switch Target - Right" to the R2/RL button in your controller
+* (Add-ons tab) Map "Fullscreen Map Toggle" to the Select/Share/View button in your controller
+* (Add-ons tab) Map "HUD Toggle" to the R3/R button in your controller
 * (General hotkeys) Map "Toggle fullscreen" to an available button of your preference
 
 ## How to dump DS cart into an NDS file
