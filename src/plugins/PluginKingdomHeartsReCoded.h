@@ -86,6 +86,7 @@ private:
 
     int fullscreenMapTransitionStep = 0;
     int fullscreenMapSelectPressStep = 0;
+    bool fullscreenMapShouldPreserveZoom = false;
 
     std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};

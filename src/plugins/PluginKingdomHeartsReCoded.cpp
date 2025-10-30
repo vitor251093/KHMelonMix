@@ -915,6 +915,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .sourceScale(0.555)
                             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                             .opacity(0.95)
+                            .singleColorToAlpha(0xaa, 0xaa, 0xaa)
+                            //.singleColorToAlpha(0xeb, 0xe3, 0xeb)
                             .hudScale(hudScale)
                             .build(aspectRatio);
 
@@ -924,12 +926,14 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         ShapeData2D bigMapShape = ShapeBuilder2D::square()
                                 .fromBottomScreen()
                                 .fromPosition(12, 32)
-                                .withSize(232, 104)
+                                .withSize(232, 116)
                                 .placeAtCorner(corner_Center)
-                                .withMargin(0.0, 0.0, 0.0, 25.0)
-                                .sourceScale(1.6)
+                                .withMargin(0.0, 0.0, 0.0, 20.0)
+                                .sourceScale(1.5)
                                 .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                                 .opacity(0.80)
+                                .singleColorToAlpha(0xaa, 0xaa, 0xaa)
+                                //.singleColorToAlpha(0xeb, 0xe3, 0xeb)
                                 .hudScale(hudScale)
                                 .build(aspectRatio);
                         minimapShape.transitionTo(bigMapShape, fullscreenDegree);
@@ -1836,10 +1840,12 @@ void PluginKingdomHeartsReCoded::toggleFullscreenMap()
     bool isZoomedIn = zoomedOutCenter.x == -1 && zoomedOutCenter.x == -1;
     bool isZoomedOut = !isZoomedIn;
 
-    if (ShowFullscreenMap != isZoomedOut)
+    if (!fullscreenMapShouldPreserveZoom && ShowFullscreenMap != isZoomedOut)
     {
         fullscreenMapSelectPressStep = 3;
     }
+
+    fullscreenMapShouldPreserveZoom = (ShowFullscreenMap && isZoomedOut);
 }
 
 const char* PluginKingdomHeartsReCoded::getGameSceneName()
@@ -1978,7 +1984,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, i
 {
     int distanceToCenter = 54;
     int minY = 31;
-    int maxY = 140;
+    int maxY = 150;
     int minX = 8;
     int maxX = 247;
 
