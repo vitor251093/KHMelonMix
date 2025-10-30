@@ -982,8 +982,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         {
                             ShapeData2D bigMapShape = ShapeBuilder2D::square()
                                     .fromBottomScreen()
-                                    .fromPosition(103, 56)
-                                    .withSize(122, 80)
+                                    .fromPosition(104, 56)
+                                    .withSize(120, 80)
                                     .placeAtCorner(corner_Center)
                                     .sourceScale(2.2)
                                     .fadeBorderSize(7.0)
