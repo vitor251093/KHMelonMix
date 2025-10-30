@@ -79,7 +79,7 @@ struct vec4 {
 };
 
 // UBO-compatible struct with proper padding
-struct alignas(16) ShapeData2D { // 112 bytes
+struct alignas(16) ShapeData2D { // 160 bytes
     vec2 sourceScale;  // 8 bytes (X factor, Y factor)
 
     int effects;
@@ -104,8 +104,8 @@ struct alignas(16) ShapeData2D { // 112 bytes
 
     vec4 squareCornersModifier; // 16 bytes (top left, top right, bottom left, bottom right)
 
-    ivec4 colorToAlpha;         // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
-    ivec4 singleColorToAlpha;   // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
+    ivec4 colorToAlpha;          // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
+    ivec4 singleColorToAlpha[4]; // 16 bytes (RGBA, and the A acts as an enabled/disabled toggle)
 
     void transitionTo(ShapeData2D finalShape, float finalPercentage)
     {
@@ -137,19 +137,6 @@ struct alignas(16) ShapeData2D { // 112 bytes
         squareCornersModifier.y = squareCornersModifier.y * sourcePercentage + finalShape.squareCornersModifier.y * finalPercentage;
         squareCornersModifier.z = squareCornersModifier.z * sourcePercentage + finalShape.squareCornersModifier.z * finalPercentage;
         squareCornersModifier.w = squareCornersModifier.w * sourcePercentage + finalShape.squareCornersModifier.w * finalPercentage;
-
-        if (colorToAlpha.w == 1 && finalShape.colorToAlpha.w == 1) {
-            colorToAlpha.x = (int)(colorToAlpha.x * sourcePercentage + finalShape.colorToAlpha.x * finalPercentage);
-            colorToAlpha.y = (int)(colorToAlpha.y * sourcePercentage + finalShape.colorToAlpha.y * finalPercentage);
-            colorToAlpha.z = (int)(colorToAlpha.z * sourcePercentage + finalShape.colorToAlpha.z * finalPercentage);
-        }
-
-        if (singleColorToAlpha.w > 0 && finalShape.singleColorToAlpha.w > 0) {
-            singleColorToAlpha.x = (int)(singleColorToAlpha.x * sourcePercentage + finalShape.singleColorToAlpha.x * finalPercentage);
-            singleColorToAlpha.y = (int)(singleColorToAlpha.y * sourcePercentage + finalShape.singleColorToAlpha.y * finalPercentage);
-            singleColorToAlpha.z = (int)(singleColorToAlpha.z * sourcePercentage + finalShape.singleColorToAlpha.z * finalPercentage);
-            singleColorToAlpha.w = (int)(singleColorToAlpha.w * sourcePercentage + finalShape.singleColorToAlpha.w * finalPercentage);
-        }
     }
 };
 
@@ -282,7 +269,7 @@ struct alignas(16) ShapeData3D {
 
         float scaleX = sourceScale.x;
         float scaleY = sourceScale.y;
-        
+
         float heightScale = 1.0/aspectRatio;
 
         float squareFinalWidth = (squareInitialCoords.z*scaleX*resolutionScale*heightScale)/iuTexScale;
@@ -310,10 +297,10 @@ struct alignas(16) ShapeData3D {
                         squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
                         squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
                         break;
-                    
+
                     case corner_TopLeft:
                         break;
-                    
+
                     case corner_Top:
                         squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
                         break;
@@ -375,6 +362,7 @@ public:
         shapeBuilder.shapeData.squareInitialCoords.w = 192;
         shapeBuilder.shapeData.opacity = 1.0;
         shapeBuilder._hudScale = 1.0;
+        shapeBuilder._colorIndex = 0;
         shapeBuilder._corner = corner_PreservePosition;
         shapeBuilder._margin.x = 0;
         shapeBuilder._margin.y = 0;
@@ -509,21 +497,18 @@ public:
         shapeData.colorToAlpha.w = 1;
         return *this;
     }
-    ShapeBuilder2D& singleColorToAlpha(int red, int green, int blue) {
-        shapeData.effects |= 0x20;
-        shapeData.singleColorToAlpha.x = red >> 2;
-        shapeData.singleColorToAlpha.y = green >> 2;
-        shapeData.singleColorToAlpha.z = blue >> 2;
-        shapeData.singleColorToAlpha.w = 1;
-        return *this;
-    }
     ShapeBuilder2D& singleColorToAlpha(int red, int green, int blue, float alpha) {
         shapeData.effects |= 0x20;
-        shapeData.singleColorToAlpha.x = red >> 2;
-        shapeData.singleColorToAlpha.y = green >> 2;
-        shapeData.singleColorToAlpha.z = blue >> 2;
-        shapeData.singleColorToAlpha.w = (int)(alpha * 64);
+        shapeData.singleColorToAlpha[_colorIndex] = ivec4();
+        shapeData.singleColorToAlpha[_colorIndex].x = red >> 2;
+        shapeData.singleColorToAlpha[_colorIndex].y = green >> 2;
+        shapeData.singleColorToAlpha[_colorIndex].z = blue >> 2;
+        shapeData.singleColorToAlpha[_colorIndex].w = (int)(alpha * 64);
+        _colorIndex++;
         return *this;
+    }
+    ShapeBuilder2D& singleColorToAlpha(int red, int green, int blue) {
+        return singleColorToAlpha(red, green, blue, 1.0/64);
     }
 
     void precompute3DCoordinatesOf2DSquareShape(float aspectRatio)
@@ -557,10 +542,10 @@ public:
                 squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
                 squareFinalY1 = (ScreenHeight - squareFinalHeight)/2;
                 break;
-            
+
             case corner_TopLeft:
                 break;
-            
+
             case corner_Top:
                 squareFinalX1 = (ScreenWidth - squareFinalWidth)/2;
                 break;
@@ -626,6 +611,7 @@ private:
     bool _fromBottomScreen;
     int _corner;
     float _hudScale;
+    int _colorIndex;
     vec4 _margin;
 };
 

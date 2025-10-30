@@ -25,6 +25,7 @@ namespace Plugins
 const char* kCompositorFS_Plugin = R"(#version 140
 
 #define SHAPES_DATA_ARRAY_SIZE 32
+#define SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE 4
 
 struct ShapeData2D {
     vec2 sourceScale;
@@ -41,7 +42,7 @@ struct ShapeData2D {
     vec4 squareCornersModifier;
 
     ivec4 colorToAlpha;
-    ivec4 singleColorToAlpha;
+    ivec4 singleColorToAlpha[SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE];
 };
 
 layout(std140) uniform ShapeBlock2D {
@@ -162,8 +163,8 @@ vec2 getHorizontalDualScreen2DTextureCoordinates(float xpos, float ypos)
         int screenTopMargin = (192*screenScale - screenHeight)/2;
         int screenLeftMargin = 0;
         if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) && 
-            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.x < (screenWidth + screenLeftMargin) &&
+            texPosition3d.y <= (screenHeight + screenTopMargin) &&
             texPosition3d.y >= screenTopMargin) {
             return fixStretch*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin));
         }
@@ -180,8 +181,8 @@ vec2 getHorizontalDualScreen2DTextureCoordinates(float xpos, float ypos)
         int screenTopMargin = (192*screenScale - screenHeight)/2;
         int screenLeftMargin = 256;
         if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) && 
-            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.x < (screenWidth + screenLeftMargin) &&
+            texPosition3d.y <= (screenHeight + screenTopMargin) &&
             texPosition3d.y >= screenTopMargin) {
             return fixStretch*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)) + vec2(0, 192);
         }
@@ -211,8 +212,8 @@ vec2 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos)
         int screenTopMargin = 0;
         int screenLeftMargin = (256*screenScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) && 
-            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.x < (screenWidth + screenLeftMargin) &&
+            texPosition3d.y <= (screenHeight + screenTopMargin) &&
             texPosition3d.y >= screenTopMargin) {
             return fixStretch*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin));
         }
@@ -229,8 +230,8 @@ vec2 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos)
         int screenTopMargin = 192;
         int screenLeftMargin = (256*screenScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) && 
-            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.x < (screenWidth + screenLeftMargin) &&
+            texPosition3d.y <= (screenHeight + screenTopMargin) &&
             texPosition3d.y >= screenTopMargin) {
             return fixStretch*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)) + vec2(0, 192);
         }
@@ -249,7 +250,7 @@ ivec4 getForcedAspectRatioScreen3DColor(float xpos, float ypos)
 
     float sourceScreenWidth = 256.0;
     float screenLeftMargin = (sourceScreenWidth - sourceScreenWidth*heightScale)/2;
-    
+
     ivec2 position3d = ivec2((fixStretch*(texPosition3d - vec2(screenLeftMargin, 0)))*u3DScale);
     return ivec4(texelFetch(_3DTex, position3d, 0).bgra * vec4(63,63,63,31));
 }
@@ -273,8 +274,8 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
         float screenTopMargin = (sourceScreenHeight*u3DScale - screenHeight)/2;
         float screenLeftMargin = 0.0;
         if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) && 
-            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.x < (screenWidth + screenLeftMargin) &&
+            texPosition3d.y <= (screenHeight + screenTopMargin) &&
             texPosition3d.y >= screenTopMargin) {
             ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)));
             return ivec4(texelFetch(_3DTex, position3d + ivec2(_3dxpos*u3DScale, 0), 0).bgra
@@ -291,8 +292,8 @@ ivec4 getHorizontalDualScreen3DColor(float xpos, float ypos)
         float screenTopMargin = (sourceScreenHeight*u3DScale - screenHeight)/2;
         float screenLeftMargin = screenWidth;
         if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) && 
-            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.x < (screenWidth + screenLeftMargin) &&
+            texPosition3d.y <= (screenHeight + screenTopMargin) &&
             texPosition3d.y >= screenTopMargin) {
             ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)));
             return ivec4(texelFetch(_3DTex, position3d + ivec2(_3dxpos*u3DScale, 0), 0).bgra
@@ -322,15 +323,15 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
         float screenTopMargin = 0.0;
         float screenLeftMargin = (sourceScreenWidth*u3DScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) && 
-            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.x < (screenWidth + screenLeftMargin) &&
+            texPosition3d.y <= (screenHeight + screenTopMargin) &&
             texPosition3d.y >= screenTopMargin) {
             ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)));
             return ivec4(texelFetch(_3DTex, position3d + ivec2(_3dxpos*u3DScale, 0), 0).bgra
                 * vec4(63,63,63,31));
         }
     }
-    
+
 
     // screen 2
     {
@@ -341,8 +342,8 @@ ivec4 getVerticalDualScreen3DColor(float xpos, float ypos)
         float screenTopMargin = screenHeight;
         float screenLeftMargin = (sourceScreenWidth*u3DScale - screenWidth)/2;
         if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) && 
-            texPosition3d.y <= (screenHeight + screenTopMargin) && 
+            texPosition3d.x < (screenWidth + screenLeftMargin) &&
+            texPosition3d.y <= (screenHeight + screenTopMargin) &&
             texPosition3d.y >= screenTopMargin) {
             ivec2 position3d = ivec2(fixStretch*2*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin)));
             return ivec4(texelFetch(_3DTex, position3d + ivec2(_3dxpos*u3DScale, 0), 0).bgra
@@ -393,7 +394,7 @@ bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, 
 }
 
 bool isInsideRoundedCorner(vec2 pos, vec2 center, float radius) {
-    return (pos.x - center.x) * (pos.x - center.x) + 
+    return (pos.x - center.x) * (pos.x - center.x) +
            (pos.y - center.y) * (pos.y - center.y) < radius * radius;
 }
 
@@ -411,7 +412,7 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
     else if (finalPos.x > squareWidth - radius[1] && finalPos.y < radius[1]) {
         validArea = isInsideRoundedCorner(finalPos, vec2(squareWidth - radius[1], radius[1]), radius[1]);
     }
-    
+
     // Bottom-left corner
     else if (finalPos.x < radius[2] && finalPos.y > squareHeight - radius[2]) {
         validArea = isInsideRoundedCorner(finalPos, vec2(radius[2], squareHeight - radius[2]), radius[2]);
@@ -624,14 +625,14 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
                     // provides full transparency support to the transparency layer
                     color.g = color.g << 2;
                     color.b = color.b << 2;
-                
+
                     // manipulate transparency
                     if ((effects & 0x20) != 0)
                     {
                         vec4 fadeBorderSize = shapes[shapeIndex].fadeBorderSize;
                         float opacity = shapes[shapeIndex].opacity;
                         if (any(greaterThan(fadeBorderSize, vec4(0))) || opacity < 1.0)
-                        {    
+                        {
                             float leftDiff = texPosition3d.x - squareFinalCoords[0];
                             float rightDiff = squareFinalCoords[2] - texPosition3d.x;
                             float topDiff = texPosition3d.y - squareFinalCoords[1];
@@ -663,14 +664,16 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
                             color = ivec4(color.r, blur, 64 - blur, 0x01);
                         }
 
-                        ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha;
-                        if (singleColorToAlpha.a > 0)
-                        {
-                            ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                            if (colorZero.r == singleColorToAlpha.r &&
-                                colorZero.g == singleColorToAlpha.g &&
-                                colorZero.b == singleColorToAlpha.b) {
-                                color = ivec4(color.r, singleColorToAlpha.a - 1, 65 - singleColorToAlpha.a, 0x01);
+                        for (int colorIndex = 0; colorIndex < SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE; colorIndex++) {
+                            ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha[colorIndex];
+                            if (singleColorToAlpha.a > 0)
+                            {
+                                ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+                                if (colorZero.r == singleColorToAlpha.r &&
+                                    colorZero.g == singleColorToAlpha.g &&
+                                    colorZero.b == singleColorToAlpha.b) {
+                                    color = ivec4(color.r, singleColorToAlpha.a - 1, 65 - singleColorToAlpha.a, 0x01);
+                                }
                             }
                         }
                     }

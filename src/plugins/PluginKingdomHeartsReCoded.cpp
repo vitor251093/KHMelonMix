@@ -916,7 +916,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                             .opacity(0.95)
                             .singleColorToAlpha(0xaa, 0xaa, 0xaa)
-                            //.singleColorToAlpha(0xeb, 0xe3, 0xeb)
+                            .singleColorToAlpha(0xeb, 0xe3, 0xeb)
                             .hudScale(hudScale)
                             .build(aspectRatio);
 
@@ -933,7 +933,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                                 .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                                 .opacity(0.80)
                                 .singleColorToAlpha(0xaa, 0xaa, 0xaa)
-                                //.singleColorToAlpha(0xeb, 0xe3, 0xeb)
+                                .singleColorToAlpha(0xeb, 0xe3, 0xeb)
                                 .hudScale(hudScale)
                                 .build(aspectRatio);
                         minimapShape.transitionTo(bigMapShape, fullscreenDegree);
