@@ -73,6 +73,7 @@ function Game {
 			echo "Error: ${game}.nds was not found in roms folder..."
 			echo
 			Start
+			Fullscreen
 		fi
 	done
 }
