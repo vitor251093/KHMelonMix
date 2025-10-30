@@ -1591,6 +1591,9 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
     if ((*AddonPress) & (1 << HK_FullscreenMapToggle)) {
         toggleFullscreenMap();
     }
+    if ((fullscreenMapSelectPressStep--) > 0) {
+        *InputMask &= ~(1<<2); // select
+    }
 
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameOlympusBattle) {
         // Enabling L + D-Pad
@@ -1828,6 +1831,15 @@ void PluginKingdomHeartsReCoded::hudToggle()
 void PluginKingdomHeartsReCoded::toggleFullscreenMap()
 {
     ShowFullscreenMap = !ShowFullscreenMap;
+
+    ivec2 zoomedOutCenter = minimapCenter(false, true, -1, -1);
+    bool isZoomedIn = zoomedOutCenter.x == -1 && zoomedOutCenter.x == -1;
+    bool isZoomedOut = !isZoomedIn;
+
+    if (ShowFullscreenMap != isZoomedOut)
+    {
+        fullscreenMapSelectPressStep = 3;
+    }
 }
 
 const char* PluginKingdomHeartsReCoded::getGameSceneName()
@@ -1962,7 +1974,7 @@ bool PluginKingdomHeartsReCoded::isHealthVisible()
 
 #define IS_COLOR(pixel,r,g,b) ((((pixel >> 8) & 0xFF) == b) && (((pixel >> 4) & 0xFF) == g) && (((pixel >> 0) & 0xFF) == r))
 
-ivec2 PluginKingdomHeartsReCoded::minimapCenter()
+ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY)
 {
     int distanceToCenter = 54;
     int minY = 31;
@@ -1970,7 +1982,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
     int minX = 8;
     int maxX = 247;
 
-    bool targetColorMap1[6][6] = {
+    bool targetColorMap1[6][6] = { // zoomed in map
         {false, false, false, false, false, false},
         {false, false, true,  true,  false, false},
         {false, true,  true,  true,  true,  false},
@@ -1978,13 +1990,13 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
         {false, false, true,  true,  false, false},
         {false, false, false, false, false, false}
     };
-    bool targetColorMap2[4][4] = {
+    bool targetColorMap2[4][4] = { // zoomed out map
         {false, false, false, false},
         {false, true,  true,  false},
         {false, true,  true,  false},
         {false, false, false, false}
     };
-    bool targetColorMap3[5][3] = {
+    bool targetColorMap3[5][3] = { // zoomed in map (side scroll)
         {false, false, false},
         {false, true,  false},
         {false, true,  false},
@@ -2001,7 +2013,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
                 for (int subY = 0; subY < 6; subY ++) {
                     for (int subX = 0; subX < 6; subX ++) {
                         u32 pixel = getPixel(buffer, x + subX - 2, y + subY - 2, 0);
-                        valid = valid && (targetColorMap1[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
+                        valid = valid && zoomedIn && (targetColorMap1[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
                         if (!valid) break;
                     }
                     if (!valid) break;
@@ -2016,7 +2028,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
                     for (int subY = 0; subY < 4; subY ++) {
                         for (int subX = 0; subX < 4; subX ++) {
                             u32 pixel = getPixel(buffer, x + subX - 1, y + subY - 1, 0);
-                            valid = valid && (targetColorMap2[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
+                            valid = valid && zoomedOut && (targetColorMap2[subY][subX] ? (pixel == 0x1000343e) : (pixel != 0x1000343e));
                             if (!valid) break;
                         }
                         if (!valid) break;
@@ -2031,7 +2043,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
                         for (int subY = 0; subY < 5; subY ++) {
                             for (int subX = 0; subX < 3; subX ++) {
                                 u32 pixel = getPixel(buffer, x + subX - 1, y + subY - 2, 0);
-                                valid = valid && (targetColorMap3[subY][subX] ? (pixel == 0x1000383e) : (pixel != 0x1000383e));
+                                valid = valid && zoomedIn && (targetColorMap3[subY][subX] ? (pixel == 0x1000383e) : (pixel != 0x1000383e));
                                 if (!valid) break;
                             }
                             if (!valid) break;
@@ -2048,7 +2060,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
 
     int posSize = possibilities.size();
     if (posSize == 0) {
-        return ivec2{x:MinimapCenterX, y:MinimapCenterY};
+        return ivec2{x:fallbackX, y:fallbackY};
     }
 
     int x = 0;
@@ -2070,9 +2082,14 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
         y:std::max(std::min(y, maxY - distanceToCenter), minY + distanceToCenter)
     };
 
+    return result;
+}
+
+ivec2 PluginKingdomHeartsReCoded::minimapCenter()
+{
+    ivec2 result = minimapCenter(true, true, MinimapCenterX, MinimapCenterY);
     MinimapCenterX = result.x;
     MinimapCenterY = result.y;
-
     return result;
 }
 
