@@ -193,7 +193,7 @@ void EmuThread::run()
         emuInstance->inputProcess();
 
         auto nds = emuInstance->getNDS();
-        auto rom = nds == nullptr ? nullptr : nds->NDSCartSlot.GetCart();
+        auto rom = nds != nullptr ? nds->NDSCartSlot.GetCart() : nullptr;
         if (rom != nullptr) {
             u32 gamecode = rom->GetHeader().GameCodeAsU32();
             bool shouldLoadPlugin = emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode;
