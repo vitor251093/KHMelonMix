@@ -89,17 +89,20 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
 
-    connect(this, SIGNAL(windowStartBgmMusic(quint16, quint8, bool, quint32, QString)), window, SLOT(asyncStartBgmMusic(quint16, quint8, bool, quint32, QString)));
-    connect(this, SIGNAL(windowStopBgmMusic(quint16, bool, quint32)), window, SLOT(asyncStopBgmMusic(quint16, bool, quint32)));
-    connect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
-    connect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
-    connect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
-    connect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
+    if (window->getWindowID() == 0)
+    {
+        connect(this, SIGNAL(windowStartBgmMusic(quint16, quint8, bool, quint32, QString)), window, SLOT(asyncStartBgmMusic(quint16, quint8, bool, quint32, QString)));
+        connect(this, SIGNAL(windowStopBgmMusic(quint16, bool, quint32)), window, SLOT(asyncStopBgmMusic(quint16, bool, quint32)));
+        connect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
+        connect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
+        connect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
+        connect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
 
-    connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
-    connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
-    connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
-    connect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
+        connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+        connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
+        connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
+        connect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
+    }
 }
 
 void EmuThread::detachWindow(MainWindow* window)
@@ -119,17 +122,20 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(swapScreensToggle()), window->actScreenSwap, SLOT(trigger()));
     }
 
-    disconnect(this, SIGNAL(windowStartBgmMusic(quint16, quint8, bool, quint32, QString)), window, SLOT(asyncStartBgmMusic(quint16, quint8, bool, quint32, QString)));
-    disconnect(this, SIGNAL(windowStopBgmMusic(quint16, bool, quint32)), window, SLOT(asyncStopBgmMusic(quint16, bool, quint32)));
-    disconnect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
-    disconnect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
-    disconnect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
-    disconnect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
+    if (window->getWindowID() == 0)
+    {
+        disconnect(this, SIGNAL(windowStartBgmMusic(quint16, quint8, bool, quint32, QString)), window, SLOT(asyncStartBgmMusic(quint16, quint8, bool, quint32, QString)));
+        disconnect(this, SIGNAL(windowStopBgmMusic(quint16, bool, quint32)), window, SLOT(asyncStopBgmMusic(quint16, bool, quint32)));
+        disconnect(this, SIGNAL(windowPauseBgmMusic()), window, SLOT(asyncPauseBgmMusic()));
+        disconnect(this, SIGNAL(windowUnpauseBgmMusic()), window, SLOT(asyncUnpauseBgmMusic()));
+        disconnect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
+        disconnect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
 
-    disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
-    disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
-    disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
-    disconnect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
+        disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+        disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
+        disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
+        disconnect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
+    }
 }
 
 void EmuThread::run()
@@ -228,9 +234,12 @@ void EmuThread::run()
                 printf("Loading plugin %s for game code %u\n", typeid(*emuInstance->plugin).name(), gamecode);
             }
 
-            emuInstance->plugin->applyTouchKeyMaskToTouchControls(&emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, emuInstance->touchInputMask);
-            emuInstance->plugin->applyHotkeyToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
-            emuInstance->plugin->applyAddonKeysToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX, &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->pluginMask, &emuInstance->pluginPress);
+            emuInstance->plugin->applyTouchKeyMaskToTouchControls(&emuInstance->touchX,
+                &emuInstance->touchY, &emuInstance->isTouching, emuInstance->touchInputMask);
+            emuInstance->plugin->applyHotkeyToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX,
+                &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->hotkeyMask, &emuInstance->hotkeyPress);
+            emuInstance->plugin->applyAddonKeysToInputMaskOrTouchControls(&emuInstance->inputMask, &emuInstance->touchX,
+                &emuInstance->touchY, &emuInstance->isTouching, &emuInstance->pluginMask, &emuInstance->pluginPress);
             
             if (!emuInstance->isRumbling && emuInstance->plugin->shouldRumble()) {
                 emuInstance->inputRumbleStart(1000); // duration in ms
