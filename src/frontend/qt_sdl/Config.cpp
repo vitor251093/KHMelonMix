@@ -52,8 +52,14 @@ int getLocaleIndex() {
     return 1;
     #endif
 
+    std::string userlocale = "en";
     int localIndex = 1;
-    std::string userlocale = std::locale("").name().substr(0, 2);
+    try {
+        userlocale = std::locale("").name().substr(0, 2);
+    }
+    catch (const std::runtime_error& ignored) {
+        // May happen if LC_ALL has an invalid value
+    }
     if (userlocale == "ja")
         localIndex = 0;
     else if (userlocale == "en")
