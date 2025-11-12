@@ -10,9 +10,10 @@
 6. (Windows) Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat";
 7. (Linux) Right-click the AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Repeat those steps for MelonMix_KHReCoded.sh as well;
 8. (Linux) Now you just need to launch the Melon Mix using "MelonMix_KHDays.sh";
-9. (macOS) Now you just need to launch the Melon Mix bundle, and open the NDS file with it;
-10. Open the Days NDS file with the Melon Mix, and then press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below). You **MUST** open the NDS file **BEFORE** opening the Input and hotkeys window, otherwise you will just see the melonDS Add-ons;
-11. **Press Config -> Plugin settings** to configure the Melon Mix according to your personal preferences.
+9. (macOS) Move the Melon Mix app to the Applications folder, or run the following command in the terminal: `xattr -drs com.apple.quarantine <path>`, replacing `<path>` with the full path of the app bundle; 
+10. (macOS) Now you just need to launch the Melon Mix bundle, and open the NDS file with it;
+11. Open the Days NDS file with the Melon Mix, and then press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below). You **MUST** open the NDS file **BEFORE** opening the Input and hotkeys window, otherwise you will just see the melonDS Add-ons;
+12. **Press Config -> Plugin settings** to configure the Melon Mix according to your personal preferences.
 
 **Note:** The Linux steps are also applicable on the Steam Deck.
 
@@ -26,9 +27,10 @@
 6. (Windows) Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.bat";
 7. (Linux) Right-click the AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Repeat those steps for MelonMix_KHDays.sh as well;
 8. (Linux) Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.sh";
-9. (macOS) Now you just need to launch the Melon Mix bundle, and open the NDS file with it;
-10. Open the Re:Coded NDS file with the Melon Mix, and then press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below). You **MUST** open the NDS file **BEFORE** opening the Input and hotkeys window, otherwise you will just see the melonDS Add-ons;
-11. **Press Config -> Plugin settings** to configure the Melon Mix according to your personal preferences.
+9. (macOS) Move the Melon Mix app to the Applications folder, or run the following command in the terminal: `xattr -drs com.apple.quarantine <path>`, replacing `<path>` with the full path of the app bundle;
+10. (macOS) Now you just need to launch the Melon Mix bundle, and open the NDS file with it;
+11. Open the Re:Coded NDS file with the Melon Mix, and then press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below). You **MUST** open the NDS file **BEFORE** opening the Input and hotkeys window, otherwise you will just see the melonDS Add-ons;
+12. **Press Config -> Plugin settings** to configure the Melon Mix according to your personal preferences.
 
 **Note:** The Linux steps are also applicable on the Steam Deck.
 
