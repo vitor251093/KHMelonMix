@@ -23,6 +23,8 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 
 <h2 align="center"><a href="https://github.com/vitor251093/KHMelonMix/blob/master/HOW_TO_PLAY.md">HOW TO PLAY</a></h2>
 
+<h2 align="center"><a href="https://github.com/vitor251093/KHMelonMix/blob/master/TROUBLESHOOTING.md">TROUBLESHOOTING</a></h2>
+
 <h2 align="center"><a href="https://github.com/vitor251093/KHMelonMix/blob/master/BUILD.md">HOW TO BUILD FROM SCRATCH</a></h2>
 
 <hr>
