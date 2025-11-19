@@ -189,7 +189,9 @@ void EmuThread::run()
 
     while (emuStatus != emuStatus_Exit)
     {
-        MPInterface::Get().Process();
+        if (emuInstance->instanceID == 0)
+            MPInterface::Get().Process();
+
         emuInstance->inputProcess();
 
         auto nds = emuInstance->getNDS();

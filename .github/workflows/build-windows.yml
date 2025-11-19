@@ -1,6 +1,3 @@
-# Caching based on this workflow:
-# https://github.com/ag-advania/melonPrimeDS/blob/master/.github/workflows/build-windows.yml
-
 name: Windows
 
 on:
@@ -13,7 +10,6 @@ on:
       - master
 
 env:
-  VCPKG_COMMIT: 2ad004460f5db4d3b66f62f5799ff66c265c4b5d
   MELONDS_GIT_BRANCH: ${{ github.ref }}
   MELONDS_GIT_HASH: ${{ github.sha }}
   MELONDS_BUILD_PROVIDER: GitHub Actions
@@ -21,111 +17,55 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2025
     defaults:
       run:
         shell: msys2 {0}
+    env:
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
     steps:
     - name: Check out sources
       uses: actions/checkout@v3
-
-    - name: Cache MSYS2 packages
-      uses: actions/cache@v3
-      with:
-        path: |
-          C:/msys64/var/cache/pacman/pkg
-          C:/msys64/etc/pacman.d/gnupg
-          ${{ github.workspace }}/vcpkg/downloads/tools/msys2
-        key: ${{ runner.os }}-msys2-pacman-${{ hashFiles('**/*.cmake') }}
-        restore-keys: |
-          ${{ runner.os }}-msys2-pacman-
-
-    - name: Purge temp msys64 (cache safety)
-      shell: pwsh
-      run: |
-        $p = Join-Path $env:RUNNER_TEMP 'msys64'
-        if (Test-Path $p) { Remove-Item -Recurse -Force $p }
-
     - name: Set up MSYS2
       uses: msys2/setup-msys2@v2
       with:
         msystem: ucrt64
-        update: false
-        path-type: inherit
+        update: true
         pacboy: gcc:p cmake:p ninja:p make:p
-
-    - name: Ensure vcpkg overlay directories exist
-      run: |
-        mkdir -p ./cmake/overlay-ports
-        mkdir -p ./cmake/overlay-triplets
-        [ -f ./cmake/overlay-ports/.keep ] || echo keep > ./cmake/overlay-ports/.keep
-        [ -f ./cmake/overlay-triplets/.keep ] || echo keep > ./cmake/overlay-triplets/.keep
-
-    - name: Ensure vcpkg binary cache directory exists
-      run: |
-        mkdir -p "${{ github.workspace }}/vcpkg_binary_cache"
-        ls -la "${{ github.workspace }}/vcpkg_binary_cache" || true
-
-    - name: Cache vcpkg directories
-      uses: actions/cache@v3
+    - name: Restore vcpkg cache
+      uses: actions/cache/restore@v4
       with:
-        path: |
-          ${{ github.workspace }}/vcpkg
-          ${{ github.workspace }}/vcpkg_installed
-          ${{ github.workspace }}/vcpkg/buildtrees
-          ${{ github.workspace }}/vcpkg/downloads
-          ${{ github.workspace }}/vcpkg/packages
-          ${{ github.workspace }}/vcpkg_binary_cache
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json', 'cmake/overlay-triplets/**', 'cmake/overlay-ports/**', 'triplets/**') }}
-        restore-keys: |
-          ${{ runner.os }}-vcpkg-
-
-    - name: Set up vcpkg (manifest)
+        path: ${{ github.workspace }}/vcpkg_cache
+        key: vcpkg-x86_64-mingw-${{ hashFiles('vcpkg.json') }}
+        restore-keys: vcpkg-x86_64-mingw-
+    - name: Set up vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
-
-    - name: Show vcpkg manifest log (head)
-      run: |
-        if [ -f build/release-mingw-x86_64/vcpkg-manifest-install.log ]; then
-          sed -n '1,160p' build/release-mingw-x86_64/vcpkg-manifest-install.log || true
-        fi
-
-    - name: Cache CMake build directory
-      uses: actions/cache@v3
-      with:
-        path: ${{ github.workspace }}/build
-        key: ${{ runner.os }}-cmake-build-${{ hashFiles('CMakeLists.txt', 'src/**', 'include/**', 'cmake/**') }}
-        restore-keys: |
-          ${{ runner.os }}-cmake-build-${{ hashFiles('CMakeLists.txt') }}
-          ${{ runner.os }}-cmake-build-
-
+        vcpkgJsonGlob: vcpkg.json
     - name: Configure
       run: cmake --preset=release-mingw-x86_64 -DMELONDS_EMBED_BUILD_INFO=ON
-      env:
-        NINJA_STATUS: "[%f/%t %o/s %es] "
-        VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg_binary_cache,readwrite"
     - name: Build
       run: cmake --build --preset=release-mingw-x86_64
-      env:
-        NINJA_STATUS: "[%f/%t %o/s %es] "
-        VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg_binary_cache,readwrite"
     - name: Preparing artifacts
-      working-directory: ${{runner.workspace}}\KHMelonMix\build
+      working-directory: ${{runner.workspace}}\KHMelonMix\build\release-mingw-x86_64
       run: |
         rm -rf dist || true
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
-        cp -r ../assets ./dist/assets
+        cp -r ../../assets ./dist/assets
         mv ./release-mingw-x86_64/melonDS.exe ./dist/MelonMix.exe
-        cp ../res/khDaysMM.ico   ./dist/MelonMix_KHDays.ico
-        cp ../res/khCodedMM.ico  ./dist/MelonMix_KHReCoded.ico
-        cp ../res/scripts/MelonMix_KHDays.bat       ./dist/MelonMix_KHDays.bat
-        cp ../res/scripts/MelonMix_KHReCoded.bat    ./dist/MelonMix_KHReCoded.bat
-        cp ../res/scripts/MelonMix_GameSelector.bat ./dist/MelonMix_GameSelector.bat
-
+        cp ../../res/khDaysMM.ico   ./dist/MelonMix_KHDays.ico
+        cp ../../res/khCodedMM.ico  ./dist/MelonMix_KHReCoded.ico
+        cp ../../res/scripts/MelonMix_KHDays.bat       ./dist/MelonMix_KHDays.bat
+        cp ../../res/scripts/MelonMix_KHReCoded.bat    ./dist/MelonMix_KHReCoded.bat
+        cp ../../res/scripts/MelonMix_GameSelector.bat ./dist/MelonMix_GameSelector.bat
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-windows-x86_64
-        path: ${{runner.workspace}}\KHMelonMix\build\dist
+        path: ${{runner.workspace}}\KHMelonMix\build\release-mingw-x86_64\dist
+    - name: Save vcpkg cache
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ github.workspace }}/vcpkg_cache
+        key: vcpkg-x86_64-mingw-${{ hashFiles('vcpkg.json') }}

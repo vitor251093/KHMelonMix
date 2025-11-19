@@ -142,6 +142,7 @@ DefaultList<bool> DefaultBools =
     {"JIT.FastMemory", true},
 #endif
 #endif
+    {"DSi.DSP.HLE", true},
 };
 
 DefaultList<std::string> DefaultStrings =

@@ -101,6 +101,7 @@ EmuInstance::EmuInstance(int inst) : deleting(false),
         targetFPS = 60.0;
     }
     else targetFPS = val;
+    curFPS = targetFPS;
 
     val = globalCfg.GetDouble("FastForwardFPS");
     if (val == 0.0)
@@ -1323,6 +1324,7 @@ bool EmuInstance::updateConsole() noexcept
             jitargs,
             static_cast<AudioBitDepth>(globalCfg.GetInt("Audio.BitDepth")),
             static_cast<AudioInterpolation>(globalCfg.GetInt("Audio.Interpolation")),
+            (double) audioFreq,
             gdbargs,
     };
     NDSArgs* args = &ndsargs;
@@ -1351,6 +1353,7 @@ bool EmuInstance::updateConsole() noexcept
                 std::move(*nand),
                 std::move(sdcard),
                 globalCfg.GetBool("DSi.FullBIOSBoot"),
+                globalCfg.GetBool("DSi.DSP.HLE")
         };
 
         dsiargs = std::move(_dsiargs);
@@ -1391,6 +1394,7 @@ bool EmuInstance::updateConsole() noexcept
             DSiArgs& _dsiargs = *dsiargs;
 
             dsi->SetFullBIOSBoot(_dsiargs.FullBIOSBoot);
+            dsi->SetDSPHLE(_dsiargs.DSPHLE);
             dsi->ARM7iBIOS = *_dsiargs.ARM7iBIOS;
             dsi->ARM9iBIOS = *_dsiargs.ARM9iBIOS;
             dsi->SetNAND(std::move(_dsiargs.NANDImage));

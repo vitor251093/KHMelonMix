@@ -317,8 +317,13 @@ SDL_Joystick* InputConfigDialog::getJoystick()
 {
     return emuInstance->getJoystick();
 }
+
+std::shared_ptr<SDL_mutex> InputConfigDialog::getJoyMutex()
+{
+    return emuInstance->getJoyMutex();
+}
+
 void InputConfigDialog::on_btnJoystickAuto_clicked()
 {
     emuInstance->autoMapJoystick();
 }
-
