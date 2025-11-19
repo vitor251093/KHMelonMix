@@ -107,7 +107,6 @@ jobs:
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
         cp -r ./assets ./dist/assets
-        ls build/
         cp build/melonDS ./dist/MelonMix
         cp ./res/scripts/MelonMix_KHDays.sh       ./dist/MelonMix_KHDays.sh
         cp ./res/scripts/MelonMix_KHReCoded.sh    ./dist/MelonMix_KHReCoded.sh
