@@ -359,9 +359,6 @@ void EmuThread::run()
                 emuInstance->osdAddMessage(0, lid ? "Lid closed" : "Lid opened");
             }
 
-            // microphone input
-            emuInstance->micProcess();
-
             refreshPluginGameScene();
             bool shouldRenderFrame = emuInstance->plugin->shouldRenderFrame();
 
