@@ -1,4 +1,5 @@
 #include "PluginKingdomHeartsReCoded.h"
+#include <cmath>
 
 namespace Plugins
 {

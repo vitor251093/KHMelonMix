@@ -1,4 +1,5 @@
 #include "PluginKingdomHeartsDays.h"
+#include <cmath>
 
 namespace Plugins
 {
