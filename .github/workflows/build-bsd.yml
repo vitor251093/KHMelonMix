@@ -103,6 +103,7 @@ jobs:
 
     - name: Preparing artifacts
       run: |
+        cd $GITHUB_WORKSPACE
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
