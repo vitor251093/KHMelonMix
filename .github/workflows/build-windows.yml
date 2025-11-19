@@ -47,23 +47,23 @@ jobs:
     - name: Build
       run: cmake --build --preset=release-mingw-x86_64
     - name: Preparing artifacts
-      working-directory: ${{runner.workspace}}\KHMelonMix\build\release-mingw-x86_64
+      working-directory: ${{runner.workspace}}\KHMelonMix\build
       run: |
         rm -rf dist || true
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
-        cp -r ../../assets ./dist/assets
+        cp -r ../assets ./dist/assets
         mv ./release-mingw-x86_64/melonDS.exe ./dist/MelonMix.exe
-        cp ../../res/khDaysMM.ico   ./dist/MelonMix_KHDays.ico
-        cp ../../res/khCodedMM.ico  ./dist/MelonMix_KHReCoded.ico
-        cp ../../res/scripts/MelonMix_KHDays.bat       ./dist/MelonMix_KHDays.bat
-        cp ../../res/scripts/MelonMix_KHReCoded.bat    ./dist/MelonMix_KHReCoded.bat
-        cp ../../res/scripts/MelonMix_GameSelector.bat ./dist/MelonMix_GameSelector.bat
+        cp ../res/khDaysMM.ico   ./dist/MelonMix_KHDays.ico
+        cp ../res/khCodedMM.ico  ./dist/MelonMix_KHReCoded.ico
+        cp ../res/scripts/MelonMix_KHDays.bat       ./dist/MelonMix_KHDays.bat
+        cp ../res/scripts/MelonMix_KHReCoded.bat    ./dist/MelonMix_KHReCoded.bat
+        cp ../res/scripts/MelonMix_GameSelector.bat ./dist/MelonMix_GameSelector.bat
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-windows-x86_64
-        path: ${{runner.workspace}}\KHMelonMix\build\release-mingw-x86_64\dist
+        path: ${{runner.workspace}}\KHMelonMix\build\dist
     - name: Save vcpkg cache
       uses: actions/cache/save@v4
       with:
