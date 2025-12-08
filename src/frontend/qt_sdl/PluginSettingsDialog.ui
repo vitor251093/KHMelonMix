@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>560</width>
-    <height>235</height>
+    <height>274</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -157,21 +157,31 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="2">
-       <widget class="QLabel" name="label">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="cbSingleScreenMode">
+        <property name="whatsThis">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adapts the game into a single screen, rendering everything on the top screen. Requires a plugin to be properly developed for that specific game.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
-         <string>Replacement Audio Pack:</string>
+         <string>Single screen mode</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0" colspan="2">
+      <item row="7" column="0" colspan="2">
        <widget class="QComboBox" name="cbxAudioPack">
         <property name="whatsThis">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Replaces the audio tracks of the game with an installed audio pack. Requires a plugin to be properly developed for that specific game.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="6" column="0" colspan="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Replacement Audio Pack:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
        <widget class="QCheckBox" name="cbFFLoadingScreens">
         <property name="whatsThis">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Fast forward the ingame loading screens. May cause audio glitches, unless you use a replacement audio pack. Requires a plugin to be properly developed for that specific game.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -181,13 +191,17 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="cbSingleScreenMode">
-        <property name="whatsThis">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Adapts the game into a single screen, rendering everything on the top screen. Requires a plugin to be properly developed for that specific game.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <item row="2" column="0" colspan="2">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="cbDaysDisableHisMemories">
         <property name="text">
-         <string>Single screen mode</string>
+         <string>(Days) Disable &quot;His&quot; Memories</string>
         </property>
        </widget>
       </item>

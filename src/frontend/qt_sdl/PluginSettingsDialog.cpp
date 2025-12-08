@@ -39,6 +39,7 @@ void PluginSettingsDialog::setEnabled()
         ui->cbEnhancedGraphics->setEnabled(false);
         ui->cbSingleScreenMode->setEnabled(false);
         ui->cbFFLoadingScreens->setEnabled(false);
+        ui->cbDaysDisableHisMemories->setEnabled(false);
         ui->cbxAudioPack->setEnabled(false);
         ui->sbHUDSize->setEnabled(false);
         ui->sbCameraSensitivity->setEnabled(false);
@@ -73,6 +74,7 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
         oldEnhancedGraphics = !cfg.GetBool(root + ".DisableEnhancedGraphics");
         oldSingleScreenMode = !cfg.GetBool(root + ".DisableSingleScreenMode");
         oldFFLoadingScreens = cfg.GetBool(root + ".FastForwardLoadingScreens");
+        oldDaysDisableHisMemories = cfg.GetBool(root + ".DaysDisableHisMemories");
         oldAudioPack = cfg.GetString(root + ".AudioPack");
         oldHUDSize = cfg.GetInt(root + ".HUDScale");
         oldHUDSize = (oldHUDSize == 0) ? 4 : oldHUDSize;
@@ -82,6 +84,7 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
         ui->cbEnhancedGraphics->setChecked(oldEnhancedGraphics != 0);
         ui->cbSingleScreenMode->setChecked(oldSingleScreenMode != 0);
         ui->cbFFLoadingScreens->setChecked(oldFFLoadingScreens != 0);
+        ui->cbDaysDisableHisMemories->setChecked(oldDaysDisableHisMemories != 0);
 
         auto audioPackNames = plugin->audioPackNames();
         ui->cbxAudioPack->addItem(QString::fromStdString("None"));
@@ -172,6 +175,17 @@ void PluginSettingsDialog::on_cbFFLoadingScreens_stateChanged(int state)
 
     auto& cfg = emuInstance->getGlobalConfig();
     cfg.SetBool(root + ".FastForwardLoadingScreens", state != 0);
+
+    emit updatePluginSettings();
+}
+
+void PluginSettingsDialog::on_cbDaysDisableHisMemories_stateChanged(int state)
+{
+    auto plugin = emuInstance->plugin;
+    std::string root = plugin->tomlUniqueIdentifier();
+
+    auto& cfg = emuInstance->getGlobalConfig();
+    cfg.SetBool(root + ".DaysDisableHisMemories", state != 0);
 
     emit updatePluginSettings();
 }

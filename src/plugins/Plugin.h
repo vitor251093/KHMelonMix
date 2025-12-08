@@ -370,6 +370,7 @@ protected:
     bool SingleScreenMode = true;
     bool DisableReplacementTextures = false;
     bool FastForwardLoadingScreens = false;
+    bool DaysDisableHisMemories = false;
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
     std::string SelectedAudioPack = "";

@@ -503,6 +503,11 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
         _ignore3DOnBottomScreen = isBottomScreen2DTextureBlack();
 
         ShouldShowBottomScreen = _hasVisible3DOnBottomScreen && (!_ignore3DOnBottomScreen || !_priorIgnore3DOnBottomScreen || !_priorPriorIgnore3DOnBottomScreen);
+
+        if (DaysDisableHisMemories)
+        {
+            ShouldShowBottomScreen = false;
+        }
     }
 }
 

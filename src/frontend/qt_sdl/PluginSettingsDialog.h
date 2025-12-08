@@ -62,6 +62,7 @@ private slots:
     void on_cbEnhancedGraphics_stateChanged(int state);
     void on_cbSingleScreenMode_stateChanged(int state);
     void on_cbFFLoadingScreens_stateChanged(int state);
+    void on_cbDaysDisableHisMemories_stateChanged(int state);
     void on_cbxAudioPack_currentTextChanged(const QString &text);
 
     void on_sbHUDSize_valueChanged(int value);
@@ -76,6 +77,7 @@ private:
     int oldEnhancedGraphics;
     int oldSingleScreenMode;
     int oldFFLoadingScreens;
+    int oldDaysDisableHisMemories;
     std::string oldAudioPack;
     int oldHUDSize;
     int oldCameraSensitivity;

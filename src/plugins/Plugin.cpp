@@ -1195,6 +1195,7 @@ void Plugin::_superLoadConfigs(
     SingleScreenMode = !getBoolConfig(root + ".DisableSingleScreenMode");
     DisableReplacementTextures = false;
     FastForwardLoadingScreens = getBoolConfig(root + ".FastForwardLoadingScreens");
+    DaysDisableHisMemories = getBoolConfig(root + ".DaysDisableHisMemories");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
     UIScale = getIntConfig(root + ".HUDScale");
