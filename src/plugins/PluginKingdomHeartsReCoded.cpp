@@ -1095,60 +1095,63 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .build(aspectRatio));
                 }
 
-                if ((GameSceneState & (1 << gameSceneState_showNextAreaName)) > 0)
+                if (GameScene != gameScene_InGameOlympusBattle)
                 {
-                    // next area name
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(88, 160)
-                            .withSize(80, 23)
-                            .placeAtCorner(corner_Bottom)
-                            .withMargin(0.0, 0.0, 0.0, 9.0)
-                            .cropSquareCorners(0.0, 0.0, 0.0, 9.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-                }
+                    if ((GameSceneState & (1 << gameSceneState_showNextAreaName)) > 0)
+                    {
+                        // next area name
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(88, 160)
+                                .withSize(80, 23)
+                                .placeAtCorner(corner_Bottom)
+                                .withMargin(0.0, 0.0, 0.0, 9.0)
+                                .cropSquareCorners(0.0, 0.0, 0.0, 9.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
 
-                if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
-                {
-                    // cleaning the rest of the upper area of the screen
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(118, 152)
-                            .withSize(20, 10)
-                            .placeAtCorner(corner_Top)
-                            .sourceScale(aspectRatio*13, 1.0*4)
-                            .hudScale(hudScale)
-                            .force()
-                            .preserveDsScale()
-                            .build(aspectRatio));
-                }
+                    if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
+                    {
+                        // cleaning the rest of the upper area of the screen
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(118, 152)
+                                .withSize(20, 10)
+                                .placeAtCorner(corner_Top)
+                                .sourceScale(aspectRatio*13, 1.0*4)
+                                .hudScale(hudScale)
+                                .force()
+                                .preserveDsScale()
+                                .build(aspectRatio));
+                    }
 
-                if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) == 0) {
-                    // overclock notification
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(0, 81)
-                            .withSize(95, 27)
-                            .placeAtCorner(corner_BottomLeft)
-                            .withMargin(0.0, 0.0, 0.0, 84.0)
-                            .hudScale(hudScale)
-                        .build(aspectRatio));
-
-                    // pickup / item notification
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(0, 39)
-                            .withSize(102, 32)
-                            .placeAtCorner(corner_BottomLeft)
-                            .withMargin(0.0, 0.0, 0.0, 124.0)
-                            .hudScale(hudScale)
+                    if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) == 0) {
+                        // overclock notification
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(0, 81)
+                                .withSize(95, 27)
+                                .placeAtCorner(corner_BottomLeft)
+                                .withMargin(0.0, 0.0, 0.0, 84.0)
+                                .hudScale(hudScale)
                             .build(aspectRatio));
 
-                    // level up notification
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(161, 39)
-                            .withSize(95, 32)
-                            .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 115.0, 0.0, 0.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
+                        // pickup / item notification
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(0, 39)
+                                .withSize(102, 32)
+                                .placeAtCorner(corner_BottomLeft)
+                                .withMargin(0.0, 0.0, 0.0, 124.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+
+                        // level up notification
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(161, 39)
+                                .withSize(95, 32)
+                                .placeAtCorner(corner_TopRight)
+                                .withMargin(0.0, 115.0, 0.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
                 }
 
                 // background
