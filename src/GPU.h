@@ -62,6 +62,11 @@ public:
 
     void DoSavestate(Savestate* file) noexcept;
 
+    // return value for GetFramebuffers:
+    // true -> pointers to finished framebuffers are returned via the parameters
+    // false -> this renderer doesn't use RAM framebuffers
+    bool GetFramebuffers(u32** top, u32** bottom);
+
     /// Sets the active renderer to the renderer given in the provided pointer.
     /// The pointer is moved-from, so it will be \c nullptr after this method is called.
     /// If the pointer is \c nullptr, the renderer is reset to the default renderer.
@@ -82,6 +87,66 @@ public:
     void MapVRAM_FG(u32 bank, u8 cnt) noexcept;
     void MapVRAM_H(u32 bank, u8 cnt) noexcept;
     void MapVRAM_I(u32 bank, u8 cnt) noexcept;
+
+    /*
+        VRAM syncing code for display capture blocks
+
+        The software renderer will write display captures straight to VRAM, making this unnecessary.
+        However, hardware-accelerated renderers may want to keep display captures in GPU memory unless
+        it is necessary to read them back. This syncing system assists with that.
+
+        Those checks are limited to banks A..D, since those are the only ones that can be used for
+        display capture.
+
+        TODO: make checks more efficient
+    */
+
+    void SyncVRAM_LCDC(u32 addr, bool write)
+    {
+        u32 bank = (addr >> 17) & 0x7;
+        if (bank >= 4) return;
+
+        if (VRAMMap_LCDC & (1<<bank))
+            SyncVRAMCaptureBlock((addr >> 15) & 0xF, write);
+    }
+
+    void SyncVRAM_ABG(u32 addr, bool write)
+    {
+        u32 mask = VRAMMap_ABG[(addr >> 14) & 0x1F];
+        addr = (addr >> 15) & 0x3;
+        if (mask & (1<<0)) SyncVRAMCaptureBlock((0<<2) | addr, write);
+        if (mask & (1<<1)) SyncVRAMCaptureBlock((1<<2) | addr, write);
+        if (mask & (1<<2)) SyncVRAMCaptureBlock((2<<2) | addr, write);
+        if (mask & (1<<3)) SyncVRAMCaptureBlock((3<<2) | addr, write);
+    }
+
+    void SyncVRAM_AOBJ(u32 addr, bool write)
+    {
+        u32 mask = VRAMMap_AOBJ[(addr >> 14) & 0xF];
+        addr = (addr >> 15) & 0x3;
+        if (mask & (1<<0)) SyncVRAMCaptureBlock((0<<2) | addr, write);
+        if (mask & (1<<1)) SyncVRAMCaptureBlock((1<<2) | addr, write);
+    }
+
+    void SyncVRAM_BBG(u32 addr, bool write)
+    {
+        u32 mask = VRAMMap_BBG[(addr >> 14) & 0x7];
+        addr = (addr >> 15) & 0x3;
+        if (mask & (1<<2)) SyncVRAMCaptureBlock((2<<2) | addr, write);
+    }
+
+    void SyncVRAM_BOBJ(u32 addr, bool write)
+    {
+        u32 mask = VRAMMap_BOBJ[(addr >> 14) & 0x7];
+        addr = (addr >> 15) & 0x3;
+        if (mask & (1<<3)) SyncVRAMCaptureBlock((3<<2) | addr, write);
+    }
+
+    int GetCaptureBlock_LCDC(u32 offset);
+    int GetCaptureBlock_ABG(u32 offset);
+    int GetCaptureBlock_AOBJ(u32 offset);
+    int GetCaptureBlock_BBG(u32 offset);
+    int GetCaptureBlock_BOBJ(u32 offset);
 
     template<typename T>
     T ReadVRAM_LCDC(u32 addr) const noexcept
@@ -581,8 +646,8 @@ public:
     u8* VRAMPtr_BBG[0x8] {};
     u8* VRAMPtr_BOBJ[0x8] {};
 
-    int FrontBuffer = 0;
-    std::unique_ptr<u32[]> Framebuffer[2][2] {};
+    //int FrontBuffer = 0;
+    //std::unique_ptr<u32[]> Framebuffer[2][2] {};
 
     GPU2D::Unit GPU2D_A;
     GPU2D::Unit GPU2D_B;
@@ -615,10 +680,14 @@ public:
 
     alignas(u64) u8 VRAMFlat_Texture[512*1024] {};
     alignas(u64) u8 VRAMFlat_TexPal[128*1024] {};
+
+    u32 OAMDirty = 0;
+    u32 PaletteDirty = 0;
+
 private:
     void ResetVRAMCache() noexcept;
-    void AssignFramebuffers() noexcept;
-    void InitFramebuffers() noexcept;
+    //void AssignFramebuffers() noexcept;
+    //void InitFramebuffers() noexcept;
     template<typename T>
     T ReadVRAM_ABGExtPal(u32 addr) const noexcept
     {
@@ -694,6 +763,14 @@ private:
         return change;
     }
 
+    u16* GetUniqueBankCBF(u32 mask, u32 offset);
+    void VRAMCBFlagsSet(u32 bank, u32 block, u16 val);
+    void VRAMCBFlagsClear(u32 bank, u32 block);
+    void VRAMCBFlagsOr(u32 bank, u32 block, u16 val);
+    void CheckCaptureStart();
+    void CheckCaptureEnd();
+    void SyncVRAMCaptureBlock(u32 block, bool write);
+
     u32 NextVCount = 0;
 
     bool RunFIFO = false;
@@ -702,8 +779,18 @@ private:
 
     std::unique_ptr<GPU2D::Renderer2D> GPU2D_Renderer = nullptr;
 
-    u32 OAMDirty = 0;
-    u32 PaletteDirty = 0;
+    u16 VRAMCaptureBlockFlags[16];
+    /*u8 VRAMBlockCaptureFlags[4 * 128*1024/VRAMCaptureGranularity] {};
+    NonStupidBitField<1024*1024/VRAMCaptureGranularity> VRAMCaptureFlags_LCDC {};
+    NonStupidBitField<512*1024/VRAMCaptureGranularity> VRAMCaptureFlags_ABG {};
+    NonStupidBitField<256*1024/VRAMCaptureGranularity> VRAMCaptureFlags_AOBJ {};
+    NonStupidBitField<128*1024/VRAMCaptureGranularity> VRAMCaptureFlags_BBG {};
+    NonStupidBitField<128*1024/VRAMCaptureGranularity> VRAMCaptureFlags_BOBJ {};*/
+
+    u16* VRAMCBF_ABG[0x20] {};
+    u16* VRAMCBF_AOBJ[0x10] {};
+    u16* VRAMCBF_BBG[0x8] {};
+    u16* VRAMCBF_BOBJ[0x8] {};
 };
 }
 

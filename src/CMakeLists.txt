@@ -98,11 +98,11 @@ if (ENABLE_GDBSTUB)
 endif()
 
 if (ENABLE_OGLRENDERER)
+    add_subdirectory(OpenGL_shaders)
     target_sources(core PRIVATE
+        # I may need to move that to OpenGL_shaders/CMakeLists.txt
         plugins/Plugin_GPU_OpenGL_shaders.h
-
-        GPU_OpenGL.cpp
-        GPU_OpenGL_shaders.h
+        GPU2D_OpenGL.cpp
         GPU3D_OpenGL.cpp
         GPU3D_Compute.cpp
         GPU3D_TexcacheOpenGL.cpp

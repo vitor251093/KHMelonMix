@@ -37,8 +37,9 @@ using Platform::LogLevel;
 // * VRAM/FIFO display modes convert colors the same way
 // * 3D engine converts colors differently (18bit = 15bit * 2 + 1, except 0 = 0)
 // * 'screen disabled' white is 63,63,63
-// * [Gericom] bit15 is used as bottom green bit for palettes. TODO: check where this applies.
-//   tested on the normal BG palette and applies there
+// * [Gericom] bit15 is used as bottom green bit for palettes.
+//   applies to any BG/OBJ graphics except direct color
+//   does not apply to VRAM display or mainmem FIFO
 //
 // for VRAM display mode, VRAM must be mapped to LCDC
 //
@@ -94,6 +95,8 @@ Unit::Unit(u32 num, melonDS::GPU& gpu) : Num(num), GPU(gpu)
 void Unit::Reset()
 {
     Enabled = false;
+    ScreenPos = Num ^ 1;
+
     DispCnt = 0;
     memset(BGCnt, 0, 4*2);
     memset(BGXPos, 0, 4*2);
@@ -597,7 +600,7 @@ void Unit::VBlank()
     if (CaptureLatch)
     {
         CaptureCnt &= ~(1<<31);
-        CaptureLatch = false;
+        //CaptureLatch = false;
     }
 
     DispFIFOReadPtr = 0;
@@ -729,6 +732,22 @@ void Unit::GetOBJVRAM(u8*& data, u32& mask) const
         data = GPU.VRAMFlat_BOBJ;
         mask = 0x1FFFF;
     }
+}
+
+int Unit::GetCaptureBlock_BG(u32 offset) const
+{
+    if (Num == 0)
+        return GPU.GetCaptureBlock_ABG(offset);
+    else
+        return GPU.GetCaptureBlock_BBG(offset);
+}
+
+int Unit::GetCaptureBlock_OBJ(u32 offset) const
+{
+    if (Num == 0)
+        return GPU.GetCaptureBlock_AOBJ(offset);
+    else
+        return GPU.GetCaptureBlock_BOBJ(offset);
 }
 
 }

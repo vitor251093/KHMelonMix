@@ -41,6 +41,15 @@ enum
     LCD_FinishFrame,
 };
 
+// flags for VRAM blocks that can serve for display captures
+// each block is 32K, thus each of banks A/B/C/D contains 4 blocks
+enum
+{
+    CBFlag_IsCapture    = (1<<15), // the contents of this block are a display capture
+    CBFlag_Complete     = (1<<14), // this block contains a complete capture (not in progress)
+    CBFlag_Synced       = (1<<13), // this block has been synced back to emulated VRAM
+};
+
 
 /*
     VRAM invalidation tracking
@@ -78,7 +87,7 @@ GPU::GPU(melonDS::NDS& nds, std::unique_ptr<Renderer3D>&& renderer3d, std::uniqu
     });
     NDS.RegisterEventFuncs(Event_DisplayFIFO, this, {MakeEventThunk(GPU, DisplayFIFO)});
 
-    InitFramebuffers();
+    //InitFramebuffers();
 }
 
 GPU::~GPU() noexcept
@@ -167,7 +176,14 @@ void GPU::Reset() noexcept
     memset(VRAMPtr_BBG, 0, sizeof(VRAMPtr_BBG));
     memset(VRAMPtr_BOBJ, 0, sizeof(VRAMPtr_BOBJ));
 
-    size_t fbsize;
+    memset(VRAMCaptureBlockFlags, 0, sizeof(VRAMCaptureBlockFlags));
+
+    memset(VRAMCBF_ABG, 0, sizeof(VRAMCBF_ABG));
+    memset(VRAMCBF_AOBJ, 0, sizeof(VRAMCBF_AOBJ));
+    memset(VRAMCBF_BBG, 0, sizeof(VRAMCBF_BBG));
+    memset(VRAMCBF_BOBJ, 0, sizeof(VRAMCBF_BOBJ));
+
+    /*size_t fbsize;
     if (GPU3D.IsRendererAccelerated())
         fbsize = (256*3 + 1) * 192;
     else
@@ -182,14 +198,15 @@ void GPU::Reset() noexcept
     {
         Framebuffer[0][1][i] = 0xFFFFFFFF;
         Framebuffer[1][1][i] = 0xFFFFFFFF;
-    }
+    }*/
+    // TODO reset the buffer!!
 
     GPU2D_A.Reset();
     GPU2D_B.Reset();
     GPU3D.Reset();
 
-    int backbuf = FrontBuffer ? 0 : 1;
-    GPU2D_Renderer->SetFramebuffer(Framebuffer[backbuf][1].get(), Framebuffer[backbuf][0].get());
+    //int backbuf = FrontBuffer ? 0 : 1;
+    //GPU2D_Renderer->SetFramebuffer(Framebuffer[backbuf][1].get(), Framebuffer[backbuf][0].get());
 
     ResetVRAMCache();
 
@@ -205,10 +222,11 @@ void GPU::Stop() noexcept
     else
         fbsize = 256 * 192;
 
-    memset(Framebuffer[0][0].get(), 0, fbsize*4);
+    /*memset(Framebuffer[0][0].get(), 0, fbsize*4);
     memset(Framebuffer[0][1].get(), 0, fbsize*4);
     memset(Framebuffer[1][0].get(), 0, fbsize*4);
-    memset(Framebuffer[1][1].get(), 0, fbsize*4);
+    memset(Framebuffer[1][1].get(), 0, fbsize*4);*/
+    // TODO stop on the GPU2D!!
 
     GPU3D.Stop(*this);
 }
@@ -280,7 +298,7 @@ void GPU::DoSavestate(Savestate* file) noexcept
         ResetVRAMCache();
 }
 
-void GPU::AssignFramebuffers() noexcept
+/*void GPU::AssignFramebuffers() noexcept
 {
     int backbuf = FrontBuffer ? 0 : 1;
     if (NDS.PowerControl9 & (1<<15))
@@ -291,7 +309,7 @@ void GPU::AssignFramebuffers() noexcept
     {
         GPU2D_Renderer->SetFramebuffer(Framebuffer[backbuf][1].get(), Framebuffer[backbuf][0].get());
     }
-}
+}*/
 
 void GPU::SetRenderer3D(std::unique_ptr<Renderer3D>&& renderer) noexcept
 {
@@ -300,10 +318,10 @@ void GPU::SetRenderer3D(std::unique_ptr<Renderer3D>&& renderer) noexcept
     else
         GPU3D.SetCurrentRenderer(std::move(renderer));
 
-    InitFramebuffers();
+    //InitFramebuffers();
 }
 
-void GPU::InitFramebuffers() noexcept
+/*void GPU::InitFramebuffers() noexcept
 {
     int fbsize;
     if (GPU3D.IsRendererAccelerated())
@@ -322,6 +340,12 @@ void GPU::InitFramebuffers() noexcept
     memset(Framebuffer[1][1].get(), 0, fbsize*4);
 
     AssignFramebuffers();
+}*/
+
+
+bool GPU::GetFramebuffers(u32** top, u32** bottom)
+{
+    return GPU2D_Renderer->GetFramebuffers(top, bottom);
 }
 
 
@@ -369,6 +393,14 @@ const u8* GPU::GetUniqueBankPtr(u32 mask, u32 offset) const noexcept
     return &VRAM[num][offset & VRAMMask[num]];
 }
 
+u16* GPU::GetUniqueBankCBF(u32 mask, u32 offset)
+{
+    //mask &= 0xF;
+    if (!mask || (mask & (mask - 1)) != 0) return nullptr;
+    int num = __builtin_ctz(mask);
+    return &VRAMCaptureBlockFlags[(num << 2) | (offset >> 1)];
+}
+
 #define MAP_RANGE(map, base, n)    for (int i = 0; i < n; i++) VRAMMap_##map[(base)+i] |= bankmask;
 #define UNMAP_RANGE(map, base, n)  for (int i = 0; i < n; i++) VRAMMap_##map[(base)+i] &= ~bankmask;
 
@@ -376,6 +408,9 @@ const u8* GPU::GetUniqueBankPtr(u32 mask, u32 offset) const noexcept
     for (int i = 0; i < n; i++) { VRAMMap_##map[(base)+i] |= bankmask; VRAMPtr_##map[(base)+i] = GetUniqueBankPtr(VRAMMap_##map[(base)+i], ((base)+i)<<14); }
 #define UNMAP_RANGE_PTR(map, base, n) \
     for (int i = 0; i < n; i++) { VRAMMap_##map[(base)+i] &= ~bankmask; VRAMPtr_##map[(base)+i] = GetUniqueBankPtr(VRAMMap_##map[(base)+i], ((base)+i)<<14); }
+
+#define SET_RANGE_CBF(map, base) \
+    for (int i = 0; i < 8; i++) { VRAMCBF_##map[(base)+i] = GetUniqueBankCBF(VRAMMap_##map[(base)+i], ((base)+i)); }
 
 void GPU::MapVRAM_AB(u32 bank, u8 cnt) noexcept
 {
@@ -400,11 +435,13 @@ void GPU::MapVRAM_AB(u32 bank, u8 cnt) noexcept
 
         case 1: // ABG
             UNMAP_RANGE_PTR(ABG, oldofs<<3, 8);
+            SET_RANGE_CBF(ABG, oldofs<<3);
             break;
 
         case 2: // AOBJ
             oldofs &= 0x1;
             UNMAP_RANGE_PTR(AOBJ, oldofs<<3, 8);
+            SET_RANGE_CBF(AOBJ, oldofs<<3);
             break;
 
         case 3: // texture
@@ -423,11 +460,13 @@ void GPU::MapVRAM_AB(u32 bank, u8 cnt) noexcept
 
         case 1: // ABG
             MAP_RANGE_PTR(ABG, ofs<<3, 8);
+            SET_RANGE_CBF(ABG, ofs<<3);
             break;
 
         case 2: // AOBJ
             ofs &= 0x1;
             MAP_RANGE_PTR(AOBJ, ofs<<3, 8);
+            SET_RANGE_CBF(AOBJ, ofs<<3);
             break;
 
         case 3: // texture
@@ -462,6 +501,7 @@ void GPU::MapVRAM_CD(u32 bank, u8 cnt) noexcept
 
         case 1: // ABG
             UNMAP_RANGE_PTR(ABG, oldofs<<3, 8);
+            SET_RANGE_CBF(ABG, oldofs<<3);
             break;
 
         case 2: // ARM7 VRAM
@@ -477,10 +517,12 @@ void GPU::MapVRAM_CD(u32 bank, u8 cnt) noexcept
             if (bank == 2)
             {
                 UNMAP_RANGE_PTR(BBG, 0, 8);
+                SET_RANGE_CBF(BBG, 0);
             }
             else
             {
                 UNMAP_RANGE_PTR(BOBJ, 0, 8);
+                SET_RANGE_CBF(BOBJ, 0);
             }
             break;
         }
@@ -496,6 +538,7 @@ void GPU::MapVRAM_CD(u32 bank, u8 cnt) noexcept
 
         case 1: // ABG
             MAP_RANGE_PTR(ABG, ofs<<3, 8);
+            SET_RANGE_CBF(ABG, ofs<<3);
             break;
 
         case 2: // ARM7 VRAM
@@ -514,14 +557,18 @@ void GPU::MapVRAM_CD(u32 bank, u8 cnt) noexcept
             if (bank == 2)
             {
                 MAP_RANGE_PTR(BBG, 0, 8);
+                SET_RANGE_CBF(BBG, 0);
             }
             else
             {
                 MAP_RANGE_PTR(BOBJ, 0, 8);
+                SET_RANGE_CBF(BOBJ, 0);
             }
             break;
         }
     }
+
+    // TODO sync capture blocks if we get mapped to ARM7?
 }
 
 void GPU::MapVRAM_E(u32 bank, u8 cnt) noexcept
@@ -545,10 +592,12 @@ void GPU::MapVRAM_E(u32 bank, u8 cnt) noexcept
 
         case 1: // ABG
             UNMAP_RANGE_PTR(ABG, 0, 4);
+            SET_RANGE_CBF(ABG, 0);
             break;
 
         case 2: // AOBJ
             UNMAP_RANGE_PTR(AOBJ, 0, 4);
+            SET_RANGE_CBF(AOBJ, 0);
             break;
 
         case 3: // texture palette
@@ -571,10 +620,12 @@ void GPU::MapVRAM_E(u32 bank, u8 cnt) noexcept
 
         case 1: // ABG
             MAP_RANGE_PTR(ABG, 0, 4);
+            SET_RANGE_CBF(ABG, 0);
             break;
 
         case 2: // AOBJ
             MAP_RANGE_PTR(AOBJ, 0, 4);
+            SET_RANGE_CBF(AOBJ, 0);
             break;
 
         case 3: // texture palette
@@ -616,6 +667,8 @@ void GPU::MapVRAM_FG(u32 bank, u8 cnt) noexcept
                 VRAMMap_ABG[base + 2] &= ~bankmask;
                 VRAMPtr_ABG[base] = GetUniqueBankPtr(VRAMMap_ABG[base], base << 14);
                 VRAMPtr_ABG[base + 2] = GetUniqueBankPtr(VRAMMap_ABG[base + 2], (base + 2) << 14);
+                VRAMCBF_ABG[base] = GetUniqueBankCBF(VRAMMap_ABG[base], base);
+                VRAMCBF_ABG[base + 2] = GetUniqueBankCBF(VRAMMap_ABG[base + 2], base + 2);
             }
             break;
 
@@ -626,6 +679,8 @@ void GPU::MapVRAM_FG(u32 bank, u8 cnt) noexcept
                 VRAMMap_AOBJ[base + 2] &= ~bankmask;
                 VRAMPtr_AOBJ[base] = GetUniqueBankPtr(VRAMMap_AOBJ[base], base << 14);
                 VRAMPtr_AOBJ[base + 2] = GetUniqueBankPtr(VRAMMap_AOBJ[base + 2], (base + 2) << 14);
+                VRAMCBF_AOBJ[base] = GetUniqueBankCBF(VRAMMap_AOBJ[base], base);
+                VRAMCBF_AOBJ[base + 2] = GetUniqueBankCBF(VRAMMap_AOBJ[base + 2], base + 2);
             }
             break;
 
@@ -659,6 +714,8 @@ void GPU::MapVRAM_FG(u32 bank, u8 cnt) noexcept
                 VRAMMap_ABG[base + 2] |= bankmask;
                 VRAMPtr_ABG[base] = GetUniqueBankPtr(VRAMMap_ABG[base], base << 14);
                 VRAMPtr_ABG[base + 2] = GetUniqueBankPtr(VRAMMap_ABG[base + 2], (base + 2) << 14);
+                VRAMCBF_ABG[base] = GetUniqueBankCBF(VRAMMap_ABG[base], base);
+                VRAMCBF_ABG[base + 2] = GetUniqueBankCBF(VRAMMap_ABG[base + 2], base + 2);
             }
             break;
 
@@ -669,6 +726,8 @@ void GPU::MapVRAM_FG(u32 bank, u8 cnt) noexcept
                 VRAMMap_AOBJ[base + 2] |= bankmask;
                 VRAMPtr_AOBJ[base] = GetUniqueBankPtr(VRAMMap_AOBJ[base], base << 14);
                 VRAMPtr_AOBJ[base + 2] = GetUniqueBankPtr(VRAMMap_AOBJ[base + 2], (base + 2) << 14);
+                VRAMCBF_AOBJ[base] = GetUniqueBankCBF(VRAMMap_AOBJ[base], base);
+                VRAMCBF_AOBJ[base + 2] = GetUniqueBankCBF(VRAMMap_AOBJ[base + 2], base + 2);
             }
             break;
 
@@ -708,14 +767,12 @@ void GPU::MapVRAM_H(u32 bank, u8 cnt) noexcept
             break;
 
         case 1: // BBG
-            VRAMMap_BBG[0] &= ~bankmask;
-            VRAMMap_BBG[1] &= ~bankmask;
-            VRAMMap_BBG[4] &= ~bankmask;
-            VRAMMap_BBG[5] &= ~bankmask;
-            VRAMPtr_BBG[0] = GetUniqueBankPtr(VRAMMap_BBG[0], 0 << 14);
-            VRAMPtr_BBG[1] = GetUniqueBankPtr(VRAMMap_BBG[1], 1 << 14);
-            VRAMPtr_BBG[4] = GetUniqueBankPtr(VRAMMap_BBG[4], 4 << 14);
-            VRAMPtr_BBG[5] = GetUniqueBankPtr(VRAMMap_BBG[5], 5 << 14);
+            for (int i : {0, 1, 4, 5})
+            {
+                VRAMMap_BBG[i] &= ~bankmask;
+                VRAMPtr_BBG[i] = GetUniqueBankPtr(VRAMMap_BBG[i], i << 14);
+                VRAMCBF_BBG[i] = GetUniqueBankCBF(VRAMMap_BBG[i], i);
+            }
             break;
 
         case 2: // BBG ext palette
@@ -733,14 +790,12 @@ void GPU::MapVRAM_H(u32 bank, u8 cnt) noexcept
             break;
 
         case 1: // BBG
-            VRAMMap_BBG[0] |= bankmask;
-            VRAMMap_BBG[1] |= bankmask;
-            VRAMMap_BBG[4] |= bankmask;
-            VRAMMap_BBG[5] |= bankmask;
-            VRAMPtr_BBG[0] = GetUniqueBankPtr(VRAMMap_BBG[0], 0 << 14);
-            VRAMPtr_BBG[1] = GetUniqueBankPtr(VRAMMap_BBG[1], 1 << 14);
-            VRAMPtr_BBG[4] = GetUniqueBankPtr(VRAMMap_BBG[4], 4 << 14);
-            VRAMPtr_BBG[5] = GetUniqueBankPtr(VRAMMap_BBG[5], 5 << 14);
+            for (int i : {0, 1, 4, 5})
+            {
+                VRAMMap_BBG[i] |= bankmask;
+                VRAMPtr_BBG[i] = GetUniqueBankPtr(VRAMMap_BBG[i], i << 14);
+                VRAMCBF_BBG[i] = GetUniqueBankCBF(VRAMMap_BBG[i], i);
+            }
             break;
 
         case 2: // BBG ext palette
@@ -770,18 +825,17 @@ void GPU::MapVRAM_I(u32 bank, u8 cnt) noexcept
             break;
 
         case 1: // BBG
-            VRAMMap_BBG[2] &= ~bankmask;
-            VRAMMap_BBG[3] &= ~bankmask;
-            VRAMMap_BBG[6] &= ~bankmask;
-            VRAMMap_BBG[7] &= ~bankmask;
-            VRAMPtr_BBG[2] = GetUniqueBankPtr(VRAMMap_BBG[2], 2 << 14);
-            VRAMPtr_BBG[3] = GetUniqueBankPtr(VRAMMap_BBG[3], 3 << 14);
-            VRAMPtr_BBG[6] = GetUniqueBankPtr(VRAMMap_BBG[6], 6 << 14);
-            VRAMPtr_BBG[7] = GetUniqueBankPtr(VRAMMap_BBG[7], 7 << 14);
+            for (int i : {2, 3, 6, 7})
+            {
+                VRAMMap_BBG[i] &= ~bankmask;
+                VRAMPtr_BBG[i] = GetUniqueBankPtr(VRAMMap_BBG[i], i << 14);
+                VRAMCBF_BBG[i] = GetUniqueBankCBF(VRAMMap_BBG[i], i);
+            }
             break;
 
         case 2: // BOBJ
             UNMAP_RANGE_PTR(BOBJ, 0, 8);
+            SET_RANGE_CBF(BOBJ, 0);
             break;
 
         case 3: // BOBJ ext palette
@@ -799,18 +853,17 @@ void GPU::MapVRAM_I(u32 bank, u8 cnt) noexcept
             break;
 
         case 1: // BBG
-            VRAMMap_BBG[2] |= bankmask;
-            VRAMMap_BBG[3] |= bankmask;
-            VRAMMap_BBG[6] |= bankmask;
-            VRAMMap_BBG[7] |= bankmask;
-            VRAMPtr_BBG[2] = GetUniqueBankPtr(VRAMMap_BBG[2], 2 << 14);
-            VRAMPtr_BBG[3] = GetUniqueBankPtr(VRAMMap_BBG[3], 3 << 14);
-            VRAMPtr_BBG[6] = GetUniqueBankPtr(VRAMMap_BBG[6], 6 << 14);
-            VRAMPtr_BBG[7] = GetUniqueBankPtr(VRAMMap_BBG[7], 7 << 14);
+            for (int i : {2, 3, 6, 7})
+            {
+                VRAMMap_BBG[i] |= bankmask;
+                VRAMPtr_BBG[i] = GetUniqueBankPtr(VRAMMap_BBG[i], i << 14);
+                VRAMCBF_BBG[i] = GetUniqueBankCBF(VRAMMap_BBG[i], i);
+            }
             break;
 
         case 2: // BOBJ
             MAP_RANGE_PTR(BOBJ, 0, 8);
+            SET_RANGE_CBF(BOBJ, 0);
             break;
 
         case 3: // BOBJ ext palette
@@ -833,11 +886,9 @@ void GPU::SetPowerCnt(u32 val) noexcept
 
     if (!(val & (1<<0))) Log(LogLevel::Warn, "!!! CLEARING POWCNT BIT0. DANGER\n");
 
-    GPU2D_A.SetEnabled(val & (1<<1));
-    GPU2D_B.SetEnabled(val & (1<<9));
+    GPU2D_A.SetEnabled(val & (1<<1), val & (1<<15));
+    GPU2D_B.SetEnabled(val & (1<<9), val & (1<<15));
     GPU3D.SetEnabled(val & (1<<3), val & (1<<2));
-
-    AssignFramebuffers();
 }
 
 
@@ -873,6 +924,8 @@ void GPU::StartFrame() noexcept
 
     TotalScanlines = 0;
     StartScanline(0);
+
+    CheckCaptureStart();
 }
 
 void GPU::StartHBlank(u32 line) noexcept
@@ -920,8 +973,9 @@ void GPU::StartHBlank(u32 line) noexcept
 
 void GPU::FinishFrame(u32 lines) noexcept
 {
-    FrontBuffer = FrontBuffer ? 0 : 1;
-    AssignFramebuffers();
+    //FrontBuffer = FrontBuffer ? 0 : 1;
+    //AssignFramebuffers();
+    GPU2D_Renderer->SwapBuffers();
 
     TotalScanlines = lines;
 
@@ -934,7 +988,7 @@ void GPU::FinishFrame(u32 lines) noexcept
 
 void GPU::BlankFrame() noexcept
 {
-    int backbuf = FrontBuffer ? 0 : 1;
+    /*int backbuf = FrontBuffer ? 0 : 1;
     int fbsize;
     if (GPU3D.IsRendererAccelerated())
         fbsize = (256*3 + 1) * 192;
@@ -945,7 +999,8 @@ void GPU::BlankFrame() noexcept
     memset(Framebuffer[backbuf][1].get(), 0, fbsize*4);
 
     FrontBuffer = backbuf;
-    AssignFramebuffers();
+    AssignFramebuffers();*/
+    // TODO do it on the renderer!!
 
     TotalScanlines = 263;
 }
@@ -1018,7 +1073,7 @@ void GPU::StartScanline(u32 line) noexcept
             // and games might already start to modify texture memory.
             // That doesn't matter for us because we cache the entire
             // texture memory anyway and only update it before the start
-            //of the next frame.
+            // of the next frame.
             // So we can give the rasteriser a bit more headroom
             GPU3D.VCount144(*this);
 
@@ -1034,13 +1089,17 @@ void GPU::StartScanline(u32 line) noexcept
             if (DispStat[0] & (1<<3)) NDS.SetIRQ(0, IRQ_VBlank);
             if (DispStat[1] & (1<<3)) NDS.SetIRQ(1, IRQ_VBlank);
 
+            CheckCaptureEnd();
+
             GPU2D_A.VBlank();
             GPU2D_B.VBlank();
             GPU3D.VBlank();
 
             // Need a better way to identify the openGL renderer in particular
-            if (GPU3D.IsRendererAccelerated())
-                GPU3D.Blit(*this);
+            //if (GPU3D.IsRendererAccelerated())
+                //GPU3D.Blit(*this);
+            GPU2D_Renderer->VBlank(&GPU2D_A, &GPU2D_B);
+            GPU2D_A.CaptureLatch = false;
         }
     }
 
@@ -1186,4 +1245,246 @@ bool GPU::MakeVRAMFlat_BOBJExtPalCoherent(NonStupidBitField<8*1024/VRAMDirtyGran
 {
     return CopyLinearVRAM<8*1024>(VRAMFlat_BOBJExtPal, &VRAMMap_BOBJExtPal, dirty, &GPU::ReadVRAM_BOBJExtPal<u64>);
 }
+
+
+void GPU::VRAMCBFlagsSet(u32 bank, u32 block, u16 val)
+{
+    u16* cbflags = &VRAMCaptureBlockFlags[bank << 2];
+    u32 start = block;//val & 0x3;
+    u32 len = (val >> 4) & 0x3;
+
+    u32 b = start;
+    for (u32 i = 0; i < len; i++)
+    {
+        cbflags[b] = val;
+        b = (b + 1) & 0x3;
+    }
+}
+
+void GPU::VRAMCBFlagsClear(u32 bank, u32 block)
+{
+    u16* cbflags = &VRAMCaptureBlockFlags[bank << 2];
+    u16 flags = cbflags[block];
+    u32 start = flags & 0x3;
+    u32 len = (flags >> 4) & 0x3;
+
+    u32 b = start;
+    for (u32 i = 0; i < len; i++)
+    {
+        cbflags[b] = 0;
+        b = (b + 1) & 0x3;
+    }
+}
+
+void GPU::VRAMCBFlagsOr(u32 bank, u32 block, u16 val)
+{
+    u16* cbflags = &VRAMCaptureBlockFlags[bank << 2];
+    u16 flags = cbflags[block];
+    u32 start = flags & 0x3;
+    u32 len = (flags >> 4) & 0x3;
+
+    u32 b = start;
+    for (u32 i = 0; i < len; i++)
+    {
+        cbflags[b] |= val;
+        b = (b + 1) & 0x3;
+    }
+}
+
+void GPU::CheckCaptureStart()
+{
+    if (!(GPU2D_A.CaptureCnt & (1<<31)))
+        return;
+
+    u32 dstbank = (GPU2D_A.CaptureCnt >> 16) & 0x3;
+    if (!(VRAMMap_LCDC & (1<<dstbank)))
+        return;
+
+    u32 dstoff = (GPU2D_A.CaptureCnt >> 18) & 0x3;
+    u32 size = (GPU2D_A.CaptureCnt >> 20) & 0x3;
+    u32 len = (size == 0) ? 1 : size;
+
+    // if needed, invalidate old capture
+    u16 oldflags = VRAMCaptureBlockFlags[(dstbank<<2) | dstoff];
+    if (oldflags & CBFlag_IsCapture)
+    {
+        // TODO sync VRAM if this is a different block?
+
+        VRAMCBFlagsClear(dstbank, dstoff);
+    }
+
+    // mark involved VRAM blocks as being a new capture
+    u16 newval = CBFlag_IsCapture | dstoff | (dstbank << 2) | (len << 4) | (size << 6);
+    VRAMCBFlagsSet(dstbank, dstoff, newval);
+    GPU2D_Renderer->AllocCapture(dstbank, dstoff, size);
+}
+
+void GPU::CheckCaptureEnd()
+{
+    if (!(GPU2D_A.CaptureCnt & (1<<31)))
+        return;
+
+    // mark this capture as complete
+    // TODO should be done before VBlank for smaller capture sizes?
+    u32 dstbank = (GPU2D_A.CaptureCnt >> 16) & 0x3;
+    u32 dstoff = (GPU2D_A.CaptureCnt >> 18) & 0x3;
+    VRAMCBFlagsOr(dstbank, dstoff, CBFlag_Complete);
+}
+
+void GPU::SyncVRAMCaptureBlock(u32 block, bool write)
+{
+    u16 flags = VRAMCaptureBlockFlags[block];
+    if (!(flags & CBFlag_IsCapture)) return;
+    if (flags & CBFlag_Synced) return;
+
+    // sync the capture which contains this block
+    u32 bank = block >> 2;
+    u32 start = flags & 0x3;
+    u32 len = (flags >> 6) & 0x3;
+    GPU2D_Renderer->SyncVRAMCapture(bank, start, len, (flags & CBFlag_Complete));
+
+    //u16* cbflags = &VRAMCaptureBlockFlags[bank << 2];
+    if (write)
+    {
+        // if this block was written to by the CPU, invalidate the entire capture
+        // the renderer will need to use the emulated VRAM contents
+        VRAMCBFlagsClear(bank, start);
+    }
+    else
+    {
+        // if this block was simply read by the CPU, we just need to mark it as synced
+        VRAMCBFlagsOr(bank, start, CBFlag_Synced);
+    }
+}
+
+int GPU::GetCaptureBlock_LCDC(u32 offset)
+{
+    u16 flags = VRAMCaptureBlockFlags[offset >> 15];
+    //return (flags & CBFlag_IsCapture);
+    if (flags & CBFlag_IsCapture)
+        return ((offset >> 15) & 0xC) | (flags & 0x3);
+    return -1;
+}
+
+int GPU::GetCaptureBlock_ABG(u32 offset)
+{
+    u16* cbf = VRAMCBF_ABG[(offset >> 14) & 0x1F];
+    if (!cbf) return -1;
+
+    u16 flags = *cbf;
+    if (!(flags & CBFlag_IsCapture))
+        return -1;
+
+    return flags & 0xF;
+#if 0
+    u32 mask = VRAMMap_ABG[(offset >> 14) & 0x1F];
+    offset = (offset >> 15) & 0x3;
+    /*if ((mask & (1<<0)) && (VRAMCaptureBlockFlags[(0<<2) | offset] & CBFlag_IsCapture)) return true;
+    if ((mask & (1<<1)) && (VRAMCaptureBlockFlags[(1<<2) | offset] & CBFlag_IsCapture)) return true;
+    if ((mask & (1<<2)) && (VRAMCaptureBlockFlags[(2<<2) | offset] & CBFlag_IsCapture)) return true;
+    if ((mask & (1<<3)) && (VRAMCaptureBlockFlags[(3<<2) | offset] & CBFlag_IsCapture)) return true;*/
+    if (mask & (1<<0))
+    {
+        u8 flags = VRAMCaptureBlockFlags[(0<<2) | offset];
+        if (flags & CBFlag_IsCapture)
+            return (0<<2) | ((flags>>4) & 0x3);
+    }
+    if (mask & (1<<1))
+    {
+        u8 flags = VRAMCaptureBlockFlags[(1<<2) | offset];
+        if (flags & CBFlag_IsCapture)
+            return (1<<2) | ((flags>>4) & 0x3);
+    }
+    if (mask & (1<<2))
+    {
+        u8 flags = VRAMCaptureBlockFlags[(2<<2) | offset];
+        if (flags & CBFlag_IsCapture)
+            return (2<<2) | ((flags>>4) & 0x3);
+    }
+    if (mask & (1<<3))
+    {
+        u8 flags = VRAMCaptureBlockFlags[(3<<2) | offset];
+        if (flags & CBFlag_IsCapture)
+            return (3<<2) | ((flags>>4) & 0x3);
+    }
+    return -1;
+#endif
+}
+
+int GPU::GetCaptureBlock_AOBJ(u32 offset)
+{
+    u16* cbf = VRAMCBF_AOBJ[(offset >> 14) & 0xF];
+    if (!cbf) return -1;
+
+    u16 flags = *cbf;
+    if (!(flags & CBFlag_IsCapture))
+        return -1;
+
+    return flags & 0xF;
+#if 0
+    u32 mask = VRAMMap_AOBJ[(offset >> 14) & 0xF];
+    offset = (offset >> 15) & 0x3;
+    if (mask & (1<<0))
+    {
+        u8 flags = VRAMCaptureBlockFlags[(0<<2) | offset];
+        if (flags & CBFlag_IsCapture)
+            return (0<<2) | ((flags>>4) & 0x3);
+    }
+    if (mask & (1<<1))
+    {
+        u8 flags = VRAMCaptureBlockFlags[(1<<2) | offset];
+        if (flags & CBFlag_IsCapture)
+            return (1<<2) | ((flags>>4) & 0x3);
+    }
+    return -1;
+#endif
+}
+
+int GPU::GetCaptureBlock_BBG(u32 offset)
+{
+    u16* cbf = VRAMCBF_BBG[(offset >> 14) & 0x7];
+    if (!cbf) return -1;
+
+    u16 flags = *cbf;
+    if (!(flags & CBFlag_IsCapture))
+        return -1;
+
+    return flags & 0xF;
+#if 0
+    u32 mask = VRAMMap_BBG[(offset >> 14) & 0x7];
+    offset = (offset >> 15) & 0x3;
+    //if ((mask & (1<<2)) && (VRAMCaptureBlockFlags[(2<<2) | offset] & CBFlag_IsCapture)) return true;
+    if (mask & (1<<2))
+    {
+        u8 flags = VRAMCaptureBlockFlags[(2<<2) | offset];
+        if (flags & CBFlag_IsCapture)
+            return (2<<2) | ((flags>>4) & 0x3);
+    }
+    return -1;
+#endif
+}
+
+int GPU::GetCaptureBlock_BOBJ(u32 offset)
+{
+    u16* cbf = VRAMCBF_BOBJ[(offset >> 14) & 0x7];
+    if (!cbf) return -1;
+
+    u16 flags = *cbf;
+    if (!(flags & CBFlag_IsCapture))
+        return -1;
+
+    return flags & 0xF;
+#if 0
+    u32 mask = VRAMMap_BOBJ[(offset >> 14) & 0x7];
+    offset = (offset >> 15) & 0x3;
+    if (mask & (1<<3))
+    {
+        u8 flags = VRAMCaptureBlockFlags[(3<<2) | offset];
+        if (flags & CBFlag_IsCapture)
+            return (3<<2) | ((flags>>4) & 0x3);
+    }
+    return -1;
+#endif
+}
+
 }

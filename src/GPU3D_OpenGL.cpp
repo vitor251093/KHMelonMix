@@ -33,8 +33,6 @@ bool GLRenderer::BuildRenderShader(u32 flags, const std::string& vs, const std::
     char shadername[32];
     snprintf(shadername, sizeof(shadername), "RenderShader%02X", flags);
 
-    int headerlen = strlen(kShaderHeader);
-
     std::string vsbuf;
     vsbuf += kShaderHeader;
     vsbuf += kRenderVSCommon;
@@ -85,9 +83,10 @@ void SetupDefaultTexParams(GLuint tex)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-GLRenderer::GLRenderer(GLCompositor&& compositor) noexcept :
-    Renderer3D(true),
-    CurGLCompositor(std::move(compositor))
+//GLRenderer::GLRenderer(GLCompositor&& compositor) noexcept :
+GLRenderer::GLRenderer() noexcept :
+    Renderer3D(true)
+    //CurGLCompositor(std::move(compositor))
 {
     // GLRenderer::New() will be used to actually initialize the renderer;
     // The various glDelete* functions silently ignore invalid IDs,
@@ -98,15 +97,16 @@ std::unique_ptr<GLRenderer> GLRenderer::New(Plugins::Plugin* plugin) noexcept
 {
     assert(glEnable != nullptr);
 
-    std::optional<GLCompositor> compositor =  GLCompositor::New(plugin);
+    /*std::optional<GLCompositor> compositor =  GLCompositor::New(plugin);
     if (!compositor)
-        return nullptr;
+        return nullptr;*/
 
     // Will be returned if the initialization succeeds,
     // or cleaned up via RAII if it fails.
-    std::unique_ptr<GLRenderer> result = std::unique_ptr<GLRenderer>(new GLRenderer(std::move(*compositor)));
+    std::unique_ptr<GLRenderer> result = std::unique_ptr<GLRenderer>(new GLRenderer());
     result->GamePlugin = plugin;
-    compositor = std::nullopt;
+    //std::unique_ptr<GLRenderer> result = std::unique_ptr<GLRenderer>(new GLRenderer(std::move(*compositor)));
+    //compositor = std::nullopt;
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
@@ -334,7 +334,8 @@ void GLRenderer::SetRenderSettings(bool betterpolygons, int scale) noexcept
     if (betterpolygons == BetterPolygons && scale == ScaleFactor)
         return;
 
-    CurGLCompositor.SetScaleFactor(scale);
+    // TODO set it for 2D renderer
+    //CurGLCompositor.SetScaleFactor(scale);
     ScaleFactor = scale;
     BetterPolygons = betterpolygons;
 
@@ -1149,7 +1150,7 @@ void GLRenderer::RenderSceneChunk(const GPU3D& gpu3d, int y, int h)
                 u32 b = (c >> 10) & 0x1F;
                 u32 a = (c >> 16) & 0x1F;
 
-                glBlendColor((float)b/31.0, (float)g/31.0, (float)r/31.0, (float)a/31.0);
+                glBlendColor((float)r/31.0, (float)g/31.0, (float)b/31.0, (float)a/31.0);
             }
 
             glDrawArrays(GL_TRIANGLES, 0, 2*3);
@@ -1331,12 +1332,18 @@ void GLRenderer::RenderFrame(GPU& gpu)
     }
 }
 
-void GLRenderer::Stop(const GPU& gpu)
+void GLRenderer::VCount144(GPU& gpu)
 {
-    CurGLCompositor.Stop(gpu);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, ColorBufferTex);
 }
 
-void GLRenderer::PrepareCaptureFrame()
+void GLRenderer::Stop(const GPU& gpu)
+{
+    //CurGLCompositor.Stop(gpu);
+}
+
+/*void GLRenderer::PrepareCaptureFrame()
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, MainFramebuffer);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -1347,9 +1354,9 @@ void GLRenderer::PrepareCaptureFrame()
     glBindBuffer(GL_PIXEL_PACK_BUFFER, PixelbufferID);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, DownscaleFramebuffer);
     glReadPixels(0, 0, 256, 192, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
-}
+}*/
 
-void GLRenderer::Blit(const GPU& gpu)
+/*void GLRenderer::Blit(const GPU& gpu)
 {
     CurGLCompositor.RenderFrame(gpu, *this);
 }
@@ -1357,7 +1364,7 @@ void GLRenderer::Blit(const GPU& gpu)
 void GLRenderer::BindOutputTexture(int buffer)
 {
     CurGLCompositor.BindOutputTexture(buffer);
-}
+}*/
 
 u32* GLRenderer::GetLine(int line)
 {
@@ -1383,9 +1390,9 @@ u32* GLRenderer::GetLine(int line)
     return &Framebuffer[stride * line];
 }
 
-void GLRenderer::SetupAccelFrame()
+/*void GLRenderer::SetupAccelFrame()
 {
     glBindTexture(GL_TEXTURE_2D, ColorBufferTex);
-}
+}*/
 
 }

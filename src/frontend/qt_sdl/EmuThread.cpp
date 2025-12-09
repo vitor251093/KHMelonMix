@@ -50,6 +50,8 @@
 #include "RTC.h"
 #include "DSi.h"
 #include "DSi_I2C.h"
+#include "GPU2D_Soft.h"
+#include "GPU2D_OpenGL.h"
 #include "GPU3D_Soft.h"
 #include "GPU3D_OpenGL.h"
 #include "GPU3D_Compute.h"
@@ -415,21 +417,9 @@ void EmuThread::run()
             if (emuInstance->firmwareSave)
                 emuInstance->firmwareSave->CheckFlush();
 
-            if (!useOpenGL)
+            if (shouldRenderFrame)
             {
-                frontBufferLock.lock();
-                frontBuffer = emuInstance->nds->GPU.FrontBuffer;
-                frontBufferLock.unlock();
-            }
-            else
-            {
-                frontBuffer = emuInstance->nds->GPU.FrontBuffer;
-
-                if (shouldRenderFrame)
-                {
-                    emuInstance->plugin->buildShapes();
-                    emuInstance->drawScreenGL();
-                }
+                emuInstance->drawScreen();
             }
 
 #ifdef MELONCAP
@@ -546,10 +536,7 @@ void EmuThread::run()
 
             SDL_Delay(75);
 
-            if (useOpenGL)
-            {
-                emuInstance->drawScreenGL();
-            }
+            emuInstance->drawScreen();
 
             if (emuInstance->plugin != nullptr) {
                 refreshPluginState();
@@ -1135,15 +1122,23 @@ void EmuThread::updateRenderer()
 {
     if (videoRenderer != lastVideoRenderer)
     {
+        // TODO: TAKE DECISION
+        // * on one hand, I am not a fan at all of the idea of having the frontend provide both 2D and 3D renderers
+        //   (with the technical possibility of mismatching them)
+        // * on the other hand, we may need customization ability in some situations (ie. the Switch port)
+        auto& gpu = emuInstance->nds->GPU;
         switch (videoRenderer)
         {
             case renderer3D_Software:
+                gpu.SetRenderer2D(std::make_unique<GPU2D::SoftRenderer>(gpu));
                 emuInstance->nds->GPU.SetRenderer3D(std::make_unique<SoftRenderer>());
                 break;
             case renderer3D_OpenGL:
+                gpu.SetRenderer2D(GPU2D::GLRenderer::New(gpu, emuInstance->plugin));
                 emuInstance->nds->GPU.SetRenderer3D(GLRenderer::New(emuInstance->plugin));
                 break;
             case renderer3D_OpenGLCompute:
+                gpu.SetRenderer2D(GPU2D::GLRenderer::New(gpu, emuInstance->plugin));
                 emuInstance->nds->GPU.SetRenderer3D(ComputeRenderer::New(emuInstance->plugin));
                 break;
             default: __builtin_unreachable();
@@ -1160,11 +1155,15 @@ void EmuThread::updateRenderer()
                     emuInstance->nds->GPU);
             break;
         case renderer3D_OpenGL:
+            static_cast<GPU2D::GLRenderer&>(emuInstance->nds->GPU.GetRenderer2D()).SetScaleFactor(
+                    cfg.GetInt("3D.GL.ScaleFactor"));
             static_cast<GLRenderer&>(emuInstance->nds->GPU.GetRenderer3D()).SetRenderSettings(
                     cfg.GetBool("3D.GL.BetterPolygons"),
                     cfg.GetInt("3D.GL.ScaleFactor"));
             break;
         case renderer3D_OpenGLCompute:
+            static_cast<GPU2D::GLRenderer&>(emuInstance->nds->GPU.GetRenderer2D()).SetScaleFactor(
+                    cfg.GetInt("3D.GL.ScaleFactor"));
             static_cast<ComputeRenderer&>(emuInstance->nds->GPU.GetRenderer3D()).SetRenderSettings(
                     cfg.GetInt("3D.GL.ScaleFactor"),
                     cfg.GetBool("3D.GL.HiresCoordinates"));

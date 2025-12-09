@@ -1982,20 +1982,16 @@ bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
 
 u32* PluginKingdomHeartsDays::topScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 == 1) {
-        FrontBuffer = FrontBuffer ? 0 : 1;
-    }
-    return nds->GPU.Framebuffer[FrontBuffer][0].get();
+    u32* topBuffer; u32* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return topBuffer;
 }
 
 u32* PluginKingdomHeartsDays::bottomScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 == 1) {
-        FrontBuffer = FrontBuffer ? 0 : 1;
-    }
-    return nds->GPU.Framebuffer[FrontBuffer][1].get();
+    u32* topBuffer; u32* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return bottomBuffer;
 }
 
 bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()

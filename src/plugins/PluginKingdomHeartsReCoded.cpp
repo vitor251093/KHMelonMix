@@ -1932,27 +1932,29 @@ bool PluginKingdomHeartsReCoded::isBufferBlack(unsigned int* buffer)
 
 u32* PluginKingdomHeartsReCoded::topScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    return nds->GPU.Framebuffer[FrontBuffer][0].get();
+    u32* topBuffer; u32* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return topBuffer;
 }
 
 u32* PluginKingdomHeartsReCoded::bottomScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    return nds->GPU.Framebuffer[FrontBuffer][1].get();
+    u32* topBuffer; u32* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return bottomBuffer;
 }
 
 bool PluginKingdomHeartsReCoded::isTopScreen2DTextureBlack()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
+    u32* topBuffer; u32* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
     return isBufferBlack(topBuffer);
 }
 
 bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
+    u32* topBuffer; u32* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
     return isBufferBlack(bottomBuffer);
 }
 

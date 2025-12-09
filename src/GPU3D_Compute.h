@@ -26,7 +26,6 @@
 #include "GPU3D.h"
 
 #include "OpenGLSupport.h"
-#include "GPU_OpenGL.h"
 
 #include "GPU3D_TexcacheOpenGL.h"
 
@@ -53,18 +52,18 @@ public:
     void RestartFrame(GPU& gpu) override;
     u32* GetLine(int line) override;
 
-    void SetupAccelFrame() override;
-    void PrepareCaptureFrame() override;
+    //void SetupAccelFrame() override;
+    //void PrepareCaptureFrame() override;
 
-    void BindOutputTexture(int buffer) override;
+    //void BindOutputTexture(int buffer) override;
 
-    void Blit(const GPU& gpu) override;
+    //void Blit(const GPU& gpu) override;
     void Stop(const GPU& gpu) override;
 
     bool NeedsShaderCompile() override { return ShaderStepIdx != 33; }
     void ShaderCompileStep(int& current, int& count) override;
 private:
-    ComputeRenderer(GLCompositor&& compositor);
+    ComputeRenderer();//GLCompositor&& compositor);
 
     GLuint ShaderInterpXSpans[2];
     GLuint ShaderBinCombined;
@@ -228,7 +227,7 @@ private:
     int MaxWorkTiles;
     bool HiresCoordinates;
 
-    GLCompositor CurGLCompositor;
+    //GLCompositor CurGLCompositor;
 
     int ShaderStepIdx = 0;
 
