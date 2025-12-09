@@ -152,24 +152,25 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 
 enum
 {
-    gameScene_Intro,                    // 0
-    gameScene_TitleScreen,              // 1
-    gameScene_IntroLoadMenu,            // 2
-    gameScene_DayCounter,               // 3
-    gameScene_Cutscene,                 // 4
-    gameScene_InGameWithMap,            // 5
-    gameScene_InGameMenu,               // 6
-    gameScene_PauseMenu,                // 7
-    gameScene_Tutorial,                 // 8
-    gameScene_InGameWithDouble3D,       // 9
-    gameScene_MultiplayerMissionReview, // 10
-    gameScene_Shop,                     // 11
-    gameScene_LoadingScreen,            // 12
-    gameScene_RoxasThoughts,            // 13
-    gameScene_WorldSelector,            // 14
-    gameScene_DeathScreen,              // 15
-    gameScene_TheEnd,                   // 16
-    gameScene_Other                     // 17
+    gameScene_Intro,
+    gameScene_TitleScreen,
+    gameScene_IntroLoadMenu,
+    gameScene_SaveMenu,
+    gameScene_DayCounter,
+    gameScene_Cutscene,
+    gameScene_InGameWithMap,
+    gameScene_InGameMenu,
+    gameScene_PauseMenu,
+    gameScene_Tutorial,
+    gameScene_InGameWithDouble3D,
+    gameScene_MultiplayerMissionReview,
+    gameScene_Shop,
+    gameScene_LoadingScreen,
+    gameScene_RoxasThoughts,
+    gameScene_WorldSelector,
+    gameScene_DeathScreen,
+    gameScene_TheEnd,
+    gameScene_Other
 };
 
 enum
@@ -1193,6 +1194,12 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
 
             break;
 
+        case gameScene_SaveMenu:
+        {
+            renderer_2DShapes_saveScreenMenu(&shapes, aspectRatio, hudScale);
+            break;
+        }
+
         case gameScene_InGameMenu:
         {
             u32 curMenu = getCurrentMainMenuView();
@@ -1264,10 +1271,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                             .preserveDsScale()
                             .build(aspectRatio));
 
-                    break;
-                }
-                case 7: { // save
-                    renderer_2DShapes_saveScreenMenu(&shapes, aspectRatio, hudScale);
                     break;
                 }
                 default:
@@ -1532,6 +1535,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
     }
 
     switch (GameScene) {
+        case gameScene_SaveMenu:
         case gameScene_DayCounter:
         case gameScene_RoxasThoughts:
         case gameScene_InGameWithMap:
@@ -1549,7 +1553,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
         
         case gameScene_MultiplayerMissionReview:
             return screenLayout_BothVertical;
-        
+
         case gameScene_Intro:
         case gameScene_TitleScreen:
         case gameScene_InGameMenu:
@@ -1930,6 +1934,7 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
         case gameScene_Intro: return "Game scene: Intro";
         case gameScene_TitleScreen: return "Game scene: Title screen";
         case gameScene_IntroLoadMenu: return "Game scene: Intro load menu";
+        case gameScene_SaveMenu: return "Game scene: Save menu";
         case gameScene_DayCounter: return "Game scene: Day counter";
         case gameScene_Cutscene: return "Game scene: Cutscene";
         case gameScene_InGameWithMap: return "Game scene: Ingame (with minimap)";
@@ -2363,6 +2368,10 @@ int PluginKingdomHeartsDays::detectGameScene()
     if (isUnplayableArea)
     {
         u32 mainMenuView = getCurrentMainMenuView();
+        if (mainMenuView == 7)
+        {
+            return gameScene_SaveMenu;
+        }
         if (mainMenuView == 8)
         {
             return gameScene_WorldSelector;
@@ -2683,7 +2692,7 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
 // 4 -> enemy profile
 // 5 -> tutorials
 // 6 -> config
-// 7 -> save
+// 7 -> save (replaced by gameScene_SaveMenu)
 // 8 -> world selector (replaced by gameScene_WorldSelector)
 // 9 -> character selection
 // 10 -> mission review
