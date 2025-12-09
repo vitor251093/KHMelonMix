@@ -60,7 +60,7 @@ Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the late
 <hr>
 
 <p align="center"><img src="https://raw.githubusercontent.com/vitor251093/KHMelonMix/master/screenshot.png"></p>
-<p align="center"><i>KH Melon Mix v0.2.2</i></p>
+<p align="center"><i>From melonDS with a widescreen cheat to KH Melon Mix v0.7.1</i></p>
 
 ## Team
 * **Programmers:** @vitor251093 and @justedni
