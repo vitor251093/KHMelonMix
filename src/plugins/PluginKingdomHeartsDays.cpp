@@ -1568,7 +1568,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
             if (nds->ARM7Read8(getAnyByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10) {
                 return screenLayout_BothHorizontal;
             }
-            return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
+            return (detectTopScreenMobiCutscene() == nullptr) ? screenLayout_BothHorizontal : ((detectBottomScreenMobiCutscene() == nullptr) ? screenLayout_Top : screenLayout_BothHorizontal);
     }
 
     return screenLayout_Top;
@@ -1601,7 +1601,7 @@ int PluginKingdomHeartsDays::renderer_brightnessMode() {
         return brightnessMode_Horizontal;
     }
     if (GameScene == gameScene_Cutscene) {
-        return brightnessMode_DisableBrightnessControl;
+        return brightnessMode_Auto;
     }
     if (GameScene == gameScene_WorldSelector) {
         return brightnessMode_Auto;
