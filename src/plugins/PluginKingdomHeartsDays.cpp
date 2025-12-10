@@ -458,6 +458,24 @@ void PluginKingdomHeartsDays::onLoadROM() {
     loadLocalization();
 
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
+
+    // Getting cutscene address offset in ROM, so we can support patched ROMs
+    u32 firstCutsceneAddr = 0;
+    std::array<u8, 0x20> firstCutsceneContent = {0x4d, 0x4f, 0x44, 0x53, 0x4e, 0x33, 0x0a, 0x00, 0x85, 0x11, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0xa0, 0x00, 0x00, 0x00, 0xf6, 0x28, 0xfc, 0x0e, 0x03, 0x00, 0x02, 0x00, 0xd8, 0x7f, 0x00, 0x00 };
+    for (int addr = 0x08000000; addr < 0x0b000000; addr++) {
+        bool match = true;
+        for (int offset = 0; offset < 0x20; offset++) {
+            if (rom[addr + offset] != firstCutsceneContent[offset]) {
+                match = false;
+                break;
+            }
+        }
+        if (match) {
+            firstCutsceneAddr = addr;
+            break;
+        }
+    }
+    cutscenesAddressOffset = firstCutsceneAddr - getMobiCutsceneAddress(&Cutscenes[0]);
 }
 
 void PluginKingdomHeartsDays::onLoadState() {
@@ -2428,7 +2446,7 @@ CutsceneEntry* PluginKingdomHeartsDays::getMobiCutsceneByAddress(u32 cutsceneAdd
 
     CutsceneEntry* cutscene1 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue) {
+        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue - cutscenesAddressOffset) {
             cutscene1 = entry;
         }
     }

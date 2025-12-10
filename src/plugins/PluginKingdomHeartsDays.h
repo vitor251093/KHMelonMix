@@ -122,6 +122,7 @@ private:
     bool SwitchTargetPressOnHold = false;
 
     std::array<CutsceneEntry, 46> Cutscenes;
+    u32 cutscenesAddressOffset = 0;
 
     std::string KH_15_25_Remix_Location = "";
     std::string TextLanguage = "";
