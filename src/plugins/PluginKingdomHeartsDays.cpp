@@ -123,6 +123,7 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define TUTORIAL_ADDRESS_JP      0x0207f8dc
 #define TUTORIAL_ADDRESS_JP_REV1 0x0207f89c
 
+// TODO: I don't think those addresses are working as expected, even without patching
 #define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
 #define CURRENT_MAP_FROM_WORLD_EU      0x02189CC6
 #define CURRENT_MAP_FROM_WORLD_JP      0x02187FC6 // TODO: KH maybe it should be 0x02188046 ?
@@ -2594,8 +2595,26 @@ s16 PluginKingdomHeartsDays::getSongIdInSongTable(u16 bgmId) {
     return -1;
 }
 
-u32 PluginKingdomHeartsDays::getMidiSequenceAddress(u16 bgmId) {
+u32 PluginKingdomHeartsDays::getSseqTableAddress()
+{
     const u32 songTableAddr = getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
+    const u32 songTableExpectedRefVal = getAnyByCart(0x020dd668, 0x020de448, 0x020dc7c8, 0x020dc748);
+    const u32 songTableRefVal = nds->ARM9Read32(songTableAddr - 0x20);
+
+    if (songTableRefVal != songTableExpectedRefVal) // patched rom support
+    {
+        for (s32 offset = -0x100; offset <= 0x100; offset += 0x4) {
+            if (nds->ARM9Read32(songTableAddr + offset - 0x20) == songTableExpectedRefVal)
+            {
+                return songTableAddr + offset;
+            }
+        }
+    }
+    return songTableAddr;
+}
+
+u32 PluginKingdomHeartsDays::getMidiSequenceAddress(u16 bgmId) {
+    const u32 songTableAddr = getSseqTableAddress();
 
     s16 idInTable = getSongIdInSongTable(bgmId);
     if (idInTable >= 0) {
@@ -2607,7 +2626,7 @@ u32 PluginKingdomHeartsDays::getMidiSequenceAddress(u16 bgmId) {
 }
 
 u16 PluginKingdomHeartsDays::getMidiSequenceSize(u16 bgmId) {
-    const u32 songTableAddr = getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP, SSEQ_TABLE_ADDRESS_JP_REV1);
+    const u32 songTableAddr = getSseqTableAddress();
 
     s16 idInTable = getSongIdInSongTable(bgmId);
     if (idInTable >= 0) {

@@ -143,6 +143,7 @@ private:
     bool isBackgroundMusicReplacementImplemented() const override { return true; }
     u16 getMidiBgmId() override;
     u16 getMidiBgmToResumeId() override;
+    u32 getSseqTableAddress();
     u32 getMidiSequenceAddress(u16 bgmId) override;
     u16 getMidiSequenceSize(u16 bgmId) override;
     u32 getStreamBgmAddress() override;
