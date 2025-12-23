@@ -78,15 +78,20 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define THE_END_SCREEN_ADDRESS_JP      0x0204c32d // TODO: KH Unconfirmed (calculated)
 #define THE_END_SCREEN_ADDRESS_JP_REV1 0x0204c2ed // TODO: KH Unconfirmed (calculated)
 
+#define CURRENT_MISSION_US      0x0204C21C
+#define CURRENT_MISSION_EU      0x0204C23C
+#define CURRENT_MISSION_JP      0x0204C67C
+#define CURRENT_MISSION_JP_REV1 0x0204C63C
+
 #define CURRENT_WORLD_US      0x0204C2CF
 #define CURRENT_WORLD_EU      0x0204C2EF
 #define CURRENT_WORLD_JP      0x0204C72F
 #define CURRENT_WORLD_JP_REV1 0x0204C6EF
 
-#define CURRENT_MISSION_US      0x0204C21C
-#define CURRENT_MISSION_EU      0x0204C23C
-#define CURRENT_MISSION_JP      0x0204C67C
-#define CURRENT_MISSION_JP_REV1 0x0204C63C
+#define CURRENT_MAP_FROM_WORLD_US      0x0204C3C8
+#define CURRENT_MAP_FROM_WORLD_EU      0x0204C3E8 // TODO: KH Unconfirmed (calculated)
+#define CURRENT_MAP_FROM_WORLD_JP      0x0204C828 // TODO: KH Unconfirmed (calculated)
+#define CURRENT_MAP_FROM_WORLD_JP_REV1 0x0204C7E8 // TODO: KH Unconfirmed (calculated)
 
 #define IS_DAYS_COUNTER_US      0x0204f6c5
 #define IS_DAYS_COUNTER_EU      0x0204f6e5
@@ -122,12 +127,6 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define TUTORIAL_ADDRESS_EU      0x0207f9fc
 #define TUTORIAL_ADDRESS_JP      0x0207f8dc
 #define TUTORIAL_ADDRESS_JP_REV1 0x0207f89c
-
-// TODO: I don't think those addresses are working as expected, even without patching
-#define CURRENT_MAP_FROM_WORLD_US      0x02188EE6
-#define CURRENT_MAP_FROM_WORLD_EU      0x02189CC6
-#define CURRENT_MAP_FROM_WORLD_JP      0x02187FC6 // TODO: KH maybe it should be 0x02188046 ?
-#define CURRENT_MAP_FROM_WORLD_JP_REV1 0x02188046 // TODO: KH maybe it should be 0x02187FC6 ?
 
 #define SONG_ID_ADDRESS_US      0x02191D5E
 #define SONG_ID_ADDRESS_EU      0x02192B3E
@@ -2807,7 +2806,7 @@ u32 PluginKingdomHeartsDays::getCurrentMap()
         Map = fullMap;
     }
 
-    if (Map == 128) { // cutscene
+    if (Map == 128) { // cutscene; TODO: IDK if that still applies
         return priorMap;
     }
 
