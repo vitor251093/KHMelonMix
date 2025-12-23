@@ -43,13 +43,13 @@
 #if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__DragonFly__) && !defined(__APPLE__)
 
 #define PRINT_AS_8_BIT_HEX(ADDRESS) printf("0x%08x: 0x%02x\n", ADDRESS, nds->ARM7Read8(ADDRESS))
-#define PRINT_AS_8_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read8(ADDRESS)))
+#define PRINT_AS_8_BIT_BIN(ADDRESS) printf("0x%08x: " BYTE_TO_BINARY_PATTERN "\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read8(ADDRESS)))
 
 #define PRINT_AS_16_BIT_HEX(ADDRESS) printf("0x%08x: 0x%04x\n", ADDRESS, nds->ARM7Read16(ADDRESS))
-#define PRINT_AS_16_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read16(ADDRESS)))
+#define PRINT_AS_16_BIT_BIN(ADDRESS) printf("0x%08x: " BYTE_TO_BINARY_PATTERN "\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read16(ADDRESS)))
 
 #define PRINT_AS_32_BIT_HEX(ADDRESS) printf("0x%08x: 0x%08x\n", ADDRESS, nds->ARM7Read32(ADDRESS))
-#define PRINT_AS_32_BIT_BIN(ADDRESS) printf("0x%08x: "BYTE_TO_BINARY_PATTERN"\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))
+#define PRINT_AS_32_BIT_BIN(ADDRESS) printf("0x%08x: " BYTE_TO_BINARY_PATTERN "\n", ADDRESS, BYTE_TO_BINARY(nds->ARM7Read32(ADDRESS)))
 
 #define log_getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
 
