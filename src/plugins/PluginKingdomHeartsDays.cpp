@@ -2806,7 +2806,7 @@ u32 PluginKingdomHeartsDays::getCurrentMap()
         Map = fullMap;
     }
 
-    if (Map == 128) { // cutscene; TODO: IDK if that still applies
+    if (Map == 128) { // cutscene; TODO: IDK if that still applies, or even if supporting that is still relevant
         return priorMap;
     }
 
