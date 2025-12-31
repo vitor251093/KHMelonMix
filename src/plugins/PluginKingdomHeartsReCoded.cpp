@@ -928,8 +928,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(_minimapCenter.x - 54, _minimapCenter.y - 54)
                             .withSize(108, 108)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 30.0, 9.0, 0.0)
-                            .sourceScale(0.555)
+                            .withMargin(0.0, 30.0, 12.0, 0.0)
+                            .sourceScale(0.65)
                             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                             .opacity(0.95)
                             .singleColorToAlpha(0xaa, 0xaa, 0xaa)
@@ -962,8 +962,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(204, 141)
                             .withSize(1, 1)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 30.0, 9.0, 0.0)
-                            .sourceScale(0.555*108)
+                            .withMargin(0.0, 30.0, 12.0, 0.0)
+                            .sourceScale(0.65*108)
                             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                             .opacity(0.95)
                             .hudScale(hudScale)
@@ -997,7 +997,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(0, 0)
                             .withSize(50, 15)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 88.0, 11.0, 0.0)
+                            .withMargin(0.0, 106.0, 11.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
                             .sourceScale(1.0/1.4)
                             .hudScale(hudScale)
@@ -1009,7 +1009,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(50, 0)
                             .withSize(82, 15)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 98.0, 12.0, 0.0)
+                            .withMargin(0.0, 116.0, 12.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
                             .sourceScale(1.0/1.4)
                             .hudScale(hudScale)
@@ -1064,12 +1064,15 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
                 if ((GameSceneState & (1 << gameSceneState_showRegularPlayerHealth)) > 0)
                 {
+                    float playerHealthBottomMargin = 12.5;
+                    float playerHealthRightMargin = 12.0;
+
                     // player health (green bar)
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(110, 182)
                             .withSize(146, 10)
                             .placeAtCorner(corner_BottomRight)
-                            .withMargin(0.0, 0.0, 8.0, 3.0)
+                            .withMargin(0.0, 0.0, playerHealthRightMargin, playerHealthBottomMargin)
                             .hudScale(hudScale)
                             .build(aspectRatio));
 
@@ -1078,7 +1081,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(168, 114)
                             .withSize(88, 78)
                             .placeAtCorner(corner_BottomRight)
-                            .withMargin(0.0, 0.0, 8.0, 3.0)
+                            .withMargin(0.0, 0.0, playerHealthRightMargin, playerHealthBottomMargin)
                             .hudScale(hudScale)
                             .build(aspectRatio));
                         
@@ -1091,7 +1094,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                                 .fromPosition(220, 74)
                                 .withSize(36, 118)
                                 .placeAtCorner(corner_BottomRight)
-                                .withMargin(0.0, 0.0, 8.0, 3.0)
+                                .withMargin(0.0, 0.0, playerHealthRightMargin, playerHealthBottomMargin)
                                 .hudScale(hudScale)
                                 .build(aspectRatio));
                     }
@@ -1162,7 +1165,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                                 .fromPosition(161, 39)
                                 .withSize(95, 32)
                                 .placeAtCorner(corner_TopRight)
-                                .withMargin(0.0, 115.0, 0.0, 0.0)
+                                .withMargin(0.0, 133.0, 0.0, 0.0)
                                 .hudScale(hudScale)
                                 .build(aspectRatio));
                     }

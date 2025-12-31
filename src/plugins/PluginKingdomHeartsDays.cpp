@@ -1073,7 +1073,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
-                // player health
+                // player health (and player allies)
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromPosition(128, 84)
                         .withSize(128, 107)
