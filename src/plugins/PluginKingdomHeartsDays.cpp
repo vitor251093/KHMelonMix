@@ -676,6 +676,10 @@ void PluginKingdomHeartsDays::renderer_2DShapes_loadScreenMenu(std::vector<Shape
 void PluginKingdomHeartsDays::renderer_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale)
 {
     float bottomMargin = 7.0;
+
+    // this is required to keep the same size and position regardless of HUD scale;
+    // the value 5.333 guarantees that, if the game is running in 4:3, the dialogs
+    // will have the original look from the NDS
     float dialogScale = 5.333/hudScale;
 
     if ((GameSceneState & (1 << gameSceneState_dialogPortraitLabelVisible)) > 0)
