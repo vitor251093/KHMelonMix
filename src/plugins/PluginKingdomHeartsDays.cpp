@@ -560,7 +560,7 @@ void PluginKingdomHeartsDays::renderer_afterBuildingShapes()
     }*/
 }
 
-void PluginKingdomHeartsDays::renderer_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale)
+void PluginKingdomHeartsDays::renderer_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale)
 {
     // save label
     shapes->push_back(ShapeBuilder2D::square()
@@ -608,7 +608,7 @@ void PluginKingdomHeartsDays::renderer_2DShapes_saveScreenMenu(std::vector<Shape
             .build(aspectRatio));
 }
 
-void PluginKingdomHeartsDays::renderer_2DShapes_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale)
+void PluginKingdomHeartsDays::renderer_2DShapes_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale)
 {
     bool showDeletePrompt = ((GameSceneState & (1 << gameSceneState_loadScreenDeletePrompt)) > 0);
 
@@ -673,7 +673,7 @@ void PluginKingdomHeartsDays::renderer_2DShapes_loadScreenMenu(std::vector<Shape
             .build(aspectRatio));
 }
 
-void PluginKingdomHeartsDays::renderer_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale)
+void PluginKingdomHeartsDays::renderer_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale)
 {
     float bottomMargin = 7.0;
 
@@ -762,7 +762,7 @@ void PluginKingdomHeartsDays::renderer_2DShapes_component_characterDialog(std::v
             .build(aspectRatio));
 }
 
-void PluginKingdomHeartsDays::renderer_2DShapes_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale)
+void PluginKingdomHeartsDays::renderer_2DShapes_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale)
 {
     float targetScale = 0.666;
     int targetLabelMargin = 12;
@@ -816,7 +816,7 @@ void PluginKingdomHeartsDays::renderer_2DShapes_component_targetView(std::vector
             .build(aspectRatio));
 }
 
-void PluginKingdomHeartsDays::renderer_2DShapes_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale)
+void PluginKingdomHeartsDays::renderer_2DShapes_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale)
 {
     // bottom mission information (part 1)
     shapes->push_back(ShapeBuilder2D::square()
@@ -843,7 +843,7 @@ void PluginKingdomHeartsDays::renderer_2DShapes_component_bottomMissionInformati
 std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
-    int hudScale = UIScale;
+    float hudScale = (((float)UIScale) - 4) / 2 + 4;
     int fullscreenMapTransitionDuration = 20;
 
     if (!SingleScreenMode &&
@@ -999,8 +999,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                                 .fromPosition(128, 60)
                                 .withSize(72, 72)
                                 .placeAtCorner(corner_TopRight)
-                                .withMargin(0.0, 30.0, 9.0, 0.0)
-                                .sourceScale(0.8333)
+                                .withMargin(0.0, 30.0, 12.0, 0.0)
+                                .sourceScale(0.972)
                                 .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                                 .opacity(0.85)
                                 .invertGrayScaleColors()
@@ -1059,7 +1059,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .fromPosition(163, 25)
                         .withSize(93, 30)
                         .placeAtCorner(corner_TopRight)
-                        .withMargin(0.0, 92.5, 12.0, 0.0)
+                        .withMargin(0.0, 104.5, 12.0, 0.0)
                         .hudScale(hudScale)
                         .build(aspectRatio));
 
@@ -1068,6 +1068,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                         .fromPosition(0, 86)
                         .withSize(108, 106)
                         .placeAtCorner(corner_BottomLeft)
+                        .sourceScale(1.2)
                         .withMargin(10.0, 0.0, 0.0, 0.0)
                         .hudScale(hudScale)
                         .build(aspectRatio));
@@ -1075,9 +1076,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
                 // player health
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromPosition(128, 84)
-                        .withSize(128, 108)
+                        .withSize(128, 107)
                         .placeAtCorner(corner_BottomRight)
-                        .withMargin(0.0, 0.0, 8.0, 3.0)
+                        .sourceScale(1.2)
+                        .withMargin(0.0, 0.0, 10.0, 10.5)
                         .hudScale(hudScale)
                         .build(aspectRatio));
             }

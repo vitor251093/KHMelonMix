@@ -511,7 +511,7 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    float uiTexScale = (6.0/hudScale);
+    float uiTexScale = (6.0/((float(hudScale) - 4) / 2 + 4));
     vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
 
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
