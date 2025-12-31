@@ -1245,6 +1245,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
+    float hudScale = (((float)UIScale) - 4) / 2 + 4;
 
     int gameSceneState = renderer_gameSceneState();
     if (GameScene == gameScene_InGameWithMap       || GameScene == gameScene_InGameDialog ||
@@ -1272,7 +1273,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                     .withMargin(0.0, 30.0, 0.0, 0.0)
                     .sourceScale(1.5)
                     .zRange(-1.0, -1.0)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .negatedTextureParam(942331720) // aim
                     .negatedTextureParam(949999400) // aim (lock on)
                     .build(aspectRatio));
@@ -1329,7 +1330,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                 .withMargin(0.0, 0.0, 0.0, 125.0)
                 .zRange(-1.0, -1.0)
                 .negateColor(0xFFFFFF)
-                .hudScale(UIScale)
+                .hudScale(hudScale)
                 .build(aspectRatio));
 
         if (GameScene != gameScene_PauseMenu) {
@@ -1343,7 +1344,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                     .withMargin(10.0, 0.0, 0.0, 0.5)
                     .zRange(-1.0, -1.0)
                     .negateColor(0xFFFFFF)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
         }
     }
