@@ -19,7 +19,7 @@ This is a version of [melonDS](https://github.com/melonDS-emu/melonDS) with some
 
 The project has an internal plugin system, so different enhancements can be applied to different games. So if you also want to improve the experience of a different game, fell free to fork this project and introduce a new plugin to the list.
 
-<!--Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the latest updates and/or to help with the project.-->
+Join our [Discord](https://discord.gg/AhRscvkqB9) to keep in touch with the latest updates and/or to help with the project.
 
 <hr>
 
