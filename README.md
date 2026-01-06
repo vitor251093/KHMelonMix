@@ -5,7 +5,7 @@
 
 <p align="center">
 <a href="https://www.gnu.org/licenses/gpl-3.0" alt="License: GPLv3"><img src="https://img.shields.io/badge/License-GPL%20v3-%23ff554d.svg"></a>
-<!--<a href="https://discord.gg/dQZx65QUnE" alt="Discord"><img src="https://img.shields.io/badge/Discord-KHMelonMix-7289da?logo=discord&logoColor=white"></a>-->
+<a href="https://discord.gg/AhRscvkqB9" alt="Discord"><img src="https://img.shields.io/badge/Discord-KHMelonMix-7289da?logo=discord&logoColor=white"></a>
 <a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-windows.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-windows.yml/badge.svg" /></a>
 <a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-ubuntu.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-ubuntu.yml/badge.svg" /></a>
 <a href="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-macos.yml?query=event%3Apush"><img src="https://github.com/vitor251093/KHMelonMix/actions/workflows/build-macos.yml/badge.svg" /></a>
@@ -19,7 +19,7 @@ This is a version of [melonDS](https://github.com/melonDS-emu/melonDS) with some
 
 The project has an internal plugin system, so different enhancements can be applied to different games. So if you also want to improve the experience of a different game, fell free to fork this project and introduce a new plugin to the list.
 
-<!--Join our [Discord](https://discord.gg/dQZx65QUnE) to keep in touch with the latest updates and/or to help with the project.-->
+Join our [Discord](https://discord.gg/AhRscvkqB9) to keep in touch with the latest updates and/or to help with the project.
 
 <hr>
 
