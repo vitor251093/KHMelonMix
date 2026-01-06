@@ -143,10 +143,10 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define STRM_ADDRESS_JP      0x0204BB14
 #define STRM_ADDRESS_JP_REV1 0x0204BAD4
 
-#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US      0x02194CC3
-#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU      0x02195AA3
-#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP      0x02193E23
-#define INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1 0x02193DA3
+#define INGAME_MENU_CONTROL_SETTING_ADDRESS_US      0x02194CC3
+#define INGAME_MENU_CONTROL_SETTING_ADDRESS_EU      0x02195AA3
+#define INGAME_MENU_CONTROL_SETTING_ADDRESS_JP      0x02193E23
+#define INGAME_MENU_CONTROL_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
 #define getAnyByCart(usAddress,euAddress,jpAddress,jpRev1Address) (isUsaCart() ? (usAddress) : (isEuropeCart() ? (euAddress) : (isJapanCartRev1() ? (jpRev1Address) : (jpAddress))))
 
@@ -1695,10 +1695,10 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
         // Enabling X + D-Pad
         if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
         {
-            u32 dpadMenuAddress = getAnyByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
-                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
-                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP,
-                                                   INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP_REV1);
+            u32 dpadMenuAddress = getAnyByCart(INGAME_MENU_CONTROL_SETTING_ADDRESS_US,
+                                                   INGAME_MENU_CONTROL_SETTING_ADDRESS_EU,
+                                                   INGAME_MENU_CONTROL_SETTING_ADDRESS_JP,
+                                                   INGAME_MENU_CONTROL_SETTING_ADDRESS_JP_REV1);
 
             if (nds->ARM7Read8(dpadMenuAddress) & 0x02) {
                 nds->ARM7Write8(dpadMenuAddress, nds->ARM7Read8(dpadMenuAddress) - 0x02);
@@ -1910,6 +1910,20 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords(int width, int height, in
 void PluginKingdomHeartsDays::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask)
 {
     if (GameScene == gameScene_InGameWithMap || GameScene == gameScene_InGameWithDouble3D) {
+
+        // Note: this work whenever a save is loaded or created, but fails if the user manually changes the setting later
+        u32 cameraSpeedMenuAddress = getAnyByCart(INGAME_MENU_CONTROL_SETTING_ADDRESS_US,
+                                                  INGAME_MENU_CONTROL_SETTING_ADDRESS_EU,
+                                                  INGAME_MENU_CONTROL_SETTING_ADDRESS_JP,
+                                                  INGAME_MENU_CONTROL_SETTING_ADDRESS_JP_REV1);
+
+        if (nds->ARM7Read8(cameraSpeedMenuAddress) & 0x40) { // changing from normal camera speed to slow camera speed
+            nds->ARM7Write8(cameraSpeedMenuAddress, nds->ARM7Read8(cameraSpeedMenuAddress) - 0x40);
+        }
+        if (nds->ARM7Read8(cameraSpeedMenuAddress) & 0x80) { // changing from fast camera speed to slow camera speed
+            nds->ARM7Write8(cameraSpeedMenuAddress, nds->ARM7Read8(cameraSpeedMenuAddress) - 0x80);
+        }
+
         _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, false);
     }
 }
