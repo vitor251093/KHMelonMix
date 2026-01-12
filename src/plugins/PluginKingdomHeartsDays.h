@@ -44,6 +44,8 @@ public:
     float renderer_forcedAspectRatio() override;
     bool renderer_showOriginalUI() override;
 
+    bool shouldPreserveDsTopScreenWhileOnDualScreenModeForGameScene();
+
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
     bool shouldRumble() override;
