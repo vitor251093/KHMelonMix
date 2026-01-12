@@ -878,6 +878,34 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
             }
             break;
 
+        case gameScene_Tutorial:
+            if (SingleScreenMode)
+            {
+                // tutorial
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .fromPosition(5, 0)
+                        .withSize(246, 192)
+                        .placeAtCorner(corner_Center)
+                        .sourceScale(5.0/hudScale)
+                        .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // background
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .fromPosition(0, 96)
+                        .withSize(5, 5)
+                        .placeAtCorner(corner_Center)
+                        .sourceScale(1000.0)
+                        .opacity(0.75)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                break;
+            }
+
         case gameScene_InGameWithDouble3D:
             if (SingleScreenMode && (GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
                 break;
@@ -1131,31 +1159,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
 
             break;
     
-        case gameScene_Tutorial:
-            // tutorial
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromBottomScreen()
-                    .fromPosition(5, 0)
-                    .withSize(246, 192)
-                    .placeAtCorner(corner_Center)
-                    .sourceScale(5.0/hudScale)
-                    .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
-            // background
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromBottomScreen()
-                    .fromPosition(0, 96)
-                    .withSize(5, 5)
-                    .placeAtCorner(corner_Center)
-                    .sourceScale(1000.0)
-                    .opacity(0.75)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
-            break;
-
         case gameScene_WorldSelector:
             // header left corner
             shapes.push_back(ShapeBuilder2D::square()
@@ -1423,6 +1426,8 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
             }
             break;
 
+        case gameScene_Tutorial:
+
         case gameScene_InGameWithDouble3D:
             if (ShouldShowBottomScreen) {
                 state |= (1 << gameSceneState_bottomScreenSora);
@@ -1512,9 +1517,6 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
                 }
             }
 
-            break;
-
-        case gameScene_Tutorial:
             break;
 
         case gameScene_LoadingScreen:
@@ -1611,6 +1613,7 @@ float PluginKingdomHeartsDays::renderer_forcedAspectRatio()
             GameScene != gameScene_InGameWithMap &&
             GameScene != gameScene_DeathScreen &&
             GameScene != gameScene_PauseMenu &&
+            GameScene != gameScene_Tutorial &&
             GameScene != gameScene_InGameWithDouble3D) {
         return (4.0/3);
     }
@@ -1622,6 +1625,7 @@ bool PluginKingdomHeartsDays::renderer_showOriginalUI() {
             GameScene != gameScene_InGameWithMap &&
             GameScene != gameScene_DeathScreen &&
             GameScene != gameScene_PauseMenu &&
+            GameScene != gameScene_Tutorial &&
             GameScene != gameScene_InGameWithDouble3D) {
         return true;
     }
