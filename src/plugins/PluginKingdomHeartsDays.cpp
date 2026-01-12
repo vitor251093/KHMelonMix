@@ -846,19 +846,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_2DShapes() {
     float hudScale = (((float)UIScale) - 4) / 2 + 4;
     int fullscreenMapTransitionDuration = 20;
 
-    if (!SingleScreenMode &&
-            GameScene != gameScene_InGameWithMap &&
-            GameScene != gameScene_DeathScreen &&
-            GameScene != gameScene_PauseMenu &&
-            GameScene != gameScene_InGameWithDouble3D) {
-        shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
-        return shapes;
-    }
-
     switch (GameScene) {
         case gameScene_IntroLoadMenu:
             renderer_2DShapes_loadScreenMenu(&shapes, aspectRatio, hudScale);
@@ -1329,21 +1316,6 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
 
-    if (!SingleScreenMode &&
-            GameScene != gameScene_InGameWithMap &&
-            GameScene != gameScene_DeathScreen &&
-            GameScene != gameScene_PauseMenu &&
-            GameScene != gameScene_InGameWithDouble3D &&
-            GameScene != gameScene_WorldSelector) {
-        bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
-        if (has3DOnTopScreen && GameScene != gameScene_WorldSelector) {
-            shapes.push_back(ShapeBuilder3D::square()
-                            .placeAtCorner(corner_Center)
-                            .build(aspectRatio));
-        }
-        return shapes;
-    }
-
     int gameSceneState = renderer_gameSceneState();
     switch (GameScene) {
         case gameScene_PauseMenu:
@@ -1600,7 +1572,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout() {
 
 int PluginKingdomHeartsDays::renderer_brightnessMode() {
     if (!SingleScreenMode) {
-        return brightnessMode_TopScreen;
+        return brightnessMode_Default;
     }
 
     if (_ShouldHideScreenForTransitions) {
@@ -1646,6 +1618,13 @@ float PluginKingdomHeartsDays::renderer_forcedAspectRatio()
 };
 
 bool PluginKingdomHeartsDays::renderer_showOriginalUI() {
+    if (!SingleScreenMode &&
+            GameScene != gameScene_InGameWithMap &&
+            GameScene != gameScene_DeathScreen &&
+            GameScene != gameScene_PauseMenu &&
+            GameScene != gameScene_InGameWithDouble3D) {
+        return true;
+    }
     return false;
 }
 
