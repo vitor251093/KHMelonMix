@@ -1615,7 +1615,8 @@ float PluginKingdomHeartsDays::renderer_forcedAspectRatio()
     return (GameScene == gameScene_DayCounter) ? (4.0/3) : AspectRatio;
 }
 
-bool PluginKingdomHeartsDays::renderer_showOriginalUI() {
+bool PluginKingdomHeartsDays::renderer_showOriginalUI()
+{
     if (!SingleScreenMode && shouldPreserveDsTopScreenWhileOnDualScreenModeForGameScene()) {
         return true;
     }
