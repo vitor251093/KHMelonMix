@@ -35,3 +35,5 @@ We are currently only replacing the Days cutscenes, and not the Re:Coded ones. I
 2. Try reducing the internal resolution.
 3. Try enabling the JIT Recompiler (Emu Settings -> CPU emulation).
 
+## How can I play the game in ultrawide aspect ratio?
+On the title bar menu, go to View -> "Aspect Ratio" and change the aspect ratio to "Top window". Then, resize the window to fill your monitor, and reset the game. Upon loading your save, the game is going to run in whichever aspect ratio the window is at this moment.
