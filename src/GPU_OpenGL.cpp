@@ -315,6 +315,7 @@ void GLRenderer::SetScaleFactor(int scale)
     glReadBuffer(GL_COLOR_ATTACHMENT0);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
+    // TODO: KH BM3 this is when the two screens are combined; this is where I need the final composition stage
     for (int i = 0; i < 2; i++)
     {
         glBindTexture(GL_TEXTURE_2D_ARRAY, FPOutputTex[i]);
