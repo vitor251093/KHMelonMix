@@ -900,10 +900,13 @@ void EmuThread::refreshPluginState()
         emuInstance->targetFPS = 1000.0;
 
         int newVideoRenderer = renderer3D_Software;
+
+        emuInstance->renderLock.lock();
         if (videoRenderer != newVideoRenderer) {
             videoRenderer = newVideoRenderer;
             updateRenderer();
         }
+        emuInstance->renderLock.unlock();
     }
     if (disableInvisibleFastMode)
     {
@@ -914,11 +917,9 @@ void EmuThread::refreshPluginState()
 
         emuInstance->targetFPS = globalCfg.GetDouble("TargetFPS");
 
-        int newVideoRenderer = globalCfg.GetInt("3D.Renderer");
-        if (videoRenderer != newVideoRenderer) {
-            videoRenderer = newVideoRenderer;
-            updateRenderer();
-        }
+        videoRenderer = globalCfg.GetInt("3D.Renderer");
+
+        videoSettingsDirty = true;
     }
 }
 

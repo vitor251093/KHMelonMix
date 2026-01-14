@@ -459,7 +459,25 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
     }
 
     if (showOriginalHud) {
-        ivec2 textureBeginning = (screenLayout == 1) ? (ivec2(fTexcoord) + ivec2(0, 192)) : ivec2(fTexcoord);
+        ivec2 textureBeginning = ivec2(fTexcoord);
+        if (currentAspectRatio != forcedAspectRatio) {
+            float heightScale = (1.0/forcedAspectRatio)/currentAspectRatio;
+
+            float sourceScreenWidth = 256.0;
+            float screenLeftMargin = (sourceScreenWidth - sourceScreenWidth/heightScale)/2;
+            float screenFinalWidth = fTexcoord.x/heightScale;
+
+            textureBeginning.x = int(screenLeftMargin + screenFinalWidth);
+            if (textureBeginning.x < 0 || textureBeginning.x > screenFinalWidth) {
+                if (index == 2)
+                {
+                    return ivec4(0, 0, 63, 0x01);
+                }
+                return ivec4(0, 0, 0, 0);
+            }
+        }
+
+        textureBeginning = (screenLayout == 1) ? (textureBeginning + ivec2(0, 192)) : textureBeginning;
         ivec2 coordinates = textureBeginning + ivec2(256,0)*index;
         ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
         if (index == 2) {
@@ -474,7 +492,7 @@ ivec4 getTopScreenColor(ivec4 _3dpix, float xpos, float ypos, int index)
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    float uiTexScale = (6.0/hudScale);
+    float uiTexScale = (6.0/((float(hudScale) - 4) / 2 + 4));
     vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
 
     for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {

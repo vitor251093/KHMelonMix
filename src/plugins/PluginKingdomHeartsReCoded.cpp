@@ -42,8 +42,22 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 
 // 0x00 => intro and main menu
 #define IS_MAIN_MENU_US 0x02060c94
-#define IS_MAIN_MENU_EU 0x02060407 // may also be 0x02060417, 0x02060423, 0x0206042b, 0x0206042f, 0x02060433, 0x0206043b, 0x02060443, 0x02060447, or 0x0206044b
+#define IS_MAIN_MENU_EU 0x020608d0
 #define IS_MAIN_MENU_JP 0x02060aa0
+
+#define IS_MAIN_MENU_VALUE_US 0x00
+#define IS_MAIN_MENU_VALUE_EU 0xff
+#define IS_MAIN_MENU_VALUE_JP 0x00
+
+// Alternatives to IS_MAIN_MENU_EU:
+// 0x020608cc is 0x00000000 / 0x00000008
+// 0x020608d0 is 0xffffffff / 0x00000000
+// 0x020608d4 is 0x00000000 / 0x00030000
+// 0x020608d8 is 0x00000000 / 0x00000009
+// 0x02060b64 is 0x00000000 / 0x00001000
+// 0x02060b68 is 0x00000000 / 0x00001000
+// 0x02060cac is 0x00000000 / 0x00001000
+// 0x02060df0 is 0x00000000 / 0x00001000
 
 #define PAUSE_SCREEN_ADDRESS_US 0x020569d0
 #define PAUSE_SCREEN_ADDRESS_EU 0x020569d0
@@ -452,7 +466,7 @@ std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
     return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 }
 
-void PluginKingdomHeartsReCoded::renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale) {
+void PluginKingdomHeartsReCoded::renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale) {
     bool showChallengeMeter = (GameSceneState & (1 << gameSceneState_showChallengeMeter)) > 0;
     int challengeMeterHeight = showChallengeMeter ? 7 : 0;
     if (showChallengeMeter)
@@ -591,7 +605,7 @@ void PluginKingdomHeartsReCoded::renderer_2DShapes_component_missionInformationF
 std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
-    int hudScale = UIScale;
+    float hudScale = (((float)UIScale) - 4) / 2 + 4;
     int fullscreenMapTransitionDuration = 20;
 
     switch (GameScene) {
@@ -914,8 +928,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(_minimapCenter.x - 54, _minimapCenter.y - 54)
                             .withSize(108, 108)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 30.0, 9.0, 0.0)
-                            .sourceScale(0.555)
+                            .withMargin(0.0, 30.0, 12.0, 0.0)
+                            .sourceScale(0.65)
                             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                             .opacity(0.95)
                             .singleColorToAlpha(0xaa, 0xaa, 0xaa)
@@ -948,8 +962,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(204, 141)
                             .withSize(1, 1)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 30.0, 9.0, 0.0)
-                            .sourceScale(0.555*108)
+                            .withMargin(0.0, 30.0, 12.0, 0.0)
+                            .sourceScale(0.65*108)
                             .fadeBorderSize(5.0, 5.0, 5.0, 5.0)
                             .opacity(0.95)
                             .hudScale(hudScale)
@@ -983,7 +997,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(0, 0)
                             .withSize(50, 15)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 88.0, 11.0, 0.0)
+                            .withMargin(0.0, 106.0, 11.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
                             .sourceScale(1.0/1.4)
                             .hudScale(hudScale)
@@ -995,7 +1009,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(50, 0)
                             .withSize(82, 15)
                             .placeAtCorner(corner_TopRight)
-                            .withMargin(0.0, 98.0, 12.0, 0.0)
+                            .withMargin(0.0, 116.0, 12.0, 0.0)
                             .colorToAlpha(0x8, 0x30, 0xaa)
                             .sourceScale(1.0/1.4)
                             .hudScale(hudScale)
@@ -1050,12 +1064,15 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
                 if ((GameSceneState & (1 << gameSceneState_showRegularPlayerHealth)) > 0)
                 {
+                    float playerHealthBottomMargin = 12.5;
+                    float playerHealthRightMargin = 12.0;
+
                     // player health (green bar)
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(110, 182)
                             .withSize(146, 10)
                             .placeAtCorner(corner_BottomRight)
-                            .withMargin(0.0, 0.0, 8.0, 3.0)
+                            .withMargin(0.0, 0.0, playerHealthRightMargin, playerHealthBottomMargin)
                             .hudScale(hudScale)
                             .build(aspectRatio));
 
@@ -1064,7 +1081,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(168, 114)
                             .withSize(88, 78)
                             .placeAtCorner(corner_BottomRight)
-                            .withMargin(0.0, 0.0, 8.0, 3.0)
+                            .withMargin(0.0, 0.0, playerHealthRightMargin, playerHealthBottomMargin)
                             .hudScale(hudScale)
                             .build(aspectRatio));
                         
@@ -1077,7 +1094,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                                 .fromPosition(220, 74)
                                 .withSize(36, 118)
                                 .placeAtCorner(corner_BottomRight)
-                                .withMargin(0.0, 0.0, 8.0, 3.0)
+                                .withMargin(0.0, 0.0, playerHealthRightMargin, playerHealthBottomMargin)
                                 .hudScale(hudScale)
                                 .build(aspectRatio));
                     }
@@ -1148,7 +1165,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                                 .fromPosition(161, 39)
                                 .withSize(95, 32)
                                 .placeAtCorner(corner_TopRight)
-                                .withMargin(0.0, 115.0, 0.0, 0.0)
+                                .withMargin(0.0, 133.0, 0.0, 0.0)
                                 .hudScale(hudScale)
                                 .build(aspectRatio));
                     }
@@ -1228,6 +1245,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
+    float hudScale = (((float)UIScale) - 4) / 2 + 4;
 
     int gameSceneState = renderer_gameSceneState();
     if (GameScene == gameScene_InGameWithMap       || GameScene == gameScene_InGameDialog ||
@@ -1255,7 +1273,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                     .withMargin(0.0, 30.0, 0.0, 0.0)
                     .sourceScale(1.5)
                     .zRange(-1.0, -1.0)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .negatedTextureParam(942331720) // aim
                     .negatedTextureParam(949999400) // aim (lock on)
                     .build(aspectRatio));
@@ -1312,7 +1330,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                 .withMargin(0.0, 0.0, 0.0, 125.0)
                 .zRange(-1.0, -1.0)
                 .negateColor(0xFFFFFF)
-                .hudScale(UIScale)
+                .hudScale(hudScale)
                 .build(aspectRatio));
 
         if (GameScene != gameScene_PauseMenu) {
@@ -1326,7 +1344,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
                     .withMargin(10.0, 0.0, 0.0, 0.5)
                     .zRange(-1.0, -1.0)
                     .negateColor(0xFFFFFF)
-                    .hudScale(UIScale)
+                    .hudScale(hudScale)
                     .build(aspectRatio));
         }
     }
@@ -2212,7 +2230,8 @@ int PluginKingdomHeartsReCoded::detectGameScene()
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
     int ingameState = nds->ARM7Read16(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
-    bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getU32ByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) == 0x00;
+    bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getU32ByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) ==
+        getU8ByCart(IS_MAIN_MENU_VALUE_US, IS_MAIN_MENU_VALUE_EU, IS_MAIN_MENU_VALUE_JP);
     bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
     bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
     bool isIntroLoadMenu = nds->ARM7Read32(getU32ByCart(IS_LOAD_SCREEN_US, IS_LOAD_SCREEN_EU, IS_LOAD_SCREEN_JP)) ==

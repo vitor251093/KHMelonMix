@@ -29,7 +29,7 @@ public:
     std::string assetsFolder() override;
     std::string tomlUniqueIdentifier() override;
 
-    void renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
+    void renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
 
     std::vector<ShapeData2D> renderer_2DShapes() override;
     std::vector<ShapeData3D> renderer_3DShapes() override;

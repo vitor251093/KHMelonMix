@@ -44,6 +44,8 @@ public:
     float renderer_forcedAspectRatio() override;
     bool renderer_showOriginalUI() override;
 
+    bool shouldPreserveDsTopScreenWhileOnDualScreenModeForGameScene();
+
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
     bool shouldRumble() override;
@@ -122,6 +124,7 @@ private:
     bool SwitchTargetPressOnHold = false;
 
     std::array<CutsceneEntry, 46> Cutscenes;
+    u32 cutscenesAddressOffset = 0;
 
     std::string KH_15_25_Remix_Location = "";
     std::string TextLanguage = "";
@@ -142,6 +145,7 @@ private:
     bool isBackgroundMusicReplacementImplemented() const override { return true; }
     u16 getMidiBgmId() override;
     u16 getMidiBgmToResumeId() override;
+    u32 getSseqTableAddress();
     u32 getMidiSequenceAddress(u16 bgmId) override;
     u16 getMidiSequenceSize(u16 bgmId) override;
     u32 getStreamBgmAddress() override;
@@ -189,11 +193,11 @@ private:
     int dialogBoxHeight();
     bool has2DOnTopOf3DAt(void* buffer, int x, int y);
 
-    void renderer_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
-    void renderer_2DShapes_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
-    void renderer_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
-    void renderer_2DShapes_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
-    void renderer_2DShapes_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
+    void renderer_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_2DShapes_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_2DShapes_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_2DShapes_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
 
     void hudToggle() override;
     void toggleFullscreenMap();
