@@ -1980,7 +1980,7 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
         plugin->setNds(nds);
         plugin->onLoadROM();
 
-        // TODO: KH Will this still be necessary?
+        // TODO: KH BM3 Will this still be necessary?
         //static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
     }
 

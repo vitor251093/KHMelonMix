@@ -82,6 +82,7 @@ bool GLRenderer2D::Init()
                                                   {{"oColor", 0}, {"oFlags", 1}}))
             return false;
 
+        // TODO: KH BM3 load replacement shader
         // const char* kCompositorFS_Custom = plugin == nullptr ? nullptr : plugin->gpuOpenGL_FS();
         // const char* compositorFS = kCompositorFS_Custom == nullptr ? kCompositorFS : kCompositorFS_Custom;
         if (!OpenGL::CompileVertexFragmentProgram(CompositorShader,

@@ -502,7 +502,7 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
 {
     if (GameScene == gameScene_InGameWithDouble3D)
     {
-        // TODO: KH Double 3D scenes should be refactored
+        // TODO: KH BM3 Double 3D scenes should be refactored
         /*bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
 
         u16 bottomScreenMasterBrightness = has3DOnTopScreen ? nds->GPU.GPU2D_B.MasterBrightness : nds->GPU.GPU2D_A.MasterBrightness;
@@ -2413,7 +2413,7 @@ int PluginKingdomHeartsDays::detectGameScene()
             return gameScene_DayCounter;
         }
 
-        // TODO: KH Replace with memory detection
+        // TODO: KH BM3 Replace with memory detection
         /*if (nds->GPU.GPU2D_B.MasterBrightness == 32784) // TODO: KH Replace with memory detection
         {
             return gameScene_RoxasThoughts;
