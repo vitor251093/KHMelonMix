@@ -198,6 +198,10 @@ private slots:
     void onFullscreenToggled();
     void onScreenEmphasisToggled();
 
+#ifdef DEVTOOLS_ENABLED
+    void onOpenMelonCap();
+#endif
+
 private:
     virtual void closeEvent(QCloseEvent* event) override;
 
@@ -311,6 +315,10 @@ public:
     QAction* actShowOSD;
     QAction* actLimitFramerate;
     QAction* actAudioSync;
+
+#ifdef DEVTOOLS_ENABLED
+    QAction* actOpenMelonCap;
+#endif
 
     QAction* actAbout;
 };

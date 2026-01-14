@@ -2,13 +2,13 @@
 
 uniform sampler2D MainInputTexA;
 uniform sampler2D MainInputTexB;
-uniform sampler2D AuxInputTex;
+uniform sampler2DArray AuxInputTex;
 
 layout(std140) uniform uFinalPassConfig
 {
     bvec4 uScreenSwap[48]; // one bool per scanline
     int uScaleFactor;
-    int uAuxScaleFactor;
+    int uAuxLayer;
     int uDispModeA;
     int uDispModeB;
     int uBrightModeA;
@@ -17,7 +17,7 @@ layout(std140) uniform uFinalPassConfig
     int uBrightFactorB;
 };
 
-smooth in vec2 fTexcoord;
+smooth in vec4 fTexcoord;
 
 out vec4 oTopColor;
 out vec4 oBottomColor;
@@ -40,22 +40,12 @@ ivec3 MasterBrightness(ivec3 color, int brightmode, int evy)
 
 void main()
 {
-    ivec2 coord = ivec2(fTexcoord * uScaleFactor);
+    ivec2 coord = ivec2(fTexcoord.zw);
 
     ivec4 col_main = ivec4(texelFetch(MainInputTexA, coord, 0) * vec4(63,63,63,31));
     ivec4 col_sub = ivec4(texelFetch(MainInputTexB, coord, 0) * vec4(63,63,63,31));
 
     ivec3 output_main, output_sub;
-
-    // TODO not always sample those? (VRAM/FIFO)
-
-    /*int capblock = 0;
-    if (dispmode_main != 2)
-        capblock = ((uCaptureReg >> 26) & 0x3);
-    //capblock += int(fTexcoord.y / 64);
-    capblock = (capblock & 0x3) | (((attrib_main.r >> 18) & 0x3) << 2);*/
-
-    ivec4 col_aux = ivec4(texelFetch(AuxInputTex, ivec2(fTexcoord * uAuxScaleFactor), 0) * vec4(63,63,63,31));
 
     if (uDispModeA == 0)
     {
@@ -70,7 +60,7 @@ void main()
     else
     {
         // VRAM display / mainmem FIFO
-        output_main = col_aux.rgb;
+        output_main = ivec3(texture(AuxInputTex, vec3(fTexcoord.xy, uAuxLayer)).rgb * vec3(63,63,63));
     }
 
     if (uDispModeB == 0)
@@ -89,11 +79,11 @@ void main()
     if (uDispModeB != 0)
         output_sub = MasterBrightness(output_sub, uBrightModeB, uBrightFactorB);
 
-    int scry = int(fTexcoord.y);
-    bvec4 swap = uScreenSwap[scry >> 3];
-    bool swapbit = swap[scry & 0x3];
+    int line = int(fTexcoord.y);
+    bvec4 swap = uScreenSwap[line >> 3];
+    bool swapbit = swap[line & 0x3];
 
-    if (swapbit)
+    if (!swapbit)
     {
         oTopColor = vec4(vec3(output_sub) / 63.0, 1.0);
         oBottomColor = vec4(vec3(output_main) / 63.0, 1.0);

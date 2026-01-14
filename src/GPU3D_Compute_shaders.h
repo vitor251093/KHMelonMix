@@ -369,6 +369,8 @@ layout (std140, binding = 0) uniform MetaUniform
     uint ClearColor, ClearDepth, ClearAttr;
 
     uint FogOffset, FogShift, FogColor;
+
+    vec2 ClearBitmapOffset;
 };
 
 #ifdef InterpSpans
@@ -1061,9 +1063,12 @@ const std::string Rasterise =
 layout (local_size_x = TileSize, local_size_y = TileSize) in;
 
 layout (binding = 0) uniform usampler2DArray CurrentTexture;
+layout (binding = 0) uniform sampler2DArray CaptureTexture;
 
 layout (location = 0) uniform uint CurVariant;
 layout (location = 1) uniform vec2 InvTextureSize;
+layout (location = 2) uniform bool TexIsCapture;
+layout (location = 3) uniform float CaptureYOffset;
 
 void main()
 {
@@ -1192,7 +1197,17 @@ void main()
 #ifdef UseTexture
             vec2 uvf = vec2(ivec2(u, v)) * vec2(1.0 / 16.0) * InvTextureSize;
 
-            uvec4 texcolor = texture(CurrentTexture, vec3(uvf, polygon.TextureLayer));
+            // TODO: if they use a capture as a texture and make it repeat, or use a nonstandard height,
+            // it may require custom handling of texcoord wraparound
+            uvec4 texcolor;
+            if (TexIsCapture)
+            {
+                uvf.y += CaptureYOffset;
+                texcolor = uvec4(texture(CaptureTexture, vec3(uvf, polygon.TextureLayer)) * vec4(63,63,63,31));
+            }
+            else
+                texcolor = texture(CurrentTexture, vec3(uvf, polygon.TextureLayer));
+
 #ifdef Decal
             if (texcolor.a == 31)
             {
@@ -1251,6 +1266,9 @@ const std::string DepthBlend =
     Tilebuffers +
     ResultBuffer +
     BinningBuffer + R"(
+
+layout (binding = 0) uniform usampler2D ClearBitmapColor;
+layout (binding = 1) uniform usampler2D ClearBitmapDepth;
 
 layout (local_size_x = TileSize, local_size_y = TileSize) in;
 
@@ -1453,9 +1471,23 @@ void main()
     uint coarseMaskLo = BinningMaskAndOffset[BinningCoarseMaskStart + linearTile*CoarseBinStride + 0];
     uint coarseMaskHi = BinningMaskAndOffset[BinningCoarseMaskStart + linearTile*CoarseBinStride + 1];
 
-    uvec2 color = uvec2(ClearColor, 0U);
-    uvec2 depth = uvec2(ClearDepth, 0U);
+    uvec2 color, depth;
     uvec2 attr = uvec2(ClearAttr, 0U);
+    if ((DispCnt & (1<<14)) != 0U)
+    {
+        float scale = 1.0 / ScreenWidth;
+        vec2 pos = (vec2(gl_GlobalInvocationID.xy) * scale) + ClearBitmapOffset;
+        color = uvec2(texture(ClearBitmapColor, pos).r, 0U);
+        depth = uvec2(texture(ClearBitmapDepth, pos).r, 0U);
+        attr.x = (attr.x & ~0x8000U) | ((depth.x >> 9) & 0x8000U);
+        depth.x &= 0xFFFFFFU;
+    }
+    else
+    {
+        color = uvec2(ClearColor, 0U);
+        depth = uvec2(ClearDepth, 0U);
+    }
+
     uint stencil = 0U;
     bool prevIsShadowMask = false;
 
@@ -1478,8 +1510,7 @@ const std::string FinalPass =
 
 layout (local_size_x = 32) in;
 
-layout (binding = 0, rgba8) writeonly uniform image2D FinalFB; 
-layout (binding = 1, rgba8ui) writeonly uniform uimage2D LowResFB; 
+layout (binding = 0, rgba8) writeonly uniform image2D FinalFB;
 
 uint BlendFog(uint color, uint depth)
 {
@@ -1638,20 +1669,6 @@ void main()
     vec4 result = vec4(color.x & 0x3FU, bitfieldExtract(color.x, 8, 8), bitfieldExtract(color.x, 16, 8), bitfieldExtract(color.x, 24, 8));
     result /= vec4(63.0, 63.0, 63.0, 31.0);
     imageStore(FinalFB, ivec2(gl_GlobalInvocationID.xy), result);
-
-    // It's a division by constant, so using the builtin division is fine
-    const int scale = ScreenWidth/256;
-    ivec2 lowresCoordinate = ivec2(gl_GlobalInvocationID.xy) / scale;
-    ivec2 lowresCoordinateRest = ivec2(gl_GlobalInvocationID.xy) % scale;
-    if (lowresCoordinateRest == ivec2(0, 0))
-    {
-        uvec4 color8;
-        color8.x = bitfieldExtract(color.x, 0, 8);
-        color8.y = bitfieldExtract(color.x, 8, 8);
-        color8.z = bitfieldExtract(color.x, 16, 8);
-        color8.w = bitfieldExtract(color.x, 24, 8);
-        imageStore(LowResFB, lowresCoordinate, color8);
-    }
 }
 
 )";

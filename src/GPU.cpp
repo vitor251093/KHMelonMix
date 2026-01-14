@@ -22,8 +22,7 @@
 
 #include "ARMJIT.h"
 
-#include "GPU2D_Soft.h"
-#include "GPU3D.h"
+#include "GPU_Soft.h"
 
 namespace melonDS
 {
@@ -72,22 +71,21 @@ enum
                 VRAMDirty need to be reset for the respective VRAM bank.
 */
 
-GPU::GPU(melonDS::NDS& nds, std::unique_ptr<Renderer3D>&& renderer3d, std::unique_ptr<GPU2D::Renderer2D>&& renderer2d) noexcept :
+GPU::GPU(melonDS::NDS& nds, std::unique_ptr<Renderer>&& renderer) noexcept :
     NDS(nds),
     GPU2D_A(0, *this),
     GPU2D_B(1, *this),
-    GPU3D(nds, renderer3d ? std::move(renderer3d) : std::make_unique<SoftRenderer>()),
-    GPU2D_Renderer(renderer2d ? std::move(renderer2d) : std::make_unique<GPU2D::SoftRenderer>(*this))
+    GPU3D(*this)
 {
     NDS.RegisterEventFuncs(Event_LCD, this,
     {
-            MakeEventThunk(GPU, StartHBlank),
-            MakeEventThunk(GPU, StartScanline),
-            MakeEventThunk(GPU, FinishFrame)
+        MakeEventThunk(GPU, StartHBlank),
+        MakeEventThunk(GPU, StartScanline),
+        MakeEventThunk(GPU, FinishFrame)
     });
     NDS.RegisterEventFuncs(Event_DisplayFIFO, this, {MakeEventThunk(GPU, DisplayFIFO)});
 
-    //InitFramebuffers();
+    SetRenderer(std::move(renderer));
 }
 
 GPU::~GPU() noexcept
@@ -128,8 +126,12 @@ void GPU::ResetVRAMCache() noexcept
 
 void GPU::Reset() noexcept
 {
+    ScreensEnabled = false;
+    ScreenSwap = false;
+
     VCount = 0;
-    NextVCount = -1;
+    VCountOverride = false;
+    NextVCount = 0;
     TotalScanlines = 0;
 
     DispStat[0] = 0;
@@ -183,30 +185,11 @@ void GPU::Reset() noexcept
     memset(VRAMCBF_BBG, 0, sizeof(VRAMCBF_BBG));
     memset(VRAMCBF_BOBJ, 0, sizeof(VRAMCBF_BOBJ));
 
-    /*size_t fbsize;
-    if (GPU3D.IsRendererAccelerated())
-        fbsize = (256*3 + 1) * 192;
-    else
-        fbsize = 256 * 192;
-
-    for (size_t i = 0; i < fbsize; i++)
-    {
-        Framebuffer[0][0][i] = 0xFFFFFFFF;
-        Framebuffer[1][0][i] = 0xFFFFFFFF;
-    }
-    for (size_t i = 0; i < fbsize; i++)
-    {
-        Framebuffer[0][1][i] = 0xFFFFFFFF;
-        Framebuffer[1][1][i] = 0xFFFFFFFF;
-    }*/
-    // TODO reset the buffer!!
-
     GPU2D_A.Reset();
     GPU2D_B.Reset();
     GPU3D.Reset();
 
-    //int backbuf = FrontBuffer ? 0 : 1;
-    //GPU2D_Renderer->SetFramebuffer(Framebuffer[backbuf][1].get(), Framebuffer[backbuf][0].get());
+    Rend->Reset();
 
     ResetVRAMCache();
 
@@ -216,27 +199,24 @@ void GPU::Reset() noexcept
 
 void GPU::Stop() noexcept
 {
-    int fbsize;
-    if (GPU3D.IsRendererAccelerated())
-        fbsize = (256*3 + 1) * 192;
-    else
-        fbsize = 256 * 192;
-
-    /*memset(Framebuffer[0][0].get(), 0, fbsize*4);
-    memset(Framebuffer[0][1].get(), 0, fbsize*4);
-    memset(Framebuffer[1][0].get(), 0, fbsize*4);
-    memset(Framebuffer[1][1].get(), 0, fbsize*4);*/
-    // TODO stop on the GPU2D!!
-
-    GPU3D.Stop(*this);
+    Rend->Stop();
 }
 
 void GPU::DoSavestate(Savestate* file) noexcept
 {
     file->Section("GPUG");
 
+    Rend->PreSavestate();
+
+    // TODO check that all the shit is in here
+    // TODO all the shit is infact not in there
+
+    file->VarBool(&ScreensEnabled);
+    file->VarBool(&ScreenSwap);
+
     file->Var16(&VCount);
-    file->Var32(&NextVCount);
+    file->VarBool(&VCountOverride);
+    file->Var16(&NextVCount);
     file->Var16(&TotalScanlines);
 
     file->Var16(&DispStat[0]);
@@ -296,56 +276,200 @@ void GPU::DoSavestate(Savestate* file) noexcept
 
     if (!file->Saving)
         ResetVRAMCache();
+
+    Rend->PostSavestate();
 }
 
-/*void GPU::AssignFramebuffers() noexcept
-{
-    int backbuf = FrontBuffer ? 0 : 1;
-    if (NDS.PowerControl9 & (1<<15))
-    {
-        GPU2D_Renderer->SetFramebuffer(Framebuffer[backbuf][0].get(), Framebuffer[backbuf][1].get());
-    }
-    else
-    {
-        GPU2D_Renderer->SetFramebuffer(Framebuffer[backbuf][1].get(), Framebuffer[backbuf][0].get());
-    }
-}*/
 
-void GPU::SetRenderer3D(std::unique_ptr<Renderer3D>&& renderer) noexcept
+void GPU::SetRenderer(std::unique_ptr<Renderer>&& renderer) noexcept
 {
-    if (renderer == nullptr)
-        GPU3D.SetCurrentRenderer(std::make_unique<SoftRenderer>());
-    else
-        GPU3D.SetCurrentRenderer(std::move(renderer));
+    if (renderer)
+    {
+        Rend = std::move(renderer);
+        if (Rend->Init())
+        {
+            Rend->Reset();
+            return;
+        }
+    }
 
-    //InitFramebuffers();
+    Rend = std::make_unique<SoftRenderer>(NDS);
+    Rend->Init();
+    Rend->Reset();
 }
 
-/*void GPU::InitFramebuffers() noexcept
+
+bool GPU::GetFramebuffers(void** top, void** bottom)
 {
-    int fbsize;
-    if (GPU3D.IsRendererAccelerated())
-        fbsize = (256*3 + 1) * 192;
+    return Rend->GetFramebuffers(top, bottom);
+}
+
+
+u8 GPU::Read8(u32 addr)
+{
+    u16 ret = Read16(addr & ~0x1);
+    if (addr & 0x1)
+        return ret >> 8;
     else
-        fbsize = 256 * 192;
+        return ret & 0xFF;
+}
 
-    Framebuffer[0][0] = std::make_unique<u32[]>(fbsize);
-    Framebuffer[1][0] = std::make_unique<u32[]>(fbsize);
-    Framebuffer[0][1] = std::make_unique<u32[]>(fbsize);
-    Framebuffer[1][1] = std::make_unique<u32[]>(fbsize);
-
-    memset(Framebuffer[0][0].get(), 0, fbsize*4);
-    memset(Framebuffer[1][0].get(), 0, fbsize*4);
-    memset(Framebuffer[0][1].get(), 0, fbsize*4);
-    memset(Framebuffer[1][1].get(), 0, fbsize*4);
-
-    AssignFramebuffers();
-}*/
-
-
-bool GPU::GetFramebuffers(u32** top, u32** bottom)
+u16 GPU::Read16(u32 addr)
 {
-    return GPU2D_Renderer->GetFramebuffers(top, bottom);
+    switch (addr)
+    {
+        case 0x04000064: return CaptureCnt & 0xFFFF;
+        case 0x04000066: return CaptureCnt >> 16;
+
+        case 0x0400006C: return MasterBrightnessA;
+        case 0x0400106C: return MasterBrightnessB;
+    }
+
+    Log(LogLevel::Debug, "unknown GPU read16 %08X\n", addr);
+    return 0;
+}
+
+u32 GPU::Read32(u32 addr)
+{
+    switch (addr)
+    {
+        case 0x04000064: return CaptureCnt;
+
+        case 0x0400006C: return MasterBrightnessA;
+        case 0x0400106C: return MasterBrightnessB;
+    }
+
+    Log(LogLevel::Debug, "unknown GPU read32 %08X\n", addr);
+    return 0;
+}
+
+void GPU::Write8(u32 addr, u8 val)
+{
+    switch (addr)
+    {
+        case 0x04000004:
+            SetDispStat(0, val, 0x00FF);
+            return;
+        case 0x04000005:
+            SetDispStat(0, val << 8, 0xFF00);
+            return;
+        case 0x04000006:
+            SetVCount(val, 0x00FF);
+            return;
+        case 0x04000007:
+            SetVCount(val << 8, 0xFF00);
+            return;
+
+        case 0x04000064:
+            CaptureCnt = (CaptureCnt & 0xFFFFFF00) | (val & 0x1F);
+            return;
+        case 0x04000065:
+            CaptureCnt = (CaptureCnt & 0xFFFF00FF) | ((val & 0x1F) << 8);
+            return;
+        case 0x04000066:
+            CaptureCnt = (CaptureCnt & 0xFF00FFFF) | ((val & 0x3F) << 16);
+            return;
+        case 0x04000067:
+            CaptureCnt = (CaptureCnt & 0x00FFFFFF) | ((val & 0xEF) << 24);
+            return;
+
+        case 0x04000068:
+            DispFIFO[DispFIFOWritePtr] = val * 0x0101;
+            return;
+        case 0x04000069:
+            return;
+        case 0x0400006A:
+            DispFIFO[DispFIFOWritePtr+1] = val * 0x0101;
+            return;
+        case 0x0400006B:
+            DispFIFOWritePtr += 2;
+            DispFIFOWritePtr &= 0xF;
+            return;
+
+        case 0x0400006C:
+            MasterBrightnessA = (MasterBrightnessA & 0xFF00) | (val & 0x1F);
+            return;
+        case 0x0400006D:
+            MasterBrightnessA = (MasterBrightnessA & 0x00FF) | ((val & 0xC0) << 8);
+            return;
+        case 0x0400106C:
+            MasterBrightnessB = (MasterBrightnessB & 0xFF00) | (val & 0x1F);
+            return;
+        case 0x0400106D:
+            MasterBrightnessB = (MasterBrightnessB & 0x00FF) | ((val & 0xC0) << 8);
+            return;
+    }
+
+    Log(LogLevel::Debug, "unknown GPU write8 %08X %02X\n", addr, val);
+}
+
+void GPU::Write16(u32 addr, u16 val)
+{
+    switch (addr)
+    {
+        case 0x04000004:
+            SetDispStat(0, val, 0xFFFF);
+            return;
+        case 0x04000006:
+            SetVCount(val, 0xFFFF);
+            return;
+
+        case 0x04000064:
+            CaptureCnt = (CaptureCnt & 0xFFFF0000) | (val & 0x1F1F);
+            return;
+        case 0x04000066:
+            CaptureCnt = (CaptureCnt & 0xFFFF) | ((val & 0xEF3F) << 16);
+            return;
+
+        case 0x04000068:
+            DispFIFO[DispFIFOWritePtr] = val;
+            return;
+        case 0x0400006A:
+            DispFIFO[DispFIFOWritePtr+1] = val;
+            DispFIFOWritePtr += 2;
+            DispFIFOWritePtr &= 0xF;
+            return;
+
+        case 0x0400006C:
+            MasterBrightnessA = val & 0xC01F;
+            return;
+        case 0x0400106C:
+            MasterBrightnessB = val & 0xC01F;
+            return;
+    }
+
+    Log(LogLevel::Debug, "unknown GPU write16 %08X %04X\n", addr, val);
+}
+
+void GPU::Write32(u32 addr, u32 val)
+{
+    switch (addr)
+    {
+        case 0x04000004:
+            SetDispStat(0, val & 0xFFFF, 0xFFFF);
+            SetVCount(val >> 16, 0xFFFF);
+            return;
+
+        case 0x04000064:
+            CaptureCnt = val & 0xEF3F1F1F;
+            return;
+
+        case 0x04000068:
+            DispFIFO[DispFIFOWritePtr] = val & 0xFFFF;
+            DispFIFO[DispFIFOWritePtr+1] = val >> 16;
+            DispFIFOWritePtr += 2;
+            DispFIFOWritePtr &= 0xF;
+            return;
+
+        case 0x0400006C:
+            MasterBrightnessA = val & 0xC01F;
+            return;
+        case 0x0400106C:
+            MasterBrightnessB = val & 0xC01F;
+            return;
+    }
+
+    Log(LogLevel::Debug, "unknown GPU write32 %08X %08X\n", addr, val);
 }
 
 
@@ -420,7 +544,7 @@ void GPU::MapVRAM_AB(u32 bank, u8 cnt) noexcept
     VRAMCNT[bank] = cnt;
 
     if (oldcnt == cnt) return;
-
+printf("MapVRAM %c: %02X -> %02X\n", 'A'+bank, oldcnt, cnt);
     u8 oldofs = (oldcnt >> 3) & 0x3;
     u8 ofs = (cnt >> 3) & 0x3;
     u32 bankmask = 1 << bank;
@@ -486,7 +610,7 @@ void GPU::MapVRAM_CD(u32 bank, u8 cnt) noexcept
     VRAMSTAT &= ~(1 << (bank-2));
 
     if (oldcnt == cnt) return;
-
+    printf("MapVRAM %c: %02X -> %02X\n", 'A'+bank, oldcnt, cnt);
     u8 oldofs = (oldcnt >> 3) & 0x7;
     u8 ofs = (cnt >> 3) & 0x7;
     u32 bankmask = 1 << bank;
@@ -579,7 +703,7 @@ void GPU::MapVRAM_E(u32 bank, u8 cnt) noexcept
     VRAMCNT[bank] = cnt;
 
     if (oldcnt == cnt) return;
-
+    printf("MapVRAM %c: %02X -> %02X\n", 'A'+bank, oldcnt, cnt);
     u32 bankmask = 1 << bank;
 
     if (oldcnt & (1<<7))
@@ -647,7 +771,7 @@ void GPU::MapVRAM_FG(u32 bank, u8 cnt) noexcept
     VRAMCNT[bank] = cnt;
 
     if (oldcnt == cnt) return;
-
+    printf("MapVRAM %c: %02X -> %02X\n", 'A'+bank, oldcnt, cnt);
     u8 oldofs = (oldcnt >> 3) & 0x7;
     u8 ofs = (cnt >> 3) & 0x7;
     u32 bankmask = 1 << bank;
@@ -755,7 +879,7 @@ void GPU::MapVRAM_H(u32 bank, u8 cnt) noexcept
     VRAMCNT[bank] = cnt;
 
     if (oldcnt == cnt) return;
-
+    printf("MapVRAM %c: %02X -> %02X\n", 'A'+bank, oldcnt, cnt);
     u32 bankmask = 1 << bank;
 
     if (oldcnt & (1<<7))
@@ -813,7 +937,7 @@ void GPU::MapVRAM_I(u32 bank, u8 cnt) noexcept
     VRAMCNT[bank] = cnt;
 
     if (oldcnt == cnt) return;
-
+    printf("MapVRAM %c: %02X -> %02X\n", 'A'+bank, oldcnt, cnt);
     u32 bankmask = 1 << bank;
 
     if (oldcnt & (1<<7))
@@ -884,13 +1008,51 @@ void GPU::SetPowerCnt(u32 val) noexcept
     // * bit9: disables engine B palette, OAM and rendering (screen turns white)
     // * bit15: screen swap
 
-    if (!(val & (1<<0))) Log(LogLevel::Warn, "!!! CLEARING POWCNT BIT0. DANGER\n");
-
-    GPU2D_A.SetEnabled(val & (1<<1), val & (1<<15));
-    GPU2D_B.SetEnabled(val & (1<<9), val & (1<<15));
+    GPU2D_A.SetEnabled(val & (1<<1));
+    GPU2D_B.SetEnabled(val & (1<<9));
     GPU3D.SetEnabled(val & (1<<3), val & (1<<2));
+
+    ScreenSwap = !!(val & (1<<15));
 }
 
+
+void GPU::SetDispStatIRQ(int cpu, int num)
+{
+    u16 irqmask = (1 << num);
+    u16 enablemask = (1 << (num+3));
+
+    // DISPSTAT IRQs are edge-triggered
+    // if the flag was already set, no IRQ will be triggered
+    if (DispStat[cpu] & irqmask)
+        return;
+
+    DispStat[cpu] |= irqmask;
+    if (DispStat[cpu] & enablemask)
+        NDS.SetIRQ(cpu, num);
+}
+
+
+bool GPU::UsesDisplayFIFO()
+{
+    if (((GPU2D_A.DispCnt >> 16) & 0x3) == 3)
+        return true;
+    if ((CaptureCnt & (1<<25)) && ((CaptureCnt >> 29) & 0x3) != 0)
+        return true;
+
+    return false;
+}
+
+void GPU::SampleDisplayFIFO(u32 offset, u32 num)
+{
+    for (u32 i = 0; i < num; i++)
+    {
+        u16 val = DispFIFO[DispFIFOReadPtr];
+        DispFIFOReadPtr++;
+        DispFIFOReadPtr &= 0xF;
+
+        DispFIFOBuffer[offset+i] = val;
+    }
+}
 
 void GPU::DisplayFIFO(u32 x) noexcept
 {
@@ -900,9 +1062,9 @@ void GPU::DisplayFIFO(u32 x) noexcept
     if (x > 0)
     {
         if (x == 8)
-            GPU2D_A.SampleFIFO(0, 5);
+            SampleDisplayFIFO(0, 5);
         else
-            GPU2D_A.SampleFIFO(x-11, 8);
+            SampleDisplayFIFO(x-11, 8);
     }
 
     if (x < 256)
@@ -912,20 +1074,21 @@ void GPU::DisplayFIFO(u32 x) noexcept
         NDS.ScheduleEvent(Event_DisplayFIFO, true, 6*8, 0, x+8);
     }
     else
-        GPU2D_A.SampleFIFO(253, 3); // sample the remaining pixels
+        SampleDisplayFIFO(253, 3); // sample the remaining pixels
 }
+
 
 void GPU::StartFrame() noexcept
 {
+    ScreensEnabled = !!(NDS.PowerControl9 & (1<<0));
+
     // only run the display FIFO if needed:
     // * if it is used for display or capture
     // * if we have display FIFO DMA
-    RunFIFO = GPU2D_A.UsesFIFO() || NDS.DMAsInMode(0, 0x04);
+    RunFIFO = UsesDisplayFIFO() || NDS.DMAsInMode(0, 0x04);
 
     TotalScanlines = 0;
     StartScanline(0);
-
-    CheckCaptureStart();
 }
 
 void GPU::StartHBlank(u32 line) noexcept
@@ -937,51 +1100,45 @@ void GPU::StartHBlank(u32 line) noexcept
     {
         // draw
         // note: this should start 48 cycles after the scanline start
-        if (line < 192)
-        {
-            GPU2D_Renderer->DrawScanline(line, &GPU2D_A);
-            GPU2D_Renderer->DrawScanline(line, &GPU2D_B);
-        }
+        Rend->DrawScanline(line);
+        Rend->DrawSprites(line+1);
 
-        // sprites are pre-rendered one scanline in advance
-        if (line < 191)
-        {
-            GPU2D_Renderer->DrawSprites(line+1, &GPU2D_A);
-            GPU2D_Renderer->DrawSprites(line+1, &GPU2D_B);
-        }
+        GPU2D_A.UpdateRegisters(VCount+1);
+        GPU2D_B.UpdateRegisters(VCount+1);
 
         NDS.CheckDMAs(0, 0x02);
     }
     else if (VCount == 215)
     {
-        GPU3D.VCount215(*this);
+        Rend->Start3DRendering();
     }
     else if (VCount == 262)
     {
-        GPU2D_Renderer->DrawSprites(0, &GPU2D_A);
-        GPU2D_Renderer->DrawSprites(0, &GPU2D_B);
+        // sprites are pre-rendered one scanline in advance
+        Rend->DrawSprites(0);
+
+        GPU2D_A.UpdateRegisters(0);
+        GPU2D_B.UpdateRegisters(0);
     }
 
     if (DispStat[0] & (1<<4)) NDS.SetIRQ(0, IRQ_HBlank);
     if (DispStat[1] & (1<<4)) NDS.SetIRQ(1, IRQ_HBlank);
 
-    if (VCount < 262)
-        NDS.ScheduleEvent(Event_LCD, true, (LINE_CYCLES - HBLANK_CYCLES), LCD_StartScanline, line+1);
-    else
+    if ((VCount == 262) || (VCount == 511))
         NDS.ScheduleEvent(Event_LCD, true, (LINE_CYCLES - HBLANK_CYCLES), LCD_FinishFrame, line+1);
+    else
+        NDS.ScheduleEvent(Event_LCD, true, (LINE_CYCLES - HBLANK_CYCLES), LCD_StartScanline, line+1);
 }
 
 void GPU::FinishFrame(u32 lines) noexcept
 {
-    //FrontBuffer = FrontBuffer ? 0 : 1;
-    //AssignFramebuffers();
-    GPU2D_Renderer->SwapBuffers();
+    Rend->SwapBuffers();
 
     TotalScanlines = lines;
 
     if (GPU3D.AbortFrame)
     {
-        GPU3D.RestartFrame(*this);
+        Rend->Restart3DRendering();
         GPU3D.AbortFrame = false;
     }
 }
@@ -1007,6 +1164,126 @@ void GPU::BlankFrame() noexcept
 
 void GPU::StartScanline(u32 line) noexcept
 {
+    /*
+     * order of operations on hardware:
+     * 1. VCount is incremented
+     * 2. things are done based on the new value (ie. 262 is when the DISPSTAT VBlank flag is cleared)
+     * 3. if VCOUNT was written to, the new value is applied
+     * 4. VMatch is checked
+     *
+     * if VCount is set to 263 or more, it will count all the way to 511 and wrap around
+     * if the 261->262 transition is skipped, the VBlank flag remains set (until the end of the next frame)
+     * -> this suppresses the next VBlank IRQ
+     * likely, skipping 191->192 behaves similarly
+     *
+     * ultimately, messing with VCount can cause a lot of weird shit, seeing as VCount controls
+     * a lot of the renderer logic and the LCD sync signals.
+     * certain VCount transitions can cause odd effects such as LCDs fading out.
+     */
+
+    // clear HBlank flags
+
+    DispStat[0] &= ~(1<<1);
+    DispStat[1] &= ~(1<<1);
+
+    // update hardware status
+
+    if (line == 0)
+        VCount = 0;
+    else
+    {
+        VCount++;
+        VCount &= 0x1FF;
+    }
+
+    // TODO: not right
+    // should be done during HBlank (or when starting a scanline for OBJ mos counters)
+    //GPU2D_A.UpdateRegisters(VCount);
+    //GPU2D_B.UpdateRegisters(VCount);
+
+    if (VCount >= 2 && VCount < 194)
+        NDS.CheckDMAs(0, 0x03);
+    else if (VCount == 194)
+        NDS.StopDMAs(0, 0x03);
+
+    if ((VCount < 192) && RunFIFO)
+        NDS.ScheduleEvent(Event_DisplayFIFO, false, 32, 0, 0);
+
+    if (VCount == 0)
+    {
+        if (CaptureCnt & (1<<31))
+        {
+            CaptureEnable = true;
+            CheckCaptureStart();
+        }
+    }
+    else if (VCount == 192)
+    {
+        // VBlank
+
+        SetDispStatIRQ(0, 0);
+        SetDispStatIRQ(1, 0);
+
+        if (CaptureEnable)
+            CheckCaptureEnd();
+
+        DispFIFOReadPtr = 0;
+        DispFIFOWritePtr = 0;
+
+        // in reality rendering already finishes at line 144
+        // and games might already start to modify texture memory.
+        // That doesn't matter for us because we cache the entire
+        // texture memory anyway and only update it before the start
+        // of the next frame.
+        // So we can give the rasteriser a bit more headroom
+        Rend->Finish3DRendering();
+
+        DispStat[0] |= (1<<0);
+        DispStat[1] |= (1<<0);
+
+        NDS.StopDMAs(0, 0x04);
+
+        NDS.CheckDMAs(0, 0x01);
+        NDS.CheckDMAs(1, 0x11);
+
+        GPU2D_A.VBlank();
+        GPU2D_B.VBlank();
+        GPU3D.VBlank();
+
+        Rend->VBlank();
+
+        CaptureCnt &= ~(1<<31);
+        CaptureEnable = false;
+    }
+    else if (VCount == 262)
+    {
+        // VBlank end
+
+        DispStat[0] &= ~(1<<0);
+        DispStat[1] &= ~(1<<0);
+    }
+
+    // if VCount was written to during the previous scanline, apply the new value
+
+    if (VCountOverride)
+    {
+        VCount = NextVCount;
+        VCountOverride = false;
+    }
+
+    // check for VCount match
+
+    if (VCount == VMatch[0])
+        SetDispStatIRQ(0, 2);
+    else
+        DispStat[0] &= ~(1<<2);
+
+    if (VCount == VMatch[1])
+        SetDispStatIRQ(1, 2);
+    else
+        DispStat[1] &= ~(1<<2);
+
+#if 0
     if (line == 0)
         VCount = 0;
     else if (NextVCount != 0xFFFFFFFF)
@@ -1037,8 +1314,23 @@ void GPU::StartScanline(u32 line) noexcept
     else
         DispStat[1] &= ~(1<<2);
 
-    GPU2D_A.CheckWindows(VCount);
-    GPU2D_B.CheckWindows(VCount);
+    //GPU2D_A.CheckWindows(VCount);
+    //GPU2D_B.CheckWindows(VCount);
+    //UpdateRegisters(VCount);
+
+    if (VCount == 0)
+    {
+        if (CaptureCnt & (1<<31))
+            CaptureEnable = true;
+    }
+    else if (VCount == 192)
+    {
+        CaptureCnt &= ~(1<<31);
+        CaptureEnable = false;
+    }
+
+    GPU2D_A.UpdateRegisters(VCount);
+    GPU2D_B.UpdateRegisters(VCount);
 
     if (VCount >= 2 && VCount < 194)
         NDS.CheckDMAs(0, 0x03);
@@ -1102,30 +1394,62 @@ void GPU::StartScanline(u32 line) noexcept
             GPU2D_A.CaptureLatch = false;
         }
     }
-
+#endif
     NDS.ScheduleEvent(Event_LCD, true, HBLANK_CYCLES, LCD_StartHBlank, line);
 }
 
 
-void GPU::SetDispStat(u32 cpu, u16 val) noexcept
+void GPU::Restart3DFrame() noexcept
 {
-    val &= 0xFFB8;
-    DispStat[cpu] &= 0x0047;
-    DispStat[cpu] |= val;
-
-    VMatch[cpu] = (val >> 8) | ((val & 0x80) << 1);
+    Rend->Restart3DRendering();
 }
 
-void GPU::SetVCount(u16 val) noexcept
+
+/*void GPU::UpdateRegisters(u32 line)
 {
+    if (line == 0)
+    {
+        if (CaptureCnt & (1<<31))
+            CaptureEnable = true;
+    }
+    else if (line == 192)
+    {
+        CaptureCnt &= ~(1<<31);
+        CaptureEnable = false;
+    }
+
+    GPU2D_A.UpdateRegisters(line);
+    GPU2D_B.UpdateRegisters(line);
+}*/
+
+
+void GPU::SetDispStat(u32 cpu, u16 val, u16 mask) noexcept
+{
+    const u16 ro_mask = 0x0047;
+
+    val &= (mask & ~ro_mask);
+    DispStat[cpu] &= (~mask & ro_mask);
+    DispStat[cpu] |= val;
+
+    VMatch[cpu] = (DispStat[cpu] >> 8) | ((DispStat[cpu] & 0x80) << 1);
+}
+
+void GPU::SetVCount(u16 val, u16 mask) noexcept
+{
+    // the VCount register is 9 bits wide
+    val &= mask & 0x1FF;
+
     // VCount write is delayed until the next scanline
 
     // TODO: how does the 3D engine react to VCount writes while it's rendering?
     // 3D engine seems to give up on the current frame in that situation, repeating the last two scanlines
     // TODO: also check the various DMA types that can be involved
 
-    GPU3D.AbortFrame |= NextVCount != val;
-    NextVCount = val;
+    u16 nextvc = (NextVCount & ~mask) | (val & mask);
+
+    GPU3D.AbortFrame |= NextVCount != nextvc;
+    NextVCount = nextvc;
+    VCountOverride = true;
 }
 
 template <u32 Size, u32 MappingGranularity>
@@ -1293,15 +1617,15 @@ void GPU::VRAMCBFlagsOr(u32 bank, u32 block, u16 val)
 
 void GPU::CheckCaptureStart()
 {
-    if (!(GPU2D_A.CaptureCnt & (1<<31)))
+    if (!(CaptureCnt & (1<<31)))
         return;
 
-    u32 dstbank = (GPU2D_A.CaptureCnt >> 16) & 0x3;
+    u32 dstbank = (CaptureCnt >> 16) & 0x3;
     if (!(VRAMMap_LCDC & (1<<dstbank)))
         return;
 
-    u32 dstoff = (GPU2D_A.CaptureCnt >> 18) & 0x3;
-    u32 size = (GPU2D_A.CaptureCnt >> 20) & 0x3;
+    u32 dstoff = (CaptureCnt >> 18) & 0x3;
+    u32 size = (CaptureCnt >> 20) & 0x3;
     u32 len = (size == 0) ? 1 : size;
 
     // if needed, invalidate old capture
@@ -1316,18 +1640,15 @@ void GPU::CheckCaptureStart()
     // mark involved VRAM blocks as being a new capture
     u16 newval = CBFlag_IsCapture | dstoff | (dstbank << 2) | (len << 4) | (size << 6);
     VRAMCBFlagsSet(dstbank, dstoff, newval);
-    GPU2D_Renderer->AllocCapture(dstbank, dstoff, size);
+    //Rend->AllocCapture(dstbank, dstoff, size);
 }
 
 void GPU::CheckCaptureEnd()
 {
-    if (!(GPU2D_A.CaptureCnt & (1<<31)))
-        return;
-
     // mark this capture as complete
     // TODO should be done before VBlank for smaller capture sizes?
-    u32 dstbank = (GPU2D_A.CaptureCnt >> 16) & 0x3;
-    u32 dstoff = (GPU2D_A.CaptureCnt >> 18) & 0x3;
+    u32 dstbank = (CaptureCnt >> 16) & 0x3;
+    u32 dstoff = (CaptureCnt >> 18) & 0x3;
     VRAMCBFlagsOr(dstbank, dstoff, CBFlag_Complete);
 }
 
@@ -1341,7 +1662,7 @@ void GPU::SyncVRAMCaptureBlock(u32 block, bool write)
     u32 bank = block >> 2;
     u32 start = flags & 0x3;
     u32 len = (flags >> 6) & 0x3;
-    GPU2D_Renderer->SyncVRAMCapture(bank, start, len, (flags & CBFlag_Complete));
+    Rend->SyncVRAMCapture(bank, start, len, (flags & CBFlag_Complete));
 
     //u16* cbflags = &VRAMCaptureBlockFlags[bank << 2];
     if (write)
@@ -1366,125 +1687,71 @@ int GPU::GetCaptureBlock_LCDC(u32 offset)
     return -1;
 }
 
-int GPU::GetCaptureBlock_ABG(u32 offset)
+void GPU::GetCaptureInfo(int* info, u16** cbf, int len)
 {
-    u16* cbf = VRAMCBF_ABG[(offset >> 14) & 0x1F];
-    if (!cbf) return -1;
+    for (int b = 0; b < len; b++)
+    {
+        u16* ptr = cbf[b];
+        if (!ptr)
+        {
+            info[b] = -1;
+            continue;
+        }
 
-    u16 flags = *cbf;
-    if (!(flags & CBFlag_IsCapture))
-        return -1;
-
-    return flags & 0xF;
-#if 0
-    u32 mask = VRAMMap_ABG[(offset >> 14) & 0x1F];
-    offset = (offset >> 15) & 0x3;
-    /*if ((mask & (1<<0)) && (VRAMCaptureBlockFlags[(0<<2) | offset] & CBFlag_IsCapture)) return true;
-    if ((mask & (1<<1)) && (VRAMCaptureBlockFlags[(1<<2) | offset] & CBFlag_IsCapture)) return true;
-    if ((mask & (1<<2)) && (VRAMCaptureBlockFlags[(2<<2) | offset] & CBFlag_IsCapture)) return true;
-    if ((mask & (1<<3)) && (VRAMCaptureBlockFlags[(3<<2) | offset] & CBFlag_IsCapture)) return true;*/
-    if (mask & (1<<0))
-    {
-        u8 flags = VRAMCaptureBlockFlags[(0<<2) | offset];
+        u16 flags = *ptr;
         if (flags & CBFlag_IsCapture)
-            return (0<<2) | ((flags>>4) & 0x3);
+            info[b] = flags & 0xF;
+        else
+            info[b] = -1;
     }
-    if (mask & (1<<1))
-    {
-        u8 flags = VRAMCaptureBlockFlags[(1<<2) | offset];
-        if (flags & CBFlag_IsCapture)
-            return (1<<2) | ((flags>>4) & 0x3);
-    }
-    if (mask & (1<<2))
-    {
-        u8 flags = VRAMCaptureBlockFlags[(2<<2) | offset];
-        if (flags & CBFlag_IsCapture)
-            return (2<<2) | ((flags>>4) & 0x3);
-    }
-    if (mask & (1<<3))
-    {
-        u8 flags = VRAMCaptureBlockFlags[(3<<2) | offset];
-        if (flags & CBFlag_IsCapture)
-            return (3<<2) | ((flags>>4) & 0x3);
-    }
-    return -1;
-#endif
 }
 
-int GPU::GetCaptureBlock_AOBJ(u32 offset)
+void GPU::GetCaptureInfo_ABG(int* info)
 {
-    u16* cbf = VRAMCBF_AOBJ[(offset >> 14) & 0xF];
-    if (!cbf) return -1;
-
-    u16 flags = *cbf;
-    if (!(flags & CBFlag_IsCapture))
-        return -1;
-
-    return flags & 0xF;
-#if 0
-    u32 mask = VRAMMap_AOBJ[(offset >> 14) & 0xF];
-    offset = (offset >> 15) & 0x3;
-    if (mask & (1<<0))
-    {
-        u8 flags = VRAMCaptureBlockFlags[(0<<2) | offset];
-        if (flags & CBFlag_IsCapture)
-            return (0<<2) | ((flags>>4) & 0x3);
-    }
-    if (mask & (1<<1))
-    {
-        u8 flags = VRAMCaptureBlockFlags[(1<<2) | offset];
-        if (flags & CBFlag_IsCapture)
-            return (1<<2) | ((flags>>4) & 0x3);
-    }
-    return -1;
-#endif
+    return GetCaptureInfo(info, VRAMCBF_ABG, 32);
 }
 
-int GPU::GetCaptureBlock_BBG(u32 offset)
+void GPU::GetCaptureInfo_AOBJ(int* info)
 {
-    u16* cbf = VRAMCBF_BBG[(offset >> 14) & 0x7];
-    if (!cbf) return -1;
-
-    u16 flags = *cbf;
-    if (!(flags & CBFlag_IsCapture))
-        return -1;
-
-    return flags & 0xF;
-#if 0
-    u32 mask = VRAMMap_BBG[(offset >> 14) & 0x7];
-    offset = (offset >> 15) & 0x3;
-    //if ((mask & (1<<2)) && (VRAMCaptureBlockFlags[(2<<2) | offset] & CBFlag_IsCapture)) return true;
-    if (mask & (1<<2))
-    {
-        u8 flags = VRAMCaptureBlockFlags[(2<<2) | offset];
-        if (flags & CBFlag_IsCapture)
-            return (2<<2) | ((flags>>4) & 0x3);
-    }
-    return -1;
-#endif
+    return GetCaptureInfo(info, VRAMCBF_AOBJ, 16);
 }
 
-int GPU::GetCaptureBlock_BOBJ(u32 offset)
+void GPU::GetCaptureInfo_BBG(int* info)
 {
-    u16* cbf = VRAMCBF_BOBJ[(offset >> 14) & 0x7];
-    if (!cbf) return -1;
+    return GetCaptureInfo(info, VRAMCBF_BBG, 8);
+}
 
-    u16 flags = *cbf;
-    if (!(flags & CBFlag_IsCapture))
-        return -1;
+void GPU::GetCaptureInfo_BOBJ(int* info)
+{
+    return GetCaptureInfo(info, VRAMCBF_BOBJ, 8);
+}
 
-    return flags & 0xF;
-#if 0
-    u32 mask = VRAMMap_BOBJ[(offset >> 14) & 0x7];
-    offset = (offset >> 15) & 0x3;
-    if (mask & (1<<3))
+void GPU::GetCaptureInfo_Texture(int* info)
+{
+    for (int b = 0; b < 16; b++)
     {
-        u8 flags = VRAMCaptureBlockFlags[(3<<2) | offset];
-        if (flags & CBFlag_IsCapture)
-            return (3<<2) | ((flags>>4) & 0x3);
+        int bank = b >> 2;
+        int subblock = b & 0x3;
+        u32 mask = VRAMMap_Texture[bank];
+        u16 cbf = 0;
+
+        // check the bank mask
+        // for now we don't bother with overlapping banks
+        // this may change if a game happens to do this
+        if (mask == (1<<0))
+            cbf = VRAMCaptureBlockFlags[(0<<2) | subblock];
+        else if (mask == (1<<1))
+            cbf = VRAMCaptureBlockFlags[(1<<2) | subblock];
+        else if (mask == (1<<2))
+            cbf = VRAMCaptureBlockFlags[(2<<2) | subblock];
+        else if (mask == (1<<3))
+            cbf = VRAMCaptureBlockFlags[(3<<2) | subblock];
+
+        if (cbf & CBFlag_IsCapture)
+            info[b] = cbf & 0xF;
+        else
+            info[b] = -1;
     }
-    return -1;
-#endif
 }
 
 }

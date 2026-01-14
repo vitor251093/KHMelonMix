@@ -1979,8 +1979,9 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
     if (plugin != nullptr) {
         plugin->setNds(nds);
         plugin->onLoadROM();
-        
-        static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
+
+        // TODO: KH Will this still be necessary?
+        //static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
     }
 
     cartType = 0;

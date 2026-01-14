@@ -1,8 +1,6 @@
 set(OPENGL_SHADER_FILES
     LayerPreVS.glsl
     LayerPreFS.glsl
-    LayerVS.glsl
-    LayerFS.glsl
     SpritePreVS.glsl
     SpritePreFS.glsl
     SpriteVS.glsl
@@ -13,6 +11,16 @@ set(OPENGL_SHADER_FILES
     FinalPassFS.glsl
     CaptureVS.glsl
     CaptureFS.glsl
+
+    3DClearVS.glsl
+    3DClearFS.glsl
+    3DClearBitmapVS.glsl
+    3DClearBitmapFS.glsl
+    3DRenderVS.glsl
+    3DRenderFS.glsl
+    3DFinalPassVS.glsl
+    3DFinalPassEdgeFS.glsl
+    3DFinalPassFogFS.glsl
 )
 
 foreach(SH_INPUT ${OPENGL_SHADER_FILES})

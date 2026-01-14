@@ -27,221 +27,231 @@
 
 namespace melonDS
 {
-class GPU;
+class GLRenderer;
 
-namespace GPU2D
-{
-
-class GLRenderer : public Renderer2D
+class GLRenderer2D : public Renderer2D
 {
 public:
-    static std::unique_ptr<GLRenderer> New(melonDS::GPU& gpu, Plugins::Plugin* plugin) noexcept;
-    ~GLRenderer() override;
+    //static std::unique_ptr<GLRenderer> New(melonDS::GPU& gpu) noexcept;
+    GLRenderer2D(melonDS::GPU2D& gpu2D, GLRenderer& parent, Plugins::Plugin* plugin);
+    ~GLRenderer2D() override;
+    bool Init() override;
+    void Reset() override;
 
     void SetScaleFactor(int scale);
 
-    void DrawScanline(u32 line, Unit* unit) override;
-    void DrawSprites(u32 line, Unit* unit) override;
-    void VBlank(Unit* unitA, Unit* unitB) override;
-    void VBlankEnd(Unit* unitA, Unit* unitB) override;
-
-    void AllocCapture(u32 bank, u32 start, u32 len) override;
-    void SyncVRAMCapture(u32 bank, u32 start, u32 len, bool complete) override;
-
-    bool GetFramebuffers(u32** top, u32** bottom) override;
-    void SwapBuffers() override;
+    void DrawScanline(u32 line) override;
+    void DrawSprites(u32 line) override;
+    void VBlank() override;
+    void VBlankEnd() override;
 
 private:
-    GLRenderer(melonDS::GPU& gpu, Plugins::Plugin* plugin);
-    bool GLInit();
-    melonDS::GPU& GPU;
+    GLRenderer& Parent;
 
     int ScaleFactor;
     int ScreenW, ScreenH;
 
+    static int ShaderCount;
+    GLuint UBOBaseID;
+
     GLuint RectVtxBuffer;
     GLuint RectVtxArray;
 
-    GLuint LayerPreShader;
+    static GLuint LayerPreShader;
+    GLint LayerPreBGConfigULoc;
     GLint LayerPreCurBGULoc;
-    GLuint LayerConfigUBO;
+    //GLuint LayerConfigUBO;
 
-    GLuint LayerShader;
-    GLint LayerScaleULoc;
-    GLint LayerCurUnitULoc;
-    GLint LayerCurBGULoc;
+    //GLuint LayerShader;
+    //GLint LayerScaleULoc;
+    //GLint LayerCurUnitULoc;
+    //GLint LayerCurBGULoc;
     GLuint ScanlineConfigUBO;
 
-    GLuint SpritePreShader;
-    GLuint SpriteConfigUBO;
+    static GLuint SpritePreShader;
+    //GLuint SpriteConfigUBO;
+    GLint SpritePreConfigULoc;
     GLuint SpritePreVtxBuffer;
     GLuint SpritePreVtxArray;
     u16* SpritePreVtxData;
 
-    GLuint SpriteShader;
+    static GLuint SpriteShader;
+    GLint SpriteConfigULoc;
     GLuint SpriteVtxBuffer;
     GLuint SpriteVtxArray;
     u16* SpriteVtxData;
 
-    GLuint CompositorShader;
+    static GLuint CompositorShader;
     GLuint CompositorConfigUBO;
+    GLint CompositorBGConfigULoc;
+    GLint CompositorScanlineConfigULoc;
+    GLint CompositorConfigULoc;
     GLint CompositorScaleULoc;
 
-    struct sUnitState
+    // base index for a BG layer within the BG texture arrays
+    // based on BG type and size
+    const u8 BGBaseIndex[4][4] = {
+        {2, 10, 6, 14},     // text mode
+        {0, 4, 16, 20},     // rotscale
+        {0, 4, 12, 16},     // bitmap
+        {18, 19, 12, 16},   // large bitmap
+    };
+
+    GLuint LayerConfigUBO;
+    GLuint SpriteConfigUBO;
+
+    GLuint VRAMTex_BG;
+    GLuint VRAMTex_OBJ;
+    GLuint PalTex_BG;
+    GLuint PalTex_OBJ;
+
+    GLuint AllBGLayerFB[22];
+    GLuint AllBGLayerTex[22];
+
+    GLuint BGLayerFB[4];
+    GLuint BGLayerTex[4];
+
+    GLuint SpriteFB;
+    GLuint SpriteTex;
+
+    GLuint OBJLayerFB;
+    GLuint OBJLayerTex;
+
+    GLuint OutputFB;
+    GLuint OutputTex;
+
+    // std140 compliant config struct for the layer shader
+    struct sLayerConfig
     {
-        GLuint VRAMTex_BG;
-        GLuint VRAMTex_OBJ;
-        GLuint PalTex_BG;
-        GLuint PalTex_OBJ;
-
-        GLuint BGLayerFB[4];
-        GLuint BGLayerTex;
-
-        GLuint SpriteFB;
-        GLuint SpriteTex;
-
-        GLuint FinalLayerFB[5];
-        GLuint FinalLayerTex;
-
-        GLuint OutputFB;
-        GLuint OutputTex;
-
-        // std140 compliant config struct for the layer shader
-        struct sLayerConfig
+        u32 uVRAMMask;
+        u32 __pad0[3];
+        u32 uCaptureMask[32];
+        struct sBGConfig
         {
-            u32 uVRAMMask;
-            u32 __pad0[3];
-            u32 uCaptureMask[32];
-            struct sBGConfig
-            {
-                u32 Size[2];
-                u32 Type;
-                u32 PalOffset;
-                u32 TileOffset;
-                u32 MapOffset;
-                u32 Clamp;
-                u32 __pad0[1];
-            } uBGConfig[4];
-        } LayerConfig;
-        //GLuint LayerConfigUBO;
+            u32 Size[2];
+            u32 Type;
+            u32 PalOffset;
+            u32 TileOffset;
+            u32 MapOffset;
+            u32 Clamp;
+            u32 __pad0[1];
+        } uBGConfig[4];
+    } LayerConfig;
+    //GLuint LayerConfigUBO;
 
-        struct sSpriteConfig
+    struct sSpriteConfig
+    {
+        u32 uScaleFactor;
+        u32 uVRAMMask;
+        u32 __pad0[2];
+        u32 uCaptureMask[32];
+        s32 uRotscale[32][4];
+        struct sOAM
         {
-            u32 uScaleFactor;
-            u32 uVRAMMask;
-            u32 __pad0[2];
-            u32 uCaptureMask[32];
-            s32 uRotscale[32][4];
-            struct sOAM
-            {
-                s32 Position[2];
-                s32 Flip[2];
-                s32 Size[2];
-                s32 BoundSize[2];
-                u32 OBJMode;
-                u32 Type;
-                u32 PalOffset;
-                u32 TileOffset;
-                u32 TileStride;
-                u32 Rotscale;
-                u32 BGPrio;
-                u32 Mosaic;
-            } uOAM[128];
-        } SpriteConfig;
-        int NumSprites;
+            s32 Position[2];
+            s32 Flip[2];
+            s32 Size[2];
+            s32 BoundSize[2];
+            u32 OBJMode;
+            u32 Type;
+            u32 PalOffset;
+            u32 TileOffset;
+            u32 TileStride;
+            u32 Rotscale;
+            u32 BGPrio;
+            u32 Mosaic;
+        } uOAM[128];
+    } SpriteConfig;
+    int NumSprites;
 
-        struct sScanlineConfig
+    struct sScanlineConfig
+    {
+        struct sScanline
         {
-            struct sScanline
-            {
-                s32 BGOffset[4][4];     // really [4][2]
-                s32 BGRotscale[2][4];
-                u32 BackColor;          // 96
-                u32 WinRegs;            // 100
-                u32 WinMask;            // 104
-                u32 __pad0[1];
-                s32 WinPos[4];
-            } uScanline[192];
-        } ScanlineConfig;
+            s32 BGOffset[4][4];     // really [4][2]
+            s32 BGRotscale[2][4];
+            u32 BackColor;          // 96
+            u32 WinRegs;            // 100
+            u32 WinMask;            // 104
+            u32 __pad0[1];
+            s32 WinPos[4];
+        } uScanline[192];
+    } ScanlineConfig;
 
-        struct sCompositorConfig
-        {
-            u32 uBGPrio[4];
-            u32 uEnableOBJ;
-            u32 uEnable3D;
-            u32 uBlendCnt;
-            u32 uBlendEffect;
-            u32 uBlendCoef[4];
-        } CompositorConfig;
+    struct sCompositorConfig
+    {
+        u32 uBGPrio[4];
+        u32 uEnableOBJ;
+        u32 uEnable3D;
+        u32 uBlendCnt;
+        u32 uBlendEffect;
+        u32 uBlendCoef[4];
+    } CompositorConfig;
 
-        int LastSpriteLine;
+    int LastLine;
 
-        u16 OAM[512];
+    u32 DispCnt;
+    u16 BGCnt[4];
+    u16 BlendCnt;
+    u8 EVA, EVB, EVY;
 
-    } UnitState[2];
+    u32 BGVRAMRange[4][4];
 
-    GLuint CaptureInputTex;
+    int LastSpriteLine;
+    u16 OAM[512];
 
-    struct sFinalPassConfig
+    u32 SpriteDispCnt;
+    bool SpriteDirty;
+
+    /*struct sFinalPassConfig
     {
         u32 uScreenSwap[192];
         u32 uScaleFactor;
-        u32 uAuxScaleFactor;
+        u32 uAuxLayer;
         u32 uDispModeA;
         u32 uDispModeB;
         u32 uBrightModeA;
         u32 uBrightModeB;
         u32 uBrightFactorA;
         u32 uBrightFactorB;
-    } FinalPassConfig;
+    } FinalPassConfig;*/
 
     u16 TempPalBuffer[256 * (1 + (4*16))];
 
-    GLuint _3DLayerTex;
+    //GLuint _3DLayerTex;
 
-    GLuint FPShaderID = 0;
+    //GLuint FPShaderID = 0;
     /*GLint FPScaleULoc = 0;
     GLint FPCaptureRegULoc = 0;
     GLint FPCaptureMaskULoc = 0;
     GLint FPCaptureTexLoc[16] {};*/
-    GLuint FPConfigUBO;
+    //GLuint FPConfigUBO;
 
-    GLuint FPVertexBufferID = 0;
-    GLuint FPVertexArrayID = 0;
+    //GLuint FPVertexBufferID = 0;
+    //GLuint FPVertexArrayID = 0;
 
     //GLuint LineAttribTex = 0;               // per-scanline attribute texture
     //GLuint BGOBJTex = 0;                    // prerender of BG/OBJ layers
-    GLuint AuxInputTex = 0;                 // aux input (VRAM and mainmem FIFO)
+    //GLuint AuxInputTex = 0;                 // aux input (VRAM and mainmem FIFO)
 
-    // hi-res capture buffers
-    // since the DS can read from and capture to the same VRAM bank (VRAM display + capture),
-    // these need to be double-buffered
-    struct sCaptureBuffer
-    {
-        GLuint Texture;
-        u16 Width, Height;
-        //int Length;
-        bool Complete;
-    } CaptureBuffers[16][2];
-    int CaptureLastBuffer[16];
-    int ActiveCapture;
+    // texture/fb for display capture VRAM input
+    /*GLuint CaptureVRAMTex;
+    GLuint CaptureVRAMFB;
 
-    u16 CaptureUsageMask;
-
-    //
-    //std::array<GLuint, 2> FPOutputTex {};  // final output
-    //std::array<GLuint, 2> FPOutputFB {};
-    GLuint FPOutputTex[2][2];               // final output
+    GLuint FPOutputTex[2];               // final output
     GLuint FPOutputFB[2];
 
     struct sCaptureConfig
     {
         u32 uCaptureSize[2];
         u32 uScaleFactor;
+        u32 uSrcAOffset;
+        u32 uSrcBLayer;
         u32 uSrcBOffset;
         u32 uDstOffset;
         u32 uDstMode;
         u32 uBlendFactors[2];
+        u32 __pad0[2];
     } CaptureConfig;
 
     GLuint CaptureShader;
@@ -258,16 +268,11 @@ private:
     GLuint CaptureSyncFB;
     GLuint CaptureSyncTex;
 
-    //GLuint test;
-
-    u32* LineAttribBuffer;
-    u32* BGOBJBuffer;
     u16* AuxInputBuffer[2];
 
-    //u32* Framebuffer[2][2];
     int BackBuffer;
 
-    u8 AuxUsageMask;
+    u8 AuxUsageMask;*/
 
     /*u8* CurBGXMosaicTable;
     array2d<u8, 16, 256> MosaicTable = []() constexpr
@@ -286,23 +291,24 @@ private:
         return table;
     }();*/
 
-    void UpdateScanlineConfig(Unit* unit, int line);
-    void UpdateLayerConfig(Unit* unit);
-    void UpdateOAM(Unit* unit, int ystart, int yend);
-    void UpdateCompositorConfig(Unit* unit);
+    void UpdateAndRender(int line);
 
-    void PrerenderSprites(Unit* unit);
-    void PrerenderLayer(Unit* unit, int layer);
+    void UpdateScanlineConfig(int line);
+    void UpdateLayerConfig();
+    void UpdateOAM(int ystart, int yend);
+    void UpdateCompositorConfig();
 
-    void RenderSprites(Unit* unit, bool window, int ystart, int yend);
-    void RenderLayer(Unit* unit, int layer, int ystart, int yend);
+    void PrerenderSprites();
+    void PrerenderLayer(int layer);
 
-    void RenderScreen(Unit* unit, int ystart, int yend);
+    void DoRenderSprites(int line);
+    void RenderSprites(bool window, int ystart, int yend);
 
-    void DoCapture(Unit* unit);
+    void RenderScreen(int ystart, int yend);
+
+    void DoCapture(int vramcap);
 
     Plugins::Plugin* GamePlugin;
 };
 
-}
 }

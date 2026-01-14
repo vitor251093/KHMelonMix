@@ -1,7 +1,26 @@
 #version 140
 
-uniform sampler2D _3DTex;
-uniform sampler2DArray LayerTex;
+uniform sampler2D BGLayerTex[4];
+uniform sampler2DArray OBJLayerTex;
+uniform sampler2DArray Capture128Tex;
+uniform sampler2DArray Capture256Tex;
+
+struct sBGConfig
+{
+    ivec2 Size;
+    int Type;
+    int PalOffset;
+    int TileOffset;
+    int MapOffset;
+    bool Clamp;
+};
+
+layout(std140) uniform ubBGConfig
+{
+    int uVRAMMask;
+    ivec4 uCaptureMask[8];
+    sBGConfig uBGConfig[4];
+};
 
 struct sScanline
 {
@@ -13,12 +32,12 @@ struct sScanline
     ivec4 WinPos;
 };
 
-layout(std140) uniform uScanlineConfig
+layout(std140) uniform ubScanlineConfig
 {
     sScanline uScanline[192];
 };
 
-layout(std140) uniform uCompositorConfig
+layout(std140) uniform ubCompositorConfig
 {
     ivec4 uBGPrio;
     bool uEnableOBJ;
@@ -31,7 +50,6 @@ layout(std140) uniform uCompositorConfig
 smooth in vec4 fTexcoord;
 
 out vec4 oColor;
-out vec4 oCaptureColor;
 
 ivec3 ConvertColor(int col)
 {
@@ -40,6 +58,120 @@ ivec3 ConvertColor(int col)
     ret.g = ((col & 0x3E0) >> 4) | (col >> 15);
     ret.b = (col & 0x7C00) >> 9;
     return ret;
+}
+
+vec4 BG0Fetch(vec2 coord)
+{
+    return texture(BGLayerTex[0], coord);
+}
+
+vec4 BG1Fetch(vec2 coord)
+{
+    return texture(BGLayerTex[1], coord);
+}
+
+vec4 BG2Fetch(vec2 coord)
+{
+    return texture(BGLayerTex[2], coord);
+}
+
+vec4 BG3Fetch(vec2 coord)
+{
+    return texture(BGLayerTex[3], coord);
+}
+
+vec4 BG0CalcAndFetch(vec2 coord, int line)
+{
+    vec2 bgpos = vec2(uScanline[line].BGOffset[0]) + coord;
+
+    return BG0Fetch(bgpos / vec2(uBGConfig[0].Size));
+}
+
+vec4 BG1CalcAndFetch(vec2 coord, int line)
+{
+    vec2 bgpos = vec2(uScanline[line].BGOffset[1]) + coord;
+
+    return BG1Fetch(bgpos / vec2(uBGConfig[1].Size));
+}
+
+vec4 BG2CalcAndFetch(vec2 coord, int line)
+{
+    vec2 bgpos;
+    if (uBGConfig[2].Type >= 2)
+    {
+        // rotscale BG
+        bgpos = vec2(uScanline[line].BGOffset[2]) / 256;
+        vec4 rotscale = vec4(uScanline[line].BGRotscale[0]) / 256;
+        mat2 rsmatrix = mat2(rotscale.xy, rotscale.zw);
+        bgpos = bgpos + (vec2(coord.x, fract(coord.y)) * rsmatrix);
+    }
+    else
+    {
+        // text-mode BG
+        bgpos = vec2(uScanline[line].BGOffset[2]) + coord;
+    }
+
+    if (uBGConfig[2].Type >= 7)
+    {
+        // hi-res capture
+        bgpos.y += uBGConfig[2].MapOffset;
+        vec3 capcoord = vec3(bgpos / vec2(uBGConfig[2].Size), uBGConfig[2].TileOffset);
+
+        // due to the possible weirdness of display capture buffers,
+        // we need to do custom wraparound handling
+        if (uBGConfig[2].Clamp)
+        {
+            if (any(lessThan(capcoord.xy, vec2(0))) || any(greaterThanEqual(capcoord.xy, vec2(1))))
+                return vec4(0);
+        }
+
+        if (uBGConfig[2].Type == 7)
+            return texture(Capture128Tex, capcoord);
+        else
+            return texture(Capture256Tex, capcoord);
+    }
+
+    return BG2Fetch(bgpos / vec2(uBGConfig[2].Size));
+}
+
+vec4 BG3CalcAndFetch(vec2 coord, int line)
+{
+    vec2 bgpos;
+    if (uBGConfig[3].Type >= 2)
+    {
+        // rotscale BG
+        bgpos = vec2(uScanline[line].BGOffset[3]) / 256;
+        vec4 rotscale = vec4(uScanline[line].BGRotscale[1]) / 256;
+        mat2 rsmatrix = mat2(rotscale.xy, rotscale.zw);
+        bgpos = bgpos + (vec2(coord.x, fract(coord.y)) * rsmatrix);
+    }
+    else
+    {
+        // text-mode BG
+        bgpos = vec2(uScanline[line].BGOffset[3]) + coord;
+    }
+
+    if (uBGConfig[3].Type >= 7)
+    {
+        // hi-res capture
+        bgpos.y += uBGConfig[3].MapOffset;
+        vec3 capcoord = vec3(bgpos / vec2(uBGConfig[3].Size), uBGConfig[3].TileOffset);
+
+        // due to the possible weirdness of display capture buffers,
+        // we need to do custom wraparound handling
+        if (uBGConfig[3].Clamp)
+        {
+            if (any(lessThan(capcoord.xy, vec2(0))) || any(greaterThanEqual(capcoord.xy, vec2(1))))
+                return vec4(0);
+        }
+
+        if (uBGConfig[3].Type == 7)
+            return texture(Capture128Tex, capcoord);
+        else
+            return texture(Capture256Tex, capcoord);
+    }
+
+    return BG3Fetch(bgpos / vec2(uBGConfig[3].Size));
 }
 
 vec4 CompositeLayers()
@@ -55,8 +187,12 @@ vec4 CompositeLayers()
     bool specialcase = false;
 
     vec4 layercol[6];
-    for (int bg = 0; bg < 6; bg++)
-        layercol[bg] = texelFetch(LayerTex, ivec3(coord, bg), 0);
+    layercol[0] = BG0CalcAndFetch(fTexcoord.xy, line);
+    layercol[1] = BG1CalcAndFetch(fTexcoord.xy, line);
+    layercol[2] = BG2CalcAndFetch(fTexcoord.xy, line);
+    layercol[3] = BG3CalcAndFetch(fTexcoord.xy, line);
+    layercol[4] = texelFetch(OBJLayerTex, ivec3(coord, 0), 0);
+    layercol[5] = texelFetch(OBJLayerTex, ivec3(coord, 1), 0);
 
     ivec4 objflags = ivec4(layercol[5] * 255);
 
@@ -180,5 +316,4 @@ vec4 CompositeLayers()
 void main()
 {
     oColor = CompositeLayers();
-    oCaptureColor = oColor;
 }

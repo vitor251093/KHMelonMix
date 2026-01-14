@@ -26,29 +26,21 @@ namespace melonDS
 {
 class GPU;
 
-namespace GPU2D
-{
-
-class Unit
+class GPU2D
 {
 public:
     // take a reference to the GPU so we can access its state
     // and ensure that it's not null
-    Unit(u32 num, melonDS::GPU& gpu);
-    virtual ~Unit() = default;
-    Unit(const Unit&) = delete;
-    Unit& operator=(const Unit&) = delete;
+    GPU2D(u32 num, melonDS::GPU& gpu);
+    virtual ~GPU2D() = default;
+    GPU2D(const GPU2D&) = delete;
+    GPU2D& operator=(const GPU2D&) = delete;
 
     void Reset();
 
     void DoSavestate(Savestate* file);
 
-    void SetEnabled(bool enable, bool swap)
-    {
-        Enabled = enable;
-        if (swap) ScreenPos = Num;
-        else      ScreenPos = Num ^ 1;
-    }
+    void SetEnabled(bool enable) { Enabled = enable; }
 
     u8 Read8(u32 addr);
     u16 Read16(u32 addr);
@@ -57,7 +49,7 @@ public:
     void Write16(u32 addr, u16 val);
     void Write32(u32 addr, u32 val);
 
-    bool UsesFIFO() const
+    /*bool UsesFIFO() const
     {
         if (((DispCnt >> 16) & 0x3) == 3)
             return true;
@@ -65,14 +57,15 @@ public:
             return true;
 
         return false;
-    }
+    }*/
 
-    void SampleFIFO(u32 offset, u32 num);
+    //void SampleFIFO(u32 offset, u32 num);
 
     void VBlank();
     virtual void VBlankEnd();
 
-    void CheckWindows(u32 line);
+    //void CheckWindows(u32 line);
+    void UpdateRegisters(u32 line);
 
     u16* GetBGExtPal(u32 slot, u32 pal);
     u16* GetOBJExtPal();
@@ -80,21 +73,22 @@ public:
     void GetBGVRAM(u8*& data, u32& mask) const;
     void GetOBJVRAM(u8*& data, u32& mask) const;
 
-    int GetCaptureBlock_BG(u32 offset) const;
-    int GetCaptureBlock_OBJ(u32 offset) const;
+    void GetCaptureInfo_BG(int* info) const;
+    void GetCaptureInfo_OBJ(int* info) const;
 
-    void UpdateMosaicCounters(u32 line);
-    void CalculateWindowMask(u32 line, u8* windowMask, const u8* objWindow);
+    //void UpdateRotscaleParams(u32 line);
+    //void UpdateMosaicCounters(u32 line);
+    void CalculateWindowMask(u8* windowMask, const u8* objWindow);
 
     u32 Num;
     bool Enabled;
-    u32 ScreenPos;
+    //u32 ScreenPos;
 
-    u16 DispFIFO[16];
+    /*u16 DispFIFO[16];
     u32 DispFIFOReadPtr;
     u32 DispFIFOWritePtr;
 
-    u16 DispFIFOBuffer[256];
+    u16 DispFIFOBuffer[256];*/
 
     u32 DispCnt;
     u16 BGCnt[4];
@@ -114,60 +108,54 @@ public:
     u8 Win0Coords[4];
     u8 Win1Coords[4];
     u8 WinCnt[4];
-    u32 Win0Active;
-    u32 Win1Active;
+    u8 Win0Active;
+    u8 Win1Active;
 
     u8 BGMosaicSize[2];
     u8 OBJMosaicSize[2];
     u8 BGMosaicY, BGMosaicYMax;
-    u8 OBJMosaicYCount, OBJMosaicY, OBJMosaicYMax;
+    u8 OBJMosaicY;
+    bool BGMosaicLatch;
+    bool OBJMosaicLatch;
 
     u16 BlendCnt;
     u16 BlendAlpha;
     u8 EVA, EVB;
     u8 EVY;
 
-    bool CaptureLatch;
-    u32 CaptureCnt;
+    //bool CaptureLatch;
+    //u32 CaptureCnt;
 
-    u16 MasterBrightness;
+    //u16 MasterBrightness;
 
 private:
+    friend class Renderer2D;
+
     melonDS::GPU& GPU;
 };
 
 class Renderer2D
 {
 public:
+    explicit Renderer2D(melonDS::GPU2D& gpu2D) : GPU(gpu2D.GPU), GPU2D(gpu2D) {}
     virtual ~Renderer2D() {}
+    virtual bool Init() = 0;
+    virtual void Reset() = 0;
 
-    virtual void DrawScanline(u32 line, Unit* unit) = 0;
-    virtual void DrawSprites(u32 line, Unit* unit) = 0;
+    virtual void DrawScanline(u32 line) = 0;
+    virtual void DrawSprites(u32 line) = 0;
 
-    virtual void VBlank(Unit* unitA, Unit* unitB) = 0;
-    virtual void VBlankEnd(Unit* unitA, Unit* unitB) = 0;
+    virtual void VBlank() = 0;
+    virtual void VBlankEnd() = 0;
 
-    virtual void AllocCapture(u32 bank, u32 start, u32 len) = 0;
-    virtual void SyncVRAMCapture(u32 bank, u32 start, u32 len, bool complete) = 0;
-
-    // a 2D renderer may render to RAM buffers, or to something else (ie. OpenGL)
-    // if the renderer uses RAM buffers, they should be 32-bit BGRA, 256x192 for each screen
-    virtual bool GetFramebuffers(u32** top, u32** bottom) = 0;
-    virtual void SwapBuffers() = 0;
-
-    /*void SetFramebuffer(u32* unitA, u32* unitB)
-    {
-        Framebuffer[0] = unitA;
-        Framebuffer[1] = unitB;
-    }*/
+    virtual bool NeedsShaderCompile() { return false; }
+    virtual void ShaderCompileStep(int& current, int& count) {}
 
 protected:
-    //u32* Framebuffer[2];
-
-    Unit* CurUnit;
+    melonDS::GPU& GPU;
+    melonDS::GPU2D& GPU2D;
 };
 
 }
 
-}
 #endif

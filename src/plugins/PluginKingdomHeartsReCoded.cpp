@@ -1930,32 +1930,32 @@ bool PluginKingdomHeartsReCoded::isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
-u32* PluginKingdomHeartsReCoded::topScreen2DTexture()
+void* PluginKingdomHeartsReCoded::topScreen2DTexture()
 {
-    u32* topBuffer; u32* bottomBuffer;
+    void* topBuffer; void* bottomBuffer;
     bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
     return topBuffer;
 }
 
-u32* PluginKingdomHeartsReCoded::bottomScreen2DTexture()
+void* PluginKingdomHeartsReCoded::bottomScreen2DTexture()
 {
-    u32* topBuffer; u32* bottomBuffer;
+    void* topBuffer; void* bottomBuffer;
     bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
     return bottomBuffer;
 }
 
 bool PluginKingdomHeartsReCoded::isTopScreen2DTextureBlack()
 {
-    u32* topBuffer; u32* bottomBuffer;
+    void* topBuffer; void* bottomBuffer;
     bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return isBufferBlack(topBuffer);
+    return isBufferBlack((unsigned int*)topBuffer);
 }
 
 bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
 {
-    u32* topBuffer; u32* bottomBuffer;
+    void* topBuffer; void* bottomBuffer;
     bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return isBufferBlack(bottomBuffer);
+    return isBufferBlack((unsigned int*)bottomBuffer);
 }
 
 bool PluginKingdomHeartsReCoded::isResultScreenVisible()
@@ -1967,7 +1967,7 @@ bool PluginKingdomHeartsReCoded::isResultScreenVisible()
 
 bool PluginKingdomHeartsReCoded::isDeweyDialogVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return (has2DOnTopOf3DAt(buffer, 50, 40) && has2DOnTopOf3DAt(buffer, 140, 40)) ||
            (has2DOnTopOf3DAt(buffer, 50, 70) && has2DOnTopOf3DAt(buffer, 140, 70)) ||
            (has2DOnTopOf3DAt(buffer, 140, 40) && has2DOnTopOf3DAt(buffer, 190, 40)) ||
@@ -1976,19 +1976,19 @@ bool PluginKingdomHeartsReCoded::isDeweyDialogVisible()
 
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10);
 }
 
 bool PluginKingdomHeartsReCoded::isDialogVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 128, 155);
 }
 
 bool PluginKingdomHeartsReCoded::isMinimapVisible()
 {
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     u32 pixel = getPixel(buffer, 1, 190, 0);
     return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) > 39;
 }
@@ -2000,19 +2000,19 @@ bool PluginKingdomHeartsReCoded::isBugSector()
 
 bool PluginKingdomHeartsReCoded::isChallengeMeterVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 12, 12);
 }
 
 bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 35, 185);
 }
 
 bool PluginKingdomHeartsReCoded::isHealthVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 233, 175);
 }
 
@@ -2049,7 +2049,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, i
     };
 
     std::vector<ivec4> possibilities;
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     for (int y = minY; y < maxY; y++) {
         for (int x = minX; x < maxX; x++) {
             if ((getPixel(buffer, x, y, 0) == 0x1000343e) || (getPixel(buffer, x, y, 0) == 0x1000383e)) {
@@ -2137,7 +2137,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
     return result;
 }
 
-bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
+bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(void* buffer, int x, int y)
 {
     /*
      * If it matches that condition, there is no 2D on top of 3D
@@ -2225,10 +2225,6 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     u8 gameState2 = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
     bool isWorldSelection = gameState2 == 0x03;
-
-    // Scale of brightness, from 0 (black) to 15 (every element is visible)
-    u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
-    u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);
 
     if (isCutscene)
     {
@@ -2602,8 +2598,8 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
         return 0;
     }
 
-    u32* topScreen = topScreen2DTexture();
-    u32* bottomScreen = bottomScreen2DTexture();
+    void* topScreen = topScreen2DTexture();
+    void* bottomScreen = bottomScreen2DTexture();
     u32 pixel_2_8 = getPixel(topScreen, 2, 8, 0);
     if (pixel_2_8 == 0x04020e1e) { // debug reports
         return 10; // 7, 8, 9, 10, 11, 12

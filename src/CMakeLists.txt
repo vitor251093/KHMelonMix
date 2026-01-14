@@ -34,6 +34,7 @@ add_library(core STATIC
     GBACart.cpp
     GBACartMotionPak.cpp
     GPU.cpp
+    GPU_Soft.cpp
     GPU_Texreplace.cpp
     GPU_Texreplace.h
     GPU2D.cpp
@@ -102,12 +103,13 @@ if (ENABLE_OGLRENDERER)
     target_sources(core PRIVATE
         # I may need to move that to OpenGL_shaders/CMakeLists.txt
         plugins/Plugin_GPU_OpenGL_shaders.h
+
+        GPU_OpenGL.cpp
         GPU2D_OpenGL.cpp
         GPU3D_OpenGL.cpp
         GPU3D_Compute.cpp
         GPU3D_TexcacheOpenGL.cpp
         GPU3D_TexcacheOpenGL.h
-        GPU3D_OpenGL_shaders.h
         OpenGLSupport.cpp)
 
     target_compile_definitions(core PUBLIC OGLRENDERER_ENABLED)

@@ -13,7 +13,7 @@
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
 
-#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
+#define getPixel(buffer, x, y, layer) ((u32*)buffer)[(256*3 + 1)*(y) + (x) + 256*(layer)]
 
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 #define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40

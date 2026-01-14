@@ -172,8 +172,8 @@ private:
     bool isSaveLoaded();
 
     bool isBufferBlack(unsigned int* buffer);
-    u32* topScreen2DTexture();
-    u32* bottomScreen2DTexture();
+    void* topScreen2DTexture();
+    void* bottomScreen2DTexture();
     bool isBottomScreen2DTextureBlack();
 
     bool ShouldShowBottomScreen = false;
@@ -187,7 +187,7 @@ private:
     bool isDialogPortraitLabelVisible();
     bool isLoadScreenDeletePromptVisible();
     int dialogBoxHeight();
-    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
+    bool has2DOnTopOf3DAt(void* buffer, int x, int y);
 
     void renderer_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
     void renderer_2DShapes_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, int hudScale);
