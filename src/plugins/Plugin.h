@@ -148,6 +148,7 @@ public:
     virtual void onLoadROM();
     virtual void onLoadState();
 
+    std::filesystem::path _CurrentFolderPath;
     virtual std::string assetsFolder() {return std::to_string(GameCode);}
     std::filesystem::path assetsFolderPath();
     virtual std::string tomlUniqueIdentifier() {return assetsFolder();};

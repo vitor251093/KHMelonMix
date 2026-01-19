@@ -66,20 +66,32 @@ void Plugin::onLoadState() {
 std::filesystem::path Plugin::assetsFolderPath()
 {
     std::string assetsFolderName = assetsFolder();
-#ifdef __APPLE__
-    Class nsBundleClass = (Class)objc_getClass("NSBundle");
-    SEL mainBundleSel = sel_registerName("mainBundle");
-    SEL bundlePathSel = sel_registerName("bundlePath");
-    SEL utf8StringSel = sel_registerName("UTF8String");
 
-    id bundle = ((id(*)(Class, SEL))objc_msgSend)(nsBundleClass, mainBundleSel);
-    id bundlePath = ((id(*)(id, SEL))objc_msgSend)(bundle, bundlePathSel);
-    const char* pathCString = ((const char* (*)(id, SEL))objc_msgSend)(bundlePath, utf8StringSel);
-    
-    std::filesystem::path currentPath = std::filesystem::path(pathCString) / "Contents";
+    std::filesystem::path currentPath = _CurrentFolderPath;
+    if (currentPath.empty())
+    {
+#ifdef __APPLE__
+        Class nsBundleClass = (Class)objc_getClass("NSBundle");
+        SEL mainBundleSel = sel_registerName("mainBundle");
+        SEL bundlePathSel = sel_registerName("bundlePath");
+        SEL utf8StringSel = sel_registerName("UTF8String");
+
+        id bundle = ((id(*)(Class, SEL))objc_msgSend)(nsBundleClass, mainBundleSel);
+        id bundlePath = ((id(*)(id, SEL))objc_msgSend)(bundle, bundlePathSel);
+        const char* pathCString = ((const char* (*)(id, SEL))objc_msgSend)(bundlePath, utf8StringSel);
+
+        currentPath = std::filesystem::path(pathCString) / "Contents";
 #else
-    std::filesystem::path currentPath = std::filesystem::current_path();
+        currentPath = std::filesystem::current_path();
 #endif
+        if (!std::filesystem::exists(currentPath / "assets")) {
+            // Fallback from working directory to current directory
+            currentPath = std::filesystem::u8path(Platform::GetLocalFilePath("."));
+        }
+
+        _CurrentFolderPath = currentPath;
+    }
+
     return currentPath / "assets" / assetsFolderName;
 }
 
