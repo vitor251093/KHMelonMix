@@ -470,8 +470,6 @@ void DynamicLibrary_Unload(DynamicLibrary* lib);
  * @return A pointer to the loaded function, or \c nullptr if the function could not be loaded.
  */
 void* DynamicLibrary_LoadFunction(DynamicLibrary* lib, const char* name);
-
-std::string GetApplicationDirPath();
 }
 
 }
