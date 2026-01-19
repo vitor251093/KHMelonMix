@@ -86,7 +86,7 @@ std::filesystem::path Plugin::assetsFolderPath()
 #endif
         if (!std::filesystem::exists(currentPath / "assets")) {
             // Fallback from working directory to current directory
-            currentPath = std::filesystem::u8path(Platform::GetLocalFilePath("."));
+            currentPath = std::filesystem::u8path(Platform::GetApplicationDirPath());
         }
 
         _CurrentFolderPath = currentPath;

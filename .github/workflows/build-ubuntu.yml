@@ -88,6 +88,14 @@ jobs:
         mv MelonMix*.AppImage ./dist_appimage/MelonMix.AppImage
         cp ./res/scripts/MelonMix_KHDays_AppImage.sh    ./dist_appimage/MelonMix_KHDays.sh
         cp ./res/scripts/MelonMix_KHReCoded_AppImage.sh ./dist_appimage/MelonMix_KHReCoded.sh
+
+    - name: Install MinGW-w64 to build winebridge
+      run: |
+        sudo apt-get install -y g++-mingw-w64-x86-64
+    - name: Build winebridge
+      run: |
+        x86_64-w64-mingw32-g++ ./tools/winebridge/winebridge.cpp -static -static-libgcc -static-libstdc++ -o ./dist_appimage/MelonMix.exe
+
     - uses: actions/upload-artifact@v4
       with:
         name: MelonMix-appimage-${{ matrix.arch.name }}
