@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
     linuxCmd = "export FUSERMOUNT_PROG=/usr/bin/fusermount; " + linuxCmd;
     linuxCmd = "export DISPLAY=:0; " + linuxCmd;
     linuxCmd = "export MELON_MIX_ASSETS=" + quote(assetsFolderPath) + "; " + linuxCmd;
-    linuxCmd += " > " + quote(unixCwd + "/melon_error.log") + " 2>&1";
+    //linuxCmd += " > " + quote(unixCwd + "/melon_mix.log") + " 2>&1";
     std::string cmd = "start /unix /usr/bin/bash -c " + quote(linuxCmd);
 
     STARTUPINFOA si{};
