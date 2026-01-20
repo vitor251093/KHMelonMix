@@ -96,6 +96,13 @@ std::filesystem::path Plugin::gameAssetsFolderPath()
         assetsPath = std::filesystem::current_path();
 #endif
 
+        if (!std::filesystem::exists(assetsPath / "assets") &&
+             std::filesystem::exists(assetsPath / "Image" / "melon" / "assets"))
+        {
+            // Fallback for Refined Launcher
+            assetsPath = assetsPath / "Image" / "melon";
+        }
+
         assetsPath = assetsPath / "assets";
         _AssetsFolderPath = assetsPath;
     }
