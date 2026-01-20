@@ -34,7 +34,7 @@
 
 **Note:** The Linux steps are also applicable on the Steam Deck.
 
-## How to play Melon Mix from the 1.5+2.5 collection
+## How to play Melon Mix from the 1.5+2.5 collection (Steam only)
 
 **Note:** Those instructions apply only to Linux and Windows.
 
