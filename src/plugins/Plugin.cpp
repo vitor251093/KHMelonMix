@@ -85,8 +85,16 @@ std::filesystem::path Plugin::assetsFolderPath()
         currentPath = std::filesystem::current_path();
 #endif
         if (!std::filesystem::exists(currentPath / "assets")) {
-            // Fallback from working directory to current directory
-            currentPath = currentPath / "Image" / "melon";
+            if (std::filesystem::exists(currentPath/ "Image" / "melon"))
+            {
+                // Fallback from working directory to current directory
+                currentPath = currentPath / "Image" / "melon";
+            }
+
+            if (!std::filesystem::exists(currentPath / "assets"))
+            {
+                std::filesystem::create_directory(currentPath / "assets");
+            }
         }
 
         _CurrentFolderPath = currentPath;
