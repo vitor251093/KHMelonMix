@@ -7,6 +7,7 @@
 #include <string>
 #include <cstdarg>
 #include <cstdio>
+#include <stdexcept>
 
 #ifdef __APPLE__
 #include <objc/objc.h>
@@ -93,7 +94,12 @@ std::filesystem::path Plugin::assetsFolderPath()
 
             if (!std::filesystem::exists(currentPath / "assets"))
             {
-                std::filesystem::create_directory(currentPath / "assets");
+                try {
+                    std::filesystem::create_directory(currentPath / "assets");
+                }
+                catch (const std::runtime_error& ignored) {
+                    printf("Failed to create assets folder. Replacement assets are unavailable");
+                }
             }
         }
 
@@ -556,7 +562,7 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
 TextureEntry& Plugin::textureById(std::string texture) {
     std::filesystem::path _assetsFolderPath = assetsFolderPath();
     std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
-    if (!std::filesystem::exists(_assetsFolderPath)) {
+    if (std::filesystem::exists(_assetsFolderPath.parent_path()) && !std::filesystem::exists(_assetsFolderPath)) {
         std::filesystem::create_directory(_assetsFolderPath);
     }
 
@@ -578,7 +584,7 @@ std::string Plugin::tmpTextureFilePath(std::string texture) {
     std::filesystem::path _assetsFolderPath = assetsFolderPath();
     std::filesystem::path tmpFolderPath = _assetsFolderPath / "textures_tmp";
 
-    if (shouldExportTextures() && !std::filesystem::exists(tmpFolderPath)) {
+    if (shouldExportTextures() && std::filesystem::exists(tmpFolderPath.parent_path()) && !std::filesystem::exists(tmpFolderPath)) {
         std::filesystem::create_directory(tmpFolderPath);
     }
 
