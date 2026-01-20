@@ -458,7 +458,7 @@ void PluginKingdomHeartsReCoded::onLoadROM() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 }
 
-std::string PluginKingdomHeartsReCoded::assetsFolder() {
+std::string PluginKingdomHeartsReCoded::gameFolderName() {
     return "recoded";
 }
 
@@ -2526,7 +2526,7 @@ std::filesystem::path PluginKingdomHeartsReCoded::patchReplacementCutsceneIfNeed
 
 std::string PluginKingdomHeartsReCoded::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
@@ -2566,7 +2566,7 @@ bool PluginKingdomHeartsReCoded::isUnskippableMobiCutscene(CutsceneEntry* cutsce
 
 std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();

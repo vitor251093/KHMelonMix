@@ -486,7 +486,7 @@ void PluginKingdomHeartsDays::onLoadState() {
     GameScene = gameScene_InGameWithMap;
 }
 
-std::string PluginKingdomHeartsDays::assetsFolder() {
+std::string PluginKingdomHeartsDays::gameFolderName() {
     return "days";
 }
 
@@ -2533,7 +2533,7 @@ std::filesystem::path PluginKingdomHeartsDays::patchReplacementCutsceneIfNeeded(
 
 std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
@@ -2717,7 +2717,7 @@ void PluginKingdomHeartsDays::refreshMouseStatus() {
 std::string PluginKingdomHeartsDays::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::string assetsRegionSubfolderName = assetsRegionSubfolder();
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();

@@ -21,7 +21,7 @@ public:
     bool isEuropeCart()     { return GameCode == euGamecode; };
     bool isJapanCart()      { return GameCode == jpGamecode; };
 
-    std::string assetsFolder() {
+    std::string gameFolderName() {
         return std::to_string(GameCode);
     }
 

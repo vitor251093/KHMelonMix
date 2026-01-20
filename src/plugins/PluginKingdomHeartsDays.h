@@ -30,7 +30,7 @@ public:
     void onLoadROM() override;
     void onLoadState() override;
 
-    std::string assetsFolder() override;
+    std::string gameFolderName() override;
     std::string assetsRegionSubfolder();
     std::string tomlUniqueIdentifier() override;
 

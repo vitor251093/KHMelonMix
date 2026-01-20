@@ -143,7 +143,7 @@ void PluginHarvestMoonDsCute::loadLocalization() {
 std::string PluginHarvestMoonDsCute::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::string assetsRegionSubfolderName = assetsRegionSubfolder();
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
@@ -152,7 +152,7 @@ std::string PluginHarvestMoonDsCute::localizationFilePath(std::string language) 
     return "";
 }
 
-std::string PluginHarvestMoonDsCute::assetsFolder() {
+std::string PluginHarvestMoonDsCute::gameFolderName() {
     return "hmdscute";
 }
 

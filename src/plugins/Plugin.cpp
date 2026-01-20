@@ -3,6 +3,7 @@
 #include "Plugin_GPU_OpenGL_shaders.h"
 #include "AudioUtils.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <cstdarg>
@@ -64,12 +65,21 @@ void Plugin::onLoadState() {
     _SoundtrackState = EMidiState::Stopped;
 };
 
-std::filesystem::path Plugin::assetsFolderPath()
+std::filesystem::path Plugin::gameAssetsFolderPath()
 {
-    std::string assetsFolderName = assetsFolder();
+    std::string assetsFolderName = gameFolderName();
 
-    std::filesystem::path currentPath = _CurrentFolderPath;
-    if (currentPath.empty())
+    std::filesystem::path assetsPath = _AssetsFolderPath;
+    if (assetsPath.empty())
+    {
+        const char* assetsPathEnv = std::getenv("MELON_MIX_ASSETS");
+        if (assetsPathEnv != nullptr)
+        {
+            assetsPath = std::filesystem::path(assetsPathEnv);
+            _AssetsFolderPath = assetsPath;
+        }
+    }
+    if (assetsPath.empty())
     {
 #ifdef __APPLE__
         Class nsBundleClass = (Class)objc_getClass("NSBundle");
@@ -81,32 +91,26 @@ std::filesystem::path Plugin::assetsFolderPath()
         id bundlePath = ((id(*)(id, SEL))objc_msgSend)(bundle, bundlePathSel);
         const char* pathCString = ((const char* (*)(id, SEL))objc_msgSend)(bundlePath, utf8StringSel);
 
-        currentPath = std::filesystem::path(pathCString) / "Contents";
+        assetsPath = std::filesystem::path(pathCString) / "Contents";
 #else
-        currentPath = std::filesystem::current_path();
+        assetsPath = std::filesystem::current_path();
 #endif
-        if (!std::filesystem::exists(currentPath / "assets")) {
-            if (std::filesystem::exists(currentPath/ "Image" / "melon"))
-            {
-                // Fallback from working directory to current directory
-                currentPath = currentPath / "Image" / "melon";
-            }
 
-            if (!std::filesystem::exists(currentPath / "assets"))
-            {
-                try {
-                    std::filesystem::create_directory(currentPath / "assets");
-                }
-                catch (const std::runtime_error& ignored) {
-                    printf("Failed to create assets folder. Replacement assets are unavailable");
-                }
-            }
-        }
-
-        _CurrentFolderPath = currentPath;
+        assetsPath = assetsPath / "assets";
+        _AssetsFolderPath = assetsPath;
     }
 
-    return currentPath / "assets" / assetsFolderName;
+    if (!std::filesystem::exists(assetsPath))
+    {
+        try {
+            std::filesystem::create_directory(assetsPath);
+        }
+        catch (const std::runtime_error& ignored) {
+            printf("Failed to create assets folder. Replacement assets are unavailable");
+        }
+    }
+
+    return assetsPath / assetsFolderName;
 }
 
 const char* Plugin::gpuOpenGL_FS()
@@ -464,7 +468,7 @@ std::string trim(const std::string& str) {
 }
 std::string Plugin::textureIndexFilePath() {
     std::string filename = "index.ini";
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
     std::filesystem::path fullPath = texturesFolder / filename;
 
@@ -485,7 +489,7 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
         return texturesIndex;
     }
 
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
     Platform::FileHandle* f = Platform::OpenLocalFile(indexFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
@@ -560,7 +564,7 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
     return texturesIndex;
 }
 TextureEntry& Plugin::textureById(std::string texture) {
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
     if (std::filesystem::exists(_assetsFolderPath.parent_path()) && !std::filesystem::exists(_assetsFolderPath)) {
         std::filesystem::create_directory(_assetsFolderPath);
@@ -581,7 +585,7 @@ TextureEntry& Plugin::textureById(std::string texture) {
     return texturesIndex[texture];
 }
 std::string Plugin::tmpTextureFilePath(std::string texture) {
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path tmpFolderPath = _assetsFolderPath / "textures_tmp";
 
     if (shouldExportTextures() && std::filesystem::exists(tmpFolderPath.parent_path()) && !std::filesystem::exists(tmpFolderPath)) {
@@ -810,7 +814,7 @@ void Plugin::onReturnToGameAfterCutscene() {
 }
 
 std::vector<std::string> Plugin::audioPackNames() {
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "audio";
     if (!std::filesystem::exists(fullPath)) {
         return {};
@@ -823,7 +827,7 @@ std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
     std::string filekey = "bgm" + std::to_string(id);
 
     auto getFilepathIfExists = [&](auto& filename) -> std::string {
-        std::filesystem::path _assetsFolderPath = assetsFolderPath();
+        std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
         if (SelectedAudioPack != "") {
             std::filesystem::path fullPath0 = _assetsFolderPath / "audio" / SelectedAudioPack / filename;
             if (std::filesystem::exists(fullPath0)) {
@@ -856,7 +860,7 @@ std::string Plugin::getReplacementBackgroundMusicFilePath(u16 id) {
 
 
 void Plugin::loadBgmRedirections() {
-    auto _assetsFolderPath = assetsFolderPath();
+    auto _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path iniFilePath = _assetsFolderPath / "audio" / "bgm.ini";
     if (SelectedAudioPack != "") {
         std::filesystem::path fullPath0 = _assetsFolderPath / "audio" / SelectedAudioPack / "bgm.ini";

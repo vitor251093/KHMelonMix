@@ -148,10 +148,10 @@ public:
     virtual void onLoadROM();
     virtual void onLoadState();
 
-    std::filesystem::path _CurrentFolderPath;
-    virtual std::string assetsFolder() {return std::to_string(GameCode);}
-    std::filesystem::path assetsFolderPath();
-    virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
+    std::filesystem::path _AssetsFolderPath;
+    virtual std::string gameFolderName() {return std::to_string(GameCode);}
+    std::filesystem::path gameAssetsFolderPath();
+    virtual std::string tomlUniqueIdentifier() {return gameFolderName();};
 
     virtual const char* gpuOpenGL_FS();
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
