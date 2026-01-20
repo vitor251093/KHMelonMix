@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
 
     std::string unixCwd = winePathToUnix(cwd);
     std::string appImage = unixCwd + "/Image/melon/MelonMix.AppImage";
+    std::string assetsFolderPath = unixCwd + "/Image/melon/assets";
     makeExecutable(appImage);
 
     std::string linuxCmd = quote(appImage)+ " --appimage-extract-and-run";
@@ -83,6 +84,7 @@ int main(int argc, char* argv[])
     linuxCmd = "export PATH=/usr/bin:/bin:/usr/local/bin; " + linuxCmd;
     linuxCmd = "export FUSERMOUNT_PROG=/usr/bin/fusermount; " + linuxCmd;
     linuxCmd = "export DISPLAY=:0; " + linuxCmd;
+    linuxCmd = "export MELON_MIX_ASSETS=" + quote(assetsFolderPath) + "; " + linuxCmd;
     linuxCmd += " > " + quote(unixCwd + "/melon_error.log") + " 2>&1";
     std::string cmd = "start /unix /usr/bin/bash -c " + quote(linuxCmd);
 
