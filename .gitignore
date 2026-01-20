@@ -1,11 +1,3 @@
-# Assets
-assets/
-!assets/.keep
-
-# ROMs
-roms/*
-!roms/.keep
-
 # Build and run artifacts
 debug.log
 error.log
@@ -36,3 +28,14 @@ CMakeCache.txt
 # Visual Studio artifacts
 .vs
 .vscode
+
+# Assets
+assets/
+!assets/.keep
+
+# ROMs
+roms/*
+!roms/.keep
+
+# Refined Launcher
+!res/KINGDOM HEARTS HD 1.5+2.5 Launcher.exe

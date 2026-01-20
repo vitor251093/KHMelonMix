@@ -86,6 +86,7 @@ jobs:
         touch ./dist_appimage/roms/DELETE_ME
         cp -r ./assets ./dist_appimage/assets
         mv MelonMix*.AppImage ./dist_appimage/MelonMix.AppImage
+        cp ./res/*.exe ./dist_appimage/
         cp ./res/scripts/MelonMix_KHDays_AppImage.sh    ./dist_appimage/MelonMix_KHDays.sh
         cp ./res/scripts/MelonMix_KHReCoded_AppImage.sh ./dist_appimage/MelonMix_KHReCoded.sh
 
