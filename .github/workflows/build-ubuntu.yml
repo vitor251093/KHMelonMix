@@ -90,9 +90,11 @@ jobs:
         cp ./res/scripts/MelonMix_KHReCoded_AppImage.sh ./dist_appimage/MelonMix_KHReCoded.sh
 
     - name: Install MinGW-w64 to build winebridge
+      if: matrix.arch.name != 'aarch64'
       run: |
         sudo apt-get install -y g++-mingw-w64-x86-64
     - name: Build winebridge
+      if: matrix.arch.name != 'aarch64'
       run: |
         x86_64-w64-mingw32-g++ ./tools/winebridge/winebridge.cpp -static -static-libgcc -static-libstdc++ -o ./dist_appimage/MelonMix.exe
 
