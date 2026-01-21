@@ -209,6 +209,7 @@ void EmuThread::run()
                 emuInstance->plugin->setNds(emuInstance->getNDS());
                 emuInstance->plugin->onLoadROM();
                 emuInstance->plugin->shouldInvalidateConfigs = true;
+                emuInstance->plugin->muteBGMs = emuInstance->instanceID > 0;
             }
             if (emuInstance->plugin->shouldInvalidateConfigs)
             {
@@ -806,36 +807,38 @@ void EmuThread::refreshPluginState()
     {
         auto* plugin = emuInstance->plugin;
 
-        if (plugin->shouldStopBackgroundMusic()) {
-            u16 bgm = plugin->getBackgroundMusicToStop();
-            bool bShouldStoreResumePos = plugin->getStoreBackgroundMusicPosition();
-            u32 fadeOutDuration = plugin->getBackgroundMusicFadeOutToApply();
-            emit windowStopBgmMusic(bgm, bShouldStoreResumePos, fadeOutDuration);
-        }
+        if (!plugin->muteBGMs) {
+            if (plugin->shouldStopBackgroundMusic()) {
+                u16 bgm = plugin->getBackgroundMusicToStop();
+                bool bShouldStoreResumePos = plugin->getStoreBackgroundMusicPosition();
+                u32 fadeOutDuration = plugin->getBackgroundMusicFadeOutToApply();
+                emit windowStopBgmMusic(bgm, bShouldStoreResumePos, fadeOutDuration);
+            }
 
-        if (plugin->shouldStartBackgroundMusic()) {
-            u16 bgm = plugin->getCurrentBackgroundMusic();
-            const std::string& path = plugin->getCurrentBackgroundMusicFilePath();
+            if (plugin->shouldStartBackgroundMusic()) {
+                u16 bgm = plugin->getCurrentBackgroundMusic();
+                const std::string& path = plugin->getCurrentBackgroundMusicFilePath();
 
-            bool bShouldStoreResumePos = plugin->getResumeFromPositionBackgroundMusic();
-            u8 volume = plugin->getCurrentBgmMusicVolume();
-            u32 delayAtStart = plugin->getBgmDelayAtStart();
-    
-            QString filePath = QString::fromUtf8(path.c_str());
-            emit windowStartBgmMusic(bgm, volume, bShouldStoreResumePos, delayAtStart, filePath);
-        }
+                bool bShouldStoreResumePos = plugin->getResumeFromPositionBackgroundMusic();
+                u8 volume = plugin->getCurrentBgmMusicVolume();
+                u32 delayAtStart = plugin->getBgmDelayAtStart();
 
-        if (plugin->shouldPauseBackgroundMusic()) {
-            emit windowPauseBgmMusic();
-        }
+                QString filePath = QString::fromUtf8(path.c_str());
+                emit windowStartBgmMusic(bgm, volume, bShouldStoreResumePos, delayAtStart, filePath);
+            }
 
-        if (plugin->shouldResumeBackgroundMusic()) {
-            emit windowUnpauseBgmMusic();
-        }
+            if (plugin->shouldPauseBackgroundMusic()) {
+                emit windowPauseBgmMusic();
+            }
 
-        if (plugin->shouldUpdateBackgroundMusicVolume()) {
-            u8 volume = plugin->getCurrentBgmMusicVolume();
-            emit windowUpdateBgmMusicVolume(volume);
+            if (plugin->shouldResumeBackgroundMusic()) {
+                emit windowUnpauseBgmMusic();
+            }
+
+            if (plugin->shouldUpdateBackgroundMusicVolume()) {
+                u8 volume = plugin->getCurrentBgmMusicVolume();
+                emit windowUpdateBgmMusicVolume(volume);
+            }
         }
     }
 

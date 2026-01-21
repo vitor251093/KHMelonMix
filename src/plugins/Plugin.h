@@ -259,6 +259,7 @@ public:
         return false;
     }
 
+    bool muteBGMs = false;
     static u16 BGM_INVALID_ID;
     bool isBackgroundMusicPlaying() const { return _CurrentBackgroundMusic != BGM_INVALID_ID; }
     u16 getCurrentBackgroundMusic() const { return _CurrentBackgroundMusic; }
