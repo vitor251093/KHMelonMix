@@ -1401,6 +1401,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
                     .build(aspectRatio));
             break;
 
+        case gameScene_Tutorial:
         case gameScene_InGameWithMap:
         case gameScene_InGameWithDouble3D:
             if ((gameSceneState & (1 << gameSceneState_showHud)) > 0)
