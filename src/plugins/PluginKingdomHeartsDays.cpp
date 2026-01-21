@@ -345,6 +345,77 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     }};
 }
 
+std::filesystem::path PluginKingdomHeartsDays::kingdomHeartsCollectionFolderPath()
+{
+    std::filesystem::path collectionFolderPath;
+
+    const char* assetsPathEnv = std::getenv("KINGDOM_HEARTS_HD_1_5_2_5_REMIX_LOCATION");
+    if (assetsPathEnv != nullptr)
+    {
+        collectionFolderPath = std::filesystem::u8path(std::string(assetsPathEnv));
+    }
+    else
+    {
+        std::filesystem::path currentFolder = std::filesystem::current_path();
+        if (currentFolder.filename().string() == "KINGDOM HEARTS -HD 1.5+2.5 ReMIX-")
+        {
+            collectionFolderPath = currentFolder;
+        }
+    }
+
+    if (collectionFolderPath.empty())
+    {
+        return collectionFolderPath;
+    }
+
+    // TODO: KH That seems way too convoluted
+    if (collectionFolderPath.string()[collectionFolderPath.string().size()-1] == '/')
+    {
+        collectionFolderPath = collectionFolderPath.parent_path();
+    }
+
+    return collectionFolderPath;
+}
+
+void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
+{
+    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
+    if (collectionFolderPath.empty())
+    {
+        return;
+    }
+
+    std::filesystem::path saveDatasFolderPath = collectionFolderPath.parent_path().parent_path() /
+        "compatdata" / "2552430" / "pfx" /
+        "drive_c" / "users" / "steamuser" / "Documents" /
+        "My Games" / "KINGDOM HEARTS HD 1.5+2.5 ReMIX" / "Steam";
+    if (!std::filesystem::exists(saveDatasFolderPath))
+    {
+        return;
+    }
+
+    std::vector<std::string> saveDataFolderNameList = Platform::ContentsOfFolder(saveDatasFolderPath.string(), true, false);
+    if (saveDataFolderNameList.empty())
+    {
+        return;
+    }
+
+    std::filesystem::path configFilePath = saveDatasFolderPath / saveDataFolderNameList[0] / "config1525.dat";
+    Platform::FileHandle* configFileHandle = Platform::OpenFile(configFilePath.string(), Platform::FileMode::ReadText);
+
+    printf("Config file path: %s\n", configFilePath.string().c_str());
+
+    char linebuf[1024];
+    while (!Platform::IsEndOfFile(configFileHandle))
+    {
+        if (!Platform::FileReadLine(linebuf, 1024, configFileHandle))
+            break;
+
+
+    }
+    Platform::CloseFile(configFileHandle);
+}
+
 void PluginKingdomHeartsDays::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
@@ -450,66 +521,6 @@ void PluginKingdomHeartsDays::loadLocalization() {
             }
         }
     }
-}
-
-void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
-{
-    std::filesystem::path collectionFolderPath;
-
-    const char* assetsPathEnv = std::getenv("KINGDOM_HEARTS_HD_1_5_2_5_REMIX_LOCATION");
-    if (assetsPathEnv != nullptr)
-    {
-        collectionFolderPath = std::filesystem::u8path(std::string(assetsPathEnv));
-    }
-    else
-    {
-        std::filesystem::path currentFolder = std::filesystem::current_path();
-        if (currentFolder.filename().string() == "KINGDOM HEARTS -HD 1.5+2.5 ReMIX-")
-        {
-            collectionFolderPath = currentFolder;
-        }
-    }
-
-    if (collectionFolderPath.empty())
-    {
-        return;
-    }
-
-    // TODO: KH That seems way too convoluted
-    if (collectionFolderPath.string()[collectionFolderPath.string().size()-1] == '/')
-    {
-        collectionFolderPath = collectionFolderPath.parent_path();
-    }
-
-    std::filesystem::path saveDatasFolderPath = collectionFolderPath.parent_path().parent_path() /
-        "compatdata" / "2552430" / "pfx" /
-        "drive_c" / "users" / "steamuser" / "Documents" /
-        "My Games" / "KINGDOM HEARTS HD 1.5+2.5 ReMIX" / "Steam";
-    if (!std::filesystem::exists(saveDatasFolderPath))
-    {
-        return;
-    }
-
-    std::vector<std::string> saveDataFolderNameList = Platform::ContentsOfFolder(saveDatasFolderPath.string(), true, false);
-    if (saveDataFolderNameList.empty())
-    {
-        return;
-    }
-
-    std::filesystem::path configFilePath = saveDatasFolderPath / saveDataFolderNameList[0] / "config1525.dat";
-    Platform::FileHandle* configFileHandle = Platform::OpenFile(configFilePath.string(), Platform::FileMode::ReadText);
-
-    printf("Config file path: %s\n", configFilePath.string().c_str());
-
-    char linebuf[1024];
-    while (!Platform::IsEndOfFile(configFileHandle))
-    {
-        if (!Platform::FileReadLine(linebuf, 1024, configFileHandle))
-            break;
-
-        
-    }
-    Platform::CloseFile(configFileHandle);
 }
 
 void PluginKingdomHeartsDays::onLoadROM() {
