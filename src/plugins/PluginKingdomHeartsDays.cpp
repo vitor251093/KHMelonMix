@@ -412,6 +412,10 @@ void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
     Platform::CloseFile(configFileHandle);
 
     // TODO: KH use the config
+
+    printf("joystickLayout: %d\n", config.joystickLayout);
+    printf("masterVolume: %d\n", config.masterVolume);
+    printf("controls_confirm: %02X\n", config.controls_confirm);
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {

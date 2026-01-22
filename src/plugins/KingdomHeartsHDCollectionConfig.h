@@ -72,10 +72,29 @@ struct HDCollectionConfig
     u8 unk3D;
     u8 unk3E;
     u8 unk3F;
-    u8 unk4x[16];
-    u8 unk5x[16];
-    u8 unk6x[16];
-    u8 unk7x[16];
+    u8 unk40;
+    u8 unk41;
+    u8 unk42;
+    u8 unk43;
+    // The controls below follow IBM PC keyboard scancode Set 1: https://www.vetra.com/scancodes.html
+    // Other possible values:
+    //   0x1000 => left mouse click
+    //   0x1001 => right mouse click
+    u32 controls_confirm;
+    u32 controls_confirm_sub;
+    u32 controls_cancel;
+    u32 controls_cancel_sub;
+    u32 controls_unassigned2;
+    u32 controls_unassigned2_sub;
+    u32 controls_unassigned1;
+    u32 controls_unassigned1_sub;
+    u32 controls_unassigned3;
+    u32 controls_unassigned3_sub;
+    u32 controls_unassigned4;
+    u32 controls_unassigned4_sub;
+    u32 controls_unassigned5;
+    u32 controls_unassigned5_sub;
+    u32 controls_unassigned6;
     u8 unk8x[16];
     u8 unk9x[16];
     u8 unkAx[16];
@@ -84,10 +103,15 @@ struct HDCollectionConfig
     u8 unkC1;
     u8 unkC2;
     u8 unkC3;
+    u32 controls_up;
+    u32 controls_up_sub;
+    u32 controls_down;
+    u32 controls_down_sub;
+    u32 controls_left;
+    u32 controls_left_sub;
+    u32 controls_right;
 
-    // The controls below follow IBM PC keyboard scancode Set 1: https://www.vetra.com/scancodes.html
-    u8 controls_forward;
-    // TODO: KH there is more after that
+    // TODO: KH there is more after that, starting from 0xE0
 };
 }
 
