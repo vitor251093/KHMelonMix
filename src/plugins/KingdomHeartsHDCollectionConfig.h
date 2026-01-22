@@ -35,36 +35,36 @@ struct KHKeyboardControls
     //   0x1004 => ?
     //   0x100A => ?
 
-    KHKey unassigned7;  // 0x3C
-    KHKey confirm;      // 0x44
-    KHKey cancel;       // 0x4C
-    KHKey unassigned2;  // 0x54
-    KHKey unassigned1;  // 0x5C
-    KHKey unassigned3;  // 0x64
-    KHKey unassigned4;  // 0x6C
-    KHKey unassigned5;  // 0x74
-    KHKey unassigned6;  // 0x7C
-    KHKey unassigned8;  // 0x84
-    KHKey unassigned13; // 0x8C
+    KHKey holdToWalk;           // 0x3C / unassigned7
+    KHKey confirm;              // 0x44
+    KHKey cancelOrJump;         // 0x4C
+    KHKey useCommand;           // 0x54 / unassigned2
+    KHKey blockEvadeDodge;      // 0x5C / unassigned1
+    KHKey holdToOpenShortcuts;  // 0x64 / unassigned3
+    KHKey toggleLockOn;         // 0x6C / unassigned4
+    KHKey changeLockOnTargetOrToggleCursorControls; // 0x74 / unassigned5
+    KHKey toggleGummiShipScoreOrChangeLockOnTarget; // 0x7C / unassigned6
+    KHKey gummiEditorFlipGummi; // 0x84 / unassigned8
+    KHKey resetCamera;          // 0x8C / unassigned13
 
-    // command menu controls ("Move cursor" in KH Collection settings)
-    KHKey unk94;
-    KHKey unk9C;
-    KHKey unkA4;
-    KHKey unkAC;
+    // move cursor
+    KHKey cursorUp;    // 0x94
+    KHKey cursorDown;  // 0x9C
+    KHKey cursorLeft;  // 0xA4
+    KHKey cursorRight; // 0xAC
 
-    KHKey unassigned15; // 0xB4
-    KHKey unassigned14; // 0xBC
-    KHKey up;           // 0xC4
-    KHKey down;         // 0xCC
-    KHKey left;         // 0xD4
-    KHKey right;        // 0xDC
+    KHKey firstPersonView; // 0xB4 / unassigned15
+    KHKey pause;           // 0xBC / unassigned14
+    KHKey up;              // 0xC4
+    KHKey down;            // 0xCC
+    KHKey left;            // 0xD4
+    KHKey right;           // 0xDC
 
-    // move camera (unassigned 9 to 12)
-    u32 unkE4;
-    u32 unkE8;
-    u32 unkEC;
-    u32 unkF0;
+    // move camera
+    u32 cameraUp;    // 0xE4 / unassigned9
+    u32 cameraDown;  // 0xE8 / unassigned10
+    u32 cameraLeft;  // 0xEC / unassigned11
+    u32 cameraRight; // 0xF0 / unassigned12
 };
 
 struct KHSoundSettings
@@ -164,14 +164,14 @@ static constexpr std::array<int, 128> Set1ToQtKey = [] {
 
     // insert
     // delete
-    // left arrow
+    // t[0xC8] = left arrow
     // home
     // end
-    // up arrow
-    // down arrow
+    // t[0xCD] = up arrow
+    // t[0xD0] = down arrow
     // page up
     // page down
-    // right arrow
+    // t[0xCB] = right arrow
 
     t[0x01] = 0x01000000 | 0x0001; // Qt::Key_Escape
     t[0x3B] = 0x01000000 | 0x0030; // F1
@@ -187,7 +187,7 @@ static constexpr std::array<int, 128> Set1ToQtKey = [] {
     t[0x57] = 0x01000000 | 0x003A; // F11
     t[0x58] = 0x01000000 | 0x003B; // F12
     // print screen
-    // scroll lock
+    // t[0x46] = scroll lock
     // pause break
     t[0x2B] = '\\';
 
@@ -196,6 +196,14 @@ static constexpr std::array<int, 128> Set1ToQtKey = [] {
 
 inline int DecodeSet1ToQt(uint8_t sc)
 {
+    // Other possible values:
+    //   0x1000 => left mouse click
+    //   0x1001 => right mouse click
+    //   0x1002 => middle button click
+    //   0x1003 => ?
+    //   0x1004 => ?
+    //   0x100A => ?
+
     return Set1ToQtKey[sc];
 }
 

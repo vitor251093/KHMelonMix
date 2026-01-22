@@ -359,41 +359,42 @@ void PluginKingdomHeartsDays::overrideConfigs(
         return;
     }
 
-    // TODO: KH use the other configs
-
     int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
     setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
 
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
 
-    //HK_AttackInteract
-    //HK_GuardCombo
-    //HK_Jump
-    //setIntConfig("Instance0.Keyboard.Start", DecodeSet1ToQt(config->keyConfiguration.));
-    //setIntConfig("Instance0.Keyboard.HK_CommandMenuUp", DecodeSet1ToQt(config->keyConfiguration.commandMenuUp.main));
-    //setIntConfig("Instance0.Keyboard.HK_CommandMenuDown", DecodeSet1ToQt(config->keyConfiguration.commandMenuDown.main));
-    //setIntConfig("Instance0.Keyboard.HK_CommandMenuLeft", DecodeSet1ToQt(config->keyConfiguration.commandMenuLeft.main));
-    //setIntConfig("Instance0.Keyboard.HK_CommandMenuRight", DecodeSet1ToQt(config->keyConfiguration.commandMenuRight.main));
-    //setIntConfig("Instance0.Keyboard.CameraUp", DecodeSet1ToQt(config->keyConfiguration.cameraUp));
-    //setIntConfig("Instance0.Keyboard.CameraDown", DecodeSet1ToQt(config->keyConfiguration.cameraDown));
-    //setIntConfig("Instance0.Keyboard.CameraLeft", DecodeSet1ToQt(config->keyConfiguration.cameraLeft));
-    //setIntConfig("Instance0.Keyboard.CameraRight", DecodeSet1ToQt(config->keyConfiguration.cameraRight));
+    setIntConfig("Instance0.Keyboard.A", DecodeSet1ToQt(config->keyConfiguration.confirm.main));
+    setIntConfig("Instance0.Keyboard.B", DecodeSet1ToQt(config->keyConfiguration.cancelOrJump.main));
+    setIntConfig("Instance0.Keyboard.Y", DecodeSet1ToQt(config->keyConfiguration.blockEvadeDodge.main));
+    setIntConfig("Instance0.Keyboard.X", DecodeSet1ToQt(config->keyConfiguration.useCommand.main));
+    // TODO: KH holdToOpenShortcuts
+    setIntConfig("Instance0.Keyboard.HK_RLockOn",       DecodeSet1ToQt(config->keyConfiguration.toggleLockOn.main));
+    setIntConfig("Instance0.Keyboard.HK_RSwitchTarget", DecodeSet1ToQt(config->keyConfiguration.changeLockOnTargetOrToggleCursorControls.main));
+    setIntConfig("Instance0.Keyboard.HK_LSwitchTarget", DecodeSet1ToQt(config->keyConfiguration.toggleGummiShipScoreOrChangeLockOnTarget.main));
     setIntConfig("Instance0.Keyboard.Up",    DecodeSet1ToQt(config->keyConfiguration.up.main));
     setIntConfig("Instance0.Keyboard.Down",  DecodeSet1ToQt(config->keyConfiguration.down.main));
     setIntConfig("Instance0.Keyboard.Left",  DecodeSet1ToQt(config->keyConfiguration.left.main));
     setIntConfig("Instance0.Keyboard.Right", DecodeSet1ToQt(config->keyConfiguration.right.main));
-    //setIntConfig("Instance0.Keyboard.HK_LSwitchTarget", DecodeSet1ToQt(config->keyConfiguration.));
-    //setIntConfig("Instance0.Keyboard.HK_RLockOn", DecodeSet1ToQt(config->keyConfiguration.));
-    //setIntConfig("Instance0.Keyboard.HK_RSwitchTarget", DecodeSet1ToQt(config->keyConfiguration.));
-    //setIntConfig("Instance0.Keyboard.A", 0);
-    //setIntConfig("Instance0.Keyboard.B", 0);
-    //setIntConfig("Instance0.Keyboard.X", 0);
-    //setIntConfig("Instance0.Keyboard.Y", 0);
-    //setIntConfig("Instance0.Keyboard.L", 0);
-    //setIntConfig("Instance0.Keyboard.R", 0);
-    //setIntConfig("Instance0.Keyboard.HK_HUDToggle", 0);
-    //setIntConfig("Instance0.Keyboard.HK_FullscreenMapToggle", 0);
+    // TODO: KH holdToWalk
+    setIntConfig("Instance0.Keyboard.HK_HUDToggle", DecodeSet1ToQt(config->keyConfiguration.gummiEditorFlipGummi.main));
+    setIntConfig("Instance0.Keyboard.CameraUp",    DecodeSet1ToQt(config->keyConfiguration.cameraUp));
+    setIntConfig("Instance0.Keyboard.CameraDown",  DecodeSet1ToQt(config->keyConfiguration.cameraDown));
+    setIntConfig("Instance0.Keyboard.CameraLeft",  DecodeSet1ToQt(config->keyConfiguration.cameraLeft));
+    setIntConfig("Instance0.Keyboard.CameraRight", DecodeSet1ToQt(config->keyConfiguration.cameraRight));
+    // TODO: KH resetCamera
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuUp",    DecodeSet1ToQt(config->keyConfiguration.cursorUp.main));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuDown",  DecodeSet1ToQt(config->keyConfiguration.cursorDown.main));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuLeft",  DecodeSet1ToQt(config->keyConfiguration.cursorLeft.main));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuRight", DecodeSet1ToQt(config->keyConfiguration.cursorRight.main));
+    setIntConfig("Instance0.Keyboard.Start", DecodeSet1ToQt(config->keyConfiguration.pause.main));
+    setIntConfig("Instance0.Keyboard.HK_FullscreenMapToggle", DecodeSet1ToQt(config->keyConfiguration.firstPersonView.main));
+
+    setIntConfig("Instance0.Keyboard.Select", -1);
+    setIntConfig("Instance0.Keyboard.L", -1);
+    setIntConfig("Instance0.Keyboard.R", -1);
+    setIntConfig("Instance0.Keyboard.X", -1);
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
