@@ -1,4 +1,5 @@
 #include "PluginKingdomHeartsDays.h"
+#include "KingdomHeartsHDCollectionConfig.h"
 #include <cmath>
 
 namespace Plugins
@@ -209,6 +210,7 @@ enum
     HK_ReplacementTexturesToggle
 };
 
+
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
@@ -405,15 +407,11 @@ void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
 
     printf("Config file path: %s\n", configFilePath.string().c_str());
 
-    char linebuf[1024];
-    while (!Platform::IsEndOfFile(configFileHandle))
-    {
-        if (!Platform::FileReadLine(linebuf, 1024, configFileHandle))
-            break;
-
-
-    }
+    HDCollectionConfig config{};
+    Platform::FileRead(&config, sizeof(config), 1, configFileHandle);
     Platform::CloseFile(configFileHandle);
+
+    // TODO: KH use the config
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
