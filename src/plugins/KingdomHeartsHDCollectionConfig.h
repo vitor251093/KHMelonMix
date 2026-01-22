@@ -67,7 +67,7 @@ struct KHKeyboardControls
     u32 unkF0;
 };
 
-struct KHCollectionConfig
+struct KHMareConfig
 {
     u8 unk0;
     u8 unk1;
@@ -89,10 +89,8 @@ struct KHCollectionConfig
     u8 unk11;
     u8 unk12;
     u8 unk13;
-    u8 unk14;
-    u8 unk15;
-    u8 unk16;
-    u8 unk17;
+    u16 resolutionWidth;
+    u16 resolutionHeight;
     u8 windowMode; // 0x00 => fullscreen; 0x02 => windowed
     u8 unk19;
     u8 unk1A;
@@ -114,7 +112,7 @@ struct KHCollectionConfig
     u16 voicesVolume; // values goes from 1 to 10
     u8 joystickLayout; // 0 => auto; 1 => xbox; 2 => playstation; 3 => generic
     u8 unk31;
-    u8 unk32;
+    u8 confirmButton; // 0 => A; 1 => B
     u8 unk33;
     u8 unk34;
     u8 unk35;
@@ -210,7 +208,7 @@ inline std::filesystem::path kingdomHeartsCollectionSteamConfigFolderPathFromDoc
     return saveDatasFolderPath / saveDataFolderNameList[0];
 }
 
-inline KHCollectionConfig* kingdomHeartsCollectionConfig()
+inline KHMareConfig* kingdomHeartsCollectionConfig()
 {
     std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
     if (collectionFolderPath.empty())
@@ -241,8 +239,8 @@ inline KHCollectionConfig* kingdomHeartsCollectionConfig()
 
     printf("Config file path: %s\n", configFilePath.string().c_str());
 
-    auto* config = new KHCollectionConfig();
-    Platform::FileRead(config, sizeof(KHCollectionConfig), 1, configFileHandle);
+    auto* config = new KHMareConfig();
+    Platform::FileRead(config, sizeof(KHMareConfig), 1, configFileHandle);
     Platform::CloseFile(configFileHandle);
     return config;
 }

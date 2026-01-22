@@ -349,7 +349,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
 void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
 {
-    KHCollectionConfig* config = kingdomHeartsCollectionConfig();
+    KHMareConfig* config = kingdomHeartsCollectionConfig();
     if (config == nullptr)
     {
         return;
