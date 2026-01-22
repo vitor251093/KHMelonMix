@@ -148,6 +148,8 @@ public:
     virtual void onLoadROM();
     virtual void onLoadState();
 
+    std::filesystem::path myDocumentsFolderPath();
+
     std::filesystem::path _AssetsFolderPath;
     virtual std::string gameFolderName() {return std::to_string(GameCode);}
     std::filesystem::path gameAssetsFolderPath();

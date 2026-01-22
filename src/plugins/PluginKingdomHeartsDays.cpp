@@ -387,9 +387,15 @@ void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
         return;
     }
 
-    std::filesystem::path saveDatasFolderPath = collectionFolderPath.parent_path().parent_path() /
+#ifdef _WIN32
+    std::filesystem::path documentsFolderPath = myDocumentsFolderPath();
+#else
+    std::filesystem::path documentsFolderPath = collectionFolderPath.parent_path().parent_path() /
         "compatdata" / "2552430" / "pfx" /
-        "drive_c" / "users" / "steamuser" / "Documents" /
+        "drive_c" / "users" / "steamuser" / "Documents";
+#endif
+
+    std::filesystem::path saveDatasFolderPath = documentsFolderPath /
         "My Games" / "KINGDOM HEARTS HD 1.5+2.5 ReMIX" / "Steam";
     if (!std::filesystem::exists(saveDatasFolderPath))
     {

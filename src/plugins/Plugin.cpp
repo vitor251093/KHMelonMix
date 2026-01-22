@@ -17,6 +17,12 @@
 #include <objc/runtime.h>
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#include <iostream>
+#include <shlobj.h>
+#endif
+
 #include "../OpenGLSupport.h"
 
 #define RAM_SEARCH_ENABLED true
@@ -63,7 +69,33 @@ void Plugin::onLoadState() {
 
     stopBackgroundMusic(0);
     _SoundtrackState = EMidiState::Stopped;
-};
+}
+
+std::filesystem::path Plugin::myDocumentsFolderPath()
+{
+#ifdef _WIN32
+    wchar_t Folder[1024];
+    HRESULT hr = SHGetFolderPathW(0, CSIDL_MYDOCUMENTS, 0, 0, Folder);
+    if (SUCCEEDED(hr))
+    {
+        char str[1024];
+        wcstombs(str, Folder, 1023);
+        return std::filesystem::u8path(std::string(str));
+    }
+
+    std::filesystem::path empty;
+    return empty;
+#else
+    const char* homeDir = std::getenv("HOME");
+
+    if (homeDir == nullptr) {
+        std::filesystem::path empty;
+        return empty;
+    }
+
+    return std::filesystem::u8path(std::string(homeDir)) / "Documents";
+#endif
+}
 
 std::filesystem::path Plugin::gameAssetsFolderPath()
 {
