@@ -95,7 +95,8 @@ struct HDCollectionConfig
     u32 controls_unassigned5;
     u32 controls_unassigned5_sub;
     u32 controls_unassigned6;
-    u8 unk8x[16];
+    u32 controls_unassigned6_sub;
+    u8 unk8x[12];
     u8 unk9x[16];
     u8 unkAx[16];
     u8 unkB0;
