@@ -376,13 +376,39 @@ std::filesystem::path PluginKingdomHeartsDays::kingdomHeartsCollectionFolderPath
         collectionFolderPath = collectionFolderPath.parent_path();
     }
 
+    if (!std::filesystem::exists(collectionFolderPath))
+    {
+        std::filesystem::path empty;
+        return empty;
+    }
+
     return collectionFolderPath;
+}
+
+std::filesystem::path PluginKingdomHeartsDays::kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(const std::filesystem::path& documentsFolderPath)
+{
+    std::filesystem::path empty;
+
+    std::filesystem::path saveDatasFolderPath = documentsFolderPath /
+        "My Games" / "KINGDOM HEARTS HD 1.5+2.5 ReMIX" / "Steam";
+    if (!std::filesystem::exists(saveDatasFolderPath))
+    {
+        return empty;
+    }
+
+    std::vector<std::string> saveDataFolderNameList = Platform::ContentsOfFolder(saveDatasFolderPath.string(), true, false);
+    if (saveDataFolderNameList.empty())
+    {
+        return empty;
+    }
+
+    return saveDatasFolderPath / saveDataFolderNameList[0];
 }
 
 void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
 {
     std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
-    if (collectionFolderPath.empty() || !std::filesystem::exists(collectionFolderPath))
+    if (collectionFolderPath.empty())
     {
         return;
     }
@@ -394,21 +420,18 @@ void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
         "compatdata" / "2552430" / "pfx" /
         "drive_c" / "users" / "steamuser" / "Documents";
 #endif
-
-    std::filesystem::path saveDatasFolderPath = documentsFolderPath /
-        "My Games" / "KINGDOM HEARTS HD 1.5+2.5 ReMIX" / "Steam";
-    if (!std::filesystem::exists(saveDatasFolderPath))
+    if (!std::filesystem::exists(documentsFolderPath))
     {
         return;
     }
 
-    std::vector<std::string> saveDataFolderNameList = Platform::ContentsOfFolder(saveDatasFolderPath.string(), true, false);
-    if (saveDataFolderNameList.empty())
+    std::filesystem::path configFolderPath = kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(documentsFolderPath);
+    if (configFolderPath.empty())
     {
         return;
     }
 
-    std::filesystem::path configFilePath = saveDatasFolderPath / saveDataFolderNameList[0] / "config1525.dat";
+    std::filesystem::path configFilePath = configFolderPath / "config1525.dat";
     Platform::FileHandle* configFileHandle = Platform::OpenFile(configFilePath.string(), Platform::FileMode::ReadText);
 
     printf("Config file path: %s\n", configFilePath.string().c_str());

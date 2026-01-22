@@ -27,6 +27,7 @@ public:
     bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROM()[0x1E] == 1; };
 
     std::filesystem::path kingdomHeartsCollectionFolderPath();
+    std::filesystem::path kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(const std::filesystem::path& documentsFolderPath);
     void loadKingdomHeartsCollectionConfig();
 
     void loadLocalization();
