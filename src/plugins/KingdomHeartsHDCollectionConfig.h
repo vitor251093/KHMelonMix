@@ -129,6 +129,76 @@ struct KHMareConfig
     // TODO: KH there is more after that, starting from 0xF4
 };
 
+static constexpr std::array<int, 128> Set1ToQtKey = [] {
+    std::array<int, 128> t{};
+
+    t[0x29] = '`';
+    t[0x02] = '1'; t[0x03] = '2'; t[0x04] = '3'; t[0x05] = '4';
+    t[0x06] = '5'; t[0x07] = '6'; t[0x08] = '7'; t[0x09] = '8';
+    t[0x0A] = '9'; t[0x0B] = '0';
+    t[0x0C] = '-'; t[0x0D] = '=';
+    t[0x0E] = 0x01000000 | 0x0003; // Qt::Key_Backspace
+
+    t[0x0F] = 0x01000000 | 0x0002; // Qt::Key_Tab
+    t[0x10] = 'Q'; t[0x11] = 'W'; t[0x12] = 'E'; t[0x13] = 'R'; t[0x14] = 'T';
+    t[0x15] = 'Y'; t[0x16] = 'U'; t[0x17] = 'I'; t[0x18] = 'O'; t[0x19] = 'P';
+    t[0x1A] = '['; t[0x1B] = ']';
+
+    t[0x3A] = 0x01000000 | 0x0024; // Qt::Key_CapsLock
+    t[0x1E] = 'A'; t[0x1F] = 'S'; t[0x20] = 'D'; t[0x21] = 'F'; t[0x22] = 'G';
+    t[0x23] = 'H'; t[0x24] = 'J'; t[0x25] = 'K'; t[0x26] = 'L';
+    t[0x27] = ';'; t[0x28] = '\'';
+    t[0x1C] = 0x01000000 | 0x0004; // Qt::Key_Return
+    t[0x2A] = 0x01000000 | 0x0020; // Qt::Key_Shift
+
+    t[0x2C] = 'Z'; t[0x2D] = 'X'; t[0x2E] = 'C'; t[0x2F] = 'V'; t[0x30] = 'B';
+    t[0x31] = 'N'; t[0x32] = 'M';
+    t[0x33] = ','; t[0x34] = '.'; t[0x35] = '/';
+
+    t[0x36] = 0x01000000 | 0x0020; // Qt::Key_Shift
+    t[0x1D] = 0x01000000 | 0x0021; // Qt::Key_Control
+    t[0x38] = 0x01000000 | 0x0023; // Qt::Key_Alt
+    t[0x39] = ' ';                // Space
+    // right alt
+    // right ctrl
+
+    // insert
+    // delete
+    // left arrow
+    // home
+    // end
+    // up arrow
+    // down arrow
+    // page up
+    // page down
+    // right arrow
+
+    t[0x01] = 0x01000000 | 0x0001; // Qt::Key_Escape
+    t[0x3B] = 0x01000000 | 0x0030; // F1
+    t[0x3C] = 0x01000000 | 0x0031; // F2
+    t[0x3D] = 0x01000000 | 0x0032; // F3
+    t[0x3E] = 0x01000000 | 0x0033; // F4
+    t[0x3F] = 0x01000000 | 0x0034; // F5
+    t[0x40] = 0x01000000 | 0x0035; // F6
+    t[0x41] = 0x01000000 | 0x0036; // F7
+    t[0x42] = 0x01000000 | 0x0037; // F8
+    t[0x43] = 0x01000000 | 0x0038; // F9
+    t[0x44] = 0x01000000 | 0x0039; // F10
+    t[0x57] = 0x01000000 | 0x003A; // F11
+    t[0x58] = 0x01000000 | 0x003B; // F12
+    // print screen
+    // scroll lock
+    // pause break
+    t[0x2B] = '\\';
+
+    return t;
+}();
+
+inline int DecodeSet1ToQt(uint8_t sc)
+{
+    return Set1ToQtKey[sc];
+}
+
 inline std::filesystem::path myDocumentsFolderPath()
 {
 #ifdef _WIN32
