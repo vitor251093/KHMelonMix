@@ -350,6 +350,10 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
 {
     HDCollectionConfig* config = kingdomHeartsCollectionConfig();
+    if (config == nullptr)
+    {
+        return;
+    }
 
     // TODO: KH use the config
 
