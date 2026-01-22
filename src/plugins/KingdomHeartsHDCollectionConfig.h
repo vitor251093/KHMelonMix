@@ -113,8 +113,9 @@ struct HDCollectionConfig
     u32 controls_left;
     u32 controls_left_sub;
     u32 controls_right;
+    u32 controls_right_sub;
 
-    // TODO: KH there is more after that, starting from 0xE0
+    // TODO: KH there is more after that, starting from 0xE4
 };
 }
 
