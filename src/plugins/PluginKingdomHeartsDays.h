@@ -26,8 +26,6 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
     bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROM()[0x1E] == 1; };
 
-    void loadKingdomHeartsCollectionConfig();
-
     void loadLocalization();
     void onLoadROM() override;
     void onLoadState() override;
@@ -82,6 +80,11 @@ public:
         KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
         TextLanguage = getStringConfig(root + ".Language");
     }
+    void overrideConfigs(
+        std::function<void(std::string, bool)> setBoolConfig,
+        std::function<void(std::string, int)> setIntConfig,
+        std::function<void(std::string, std::string)> setStringConfig
+    ) override;
 private:
     bool PausedInGame = false;
     bool isCharacterControllable = false;

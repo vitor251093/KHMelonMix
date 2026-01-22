@@ -67,6 +67,14 @@ struct KHKeyboardControls
     u32 unkF0;
 };
 
+struct KHSoundSettings
+{
+    u16 masterVolume; // values goes from 1 to 10
+    u16 bgmVolume; // values goes from 1 to 10
+    u16 sfxVolume; // values goes from 1 to 10
+    u16 voicesVolume; // values goes from 1 to 10
+};
+
 struct KHMareConfig
 {
     u8 unk0;
@@ -89,14 +97,14 @@ struct KHMareConfig
     u8 unk11;
     u8 unk12;
     u8 unk13;
-    u16 resolutionWidth;
-    u16 resolutionHeight;
+    u8 unk14;
+    u8 unk15;
+    u8 unk16;
+    u8 unk17;
     u8 windowMode; // 0x00 => fullscreen; 0x02 => windowed
     u8 unk19;
-    u8 unk1A;
-    u8 unk1B;
-    u8 unk1C;
-    u8 unk1D;
+    u16 resolutionWidth;
+    u16 resolutionHeight;
     u8 frameRefreshRate; // 0 => 30; 1 => 60; 2 => 120; 3 => unlock
     u8 unk1F;
     u8 unk20;
@@ -106,11 +114,8 @@ struct KHMareConfig
     u8 unk24;
     u8 unk25;
     u8 unk26;
-    u16 masterVolume; // values goes from 1 to 10
-    u16 bgmVolume; // values goes from 1 to 10
-    u16 sfxVolume; // values goes from 1 to 10
-    u16 voicesVolume; // values goes from 1 to 10
-    u8 joystickLayout; // 0 => auto; 1 => xbox; 2 => playstation; 3 => generic
+    KHSoundSettings sound;
+    u8 joystickButtonIcons; // 0 => auto; 1 => xbox; 2 => playstation; 3 => generic
     u8 unk31;
     u8 confirmButton; // 0 => A; 1 => B
     u8 unk33;
@@ -119,7 +124,7 @@ struct KHMareConfig
     u8 unk36;
     u8 unk37;
     u32 mouseSensitivity; // values goes from 1 to 60 (default: 30)
-    KHKeyboardControls controls;
+    KHKeyboardControls keyConfiguration;
 
     // TODO: KH there is more after that, starting from 0xF4
 };

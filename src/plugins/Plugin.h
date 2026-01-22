@@ -330,6 +330,11 @@ public:
         std::function<int(std::string)> getIntConfig,
         std::function<std::string(std::string)> getStringConfig
     );
+    virtual void overrideConfigs(
+        std::function<void(std::string, bool)> setBoolConfig,
+        std::function<void(std::string, int)> setIntConfig,
+        std::function<void(std::string, std::string)> setStringConfig
+    ) {}
 
     virtual void hudToggle() {}
 

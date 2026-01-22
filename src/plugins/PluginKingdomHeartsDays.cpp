@@ -347,7 +347,11 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     }};
 }
 
-void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
+void PluginKingdomHeartsDays::overrideConfigs(
+    std::function<void(std::string, bool)> setBoolConfig,
+    std::function<void(std::string, int)> setIntConfig,
+    std::function<void(std::string, std::string)> setStringConfig
+)
 {
     KHMareConfig* config = kingdomHeartsCollectionConfig();
     if (config == nullptr)
@@ -355,11 +359,15 @@ void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
         return;
     }
 
-    // TODO: KH use the config
+    // TODO: KH use the other configs
 
-    printf("joystickLayout: %d\n", config->joystickLayout);
-    printf("masterVolume: %d\n", config->masterVolume);
-    printf("controls_confirm: %02X\n", config->controls.confirm.main);
+    int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
+    setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
+
+    setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
+    setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
+
+    //printf("controls_confirm: %02X\n", config->keyConfiguration.confirm.main);
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
@@ -473,7 +481,6 @@ void PluginKingdomHeartsDays::onLoadROM() {
     Plugin::onLoadROM();
 
     loadLocalization();
-    loadKingdomHeartsCollectionConfig();
 
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
