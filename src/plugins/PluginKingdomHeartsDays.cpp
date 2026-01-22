@@ -525,7 +525,7 @@ void PluginKingdomHeartsDays::onLoadROM() {
     Plugin::onLoadROM();
 
     loadLocalization();
-    //loadKingdomHeartsCollectionConfig();
+    loadKingdomHeartsCollectionConfig();
 
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 

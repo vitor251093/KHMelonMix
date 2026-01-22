@@ -54,9 +54,9 @@ struct HDCollectionConfig
     u8 unk26;
     u16 masterVolume; // values goes from 1 to 10
     u16 bgmVolume; // values goes from 1 to 10
-    u16 sfxVolume; // TODO: KH calculated address
-    u16 voicesVolume; // TODO: KH calculated address
-    u16 joystickLayout; // 0 => auto; 1 => xbox; 2 => playstation; 3 => generic
+    u16 sfxVolume; // values goes from 1 to 10
+    u16 voicesVolume; // values goes from 1 to 10
+    u8 joystickLayout; // 0 => auto; 1 => xbox; 2 => playstation; 3 => generic
     u8 unk31;
     u8 unk32;
     u8 unk33;
