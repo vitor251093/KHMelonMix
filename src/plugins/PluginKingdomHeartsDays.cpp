@@ -382,7 +382,7 @@ std::filesystem::path PluginKingdomHeartsDays::kingdomHeartsCollectionFolderPath
 void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
 {
     std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
-    if (collectionFolderPath.empty())
+    if (collectionFolderPath.empty() || !std::filesystem::exists(collectionFolderPath))
     {
         return;
     }
