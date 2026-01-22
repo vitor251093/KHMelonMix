@@ -97,7 +97,7 @@ struct KHMareConfig
     u8 unk1B;
     u8 unk1C;
     u8 unk1D;
-    u8 unk1E;
+    u8 frameRefreshRate; // 0 => 30; 1 => 60; 2 => 120; 3 => unlock
     u8 unk1F;
     u8 unk20;
     u8 unk21;
