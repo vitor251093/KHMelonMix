@@ -349,7 +349,7 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
 void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
 {
-    HDCollectionConfig* config = kingdomHeartsCollectionConfig();
+    KHCollectionConfig* config = kingdomHeartsCollectionConfig();
     if (config == nullptr)
     {
         return;
@@ -359,7 +359,7 @@ void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
 
     printf("joystickLayout: %d\n", config->joystickLayout);
     printf("masterVolume: %d\n", config->masterVolume);
-    printf("controls_confirm: %02X\n", config->controls_confirm);
+    printf("controls_confirm: %02X\n", config->controls.confirm.main);
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {

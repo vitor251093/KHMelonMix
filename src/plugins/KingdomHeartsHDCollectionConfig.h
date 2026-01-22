@@ -18,7 +18,56 @@ namespace Plugins
 {
 using namespace melonDS;
 
-struct HDCollectionConfig
+struct KHKey
+{
+    u32 main;
+    u32 sub;
+};
+
+struct KHKeyboardControls
+{
+    // The controls below follow IBM PC keyboard scancode Set 1: https://www.vetra.com/scancodes.html
+    // Other possible values:
+    //   0x1000 => left mouse click
+    //   0x1001 => right mouse click
+    //   0x1002 => middle button click
+    //   0x1003 => ?
+    //   0x1004 => ?
+    //   0x100A => ?
+
+    KHKey unassigned7;  // 0x3C
+    KHKey confirm;      // 0x44
+    KHKey cancel;       // 0x4C
+    KHKey unassigned2;  // 0x54
+    KHKey unassigned1;  // 0x5C
+    KHKey unassigned3;  // 0x64
+    KHKey unassigned4;  // 0x6C
+    KHKey unassigned5;  // 0x74
+    KHKey unassigned6;  // 0x7C
+    KHKey unassigned8;  // 0x84
+    KHKey unassigned13; // 0x8C
+
+    // command menu controls ("Move cursor" in KH Collection settings)
+    KHKey unk94;
+    KHKey unk9C;
+    KHKey unkA4;
+    KHKey unkAC;
+
+    KHKey unassigned15; // 0xB4
+    KHKey unassigned14; // 0xBC
+    KHKey up;           // 0xC4
+    KHKey down;         // 0xCC
+    KHKey left;         // 0xD4
+    KHKey right;        // 0xDC
+
+    // move camera (unassigned 9 to 12)
+    u32 unkE4;
+    u32 unkE8;
+    u32 unkEC;
+    u32 unkF0;
+};
+
+struct KHCollectionConfig
 {
     u8 unk0;
     u8 unk1;
@@ -71,59 +120,10 @@ struct HDCollectionConfig
     u8 unk35;
     u8 unk36;
     u8 unk37;
-    u8 unk38;
-    u8 unk39;
-    u8 unk3A;
-    u8 unk3B;
-    u8 unk3C;
-    u8 unk3D;
-    u8 unk3E;
-    u8 unk3F;
-    u8 unk40;
-    u8 unk41;
-    u8 unk42;
-    u8 unk43;
-    // The controls below follow IBM PC keyboard scancode Set 1: https://www.vetra.com/scancodes.html
-    // Other possible values:
-    //   0x1000 => left mouse click
-    //   0x1001 => right mouse click
-    u32 controls_confirm;
-    u32 controls_confirm_sub;
-    u32 controls_cancel;
-    u32 controls_cancel_sub;
-    u32 controls_unassigned2;
-    u32 controls_unassigned2_sub;
-    u32 controls_unassigned1;
-    u32 controls_unassigned1_sub;
-    u32 controls_unassigned3;
-    u32 controls_unassigned3_sub;
-    u32 controls_unassigned4;
-    u32 controls_unassigned4_sub;
-    u32 controls_unassigned5;
-    u32 controls_unassigned5_sub;
-    u32 controls_unassigned6;
-    u32 controls_unassigned6_sub;
-    u8 unk8x[12];
-    u8 unk9x[16];
-    u8 unkAx[16];
-    u8 unkB0;
-    u8 unkB1;
-    u8 unkB2;
-    u8 unkB3;
-    u32 controls_unassigned_last1;
-    u32 controls_unassigned_last1_sub;
-    u32 controls_unassigned_last2;
-    u32 controls_unassigned_last2_sub;
-    u32 controls_up;
-    u32 controls_up_sub;
-    u32 controls_down;
-    u32 controls_down_sub;
-    u32 controls_left;
-    u32 controls_left_sub;
-    u32 controls_right;
-    u32 controls_right_sub;
+    u32 mouseSensitivity; // values goes from 1 to 60 (default: 30)
+    KHKeyboardControls controls;
 
-    // TODO: KH there is more after that, starting from 0xE4
+    // TODO: KH there is more after that, starting from 0xF4
 };
 
 inline std::filesystem::path myDocumentsFolderPath()
@@ -210,7 +210,7 @@ inline std::filesystem::path kingdomHeartsCollectionSteamConfigFolderPathFromDoc
     return saveDatasFolderPath / saveDataFolderNameList[0];
 }
 
-inline HDCollectionConfig* kingdomHeartsCollectionConfig()
+inline KHCollectionConfig* kingdomHeartsCollectionConfig()
 {
     std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
     if (collectionFolderPath.empty())
@@ -241,8 +241,8 @@ inline HDCollectionConfig* kingdomHeartsCollectionConfig()
 
     printf("Config file path: %s\n", configFilePath.string().c_str());
 
-    auto* config = new HDCollectionConfig();
-    Platform::FileRead(config, sizeof(HDCollectionConfig), 1, configFileHandle);
+    auto* config = new KHCollectionConfig();
+    Platform::FileRead(config, sizeof(KHCollectionConfig), 1, configFileHandle);
     Platform::CloseFile(configFileHandle);
     return config;
 }
