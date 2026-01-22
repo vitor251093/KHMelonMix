@@ -347,104 +347,15 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     }};
 }
 
-std::filesystem::path PluginKingdomHeartsDays::kingdomHeartsCollectionFolderPath()
-{
-    std::filesystem::path collectionFolderPath;
-
-    const char* assetsPathEnv = std::getenv("KINGDOM_HEARTS_HD_1_5_2_5_REMIX_LOCATION");
-    if (assetsPathEnv != nullptr)
-    {
-        collectionFolderPath = std::filesystem::u8path(std::string(assetsPathEnv));
-    }
-    else
-    {
-        std::filesystem::path currentFolder = std::filesystem::current_path();
-        if (currentFolder.filename().string() == "KINGDOM HEARTS -HD 1.5+2.5 ReMIX-")
-        {
-            collectionFolderPath = currentFolder;
-        }
-    }
-
-    if (collectionFolderPath.empty())
-    {
-        return collectionFolderPath;
-    }
-
-    // TODO: KH That seems way too convoluted
-    if (collectionFolderPath.string()[collectionFolderPath.string().size()-1] == '/')
-    {
-        collectionFolderPath = collectionFolderPath.parent_path();
-    }
-
-    if (!std::filesystem::exists(collectionFolderPath))
-    {
-        std::filesystem::path empty;
-        return empty;
-    }
-
-    return collectionFolderPath;
-}
-
-std::filesystem::path PluginKingdomHeartsDays::kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(const std::filesystem::path& documentsFolderPath)
-{
-    std::filesystem::path empty;
-
-    std::filesystem::path saveDatasFolderPath = documentsFolderPath /
-        "My Games" / "KINGDOM HEARTS HD 1.5+2.5 ReMIX" / "Steam";
-    if (!std::filesystem::exists(saveDatasFolderPath))
-    {
-        return empty;
-    }
-
-    std::vector<std::string> saveDataFolderNameList = Platform::ContentsOfFolder(saveDatasFolderPath.string(), true, false);
-    if (saveDataFolderNameList.empty())
-    {
-        return empty;
-    }
-
-    return saveDatasFolderPath / saveDataFolderNameList[0];
-}
-
 void PluginKingdomHeartsDays::loadKingdomHeartsCollectionConfig()
 {
-    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
-    if (collectionFolderPath.empty())
-    {
-        return;
-    }
-
-#ifdef _WIN32
-    std::filesystem::path documentsFolderPath = myDocumentsFolderPath();
-#else
-    std::filesystem::path documentsFolderPath = collectionFolderPath.parent_path().parent_path() /
-        "compatdata" / "2552430" / "pfx" /
-        "drive_c" / "users" / "steamuser" / "Documents";
-#endif
-    if (!std::filesystem::exists(documentsFolderPath))
-    {
-        return;
-    }
-
-    std::filesystem::path configFolderPath = kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(documentsFolderPath);
-    if (configFolderPath.empty())
-    {
-        return;
-    }
-
-    std::filesystem::path configFilePath = configFolderPath / "config1525.dat";
-    Platform::FileHandle* configFileHandle = Platform::OpenFile(configFilePath.string(), Platform::FileMode::ReadText);
-
-    printf("Config file path: %s\n", configFilePath.string().c_str());
-
-    HDCollectionConfig config{};
-    Platform::FileRead(&config, sizeof(config), 1, configFileHandle);
-    Platform::CloseFile(configFileHandle);
+    HDCollectionConfig* config = kingdomHeartsCollectionConfig();
 
     // TODO: KH use the config
 
-    printf("joystickLayout: %d\n", config.joystickLayout);
-    printf("masterVolume: %d\n", config.masterVolume);
-    printf("controls_confirm: %02X\n", config.controls_confirm);
+    printf("joystickLayout: %d\n", config->joystickLayout);
+    printf("masterVolume: %d\n", config->masterVolume);
+    printf("controls_confirm: %02X\n", config->controls_confirm);
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {

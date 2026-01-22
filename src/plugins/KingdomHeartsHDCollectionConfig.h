@@ -5,7 +5,14 @@
 #ifndef MELONDS_KINGDOMHEARTSHDCOLLECTIONCONFIG_H
 #define MELONDS_KINGDOMHEARTSHDCOLLECTIONCONFIG_H
 
+#include <filesystem>
 #include "../types.h"
+
+#ifdef _WIN32
+#include <windows.h>
+#include <iostream>
+#include <shlobj.h>
+#endif
 
 namespace Plugins
 {
@@ -118,6 +125,128 @@ struct HDCollectionConfig
 
     // TODO: KH there is more after that, starting from 0xE4
 };
+
+inline std::filesystem::path myDocumentsFolderPath()
+{
+#ifdef _WIN32
+    wchar_t Folder[1024];
+    HRESULT hr = SHGetFolderPathW(0, CSIDL_MYDOCUMENTS, 0, 0, Folder);
+    if (SUCCEEDED(hr))
+    {
+        char str[1024];
+        wcstombs(str, Folder, 1023);
+        return std::filesystem::u8path(std::string(str));
+    }
+
+    std::filesystem::path empty;
+    return empty;
+#else
+    const char* homeDir = std::getenv("HOME");
+
+    if (homeDir == nullptr) {
+        std::filesystem::path empty;
+        return empty;
+    }
+
+    return std::filesystem::u8path(std::string(homeDir)) / "Documents";
+#endif
+}
+
+inline std::filesystem::path kingdomHeartsCollectionFolderPath()
+{
+    std::filesystem::path collectionFolderPath;
+
+    const char* assetsPathEnv = std::getenv("KINGDOM_HEARTS_HD_1_5_2_5_REMIX_LOCATION");
+    if (assetsPathEnv != nullptr)
+    {
+        collectionFolderPath = std::filesystem::u8path(std::string(assetsPathEnv));
+    }
+    else
+    {
+        std::filesystem::path currentFolder = std::filesystem::current_path();
+        if (currentFolder.filename().string() == "KINGDOM HEARTS -HD 1.5+2.5 ReMIX-")
+        {
+            collectionFolderPath = currentFolder;
+        }
+    }
+
+    if (collectionFolderPath.empty())
+    {
+        return collectionFolderPath;
+    }
+
+    // TODO: KH That seems way too convoluted
+    if (collectionFolderPath.string()[collectionFolderPath.string().size()-1] == '/')
+    {
+        collectionFolderPath = collectionFolderPath.parent_path();
+    }
+
+    if (!std::filesystem::exists(collectionFolderPath))
+    {
+        std::filesystem::path empty;
+        return empty;
+    }
+
+    return collectionFolderPath;
+}
+
+inline std::filesystem::path kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(const std::filesystem::path& documentsFolderPath)
+{
+    std::filesystem::path empty;
+
+    std::filesystem::path saveDatasFolderPath = documentsFolderPath /
+        "My Games" / "KINGDOM HEARTS HD 1.5+2.5 ReMIX" / "Steam";
+    if (!std::filesystem::exists(saveDatasFolderPath))
+    {
+        return empty;
+    }
+
+    std::vector<std::string> saveDataFolderNameList = Platform::ContentsOfFolder(saveDatasFolderPath.string(), true, false);
+    if (saveDataFolderNameList.empty())
+    {
+        return empty;
+    }
+
+    return saveDatasFolderPath / saveDataFolderNameList[0];
+}
+
+inline HDCollectionConfig* kingdomHeartsCollectionConfig()
+{
+    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
+    if (collectionFolderPath.empty())
+    {
+        return nullptr;
+    }
+
+#ifdef _WIN32
+    std::filesystem::path documentsFolderPath = myDocumentsFolderPath();
+#else
+    std::filesystem::path documentsFolderPath = collectionFolderPath.parent_path().parent_path() /
+        "compatdata" / "2552430" / "pfx" /
+        "drive_c" / "users" / "steamuser" / "Documents";
+#endif
+    if (!std::filesystem::exists(documentsFolderPath))
+    {
+        return nullptr;
+    }
+
+    std::filesystem::path configFolderPath = kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(documentsFolderPath);
+    if (configFolderPath.empty())
+    {
+        return nullptr;
+    }
+
+    std::filesystem::path configFilePath = configFolderPath / "config1525.dat";
+    Platform::FileHandle* configFileHandle = Platform::OpenFile(configFilePath.string(), Platform::FileMode::ReadText);
+
+    printf("Config file path: %s\n", configFilePath.string().c_str());
+
+    auto* config = new HDCollectionConfig();
+    Platform::FileRead(config, sizeof(HDCollectionConfig), 1, configFileHandle);
+    Platform::CloseFile(configFileHandle);
+    return config;
+}
+
 }
 
 #endif //MELONDS_KINGDOMHEARTSHDCOLLECTIONCONFIG_H
