@@ -365,6 +365,9 @@ void PluginKingdomHeartsDays::overrideConfigs(
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
 
+    // TODO: KH Disabling the keyboard automatic mapping for now because we need mouse control for the camera for that to work 100%;
+    //       We can still add joystick automatic mapping though
+    /*
     setIntConfig("Instance0.Keyboard.A", DecodeSet1ToQt(&config->keyConfiguration.confirm));
     setIntConfig("Instance0.Keyboard.B", DecodeSet1ToQt(&config->keyConfiguration.cancelOrJump));
     setIntConfig("Instance0.Keyboard.Y", DecodeSet1ToQt(&config->keyConfiguration.blockEvadeDodge));
@@ -398,6 +401,7 @@ void PluginKingdomHeartsDays::overrideConfigs(
     setIntConfig("Instance0.Keyboard.L", -1);
     setIntConfig("Instance0.Keyboard.R", -1);
     setIntConfig("Instance0.Keyboard.X", -1);
+    */
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
