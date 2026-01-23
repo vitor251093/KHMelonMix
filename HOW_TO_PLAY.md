@@ -7,9 +7,9 @@
 3. Dump an original copy of "358/2 Days" and copy the NDS file to your computer;
 4. Rename that NDS file to "days.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
 5. Place [this assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing) next to the Melon Mix executable file (optional; only if you want to upgrade the audio / cutscenes / textures / sprites) (on macOS, the assets folder should be inside the bundle's Contents folder);
-6. (Windows) Now you just need to launch the Melon Mix using "MelonMix_KHDays.bat";
+6. (Windows) In the future, launch the Melon Mix using "MelonMix_KHDays.bat", but, right now, launch "MelonMix.exe";
 7. (Linux) Right-click the AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Repeat those steps for MelonMix_KHReCoded.sh as well;
-8. (Linux) Now you just need to launch the Melon Mix using "MelonMix_KHDays.sh";
+8. (Linux) In the future, launch the Melon Mix using "MelonMix_KHDays.sh", but, right now, launch the AppImage;
 9. (macOS) Move the Melon Mix app to the Applications folder, or run the following command in the terminal: `xattr -drs com.apple.quarantine <path>`, replacing `<path>` with the full path of the app bundle; 
 10. (macOS) Now you just need to launch the Melon Mix bundle, and open the NDS file with it;
 11. Open the Days NDS file with the Melon Mix, and then press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below). You **MUST** open the NDS file **BEFORE** opening the Input and hotkeys window, otherwise you will just see the melonDS Add-ons;
@@ -24,9 +24,9 @@
 3. Dump an original copy of "Re:Coded" and copy the NDS file to your computer;
 4. Rename that NDS file to "recoded.nds", place it inside a folder named "roms", and then place that folder next to the Melon Mix executable that you just copied;
 5. Place [this assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing) next to the Melon Mix executable file (optional; only if you want to upgrade the audio / cutscenes / textures / sprites) (on macOS, the assets folder should be inside the bundle's Contents folder);
-6. (Windows) Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.bat";
+6. (Windows) In the future, launch the Melon Mix using "MelonMix_KHReCoded.bat", but, right now, launch "MelonMix.exe";
 7. (Linux) Right-click the AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Repeat those steps for MelonMix_KHDays.sh as well;
-8. (Linux) Now you just need to launch the Melon Mix using "MelonMix_KHReCoded.sh";
+8. (Linux) In the future, launch the Melon Mix using "MelonMix_KHReCoded.sh", but, right now, launch the AppImage;
 9. (macOS) Move the Melon Mix app to the Applications folder, or run the following command in the terminal: `xattr -drs com.apple.quarantine <path>`, replacing `<path>` with the full path of the app bundle;
 10. (macOS) Now you just need to launch the Melon Mix bundle, and open the NDS file with it;
 11. Open the Re:Coded NDS file with the Melon Mix, and then press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below). You **MUST** open the NDS file **BEFORE** opening the Input and hotkeys window, otherwise you will just see the melonDS Add-ons;
