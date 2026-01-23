@@ -27,13 +27,18 @@ struct KHKey
 struct KHKeyboardControls
 {
     // The controls below follow IBM PC keyboard scancode Set 1: https://www.vetra.com/scancodes.html
-    // Other possible values:
+    // Mouse related values:
     //   0x1000 => left mouse click
     //   0x1001 => right mouse click
     //   0x1002 => middle button click
-    //   0x1003 => ?
-    //   0x1004 => ?
-    //   0x100A => ?
+    //   0x1003 => forward mouse button click
+    //   0x1004 => mouse scroll up
+    //   0x1005 => move mouse up
+    //   0x1006 => move mouse down
+    //   0x1007 => move mouse left
+    //   0x1008 => move mouse right
+    //   0x1009 => backward mouse button click
+    //   0x100A => mouse scroll down
 
     KHKey holdToWalk;           // 0x3C / unassigned7
     KHKey confirm;              // 0x44
