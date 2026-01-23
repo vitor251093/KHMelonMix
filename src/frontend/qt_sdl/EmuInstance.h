@@ -161,8 +161,6 @@ public:
     SDL_Joystick* getJoystick() { return joystick; }
     std::shared_ptr<SDL_mutex> getJoyMutex() { return joyMutex; }
 
-    void autoMapJoystick();
-
     std::vector<int> heldKeys;
     std::vector<int> keyStrokes;
 
@@ -254,11 +252,6 @@ private:
     void onKeyPress(QKeyEvent* event);
     void onKeyRelease(QKeyEvent* event);
     void keyReleaseAll();
-
-    void setAutoJoystickConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
-                               int camRight, int camLeft, int camUp, int camDown,
-                               int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
-                               int pause, int fullscreen);
 
     void openJoystick();
     void closeJoystick();
