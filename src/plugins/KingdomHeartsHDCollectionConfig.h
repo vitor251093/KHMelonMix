@@ -129,8 +129,8 @@ struct KHMareConfig
     // TODO: KH there is more after that, starting from 0xF4
 };
 
-static constexpr std::array<int, 128> Set1ToQtKey = [] {
-    std::array<int, 128> t{};
+static constexpr std::array<int, 256> Set1ToQtKey = [] {
+    std::array<int, 256> t{};
 
     t[0x29] = '`';
     t[0x02] = '1'; t[0x03] = '2'; t[0x04] = '3'; t[0x05] = '4';
@@ -148,7 +148,7 @@ static constexpr std::array<int, 128> Set1ToQtKey = [] {
     t[0x1E] = 'A'; t[0x1F] = 'S'; t[0x20] = 'D'; t[0x21] = 'F'; t[0x22] = 'G';
     t[0x23] = 'H'; t[0x24] = 'J'; t[0x25] = 'K'; t[0x26] = 'L';
     t[0x27] = ';'; t[0x28] = '\'';
-    t[0x1C] = 0x01000000 | 0x0004; // Qt::Key_Return
+    t[0x1C] = 0x01000000 | 0x0005; // Qt::Key_Return
     t[0x2A] = 0x01000000 | 0x0020; // Qt::Key_Shift
 
     t[0x2C] = 'Z'; t[0x2D] = 'X'; t[0x2E] = 'C'; t[0x2F] = 'V'; t[0x30] = 'B';
@@ -158,20 +158,20 @@ static constexpr std::array<int, 128> Set1ToQtKey = [] {
     t[0x36] = 0x01000000 | 0x0020; // Qt::Key_Shift
     t[0x1D] = 0x01000000 | 0x0021; // Qt::Key_Control
     t[0x38] = 0x01000000 | 0x0023; // Qt::Key_Alt
-    t[0x39] = ' ';                // Space
-    // right alt
+    t[0x39] = ' ';                 // Space
+    t[0xB8] = 0x01000000 | 0x1103; // right alt
     // right ctrl
 
-    // insert
-    // delete
-    // t[0xC8] = left arrow
-    // home
-    // end
-    // t[0xCD] = up arrow
-    // t[0xD0] = down arrow
-    // page up
-    // page down
-    // t[0xCB] = right arrow
+    //t[0x??] = 0x01000000 | 0x0006; // insert
+    //t[0x??] = 0x01000000 | 0x0007; // delete
+    t[0xC8] = 0x01000000 | 0x0012; // left arrow
+    //t[0x??] = 0x01000000 | 0x0010; // home
+    //t[0x??] = 0x01000000 | 0x0011; // end
+    t[0xCD] = 0x01000000 | 0x0013; // up arrow
+    t[0xD0] = 0x01000000 | 0x0015; // down arrow
+    //t[0x??] = 0x01000000 | 0x0016; // page up
+    //t[0x??] = 0x01000000 | 0x0017; // page down
+    t[0xCB] = 0x01000000 | 0x0014; // right arrow
 
     t[0x01] = 0x01000000 | 0x0001; // Qt::Key_Escape
     t[0x3B] = 0x01000000 | 0x0030; // F1
@@ -187,24 +187,35 @@ static constexpr std::array<int, 128> Set1ToQtKey = [] {
     t[0x57] = 0x01000000 | 0x003A; // F11
     t[0x58] = 0x01000000 | 0x003B; // F12
     // print screen
-    // t[0x46] = scroll lock
-    // pause break
+    t[0x46] = 0x01000000 | 0x0026; // scroll lock
+    //t[0x??] = 0x01000000 | 0x0008; // pause break
     t[0x2B] = '\\';
 
     return t;
 }();
 
-inline int DecodeSet1ToQt(uint8_t sc)
+inline int DecodeSet1ToQt(u32 sc)
 {
-    // Other possible values:
-    //   0x1000 => left mouse click
-    //   0x1001 => right mouse click
-    //   0x1002 => middle button click
-    //   0x1003 => ?
-    //   0x1004 => ?
-    //   0x100A => ?
+    if (sc > 255)
+    {
+        return -1;
+    }
+    int val = Set1ToQtKey[sc];
+    if (val == 0)
+    {
+        return -1;
+    }
+    return val;
+}
 
-    return Set1ToQtKey[sc];
+inline int DecodeSet1ToQt(KHKey* key)
+{
+    int val = DecodeSet1ToQt(key->main);
+    if (val == -1)
+    {
+        val = DecodeSet1ToQt(key->sub);
+    }
+    return val;
 }
 
 inline std::filesystem::path myDocumentsFolderPath()

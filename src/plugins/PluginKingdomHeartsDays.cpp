@@ -365,32 +365,35 @@ void PluginKingdomHeartsDays::overrideConfigs(
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
 
-    setIntConfig("Instance0.Keyboard.A", DecodeSet1ToQt(config->keyConfiguration.confirm.main));
-    setIntConfig("Instance0.Keyboard.B", DecodeSet1ToQt(config->keyConfiguration.cancelOrJump.main));
-    setIntConfig("Instance0.Keyboard.Y", DecodeSet1ToQt(config->keyConfiguration.blockEvadeDodge.main));
-    setIntConfig("Instance0.Keyboard.X", DecodeSet1ToQt(config->keyConfiguration.useCommand.main));
+    setIntConfig("Instance0.Keyboard.A", DecodeSet1ToQt(&config->keyConfiguration.confirm));
+    setIntConfig("Instance0.Keyboard.B", DecodeSet1ToQt(&config->keyConfiguration.cancelOrJump));
+    setIntConfig("Instance0.Keyboard.Y", DecodeSet1ToQt(&config->keyConfiguration.blockEvadeDodge));
+    setIntConfig("Instance0.Keyboard.X", DecodeSet1ToQt(&config->keyConfiguration.useCommand));
     // TODO: KH holdToOpenShortcuts
-    setIntConfig("Instance0.Keyboard.HK_RLockOn",       DecodeSet1ToQt(config->keyConfiguration.toggleLockOn.main));
-    setIntConfig("Instance0.Keyboard.HK_RSwitchTarget", DecodeSet1ToQt(config->keyConfiguration.changeLockOnTargetOrToggleCursorControls.main));
-    setIntConfig("Instance0.Keyboard.HK_LSwitchTarget", DecodeSet1ToQt(config->keyConfiguration.toggleGummiShipScoreOrChangeLockOnTarget.main));
-    setIntConfig("Instance0.Keyboard.Up",    DecodeSet1ToQt(config->keyConfiguration.up.main));
-    setIntConfig("Instance0.Keyboard.Down",  DecodeSet1ToQt(config->keyConfiguration.down.main));
-    setIntConfig("Instance0.Keyboard.Left",  DecodeSet1ToQt(config->keyConfiguration.left.main));
-    setIntConfig("Instance0.Keyboard.Right", DecodeSet1ToQt(config->keyConfiguration.right.main));
+    setIntConfig("Instance0.Keyboard.HK_RLockOn",       DecodeSet1ToQt(&config->keyConfiguration.toggleLockOn));
+    setIntConfig("Instance0.Keyboard.HK_RSwitchTarget", DecodeSet1ToQt(&config->keyConfiguration.changeLockOnTargetOrToggleCursorControls));
+    setIntConfig("Instance0.Keyboard.HK_LSwitchTarget", DecodeSet1ToQt(&config->keyConfiguration.toggleGummiShipScoreOrChangeLockOnTarget));
+    setIntConfig("Instance0.Keyboard.Up",    DecodeSet1ToQt(&config->keyConfiguration.up));
+    setIntConfig("Instance0.Keyboard.Down",  DecodeSet1ToQt(&config->keyConfiguration.down));
+    setIntConfig("Instance0.Keyboard.Left",  DecodeSet1ToQt(&config->keyConfiguration.left));
+    setIntConfig("Instance0.Keyboard.Right", DecodeSet1ToQt(&config->keyConfiguration.right));
     // TODO: KH holdToWalk
-    setIntConfig("Instance0.Keyboard.HK_HUDToggle", DecodeSet1ToQt(config->keyConfiguration.gummiEditorFlipGummi.main));
+    setIntConfig("Instance0.Keyboard.HK_HUDToggle", DecodeSet1ToQt(&config->keyConfiguration.gummiEditorFlipGummi));
     setIntConfig("Instance0.Keyboard.CameraUp",    DecodeSet1ToQt(config->keyConfiguration.cameraUp));
     setIntConfig("Instance0.Keyboard.CameraDown",  DecodeSet1ToQt(config->keyConfiguration.cameraDown));
     setIntConfig("Instance0.Keyboard.CameraLeft",  DecodeSet1ToQt(config->keyConfiguration.cameraLeft));
     setIntConfig("Instance0.Keyboard.CameraRight", DecodeSet1ToQt(config->keyConfiguration.cameraRight));
     // TODO: KH resetCamera
-    setIntConfig("Instance0.Keyboard.HK_CommandMenuUp",    DecodeSet1ToQt(config->keyConfiguration.cursorUp.main));
-    setIntConfig("Instance0.Keyboard.HK_CommandMenuDown",  DecodeSet1ToQt(config->keyConfiguration.cursorDown.main));
-    setIntConfig("Instance0.Keyboard.HK_CommandMenuLeft",  DecodeSet1ToQt(config->keyConfiguration.cursorLeft.main));
-    setIntConfig("Instance0.Keyboard.HK_CommandMenuRight", DecodeSet1ToQt(config->keyConfiguration.cursorRight.main));
-    setIntConfig("Instance0.Keyboard.Start", DecodeSet1ToQt(config->keyConfiguration.pause.main));
-    setIntConfig("Instance0.Keyboard.HK_FullscreenMapToggle", DecodeSet1ToQt(config->keyConfiguration.firstPersonView.main));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuUp",    DecodeSet1ToQt(&config->keyConfiguration.cursorUp));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuDown",  DecodeSet1ToQt(&config->keyConfiguration.cursorDown));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuLeft",  DecodeSet1ToQt(&config->keyConfiguration.cursorLeft));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuRight", DecodeSet1ToQt(&config->keyConfiguration.cursorRight));
+    setIntConfig("Instance0.Keyboard.Start", DecodeSet1ToQt(&config->keyConfiguration.pause));
+    setIntConfig("Instance0.Keyboard.HK_FullscreenMapToggle", DecodeSet1ToQt(&config->keyConfiguration.firstPersonView));
 
+    setIntConfig("Instance0.Keyboard.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Keyboard.HK_Jump",       -1);
+    setIntConfig("Instance0.Keyboard.HK_GuardCombo", -1);
     setIntConfig("Instance0.Keyboard.Select", -1);
     setIntConfig("Instance0.Keyboard.L", -1);
     setIntConfig("Instance0.Keyboard.R", -1);
