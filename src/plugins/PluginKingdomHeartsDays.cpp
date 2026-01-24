@@ -362,6 +362,14 @@ void PluginKingdomHeartsDays::overrideConfigs(
     int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
     setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
 
+    float aspectRatio = ((float)config->resolutionWidth)/((float)config->resolutionHeight);
+    bool isAspectRatioId0 = std::abs(aspectRatio -  4.0/3.0) < 0.0001;
+    bool isAspectRatioId1 = std::abs(aspectRatio - 16.0/9.0) < 0.0001;
+    bool isAspectRatioId2 = std::abs(aspectRatio - 21.0/9.0) < 0.0001;
+    bool isAspectRatioId4 = std::abs(aspectRatio -  5.0/3.0) < 0.0001;
+    int aspectRatioId = isAspectRatioId0 ? 0 : (isAspectRatioId1 ? 1 : (isAspectRatioId2 ? 2 : (isAspectRatioId4 ? 4 : 3)));
+    setIntConfig("Instance0.Window0.ScreenAspectTop", aspectRatioId);
+
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
 
