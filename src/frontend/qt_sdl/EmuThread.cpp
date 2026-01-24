@@ -227,6 +227,7 @@ void EmuThread::run()
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     ref.SetString(path, value);
                 });
+                Config::Save();
 
                 emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);

@@ -153,7 +153,7 @@ static constexpr std::array<int, 256> Set1ToQtKey = [] {
     t[0x1E] = 'A'; t[0x1F] = 'S'; t[0x20] = 'D'; t[0x21] = 'F'; t[0x22] = 'G';
     t[0x23] = 'H'; t[0x24] = 'J'; t[0x25] = 'K'; t[0x26] = 'L';
     t[0x27] = ';'; t[0x28] = '\'';
-    t[0x1C] = 0x01000000 | 0x0005; // Qt::Key_Return
+    t[0x1C] = 0x01000000 | 0x0004; // Qt::Key_Return
     t[0x2A] = 0x01000000 | 0x0020; // Qt::Key_Shift
 
     t[0x2C] = 'Z'; t[0x2D] = 'X'; t[0x2E] = 'C'; t[0x2F] = 'V'; t[0x30] = 'B';
@@ -307,12 +307,12 @@ inline std::filesystem::path kingdomHeartsCollectionSteamConfigFolderPathFromDoc
     return saveDatasFolderPath / saveDataFolderNameList[0];
 }
 
-inline KHMareConfig* kingdomHeartsCollectionConfig()
+inline std::filesystem::path kingdomHeartsCollectionConfigFolder()
 {
     std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
     if (collectionFolderPath.empty())
     {
-        return nullptr;
+        return collectionFolderPath;
     }
 
 #ifdef _WIN32
@@ -324,10 +324,16 @@ inline KHMareConfig* kingdomHeartsCollectionConfig()
 #endif
     if (!std::filesystem::exists(documentsFolderPath))
     {
-        return nullptr;
+        std::filesystem::path empty;
+        return empty;
     }
 
-    std::filesystem::path configFolderPath = kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(documentsFolderPath);
+    return kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(documentsFolderPath);
+}
+
+inline KHMareConfig* kingdomHeartsCollectionConfig()
+{
+    std::filesystem::path configFolderPath = kingdomHeartsCollectionConfigFolder();
     if (configFolderPath.empty())
     {
         return nullptr;
