@@ -391,21 +391,30 @@ public:
 
             TexArrayEntry& storagePlace = it->second.Texture;
 
+            u32 currentIdx = storagePlace.CurrentIndex;
+            if (storagePlace.TextureIDs.find(currentIdx) != storagePlace.TextureIDs.end()) {
+                TexLoader.DeleteTexture(storagePlace.TextureIDs[currentIdx]);
+            }
+
             u32 layers = 1;
             auto array = TexLoader.GenerateTexture(width, height, layers);
-            storagePlace.TextureIDs[storagePlace.CurrentIndex] = array;
+            storagePlace.TextureIDs[currentIdx] = array;
             storagePlace.Countdown = texturePtr == nullptr ? 0 : (texturePtr->getLastScene().time + 1);
-            storagePlace.TimePerIndex[storagePlace.CurrentIndex] = storagePlace.Countdown;
-            storagePlace.LayerByIndex[storagePlace.CurrentIndex] = newStoragePlace.LayerByIndex[0];
+            storagePlace.TimePerIndex[currentIdx] = storagePlace.Countdown;
+            storagePlace.LayerByIndex[currentIdx] = newStoragePlace.LayerByIndex[0];
             storagePlace.WasReplacementEnabled = textureReplacementEnabled;
             
             entry.Texture = storagePlace;
 
-            TexLoader.UploadTexture(storagePlace.TextureIDs[storagePlace.CurrentIndex], width, height,
-                    storagePlace.LayerByIndex[storagePlace.CurrentIndex], imageData);
+            TexLoader.UploadTexture(storagePlace.TextureIDs[currentIdx], width, height,
+                    storagePlace.LayerByIndex[currentIdx], imageData);
 
-            textureHandle = storagePlace.TextureIDs[storagePlace.CurrentIndex];
-            layer = storagePlace.LayerByIndex[storagePlace.CurrentIndex];
+            if (imageData != (unsigned char*)DecodingBuffer) {
+                free(imageData);
+            }
+
+            textureHandle = storagePlace.TextureIDs[currentIdx];
+            layer = storagePlace.LayerByIndex[currentIdx];
             helper = &Cache.emplace(std::make_pair(key, entry)).first->second.LastVariant;
         }
         else {
@@ -424,7 +433,9 @@ public:
 
             TexLoader.UploadTexture(storagePlace.TextureIDs[storagePlace.CurrentIndex], width, height,
                     storagePlace.LayerByIndex[storagePlace.CurrentIndex], imageData);
-            //printf("using storage place %d %d | %d %d (%d)\n", width, height, storagePlace.TexArrayIdx, storagePlace.LayerIdx, array.ImageDescriptor);
+
+            if (imageData != (unsigned char*)DecodingBuffer)
+                free(imageData);
 
             textureHandle = storagePlace.TextureIDs[storagePlace.CurrentIndex];
             layer = storagePlace.LayerByIndex[storagePlace.CurrentIndex];

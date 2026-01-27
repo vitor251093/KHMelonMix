@@ -56,7 +56,7 @@ If everything went well, KH Melon Mix should now be in the `build` folder. For d
 
 ## macOS
 1. Install the [Homebrew Package Manager](https://brew.sh)
-2. Install dependencies: `brew install git pkg-config cmake sdl2 qt@6 libarchive enet zstd faad2 flac`
+2. Install dependencies: `brew install git pkg-config cmake sdl2 qt@6 libarchive enet zstd faad2 flac lua`
 3. Download the KH Melon Mix repository and prepare:
    ```zsh
    git clone https://github.com/vitor251093/KHMelonMix
