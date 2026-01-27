@@ -1930,27 +1930,30 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
 }
 
 bool PluginKingdomHeartsDays::overrideMouseTouchCoords_cameraControl(int width, int height, int& x, int& y, bool& touching) {
-    int centerX = width/2;
-    int centerY = height/2;
-    float sensitivity = 10.0;
+    float scaleX = ((float)width) / 256.0;
+    float scaleY = ((float)height) / 192.0;
 
-    if (abs(x - centerX) < 3) {
-        x = centerX;
+    float posX = ((float)x) / scaleX;
+    float posY = ((float)y) / scaleY;
+    float sensitivity = 20.0;
+
+    if (abs(posX - 128.0) < 2.0) {
+        posX = 128.0;
     }
-    if (abs(y - centerY) < 3) {
-        y = centerY;
+    if (abs(posY - 96.0) < 2.0) {
+        posY = 96.0;
     }
 
-    if (x == centerX && y == centerY) {
+    if (posX == 128.0 && posY == 96.0) {
         touching = false;
-        x = 128;
-        y = 96;
+        x = width/2;
+        y = height/2;
         return true;
     }
 
     touching = true;
-    x = 128 + (int)((x - centerX)*sensitivity);
-    y = 96 + (int)((y - centerY)*sensitivity);
+    x = width/2 + (int)((x - width/2)*sensitivity);
+    y = height/2 + (int)((y - height/2)*sensitivity);
     return true;
 }
 bool PluginKingdomHeartsDays::overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching) {
