@@ -384,17 +384,12 @@ void Plugin::_superApplyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bo
         if (_LastTouchScreenMovementWasByPlugin) {
             *isTouching = false;
             _LastTouchScreenMovementWasByPlugin = false;
-            return;
         }
         return;
     }
 
     bool resetTouchScreen = false;
     if (*isTouching == false) {
-        if (noMovement) {
-            return;
-        }
-
         TouchX = 256/2;
         TouchY = 192/2;
         *isTouching = true;
