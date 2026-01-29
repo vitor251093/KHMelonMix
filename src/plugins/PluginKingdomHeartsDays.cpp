@@ -1949,6 +1949,8 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords_cameraControl(int width, 
         if (touching == false) {
             x = width/2;
             y = height/2;
+            LastMouseCoordX = x;
+            LastMouseCoordY = y;
             return true;
         }
 
@@ -1957,8 +1959,10 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords_cameraControl(int width, 
     }
 
     touching = true;
-    x = width/2 + (int)((x - width/2)*sensitivity);
-    y = height/2 + (int)((y - height/2)*sensitivity);
+    x = LastMouseCoordX + (int)((x - width/2)*sensitivity);
+    y = LastMouseCoordY + (int)((y - height/2)*sensitivity);
+    LastMouseCoordX = x;
+    LastMouseCoordY = y;
     return true;
 }
 bool PluginKingdomHeartsDays::overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching) {
