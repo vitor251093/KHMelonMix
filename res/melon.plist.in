@@ -7,7 +7,7 @@
     <key>CFBundleIconFile</key>
     <string>melon.icns</string>
     <key>CFBundleIdentifier</key>
-    <string>com.vitormm.khDaysMM</string>
+    <string>com.vitormm.MelonMix</string>
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
     <key>CFBundlePackageType</key>

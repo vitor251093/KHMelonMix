@@ -36,7 +36,7 @@
 
 ## How to play Melon Mix from the 1.5+2.5 collection (Steam only)
 
-**Note:** Those instructions apply only to Linux and Windows.
+**Note:** Those instructions apply only to Linux and Windows, and are only compatible with Melon Mix 0.8.0 and later releases.
 
 1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for your system (appimage for Linux, windows for Windows);
 2. Extract the downloaded ZIP file to a new folder;

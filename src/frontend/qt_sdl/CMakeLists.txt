@@ -276,7 +276,7 @@ if (UNIX AND NOT APPLE)
             RENAME com.vitormm.melonMix.png)
     endforeach()
 
-    install(FILES ${CMAKE_SOURCE_DIR}/res/com.vitormm.khDaysMM.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
+    install(FILES ${CMAKE_SOURCE_DIR}/res/com.vitormm.MelonMix.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
     install(TARGETS melonDS BUNDLE DESTINATION ${CMAKE_BINARY_DIR} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
     if (NOT USE_QT6)
