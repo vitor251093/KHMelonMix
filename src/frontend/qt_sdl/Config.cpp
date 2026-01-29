@@ -819,6 +819,14 @@ bool Load()
 {
     auto cfgpath = Platform::GetLocalFilePath(kConfigFile);
 
+    const char* customSettingsPath = std::getenv("MELON_MIX_SETTINGS");
+    if (customSettingsPath != nullptr) {
+        auto customSettingsPathStr = std::string(customSettingsPath);
+        if (Platform::FileExists(customSettingsPathStr) && Platform::CheckFileWritable(customSettingsPathStr)) {
+            cfgpath = customSettingsPathStr;
+        }
+    }
+
     if (!Platform::CheckFileWritable(cfgpath))
         return false;
 
@@ -842,6 +850,15 @@ bool Load()
 void Save()
 {
     auto cfgpath = Platform::GetLocalFilePath(kConfigFile);
+
+    const char* customSettingsPath = std::getenv("MELON_MIX_SETTINGS");
+    if (customSettingsPath != nullptr) {
+        auto customSettingsPathStr = std::string(customSettingsPath);
+        if (Platform::FileExists(customSettingsPathStr) && Platform::CheckFileWritable(customSettingsPathStr)) {
+            cfgpath = customSettingsPathStr;
+        }
+    }
+
     if (!Platform::CheckFileWritable(cfgpath))
         return;
 
