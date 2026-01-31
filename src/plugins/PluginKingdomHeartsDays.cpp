@@ -655,7 +655,7 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
     {
         bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
 
-        u16 bottomScreenMasterBrightness = has3DOnTopScreen ? nds->GPU.GPU2D_B.MasterBrightness : nds->GPU.GPU2D_A.MasterBrightness;
+        u16 bottomScreenMasterBrightness = has3DOnTopScreen ? nds->GPU.MasterBrightnessB : nds->GPU.MasterBrightnessA;
         _hasVisible3DOnBottomScreen = true;
 
         // fade from/to white, on "Mission Complete"
@@ -2156,32 +2156,28 @@ bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
     return foundAny;
 }
 
-u32* PluginKingdomHeartsDays::topScreen2DTexture()
+void* PluginKingdomHeartsDays::topScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 == 1) {
-        FrontBuffer = FrontBuffer ? 0 : 1;
-    }
-    return nds->GPU.Framebuffer[FrontBuffer][0].get();
+    void* topBuffer; void* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return topBuffer;
 }
 
-u32* PluginKingdomHeartsDays::bottomScreen2DTexture()
+void* PluginKingdomHeartsDays::bottomScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 == 1) {
-        FrontBuffer = FrontBuffer ? 0 : 1;
-    }
-    return nds->GPU.Framebuffer[FrontBuffer][1].get();
+    void* topBuffer; void* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return bottomBuffer;
 }
 
 bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 {
-    return isBufferBlack(bottomScreen2DTexture());
+    return isBufferBlack((unsigned int*)bottomScreen2DTexture());
 }
 
 bool PluginKingdomHeartsDays::isDialogVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     for (int y = 161; y >= 141; y--) {
         if (has2DOnTopOf3DAt(buffer, 128, y)) {
             return true;
@@ -2200,14 +2196,14 @@ bool PluginKingdomHeartsDays::isMinimapVisible() {
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return (has2DOnTopOf3DAt(buffer, 0, 0) && has2DOnTopOf3DAt(buffer, 128, 0) && has2DOnTopOf3DAt(buffer, 254, 0)) ||
            (has2DOnTopOf3DAt(buffer, 0, 8) && has2DOnTopOf3DAt(buffer, 128, 8) && has2DOnTopOf3DAt(buffer, 254, 8));
 }
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 {
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     u32 pixel = getPixel(buffer, 5, 4, 0);
     if (((pixel >> 0) & 0x3F) >= 15 && ((pixel >> 8) & 0x3F) >= 15 && ((pixel >> 16) & 0x3F) >= 15)
     {
@@ -2230,7 +2226,7 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
 {
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     bool onlyBlack = true;
     for (int x = 10; x < 128; x++) {
         u32 pixel3 = getPixel(buffer, x, 188, 0);
@@ -2246,7 +2242,7 @@ bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
 {
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     bool onlyGrayscale = true;
     for (int x = 48; x < 88; x++) {
         u32 pixel3 = getPixel(buffer, x, 56, 0);
@@ -2265,7 +2261,7 @@ bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 0,   2) &&  has2DOnTopOf3DAt(buffer, 64,  2) &&
           !has2DOnTopOf3DAt(buffer, 128, 2) && !has2DOnTopOf3DAt(buffer, 192, 2) &&
           !has2DOnTopOf3DAt(buffer, 255, 2) &&
@@ -2285,7 +2281,7 @@ bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 {
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     u32 pixel1 = getPixel(buffer, 206, 134, 0);
     u32 pixel2 = getPixel(buffer, 206, 140, 0);
     return ((pixel1 >> 0) & 0x3F) < 5 && ((pixel1 >> 8) & 0x3F) < 5 && ((pixel1 >> 16) & 0x3F) < 5 &&
@@ -2294,7 +2290,7 @@ bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 
 int PluginKingdomHeartsDays::dialogBoxHeight()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     int x = 100;
     int topY = 0;
     int bottomY = 0;
@@ -2313,7 +2309,7 @@ int PluginKingdomHeartsDays::dialogBoxHeight()
     return bottomY - topY;
 }
 
-bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
+bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(void* buffer, int x, int y)
 {
     /*
      * If it matches that condition, there is no 2D on top of 3D
@@ -2571,7 +2567,7 @@ int PluginKingdomHeartsDays::detectGameScene()
             return gameScene_DayCounter;
         }
 
-        if (nds->GPU.GPU2D_B.MasterBrightness == 32784) // TODO: KH Replace with memory detection
+        if (nds->GPU.MasterBrightnessB == 32784) // TODO: KH Replace with memory detection
         {
             return gameScene_RoxasThoughts;
         }

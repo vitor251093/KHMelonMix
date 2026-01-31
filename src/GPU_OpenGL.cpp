@@ -47,9 +47,9 @@ GLRenderer::GLRenderer(melonDS::NDS& nds, Plugins::Plugin* plugin, bool compute)
     // TODO, eventually: figure out a nicer way to support different 3D renderers?
     IsCompute = compute;
     if (IsCompute)
-        Rend3D = std::make_unique<ComputeRenderer3D>(GPU.GPU3D, *this);
+        Rend3D = std::make_unique<ComputeRenderer3D>(GPU.GPU3D, plugin, *this);
     else
-        Rend3D = std::make_unique<GLRenderer3D>(GPU.GPU3D, *this);
+        Rend3D = std::make_unique<GLRenderer3D>(GPU.GPU3D, plugin, *this);
 
     ScaleFactor = 0;
 }

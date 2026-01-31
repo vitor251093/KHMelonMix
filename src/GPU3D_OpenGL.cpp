@@ -640,7 +640,7 @@ void GLRenderer3D::BuildPolygons(GLRenderer3D::RendererPolygon* polygons, int np
                 for (u32 j = 0; j < poly->NumVertices; j++)
                 {
                     Vertex* vtx = poly->Vertices[j];
-                    tmpVptr = SetupVertex(poly, j, vtx, vtxattr, tmpVptr);
+                    tmpVptr = SetupVertex(poly, j, vtx, vtxattr, curtexlayer, tmpVptr);
                 }
 
                 s32 scaledPositions[10][2];

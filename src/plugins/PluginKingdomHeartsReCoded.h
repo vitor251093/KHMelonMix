@@ -157,8 +157,8 @@ private:
     void muteStreamedMusic() override;
 
     bool isBufferBlack(unsigned int* buffer);
-    u32* topScreen2DTexture();
-    u32* bottomScreen2DTexture();
+    void* topScreen2DTexture();
+    void* bottomScreen2DTexture();
     bool isTopScreen2DTextureBlack();
     bool isBottomScreen2DTextureBlack();
 
@@ -173,7 +173,7 @@ private:
     bool isHealthVisible();
     ivec2 minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY);
     ivec2 minimapCenter();
-    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
+    bool has2DOnTopOf3DAt(void* buffer, int x, int y);
 
     void hudToggle() override;
     void toggleFullscreenMap();
