@@ -50,9 +50,11 @@ template <typename TexLoaderT, typename TexHandleT>
 class Texcache
 {
 public:
-    Texcache(melonDS::GPU& gpu, const TexLoaderT& texloader)
+    Texcache(melonDS::GPU& gpu, Plugins::Plugin* plugin, const TexLoaderT& texloader)
         : GPU(gpu), TexLoader(texloader) // probably better if this would be a move constructor???
-    {}
+    {
+        GamePlugin = plugin;
+    }
 
     Plugins::Plugin* GamePlugin;
 

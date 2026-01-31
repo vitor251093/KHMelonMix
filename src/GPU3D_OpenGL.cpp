@@ -104,7 +104,7 @@ void SetupDefaultTexParams(GLuint tex)
 }
 
 GLRenderer3D::GLRenderer3D(melonDS::GPU3D& gpu3D, Plugins::Plugin* plugin, GLRenderer& parent) noexcept :
-    Renderer3D(gpu3D), Parent(parent), Texcache(gpu3D.GPU, TexcacheOpenGLLoader(false))
+    Renderer3D(gpu3D), Parent(parent), Texcache(gpu3D.GPU, plugin, TexcacheOpenGLLoader(false))
 {
     GamePlugin = plugin;
 

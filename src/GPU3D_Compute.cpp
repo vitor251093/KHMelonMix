@@ -31,7 +31,7 @@ namespace melonDS
 {
 
 ComputeRenderer3D::ComputeRenderer3D(melonDS::GPU3D& gpu3D, Plugins::Plugin* plugin, GLRenderer& parent)
-    : Renderer3D(gpu3D), Parent(parent), Texcache(gpu3D.GPU, TexcacheOpenGLLoader(true))
+    : Renderer3D(gpu3D), Parent(parent), Texcache(gpu3D.GPU, plugin, TexcacheOpenGLLoader(true))
 {
     GamePlugin = plugin;
     ScaleFactor = 0;
