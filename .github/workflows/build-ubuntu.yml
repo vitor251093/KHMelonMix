@@ -36,7 +36,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install --allow-downgrades cmake ninja-build extra-cmake-modules libpcap0.8-dev libsdl2-dev libenet-dev \
-          qt6-{base,base-private,multimedia}-dev libqt6svg6-dev libarchive-dev libzstd-dev libfuse2 libfaad-dev libflac-dev liblua5.4-dev
+          qt6-{base,base-private,multimedia}-dev qt6-wayland libqt6svg6-dev libarchive-dev libzstd-dev libfuse2 libfaad-dev libflac-dev liblua5.4-dev
     - name: Install GStreamer dependencies
       run: |
         sudo apt-get install --allow-downgrades libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
@@ -73,6 +73,8 @@ jobs:
         chmod a+x linuxdeploy-*.sh
     - name: Build the AppImage
       env:
+        EXTRA_PLATFORM_PLUGINS: libqwayland-egl.so;libqwayland-generic.so
+        EXTRA_QT_PLUGINS: waylandcompositor
         QMAKE: /usr/lib/qt6/bin/qmake
       run: |
         ./linuxdeploy-${{ matrix.arch.name }}.AppImage --list-plugins
