@@ -24,7 +24,7 @@ public:
 
     int DefaultCameraSensitivity = 1;
 
-    std::string assetsFolder() {
+    std::string gameFolderName() {
         return std::to_string(GameCode);
     }
 

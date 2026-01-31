@@ -148,9 +148,10 @@ public:
     virtual void onLoadROM();
     virtual void onLoadState();
 
-    virtual std::string assetsFolder() {return std::to_string(GameCode);}
-    std::filesystem::path assetsFolderPath();
-    virtual std::string tomlUniqueIdentifier() {return assetsFolder();};
+    std::filesystem::path _AssetsFolderPath;
+    virtual std::string gameFolderName() {return std::to_string(GameCode);}
+    std::filesystem::path gameAssetsFolderPath();
+    virtual std::string tomlUniqueIdentifier() {return gameFolderName();};
 
     virtual const char* gpuOpenGL_FS();
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
@@ -258,6 +259,7 @@ public:
         return false;
     }
 
+    bool muteBGMs = false;
     static u16 BGM_INVALID_ID;
     bool isBackgroundMusicPlaying() const { return _CurrentBackgroundMusic != BGM_INVALID_ID; }
     u16 getCurrentBackgroundMusic() const { return _CurrentBackgroundMusic; }
@@ -328,6 +330,11 @@ public:
         std::function<int(std::string)> getIntConfig,
         std::function<std::string(std::string)> getStringConfig
     );
+    virtual void overrideConfigs(
+        std::function<void(std::string, bool)> setBoolConfig,
+        std::function<void(std::string, int)> setIntConfig,
+        std::function<void(std::string, std::string)> setStringConfig
+    ) {}
 
     virtual void hudToggle() {}
 

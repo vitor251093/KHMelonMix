@@ -26,7 +26,7 @@ public:
     void loadLocalization();
     void onLoadROM() override;
 
-    std::string assetsFolder() override;
+    std::string gameFolderName() override;
     std::string tomlUniqueIdentifier() override;
 
     void renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);

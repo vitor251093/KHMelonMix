@@ -60,6 +60,7 @@ const char* EmuInstance::hotkeyNames[HK_MAX] =
     "HK_PowerButton",
     "HK_VolumeUp",
     "HK_VolumeDown",
+    "HK_AudioMuteToggle",
     "HK_SlowMo",
     "HK_FastForwardToggle",
     "HK_SlowMoToggle",
@@ -250,101 +251,6 @@ void EmuInstance::setJoystick(int id)
     joystickID = id;
     openJoystick();
     SDL_UnlockMutex(joyMutex.get());
-}
-
-void EmuInstance::setAutoJoystickConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
-                                        int camRight, int camLeft, int camUp, int camDown,
-                                        int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
-                                        int pause, int fullscreen)
-{
-    bool shouldNotUpdate = (joyMapping[0] == -1) && (joyMapping[1]  == -1) && (joyMapping[2]  == -1) &&
-                           (joyMapping[3] == -1) && (joyMapping[4]  == -1) && (joyMapping[5]  == -1) &&
-                           (joyMapping[6] == -1) && (joyMapping[7]  == -1) && (joyMapping[8]  == -1) &&
-                           (joyMapping[9] == -1) && (joyMapping[10] == -1) && (joyMapping[11] == -1);
-    if (shouldNotUpdate) {
-        return;
-    }
-
-    joyMapping[0] = a;
-    joyMapping[1] = b;
-    joyMapping[2] = select;
-    joyMapping[3] = start;
-    joyMapping[4] = right;
-    joyMapping[5] = left;
-    joyMapping[6] = up;
-    joyMapping[7] = down;
-    joyMapping[8] = r;
-    joyMapping[9] = l;
-    joyMapping[10] = x;
-    joyMapping[11] = y;
-
-    touchJoyMapping[0] = camRight;
-    touchJoyMapping[1] = camLeft;
-    touchJoyMapping[2] = camUp;
-    touchJoyMapping[3] = camDown;
-
-    hkJoyMapping[HK_Lid] = -1;
-    hkJoyMapping[HK_Mic] = -1;
-    hkJoyMapping[HK_Pause] = pause;
-    hkJoyMapping[HK_Reset] = -1;
-    hkJoyMapping[HK_FastForward] = -1;
-    hkJoyMapping[HK_FastForwardToggle] = -1;
-    hkJoyMapping[HK_FullscreenToggle] = fullscreen;
-    hkJoyMapping[HK_SwapScreens] = -1;
-    hkJoyMapping[HK_SwapScreenEmphasis] = -1;
-    hkJoyMapping[HK_SolarSensorDecrease] = -1;
-    hkJoyMapping[HK_SolarSensorIncrease] = -1;
-    hkJoyMapping[HK_FrameStep] = -1;
-    hkJoyMapping[HK_PowerButton] = -1;
-    hkJoyMapping[HK_VolumeUp] = -1;
-    hkJoyMapping[HK_VolumeDown] = -1;
-
-    // hkJoyMapping[HK_HUDToggle] = -1;
-    // hkJoyMapping[HK_RLockOn] = -1;
-    // hkJoyMapping[HK_LSwitchTarget] = -1;
-    // hkJoyMapping[HK_RSwitchTarget] = -1;
-    // hkJoyMapping[HK_CommandMenuLeft] = cmdLeft;
-    // hkJoyMapping[HK_CommandMenuRight] = cmdRight;
-    // hkJoyMapping[HK_CommandMenuUp] = cmdUp;
-    // hkJoyMapping[HK_CommandMenuDown] = cmdDown;
-}
-
-void EmuInstance::autoMapJoystick()
-{
-    int JoystickVendorID = SDL_JoystickGetDeviceVendor(joystickID);
-    int JoystickDeviceID = SDL_JoystickGetDeviceProduct(joystickID);
-
-    printf("Joystick - Vendor ID %04x - Device ID %04x\n", JoystickVendorID, JoystickDeviceID);
-    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268) { // PS3 Controller
-
-    }
-    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4) { // PS4 Controller V1
-
-    }
-    if (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc) { // PS4 Controller V2
-        setAutoJoystickConfig(1, 0, 4, 6, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048778, 69271561, 3, 2,
-                                0x201FFFF, 0x211FFFF, 0x311FFFF, 0x301FFFF,
-                                0x102, 0x108, 0x101, 0x104,
-                                69271559, 86048776);
-    }
-    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028e) { // Xbox 360 Controller (Wired)
-        setAutoJoystickConfig(1, 0, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 86048773, 35717124, 3, 2,
-                                0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
-                                0x102, 0x108, 0x101, 0x104,
-                                9, 10);
-    }
-    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x028f) { // Xbox 360 Controller (Wireless)
-
-    }
-    if (JoystickVendorID == 0x045e && JoystickDeviceID == 0x02d1) { // Xbox One Controller
-
-    }
-    if (JoystickVendorID == 0x28de) { // Valve controllers
-        setAutoJoystickConfig(0, 1, 6, 7, 0x001FFFF, 0x011FFFF, 0x111FFFF, 0x101FFFF, 5, 4, 3, 2,
-                                0x301FFFF, 0x311FFFF, 0x411FFFF, 0x401FFFF,
-                                0x102, 0x108, 0x101, 0x104,
-                                0x221FFFF, 0x521FFFF);
-    }
 }
 
 void EmuInstance::openJoystick()

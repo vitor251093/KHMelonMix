@@ -1,4 +1,5 @@
 #include "PluginKingdomHeartsDays.h"
+#include "KingdomHeartsHDCollectionConfig.h"
 #include <cmath>
 
 namespace Plugins
@@ -209,6 +210,7 @@ enum
     HK_ReplacementTexturesToggle
 };
 
+
 PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 {
     GameCode = gameCode;
@@ -343,6 +345,155 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         { 0x5a, 0, "Dearly Beloved", 2900195 },
         { 0x78, 39, "Dearly Beloved (Reprise)", 2459033 }
     }};
+}
+
+void PluginKingdomHeartsDays::overrideConfigs(
+    std::function<void(std::string, bool)> setBoolConfig,
+    std::function<void(std::string, int)> setIntConfig,
+    std::function<void(std::string, std::string)> setStringConfig
+)
+{
+    KHMareConfig* config = kingdomHeartsCollectionConfig();
+    if (config == nullptr)
+    {
+        return;
+    }
+
+    // TODO: KH Right now, this doesn't work for the first launch, which makes your first save unusable
+    //std::filesystem::path saveFilePath = kingdomHeartsCollectionConfigFolder();
+    //setStringConfig("Instance0.SaveFilePath", saveFilePath.string());
+
+    int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
+    setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
+
+    float aspectRatio = ((float)config->resolutionWidth)/((float)config->resolutionHeight);
+    bool isAspectRatioId0 = std::abs(aspectRatio -  4.0/3.0) < 0.0001;
+    bool isAspectRatioId1 = std::abs(aspectRatio - 16.0/9.0) < 0.0001;
+    bool isAspectRatioId2 = std::abs(aspectRatio - 21.0/9.0) < 0.0001;
+    bool isAspectRatioId4 = std::abs(aspectRatio -  5.0/3.0) < 0.0001;
+    int aspectRatioId = isAspectRatioId0 ? 0 : (isAspectRatioId1 ? 1 : (isAspectRatioId2 ? 2 : (isAspectRatioId4 ? 4 : 3)));
+    setIntConfig("Instance0.Window0.ScreenAspectTop", aspectRatioId);
+
+    setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
+    setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
+
+    // TODO: KH Disabling the keyboard automatic mapping for now because we need mouse control for the camera for that to work 100%;
+    //       Joystick automatic mapping is also disabled, but that's because I don't know how to detect the product and vendor IDs from here
+    /*
+    setIntConfig("Instance0.Keyboard.A", DecodeSet1ToQt(&config->keyConfiguration.confirm));
+    setIntConfig("Instance0.Keyboard.B", DecodeSet1ToQt(&config->keyConfiguration.cancelOrJump));
+    setIntConfig("Instance0.Keyboard.Y", DecodeSet1ToQt(&config->keyConfiguration.blockEvadeDodge));
+    setIntConfig("Instance0.Keyboard.X", DecodeSet1ToQt(&config->keyConfiguration.useCommand));
+    // TODO: KH holdToOpenShortcuts
+    setIntConfig("Instance0.Keyboard.HK_RLockOn",       DecodeSet1ToQt(&config->keyConfiguration.toggleLockOn));
+    setIntConfig("Instance0.Keyboard.HK_RSwitchTarget", DecodeSet1ToQt(&config->keyConfiguration.changeLockOnTargetOrToggleCursorControls));
+    setIntConfig("Instance0.Keyboard.HK_LSwitchTarget", DecodeSet1ToQt(&config->keyConfiguration.toggleGummiShipScoreOrChangeLockOnTarget));
+    setIntConfig("Instance0.Keyboard.Up",    DecodeSet1ToQt(&config->keyConfiguration.up));
+    setIntConfig("Instance0.Keyboard.Down",  DecodeSet1ToQt(&config->keyConfiguration.down));
+    setIntConfig("Instance0.Keyboard.Left",  DecodeSet1ToQt(&config->keyConfiguration.left));
+    setIntConfig("Instance0.Keyboard.Right", DecodeSet1ToQt(&config->keyConfiguration.right));
+    // TODO: KH holdToWalk
+    setIntConfig("Instance0.Keyboard.HK_HUDToggle", DecodeSet1ToQt(&config->keyConfiguration.gummiEditorFlipGummi));
+    setIntConfig("Instance0.Keyboard.CameraUp",    DecodeSet1ToQt(config->keyConfiguration.cameraUp));
+    setIntConfig("Instance0.Keyboard.CameraDown",  DecodeSet1ToQt(config->keyConfiguration.cameraDown));
+    setIntConfig("Instance0.Keyboard.CameraLeft",  DecodeSet1ToQt(config->keyConfiguration.cameraLeft));
+    setIntConfig("Instance0.Keyboard.CameraRight", DecodeSet1ToQt(config->keyConfiguration.cameraRight));
+    // TODO: KH resetCamera
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuUp",    DecodeSet1ToQt(&config->keyConfiguration.cursorUp));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuDown",  DecodeSet1ToQt(&config->keyConfiguration.cursorDown));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuLeft",  DecodeSet1ToQt(&config->keyConfiguration.cursorLeft));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuRight", DecodeSet1ToQt(&config->keyConfiguration.cursorRight));
+    setIntConfig("Instance0.Keyboard.Start", DecodeSet1ToQt(&config->keyConfiguration.pause));
+    setIntConfig("Instance0.Keyboard.HK_FullscreenMapToggle", DecodeSet1ToQt(&config->keyConfiguration.firstPersonView));
+
+    setIntConfig("Instance0.Keyboard.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Keyboard.HK_Jump",       -1);
+    setIntConfig("Instance0.Keyboard.HK_GuardCombo", -1);
+    setIntConfig("Instance0.Keyboard.Select", -1);
+    setIntConfig("Instance0.Keyboard.L", -1);
+    setIntConfig("Instance0.Keyboard.R", -1);
+    setIntConfig("Instance0.Keyboard.X", -1);
+    */
+
+    /*
+    // "Steam Input" controller
+    setIntConfig("Instance0.JoystickID", 0);
+    setIntConfig("Instance0.Joystick.A", 1);
+    setIntConfig("Instance0.Joystick.B", 0);
+    setIntConfig("Instance0.Joystick.Y", 2);
+    setIntConfig("Instance0.Joystick.X", 3);
+    // TODO: KH holdToOpenShortcuts
+    setIntConfig("Instance0.Joystick.HK_RLockOn",       5);
+    setIntConfig("Instance0.Joystick.HK_RSwitchTarget", 0x521FFFF);
+    setIntConfig("Instance0.Joystick.HK_LSwitchTarget", 0x221FFFF);
+    setIntConfig("Instance0.Joystick.Up",    0x111FFFF);
+    setIntConfig("Instance0.Joystick.Down",  0x101FFFF);
+    setIntConfig("Instance0.Joystick.Left",  0x011FFFF);
+    setIntConfig("Instance0.Joystick.Right", 0x001FFFF);
+    // TODO: KH holdToWalk
+    setIntConfig("Instance0.Joystick.HK_HUDToggle", 10);
+    setIntConfig("Instance0.Joystick.CameraUp",    0x411FFFF);
+    setIntConfig("Instance0.Joystick.CameraDown",  0x401FFFF);
+    setIntConfig("Instance0.Joystick.CameraLeft",  0x311FFFF);
+    setIntConfig("Instance0.Joystick.CameraRight", 0x301FFFF);
+    // TODO: KH resetCamera
+    setIntConfig("Instance0.Joystick.HK_CommandMenuUp",    0x101);
+    setIntConfig("Instance0.Joystick.HK_CommandMenuDown",  0x104);
+    setIntConfig("Instance0.Joystick.HK_CommandMenuLeft",  0x108);
+    setIntConfig("Instance0.Joystick.HK_CommandMenuRight", 0x102);
+    setIntConfig("Instance0.Joystick.Start", 7);
+    setIntConfig("Instance0.Joystick.HK_FullscreenMapToggle", 6);
+
+    setIntConfig("Instance0.Joystick.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Joystick.HK_Jump",       -1);
+    setIntConfig("Instance0.Joystick.HK_GuardCombo", -1);
+    setIntConfig("Instance0.Joystick.Select", -1);
+    setIntConfig("Instance0.Joystick.L", -1);
+    setIntConfig("Instance0.Joystick.R", -1);
+    setIntConfig("Instance0.Joystick.X", -1);
+    */
+
+    // PS3 controller (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268)
+
+    // PS4 controller V1 (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4)
+
+    /*
+    // PS4 controller V2 (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc)
+    setIntConfig("Instance0.JoystickID", 0);
+    setIntConfig("Instance0.Joystick.A", 1);
+    setIntConfig("Instance0.Joystick.B", 0);
+    setIntConfig("Instance0.Joystick.Y", 2);
+    setIntConfig("Instance0.Joystick.X", 3);
+    // TODO: KH holdToOpenShortcuts
+    setIntConfig("Instance0.Joystick.HK_RLockOn",       10);
+    setIntConfig("Instance0.Joystick.HK_RSwitchTarget", 0x521FFFF);
+    setIntConfig("Instance0.Joystick.HK_LSwitchTarget", 0x421FFFF);
+    setIntConfig("Instance0.Joystick.Up",    0x111FFFF);
+    setIntConfig("Instance0.Joystick.Down",  0x101FFFF);
+    setIntConfig("Instance0.Joystick.Left",  0x011FFFF);
+    setIntConfig("Instance0.Joystick.Right", 0x001FFFF);
+    // TODO: KH holdToWalk
+    setIntConfig("Instance0.Joystick.HK_HUDToggle", 8);
+    setIntConfig("Instance0.Joystick.CameraUp",    0x311FFFF);
+    setIntConfig("Instance0.Joystick.CameraDown",  0x301FFFF);
+    setIntConfig("Instance0.Joystick.CameraLeft",  0x211FFFF);
+    setIntConfig("Instance0.Joystick.CameraRight", 0x201FFFF);
+    // TODO: KH resetCamera
+    setIntConfig("Instance0.Joystick.HK_CommandMenuUp",    11);
+    setIntConfig("Instance0.Joystick.HK_CommandMenuDown",  12);
+    setIntConfig("Instance0.Joystick.HK_CommandMenuLeft",  13);
+    setIntConfig("Instance0.Joystick.HK_CommandMenuRight", 14);
+    setIntConfig("Instance0.Joystick.Start", 6);
+    setIntConfig("Instance0.Joystick.HK_FullscreenMapToggle", 15);
+
+    setIntConfig("Instance0.Joystick.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Joystick.HK_Jump",       -1);
+    setIntConfig("Instance0.Joystick.HK_GuardCombo", -1);
+    setIntConfig("Instance0.Joystick.Select", -1);
+    setIntConfig("Instance0.Joystick.L", -1);
+    setIntConfig("Instance0.Joystick.R", -1);
+    setIntConfig("Instance0.Joystick.X", -1);
+    */
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
@@ -486,7 +637,7 @@ void PluginKingdomHeartsDays::onLoadState() {
     GameScene = gameScene_InGameWithMap;
 }
 
-std::string PluginKingdomHeartsDays::assetsFolder() {
+std::string PluginKingdomHeartsDays::gameFolderName() {
     return "days";
 }
 
@@ -1330,6 +1481,7 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_3DShapes() {
                     .build(aspectRatio));
             break;
 
+        case gameScene_Tutorial:
         case gameScene_InGameWithMap:
         case gameScene_InGameWithDouble3D:
             if ((gameSceneState & (1 << gameSceneState_showHud)) > 0)
@@ -1779,27 +1931,30 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
 }
 
 bool PluginKingdomHeartsDays::overrideMouseTouchCoords_cameraControl(int width, int height, int& x, int& y, bool& touching) {
-    int centerX = width/2;
-    int centerY = height/2;
-    float sensitivity = 10.0;
+    float scaleX = ((float)width) / 256.0;
+    float scaleY = ((float)height) / 192.0;
 
-    if (abs(x - centerX) < 3) {
-        x = centerX;
+    float posX = ((float)x) / scaleX;
+    float posY = ((float)y) / scaleY;
+    float sensitivity = 20.0;
+
+    if (abs(posX - 128.0) < 2.0) {
+        posX = 128.0;
     }
-    if (abs(y - centerY) < 3) {
-        y = centerY;
+    if (abs(posY - 96.0) < 2.0) {
+        posY = 96.0;
     }
 
-    if (x == centerX && y == centerY) {
+    if (posX == 128.0 && posY == 96.0) {
         touching = false;
-        x = 128;
-        y = 96;
+        x = width/2;
+        y = height/2;
         return true;
     }
 
     touching = true;
-    x = 128 + (int)((x - centerX)*sensitivity);
-    y = 96 + (int)((y - centerY)*sensitivity);
+    x = width/2 + (int)((x - width/2)*sensitivity);
+    y = height/2 + (int)((y - height/2)*sensitivity);
     return true;
 }
 bool PluginKingdomHeartsDays::overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching) {
@@ -2531,7 +2686,7 @@ std::filesystem::path PluginKingdomHeartsDays::patchReplacementCutsceneIfNeeded(
 
 std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
@@ -2715,7 +2870,7 @@ void PluginKingdomHeartsDays::refreshMouseStatus() {
 std::string PluginKingdomHeartsDays::localizationFilePath(std::string language) {
     std::string filename = language + ".ini";
     std::string assetsRegionSubfolderName = assetsRegionSubfolder();
-    std::filesystem::path _assetsFolderPath = assetsFolderPath();
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();

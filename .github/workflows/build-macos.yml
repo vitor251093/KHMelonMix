@@ -22,7 +22,7 @@ jobs:
         arch: [x86_64, arm64]
 
     name: ${{ matrix.arch }}
-    runs-on: macos-14
+    runs-on: macos-26
 
     env:
       VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
@@ -55,8 +55,8 @@ jobs:
         shell: bash
         run: |
           cd build/release-mac-${{ matrix.arch }}
-          mv melonDS.app khDaysMM.app
-          zip -r -y ../../macOS-${{ matrix.arch }}.zip khDaysMM.app
+          mv melonDS.app MelonMix.app
+          zip -r -y ../../macOS-${{ matrix.arch }}.zip MelonMix.app
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -72,7 +72,7 @@ jobs:
   universal-binary:
     name: Universal binary
     needs: [build-macos]
-    runs-on: macos-14
+    runs-on: macos-26
     continue-on-error: true
     steps:
       - name: Download x86_64
@@ -90,12 +90,12 @@ jobs:
         run: |
           unzip x86_64/*.zip -d x86_64
           unzip arm64/*.zip -d arm64
-          lipo {x86_64,arm64}/khDaysMM.app/Contents/MacOS/melonDS -create -output melonDS
-          cp -a arm64/khDaysMM.app khDaysMM.app
-          rm khDaysMM.app/Contents/MacOS/melonDS
-          cp melonDS khDaysMM.app/Contents/MacOS/melonDS
-          codesign -s - --deep khDaysMM.app
-          zip -r -y macOS-universal.zip khDaysMM.app
+          lipo {x86_64,arm64}/MelonMix.app/Contents/MacOS/melonDS -create -output melonDS
+          cp -a arm64/MelonMix.app MelonMix.app
+          rm MelonMix.app/Contents/MacOS/melonDS
+          cp melonDS MelonMix.app/Contents/MacOS/melonDS
+          codesign -s - --deep MelonMix.app
+          zip -r -y macOS-universal.zip MelonMix.app
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

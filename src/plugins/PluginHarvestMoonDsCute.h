@@ -26,7 +26,7 @@ public:
     void onLoadROM() override;
     void onLoadState() override;
 
-    std::string assetsFolder() override;
+    std::string gameFolderName() override;
     std::string assetsRegionSubfolder();
 
     std::vector<ShapeData2D> renderer_2DShapes() override;

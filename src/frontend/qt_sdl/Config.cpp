@@ -339,6 +339,7 @@ LegacyEntry LegacyFile[] =
     {"MouseHide",        1, "Mouse.Hide", false},
     {"MouseHideSeconds", 0, "Mouse.HideSeconds", false},
     {"PauseLostFocus",   1, "PauseLostFocus", false},
+    {"MuteFastForward",   1, "MuteFastForward", false},
     {"UITheme",          2, "UITheme", false},
 
     {"RTCOffset",       3, "RTC.Offset", true},
@@ -818,6 +819,14 @@ bool Load()
 {
     auto cfgpath = Platform::GetLocalFilePath(kConfigFile);
 
+    const char* customSettingsPath = std::getenv("MELON_MIX_SETTINGS");
+    if (customSettingsPath != nullptr) {
+        auto customSettingsPathStr = std::string(customSettingsPath);
+        if (Platform::FileExists(customSettingsPathStr) && Platform::CheckFileWritable(customSettingsPathStr)) {
+            cfgpath = customSettingsPathStr;
+        }
+    }
+
     if (!Platform::CheckFileWritable(cfgpath))
         return false;
 
@@ -841,6 +850,15 @@ bool Load()
 void Save()
 {
     auto cfgpath = Platform::GetLocalFilePath(kConfigFile);
+
+    const char* customSettingsPath = std::getenv("MELON_MIX_SETTINGS");
+    if (customSettingsPath != nullptr) {
+        auto customSettingsPathStr = std::string(customSettingsPath);
+        if (Platform::FileExists(customSettingsPathStr) && Platform::CheckFileWritable(customSettingsPathStr)) {
+            cfgpath = customSettingsPathStr;
+        }
+    }
+
     if (!Platform::CheckFileWritable(cfgpath))
         return;
 

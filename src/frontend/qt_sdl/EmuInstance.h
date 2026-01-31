@@ -50,6 +50,7 @@ enum
     HK_PowerButton,
     HK_VolumeUp,
     HK_VolumeDown,
+    HK_AudioMuteToggle,
     HK_SlowMo,
     HK_FastForwardToggle,
     HK_SlowMoToggle,
@@ -161,8 +162,6 @@ public:
     SDL_Joystick* getJoystick() { return joystick; }
     std::shared_ptr<SDL_mutex> getJoyMutex() { return joyMutex; }
 
-    void autoMapJoystick();
-
     std::vector<int> heldKeys;
     std::vector<int> keyStrokes;
 
@@ -233,7 +232,9 @@ private:
     void audioDeInit();
     void audioEnable();
     void audioDisable();
-    void audioMute();
+    void updateAudioMuteByWindowFocus();
+    void toggleAudioMute();
+    void updateFastForwardMute(bool fastForward);
     void audioSync();
     void audioUpdateSettings();
 
@@ -252,11 +253,6 @@ private:
     void onKeyPress(QKeyEvent* event);
     void onKeyRelease(QKeyEvent* event);
     void keyReleaseAll();
-
-    void setAutoJoystickConfig(int a, int b, int select, int start, int right, int left, int up, int down, int r, int l, int x, int y,
-                               int camRight, int camLeft, int camUp, int camDown,
-                               int cmdLeft, int cmdRight, int cmdUp, int cmdDown,
-                               int pause, int fullscreen);
 
     void openJoystick();
     void closeJoystick();
@@ -331,7 +327,9 @@ private:
     int audioFreq;
     int audioBufSize;
     float audioSampleFrac;
-    bool audioMuted;
+    bool audioMutedToggle;
+    bool audioMutedByFastForward;
+    bool audioMutedByWindowFocus;
     SDL_cond* audioSyncCond;
     SDL_mutex* audioSyncLock;
 

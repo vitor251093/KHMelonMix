@@ -14,9 +14,9 @@ You need to dump your own DS cartridge. There are multiple ways to do so. Those 
 2. Do you intend to download the HD cutscenes? If no, then you are probably experiencing a bug with the rendering of a DS cutscene.
 3. Did you download [the assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing)? If no, download it, and then test again.
 4. Open the folder where the Melon Mix application is. From there, are the MP4 files of the cutscenes inside the assets/days/cutscenes/cinematics folder? If no, organize the folders structure so that matches, and then test again.
-5. Look for 802.mp4 inside assets/days/cutscenes/cinematics. If you can't see it, that's because the assets folder wasn't completely downloaded. Open the Drive link from step 1, check which cutscene files are missing, download them manually, place then inside assets/days/cutscenes/cinematics, and then try again. 
-6. Try opening 802.mp4 with VLC. Is it playing? If yes, test again by launching the Melon Mix application directly, instead of using the bash file, the batch file, or Steam.
-7. 802.mp4 not playing may be a codec issue or a corrupted download issue. Try downloading that specific file again from the Drive, and see if that solves the issue.
+5. Look for hd802.mp4 inside assets/days/cutscenes/cinematics. If you can't see it, that's because the assets folder wasn't completely downloaded. Open the Drive link from step 1, check which cutscene files are missing, download them manually, place then inside assets/days/cutscenes/cinematics, and then try again. 
+6. Try opening hd802.mp4 with VLC. Is it playing? If yes, test again by launching the Melon Mix application directly, instead of using the bash file, the batch file, or Steam.
+7. hd802.mp4 not playing may be a codec issue or a corrupted download issue. Try downloading that specific file again from the Drive, and see if that solves the issue.
 8. Open `MelonMix_KHDays.bat` with notepad, add a new line after `@echo off` with `set QT_MEDIA_BACKEND=windows`, save the file, and then use it to launch the Melon Mix.
 
 ## I can't see the 358/2 Days cutscenes if I launch the Melon Mix using the sh/bat files or Steam 

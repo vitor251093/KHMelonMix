@@ -212,10 +212,26 @@ void EmuThread::run()
                 emuInstance->plugin->setNds(emuInstance->getNDS());
                 emuInstance->plugin->onLoadROM();
                 emuInstance->plugin->shouldInvalidateConfigs = true;
+                emuInstance->plugin->muteBGMs = emuInstance->instanceID > 0;
             }
             if (emuInstance->plugin->shouldInvalidateConfigs)
             {
                 emuInstance->plugin->shouldInvalidateConfigs = false;
+
+                emuInstance->plugin->overrideConfigs([cfg = globalCfg](const std::string& path, bool value){
+                    Config::Table& ref = const_cast <Config::Table&>(cfg);
+                    ref.SetBool(path, value);
+                },
+                [cfg = globalCfg](const std::string& path, int value){
+                    Config::Table& ref = const_cast <Config::Table&>(cfg);
+                    ref.SetInt(path, value);
+                },
+                [cfg = globalCfg](const std::string& path, std::string value){
+                    Config::Table& ref = const_cast <Config::Table&>(cfg);
+                    ref.SetString(path, value);
+                });
+                Config::Save();
+
                 emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetBool(path);
@@ -437,6 +453,8 @@ void EmuThread::run()
             if (emuInstance->hotkeyPressed(HK_FastForwardToggle)) emuInstance->fastForwardToggled = !emuInstance->fastForwardToggled;
             if (emuInstance->hotkeyPressed(HK_SlowMoToggle)) emuInstance->slowmoToggled = !emuInstance->slowmoToggled;
 
+            if (emuInstance->hotkeyPressed(HK_AudioMuteToggle)) emuInstance->toggleAudioMute();
+
             bool enablefastforward = (emuInstance->hotkeyDown(HK_FastForward) | emuInstance->fastForwardToggled) || pluginShouldFastForward();
             bool enableslowmo = emuInstance->hotkeyDown(HK_SlowMo) | emuInstance->slowmoToggled;
 
@@ -455,6 +473,7 @@ void EmuThread::run()
 
             fastforward = enablefastforward;
             slowmo = enableslowmo;
+            emuInstance->updateFastForwardMute(fastforward);
 
             if (slowmo) emuInstance->curFPS = emuInstance->slowmoFPS;
             else if (fastforward) emuInstance->curFPS = emuInstance->fastForwardFPS;
@@ -519,7 +538,7 @@ void EmuThread::run()
                     winUpdateFreq = 1;
                     
                 double actualfps = (59.8261 * 263.0) / nlines;
-                snprintf(melontitle, sizeof(melontitle), "[%d/%.0f] khDaysMM " MELONDS_VERSION, fps, actualfps);
+                snprintf(melontitle, sizeof(melontitle), "[%d/%.0f] Melon Mix " MELONDS_VERSION, fps, actualfps);
                 changeWindowTitle(melontitle);
             }
         }
@@ -532,7 +551,7 @@ void EmuThread::run()
 
             emit windowUpdate();
 
-            snprintf(melontitle, sizeof(melontitle), "khDaysMM " MELONDS_VERSION);
+            snprintf(melontitle, sizeof(melontitle), "Melon Mix " MELONDS_VERSION);
             changeWindowTitle(melontitle);
 
             SDL_Delay(75);
@@ -794,36 +813,38 @@ void EmuThread::refreshPluginState()
     {
         auto* plugin = emuInstance->plugin;
 
-        if (plugin->shouldStopBackgroundMusic()) {
-            u16 bgm = plugin->getBackgroundMusicToStop();
-            bool bShouldStoreResumePos = plugin->getStoreBackgroundMusicPosition();
-            u32 fadeOutDuration = plugin->getBackgroundMusicFadeOutToApply();
-            emit windowStopBgmMusic(bgm, bShouldStoreResumePos, fadeOutDuration);
-        }
+        if (!plugin->muteBGMs) {
+            if (plugin->shouldStopBackgroundMusic()) {
+                u16 bgm = plugin->getBackgroundMusicToStop();
+                bool bShouldStoreResumePos = plugin->getStoreBackgroundMusicPosition();
+                u32 fadeOutDuration = plugin->getBackgroundMusicFadeOutToApply();
+                emit windowStopBgmMusic(bgm, bShouldStoreResumePos, fadeOutDuration);
+            }
 
-        if (plugin->shouldStartBackgroundMusic()) {
-            u16 bgm = plugin->getCurrentBackgroundMusic();
-            const std::string& path = plugin->getCurrentBackgroundMusicFilePath();
+            if (plugin->shouldStartBackgroundMusic()) {
+                u16 bgm = plugin->getCurrentBackgroundMusic();
+                const std::string& path = plugin->getCurrentBackgroundMusicFilePath();
 
-            bool bShouldStoreResumePos = plugin->getResumeFromPositionBackgroundMusic();
-            u8 volume = plugin->getCurrentBgmMusicVolume();
-            u32 delayAtStart = plugin->getBgmDelayAtStart();
-    
-            QString filePath = QString::fromUtf8(path.c_str());
-            emit windowStartBgmMusic(bgm, volume, bShouldStoreResumePos, delayAtStart, filePath);
-        }
+                bool bShouldStoreResumePos = plugin->getResumeFromPositionBackgroundMusic();
+                u8 volume = plugin->getCurrentBgmMusicVolume();
+                u32 delayAtStart = plugin->getBgmDelayAtStart();
 
-        if (plugin->shouldPauseBackgroundMusic()) {
-            emit windowPauseBgmMusic();
-        }
+                QString filePath = QString::fromUtf8(path.c_str());
+                emit windowStartBgmMusic(bgm, volume, bShouldStoreResumePos, delayAtStart, filePath);
+            }
 
-        if (plugin->shouldResumeBackgroundMusic()) {
-            emit windowUnpauseBgmMusic();
-        }
+            if (plugin->shouldPauseBackgroundMusic()) {
+                emit windowPauseBgmMusic();
+            }
 
-        if (plugin->shouldUpdateBackgroundMusicVolume()) {
-            u8 volume = plugin->getCurrentBgmMusicVolume();
-            emit windowUpdateBgmMusicVolume(volume);
+            if (plugin->shouldResumeBackgroundMusic()) {
+                emit windowUnpauseBgmMusic();
+            }
+
+            if (plugin->shouldUpdateBackgroundMusicVolume()) {
+                u8 volume = plugin->getCurrentBgmMusicVolume();
+                emit windowUpdateBgmMusicVolume(volume);
+            }
         }
     }
 

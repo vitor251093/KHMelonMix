@@ -9,6 +9,9 @@
 namespace Texreplace
 {
 
+#define CHANNELS_RGB  3
+#define CHANNELS_RGBA 4
+
 unsigned char* LoadTextureFromFile(const char* path, int* width, int* height, int* channels)
 {
     unsigned char* imageData = stbi_load(path, width, height, channels, 0);
@@ -16,24 +19,27 @@ unsigned char* LoadTextureFromFile(const char* path, int* width, int* height, in
         return nullptr;
     }
 
-    if (*channels == 3) {
-        unsigned char* newImageData = (unsigned char*)malloc((*height) * (*width) * (*channels) * sizeof(unsigned char[4]));
+    // Convert RGB to RGBA (DS GPU expects 4-channel textures)
+    if (*channels == CHANNELS_RGB) {
+        unsigned char* newImageData = (unsigned char*)malloc(
+            (*height) * (*width) * CHANNELS_RGBA * sizeof(unsigned char));
         for (int y = 0; y < (*height); ++y) {
             for (int x = 0; x < (*width); ++x) {
-                unsigned char* old_pixel = imageData + (y * (*width) + x) * 3;
-                unsigned char* new_pixel = newImageData + (y * (*width) + x) * 4;
-                new_pixel[0] = old_pixel[0];
-                new_pixel[1] = old_pixel[1];
-                new_pixel[2] = old_pixel[2];
-                new_pixel[3] = 255;
+                unsigned char* oldPixel = imageData + (y * (*width) + x) * CHANNELS_RGB;
+                unsigned char* newPixel = newImageData + (y * (*width) + x) * CHANNELS_RGBA;
+                newPixel[0] = oldPixel[0];
+                newPixel[1] = oldPixel[1];
+                newPixel[2] = oldPixel[2];
+                newPixel[3] = 255;
             }
         }
+        stbi_image_free(imageData);
         imageData = newImageData;
-        *channels = 4;
+        *channels = CHANNELS_RGBA;
     }
     for (int y = 0; y < (*height); ++y) {
         for (int x = 0; x < (*width); ++x) {
-            unsigned char* pixel = imageData + (y * (*width) + x) * 4;
+            unsigned char* pixel = imageData + (y * (*width) + x) * CHANNELS_RGBA;
             unsigned char r = pixel[0];
             unsigned char g = pixel[1];
             unsigned char b = pixel[2];
@@ -77,5 +83,6 @@ void ExportTextureAsFile(unsigned char* data, const char* path, u32 width, u32 h
     }
 
     stbi_write_png(path, width, height, channels, newImageData, width * channels);
+    free(newImageData);
 }
 }

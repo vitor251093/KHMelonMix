@@ -2333,13 +2333,6 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0">
-    <widget class="QPushButton" name="btnJoystickAuto">
-      <property name="text">
-        <string>Automatic mapping (if available)</string>
-      </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <tabstops>
