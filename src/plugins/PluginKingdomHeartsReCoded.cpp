@@ -211,6 +211,7 @@ enum
     gameSceneState_bottomScreenCutscene,
     gameSceneState_topScreenCutscene,
     gameSceneState_deweyDialogVisible,
+    gameSceneState_comboLimitVisible,
     gameSceneState_speedComboFinisherVisible,
     gameSceneState_starRaveFinisherVisible,
     gameSceneState_spinnerSawFinisherVisible
@@ -925,9 +926,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     // minimap
                     ivec2 _minimapCenter = minimapCenter();
                     float fullscreenDegree = ((float)fullscreenMapTransitionStep) / fullscreenMapTransitionDuration;
-                    if ((GameSceneState & (1 << gameSceneState_speedComboFinisherVisible)) > 0 ||
-                        (GameSceneState & (1 << gameSceneState_starRaveFinisherVisible))   > 0 ||
-                        (GameSceneState & (1 << gameSceneState_spinnerSawFinisherVisible)) > 0)
+                    if ((GameSceneState & (1 << gameSceneState_comboLimitVisible)) > 0)
                     {
                         fullscreenDegree = 0;
                     }
@@ -1117,6 +1116,18 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .withSize(88, 84)
                             .placeAtCorner(corner_BottomLeft)
                             .withMargin(10.0, 0.0, 0.0, 0.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((GameSceneState & (1 << gameSceneState_comboLimitVisible)) > 0)
+                {
+                    // combo limit counter
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(0, 130)
+                            .withSize(78, 61)
+                            .placeAtCorner(corner_BottomLeft)
+                            .cropSquareCorners(0.0, 12.0, 0.0, 0.0)
                             .hudScale(hudScale)
                             .build(aspectRatio));
                 }
@@ -1506,6 +1517,10 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
                 state |= (1 << gameSceneState_deweyDialogVisible);
             }
 
+            if (isComboLimitVisible())
+            {
+                state |= (1 << gameSceneState_comboLimitVisible);
+            }
             if (isSpeedComboFinisherVisible())
             {
                 state |= (1 << gameSceneState_speedComboFinisherVisible);
@@ -2482,7 +2497,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         return gameScene_ResultScreen;
     }
 
-    if (isInGameDialog)
+    if (isInGameDialog && !isComboLimitVisible())
     {
         return gameScene_InGameDialog;
     }
