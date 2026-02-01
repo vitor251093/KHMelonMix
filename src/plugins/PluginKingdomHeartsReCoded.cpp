@@ -210,7 +210,10 @@ enum
     gameSceneState_showChallengeMeter,
     gameSceneState_bottomScreenCutscene,
     gameSceneState_topScreenCutscene,
-    gameSceneState_deweyDialogVisible
+    gameSceneState_deweyDialogVisible,
+    gameSceneState_speedComboFinisherVisible,
+    gameSceneState_starRaveFinisherVisible,
+    gameSceneState_spinnerSawFinisherVisible
 };
 
 enum
@@ -922,6 +925,12 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     // minimap
                     ivec2 _minimapCenter = minimapCenter();
                     float fullscreenDegree = ((float)fullscreenMapTransitionStep) / fullscreenMapTransitionDuration;
+                    if ((GameSceneState & (1 << gameSceneState_speedComboFinisherVisible)) > 0 ||
+                        (GameSceneState & (1 << gameSceneState_starRaveFinisherVisible))   > 0 ||
+                        (GameSceneState & (1 << gameSceneState_spinnerSawFinisherVisible)) > 0)
+                    {
+                        fullscreenDegree = 0;
+                    }
 
                     ShapeData2D minimapShape = ShapeBuilder2D::square()
                             .fromBottomScreen()
@@ -1108,6 +1117,72 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .withSize(88, 84)
                             .placeAtCorner(corner_BottomLeft)
                             .withMargin(10.0, 0.0, 0.0, 0.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((GameSceneState & (1 << gameSceneState_speedComboFinisherVisible)) > 0)
+                {
+                    // vertical area, including bottom arrow that points down
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(112, 12)
+                            .withSize(36, 168)
+                            .placeAtCorner(corner_Center)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // most of the finisher
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(54, 12)
+                            .withSize(150, 150)
+                            .placeAtCorner(corner_Center)
+                            .withMargin(0.0, 0.0, 0.0, 18.0)
+                            .cropSquareCorners(0.0, 0.0, 46.0, 46.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((GameSceneState & (1 << gameSceneState_starRaveFinisherVisible)) > 0)
+                {
+                    // top area
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(76, 0)
+                            .withSize(104, 56)
+                            .placeAtCorner(corner_Center)
+                            .withMargin(0.0, 0.0, 0.0, 28.0)
+                            .cropSquareCorners(0.0, 0.0, 48.0, 0.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // bottom area
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(76, 56)
+                            .withSize(104, 82)
+                            .placeAtCorner(corner_Center)
+                            .withMargin(0.0, 28.0, 0.0, 0.0)
+                            .cropSquareCorners(48.0, 0.0, 0.0, 0.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+                }
+
+                if ((GameSceneState & (1 << gameSceneState_spinnerSawFinisherVisible)) > 0)
+                {
+                    // vertical area, including B button and the target, if around it
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(85, 12)
+                            .withSize(90, 168)
+                            .placeAtCorner(corner_Center)
+                            .cropSquareCorners(0.0, 0.0, 0.0, 20.0)
+                            .hudScale(hudScale)
+                            .build(aspectRatio));
+
+                    // most of the finisher
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(54, 12)
+                            .withSize(150, 150)
+                            .placeAtCorner(corner_Center)
+                            .withMargin(0.0, 0.0, 0.0, 18.0)
+                            .cropSquareCorners(0.0, 0.0, 46.0, 46.0)
                             .hudScale(hudScale)
                             .build(aspectRatio));
                 }
@@ -1429,6 +1504,19 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
             if (isDeweyDialogVisible())
             {
                 state |= (1 << gameSceneState_deweyDialogVisible);
+            }
+
+            if (isSpeedComboFinisherVisible())
+            {
+                state |= (1 << gameSceneState_speedComboFinisherVisible);
+            }
+            if (isStarRaveFinisherVisible())
+            {
+                state |= (1 << gameSceneState_starRaveFinisherVisible);
+            }
+            if (isSpinnerSawFinisherVisible())
+            {
+                state |= (1 << gameSceneState_spinnerSawFinisherVisible);
             }
 
             if (isMissionInformationVisibleOnTopScreen())
@@ -2024,6 +2112,30 @@ bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
 {
     u32* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 35, 185);
+}
+
+bool PluginKingdomHeartsReCoded::isComboLimitVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return has2DOnTopOf3DAt(buffer, 12, 146) && !has2DOnTopOf3DAt(buffer, 35, 185);
+}
+
+bool PluginKingdomHeartsReCoded::isSpeedComboFinisherVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 65, 60) && has2DOnTopOf3DAt(buffer, 65, 75) &&
+                                    has2DOnTopOf3DAt(buffer, 65, 90) && has2DOnTopOf3DAt(buffer, 65, 120);
+}
+
+bool PluginKingdomHeartsReCoded::isStarRaveFinisherVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 128, 60) && !has2DOnTopOf3DAt(buffer, 128, 150);
+}
+
+bool PluginKingdomHeartsReCoded::isSpinnerSawFinisherVisible()
+{
+    return isComboLimitVisible() && !isSpeedComboFinisherVisible() && !isStarRaveFinisherVisible();
 }
 
 bool PluginKingdomHeartsReCoded::isHealthVisible()
