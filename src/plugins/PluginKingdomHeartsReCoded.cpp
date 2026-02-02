@@ -1124,7 +1124,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(0, 130)
                             .withSize(78, 61)
                             .placeAtCorner(corner_BottomLeft)
-                            .cropSquareCorners(0.0, 12.0, 0.0, 0.0)
                             .hudScale(hudScale)
                             .build(aspectRatio));
 
