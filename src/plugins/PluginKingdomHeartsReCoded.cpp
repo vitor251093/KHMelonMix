@@ -211,10 +211,7 @@ enum
     gameSceneState_bottomScreenCutscene,
     gameSceneState_topScreenCutscene,
     gameSceneState_deweyDialogVisible,
-    gameSceneState_comboLimitVisible,
-    gameSceneState_speedComboFinisherVisible,
-    gameSceneState_starRaveFinisherVisible,
-    gameSceneState_spinnerSawFinisherVisible
+    gameSceneState_comboLimitVisible
 };
 
 enum
@@ -456,7 +453,7 @@ void PluginKingdomHeartsReCoded::loadLocalization() {
 
 void PluginKingdomHeartsReCoded::onLoadROM() {
     Plugin::onLoadROM();
-    
+
     loadLocalization();
 
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
@@ -1092,7 +1089,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .withMargin(0.0, 0.0, playerHealthRightMargin, playerHealthBottomMargin)
                             .hudScale(hudScale)
                             .build(aspectRatio));
-                        
+
                     // TODO: KH UI implement cropped corner
                     // if (finalPos.x*1.7 + finalPos.y > 64.0) {
 
@@ -1130,72 +1127,74 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .cropSquareCorners(0.0, 12.0, 0.0, 0.0)
                             .hudScale(hudScale)
                             .build(aspectRatio));
-                }
 
-                if ((GameSceneState & (1 << gameSceneState_speedComboFinisherVisible)) > 0)
-                {
-                    // vertical area, including bottom arrow that points down
+                    // top center counter
                     shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(112, 12)
-                            .withSize(36, 168)
-                            .placeAtCorner(corner_Center)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // most of the finisher
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(54, 12)
-                            .withSize(150, 150)
-                            .placeAtCorner(corner_Center)
-                            .withMargin(0.0, 0.0, 0.0, 18.0)
-                            .cropSquareCorners(0.0, 0.0, 46.0, 46.0)
+                            .fromPosition(100, 0)
+                            .withSize(54, 17)
+                            .placeAtCorner(corner_Top)
+                            .withMargin(0.0, 5.0, 0.0, 0.0)
                             .hudScale(hudScale)
                             .build(aspectRatio));
                 }
 
-                if ((GameSceneState & (1 << gameSceneState_starRaveFinisherVisible)) > 0)
+                if (GameScene != gameScene_InGameOlympusBattle)
                 {
-                    // top area
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(76, 0)
-                            .withSize(104, 56)
-                            .placeAtCorner(corner_Center)
-                            .withMargin(0.0, 0.0, 0.0, 28.0)
-                            .cropSquareCorners(0.0, 0.0, 48.0, 0.0)
-                            .hudScale(hudScale)
+                    if ((GameSceneState & (1 << gameSceneState_showNextAreaName)) > 0)
+                    {
+                        // next area name
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(88, 160)
+                                .withSize(80, 23)
+                                .placeAtCorner(corner_Bottom)
+                                .withMargin(0.0, 0.0, 0.0, 9.0)
+                                .cropSquareCorners(0.0, 0.0, 0.0, 9.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
+
+                    if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
+                    {
+                        // cleaning the rest of the upper area of the screen
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(118, 152)
+                                .withSize(20, 10)
+                                .placeAtCorner(corner_Top)
+                                .sourceScale(aspectRatio*13, 1.0*4)
+                                .hudScale(hudScale)
+                                .force()
+                                .preserveDsScale()
+                                .build(aspectRatio));
+                    }
+
+                    if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) == 0) {
+                        // overclock notification
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(0, 81)
+                                .withSize(95, 27)
+                                .placeAtCorner(corner_BottomLeft)
+                                .withMargin(0.0, 0.0, 0.0, 84.0)
+                                .hudScale(hudScale)
                             .build(aspectRatio));
 
-                    // bottom area
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(76, 56)
-                            .withSize(104, 82)
-                            .placeAtCorner(corner_Center)
-                            .withMargin(0.0, 28.0, 0.0, 0.0)
-                            .cropSquareCorners(48.0, 0.0, 0.0, 0.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-                }
+                        // pickup / item notification
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(0, 39)
+                                .withSize(102, 32)
+                                .placeAtCorner(corner_BottomLeft)
+                                .withMargin(0.0, 0.0, 0.0, 124.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
 
-                if ((GameSceneState & (1 << gameSceneState_spinnerSawFinisherVisible)) > 0)
-                {
-                    // vertical area, including B button and the target, if around it
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(85, 12)
-                            .withSize(90, 168)
-                            .placeAtCorner(corner_Center)
-                            .cropSquareCorners(0.0, 0.0, 0.0, 20.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
-
-                    // most of the finisher
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(54, 12)
-                            .withSize(150, 150)
-                            .placeAtCorner(corner_Center)
-                            .withMargin(0.0, 0.0, 0.0, 18.0)
-                            .cropSquareCorners(0.0, 0.0, 46.0, 46.0)
-                            .hudScale(hudScale)
-                            .build(aspectRatio));
+                        // level up notification
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(161, 39)
+                                .withSize(95, 32)
+                                .placeAtCorner(corner_TopRight)
+                                .withMargin(0.0, 133.0, 0.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
                 }
 
                 if (GameScene != gameScene_InGameOlympusBattle)
@@ -1284,7 +1283,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     .build(aspectRatio));
 
             break;
-    
+
         case gameScene_Tutorial:
             // tutorial
             shapes.push_back(ShapeBuilder2D::square()
@@ -1324,7 +1323,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                     .build(aspectRatio));
             break;
     }
-    
+
     return shapes;
 }
 
@@ -1333,10 +1332,11 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
     auto shapes = std::vector<ShapeData3D>();
     float hudScale = (((float)UIScale) - 4) / 2 + 4;
 
-    int gameSceneState = renderer_gameSceneState();
     if (GameScene == gameScene_InGameWithMap       || GameScene == gameScene_InGameDialog ||
         GameScene == gameScene_InGameOlympusBattle || GameScene == gameScene_PauseMenu)
     {
+        bool isFinisherWithComboLimitHappening = ((GameSceneState & (1 << gameSceneState_comboLimitVisible)) > 0);
+
         if (HideAllHUD)
         {
             // no HUD
@@ -1349,89 +1349,105 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
         }
 
         if (GameScene != gameScene_InGameOlympusBattle) {
-            // SP score, and Inside Riku Data Percent
-            shapes.push_back(ShapeBuilder3D::square()
-                    .polygonMode()
-                    .negatePolygonAttributes(2031808) // pickup license notification
-                    .fromPosition(0, 0)
-                    .withSize(130, 60)
-                    .placeAtCorner(corner_TopLeft)
-                    .withMargin(0.0, 30.0, 0.0, 0.0)
-                    .sourceScale(1.5)
-                    .zRange(-1.0, -1.0)
-                    .hudScale(hudScale)
-                    .negatedTextureParam(942331720) // aim
-                    .negatedTextureParam(949999400) // aim (lock on)
-                    .build(aspectRatio));
+
+            if (isFinisherWithComboLimitHappening)
+            {
+                // TODO: KH The different finishers need to be adjusted properly
+                shapes.push_back(ShapeBuilder3D::square()
+                            .polygonMode()
+                            .placeAtCorner(corner_Center)
+                            .zRange(-1.0, -0.1)
+                            .hudScale(SCREEN_SCALE)
+                            .build(aspectRatio));
+            }
+
+            if (!isFinisherWithComboLimitHappening) {
+                // SP score, and Inside Riku Data Percent
+                shapes.push_back(ShapeBuilder3D::square()
+                        .polygonMode()
+                        .negatePolygonAttributes(2031808) // pickup license notification
+                        .fromPosition(0, 0)
+                        .withSize(130, 60)
+                        .placeAtCorner(corner_TopLeft)
+                        .withMargin(0.0, 30.0, 0.0, 0.0)
+                        .sourceScale(1.5)
+                        .zRange(-1.0, -1.0)
+                        .hudScale(hudScale)
+                        .negatedTextureParam(942331720) // aim
+                        .negatedTextureParam(949999400) // aim (lock on)
+                        .build(aspectRatio));
+            }
         }
 
-        // aim
-        shapes.push_back(ShapeBuilder3D::square()
-                .polygonMode()
-                .polygonVertexesCount(4)
-                .polygonAttributes(1058996416)
-                .includeOutOfBoundsPolygons()
-                .zRange(-1.0, -0.5)
-                .adjustAspectRatioOnly()
-                .build(aspectRatio));
-
-        // aim
-        shapes.push_back(ShapeBuilder3D::square()
-                .polygonMode()
-                .polygonVertexesCount(4)
-                .polygonAttributes(1042219200)
-                .includeOutOfBoundsPolygons()
-                .zRange(-1.0, -0.5)
-                .adjustAspectRatioOnly()
-                .build(aspectRatio));
-
-        // green aim small square
-        shapes.push_back(ShapeBuilder3D::square()
-                .polygonMode()
-                .polygonVertexesCount(4)
-                .polygonAttributes(1025441984)
-                .fromPosition(0, 60)
-                .withSize(256, 136)
-                .zRange(-1.0, -0.5)
-                .adjustAspectRatioOnly()
-                .build(aspectRatio));
-
-        // green aim big square
-        shapes.push_back(ShapeBuilder3D::square()
-                .polygonMode()
-                .polygonVertexesCount(4)
-                .polygonAttributes(2033856)
-                .fromPosition(0, 60)
-                .withSize(256, 136)
-                .zRange(-1.0, -0.5)
-                .adjustAspectRatioOnly()
-                .build(aspectRatio));
-
-        // pickup license notification
-        shapes.push_back(ShapeBuilder3D::square()
-                .polygonMode()
-                .fromPosition(0, 27)
-                .withSize(80, 44)
-                .placeAtCorner(corner_BottomLeft)
-                .withMargin(0.0, 0.0, 0.0, 125.0)
-                .zRange(-1.0, -1.0)
-                .negateColor(0xFFFFFF)
-                .hudScale(hudScale)
-                .build(aspectRatio));
-
-        if (GameScene != gameScene_PauseMenu) {
-            // command menu
+        if (!isFinisherWithComboLimitHappening) {
+            // aim
             shapes.push_back(ShapeBuilder3D::square()
                     .polygonMode()
-                    .polygonAttributes(2031808)
-                    .fromPosition(0, 69)
-                    .withSize(80, 124)
+                    .polygonVertexesCount(4)
+                    .polygonAttributes(1058996416)
+                    .includeOutOfBoundsPolygons()
+                    .zRange(-1.0, -0.5)
+                    .adjustAspectRatioOnly()
+                    .build(aspectRatio));
+
+            // aim
+            shapes.push_back(ShapeBuilder3D::square()
+                    .polygonMode()
+                    .polygonVertexesCount(4)
+                    .polygonAttributes(1042219200)
+                    .includeOutOfBoundsPolygons()
+                    .zRange(-1.0, -0.5)
+                    .adjustAspectRatioOnly()
+                    .build(aspectRatio));
+
+            // green aim small square
+            shapes.push_back(ShapeBuilder3D::square()
+                    .polygonMode()
+                    .polygonVertexesCount(4)
+                    .polygonAttributes(1025441984)
+                    .fromPosition(0, 60)
+                    .withSize(256, 136)
+                    .zRange(-1.0, -0.5)
+                    .adjustAspectRatioOnly()
+                    .build(aspectRatio));
+
+            // green aim big square
+            shapes.push_back(ShapeBuilder3D::square()
+                    .polygonMode()
+                    .polygonVertexesCount(4)
+                    .polygonAttributes(2033856)
+                    .fromPosition(0, 60)
+                    .withSize(256, 136)
+                    .zRange(-1.0, -0.5)
+                    .adjustAspectRatioOnly()
+                    .build(aspectRatio));
+
+            // pickup license notification
+            shapes.push_back(ShapeBuilder3D::square()
+                    .polygonMode()
+                    .fromPosition(0, 27)
+                    .withSize(80, 44)
                     .placeAtCorner(corner_BottomLeft)
-                    .withMargin(10.0, 0.0, 0.0, 0.5)
+                    .withMargin(0.0, 0.0, 0.0, 125.0)
                     .zRange(-1.0, -1.0)
                     .negateColor(0xFFFFFF)
                     .hudScale(hudScale)
                     .build(aspectRatio));
+
+            if (GameScene != gameScene_PauseMenu) {
+                // command menu
+                shapes.push_back(ShapeBuilder3D::square()
+                        .polygonMode()
+                        .polygonAttributes(2031808)
+                        .fromPosition(0, 69)
+                        .withSize(80, 124)
+                        .placeAtCorner(corner_BottomLeft)
+                        .withMargin(10.0, 0.0, 0.0, 0.5)
+                        .zRange(-1.0, -1.0)
+                        .negateColor(0xFFFFFF)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+            }
         }
     }
 
@@ -1521,18 +1537,6 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
             {
                 state |= (1 << gameSceneState_comboLimitVisible);
             }
-            if (isSpeedComboFinisherVisible())
-            {
-                state |= (1 << gameSceneState_speedComboFinisherVisible);
-            }
-            if (isStarRaveFinisherVisible())
-            {
-                state |= (1 << gameSceneState_starRaveFinisherVisible);
-            }
-            if (isSpinnerSawFinisherVisible())
-            {
-                state |= (1 << gameSceneState_spinnerSawFinisherVisible);
-            }
 
             if (isMissionInformationVisibleOnTopScreen())
             {
@@ -1600,14 +1604,14 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
 
         case gameScene_PauseMenu:
             break;
-    
+
         case gameScene_Tutorial:
             break;
 
         case gameScene_LoadingScreen:
             break;
     }
-    
+
     return state;
 }
 
@@ -1621,12 +1625,12 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
         case gameScene_InGameOlympusBattle:
         case gameScene_ResultScreen:
             return screenLayout_Top;
-        
+
         case gameScene_IntroLoadMenu:
         case gameScene_Tutorial:
         case gameScene_LoadingScreen:
             return screenLayout_Bottom;
-        
+
         case gameScene_Intro:
         case gameScene_TitleScreen:
         case gameScene_WorldSelection:
@@ -1635,7 +1639,7 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
         case gameScene_Other2D:
         case gameScene_Other:
             return screenLayout_BothHorizontal;
-        
+
         case gameScene_Cutscene:
             return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
     }
@@ -1647,7 +1651,7 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
             case 13: // quest list
             case 17: // challenge view
                 return screenLayout_Top;
-            
+
             default:
                 return screenLayout_BothHorizontal;
         }
@@ -1694,7 +1698,7 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
             case 13: // quest list
             case 17: // challenge view
                 return brightnessMode_TopScreen;
-            
+
             default:
                 return brightnessMode_Horizontal;
         }
@@ -2096,7 +2100,8 @@ bool PluginKingdomHeartsReCoded::isDeweyDialogVisible()
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
 {
     u32* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10);
+    return (has2DOnTopOf3DAt(buffer, 64,  0) || has2DOnTopOf3DAt(buffer, 64,  10)) &&
+           (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10));
 }
 
 bool PluginKingdomHeartsReCoded::isDialogVisible()
@@ -2133,24 +2138,6 @@ bool PluginKingdomHeartsReCoded::isComboLimitVisible()
 {
     u32* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 12, 146) && !has2DOnTopOf3DAt(buffer, 35, 185);
-}
-
-bool PluginKingdomHeartsReCoded::isSpeedComboFinisherVisible()
-{
-    u32* buffer = topScreen2DTexture();
-    return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 65, 60) && has2DOnTopOf3DAt(buffer, 65, 75) &&
-                                    has2DOnTopOf3DAt(buffer, 65, 90) && has2DOnTopOf3DAt(buffer, 65, 120);
-}
-
-bool PluginKingdomHeartsReCoded::isStarRaveFinisherVisible()
-{
-    u32* buffer = topScreen2DTexture();
-    return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 128, 60) && !has2DOnTopOf3DAt(buffer, 128, 150);
-}
-
-bool PluginKingdomHeartsReCoded::isSpinnerSawFinisherVisible()
-{
-    return isComboLimitVisible() && !isSpeedComboFinisherVisible() && !isStarRaveFinisherVisible();
 }
 
 bool PluginKingdomHeartsReCoded::isHealthVisible()
@@ -2633,7 +2620,7 @@ bool PluginKingdomHeartsReCoded::canReturnToGameAfterReplacementCutscene()
         // 3. the cutscene is unskippable, so even if it didn't end, we need to return
         return !isCutsceneScene || _NextCutscene != nullptr || _IsUnskippableCutscene;
     }
-    
+
     return true;
 }
 

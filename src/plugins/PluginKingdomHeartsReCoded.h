@@ -43,7 +43,7 @@ public:
 
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
-    
+
     bool overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) override;
@@ -171,9 +171,6 @@ private:
     bool isChallengeMeterVisible();
     bool isCommandMenuVisible();
     bool isComboLimitVisible();
-    bool isSpeedComboFinisherVisible();
-    bool isStarRaveFinisherVisible();
-    bool isSpinnerSawFinisherVisible();
     bool isHealthVisible();
     ivec2 minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY);
     ivec2 minimapCenter();

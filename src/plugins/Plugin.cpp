@@ -239,7 +239,7 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
                         {
                             if (loggerModeEnabled) {
                                 atLeastOneLog = true;
-                                printf("Position: %d - %d -- Size: %d - %d\n", x0, y0, x1 - x0, y1 - y0);
+                                printf("Position: %d - %d -- Size: %d - %d - New vertexes: %d\n", x0, y0, x1 - x0, y1 - y0, polygon->NumVertices);
                             }
 
                             if ((shape.effects & 0x8) != 0)
@@ -254,6 +254,10 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
                                 for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
                                     gpuOpenGL_applyChangesToPolygonVertex(resolutionScale, scaledPositions, polygon, shape, vIndex);
                                 }
+                            }
+
+                            if (atLeastOneLog) {
+                                printf("\n");
                             }
 
                             return true;
