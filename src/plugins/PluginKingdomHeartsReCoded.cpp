@@ -211,7 +211,10 @@ enum
     gameSceneState_bottomScreenCutscene,
     gameSceneState_topScreenCutscene,
     gameSceneState_deweyDialogVisible,
-    gameSceneState_comboLimitVisible
+    gameSceneState_comboLimitVisible,
+    gameSceneState_speedComboFinisherVisible,
+    gameSceneState_starRaveFinisherVisible,
+    gameSceneState_spinnerSawFinisherVisible
 };
 
 enum
@@ -1124,17 +1127,39 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                             .fromPosition(0, 130)
                             .withSize(78, 61)
                             .placeAtCorner(corner_BottomLeft)
+                            .cropSquareCorners(0.0, 11.0, 0.0, 0.0)
                             .hudScale(hudScale)
                             .build(aspectRatio));
 
                     // top center counter
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(100, 0)
-                            .withSize(54, 17)
+                            .withSize(54, 16)
                             .placeAtCorner(corner_Top)
                             .withMargin(0.0, 5.0, 0.0, 0.0)
                             .hudScale(hudScale)
                             .build(aspectRatio));
+
+                    if ((GameSceneState & (1 << gameSceneState_speedComboFinisherVisible)) > 0)
+                    {
+                        // vertical area, including bottom arrow that points down
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(112, 15)
+                                .withSize(36, 165)
+                                .placeAtCorner(corner_Center)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+
+                        // most of the finisher
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(54, 15)
+                                .withSize(150, 147)
+                                .placeAtCorner(corner_Center)
+                                .withMargin(0.0, 0.0, 0.0, 9.0)
+                                .cropSquareCorners(0.0, 0.0, 46.0, 46.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
                 }
 
                 if (GameScene != gameScene_InGameOlympusBattle)
@@ -1257,10 +1282,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
                 // background
                 shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(118, 152)
-                        .withSize(20, 10)
+                        .fromPosition(110, 160)
+                        .withSize(4, 2)
                         .placeAtCorner(corner_Center)
-                        .sourceScale(1000.0)
+                        .sourceScale(5000.0)
                         .build(aspectRatio));
             }
 
@@ -1351,13 +1376,16 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
 
             if (isFinisherWithComboLimitHappening)
             {
-                // TODO: KH The different finishers need to be adjusted properly
-                shapes.push_back(ShapeBuilder3D::square()
-                            .polygonMode()
-                            .placeAtCorner(corner_Center)
-                            .zRange(-1.0, -0.1)
-                            .hudScale(SCREEN_SCALE)
-                            .build(aspectRatio));
+                if (((GameSceneState & (1 << gameSceneState_starRaveFinisherVisible))   > 0) ||
+                    ((GameSceneState & (1 << gameSceneState_spinnerSawFinisherVisible)) > 0)) {
+                    // TODO: KH The different finishers need to be adjusted properly
+                    shapes.push_back(ShapeBuilder3D::square()
+                                .polygonMode()
+                                .placeAtCorner(corner_Center)
+                                .zRange(-1.0, -0.1)
+                                .hudScale(SCREEN_SCALE)
+                                .build(aspectRatio));
+                }
             }
 
             if (!isFinisherWithComboLimitHappening) {
@@ -1536,6 +1564,18 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
             {
                 state |= (1 << gameSceneState_comboLimitVisible);
             }
+            if (isSpeedComboFinisherVisible())
+            {
+                state |= (1 << gameSceneState_speedComboFinisherVisible);
+            }
+            if (isStarRaveFinisherVisible())
+            {
+                state |= (1 << gameSceneState_starRaveFinisherVisible);
+            }
+            if (isSpinnerSawFinisherVisible())
+            {
+                state |= (1 << gameSceneState_spinnerSawFinisherVisible);
+            }
 
             if (isMissionInformationVisibleOnTopScreen())
             {
@@ -1548,7 +1588,8 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
                 break;
             }
 
-            if (isDialogVisible()) {
+            if (isDialogVisible() && !isComboLimitVisible())
+            {
                 state |= (1 << gameSceneState_dialogVisible);
                 break;
             }
@@ -2137,6 +2178,25 @@ bool PluginKingdomHeartsReCoded::isComboLimitVisible()
 {
     u32* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 12, 146) && !has2DOnTopOf3DAt(buffer, 35, 185);
+}
+
+bool PluginKingdomHeartsReCoded::isSpeedComboFinisherVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 65, 60) && has2DOnTopOf3DAt(buffer, 65, 75) &&
+                                    has2DOnTopOf3DAt(buffer, 65, 90) && has2DOnTopOf3DAt(buffer, 65, 120);
+}
+
+bool PluginKingdomHeartsReCoded::isStarRaveFinisherVisible()
+{
+    u32* buffer = topScreen2DTexture();
+    // TODO: KH This doesn't work because Star Rave is 3D
+    return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 128, 60) && !has2DOnTopOf3DAt(buffer, 128, 150);
+}
+
+bool PluginKingdomHeartsReCoded::isSpinnerSawFinisherVisible()
+{
+    return isComboLimitVisible() && !isSpeedComboFinisherVisible() && !isStarRaveFinisherVisible();
 }
 
 bool PluginKingdomHeartsReCoded::isHealthVisible()

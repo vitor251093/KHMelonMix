@@ -171,6 +171,9 @@ private:
     bool isChallengeMeterVisible();
     bool isCommandMenuVisible();
     bool isComboLimitVisible();
+    bool isSpeedComboFinisherVisible();
+    bool isStarRaveFinisherVisible();
+    bool isSpinnerSawFinisherVisible();
     bool isHealthVisible();
     ivec2 minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY);
     ivec2 minimapCenter();
