@@ -1,4 +1,5 @@
 #include "PluginKingdomHeartsReCoded.h"
+#include "KingdomHeartsHDCollectionConfig.h"
 #include <cmath>
 
 namespace Plugins
@@ -345,6 +346,36 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     StreamedBgmEntries = std::array<StreamedBgmEntry, 1> {{
         { 0X64, 41, "Dearly Beloved", 3212253 }
     }};
+}
+
+std::string PluginKingdomHeartsReCoded::saveFilePath()
+{
+    const char* saveFilePathStrPtr = std::getenv("MELON_MIX_SAVE");
+    if (saveFilePathStrPtr != nullptr)
+    {
+        return std::string(saveFilePathStrPtr);
+    }
+
+    std::string saveFilePathStr = "";
+    std::filesystem::path saveFilePath = kingdomHeartsCollectionConfigFolder();
+    if (!saveFilePath.empty())
+    {
+        saveFilePathStr = saveFilePath.string();
+    }
+    if (saveFilePathStr.empty())
+    {
+        return "";
+    }
+
+    std::string saveFileName = "KHRECODED_WW.sav";
+
+    int i = saveFilePathStr.length() - 1;
+    if (saveFilePathStr[i] != '/' && saveFilePathStr[i] != '\\')
+    {
+        saveFilePathStr += "/";
+    }
+
+    return saveFilePathStr + saveFileName;
 }
 
 void PluginKingdomHeartsReCoded::loadLocalization() {

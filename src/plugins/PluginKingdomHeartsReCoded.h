@@ -24,6 +24,7 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
     void loadLocalization();
+    std::string saveFilePath();
     void onLoadROM() override;
 
     std::string gameFolderName() override;
