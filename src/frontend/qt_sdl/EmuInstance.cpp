@@ -1914,12 +1914,11 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
     u32 savelen = 0;
     std::unique_ptr<u8[]> savedata = nullptr;
 
-    std::string saveFilePath = plugin->saveFilePath();
-    if (saveFilePath.empty())
+    std::string savname = plugin->saveFilePath();
+    if (savname.empty())
     {
-        saveFilePath = localCfg.GetString("SaveFilePath");
+        savname = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
     }
-    std::string savname = getAssetPath(false, saveFilePath, ".sav");
     std::string origsav = savname;
     savname += instanceFileSuffix();
 

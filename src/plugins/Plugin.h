@@ -147,7 +147,7 @@ public:
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
     virtual std::string saveFilePath()
     {
-        const char* saveFilePathStr = std::getenv("MELON_MIX_SAVES");
+        const char* saveFilePathStr = std::getenv("MELON_MIX_SAVE");
         if (saveFilePathStr != nullptr)
         {
             return std::string(saveFilePathStr);

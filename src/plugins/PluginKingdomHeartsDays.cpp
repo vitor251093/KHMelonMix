@@ -496,17 +496,32 @@ void PluginKingdomHeartsDays::overrideConfigs(
 
 std::string PluginKingdomHeartsDays::saveFilePath()
 {
-    const char* saveFilePathStr = std::getenv("MELON_MIX_SAVES");
-    if (saveFilePathStr != nullptr)
+    const char* saveFilePathStrPtr = std::getenv("MELON_MIX_SAVE");
+    if (saveFilePathStrPtr != nullptr)
     {
-        return std::string(saveFilePathStr);
+        return std::string(saveFilePathStrPtr);
     }
+
+    std::string saveFilePathStr = "";
     std::filesystem::path saveFilePath = kingdomHeartsCollectionConfigFolder();
-    if (saveFilePath.empty())
+    if (!saveFilePath.empty())
+    {
+        saveFilePathStr = saveFilePath.string();
+    }
+    if (saveFilePathStr.empty())
     {
         return "";
     }
-    return saveFilePath.string();
+
+    std::string saveFileName = "KHDAYS_WW.sav";
+
+    int i = saveFilePathStr.length() - 1;
+    if (saveFilePathStr[i] != '/' && saveFilePathStr[i] != '\\')
+    {
+        saveFilePathStr += "/";
+    }
+
+    return saveFilePathStr + saveFileName;
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
