@@ -322,6 +322,7 @@ void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
     if (ui->cbxJoystick->count() < 2) return;
 
     Config::Table& instcfg = emuInstance->getLocalConfig();
+    auto plugin = emuInstance->plugin;
 
     // saving mapping from current controller
     Config::Table oldJoycfg = instcfg.GetTable("Joystick." + std::to_string(joystickUniqueID));
@@ -345,6 +346,18 @@ void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
         i++;
     }
 
+    if (plugin != nullptr) {
+        for (i = 0; i < plugin->customKeyMappingNames.size(); i++)
+        {
+            oldJoycfg.SetInt(plugin->customKeyMappingNames[i], pluginJoyMap[i]);
+        }
+    }
+
+    for (i = 0; i < touchscreen_num; i++)
+    {
+        oldJoycfg.SetInt(EmuInstance::touchButtonNames[dstouchkeyorder[i]], touchScreenJoyMap[i]);
+    }
+
     Config::Save();
 
     // loading mapping from selected controller
@@ -359,7 +372,7 @@ void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
         keypadJoyMap[i] = joycfg.GetInt(EmuInstance::buttonNames[dskeyorder[i]]);
     }
 
-    int i = 0;
+    i = 0;
     for (int hotkey : hk_addons)
     {
         addonsJoyMap[i] = joycfg.GetInt(EmuInstance::hotkeyNames[hotkey]);
@@ -371,6 +384,18 @@ void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
     {
         hkGeneralJoyMap[i] = joycfg.GetInt(EmuInstance::hotkeyNames[hotkey]);
         i++;
+    }
+
+    if (plugin != nullptr) {
+        for (i = 0; i < plugin->customKeyMappingNames.size(); i++)
+        {
+            joycfg.SetInt(plugin->customKeyMappingNames[i], pluginJoyMap[i]);
+        }
+    }
+
+    for (i = 0; i < touchscreen_num; i++)
+    {
+        joycfg.SetInt(EmuInstance::touchButtonNames[dstouchkeyorder[i]], touchScreenJoyMap[i]);
     }
 
     emuInstance->inputLoadConfig();
