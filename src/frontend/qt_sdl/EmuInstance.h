@@ -266,6 +266,8 @@ private:
     void saveRTCData();
     void setDateTime();
 
+    std::string ndsSaveFilePath();
+
     bool deleting;
 
     int instanceID;

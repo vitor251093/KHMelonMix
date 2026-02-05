@@ -1434,7 +1434,7 @@ void EmuInstance::reset()
     if ((cartType != -1) && ndsSave)
     {
         std::string oldsave = ndsSave->GetPath();
-        std::string newsave = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
+        std::string newsave = ndsSaveFilePath();
         newsave += instanceFileSuffix();
         if (oldsave != newsave)
             ndsSave->SetPath(newsave, false);
@@ -1914,11 +1914,7 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
     u32 savelen = 0;
     std::unique_ptr<u8[]> savedata = nullptr;
 
-    std::string savname = plugin->saveFilePath();
-    if (savname.empty())
-    {
-        savname = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
-    }
+    std::string savname = ndsSaveFilePath();
     std::string origsav = savname;
     savname += instanceFileSuffix();
 
@@ -2267,6 +2263,16 @@ void EmuInstance::romIcon(const u8 (&data)[512], const u16 (&palette)[16], u32 (
             }
         }
     }
+}
+
+std::string EmuInstance::ndsSaveFilePath()
+{
+    std::string savname = plugin->saveFilePath();
+    if (savname.empty())
+    {
+        savname = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
+    }
+    return savname;
 }
 
 #define SEQ_FLIPV(i) ((i & 0b1000000000000000) >> 15)
