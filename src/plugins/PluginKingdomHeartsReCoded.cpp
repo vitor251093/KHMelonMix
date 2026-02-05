@@ -2152,7 +2152,7 @@ bool PluginKingdomHeartsReCoded::isStarRaveFinisherVisible()
     int matches = 0;
     for (int i = 0; i < nds->GPU.GPU3D.RenderNumPolygons; i++)
     {
-        Polygon* polygon = nds->GPU.GPU3D.RenderPolygonRAM[i];
+        melonDS::Polygon* polygon = nds->GPU.GPU3D.RenderPolygonRAM[i];
 
         bool match = false;
         for (int i = 0; i < polygon->NumVertices; i++)
