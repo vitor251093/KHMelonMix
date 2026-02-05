@@ -49,6 +49,9 @@
 #include "main.h"
 
 #include "GPU2D_Soft.h"
+#include "Utils.h"
+
+#include "plugins/PluginManager.h"
 
 using std::make_unique;
 using std::pair;
@@ -1882,6 +1885,26 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
         return false;
     }
 
+    if (plugin == nullptr)
+    {
+        unique_ptr<u8[]> filedata2 = nullptr;
+        u32 filelen2;
+        std::string basepath2;
+        std::string romname2;
+
+        if (!loadROMData(filepath, filedata2, filelen2, basepath2, romname2))
+        {
+            errorstr = "Failed to load the DS ROM.";
+            return false;
+        }
+
+        auto [cartrom, cartromsize] = PadToPowerOf2(std::move(filedata2), filelen2);
+        NDSHeader header {};
+        memcpy(&header, cartrom.get(), sizeof(header));
+        u32 gamecode = header.GameCodeAsU32();
+        plugin = Plugins::PluginManager::load(gamecode);
+    }
+
     ndsSave = nullptr;
 
     baseROMDir = basepath;
@@ -1891,7 +1914,12 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
     u32 savelen = 0;
     std::unique_ptr<u8[]> savedata = nullptr;
 
-    std::string savname = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
+    std::string saveFilePath = plugin->saveFilePath();
+    if (saveFilePath.empty())
+    {
+        saveFilePath = localCfg.GetString("SaveFilePath");
+    }
+    std::string savname = getAssetPath(false, saveFilePath, ".sav");
     std::string origsav = savname;
     savname += instanceFileSuffix();
 
@@ -1975,12 +2003,10 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
         }
     }
 
-    if (plugin != nullptr) {
-        plugin->setNds(nds);
-        plugin->onLoadROM();
-        
-        static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
-    }
+    plugin->setNds(nds);
+    plugin->onLoadROM();
+
+    static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
 
     cartType = 0;
     ndsSave = std::make_unique<SaveManager>(savname);

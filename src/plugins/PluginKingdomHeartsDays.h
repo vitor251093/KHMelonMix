@@ -27,6 +27,7 @@ public:
     bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROM()[0x1E] == 1; };
 
     void loadLocalization();
+    std::string saveFilePath();
     void onLoadROM() override;
     void onLoadState() override;
 

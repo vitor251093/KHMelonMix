@@ -359,10 +359,6 @@ void PluginKingdomHeartsDays::overrideConfigs(
         return;
     }
 
-    // TODO: KH Right now, this doesn't work for the first launch, which makes your first save unusable
-    //std::filesystem::path saveFilePath = kingdomHeartsCollectionConfigFolder();
-    //setStringConfig("Instance0.SaveFilePath", saveFilePath.string());
-
     /*
     int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
     setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
@@ -496,6 +492,16 @@ void PluginKingdomHeartsDays::overrideConfigs(
     setIntConfig("Instance0.Joystick.R", -1);
     setIntConfig("Instance0.Joystick.X", -1);
     */
+}
+
+std::string PluginKingdomHeartsDays::saveFilePath()
+{
+    std::filesystem::path saveFilePath = kingdomHeartsCollectionConfigFolder();
+    if (saveFilePath.empty())
+    {
+        return "";
+    }
+    return saveFilePath.string();
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {

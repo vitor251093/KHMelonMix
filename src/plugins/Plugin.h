@@ -145,6 +145,7 @@ public:
     }
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
+    virtual std::string saveFilePath() {return "";}
     virtual void onLoadROM();
     virtual void onLoadState();
 
