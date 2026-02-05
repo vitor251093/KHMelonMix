@@ -363,6 +363,7 @@ void PluginKingdomHeartsDays::overrideConfigs(
     //std::filesystem::path saveFilePath = kingdomHeartsCollectionConfigFolder();
     //setStringConfig("Instance0.SaveFilePath", saveFilePath.string());
 
+    /*
     int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
     setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
 
@@ -376,6 +377,7 @@ void PluginKingdomHeartsDays::overrideConfigs(
 
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
+    */
 
     // TODO: KH Disabling the keyboard automatic mapping for now because we need mouse control for the camera for that to work 100%;
     //       Joystick automatic mapping is also disabled, but that's because I don't know how to detect the product and vendor IDs from here
