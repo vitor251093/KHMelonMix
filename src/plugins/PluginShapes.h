@@ -241,7 +241,7 @@ struct alignas(16) ShapeData3D {
         return (colorMatchEqual ? !colorMatchEqual2 : true) && !colorMatchNeg;
     }
 
-    vec3 compute3DCoordinatesOf3DSquareShapeInVertexMode(float _x, float _y, float _z, unsigned int polygonAttr, unsigned int texParam, int* rgb, float resolutionScale, float aspectRatio)
+    vec3 compute3DCoordinatesOf3DSquareShapeInVertexMode(float _x, float _y, float _z, float xCenter, float yCenter, unsigned int polygonAttr, unsigned int texParam, int* rgb, float resolutionScale, float aspectRatio)
     {
         float updated = 0;
 
@@ -333,10 +333,18 @@ struct alignas(16) ShapeData3D {
                         break;
 
                     case corner_PreservePosition:
-                    default:
-                        squareFinalX1 = (squareInitialCoords.x + squareInitialCoords.z/2)*scaleX - squareFinalWidth/2;
-                        squareFinalY1 = (squareInitialCoords.y + squareInitialCoords.w/2)*scaleY - squareFinalHeight/2;
-                        break;
+                    default: {
+                        float ogDiffX = (_x - xCenter);
+                        float ogDiffY = (_y - yCenter);
+
+                        float finalDiffX = (ogDiffX*scaleX*heightScale)/iuTexScale;
+                        float finalDiffY = (ogDiffY*scaleY)/iuTexScale;
+
+                        _x = xCenter + finalDiffX;
+                        _y = yCenter + finalDiffY;
+
+                        return vec3{_x, _y, updated};
+                    }
                 }
 
                 _x = ((_x - squareInitialCoords.x*resolutionScale)/iuTexScale)*scaleX*heightScale + squareFinalX1 + (margin.x - margin.z)*(resolutionScale/(iuTexScale*aspectRatio));

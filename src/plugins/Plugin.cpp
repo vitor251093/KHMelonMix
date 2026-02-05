@@ -173,7 +173,7 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
 
-bool Plugin::gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, ShapeData3D shape, int vertexIndex)
+bool Plugin::gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, float xCenter, float yCenter, ShapeData3D shape, int vertexIndex)
 {
     float aspectRatio = AspectRatio / (4.f / 3.f);
 
@@ -188,7 +188,7 @@ bool Plugin::gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scal
 
     bool loggerModeEnabled = (shape.effects & 0x4) != 0;
 
-    vec3 newValues = shape.compute3DCoordinatesOf3DSquareShapeInVertexMode(_x, _y, _z, polygon->Attr, polygon->TexParam, rgb, resolutionScale, aspectRatio);
+    vec3 newValues = shape.compute3DCoordinatesOf3DSquareShapeInVertexMode(_x, _y, _z, xCenter, yCenter, polygon->Attr, polygon->TexParam, rgb, resolutionScale, aspectRatio);
     if (newValues.z == 1) {
         if (loggerModeEnabled) {
             printf("Old Position: %f - %f -- Attribute: %d -- New Position: %f - %f\n", _x, _y, polygon->Attr, newValues.x, newValues.y);
@@ -242,9 +242,11 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
                                 printf("Position: %d - %d -- Size: %d - %d - New vertexes: %d\n", x0, y0, x1 - x0, y1 - y0, polygon->NumVertices);
                             }
 
+                            float xCenter = (x0 + x1)/2.0;
+                            float yCenter = (y0 + y1)/2.0;
+
                             if ((shape.effects & 0x8) != 0)
                             {
-                                float xCenter = (x0 + x1)/2.0;
                                 for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
                                     scaledPositions[vIndex][0] = (u32)(xCenter + (s32)(((float)scaledPositions[vIndex][0] - xCenter)/aspectRatio));
                                 }
@@ -252,7 +254,7 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
                             else
                             {
                                 for (int vIndex = 0; vIndex < polygon->NumVertices; vIndex++) {
-                                    gpuOpenGL_applyChangesToPolygonVertex(resolutionScale, scaledPositions, polygon, shape, vIndex);
+                                    gpuOpenGL_applyChangesToPolygonVertex(resolutionScale, scaledPositions, polygon, xCenter, yCenter, shape, vIndex);
                                 }
                             }
 
@@ -277,7 +279,7 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
             if ((shape.effects & 0x1) == 0)
             {
                 bool loggerModeEnabled = (shape.effects & 0x4) != 0;
-                bool thisChanged = gpuOpenGL_applyChangesToPolygonVertex(resolutionScale, scaledPositions, polygon, shape, vertexIndex);
+                bool thisChanged = gpuOpenGL_applyChangesToPolygonVertex(resolutionScale, scaledPositions, polygon, 0, 0, shape, vertexIndex);
                 changed |= thisChanged;
                 atLeastOneLog = atLeastOneLog || (loggerModeEnabled && thisChanged);
                 if (thisChanged)

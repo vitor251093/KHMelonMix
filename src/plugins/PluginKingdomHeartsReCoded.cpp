@@ -1320,16 +1320,32 @@ std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
 
             if (isFinisherWithComboLimitHappening)
             {
-                if (((GameSceneState & (1 << gameSceneState_starRaveFinisherVisible))   > 0) ||
-                    ((GameSceneState & (1 << gameSceneState_spinnerSawFinisherVisible)) > 0)) {
-                    // TODO: KH The different finishers need to be adjusted properly
+                if ((GameSceneState & (1 << gameSceneState_starRaveFinisherVisible))   > 0) {
+                    // buttons
+                    shapes.push_back(ShapeBuilder3D::square()
+                                .polygonMode()
+                                .zRange(-1.0, -1.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+
+                    // lines
+                    shapes.push_back(ShapeBuilder3D::square()
+                                .polygonMode()
+                                .placeAtCorner(corner_Center)
+                                .zRange(-0.999999, -0.99)
+                                .sourceScale(aspectRatio, 1.0)
+                                .hudScale(SCREEN_SCALE)
+                                .build(aspectRatio));
+                }
+
+                if ((GameSceneState & (1 << gameSceneState_spinnerSawFinisherVisible)) > 0) {
                     shapes.push_back(ShapeBuilder3D::square()
                                 .polygonMode()
                                 .placeAtCorner(corner_Center)
                                 .zRange(-1.0, -0.1)
-                                .hudScale(SCREEN_SCALE)
+                                .hudScale(hudScale)
                                 .build(aspectRatio));
-                }
+                    }
             }
 
             if (!isFinisherWithComboLimitHappening) {
@@ -2133,9 +2149,34 @@ bool PluginKingdomHeartsReCoded::isSpeedComboFinisherVisible()
 
 bool PluginKingdomHeartsReCoded::isStarRaveFinisherVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    // TODO: KH This doesn't work because Star Rave is 3D
-    return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 128, 60) && !has2DOnTopOf3DAt(buffer, 128, 150);
+    int matches = 0;
+    for (int i = 0; i < nds->GPU.GPU3D.RenderNumPolygons; i++)
+    {
+        Polygon* polygon = nds->GPU.GPU3D.RenderPolygonRAM[i];
+
+        bool match = false;
+        for (int i = 0; i < polygon->NumVertices; i++)
+        {
+            s32 z = polygon->Vertices[i]->Position[2];
+            float _z = ((float)z)/(1 << 22);
+            if (_z > -1.0 && _z <= -0.99)
+            {
+                match = true;
+            }
+        }
+
+        if (match)
+        {
+            matches++;
+        }
+    }
+
+    if (matches == 2)
+    {
+        return isComboLimitVisible();
+    }
+
+    return false;
 }
 
 bool PluginKingdomHeartsReCoded::isSpinnerSawFinisherVisible()
