@@ -359,6 +359,8 @@ void PluginKingdomHeartsDays::overrideConfigs(
         return;
     }
 
+    // TODO: KH We need to check if Melon Mix should be launched in fullscreen or not (config.windowMode)
+
     int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
     setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
 
@@ -372,6 +374,8 @@ void PluginKingdomHeartsDays::overrideConfigs(
 
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
+
+    // TODO: KH We need to load mouse sensitivity (config.mouseSensitivity) to: plugin->tomlUniqueIdentifier() + ".CameraSensitivity"
 
     // TODO: KH Disabling the keyboard automatic mapping for now because we need mouse control for the camera for that to work 100%
     /*
