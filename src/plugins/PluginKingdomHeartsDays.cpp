@@ -359,7 +359,6 @@ void PluginKingdomHeartsDays::overrideConfigs(
         return;
     }
 
-    /*
     int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
     setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
 
@@ -373,10 +372,8 @@ void PluginKingdomHeartsDays::overrideConfigs(
 
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
-    */
 
-    // TODO: KH Disabling the keyboard automatic mapping for now because we need mouse control for the camera for that to work 100%;
-    //       Joystick automatic mapping is also disabled, but that's because I don't know how to detect the product and vendor IDs from here
+    // TODO: KH Disabling the keyboard automatic mapping for now because we need mouse control for the camera for that to work 100%
     /*
     setIntConfig("Instance0.Keyboard.A", DecodeSet1ToQt(&config->keyConfiguration.confirm));
     setIntConfig("Instance0.Keyboard.B", DecodeSet1ToQt(&config->keyConfiguration.cancelOrJump));
@@ -410,88 +407,79 @@ void PluginKingdomHeartsDays::overrideConfigs(
     setIntConfig("Instance0.Keyboard.Select", -1);
     setIntConfig("Instance0.Keyboard.L", -1);
     setIntConfig("Instance0.Keyboard.R", -1);
-    setIntConfig("Instance0.Keyboard.X", -1);
     */
 
-    /*
-    // "Steam Input" controller
-    setIntConfig("Instance0.JoystickID", 0);
-    setIntConfig("Instance0.Joystick.A", 1);
-    setIntConfig("Instance0.Joystick.B", 0);
-    setIntConfig("Instance0.Joystick.Y", 2);
-    setIntConfig("Instance0.Joystick.X", 3);
+    // "Steam Input" controller (JoystickVendorID == 0x28de && JoystickDeviceID == 0x11ff)
+    setIntConfig("Instance0.Joystick.685642239.A", 1);
+    setIntConfig("Instance0.Joystick.685642239.B", 0);
+    setIntConfig("Instance0.Joystick.685642239.Y", 2);
+    setIntConfig("Instance0.Joystick.685642239.X", 3);
     // TODO: KH holdToOpenShortcuts
-    setIntConfig("Instance0.Joystick.HK_RLockOn",       5);
-    setIntConfig("Instance0.Joystick.HK_RSwitchTarget", 0x521FFFF);
-    setIntConfig("Instance0.Joystick.HK_LSwitchTarget", 0x221FFFF);
-    setIntConfig("Instance0.Joystick.Up",    0x111FFFF);
-    setIntConfig("Instance0.Joystick.Down",  0x101FFFF);
-    setIntConfig("Instance0.Joystick.Left",  0x011FFFF);
-    setIntConfig("Instance0.Joystick.Right", 0x001FFFF);
+    setIntConfig("Instance0.Joystick.685642239.HK_RLockOn",       5);
+    setIntConfig("Instance0.Joystick.685642239.HK_RSwitchTarget", 0x521FFFF);
+    setIntConfig("Instance0.Joystick.685642239.HK_LSwitchTarget", 0x221FFFF);
+    setIntConfig("Instance0.Joystick.685642239.Up",    0x111FFFF);
+    setIntConfig("Instance0.Joystick.685642239.Down",  0x101FFFF);
+    setIntConfig("Instance0.Joystick.685642239.Left",  0x011FFFF);
+    setIntConfig("Instance0.Joystick.685642239.Right", 0x001FFFF);
     // TODO: KH holdToWalk
-    setIntConfig("Instance0.Joystick.HK_HUDToggle", 10);
-    setIntConfig("Instance0.Joystick.CameraUp",    0x411FFFF);
-    setIntConfig("Instance0.Joystick.CameraDown",  0x401FFFF);
-    setIntConfig("Instance0.Joystick.CameraLeft",  0x311FFFF);
-    setIntConfig("Instance0.Joystick.CameraRight", 0x301FFFF);
+    setIntConfig("Instance0.Joystick.685642239.HK_HUDToggle", 10);
+    setIntConfig("Instance0.Joystick.685642239.CameraUp",    0x411FFFF);
+    setIntConfig("Instance0.Joystick.685642239.CameraDown",  0x401FFFF);
+    setIntConfig("Instance0.Joystick.685642239.CameraLeft",  0x311FFFF);
+    setIntConfig("Instance0.Joystick.685642239.CameraRight", 0x301FFFF);
     // TODO: KH resetCamera
-    setIntConfig("Instance0.Joystick.HK_CommandMenuUp",    0x101);
-    setIntConfig("Instance0.Joystick.HK_CommandMenuDown",  0x104);
-    setIntConfig("Instance0.Joystick.HK_CommandMenuLeft",  0x108);
-    setIntConfig("Instance0.Joystick.HK_CommandMenuRight", 0x102);
-    setIntConfig("Instance0.Joystick.Start", 7);
-    setIntConfig("Instance0.Joystick.HK_FullscreenMapToggle", 6);
+    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuUp",    0x101);
+    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuDown",  0x104);
+    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuLeft",  0x108);
+    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuRight", 0x102);
+    setIntConfig("Instance0.Joystick.685642239.Start", 7);
+    setIntConfig("Instance0.Joystick.685642239.HK_FullscreenMapToggle", 6);
 
-    setIntConfig("Instance0.Joystick.HK_AttackInteract", -1);
-    setIntConfig("Instance0.Joystick.HK_Jump",       -1);
-    setIntConfig("Instance0.Joystick.HK_GuardCombo", -1);
-    setIntConfig("Instance0.Joystick.Select", -1);
-    setIntConfig("Instance0.Joystick.L", -1);
-    setIntConfig("Instance0.Joystick.R", -1);
-    setIntConfig("Instance0.Joystick.X", -1);
-    */
+    setIntConfig("Instance0.Joystick.685642239.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Joystick.685642239.HK_Jump",       -1);
+    setIntConfig("Instance0.Joystick.685642239.HK_GuardCombo", -1);
+    setIntConfig("Instance0.Joystick.685642239.Select", -1);
+    setIntConfig("Instance0.Joystick.685642239.L", -1);
+    setIntConfig("Instance0.Joystick.685642239.R", -1);
 
     // PS3 controller (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268)
 
     // PS4 controller V1 (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4)
 
-    /*
     // PS4 controller V2 (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc)
-    setIntConfig("Instance0.JoystickID", 0);
-    setIntConfig("Instance0.Joystick.A", 1);
-    setIntConfig("Instance0.Joystick.B", 0);
-    setIntConfig("Instance0.Joystick.Y", 2);
-    setIntConfig("Instance0.Joystick.X", 3);
+    setIntConfig("Instance0.Joystick.88869324.A", 1);
+    setIntConfig("Instance0.Joystick.88869324.B", 0);
+    setIntConfig("Instance0.Joystick.88869324.Y", 2);
+    setIntConfig("Instance0.Joystick.88869324.X", 3);
     // TODO: KH holdToOpenShortcuts
-    setIntConfig("Instance0.Joystick.HK_RLockOn",       10);
-    setIntConfig("Instance0.Joystick.HK_RSwitchTarget", 0x521FFFF);
-    setIntConfig("Instance0.Joystick.HK_LSwitchTarget", 0x421FFFF);
-    setIntConfig("Instance0.Joystick.Up",    0x111FFFF);
-    setIntConfig("Instance0.Joystick.Down",  0x101FFFF);
-    setIntConfig("Instance0.Joystick.Left",  0x011FFFF);
-    setIntConfig("Instance0.Joystick.Right", 0x001FFFF);
+    setIntConfig("Instance0.Joystick.88869324.HK_RLockOn",       10);
+    setIntConfig("Instance0.Joystick.88869324.HK_RSwitchTarget", 0x521FFFF);
+    setIntConfig("Instance0.Joystick.88869324.HK_LSwitchTarget", 0x421FFFF);
+    setIntConfig("Instance0.Joystick.88869324.Up",    0x111FFFF);
+    setIntConfig("Instance0.Joystick.88869324.Down",  0x101FFFF);
+    setIntConfig("Instance0.Joystick.88869324.Left",  0x011FFFF);
+    setIntConfig("Instance0.Joystick.88869324.Right", 0x001FFFF);
     // TODO: KH holdToWalk
-    setIntConfig("Instance0.Joystick.HK_HUDToggle", 8);
-    setIntConfig("Instance0.Joystick.CameraUp",    0x311FFFF);
-    setIntConfig("Instance0.Joystick.CameraDown",  0x301FFFF);
-    setIntConfig("Instance0.Joystick.CameraLeft",  0x211FFFF);
-    setIntConfig("Instance0.Joystick.CameraRight", 0x201FFFF);
+    setIntConfig("Instance0.Joystick.88869324.HK_HUDToggle", 8);
+    setIntConfig("Instance0.Joystick.88869324.CameraUp",    0x311FFFF);
+    setIntConfig("Instance0.Joystick.88869324.CameraDown",  0x301FFFF);
+    setIntConfig("Instance0.Joystick.88869324.CameraLeft",  0x211FFFF);
+    setIntConfig("Instance0.Joystick.88869324.CameraRight", 0x201FFFF);
     // TODO: KH resetCamera
-    setIntConfig("Instance0.Joystick.HK_CommandMenuUp",    11);
-    setIntConfig("Instance0.Joystick.HK_CommandMenuDown",  12);
-    setIntConfig("Instance0.Joystick.HK_CommandMenuLeft",  13);
-    setIntConfig("Instance0.Joystick.HK_CommandMenuRight", 14);
-    setIntConfig("Instance0.Joystick.Start", 6);
-    setIntConfig("Instance0.Joystick.HK_FullscreenMapToggle", 15);
+    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuUp",    11);
+    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuDown",  12);
+    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuLeft",  13);
+    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuRight", 14);
+    setIntConfig("Instance0.Joystick.88869324.Start", 6);
+    setIntConfig("Instance0.Joystick.88869324.HK_FullscreenMapToggle", 15);
 
-    setIntConfig("Instance0.Joystick.HK_AttackInteract", -1);
-    setIntConfig("Instance0.Joystick.HK_Jump",       -1);
-    setIntConfig("Instance0.Joystick.HK_GuardCombo", -1);
-    setIntConfig("Instance0.Joystick.Select", -1);
-    setIntConfig("Instance0.Joystick.L", -1);
-    setIntConfig("Instance0.Joystick.R", -1);
-    setIntConfig("Instance0.Joystick.X", -1);
-    */
+    setIntConfig("Instance0.Joystick.88869324.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Joystick.88869324.HK_Jump",       -1);
+    setIntConfig("Instance0.Joystick.88869324.HK_GuardCombo", -1);
+    setIntConfig("Instance0.Joystick.88869324.Select", -1);
+    setIntConfig("Instance0.Joystick.88869324.L", -1);
+    setIntConfig("Instance0.Joystick.88869324.R", -1);
 }
 
 std::string PluginKingdomHeartsDays::saveFilePath()
