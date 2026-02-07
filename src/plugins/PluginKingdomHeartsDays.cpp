@@ -494,6 +494,9 @@ std::string PluginKingdomHeartsDays::saveFilePath()
         return std::string(saveFilePathStrPtr);
     }
 
+    // TODO: KH add empty early return if the user already has a sav 
+    //  file on the default location
+    
     std::string saveFilePathStr = "";
     std::filesystem::path saveFilePath = kingdomHeartsCollectionConfigFolder();
     if (!saveFilePath.empty())
