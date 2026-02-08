@@ -359,6 +359,8 @@ void PluginKingdomHeartsDays::overrideConfigs(
         return;
     }
 
+    // TODO: KH We need to load the language being used by the collection
+    
     // TODO: KH We need to check if Melon Mix should be launched in fullscreen or not (config.windowMode)
 
     int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
