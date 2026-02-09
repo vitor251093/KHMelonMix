@@ -359,7 +359,21 @@ void PluginKingdomHeartsDays::overrideConfigs(
         return;
     }
 
-    // TODO: KH We need to load the language being used by the collection
+    std::string khLanguage = kingdomHeartsLanguage();
+    int localIndex = 1;
+    if (khLanguage == "japanese")
+        localIndex = 0;
+    else if (khLanguage == "english")
+        localIndex = 1;
+    else if (khLanguage == "french")
+        localIndex = 2;
+    else if (khLanguage == "deutch")
+        localIndex = 3;
+    else if (khLanguage == "italian")
+        localIndex = 4;
+    else if (khLanguage == "spanish")
+        localIndex = 5;
+    setIntConfig("Instance0.Firmware.Language", localIndex);
     
     // TODO: KH We need to check if Melon Mix should be launched in fullscreen or not (config.windowMode)
 

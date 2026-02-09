@@ -5,7 +5,12 @@
 #ifndef MELONDS_KINGDOMHEARTSHDCOLLECTIONCONFIG_H
 #define MELONDS_KINGDOMHEARTSHDCOLLECTIONCONFIG_H
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <regex>
 #include <filesystem>
+
 #include "../types.h"
 
 #ifdef _WIN32
@@ -365,6 +370,50 @@ inline void createKingdomHeartsSignalFile()
         Platform::FileWrite("\n", 1, 1, signalHandle);
         Platform::CloseFile(signalHandle);
     }
+}
+
+inline std::string kingdomHeartsLanguage()
+{
+    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
+    if (collectionFolderPath.empty())
+    {
+        return collectionFolderPath;
+    }
+
+    std::filesystem::path steamappsPath = collectionFolderPath.parent_path().parent_path();
+
+    std::filesystem::path manifestPath = steamappsPath / "appmanifest_2552430.acf";
+
+    if (!exists(manifestPath)) {
+        return "";
+    }
+
+    std::ifstream file(manifestPath);
+    if (!file.is_open()) {
+        return "";
+    }
+
+    std::string line;
+    std::string language = "";
+    // Regex to find "language" followed by any whitespace and then the value in quotes
+    std::regex langRegex("\"language\"\\s+\"([^\"]+)\"");
+    std::smatch match;
+
+    bool found = false;
+    while (std::getline(file, line)) {
+        if (std::regex_search(line, match, langRegex)) {
+            // match[1] contains the first captured group (the language name)
+            language = match[1];
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        return "";
+    }
+
+    return language;
 }
 
 }

@@ -270,6 +270,7 @@ private:
     void saveRTCData();
     void setDateTime();
 
+    melonDS::u32 gameCodeFromNdsFileAtPath(QStringList filepath);
     std::string ndsSaveFilePath();
 
     bool deleting;

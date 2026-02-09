@@ -214,21 +214,6 @@ void EmuThread::run()
             if (emuInstance->plugin->shouldInvalidateConfigs)
             {
                 emuInstance->plugin->shouldInvalidateConfigs = false;
-
-                emuInstance->plugin->overrideConfigs([cfg = globalCfg](const std::string& path, bool value){
-                    Config::Table& ref = const_cast <Config::Table&>(cfg);
-                    ref.SetBool(path, value);
-                },
-                [cfg = globalCfg](const std::string& path, int value){
-                    Config::Table& ref = const_cast <Config::Table&>(cfg);
-                    ref.SetInt(path, value);
-                },
-                [cfg = globalCfg](const std::string& path, std::string value){
-                    Config::Table& ref = const_cast <Config::Table&>(cfg);
-                    ref.SetString(path, value);
-                });
-                Config::Save();
-
                 emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetBool(path);

@@ -1885,24 +1885,23 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
         return false;
     }
 
-    if (plugin == nullptr)
+    u32 gamecode = gameCodeFromNdsFileAtPath(filepath);
+    if (plugin == nullptr || gamecode == 0 || plugin->getGameCode() != gamecode)
     {
-        unique_ptr<u8[]> filedata2 = nullptr;
-        u32 filelen2;
-        std::string basepath2;
-        std::string romname2;
-
-        if (!loadROMData(filepath, filedata2, filelen2, basepath2, romname2))
-        {
-            errorstr = "Failed to load the DS ROM.";
-            return false;
-        }
-
-        auto [cartrom, cartromsize] = PadToPowerOf2(std::move(filedata2), filelen2);
-        NDSHeader header {};
-        memcpy(&header, cartrom.get(), sizeof(header));
-        u32 gamecode = header.GameCodeAsU32();
         plugin = Plugins::PluginManager::load(gamecode);
+
+        plugin->overrideConfigs([cfg = globalCfg](const std::string& path, bool value){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            ref.SetBool(path, value);
+        },
+        [cfg = globalCfg](const std::string& path, int value){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            ref.SetInt(path, value);
+        },
+        [cfg = globalCfg](const std::string& path, std::string value){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            ref.SetString(path, value);
+        });
     }
 
     ndsSave = nullptr;
@@ -2263,6 +2262,24 @@ void EmuInstance::romIcon(const u8 (&data)[512], const u16 (&palette)[16], u32 (
             }
         }
     }
+}
+
+u32 EmuInstance::gameCodeFromNdsFileAtPath(QStringList filepath)
+{
+    unique_ptr<u8[]> filedata2 = nullptr;
+    u32 filelen2;
+    std::string basepath2;
+    std::string romname2;
+
+    if (!loadROMData(filepath, filedata2, filelen2, basepath2, romname2))
+    {
+        return 0;
+    }
+
+    auto [cartrom, cartromsize] = PadToPowerOf2(std::move(filedata2), filelen2);
+    NDSHeader header {};
+    memcpy(&header, cartrom.get(), sizeof(header));
+    return header.GameCodeAsU32();
 }
 
 std::string EmuInstance::ndsSaveFilePath()
