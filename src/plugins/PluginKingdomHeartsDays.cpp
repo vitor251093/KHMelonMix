@@ -490,6 +490,8 @@ void PluginKingdomHeartsDays::overrideConfigs(
 
 std::string PluginKingdomHeartsDays::saveFilePath()
 {
+    createKingdomHeartsSignalFile();
+
     const char* saveFilePathStrPtr = std::getenv("MELON_MIX_SAVE");
     if (saveFilePathStrPtr != nullptr)
     {

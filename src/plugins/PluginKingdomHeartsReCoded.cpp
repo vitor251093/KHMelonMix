@@ -350,6 +350,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
 
 std::string PluginKingdomHeartsReCoded::saveFilePath()
 {
+    createKingdomHeartsSignalFile();
+
     const char* saveFilePathStrPtr = std::getenv("MELON_MIX_SAVE");
     if (saveFilePathStrPtr != nullptr)
     {

@@ -350,6 +350,23 @@ inline KHMareConfig* kingdomHeartsCollectionConfig()
     return config;
 }
 
+inline void createKingdomHeartsSignalFile()
+{
+    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
+    if (collectionFolderPath.empty())
+    {
+        return;
+    }
+
+    std::filesystem::path signalFilePath = collectionFolderPath / ".melonmix_signal";
+    if (!std::filesystem::exists(signalFilePath))
+    {
+        Platform::FileHandle* signalHandle = Platform::OpenFile(signalFilePath.string(), Platform::FileMode::Append);
+        Platform::FileWrite("\n", 1, 1, signalHandle);
+        Platform::CloseFile(signalHandle);
+    }
+}
+
 }
 
 #endif //MELONDS_KINGDOMHEARTSHDCOLLECTIONCONFIG_H
