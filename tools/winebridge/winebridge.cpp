@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
         nullptr,
         (LPSTR)commandLineLPSTR.data(),
         nullptr, nullptr, FALSE,
-        CREATE_NEW_CONSOLE,
+        CREATE_NO_WINDOW,
         nullptr,
         (LPSTR)cwdLPSTR.data(), &si, &pi
     );
