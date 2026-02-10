@@ -348,6 +348,162 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     }};
 }
 
+void PluginKingdomHeartsReCoded::overrideConfigs(
+    std::function<void(std::string, bool)> setBoolConfig,
+    std::function<void(std::string, int)> setIntConfig,
+    std::function<void(std::string, std::string)> setStringConfig
+)
+{
+    KHMareConfig* config = kingdomHeartsCollectionConfig();
+    if (config == nullptr)
+    {
+        return;
+    }
+
+    std::string khLanguage = kingdomHeartsLanguage();
+    int localIndex = 1;
+    if (khLanguage == "japanese")
+        localIndex = 0;
+    else if (khLanguage == "english")
+        localIndex = 1;
+    else if (khLanguage == "french")
+        localIndex = 2;
+    else if (khLanguage == "deutch")
+        localIndex = 3;
+    else if (khLanguage == "italian")
+        localIndex = 4;
+    else if (khLanguage == "spanish")
+        localIndex = 5;
+    setIntConfig("Instance0.Firmware.Language", localIndex);
+
+    // TODO: KH Load Steam persona name
+    // setStringConfig("Instance0.Firmware.Username", "MelonMix"); // max length of 10
+
+    int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
+    setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
+
+    float aspectRatio = ((float)config->resolutionWidth)/((float)config->resolutionHeight);
+    bool isAspectRatioId0 = std::abs(aspectRatio -  4.0/3.0) < 0.0001;
+    bool isAspectRatioId1 = std::abs(aspectRatio - 16.0/9.0) < 0.0001;
+    bool isAspectRatioId2 = std::abs(aspectRatio - 21.0/9.0) < 0.0001;
+    bool isAspectRatioId4 = std::abs(aspectRatio -  5.0/3.0) < 0.0001;
+    int aspectRatioId = isAspectRatioId0 ? 0 : (isAspectRatioId1 ? 1 : (isAspectRatioId2 ? 2 : (isAspectRatioId4 ? 4 : 3)));
+    setIntConfig("Instance0.Window0.ScreenAspectTop", aspectRatioId);
+
+    setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
+    setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
+
+    // TODO: KH We need to load mouse sensitivity (config.mouseSensitivity) to: plugin->tomlUniqueIdentifier() + ".CameraSensitivity"
+
+    // TODO: KH Disabling the keyboard automatic mapping for now because we need mouse control for the camera for that to work 100%
+    /*
+    setIntConfig("Instance0.Keyboard.A", DecodeSet1ToQt(&config->keyConfiguration.confirm));
+    setIntConfig("Instance0.Keyboard.B", DecodeSet1ToQt(&config->keyConfiguration.cancelOrJump));
+    setIntConfig("Instance0.Keyboard.Y", DecodeSet1ToQt(&config->keyConfiguration.blockEvadeDodge));
+    setIntConfig("Instance0.Keyboard.X", DecodeSet1ToQt(&config->keyConfiguration.useCommand));
+    // TODO: KH holdToOpenShortcuts
+    setIntConfig("Instance0.Keyboard.HK_RLockOn",       DecodeSet1ToQt(&config->keyConfiguration.toggleLockOn));
+    setIntConfig("Instance0.Keyboard.HK_RSwitchTarget", DecodeSet1ToQt(&config->keyConfiguration.changeLockOnTargetOrToggleCursorControls));
+    setIntConfig("Instance0.Keyboard.HK_LSwitchTarget", DecodeSet1ToQt(&config->keyConfiguration.toggleGummiShipScoreOrChangeLockOnTarget));
+    setIntConfig("Instance0.Keyboard.Up",    DecodeSet1ToQt(&config->keyConfiguration.up));
+    setIntConfig("Instance0.Keyboard.Down",  DecodeSet1ToQt(&config->keyConfiguration.down));
+    setIntConfig("Instance0.Keyboard.Left",  DecodeSet1ToQt(&config->keyConfiguration.left));
+    setIntConfig("Instance0.Keyboard.Right", DecodeSet1ToQt(&config->keyConfiguration.right));
+    // TODO: KH holdToWalk
+    setIntConfig("Instance0.Keyboard.HK_HUDToggle", DecodeSet1ToQt(&config->keyConfiguration.gummiEditorFlipGummi));
+    setIntConfig("Instance0.Keyboard.CameraUp",    DecodeSet1ToQt(config->keyConfiguration.cameraUp));
+    setIntConfig("Instance0.Keyboard.CameraDown",  DecodeSet1ToQt(config->keyConfiguration.cameraDown));
+    setIntConfig("Instance0.Keyboard.CameraLeft",  DecodeSet1ToQt(config->keyConfiguration.cameraLeft));
+    setIntConfig("Instance0.Keyboard.CameraRight", DecodeSet1ToQt(config->keyConfiguration.cameraRight));
+    // TODO: KH resetCamera
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuUp",    DecodeSet1ToQt(&config->keyConfiguration.cursorUp));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuDown",  DecodeSet1ToQt(&config->keyConfiguration.cursorDown));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuLeft",  DecodeSet1ToQt(&config->keyConfiguration.cursorLeft));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuRight", DecodeSet1ToQt(&config->keyConfiguration.cursorRight));
+    setIntConfig("Instance0.Keyboard.Start", DecodeSet1ToQt(&config->keyConfiguration.pause));
+    setIntConfig("Instance0.Keyboard.HK_FullscreenMapToggle", DecodeSet1ToQt(&config->keyConfiguration.firstPersonView));
+
+    setIntConfig("Instance0.Keyboard.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Keyboard.HK_Jump",       -1);
+    setIntConfig("Instance0.Keyboard.HK_GuardCombo", -1);
+    setIntConfig("Instance0.Keyboard.Select", -1);
+    setIntConfig("Instance0.Keyboard.L", -1);
+    setIntConfig("Instance0.Keyboard.R", -1);
+    */
+
+    // "Steam Input" controller (JoystickVendorID == 0x28de && JoystickDeviceID == 0x11ff)
+    setIntConfig("Instance0.Joystick.685642239.A", 1);
+    setIntConfig("Instance0.Joystick.685642239.B", 0);
+    setIntConfig("Instance0.Joystick.685642239.Y", 2);
+    setIntConfig("Instance0.Joystick.685642239.X", 3);
+    // TODO: KH holdToOpenShortcuts
+    setIntConfig("Instance0.Joystick.685642239.HK_RLockOn",       5);
+    setIntConfig("Instance0.Joystick.685642239.HK_RSwitchTarget", 0x521FFFF);
+    setIntConfig("Instance0.Joystick.685642239.HK_LSwitchTarget", 0x221FFFF);
+    setIntConfig("Instance0.Joystick.685642239.Up",    0x111FFFF);
+    setIntConfig("Instance0.Joystick.685642239.Down",  0x101FFFF);
+    setIntConfig("Instance0.Joystick.685642239.Left",  0x011FFFF);
+    setIntConfig("Instance0.Joystick.685642239.Right", 0x001FFFF);
+    // TODO: KH holdToWalk
+    setIntConfig("Instance0.Joystick.685642239.HK_HUDToggle", 10);
+    setIntConfig("Instance0.Joystick.685642239.CameraUp",    0x411FFFF);
+    setIntConfig("Instance0.Joystick.685642239.CameraDown",  0x401FFFF);
+    setIntConfig("Instance0.Joystick.685642239.CameraLeft",  0x311FFFF);
+    setIntConfig("Instance0.Joystick.685642239.CameraRight", 0x301FFFF);
+    // TODO: KH resetCamera
+    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuUp",    0x101);
+    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuDown",  0x104);
+    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuLeft",  0x108);
+    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuRight", 0x102);
+    setIntConfig("Instance0.Joystick.685642239.Start", 7);
+    setIntConfig("Instance0.Joystick.685642239.HK_FullscreenMapToggle", 6);
+
+    setIntConfig("Instance0.Joystick.685642239.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Joystick.685642239.HK_Jump",       -1);
+    setIntConfig("Instance0.Joystick.685642239.HK_GuardCombo", -1);
+    setIntConfig("Instance0.Joystick.685642239.Select", -1);
+    setIntConfig("Instance0.Joystick.685642239.L", -1);
+    setIntConfig("Instance0.Joystick.685642239.R", -1);
+
+    // PS3 controller (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268)
+
+    // PS4 controller V1 (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4)
+
+    // PS4 controller V2 (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc)
+    setIntConfig("Instance0.Joystick.88869324.A", 1);
+    setIntConfig("Instance0.Joystick.88869324.B", 0);
+    setIntConfig("Instance0.Joystick.88869324.Y", 2);
+    setIntConfig("Instance0.Joystick.88869324.X", 3);
+    // TODO: KH holdToOpenShortcuts
+    setIntConfig("Instance0.Joystick.88869324.HK_RLockOn",       10);
+    setIntConfig("Instance0.Joystick.88869324.HK_RSwitchTarget", 0x521FFFF);
+    setIntConfig("Instance0.Joystick.88869324.HK_LSwitchTarget", 0x421FFFF);
+    setIntConfig("Instance0.Joystick.88869324.Up",    0x111FFFF);
+    setIntConfig("Instance0.Joystick.88869324.Down",  0x101FFFF);
+    setIntConfig("Instance0.Joystick.88869324.Left",  0x011FFFF);
+    setIntConfig("Instance0.Joystick.88869324.Right", 0x001FFFF);
+    // TODO: KH holdToWalk
+    setIntConfig("Instance0.Joystick.88869324.HK_HUDToggle", 8);
+    setIntConfig("Instance0.Joystick.88869324.CameraUp",    0x311FFFF);
+    setIntConfig("Instance0.Joystick.88869324.CameraDown",  0x301FFFF);
+    setIntConfig("Instance0.Joystick.88869324.CameraLeft",  0x211FFFF);
+    setIntConfig("Instance0.Joystick.88869324.CameraRight", 0x201FFFF);
+    // TODO: KH resetCamera
+    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuUp",    11);
+    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuDown",  12);
+    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuLeft",  13);
+    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuRight", 14);
+    setIntConfig("Instance0.Joystick.88869324.Start", 6);
+    setIntConfig("Instance0.Joystick.88869324.HK_FullscreenMapToggle", 15);
+
+    setIntConfig("Instance0.Joystick.88869324.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Joystick.88869324.HK_Jump",       -1);
+    setIntConfig("Instance0.Joystick.88869324.HK_GuardCombo", -1);
+    setIntConfig("Instance0.Joystick.88869324.Select", -1);
+    setIntConfig("Instance0.Joystick.88869324.L", -1);
+    setIntConfig("Instance0.Joystick.88869324.R", -1);
+}
+
 std::string PluginKingdomHeartsReCoded::saveFilePath()
 {
     createKingdomHeartsSignalFile();
@@ -378,6 +534,15 @@ std::string PluginKingdomHeartsReCoded::saveFilePath()
     }
 
     return saveFilePathStr + saveFileName;
+}
+
+bool PluginKingdomHeartsReCoded::shouldStartInFullscreen() {
+    KHMareConfig* config = kingdomHeartsCollectionConfig();
+    if (config == nullptr)
+    {
+        return FullscreenOnStartup;
+    }
+    return config->windowMode == 0;
 }
 
 void PluginKingdomHeartsReCoded::loadLocalization() {

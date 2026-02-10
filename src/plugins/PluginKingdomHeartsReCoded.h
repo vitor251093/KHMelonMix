@@ -25,6 +25,7 @@ public:
 
     void loadLocalization();
     std::string saveFilePath();
+    bool shouldStartInFullscreen() override;
     void onLoadROM() override;
 
     std::string gameFolderName() override;
@@ -74,6 +75,11 @@ public:
         KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
         TextLanguage = getStringConfig(root + ".Language");
     }
+    void overrideConfigs(
+        std::function<void(std::string, bool)> setBoolConfig,
+        std::function<void(std::string, int)> setIntConfig,
+        std::function<void(std::string, std::string)> setStringConfig
+    ) override;
 private:
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;
