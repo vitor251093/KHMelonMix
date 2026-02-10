@@ -79,7 +79,6 @@ public:
 
         std::string root = tomlUniqueIdentifier();
 
-        KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
         TextLanguage = getStringConfig(root + ".Language");
     }
     void overrideConfigs(
@@ -133,7 +132,6 @@ private:
     std::array<CutsceneEntry, 46> Cutscenes;
     u32 cutscenesAddressOffset = 0;
 
-    std::string KH_15_25_Remix_Location = "";
     std::string TextLanguage = "";
 
     int detectGameScene() override;

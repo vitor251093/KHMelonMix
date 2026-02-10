@@ -2751,8 +2751,9 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
         return fullPath.string();
     }
 
-    if (!KH_15_25_Remix_Location.empty()) {
-        std::filesystem::path collectionPath = KH_15_25_Remix_Location;
+    /*
+    std::filesystem::path collectionPath = kingdomHeartsCollectionFolderPath();
+    if (!collectionPath.empty()) {
         std::filesystem::path newEpicFolderPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "Days" / "en";
         if (std::filesystem::exists(newEpicFolderPath)) {
             std::filesystem::path newEpicFullPath = patchReplacementCutsceneIfNeeded(cutscene, newEpicFolderPath);
@@ -2768,6 +2769,7 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
             }
         }
     }
+    */
 
     return "";
 }
