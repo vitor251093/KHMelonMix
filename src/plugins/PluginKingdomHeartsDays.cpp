@@ -374,6 +374,9 @@ void PluginKingdomHeartsDays::overrideConfigs(
     else if (khLanguage == "spanish")
         localIndex = 5;
     setIntConfig("Instance0.Firmware.Language", localIndex);
+
+    // TODO: KH Load Steam persona name
+    // setStringConfig("Instance0.Firmware.Username", "MelonMix"); // max length of 10
     
     // TODO: KH We need to check if Melon Mix should be launched in fullscreen or not (config.windowMode)
 
