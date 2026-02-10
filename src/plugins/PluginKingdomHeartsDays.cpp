@@ -378,8 +378,6 @@ void PluginKingdomHeartsDays::overrideConfigs(
     // TODO: KH Load Steam persona name
     // setStringConfig("Instance0.Firmware.Username", "MelonMix"); // max length of 10
     
-    // TODO: KH We need to check if Melon Mix should be launched in fullscreen or not (config.windowMode)
-
     int scaleFactor = (int)std::ceil(std::max(((float)config->resolutionWidth)/256, ((float)config->resolutionHeight)/192));
     setIntConfig("3D.GL.ScaleFactor", scaleFactor - 1); // TODO: KH Once we implement support to frame skip, this "- 1" shouldn't be necessary
 
@@ -538,6 +536,15 @@ std::string PluginKingdomHeartsDays::saveFilePath()
     }
 
     return saveFilePathStr + saveFileName;
+}
+
+bool PluginKingdomHeartsDays::shouldStartInFullscreen() {
+    KHMareConfig* config = kingdomHeartsCollectionConfig();
+    if (config == nullptr)
+    {
+        return FullscreenOnStartup;
+    }
+    return config->windowMode == 0;
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {

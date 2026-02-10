@@ -139,6 +139,8 @@ public:
 
     int DefaultCameraSensitivity = 3;
 
+    bool shouldStartPlugin = true;
+
     bool shouldInvalidateConfigs = false;
     void invalidateConfigs() {
         shouldInvalidateConfigs = true;
@@ -197,7 +199,7 @@ public:
     bool shouldExportTextures() {
         return ExportTextures;
     }
-    bool shouldStartInFullscreen() {
+    virtual bool shouldStartInFullscreen() {
         return FullscreenOnStartup;
     }
 
