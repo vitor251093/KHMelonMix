@@ -416,7 +416,7 @@ inline std::string kingdomHeartsLanguage()
     return language;
 }
 
-inline void kingdomHeartsKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig)
+inline void applyKingdomHeartsKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig)
 {
     // TODO: KH We need to load mouse sensitivity (config.mouseSensitivity) to: plugin->tomlUniqueIdentifier() + ".CameraSensitivity"
 
