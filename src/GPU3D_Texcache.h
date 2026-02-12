@@ -298,33 +298,28 @@ public:
         Plugins::TextureEntry* texturePtr = nullptr;
         if (textureReplacementEnabled) {
             std::ostringstream oss0;
-            oss0 << "3d-";
+            oss0 << "-3d-";
             for (int i = 0; i < 2; i++)
             {
                 if (entry.TextureRAMSize[i])
                     oss0 << static_cast<char32_t>(entry.TextureHash[i]);
             }
-            std::string uniqueIdentifier1 = oss0.str();
-            std::ostringstream oss;
-            for (int i = 0; i < 2; i++)
-            {
-                if (entry.TextureRAMSize[i])
-                    oss << static_cast<char32_t>(XXH3_64bits(&gpu.VRAMFlat_Texture[entry.TextureRAMStart[i]], entry.TextureRAMSize[i]));
-            }
-            std::string uniqueIdentifier2 = oss.str();
-            oss << "-";
-            oss << palBase;
-            std::string uniqueIdentifier3 = oss.str();
+            std::string newIdentifierWithoutPal = oss0.str();
+            oss0 << "-";
+            oss0 << palBase;
+            std::string newIdentifierWithPal = oss0.str();
 
-            Plugins::TextureEntry& texture1 = GamePlugin->textureById(uniqueIdentifier1);
-            Plugins::TextureEntry& texture2 = GamePlugin->textureById(uniqueIdentifier3);
-            Plugins::TextureEntry& texture3 = GamePlugin->textureById(uniqueIdentifier2);
+            std::filesystem::path _assetsFolderPath = GamePlugin->gameAssetsFolderPath();
+            std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
+
+            Plugins::TextureEntry& newTextureWithPal = GamePlugin->textureById(newIdentifierWithPal);
+            Plugins::TextureEntry& newTextureWithoutPal = GamePlugin->textureById(newIdentifierWithoutPal);
 
             int channels = 4;
             int r_width, r_height, r_channels;
             imageData = nullptr;
 
-            Plugins::TextureEntry* textures[] = {&texture1, &texture2, &texture3};
+            Plugins::TextureEntry* textures[] = {&newTextureWithPal, &newTextureWithoutPal};
             for (int i = 0; i < sizeof(textures) / sizeof(textures[0]); ++i) {
                 Plugins::TextureEntry* texture = textures[i];
                 auto& scene = texture->getNextScene();
@@ -351,7 +346,7 @@ public:
                 imageData = (unsigned char*)DecodingBuffer;
 
                 if (GamePlugin->shouldExportTextures()) {
-                    std::string fullPathTmp = GamePlugin->tmpTextureFilePath(uniqueIdentifier3);
+                    std::string fullPathTmp = GamePlugin->tmpTextureFilePath(newIdentifierWithPal);
                     const char* pathTmp = fullPathTmp.c_str();
 
                     printf("Saving texture %s\n", pathTmp);
