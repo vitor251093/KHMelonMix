@@ -298,33 +298,76 @@ public:
         Plugins::TextureEntry* texturePtr = nullptr;
         if (textureReplacementEnabled) {
             std::ostringstream oss0;
-            oss0 << "3d-";
+            oss0 << "-3d-";
             for (int i = 0; i < 2; i++)
             {
                 if (entry.TextureRAMSize[i])
                     oss0 << static_cast<char32_t>(entry.TextureHash[i]);
             }
-            std::string uniqueIdentifier1 = oss0.str();
+            std::string newIdentifierWithoutPal = oss0.str();
+            oss0 << "-";
+            oss0 << palBase;
+            std::string newIdentifierWithPal = oss0.str();
+
             std::ostringstream oss;
             for (int i = 0; i < 2; i++)
             {
                 if (entry.TextureRAMSize[i])
                     oss << static_cast<char32_t>(XXH3_64bits(&gpu.VRAMFlat_Texture[entry.TextureRAMStart[i]], entry.TextureRAMSize[i]));
             }
-            std::string uniqueIdentifier2 = oss.str();
+            std::string oldIdentifierWithoutPal = oss.str();
             oss << "-";
             oss << palBase;
-            std::string uniqueIdentifier3 = oss.str();
+            std::string oldIdentifierWithPal = oss.str();
 
-            Plugins::TextureEntry& texture1 = GamePlugin->textureById(uniqueIdentifier1);
-            Plugins::TextureEntry& texture2 = GamePlugin->textureById(uniqueIdentifier3);
-            Plugins::TextureEntry& texture3 = GamePlugin->textureById(uniqueIdentifier2);
+            std::filesystem::path _assetsFolderPath = GamePlugin->assetsFolderPath();
+            std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
+
+            Plugins::TextureEntry& oldTextureWithPal = GamePlugin->textureById(oldIdentifierWithPal);
+            Plugins::TextureEntry& newTextureWithPal = GamePlugin->textureById(newIdentifierWithPal);
+            const char* oldTextureWithPalPath = oldTextureWithPal.getLastScene().fullPath.c_str();
+            const char* newTextureWithPalPath = newTextureWithPal.getLastScene().fullPath.c_str();
+            if (strlen(oldTextureWithPalPath) > 0 && strlen(newTextureWithPalPath) == 0)
+            {
+                std::filesystem::path oldFullPath = texturesFolder / (oldIdentifierWithPal + ".png");
+                std::filesystem::path newFullPath = texturesFolder / (newIdentifierWithPal + ".png");
+
+                int r_width, r_height, r_channels;
+                imageData = Texreplace::LoadTextureFromFile(oldTextureWithPalPath, &r_width, &r_height, &r_channels);
+
+                newTextureWithPal.setPath(newIdentifierWithPal + ".png");
+                newTextureWithPal.getLastScene().fullPath = newFullPath.string();
+
+                Texreplace::ExportTextureAsFile(imageData, newFullPath.string().c_str(), r_width, r_height, 4);
+
+                std::filesystem::remove(oldFullPath);
+            }
+
+            Plugins::TextureEntry& oldTextureWithoutPal = GamePlugin->textureById(oldIdentifierWithoutPal);
+            Plugins::TextureEntry& newTextureWithoutPal = GamePlugin->textureById(newIdentifierWithoutPal);
+            const char* oldTextureWithoutPalPath = oldTextureWithoutPal.getLastScene().fullPath.c_str();
+            const char* newTextureWithoutPalPath = newTextureWithoutPal.getLastScene().fullPath.c_str();
+            if (strlen(oldTextureWithoutPalPath) > 0 && strlen(newTextureWithoutPalPath) == 0)
+            {
+                std::filesystem::path oldFullPath = texturesFolder / (oldIdentifierWithoutPal + ".png");
+                std::filesystem::path newFullPath = texturesFolder / (newIdentifierWithoutPal + ".png");
+
+                int r_width, r_height, r_channels;
+                imageData = Texreplace::LoadTextureFromFile(oldTextureWithoutPalPath, &r_width, &r_height, &r_channels);
+
+                newTextureWithoutPal.setPath(newIdentifierWithoutPal + ".png");
+                newTextureWithoutPal.getLastScene().fullPath = newFullPath.string();
+
+                Texreplace::ExportTextureAsFile(imageData, newFullPath.string().c_str(), r_width, r_height, 4);
+
+                std::filesystem::remove(oldFullPath);
+            }
 
             int channels = 4;
             int r_width, r_height, r_channels;
             imageData = nullptr;
 
-            Plugins::TextureEntry* textures[] = {&texture1, &texture2, &texture3};
+            Plugins::TextureEntry* textures[] = {&newTextureWithPal, &newTextureWithoutPal};
             for (int i = 0; i < sizeof(textures) / sizeof(textures[0]); ++i) {
                 Plugins::TextureEntry* texture = textures[i];
                 auto& scene = texture->getNextScene();
@@ -351,7 +394,7 @@ public:
                 imageData = (unsigned char*)DecodingBuffer;
 
                 if (GamePlugin->shouldExportTextures()) {
-                    std::string fullPathTmp = GamePlugin->tmpTextureFilePath(uniqueIdentifier3);
+                    std::string fullPathTmp = GamePlugin->tmpTextureFilePath(newIdentifierWithPal);
                     const char* pathTmp = fullPathTmp.c_str();
 
                     printf("Saving texture %s\n", pathTmp);
