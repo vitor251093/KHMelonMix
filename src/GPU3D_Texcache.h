@@ -327,40 +327,54 @@ public:
             Plugins::TextureEntry& newTextureWithPal = GamePlugin->textureById(newIdentifierWithPal);
             const char* oldTextureWithPalPath = oldTextureWithPal.getLastScene().fullPath.c_str();
             const char* newTextureWithPalPath = newTextureWithPal.getLastScene().fullPath.c_str();
-            if (strlen(oldTextureWithPalPath) > 0 && strlen(newTextureWithPalPath) == 0)
+            if (strlen(oldTextureWithPalPath) > 0)
             {
-                std::filesystem::path oldFullPath = texturesFolder / (oldIdentifierWithPal + ".png");
-                std::filesystem::path newFullPath = texturesFolder / (newIdentifierWithPal + ".png");
+                if (strlen(newTextureWithPalPath) > 0)
+                {
+                    GamePlugin->errorLog("Texture %s couldn't be renamed to %s due to conflict", oldIdentifierWithPal, newIdentifierWithPal);
+                }
+                else {
+                    std::filesystem::path oldFullPath = texturesFolder / (oldIdentifierWithPal + ".png");
+                    std::filesystem::path newFullPath = texturesFolder / (newIdentifierWithPal + ".png");
 
-                int r_width, r_height, r_channels;
-                imageData = Texreplace::LoadTextureFromFile(oldTextureWithPalPath, &r_width, &r_height, &r_channels);
+                    int r_width, r_height, r_channels;
+                    imageData = Texreplace::LoadTextureFromFile(oldTextureWithPalPath, &r_width, &r_height, &r_channels);
 
-                newTextureWithPal.setPath(newIdentifierWithPal + ".png");
-                newTextureWithPal.getLastScene().fullPath = newFullPath.string();
+                    newTextureWithPal.setPath(newIdentifierWithPal + ".png");
+                    newTextureWithPal.getLastScene().fullPath = newFullPath.string();
 
-                Texreplace::ExportTextureAsFile(imageData, newFullPath.string().c_str(), r_width, r_height, 4);
+                    Texreplace::ExportTextureAsFile(imageData, newFullPath.string().c_str(), r_width, r_height, 4);
 
-                std::filesystem::remove(oldFullPath);
+                    std::filesystem::remove(oldFullPath);
+                    oldTextureWithPal.getLastScene().fullPath = "";
+                }
             }
 
             Plugins::TextureEntry& oldTextureWithoutPal = GamePlugin->textureById(oldIdentifierWithoutPal);
             Plugins::TextureEntry& newTextureWithoutPal = GamePlugin->textureById(newIdentifierWithoutPal);
             const char* oldTextureWithoutPalPath = oldTextureWithoutPal.getLastScene().fullPath.c_str();
             const char* newTextureWithoutPalPath = newTextureWithoutPal.getLastScene().fullPath.c_str();
-            if (strlen(oldTextureWithoutPalPath) > 0 && strlen(newTextureWithoutPalPath) == 0)
+            if (strlen(oldTextureWithoutPalPath) > 0)
             {
-                std::filesystem::path oldFullPath = texturesFolder / (oldIdentifierWithoutPal + ".png");
-                std::filesystem::path newFullPath = texturesFolder / (newIdentifierWithoutPal + ".png");
+                if (strlen(newTextureWithoutPalPath) > 0)
+                {
+                    GamePlugin->errorLog("Texture %s couldn't be renamed to %s due to conflict", oldIdentifierWithoutPal, newIdentifierWithoutPal);
+                }
+                else {
+                    std::filesystem::path oldFullPath = texturesFolder / (oldIdentifierWithoutPal + ".png");
+                    std::filesystem::path newFullPath = texturesFolder / (newIdentifierWithoutPal + ".png");
 
-                int r_width, r_height, r_channels;
-                imageData = Texreplace::LoadTextureFromFile(oldTextureWithoutPalPath, &r_width, &r_height, &r_channels);
+                    int r_width, r_height, r_channels;
+                    imageData = Texreplace::LoadTextureFromFile(oldTextureWithoutPalPath, &r_width, &r_height, &r_channels);
 
-                newTextureWithoutPal.setPath(newIdentifierWithoutPal + ".png");
-                newTextureWithoutPal.getLastScene().fullPath = newFullPath.string();
+                    newTextureWithoutPal.setPath(newIdentifierWithoutPal + ".png");
+                    newTextureWithoutPal.getLastScene().fullPath = newFullPath.string();
 
-                Texreplace::ExportTextureAsFile(imageData, newFullPath.string().c_str(), r_width, r_height, 4);
+                    Texreplace::ExportTextureAsFile(imageData, newFullPath.string().c_str(), r_width, r_height, 4);
 
-                std::filesystem::remove(oldFullPath);
+                    std::filesystem::remove(oldFullPath);
+                    oldTextureWithoutPal.getLastScene().fullPath = "";
+                }
             }
 
             int channels = 4;
