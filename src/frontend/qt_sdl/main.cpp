@@ -268,6 +268,11 @@ bool MelonApplication::event(QEvent *event)
 
 int main(int argc, char** argv)
 {
+    if (argc == 2 && (!strcasecmp(argv[1], "--version") || !strcasecmp(argv[1], "-v"))) {
+        printf("Melon Mix " MELONDS_VERSION "\n");
+        return 0;
+    }
+
     sysTimer.start();
     srand(time(nullptr));
 
