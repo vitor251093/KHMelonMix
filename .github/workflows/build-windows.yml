@@ -28,6 +28,12 @@ jobs:
     steps:
     - name: Check out sources
       uses: actions/checkout@v3
+    - name: Set up MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ucrt64
+        update: true
+        pacboy: gcc:p cmake:p ninja:p make:p
     - name: Set Version Suffix
       run: |
         if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
@@ -35,12 +41,6 @@ jobs:
           BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
           echo "MELONDS_VERSION_SUFFIX=-$BRANCH_NAME-$TIMESTAMP" >> $GITHUB_ENV
         fi
-    - name: Set up MSYS2
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: ucrt64
-        update: true
-        pacboy: gcc:p cmake:p ninja:p make:p
     - name: Restore vcpkg cache
       uses: actions/cache/restore@v4
       with:
