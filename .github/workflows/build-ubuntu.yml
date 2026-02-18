@@ -5,9 +5,11 @@ on:
     branches:
       - master
       - ci/*
+      - feature/*
   pull_request:
     branches:
       - master
+  workflow_dispatch:
 
 env:
   MELONDS_GIT_BRANCH: ${{ github.ref }}
@@ -32,6 +34,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       name: Check out sources
+    - name: Set Version Suffix
+      run: |
+        if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+          TIMESTAMP=$(date +'%Y%m%d%H%M')
+          BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+          echo "MELONDS_VERSION_SUFFIX=-$BRANCH_NAME-$TIMESTAMP" >> $GITHUB_ENV
+        fi
     - name: Install dependencies
       run: |
         sudo apt update
