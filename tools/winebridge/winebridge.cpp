@@ -4,6 +4,13 @@
 #include <cstdio>
 #include <memory>
 #include <array>
+#include <filesystem>
+
+bool isRunningInsideWine()
+{
+    std::string winepathExePath = "C:\\windows\\system32\\winepath.exe";
+    return std::filesystem::exists(winepathExePath);
+}
 
 std::string winePathToUnix(const std::string& windowsPath)
 {
@@ -108,6 +115,11 @@ static void closeWaitTitleProject(PROCESS_INFORMATION& waitPi, std::string& sign
 
 int main(int argc, char* argv[])
 {
+    if (!isRunningInsideWine()) {
+        MessageBox(0,"This EXE file in intended to be used inside Wine/Proton only. If you are on Windows, download the Windows version, and not the AppImage version", "Melon Mix Wine Bridge", MB_OK);
+        return 1;
+    }
+
     char cwd[MAX_PATH];
     GetCurrentDirectoryA(MAX_PATH, cwd);
 
