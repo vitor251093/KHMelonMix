@@ -1373,10 +1373,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes
                                 .hudScale(hudScale)
                                 .build(aspectRatio));
 
-                        // level up notification
+                        // level up notification + Scout-L License
                         shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(161, 39)
-                                .withSize(95, 32)
+                                .fromPosition(161, 24)
+                                .withSize(95, 47)
                                 .placeAtCorner(corner_TopRight)
                                 .withMargin(0.0, 133.0, 0.0, 0.0)
                                 .hudScale(hudScale)
