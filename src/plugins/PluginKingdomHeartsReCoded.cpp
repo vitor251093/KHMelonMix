@@ -1261,8 +1261,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes
                     if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) == 0) {
                         // player allies health
                         shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(220, 74)
-                                .withSize(36, 118)
+                                .fromPosition(220, 72)
+                                .withSize(36, 120)
                                 .placeAtCorner(corner_BottomRight)
                                 .withMargin(0.0, 0.0, playerHealthRightMargin, playerHealthBottomMargin)
                                 .hudScale(hudScale)
