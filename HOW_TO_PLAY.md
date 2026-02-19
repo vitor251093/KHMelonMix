@@ -2,7 +2,7 @@
 
 ## Windows (without the 1.5+2.5 collection)
 
-1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for Windows (not the source code zip);
+1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-windows-x86_64.zip) for Windows;
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Create a folder named "roms" next to the Melon Mix executable that you just copied;
 4. In order to play "358/2 Days":
@@ -18,7 +18,7 @@
 
 ## Linux / Steam Deck (without the 1.5+2.5 collection)
 
-1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for Linux (we recommend using the AppImage);
+1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-appimage-x86_64.zip) for Linux;
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Create a folder named "roms" next to the Melon Mix executable that you just copied;
 4. In order to play "358/2 Days":
@@ -35,7 +35,7 @@
 
 ## macOS (without the 1.5+2.5 collection)
 
-1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for macOS (not the source code zip);
+1. Download the latest version for macOS ([Intel]((https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-macOS-x86_64.zip)) / [Apple Silicon](https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-macOS-arm64.zip));
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Create a folder named "roms" next to the Melon Mix executable that you just copied;
 4. In order to play "358/2 Days":
@@ -52,7 +52,7 @@
 
 ## Windows (from the 1.5+2.5 collection) (Steam only)
 
-1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for Windows (not the source code zip);
+1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-windows-x86_64.zip) for Windows;
 2. Extract the downloaded ZIP file to a new folder (let's refer to it in the next steps as the "extracted folder");
 3. Open Steam, right-click your installation of the 1.5+2.5 collection, and press `Manage` -> `Browse local files`, which will open a folder (let's refer to it in the next steps as the "collection folder");
 4. Inside the collection folder, rename `KINGDOM HEARTS HD 1.5+2.5 Launcher.exe` to `KINGDOM HEARTS HD 1.5+2.5 Launcher backup.exe`;
@@ -72,7 +72,7 @@
 
 ## Linux / Steam Deck (from the 1.5+2.5 collection) (Steam only)
 
-1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest) for Linux (the appimage, specifically);
+1. Download the [latest version](https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-appimage-x86_64.zip) for Linux;
 2. Extract the downloaded ZIP file to a new folder (let's refer to it in the next steps as the "extracted folder");
 3. Open Steam, right-click your installation of the 1.5+2.5 collection, and press `Manage` -> `Browse local files`, which will open a folder (let's refer to it in the next steps as the "collection folder");
 4. Inside the collection folder, rename `KINGDOM HEARTS HD 1.5+2.5 Launcher.exe` to `KINGDOM HEARTS HD 1.5+2.5 Launcher backup.exe`;
