@@ -206,6 +206,7 @@ enum
     gameSceneState_showNextAreaName,
     gameSceneState_showFloorCounter,
     gameSceneState_showEnemiesCounter,
+    gameSceneState_bugLevelVisible,
     gameSceneState_topScreenMissionInformationVisible,
     gameSceneState_showBottomScreenMissionInformation,
     gameSceneState_showChallengeMeter,
@@ -1131,6 +1132,17 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes
             }
 
         case gameScene_InGameWithMap:
+            if ((GameSceneState & (1 << gameSceneState_bugLevelVisible)) > 0)
+            {
+                // bug level meter
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(140, 20)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+            }
+
             if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
             {
                 // top mission information
@@ -1652,6 +1664,11 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
             if (isSpinnerSawFinisherVisible())
             {
                 state |= (1 << gameSceneState_spinnerSawFinisherVisible);
+            }
+
+            if (isBugLevelVisibleOnTopScreen())
+            {
+                state |= (1 << gameSceneState_bugLevelVisible);
             }
 
             if (isMissionInformationVisibleOnTopScreen())
@@ -2224,11 +2241,20 @@ bool PluginKingdomHeartsReCoded::isDeweyDialogVisible()
            (has2DOnTopOf3DAt(buffer, 140, 60) && has2DOnTopOf3DAt(buffer, 190, 60));
 }
 
+bool PluginKingdomHeartsReCoded::isBugLevelVisibleOnTopScreen()
+{
+    u32* buffer = topScreen2DTexture();
+    return (has2DOnTopOf3DAt(buffer, 64,  0) || has2DOnTopOf3DAt(buffer, 64,  10)) &&
+           (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10)) &&
+          !(has2DOnTopOf3DAt(buffer, 170, 0) || has2DOnTopOf3DAt(buffer, 170, 10));
+}
+
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
 {
     u32* buffer = topScreen2DTexture();
     return (has2DOnTopOf3DAt(buffer, 64,  0) || has2DOnTopOf3DAt(buffer, 64,  10)) &&
-           (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10));
+           (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10)) &&
+           (has2DOnTopOf3DAt(buffer, 170, 0) || has2DOnTopOf3DAt(buffer, 170, 10));
 }
 
 bool PluginKingdomHeartsReCoded::isDialogVisible()

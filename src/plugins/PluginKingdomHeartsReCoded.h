@@ -170,6 +170,7 @@ private:
 
     bool isResultScreenVisible();
     bool isDeweyDialogVisible();
+    bool isBugLevelVisibleOnTopScreen();
     bool isMissionInformationVisibleOnTopScreen();
     bool isDialogVisible();
     bool isMinimapVisible();
