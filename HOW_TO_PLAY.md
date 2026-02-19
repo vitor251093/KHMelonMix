@@ -35,7 +35,7 @@
 
 ## macOS (without the 1.5+2.5 collection)
 
-1. Download the latest version for macOS ([Intel]((https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-macOS-x86_64.zip)) / [Apple Silicon](https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-macOS-arm64.zip));
+1. Download the latest version for macOS ([Intel](https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-macOS-x86_64.zip) / [Apple Silicon](https://github.com/vitor251093/KHMelonMix/releases/latest/download/MelonMix-macOS-arm64.zip));
 2. Open the downloaded ZIP file and copy the contents to an empty folder;
 3. Create a folder named "roms" next to the Melon Mix executable that you just copied;
 4. In order to play "358/2 Days":
