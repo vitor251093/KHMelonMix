@@ -37,8 +37,9 @@ public:
     std::string tomlUniqueIdentifier() override;
 
     void renderer_beforeBuildingShapes() override;
-    std::vector<ShapeData2D> renderer_2DShapes() override;
-    std::vector<ShapeData3D> renderer_3DShapes() override;
+    std::vector<ShapeData2D> renderer_composition() override;
+    std::vector<ShapeData2D> renderer_topScreen_2DShapes() override;
+    std::vector<ShapeData3D> renderer_topScreen_3DShapes() override;
     void renderer_afterBuildingShapes() override;
     int renderer_gameSceneState() override;
     int renderer_screenLayout() override;
@@ -198,11 +199,11 @@ private:
     int dialogBoxHeight();
     bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 
-    void renderer_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
-    void renderer_2DShapes_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
-    void renderer_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
-    void renderer_2DShapes_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
-    void renderer_2DShapes_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_topScreen_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_topScreen_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
 
     void hudToggle() override;
     void toggleFullscreenMap();

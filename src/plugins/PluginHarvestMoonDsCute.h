@@ -29,7 +29,7 @@ public:
     std::string gameFolderName() override;
     std::string assetsRegionSubfolder();
 
-    std::vector<ShapeData2D> renderer_2DShapes() override;
+    std::vector<ShapeData2D> renderer_topScreen_2DShapes() override;
     int renderer_screenLayout() override;
     int renderer_brightnessMode() override;
     bool renderer_showOriginalUI() override;

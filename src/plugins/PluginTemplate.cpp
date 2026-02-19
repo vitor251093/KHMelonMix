@@ -30,7 +30,13 @@ int PluginTemplate::detectGameScene()
     return 0;
 }
 
-std::vector<ShapeData2D> PluginTemplate::renderer_2DShapes() {
+std::vector<ShapeData2D> PluginTemplate::renderer_composition()
+{
+    auto shapes = std::vector<ShapeData2D>();
+    return shapes;
+}
+
+std::vector<ShapeData2D> PluginTemplate::renderer_topScreen_2DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
     float hudScale = (((float)UIScale) - 4) / 2 + 4;
@@ -51,7 +57,7 @@ std::vector<ShapeData2D> PluginTemplate::renderer_2DShapes() {
     return shapes;
 }
 
-std::vector<ShapeData3D> PluginTemplate::renderer_3DShapes() {
+std::vector<ShapeData3D> PluginTemplate::renderer_topScreen_3DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     std::vector<ShapeData3D> shapes;
     shapes.push_back(ShapeBuilder3D::square()

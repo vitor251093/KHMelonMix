@@ -173,8 +173,9 @@ public:
 
     void buildShapes();
     virtual void renderer_beforeBuildingShapes() { };
-    virtual std::vector<ShapeData2D> renderer_2DShapes() { return std::vector<ShapeData2D>(); };
-    virtual std::vector<ShapeData3D> renderer_3DShapes() { return std::vector<ShapeData3D>(); };
+    virtual std::vector<ShapeData2D> renderer_composition() { return std::vector<ShapeData2D>(); };
+    virtual std::vector<ShapeData2D> renderer_topScreen_2DShapes() { return std::vector<ShapeData2D>(); };
+    virtual std::vector<ShapeData3D> renderer_topScreen_3DShapes() { return std::vector<ShapeData3D>(); };
     virtual void renderer_afterBuildingShapes() { };
     virtual int renderer_gameSceneState() { return 0; };
     virtual int renderer_screenLayout() { return 0; };

@@ -31,10 +31,11 @@ public:
     std::string gameFolderName() override;
     std::string tomlUniqueIdentifier() override;
 
-    void renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
 
-    std::vector<ShapeData2D> renderer_2DShapes() override;
-    std::vector<ShapeData3D> renderer_3DShapes() override;
+    std::vector<ShapeData2D> renderer_composition() override;
+    std::vector<ShapeData2D> renderer_topScreen_2DShapes() override;
+    std::vector<ShapeData3D> renderer_topScreen_3DShapes() override;
     int renderer_gameSceneState() override;
     int renderer_screenLayout() override;
     int renderer_brightnessMode() override;

@@ -1253,8 +1253,12 @@ void Plugin::buildShapes()
 {
     renderer_beforeBuildingShapes();
     GameSceneState = renderer_gameSceneState();
-    current2DShapes = renderer_2DShapes();
-    current3DShapes = renderer_3DShapes();
+    current2DShapes = renderer_topScreen_2DShapes();
+    current3DShapes = renderer_topScreen_3DShapes();
+
+    std::vector<ShapeData2D> currentCompositionShapes = renderer_composition();
+    current2DShapes.insert(current2DShapes.begin(), currentCompositionShapes.begin(), currentCompositionShapes.end());
+
     renderer_afterBuildingShapes();
 }
 

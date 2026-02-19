@@ -560,7 +560,7 @@ std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
     return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 }
 
-void PluginKingdomHeartsReCoded::renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale) {
+void PluginKingdomHeartsReCoded::renderer_composition_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale) {
     bool showChallengeMeter = (GameSceneState & (1 << gameSceneState_showChallengeMeter)) > 0;
     int challengeMeterHeight = showChallengeMeter ? 7 : 0;
     if (showChallengeMeter)
@@ -696,9 +696,15 @@ void PluginKingdomHeartsReCoded::renderer_2DShapes_component_missionInformationF
             .build(aspectRatio));
 }
 
-std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
-    float aspectRatio = AspectRatio / (4.f / 3.f);
+std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_composition()
+{
     auto shapes = std::vector<ShapeData2D>();
+
+    if (!SingleScreenMode) {
+        return shapes;
+    }
+
+    float aspectRatio = AspectRatio / (4.f / 3.f);
     float hudScale = (((float)UIScale) - 4) / 2 + 4;
     int fullscreenMapTransitionDuration = 20;
 
@@ -778,21 +784,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                         .preserveDsScale()
                         .build(aspectRatio));
             }
-            if ((GameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-            }
-            break;
-
-        case gameScene_CutsceneWithStaticImages:
-            shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
             break;
 
         case gameScene_InGameSaveMenu:
@@ -872,54 +863,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 break;
             }
 
-        case gameScene_InGameMenu:
-            // config and quest list; the others are in horizontal style
-            shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .force()
-                    .build(aspectRatio));
-            break;
-
-        case gameScene_ResultScreen:
-            // review/result screens of different kinds
-            shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
-            break;
-
-        case gameScene_InGameOlympusBattle:
-            // moves list
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(0, 0)
-                    .withSize(256, 40)
-                    .placeAtCorner(corner_TopLeft)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
-            // cleaning the rest of the upper area of the screen
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(118, 152)
-                    .withSize(14, 10)
-                    .placeAtCorner(corner_Top)
-                    .sourceScale(aspectRatio*20, 1.0*4)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
-
-        case gameScene_InGameDialog:
-            if ((GameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-                break;
-            }
-
         case gameScene_InGameWithMap:
             if ((GameSceneState & (1 << gameSceneState_showFullscreenMap)) > 0)
             {
@@ -936,82 +879,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
                 }
             }
 
-            if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
-            {
-                // top mission information
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromPosition(0, 0)
-                        .withSize(256, 40)
-                        .placeAtCorner(corner_TopLeft)
-                        .hudScale(hudScale)
-                        .build(aspectRatio));
-            }
-
-            if ((GameSceneState & (1 << gameSceneState_textOverScreen)) > 0)
-            {
-                // texts over screen, like in the tutorial
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-                break;
-            }
-
-            if ((GameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-                break;
-            }
-
             if ((GameSceneState & (1 << gameSceneState_showHud)) > 0)
             {
-                if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) == 0)
-                {
-                    if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) > 0) {
-                        // dewey dialog when visiting the alleyway for the first time, while walking backwards
-                        // Note: the workaround below avoids duplicating the enemy health
-
-                        shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(36, 0)
-                                .withSize(184, 16)
-                                .placeAtCorner(corner_Top)
-                                .withMargin(0.0, 7.5, 0.0, 0.0)
-                                .hudScale(hudScale)
-                                .build(aspectRatio));
-
-                        shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(0, 16)
-                                .withSize(256, 79)
-                                .placeAtCorner(corner_Top)
-                                .withMargin(0.0, 23.5, 0.0, 0.0)
-                                .hudScale(hudScale)
-                                .build(aspectRatio));
-
-                        // enemy health, if any
-                        shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(220, 0)
-                                .withSize(36, 16)
-                                .placeAtCorner(corner_TopRight)
-                                .withMargin(0.0, 7.5, 9.0, 0.0)
-                                .hudScale(hudScale)
-                                .build(aspectRatio));
-                    }
-                    else {
-                        // enemy health
-                        shapes.push_back(ShapeBuilder2D::square()
-                                .fromPosition(163, 0)
-                                .withSize(93, 22)
-                                .placeAtCorner(corner_TopRight)
-                                .withMargin(0.0, 7.5, 9.0, 0.0)
-                                .hudScale(hudScale)
-                                .build(aspectRatio));
-                    }
-                }
-
                 if ((GameSceneState & (1 << gameSceneState_showMinimap)) > 0) {
                     // minimap
                     ivec2 _minimapCenter = minimapCenter();
@@ -1146,7 +1015,196 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
                 if ((GameSceneState & (1 << gameSceneState_showBottomScreenMissionInformation)) > 0)
                 {
-                    renderer_2DShapes_component_missionInformationFromBottomScreen(&shapes, aspectRatio, hudScale);
+                    renderer_composition_component_missionInformationFromBottomScreen(&shapes, aspectRatio, hudScale);
+                }
+            }
+
+            break;
+
+        case gameScene_Tutorial:
+            // tutorial
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(5, 0)
+                    .withSize(246, 192)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(5.0)
+                    .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .fromPosition(0, 96)
+                    .withSize(5, 5)
+                    .placeAtCorner(corner_Center)
+                    .sourceScale(1000.0)
+                    .opacity(0.75)
+                    .build(aspectRatio));
+
+            break;
+
+        case gameScene_LoadingScreen:
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_BottomRight)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+            break;
+
+    }
+
+    return shapes;
+}
+
+std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes() {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    auto shapes = std::vector<ShapeData2D>();
+    float hudScale = (((float)UIScale) - 4) / 2 + 4;
+    int fullscreenMapTransitionDuration = 20;
+
+    switch (GameScene) {
+        case gameScene_Cutscene:
+            if ((GameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            }
+            break;
+
+        case gameScene_CutsceneWithStaticImages:
+            shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            break;
+
+        case gameScene_InGameMenu:
+            // config and quest list; the others are in horizontal style
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .force()
+                    .build(aspectRatio));
+            break;
+
+        case gameScene_ResultScreen:
+            // review/result screens of different kinds
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Center)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+            break;
+
+        case gameScene_InGameOlympusBattle:
+            // moves list
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(0, 0)
+                    .withSize(256, 40)
+                    .placeAtCorner(corner_TopLeft)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+
+            // cleaning the rest of the upper area of the screen
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromPosition(118, 152)
+                    .withSize(14, 10)
+                    .placeAtCorner(corner_Top)
+                    .sourceScale(aspectRatio*20, 1.0*4)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+        case gameScene_InGameDialog:
+            if ((GameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
+
+        case gameScene_InGameWithMap:
+            if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) > 0)
+            {
+                // top mission information
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(256, 40)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+            }
+
+            if ((GameSceneState & (1 << gameSceneState_textOverScreen)) > 0)
+            {
+                // texts over screen, like in the tutorial
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
+
+            if ((GameSceneState & (1 << gameSceneState_dialogVisible)) > 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+                break;
+            }
+
+            if ((GameSceneState & (1 << gameSceneState_showHud)) > 0)
+            {
+                if ((GameSceneState & (1 << gameSceneState_topScreenMissionInformationVisible)) == 0)
+                {
+                    if ((GameSceneState & (1 << gameSceneState_deweyDialogVisible)) > 0) {
+                        // dewey dialog when visiting the alleyway for the first time, while walking backwards
+                        // Note: the workaround below avoids duplicating the enemy health
+
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(36, 0)
+                                .withSize(184, 16)
+                                .placeAtCorner(corner_Top)
+                                .withMargin(0.0, 7.5, 0.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(0, 16)
+                                .withSize(256, 79)
+                                .placeAtCorner(corner_Top)
+                                .withMargin(0.0, 23.5, 0.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+
+                        // enemy health, if any
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(220, 0)
+                                .withSize(36, 16)
+                                .placeAtCorner(corner_TopRight)
+                                .withMargin(0.0, 7.5, 9.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
+                    else {
+                        // enemy health
+                        shapes.push_back(ShapeBuilder2D::square()
+                                .fromPosition(163, 0)
+                                .withSize(93, 22)
+                                .placeAtCorner(corner_TopRight)
+                                .withMargin(0.0, 7.5, 9.0, 0.0)
+                                .hudScale(hudScale)
+                                .build(aspectRatio));
+                    }
                 }
 
                 if ((GameSceneState & (1 << gameSceneState_showOlympusBattlePlayerHealth)) > 0)
@@ -1342,37 +1400,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
 
             break;
 
-        case gameScene_Tutorial:
-            // tutorial
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromBottomScreen()
-                    .fromPosition(5, 0)
-                    .withSize(246, 192)
-                    .placeAtCorner(corner_Center)
-                    .sourceScale(5.0)
-                    .squareBorderRadius(10.0, 10.0, 5.0, 5.0)
-                    .build(aspectRatio));
-
-            // background
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromBottomScreen()
-                    .fromPosition(0, 96)
-                    .withSize(5, 5)
-                    .placeAtCorner(corner_Center)
-                    .sourceScale(1000.0)
-                    .opacity(0.75)
-                    .build(aspectRatio));
-
-            break;
-
-        case gameScene_LoadingScreen:
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromBottomScreen()
-                    .placeAtCorner(corner_BottomRight)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-            break;
-
         case gameScene_DeathScreen:
             shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
@@ -1385,7 +1412,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_2DShapes() {
     return shapes;
 }
 
-std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_3DShapes() {
+std::vector<ShapeData3D> PluginKingdomHeartsReCoded::renderer_topScreen_3DShapes() {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData3D>();
     float hudScale = (((float)UIScale) - 4) / 2 + 4;
@@ -1705,7 +1732,12 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
     return state;
 }
 
-int PluginKingdomHeartsReCoded::renderer_screenLayout() {
+int PluginKingdomHeartsReCoded::renderer_screenLayout()
+{
+    if (!SingleScreenMode) {
+        return screenLayout_Top;
+    }
+
     switch (GameScene) {
         case gameScene_InGameWithMap:
         case gameScene_PauseMenu:
@@ -1750,7 +1782,12 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout() {
     return screenLayout_Top;
 };
 
-int PluginKingdomHeartsReCoded::renderer_brightnessMode() {
+int PluginKingdomHeartsReCoded::renderer_brightnessMode()
+{
+    if (!SingleScreenMode) {
+        return brightnessMode_Default;
+    }
+
     if (_ShouldHideScreenForTransitions) {
         return brightnessMode_BlackScreen;
     }
