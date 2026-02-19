@@ -377,7 +377,7 @@ inline std::string kingdomHeartsLanguage()
     std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
     if (collectionFolderPath.empty())
     {
-        return collectionFolderPath;
+        return "";
     }
 
     std::filesystem::path steamappsPath = collectionFolderPath.parent_path().parent_path();
