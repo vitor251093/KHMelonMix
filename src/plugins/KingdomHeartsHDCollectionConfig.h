@@ -10,6 +10,7 @@
 #include <string>
 #include <regex>
 #include <filesystem>
+#include <SDL2/SDL.h>
 
 #include "../types.h"
 
@@ -416,6 +417,44 @@ inline std::string kingdomHeartsLanguage()
     return language;
 }
 
+inline int GetAxisBinding(SDL_GameController* controller, SDL_GameControllerAxis axis, bool isNegative) {
+    SDL_GameControllerButtonBind bind = SDL_GameControllerGetBindForAxis(controller, axis);
+
+    if (bind.bindType == SDL_CONTROLLER_BINDTYPE_AXIS) {
+        int physicalIndex = bind.value.axis;
+
+        // TODO: KH this may be necessary in some cases, apparently?
+        Sint16 axisval = 0xFFFF; // SDL_GameControllerGetAxis(controller, axis);
+
+        bool isTrigger = (axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+
+        if (isTrigger) {
+            return (axisval & 0xFFFF) | 0x10000 | (2 << 20) | (physicalIndex << 24);
+        }
+
+        u32 direction = isNegative ? 0x1 : 0x0;
+        return (int)((axisval & 0xFFFF) | 0x10000 | (direction << 20) | (physicalIndex << 24));
+    }
+    return -1;
+}
+
+inline int GetButtonBinding(SDL_GameController* controller, std::vector<SDL_GameControllerButton> preferences) {
+    for (auto button : preferences) {
+        SDL_GameControllerButtonBind bind = SDL_GameControllerGetBindForButton(controller, button);
+
+        if (bind.bindType == SDL_CONTROLLER_BINDTYPE_HAT) {
+            int hatIndex = bind.value.hat.hat;
+            int hatMask  = bind.value.hat.hat_mask;
+            return 0x100 | hatMask | (hatIndex << 4);
+        }
+
+        if (bind.bindType == SDL_CONTROLLER_BINDTYPE_BUTTON) {
+            return bind.value.button;
+        }
+    }
+    return -1;
+}
+
 inline void applyKingdomHeartsKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig)
 {
     // TODO: KH We need to load mouse sensitivity (config.mouseSensitivity) to: plugin->tomlUniqueIdentifier() + ".CameraSensitivity"
@@ -456,77 +495,54 @@ inline void applyKingdomHeartsKeyboardAndJoystickMappings(KHMareConfig* config, 
     setIntConfig("Instance0.Keyboard.R", -1);
     */
 
-    // "Steam Input" controller (JoystickVendorID == 0x28de && JoystickDeviceID == 0x11ff)
-    setIntConfig("Instance0.Joystick.685642239.A", 1);
-    setIntConfig("Instance0.Joystick.685642239.B", 0);
-    setIntConfig("Instance0.Joystick.685642239.Y", 2);
-    setIntConfig("Instance0.Joystick.685642239.X", 3);
-    // TODO: KH holdToOpenShortcuts
-    setIntConfig("Instance0.Joystick.685642239.HK_RLockOn",       5);
-    setIntConfig("Instance0.Joystick.685642239.HK_RSwitchTarget", 0x521FFFF);
-    setIntConfig("Instance0.Joystick.685642239.HK_LSwitchTarget", 0x221FFFF);
-    setIntConfig("Instance0.Joystick.685642239.Up",    0x111FFFF);
-    setIntConfig("Instance0.Joystick.685642239.Down",  0x101FFFF);
-    setIntConfig("Instance0.Joystick.685642239.Left",  0x011FFFF);
-    setIntConfig("Instance0.Joystick.685642239.Right", 0x001FFFF);
-    // TODO: KH holdToWalk
-    setIntConfig("Instance0.Joystick.685642239.HK_HUDToggle", 10);
-    setIntConfig("Instance0.Joystick.685642239.CameraUp",    0x411FFFF);
-    setIntConfig("Instance0.Joystick.685642239.CameraDown",  0x401FFFF);
-    setIntConfig("Instance0.Joystick.685642239.CameraLeft",  0x311FFFF);
-    setIntConfig("Instance0.Joystick.685642239.CameraRight", 0x301FFFF);
-    // TODO: KH resetCamera
-    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuUp",    0x101);
-    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuDown",  0x104);
-    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuLeft",  0x108);
-    setIntConfig("Instance0.Joystick.685642239.HK_CommandMenuRight", 0x102);
-    setIntConfig("Instance0.Joystick.685642239.Start", 7);
-    setIntConfig("Instance0.Joystick.685642239.HK_FullscreenMapToggle", 6);
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (SDL_IsGameController(i)) {
+            SDL_GameController* controller = SDL_GameControllerOpen(i);
+            if (!controller) continue;
 
-    setIntConfig("Instance0.Joystick.685642239.HK_AttackInteract", -1);
-    setIntConfig("Instance0.Joystick.685642239.HK_Jump",       -1);
-    setIntConfig("Instance0.Joystick.685642239.HK_GuardCombo", -1);
-    setIntConfig("Instance0.Joystick.685642239.Select", -1);
-    setIntConfig("Instance0.Joystick.685642239.L", -1);
-    setIntConfig("Instance0.Joystick.685642239.R", -1);
+            u16 vendor = SDL_GameControllerGetVendor(controller);
+            u16 product = SDL_GameControllerGetProduct(controller);
+            u32 controllerID = (int)((vendor << 16) | product);
 
-    // PS3 controller (JoystickVendorID == 0x054c && JoystickDeviceID == 0x0268)
+            std::string prefix = "Instance0.Joystick." + std::to_string(controllerID) + ".";
 
-    // PS4 controller V1 (JoystickVendorID == 0x054c && JoystickDeviceID == 0x05c4)
+            setIntConfig(prefix + "A", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_B}));
+            setIntConfig(prefix + "B", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_A}));
+            setIntConfig(prefix + "Y", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_Y}));
+            setIntConfig(prefix + "X", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_X}));
+            // TODO: KH holdToOpenShortcuts
+            setIntConfig(prefix + "HK_RLockOn", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER}));
+            setIntConfig(prefix + "HK_LSwitchTarget", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT, true));
+            setIntConfig(prefix + "HK_RSwitchTarget", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, true));
+            setIntConfig(prefix + "Up",    GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTY, true));
+            setIntConfig(prefix + "Down",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTY, false));
+            setIntConfig(prefix + "Left",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTX, true));
+            setIntConfig(prefix + "Right", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTX, false));
+            // TODO: KH holdToWalk
+            setIntConfig(prefix + "HK_HUDToggle", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_LEFTSTICK}));
+            setIntConfig(prefix + "CameraUp",    GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTY, true));
+            setIntConfig(prefix + "CameraDown",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTY, false));
+            setIntConfig(prefix + "CameraLeft",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTX, true));
+            setIntConfig(prefix + "CameraRight", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTX, false));
+            // TODO: KH resetCamera
+            setIntConfig(prefix + "HK_CommandMenuUp",    GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_UP}));
+            setIntConfig(prefix + "HK_CommandMenuDown",  GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_DOWN}));
+            setIntConfig(prefix + "HK_CommandMenuLeft",  GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_LEFT}));
+            setIntConfig(prefix + "HK_CommandMenuRight", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_RIGHT}));
+            setIntConfig(prefix + "Start", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_START}));
+            setIntConfig(prefix + "HK_FullscreenMapToggle", GetButtonBinding(controller,
+                { SDL_CONTROLLER_BUTTON_TOUCHPAD, SDL_CONTROLLER_BUTTON_BACK, SDL_CONTROLLER_BUTTON_GUIDE }));
 
-    // PS4 controller V2 (JoystickVendorID == 0x054c && JoystickDeviceID == 0x09cc)
-    setIntConfig("Instance0.Joystick.88869324.A", 1);
-    setIntConfig("Instance0.Joystick.88869324.B", 0);
-    setIntConfig("Instance0.Joystick.88869324.Y", 2);
-    setIntConfig("Instance0.Joystick.88869324.X", 3);
-    // TODO: KH holdToOpenShortcuts
-    setIntConfig("Instance0.Joystick.88869324.HK_RLockOn",       10);
-    setIntConfig("Instance0.Joystick.88869324.HK_RSwitchTarget", 0x521FFFF);
-    setIntConfig("Instance0.Joystick.88869324.HK_LSwitchTarget", 0x421FFFF);
-    setIntConfig("Instance0.Joystick.88869324.Up",    0x111FFFF);
-    setIntConfig("Instance0.Joystick.88869324.Down",  0x101FFFF);
-    setIntConfig("Instance0.Joystick.88869324.Left",  0x011FFFF);
-    setIntConfig("Instance0.Joystick.88869324.Right", 0x001FFFF);
-    // TODO: KH holdToWalk
-    setIntConfig("Instance0.Joystick.88869324.HK_HUDToggle", 8);
-    setIntConfig("Instance0.Joystick.88869324.CameraUp",    0x311FFFF);
-    setIntConfig("Instance0.Joystick.88869324.CameraDown",  0x301FFFF);
-    setIntConfig("Instance0.Joystick.88869324.CameraLeft",  0x211FFFF);
-    setIntConfig("Instance0.Joystick.88869324.CameraRight", 0x201FFFF);
-    // TODO: KH resetCamera
-    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuUp",    11);
-    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuDown",  12);
-    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuLeft",  13);
-    setIntConfig("Instance0.Joystick.88869324.HK_CommandMenuRight", 14);
-    setIntConfig("Instance0.Joystick.88869324.Start", 6);
-    setIntConfig("Instance0.Joystick.88869324.HK_FullscreenMapToggle", 15);
+            setIntConfig(prefix + "HK_AttackInteract", -1);
+            setIntConfig(prefix + "HK_Jump",       -1);
+            setIntConfig(prefix + "HK_GuardCombo", -1);
+            setIntConfig(prefix + "Select", -1);
+            setIntConfig(prefix + "L", -1);
+            setIntConfig(prefix + "R", -1);
 
-    setIntConfig("Instance0.Joystick.88869324.HK_AttackInteract", -1);
-    setIntConfig("Instance0.Joystick.88869324.HK_Jump",       -1);
-    setIntConfig("Instance0.Joystick.88869324.HK_GuardCombo", -1);
-    setIntConfig("Instance0.Joystick.88869324.Select", -1);
-    setIntConfig("Instance0.Joystick.88869324.L", -1);
-    setIntConfig("Instance0.Joystick.88869324.R", -1);
+            SDL_GameControllerClose(controller);
+        }
+    }
 }
 
 }
