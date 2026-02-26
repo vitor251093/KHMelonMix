@@ -1,4 +1,4 @@
-#include "KingdomHeartsHDCollectionConfig.h"
+#include "KingdomHeartsHDCollection.h"
 
 #include <iostream>
 #include <fstream>
@@ -105,7 +105,7 @@ int KingdomHeartsHDCollection::DecodeSet1ToQt(KHKey* key)
     return val;
 }
 
-std::filesystem::path KingdomHeartsHDCollection::myDocumentsFolderPath()
+std::filesystem::path KingdomHeartsHDCollection::userDocumentsFolderPath()
 {
 #ifdef _WIN32
     wchar_t Folder[1024];
@@ -131,7 +131,7 @@ std::filesystem::path KingdomHeartsHDCollection::myDocumentsFolderPath()
 #endif
 }
 
-std::filesystem::path KingdomHeartsHDCollection::kingdomHeartsCollectionFolderPath()
+std::filesystem::path KingdomHeartsHDCollection::path()
 {
     std::filesystem::path collectionFolderPath;
 
@@ -169,7 +169,7 @@ std::filesystem::path KingdomHeartsHDCollection::kingdomHeartsCollectionFolderPa
     return collectionFolderPath;
 }
 
-std::filesystem::path KingdomHeartsHDCollection::kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(const std::filesystem::path& documentsFolderPath)
+std::filesystem::path KingdomHeartsHDCollection::steamConfigFolderPathFromDocumentsPath(const std::filesystem::path& documentsFolderPath)
 {
     std::filesystem::path empty;
 
@@ -189,9 +189,9 @@ std::filesystem::path KingdomHeartsHDCollection::kingdomHeartsCollectionSteamCon
     return saveDatasFolderPath / saveDataFolderNameList[0];
 }
 
-std::filesystem::path KingdomHeartsHDCollection::kingdomHeartsCollectionConfigFolder()
+std::filesystem::path KingdomHeartsHDCollection::configFolderPath()
 {
-    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
+    std::filesystem::path collectionFolderPath = path();
     if (collectionFolderPath.empty())
     {
         return collectionFolderPath;
@@ -210,18 +210,18 @@ std::filesystem::path KingdomHeartsHDCollection::kingdomHeartsCollectionConfigFo
         return empty;
     }
 
-    return kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(documentsFolderPath);
+    return steamConfigFolderPathFromDocumentsPath(documentsFolderPath);
 }
 
-KingdomHeartsHDCollection::KHMareConfig* KingdomHeartsHDCollection::kingdomHeartsCollectionConfig()
+KingdomHeartsHDCollection::KHMareConfig* KingdomHeartsHDCollection::config()
 {
-    std::filesystem::path configFolderPath = kingdomHeartsCollectionConfigFolder();
-    if (configFolderPath.empty())
+    std::filesystem::path _configFolderPath = configFolderPath();
+    if (_configFolderPath.empty())
     {
         return nullptr;
     }
 
-    std::filesystem::path configFilePath = configFolderPath / "config1525.dat";
+    std::filesystem::path configFilePath = _configFolderPath / "config1525.dat";
     Platform::FileHandle* configFileHandle = Platform::OpenFile(configFilePath.string(), Platform::FileMode::ReadText);
 
     printf("Config file path: %s\n", configFilePath.string().c_str());
@@ -232,9 +232,9 @@ KingdomHeartsHDCollection::KHMareConfig* KingdomHeartsHDCollection::kingdomHeart
     return config;
 }
 
-void KingdomHeartsHDCollection::createKingdomHeartsSignalFile()
+void KingdomHeartsHDCollection::createSignalFile()
 {
-    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
+    std::filesystem::path collectionFolderPath = path();
     if (collectionFolderPath.empty())
     {
         return;
@@ -249,9 +249,9 @@ void KingdomHeartsHDCollection::createKingdomHeartsSignalFile()
     }
 }
 
-std::string KingdomHeartsHDCollection::kingdomHeartsLanguage()
+std::string KingdomHeartsHDCollection::language()
 {
-    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
+    std::filesystem::path collectionFolderPath = path();
     if (collectionFolderPath.empty())
     {
         return "";
@@ -328,7 +328,7 @@ inline int GetButtonBinding(SDL_GameController* controller, std::vector<SDL_Game
     return -1;
 }
 
-void KingdomHeartsHDCollection::applyKingdomHeartsJoystickMappings(std::function<void(std::string, int)> setIntConfig, bool bAsConfirmButton)
+void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::string, int)> setIntConfig, bool bAsConfirmButton)
 {
     for (int i = 0; i < SDL_NumJoysticks(); ++i) {
         if (SDL_IsGameController(i)) {
@@ -380,7 +380,7 @@ void KingdomHeartsHDCollection::applyKingdomHeartsJoystickMappings(std::function
     }
 }
 
-void KingdomHeartsHDCollection::applyKingdomHeartsKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig)
+void KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig)
 {
     // TODO: KH We need to load mouse sensitivity (config.mouseSensitivity) to: plugin->tomlUniqueIdentifier() + ".CameraSensitivity"
 
@@ -420,7 +420,7 @@ void KingdomHeartsHDCollection::applyKingdomHeartsKeyboardAndJoystickMappings(KH
     setIntConfig("Instance0.Keyboard.R", -1);
     */
 
-    applyKingdomHeartsJoystickMappings(setIntConfig, config->confirmButton == 1);
+    applyJoystickMappings(setIntConfig, config->confirmButton == 1);
 }
 
 }

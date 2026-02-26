@@ -138,21 +138,21 @@ private:
     static int DecodeSet1ToQt(u32 sc);
     static int DecodeSet1ToQt(KHKey* key);
 
-    static std::filesystem::path myDocumentsFolderPath();
-    static std::filesystem::path kingdomHeartsCollectionSteamConfigFolderPathFromDocuments(const std::filesystem::path& documentsFolderPath);
+    static std::filesystem::path userDocumentsFolderPath();
+    static std::filesystem::path steamConfigFolderPathFromDocumentsPath(const std::filesystem::path& documentsFolderPath);
 
 public:
-    static std::filesystem::path kingdomHeartsCollectionFolderPath();
-    static std::filesystem::path kingdomHeartsCollectionConfigFolder();
+    static std::filesystem::path path();
+    static std::filesystem::path configFolderPath();
 
-    static KHMareConfig* kingdomHeartsCollectionConfig();
+    static KHMareConfig* config();
 
-    static void createKingdomHeartsSignalFile();
+    static void createSignalFile();
 
-    static std::string kingdomHeartsLanguage();
+    static std::string language();
 
-    static void applyKingdomHeartsJoystickMappings(std::function<void(std::string, int)> setIntConfig, bool bAsConfirmButton);
-    static void applyKingdomHeartsKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig);
+    static void applyJoystickMappings(std::function<void(std::string, int)> setIntConfig, bool bAsConfirmButton);
+    static void applyKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig);
 
 };
 }
