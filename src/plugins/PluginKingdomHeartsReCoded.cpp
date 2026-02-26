@@ -1,5 +1,5 @@
 #include "PluginKingdomHeartsReCoded.h"
-#include "KingdomHeartsHDCollectionConfig.h"
+#include "KingdomHeartsHDCollection.h"
 #include <cmath>
 
 namespace Plugins
@@ -357,16 +357,16 @@ void PluginKingdomHeartsReCoded::overrideConfigs(
 {
     if (AutomaticallyMapJoysticks)
     {
-        applyKingdomHeartsJoystickMappings(setIntConfig, false);
+        KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
     }
 
-    KHMareConfig* config = kingdomHeartsCollectionConfig();
+    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
     if (config == nullptr)
     {
         return;
     }
 
-    std::string khLanguage = kingdomHeartsLanguage();
+    std::string khLanguage = KingdomHeartsHDCollection::language();
     int localIndex = 1;
     if (khLanguage == "japanese")
         localIndex = 0;
@@ -399,12 +399,12 @@ void PluginKingdomHeartsReCoded::overrideConfigs(
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
 
-    applyKingdomHeartsKeyboardAndJoystickMappings(config, setIntConfig);
+    KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(config, setIntConfig);
 }
 
 std::string PluginKingdomHeartsReCoded::saveFilePath()
 {
-    createKingdomHeartsSignalFile();
+    KingdomHeartsHDCollection::createSignalFile();
 
     const char* saveFilePathStrPtr = std::getenv("MELON_MIX_SAVE");
     if (saveFilePathStrPtr != nullptr)
@@ -413,7 +413,7 @@ std::string PluginKingdomHeartsReCoded::saveFilePath()
     }
 
     std::string saveFilePathStr = "";
-    std::filesystem::path saveFilePath = kingdomHeartsCollectionConfigFolder();
+    std::filesystem::path saveFilePath = KingdomHeartsHDCollection::configFolderPath();
     if (!saveFilePath.empty())
     {
         saveFilePathStr = saveFilePath.string();
@@ -435,7 +435,7 @@ std::string PluginKingdomHeartsReCoded::saveFilePath()
 }
 
 bool PluginKingdomHeartsReCoded::shouldStartInFullscreen() {
-    KHMareConfig* config = kingdomHeartsCollectionConfig();
+    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
     if (config == nullptr)
     {
         return FullscreenOnStartup;
