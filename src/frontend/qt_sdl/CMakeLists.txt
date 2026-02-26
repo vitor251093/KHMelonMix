@@ -71,7 +71,6 @@ set(SOURCES_QT_SDL
     NetplayDialog.cpp
 
     plugins/PluginJoystick.cpp
-    plugins/KingdomHeartsHDCollection.cpp
 
     LuaMain.cpp
 )

@@ -1,10 +1,10 @@
-#include "../../../plugins/KingdomHeartsHDCollection.h"
+#include "KingdomHeartsHDCollection.h"
 
 #include <iostream>
 #include <fstream>
 #include <regex>
 
-#include "../../../Platform.h"
+#include "../Platform.h"
 
 #ifdef _WIN32
 #include <windows.h>
