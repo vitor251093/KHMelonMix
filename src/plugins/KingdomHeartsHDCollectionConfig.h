@@ -128,7 +128,7 @@ struct KHMareConfig
     KHSoundSettings sound;
     u8 joystickButtonIcons; // 0 => auto; 1 => xbox; 2 => playstation; 3 => generic
     u8 unk31;
-    u8 confirmButton; // 0 => A; 1 => B
+    u8 confirmButton; // 0 => A/Circle; 1 => B/X
     u8 unk33;
     u8 unk34;
     u8 unk35;
@@ -452,7 +452,7 @@ inline int GetButtonBinding(SDL_GameController* controller, std::vector<SDL_Game
     return -1;
 }
 
-inline void applyKingdomHeartsJoystickMappings(std::function<void(std::string, int)> setIntConfig)
+inline void applyKingdomHeartsJoystickMappings(std::function<void(std::string, int)> setIntConfig, bool bAsConfirmButton)
 {
     for (int i = 0; i < SDL_NumJoysticks(); ++i) {
         if (SDL_IsGameController(i)) {
@@ -465,8 +465,8 @@ inline void applyKingdomHeartsJoystickMappings(std::function<void(std::string, i
 
             std::string prefix = "Instance0.Joystick." + std::to_string(controllerID) + ".";
 
-            setIntConfig(prefix + "A", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_B}));
-            setIntConfig(prefix + "B", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_A}));
+            setIntConfig(prefix + "A", GetButtonBinding(controller, {bAsConfirmButton ? SDL_CONTROLLER_BUTTON_B : SDL_CONTROLLER_BUTTON_A}));
+            setIntConfig(prefix + "B", GetButtonBinding(controller, {bAsConfirmButton ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B}));
             setIntConfig(prefix + "Y", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_Y}));
             setIntConfig(prefix + "X", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_X}));
             // TODO: KH holdToOpenShortcuts
@@ -544,7 +544,7 @@ inline void applyKingdomHeartsKeyboardAndJoystickMappings(KHMareConfig* config, 
     setIntConfig("Instance0.Keyboard.R", -1);
     */
 
-    applyKingdomHeartsJoystickMappings(setIntConfig);
+    applyKingdomHeartsJoystickMappings(setIntConfig, config->confirmButton == 1);
 }
 
 }

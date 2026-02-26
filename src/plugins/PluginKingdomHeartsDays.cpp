@@ -355,7 +355,7 @@ void PluginKingdomHeartsDays::overrideConfigs(
 {
     if (AutomaticallyMapJoysticks)
     {
-        applyKingdomHeartsJoystickMappings(setIntConfig);
+        applyKingdomHeartsJoystickMappings(setIntConfig, false);
     }
 
     KHMareConfig* config = kingdomHeartsCollectionConfig();
