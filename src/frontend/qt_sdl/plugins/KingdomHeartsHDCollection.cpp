@@ -407,7 +407,7 @@ inline int GetBinding(SDL_GameController* controller, std::vector<KingdomHeartsH
     return -1;
 }
 
-void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::string, int)> setIntConfig, bool bAsConfirmButton)
+void KingdomHeartsHDCollection::applyJoystickMappingsWithMap(std::function<void(std::string, int)> setIntConfig, std::map<std::string, std::vector<Plugin_GameControllerButton>> map)
 {
     for (int i = 0; i < SDL_NumJoysticks(); ++i) {
         if (SDL_IsGameController(i)) {
@@ -420,43 +420,52 @@ void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::st
 
             std::string prefix = "Instance0.Joystick." + std::to_string(controllerID) + ".";
 
-            setIntConfig(prefix + "A", GetBinding(controller, {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_B : PLUGIN_GAME_CONTROLLER_BUTTON_A}));
-            setIntConfig(prefix + "B", GetBinding(controller, {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_A : PLUGIN_GAME_CONTROLLER_BUTTON_B}));
-            setIntConfig(prefix + "Y", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_Y}));
-            setIntConfig(prefix + "X", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_X}));
-            // TODO: KH holdToOpenShortcuts
-            setIntConfig(prefix + "HK_RLockOn",       GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSHOULDER}));
-            setIntConfig(prefix + "HK_LSwitchTarget", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_TRIGGER}));
-            setIntConfig(prefix + "HK_RSwitchTarget", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_TRIGGER}));
-            setIntConfig(prefix + "Up",    GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_UP}));
-            setIntConfig(prefix + "Down",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_DOWN}));
-            setIntConfig(prefix + "Left",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_LEFT}));
-            setIntConfig(prefix + "Right", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_RIGHT}));
-            // TODO: KH holdToWalk
-            setIntConfig(prefix + "HK_HUDToggle", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSTICK}));
-            setIntConfig(prefix + "CameraUp",    GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_UP}));
-            setIntConfig(prefix + "CameraDown",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_DOWN}));
-            setIntConfig(prefix + "CameraLeft",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_LEFT}));
-            setIntConfig(prefix + "CameraRight", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_RIGHT}));
-            // TODO: KH resetCamera
-            setIntConfig(prefix + "HK_CommandMenuUp",    GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_UP}));
-            setIntConfig(prefix + "HK_CommandMenuDown",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_DOWN}));
-            setIntConfig(prefix + "HK_CommandMenuLeft",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_LEFT}));
-            setIntConfig(prefix + "HK_CommandMenuRight", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_RIGHT}));
-            setIntConfig(prefix + "Start", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_START}));
-            setIntConfig(prefix + "HK_FullscreenMapToggle", GetBinding(controller,
-                { PLUGIN_GAME_CONTROLLER_BUTTON_TOUCHPAD, PLUGIN_GAME_CONTROLLER_BUTTON_BACK, PLUGIN_GAME_CONTROLLER_BUTTON_GUIDE }));
-
-            setIntConfig(prefix + "HK_AttackInteract", -1);
-            setIntConfig(prefix + "HK_Jump",       -1);
-            setIntConfig(prefix + "HK_GuardCombo", -1);
-            setIntConfig(prefix + "Select", -1);
-            setIntConfig(prefix + "L", -1);
-            setIntConfig(prefix + "R", -1);
+            for (const auto& [keyName, preferences] : map)
+            {
+                setIntConfig(prefix + keyName, GetBinding(controller, preferences));
+            }
 
             SDL_GameControllerClose(controller);
         }
     }
+}
+
+void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::string, int)> setIntConfig, bool bAsConfirmButton)
+{
+    std::map<std::string, std::vector<Plugin_GameControllerButton>> map = {
+        {"A",                     {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_B : PLUGIN_GAME_CONTROLLER_BUTTON_A}},
+        {"B",                     {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_A : PLUGIN_GAME_CONTROLLER_BUTTON_B}},
+        {"Y",                     {PLUGIN_GAME_CONTROLLER_BUTTON_Y}},
+        {"X",                     {PLUGIN_GAME_CONTROLLER_BUTTON_X}},
+        // TODO: KH holdToOpenShortcuts
+        {"HK_RLockOn",            {PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSHOULDER}},
+        {"HK_LSwitchTarget",      {PLUGIN_GAME_CONTROLLER_LEFT_TRIGGER}},
+        {"HK_RSwitchTarget",      {PLUGIN_GAME_CONTROLLER_RIGHT_TRIGGER}},
+        {"Up",                    {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_UP}},
+        {"Down",                  {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_DOWN}},
+        {"Left",                  {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_LEFT}},
+        {"Right",                 {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_RIGHT}},
+        // TODO: KH holdToWalk
+        {"HK_HUDToggle",          {PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSTICK}},
+        {"CameraUp",              {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_UP}},
+        {"CameraDown",            {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_DOWN}},
+        {"CameraLeft",            {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_LEFT}},
+        {"CameraRight",           {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_RIGHT}},
+        // TODO: KH resetCamera
+        {"HK_CommandMenuUp",      {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_UP}},
+        {"HK_CommandMenuDown",    {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_DOWN}},
+        {"HK_CommandMenuLeft",    {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_LEFT}},
+        {"HK_CommandMenuRight",   {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_RIGHT}},
+        {"Start",                 {PLUGIN_GAME_CONTROLLER_BUTTON_START}},
+        {"HK_FullscreenMapToggle",{PLUGIN_GAME_CONTROLLER_BUTTON_TOUCHPAD, PLUGIN_GAME_CONTROLLER_BUTTON_BACK, PLUGIN_GAME_CONTROLLER_BUTTON_GUIDE}},
+        {"HK_AttackInteract",     {}},
+        {"HK_Jump",               {}},
+        {"HK_GuardCombo",         {}},
+        {"Select",                {}},
+        {"L",                     {}},
+        {"R",                     {}}
+    };
+    applyJoystickMappingsWithMap(setIntConfig, map);
 }
 
 void KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig)

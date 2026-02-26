@@ -8,6 +8,7 @@
 #include <functional>
 #include <string>
 #include <filesystem>
+#include <map>
 
 #include "../types.h"
 
@@ -176,6 +177,8 @@ private:
 
     static std::filesystem::path userDocumentsFolderPath();
     static std::filesystem::path steamConfigFolderPathFromDocumentsPath(const std::filesystem::path& documentsFolderPath);
+
+    static void applyJoystickMappingsWithMap(std::function<void(std::string, int)> setIntConfig, std::map<std::string, std::vector<Plugin_GameControllerButton>> map);
 
 public:
     static std::filesystem::path path();
