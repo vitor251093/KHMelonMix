@@ -353,6 +353,11 @@ void PluginKingdomHeartsDays::overrideConfigs(
     std::function<void(std::string, std::string)> setStringConfig
 )
 {
+    if (AutomaticallyMapJoysticks)
+    {
+        applyKingdomHeartsJoystickMappings(setIntConfig);
+    }
+
     KHMareConfig* config = kingdomHeartsCollectionConfig();
     if (config == nullptr)
     {

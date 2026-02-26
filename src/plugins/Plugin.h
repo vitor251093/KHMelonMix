@@ -387,6 +387,7 @@ protected:
     int CameraSensitivity = 0;
     bool EnhancedGraphics = true;
     bool SingleScreenMode = true;
+    bool AutomaticallyMapJoysticks = false;
     bool DisableReplacementTextures = false;
     bool FastForwardLoadingScreens = false;
     bool DaysDisableHisMemories = false;

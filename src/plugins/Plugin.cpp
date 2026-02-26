@@ -1231,6 +1231,7 @@ void Plugin::_superLoadConfigs(
     CameraSensitivity = (CameraSensitivity == 0) ? DefaultCameraSensitivity : CameraSensitivity;
     EnhancedGraphics = !getBoolConfig(root + ".DisableEnhancedGraphics");
     SingleScreenMode = !getBoolConfig(root + ".DisableSingleScreenMode");
+    AutomaticallyMapJoysticks = getBoolConfig(root + ".AutomaticallyMapJoysticks");
     DisableReplacementTextures = false;
     FastForwardLoadingScreens = getBoolConfig(root + ".FastForwardLoadingScreens");
     DaysDisableHisMemories = getBoolConfig(root + ".DaysDisableHisMemories");

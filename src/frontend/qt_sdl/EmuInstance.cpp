@@ -1890,6 +1890,19 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
     {
         plugin = Plugins::PluginManager::load(gamecode);
 
+        plugin->loadConfigs([cfg = globalCfg](const std::string& path){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            return ref.GetBool(path);
+        },
+        [cfg = globalCfg](const std::string& path){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            return ref.GetInt(path);
+        },
+        [cfg = globalCfg](const std::string& path){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            return ref.GetString(path);
+        });
+
         plugin->overrideConfigs([cfg = globalCfg](const std::string& path, bool value){
             Config::Table& ref = const_cast <Config::Table&>(cfg);
             ref.SetBool(path, value);
