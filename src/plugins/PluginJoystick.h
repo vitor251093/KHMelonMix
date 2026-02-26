@@ -1,0 +1,62 @@
+//
+// Created by vitor on 2/26/26.
+//
+
+#ifndef MELONDS_PLUGINJOYSTICK_H
+#define MELONDS_PLUGINJOYSTICK_H
+
+#include <functional>
+#include <string>
+#include <filesystem>
+#include <map>
+
+#include "../types.h"
+
+namespace Plugins
+{
+using namespace melonDS;
+
+enum PluginJoystickInput
+{
+    PLUGIN_GAME_CONTROLLER_BUTTON_INVALID = -1,
+    PLUGIN_GAME_CONTROLLER_BUTTON_A,
+    PLUGIN_GAME_CONTROLLER_BUTTON_B,
+    PLUGIN_GAME_CONTROLLER_BUTTON_X,
+    PLUGIN_GAME_CONTROLLER_BUTTON_Y,
+    PLUGIN_GAME_CONTROLLER_BUTTON_BACK,
+    PLUGIN_GAME_CONTROLLER_BUTTON_GUIDE,
+    PLUGIN_GAME_CONTROLLER_BUTTON_START,
+    PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSTICK,
+    PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSTICK,
+    PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSHOULDER,
+    PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSHOULDER,
+    PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_UP,
+    PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_DOWN,
+    PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_LEFT,
+    PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_RIGHT,
+    PLUGIN_GAME_CONTROLLER_BUTTON_MISC1,    /* Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button */
+    PLUGIN_GAME_CONTROLLER_BUTTON_PADDLE1,  /* Xbox Elite paddle P1 (upper left, facing the back) */
+    PLUGIN_GAME_CONTROLLER_BUTTON_PADDLE2,  /* Xbox Elite paddle P3 (upper right, facing the back) */
+    PLUGIN_GAME_CONTROLLER_BUTTON_PADDLE3,  /* Xbox Elite paddle P2 (lower left, facing the back) */
+    PLUGIN_GAME_CONTROLLER_BUTTON_PADDLE4,  /* Xbox Elite paddle P4 (lower right, facing the back) */
+    PLUGIN_GAME_CONTROLLER_BUTTON_TOUCHPAD, /* PS4/PS5 touchpad button */
+    PLUGIN_GAME_CONTROLLER_LEFT_AXIS_LEFT,
+    PLUGIN_GAME_CONTROLLER_LEFT_AXIS_RIGHT,
+    PLUGIN_GAME_CONTROLLER_LEFT_AXIS_UP,
+    PLUGIN_GAME_CONTROLLER_LEFT_AXIS_DOWN,
+    PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_LEFT,
+    PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_RIGHT,
+    PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_UP,
+    PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_DOWN,
+    PLUGIN_GAME_CONTROLLER_LEFT_TRIGGER,
+    PLUGIN_GAME_CONTROLLER_RIGHT_TRIGGER
+};
+
+class PluginJoystick
+{
+public:
+    static void applyMappings(std::function<void(std::string, int)> setIntConfig, std::map<std::string, std::vector<PluginJoystickInput>> map);
+};
+}
+
+#endif //MELONDS_PLUGINJOYSTICK_H
