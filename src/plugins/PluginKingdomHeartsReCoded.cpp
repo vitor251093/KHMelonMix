@@ -357,16 +357,16 @@ void PluginKingdomHeartsReCoded::overrideConfigs(
 {
     if (AutomaticallyMapJoysticks)
     {
-        applyKingdomHeartsJoystickMappings(setIntConfig, false);
+        KingdomHeartsHDCollection::applyKingdomHeartsJoystickMappings(setIntConfig, false);
     }
 
-    KHMareConfig* config = kingdomHeartsCollectionConfig();
+    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::kingdomHeartsCollectionConfig();
     if (config == nullptr)
     {
         return;
     }
 
-    std::string khLanguage = kingdomHeartsLanguage();
+    std::string khLanguage = KingdomHeartsHDCollection::kingdomHeartsLanguage();
     int localIndex = 1;
     if (khLanguage == "japanese")
         localIndex = 0;
@@ -399,12 +399,12 @@ void PluginKingdomHeartsReCoded::overrideConfigs(
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
 
-    applyKingdomHeartsKeyboardAndJoystickMappings(config, setIntConfig);
+    KingdomHeartsHDCollection::applyKingdomHeartsKeyboardAndJoystickMappings(config, setIntConfig);
 }
 
 std::string PluginKingdomHeartsReCoded::saveFilePath()
 {
-    createKingdomHeartsSignalFile();
+    KingdomHeartsHDCollection::createKingdomHeartsSignalFile();
 
     const char* saveFilePathStrPtr = std::getenv("MELON_MIX_SAVE");
     if (saveFilePathStrPtr != nullptr)
@@ -413,7 +413,7 @@ std::string PluginKingdomHeartsReCoded::saveFilePath()
     }
 
     std::string saveFilePathStr = "";
-    std::filesystem::path saveFilePath = kingdomHeartsCollectionConfigFolder();
+    std::filesystem::path saveFilePath = KingdomHeartsHDCollection::kingdomHeartsCollectionConfigFolder();
     if (!saveFilePath.empty())
     {
         saveFilePathStr = saveFilePath.string();
@@ -435,7 +435,7 @@ std::string PluginKingdomHeartsReCoded::saveFilePath()
 }
 
 bool PluginKingdomHeartsReCoded::shouldStartInFullscreen() {
-    KHMareConfig* config = kingdomHeartsCollectionConfig();
+    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::kingdomHeartsCollectionConfig();
     if (config == nullptr)
     {
         return FullscreenOnStartup;

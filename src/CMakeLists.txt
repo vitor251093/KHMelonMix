@@ -81,6 +81,7 @@ add_library(core STATIC
     plugins/PluginHarvestMoonDsCute.cpp
     plugins/PluginMetroidPrimeHunters.cpp
     plugins/PluginTemplateLua.cpp
+    plugins/KingdomHeartsHDCollectionConfig.cpp
 
     sha1/sha1.c
     tiny-AES-c/aes.c
