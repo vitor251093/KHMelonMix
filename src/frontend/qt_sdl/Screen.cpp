@@ -321,11 +321,24 @@ void ScreenPanel::mouseMoveEvent(QMouseEvent* event)
     if (!emuInstance->emuIsActive()) return;
     //if (!(event->buttons() & Qt::LeftButton)) return;
 
-    int x = event->pos().x();
-    int y = event->pos().y();
+    QPoint mousePosition = event->pos();
+    int x = mousePosition.x();
+    int y = mousePosition.y();
+
+    QPoint windowCenter = mainWindow->panel->rect().center();
+    if (mousePosition == windowCenter)
+    {
+        return;
+    }
 
     if (emuInstance->plugin->overrideMouseTouchCoords(width(), height(), x, y, touching))
     {
+        if (emuInstance->plugin->isMouseCursorGrabbed()) {
+            QCursor::setPos(mainWindow->panel->mapToGlobal(windowCenter));
+            // mainWindow->panel->releaseMouse();
+            // mainWindow->panel->grabMouse();
+        }
+
         emuInstance->touchScreen(x, y);
 
         if (!touching) {

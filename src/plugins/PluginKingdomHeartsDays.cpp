@@ -1929,8 +1929,8 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords_cameraControl(int width, 
 
     if (posX == 128.0 && posY == 96.0) {
         if (touching == false) {
-            x = width/2;
-            y = height/2;
+            x = 128.0;
+            y = 96.0;
             LastMouseCoordX = x;
             LastMouseCoordY = y;
             return true;
@@ -1941,8 +1941,8 @@ bool PluginKingdomHeartsDays::overrideMouseTouchCoords_cameraControl(int width, 
     }
 
     touching = true;
-    x = LastMouseCoordX + (int)((x - width/2)*sensitivity);
-    y = LastMouseCoordY + (int)((y - height/2)*sensitivity);
+    x = LastMouseCoordX + (int)((x - width/2)*(sensitivity/scaleX));
+    y = LastMouseCoordY + (int)((y - height/2)*(sensitivity/scaleY));
     LastMouseCoordX = x;
     LastMouseCoordY = y;
     return true;
