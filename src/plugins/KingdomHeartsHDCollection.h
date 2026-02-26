@@ -10,6 +10,7 @@
 #include <filesystem>
 
 #include "../types.h"
+#include "PluginJoystick.h"
 
 namespace Plugins
 {
