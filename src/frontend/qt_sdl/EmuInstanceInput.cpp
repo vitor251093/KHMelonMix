@@ -132,10 +132,10 @@ void EmuInstance::inputDeInit()
 void EmuInstance::inputLoadConfig()
 {
     SDL_LockMutex(joyMutex.get());
+    setJoystickByUniqueId(localCfg.GetInt("JoystickUniqueID"));
 
-    int curJoystickUniqueID = localCfg.GetInt("JoystickUniqueID");
     Config::Table keycfg = localCfg.GetTable("Keyboard");
-    Config::Table joycfg = localCfg.GetTable("Joystick." + std::to_string(curJoystickUniqueID));
+    Config::Table joycfg = localCfg.GetTable("Joystick." + std::to_string(joystickUniqueID));
 
     for (int i = 0; i < 12; i++)
     {
@@ -165,7 +165,6 @@ void EmuInstance::inputLoadConfig()
         touchJoyMapping[i] = joycfg.GetInt(touchButtonNames[i]);
     }
 
-    setJoystickByUniqueId(curJoystickUniqueID);
     SDL_UnlockMutex(joyMutex.get());
 }
 
