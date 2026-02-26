@@ -423,17 +423,14 @@ inline int GetAxisBinding(SDL_GameController* controller, SDL_GameControllerAxis
     if (bind.bindType == SDL_CONTROLLER_BINDTYPE_AXIS) {
         int physicalIndex = bind.value.axis;
 
-        // TODO: KH this may be necessary in some cases, apparently?
-        Sint16 axisval = 0xFFFF; // SDL_GameControllerGetAxis(controller, axis);
-
         bool isTrigger = (axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 
         if (isTrigger) {
-            return (axisval & 0xFFFF) | 0x10000 | (2 << 20) | (physicalIndex << 24);
+            return 0xFFFF | 0x10000 | (2 << 20) | (physicalIndex << 24);
         }
 
-        u32 direction = isNegative ? 0x1 : 0x0;
-        return (int)((axisval & 0xFFFF) | 0x10000 | (direction << 20) | (physicalIndex << 24));
+        int direction = isNegative ? 0x1 : 0x0;
+        return 0xFFFF | 0x10000 | (direction << 20) | (physicalIndex << 24);
     }
     return -1;
 }
