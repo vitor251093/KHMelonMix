@@ -197,7 +197,7 @@ std::filesystem::path KingdomHeartsHDCollection::configFolderPath()
     }
 
 #ifdef _WIN32
-    std::filesystem::path documentsFolderPath = myDocumentsFolderPath();
+    std::filesystem::path documentsFolderPath = userDocumentsFolderPath();
 #else
     std::filesystem::path documentsFolderPath = collectionFolderPath.parent_path().parent_path() /
         "compatdata" / "2552430" / "pfx" /
