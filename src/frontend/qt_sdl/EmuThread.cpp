@@ -201,34 +201,24 @@ void EmuThread::run()
             bool shouldLoadPlugin = emuInstance->plugin == nullptr || emuInstance->plugin->getGameCode() != gamecode;
             if (shouldLoadPlugin)
             {
+                emuInstance->plugin = Plugins::PluginManager::load(gamecode);
+                emuInstance->plugin->setNds(emuInstance->getNDS());
+                emuInstance->plugin->onLoadROM();
+            }
+            bool shouldStartPlugin = emuInstance->plugin->shouldStartPlugin;
+            if (shouldStartPlugin)
+            {
                 lastVideoRenderer = -1;
                 videoSettingsDirty = true;
 
                 emit windowStopAllBgm();
-                emuInstance->plugin = Plugins::PluginManager::load(gamecode);
-                emuInstance->plugin->setNds(emuInstance->getNDS());
-                emuInstance->plugin->onLoadROM();
+                emuInstance->plugin->shouldStartPlugin = false;
                 emuInstance->plugin->shouldInvalidateConfigs = true;
                 emuInstance->plugin->muteBGMs = emuInstance->instanceID > 0;
             }
             if (emuInstance->plugin->shouldInvalidateConfigs)
             {
                 emuInstance->plugin->shouldInvalidateConfigs = false;
-
-                emuInstance->plugin->overrideConfigs([cfg = globalCfg](const std::string& path, bool value){
-                    Config::Table& ref = const_cast <Config::Table&>(cfg);
-                    ref.SetBool(path, value);
-                },
-                [cfg = globalCfg](const std::string& path, int value){
-                    Config::Table& ref = const_cast <Config::Table&>(cfg);
-                    ref.SetInt(path, value);
-                },
-                [cfg = globalCfg](const std::string& path, std::string value){
-                    Config::Table& ref = const_cast <Config::Table&>(cfg);
-                    ref.SetString(path, value);
-                });
-                Config::Save();
-
                 emuInstance->plugin->loadConfigs([cfg = globalCfg](const std::string& path){
                     Config::Table& ref = const_cast <Config::Table&>(cfg);
                     return ref.GetBool(path);
@@ -242,7 +232,7 @@ void EmuThread::run()
                     return ref.GetString(path);
                 });
             }
-            if (shouldLoadPlugin)
+            if (shouldStartPlugin)
             {
                 if (emuInstance->plugin->shouldStartInFullscreen()) {
                     emit windowFullscreenToggle();

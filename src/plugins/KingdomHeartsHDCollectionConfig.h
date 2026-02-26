@@ -5,7 +5,13 @@
 #ifndef MELONDS_KINGDOMHEARTSHDCOLLECTIONCONFIG_H
 #define MELONDS_KINGDOMHEARTSHDCOLLECTIONCONFIG_H
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <regex>
 #include <filesystem>
+#include <SDL2/SDL.h>
+
 #include "../types.h"
 
 #ifdef _WIN32
@@ -122,7 +128,7 @@ struct KHMareConfig
     KHSoundSettings sound;
     u8 joystickButtonIcons; // 0 => auto; 1 => xbox; 2 => playstation; 3 => generic
     u8 unk31;
-    u8 confirmButton; // 0 => A; 1 => B
+    u8 confirmButton; // 0 => A/Circle; 1 => B/X
     u8 unk33;
     u8 unk34;
     u8 unk35;
@@ -348,6 +354,197 @@ inline KHMareConfig* kingdomHeartsCollectionConfig()
     Platform::FileRead(config, sizeof(KHMareConfig), 1, configFileHandle);
     Platform::CloseFile(configFileHandle);
     return config;
+}
+
+inline void createKingdomHeartsSignalFile()
+{
+    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
+    if (collectionFolderPath.empty())
+    {
+        return;
+    }
+
+    std::filesystem::path signalFilePath = collectionFolderPath / ".melonmix_signal";
+    if (!std::filesystem::exists(signalFilePath))
+    {
+        Platform::FileHandle* signalHandle = Platform::OpenFile(signalFilePath.string(), Platform::FileMode::Append);
+        Platform::FileWrite("\n", 1, 1, signalHandle);
+        Platform::CloseFile(signalHandle);
+    }
+}
+
+inline std::string kingdomHeartsLanguage()
+{
+    std::filesystem::path collectionFolderPath = kingdomHeartsCollectionFolderPath();
+    if (collectionFolderPath.empty())
+    {
+        return "";
+    }
+
+    std::filesystem::path steamappsPath = collectionFolderPath.parent_path().parent_path();
+
+    std::filesystem::path manifestPath = steamappsPath / "appmanifest_2552430.acf";
+
+    if (!exists(manifestPath)) {
+        return "";
+    }
+
+    std::ifstream file(manifestPath);
+    if (!file.is_open()) {
+        return "";
+    }
+
+    std::string line;
+    std::string language = "";
+    // Regex to find "language" followed by any whitespace and then the value in quotes
+    std::regex langRegex("\"language\"\\s+\"([^\"]+)\"");
+    std::smatch match;
+
+    bool found = false;
+    while (std::getline(file, line)) {
+        if (std::regex_search(line, match, langRegex)) {
+            // match[1] contains the first captured group (the language name)
+            language = match[1];
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        return "";
+    }
+
+    return language;
+}
+
+inline int GetAxisBinding(SDL_GameController* controller, SDL_GameControllerAxis axis, bool isNegative) {
+    SDL_GameControllerButtonBind bind = SDL_GameControllerGetBindForAxis(controller, axis);
+
+    if (bind.bindType == SDL_CONTROLLER_BINDTYPE_AXIS) {
+        int physicalIndex = bind.value.axis;
+
+        bool isTrigger = (axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT || axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+
+        if (isTrigger) {
+            return 0xFFFF | 0x10000 | (2 << 20) | (physicalIndex << 24);
+        }
+
+        int direction = isNegative ? 0x1 : 0x0;
+        return 0xFFFF | 0x10000 | (direction << 20) | (physicalIndex << 24);
+    }
+    return -1;
+}
+
+inline int GetButtonBinding(SDL_GameController* controller, std::vector<SDL_GameControllerButton> preferences) {
+    for (auto button : preferences) {
+        SDL_GameControllerButtonBind bind = SDL_GameControllerGetBindForButton(controller, button);
+
+        if (bind.bindType == SDL_CONTROLLER_BINDTYPE_HAT) {
+            int hatIndex = bind.value.hat.hat;
+            int hatMask  = bind.value.hat.hat_mask;
+            return 0x100 | hatMask | (hatIndex << 4);
+        }
+
+        if (bind.bindType == SDL_CONTROLLER_BINDTYPE_BUTTON) {
+            return bind.value.button;
+        }
+    }
+    return -1;
+}
+
+inline void applyKingdomHeartsJoystickMappings(std::function<void(std::string, int)> setIntConfig, bool bAsConfirmButton)
+{
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (SDL_IsGameController(i)) {
+            SDL_GameController* controller = SDL_GameControllerOpen(i);
+            if (!controller) continue;
+
+            u16 vendor = SDL_GameControllerGetVendor(controller);
+            u16 product = SDL_GameControllerGetProduct(controller);
+            u32 controllerID = (int)((vendor << 16) | product);
+
+            std::string prefix = "Instance0.Joystick." + std::to_string(controllerID) + ".";
+
+            setIntConfig(prefix + "A", GetButtonBinding(controller, {bAsConfirmButton ? SDL_CONTROLLER_BUTTON_B : SDL_CONTROLLER_BUTTON_A}));
+            setIntConfig(prefix + "B", GetButtonBinding(controller, {bAsConfirmButton ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B}));
+            setIntConfig(prefix + "Y", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_Y}));
+            setIntConfig(prefix + "X", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_X}));
+            // TODO: KH holdToOpenShortcuts
+            setIntConfig(prefix + "HK_RLockOn", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER}));
+            setIntConfig(prefix + "HK_LSwitchTarget", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT, true));
+            setIntConfig(prefix + "HK_RSwitchTarget", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, true));
+            setIntConfig(prefix + "Up",    GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTY, true));
+            setIntConfig(prefix + "Down",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTY, false));
+            setIntConfig(prefix + "Left",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTX, true));
+            setIntConfig(prefix + "Right", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTX, false));
+            // TODO: KH holdToWalk
+            setIntConfig(prefix + "HK_HUDToggle", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_LEFTSTICK}));
+            setIntConfig(prefix + "CameraUp",    GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTY, true));
+            setIntConfig(prefix + "CameraDown",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTY, false));
+            setIntConfig(prefix + "CameraLeft",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTX, true));
+            setIntConfig(prefix + "CameraRight", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTX, false));
+            // TODO: KH resetCamera
+            setIntConfig(prefix + "HK_CommandMenuUp",    GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_UP}));
+            setIntConfig(prefix + "HK_CommandMenuDown",  GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_DOWN}));
+            setIntConfig(prefix + "HK_CommandMenuLeft",  GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_LEFT}));
+            setIntConfig(prefix + "HK_CommandMenuRight", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_RIGHT}));
+            setIntConfig(prefix + "Start", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_START}));
+            setIntConfig(prefix + "HK_FullscreenMapToggle", GetButtonBinding(controller,
+                { SDL_CONTROLLER_BUTTON_TOUCHPAD, SDL_CONTROLLER_BUTTON_BACK, SDL_CONTROLLER_BUTTON_GUIDE }));
+
+            setIntConfig(prefix + "HK_AttackInteract", -1);
+            setIntConfig(prefix + "HK_Jump",       -1);
+            setIntConfig(prefix + "HK_GuardCombo", -1);
+            setIntConfig(prefix + "Select", -1);
+            setIntConfig(prefix + "L", -1);
+            setIntConfig(prefix + "R", -1);
+
+            SDL_GameControllerClose(controller);
+        }
+    }
+}
+
+inline void applyKingdomHeartsKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig)
+{
+    // TODO: KH We need to load mouse sensitivity (config.mouseSensitivity) to: plugin->tomlUniqueIdentifier() + ".CameraSensitivity"
+
+    // TODO: KH Disabling the keyboard automatic mapping for now because we need mouse control for the camera for that to work 100%
+    /*
+    setIntConfig("Instance0.Keyboard.A", DecodeSet1ToQt(&config->keyConfiguration.confirm));
+    setIntConfig("Instance0.Keyboard.B", DecodeSet1ToQt(&config->keyConfiguration.cancelOrJump));
+    setIntConfig("Instance0.Keyboard.Y", DecodeSet1ToQt(&config->keyConfiguration.blockEvadeDodge));
+    setIntConfig("Instance0.Keyboard.X", DecodeSet1ToQt(&config->keyConfiguration.useCommand));
+    // TODO: KH holdToOpenShortcuts
+    setIntConfig("Instance0.Keyboard.HK_RLockOn",       DecodeSet1ToQt(&config->keyConfiguration.toggleLockOn));
+    setIntConfig("Instance0.Keyboard.HK_RSwitchTarget", DecodeSet1ToQt(&config->keyConfiguration.changeLockOnTargetOrToggleCursorControls));
+    setIntConfig("Instance0.Keyboard.HK_LSwitchTarget", DecodeSet1ToQt(&config->keyConfiguration.toggleGummiShipScoreOrChangeLockOnTarget));
+    setIntConfig("Instance0.Keyboard.Up",    DecodeSet1ToQt(&config->keyConfiguration.up));
+    setIntConfig("Instance0.Keyboard.Down",  DecodeSet1ToQt(&config->keyConfiguration.down));
+    setIntConfig("Instance0.Keyboard.Left",  DecodeSet1ToQt(&config->keyConfiguration.left));
+    setIntConfig("Instance0.Keyboard.Right", DecodeSet1ToQt(&config->keyConfiguration.right));
+    // TODO: KH holdToWalk
+    setIntConfig("Instance0.Keyboard.HK_HUDToggle", DecodeSet1ToQt(&config->keyConfiguration.gummiEditorFlipGummi));
+    setIntConfig("Instance0.Keyboard.CameraUp",    DecodeSet1ToQt(config->keyConfiguration.cameraUp));
+    setIntConfig("Instance0.Keyboard.CameraDown",  DecodeSet1ToQt(config->keyConfiguration.cameraDown));
+    setIntConfig("Instance0.Keyboard.CameraLeft",  DecodeSet1ToQt(config->keyConfiguration.cameraLeft));
+    setIntConfig("Instance0.Keyboard.CameraRight", DecodeSet1ToQt(config->keyConfiguration.cameraRight));
+    // TODO: KH resetCamera
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuUp",    DecodeSet1ToQt(&config->keyConfiguration.cursorUp));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuDown",  DecodeSet1ToQt(&config->keyConfiguration.cursorDown));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuLeft",  DecodeSet1ToQt(&config->keyConfiguration.cursorLeft));
+    setIntConfig("Instance0.Keyboard.HK_CommandMenuRight", DecodeSet1ToQt(&config->keyConfiguration.cursorRight));
+    setIntConfig("Instance0.Keyboard.Start", DecodeSet1ToQt(&config->keyConfiguration.pause));
+    setIntConfig("Instance0.Keyboard.HK_FullscreenMapToggle", DecodeSet1ToQt(&config->keyConfiguration.firstPersonView));
+
+    setIntConfig("Instance0.Keyboard.HK_AttackInteract", -1);
+    setIntConfig("Instance0.Keyboard.HK_Jump",       -1);
+    setIntConfig("Instance0.Keyboard.HK_GuardCombo", -1);
+    setIntConfig("Instance0.Keyboard.Select", -1);
+    setIntConfig("Instance0.Keyboard.L", -1);
+    setIntConfig("Instance0.Keyboard.R", -1);
+    */
+
+    applyKingdomHeartsJoystickMappings(setIntConfig, config->confirmButton == 1);
 }
 
 }

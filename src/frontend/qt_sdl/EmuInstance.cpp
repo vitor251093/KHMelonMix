@@ -49,6 +49,9 @@
 #include "main.h"
 
 #include "GPU2D_Soft.h"
+#include "Utils.h"
+
+#include "plugins/PluginManager.h"
 
 using std::make_unique;
 using std::pair;
@@ -1431,7 +1434,7 @@ void EmuInstance::reset()
     if ((cartType != -1) && ndsSave)
     {
         std::string oldsave = ndsSave->GetPath();
-        std::string newsave = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
+        std::string newsave = ndsSaveFilePath();
         newsave += instanceFileSuffix();
         if (oldsave != newsave)
             ndsSave->SetPath(newsave, false);
@@ -1882,6 +1885,38 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
         return false;
     }
 
+    u32 gamecode = gameCodeFromNdsFileAtPath(filepath);
+    if (plugin == nullptr || gamecode == 0 || plugin->getGameCode() != gamecode)
+    {
+        plugin = Plugins::PluginManager::load(gamecode);
+
+        plugin->loadConfigs([cfg = globalCfg](const std::string& path){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            return ref.GetBool(path);
+        },
+        [cfg = globalCfg](const std::string& path){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            return ref.GetInt(path);
+        },
+        [cfg = globalCfg](const std::string& path){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            return ref.GetString(path);
+        });
+
+        plugin->overrideConfigs([cfg = globalCfg](const std::string& path, bool value){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            ref.SetBool(path, value);
+        },
+        [cfg = globalCfg](const std::string& path, int value){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            ref.SetInt(path, value);
+        },
+        [cfg = globalCfg](const std::string& path, std::string value){
+            Config::Table& ref = const_cast <Config::Table&>(cfg);
+            ref.SetString(path, value);
+        });
+    }
+
     ndsSave = nullptr;
 
     baseROMDir = basepath;
@@ -1891,7 +1926,7 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
     u32 savelen = 0;
     std::unique_ptr<u8[]> savedata = nullptr;
 
-    std::string savname = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
+    std::string savname = ndsSaveFilePath();
     std::string origsav = savname;
     savname += instanceFileSuffix();
 
@@ -1975,12 +2010,10 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
         }
     }
 
-    if (plugin != nullptr) {
-        plugin->setNds(nds);
-        plugin->onLoadROM();
-        
-        static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
-    }
+    plugin->setNds(nds);
+    plugin->onLoadROM();
+
+    static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
 
     cartType = 0;
     ndsSave = std::make_unique<SaveManager>(savname);
@@ -2242,6 +2275,34 @@ void EmuInstance::romIcon(const u8 (&data)[512], const u16 (&palette)[16], u32 (
             }
         }
     }
+}
+
+u32 EmuInstance::gameCodeFromNdsFileAtPath(QStringList filepath)
+{
+    unique_ptr<u8[]> filedata2 = nullptr;
+    u32 filelen2;
+    std::string basepath2;
+    std::string romname2;
+
+    if (!loadROMData(filepath, filedata2, filelen2, basepath2, romname2))
+    {
+        return 0;
+    }
+
+    auto [cartrom, cartromsize] = PadToPowerOf2(std::move(filedata2), filelen2);
+    NDSHeader header {};
+    memcpy(&header, cartrom.get(), sizeof(header));
+    return header.GameCodeAsU32();
+}
+
+std::string EmuInstance::ndsSaveFilePath()
+{
+    std::string savname = plugin->saveFilePath();
+    if (savname.empty())
+    {
+        savname = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
+    }
+    return savname;
 }
 
 #define SEQ_FLIPV(i) ((i & 0b1000000000000000) >> 15)

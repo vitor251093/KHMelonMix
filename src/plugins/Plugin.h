@@ -139,12 +139,23 @@ public:
 
     int DefaultCameraSensitivity = 3;
 
+    bool shouldStartPlugin = true;
+
     bool shouldInvalidateConfigs = false;
     void invalidateConfigs() {
         shouldInvalidateConfigs = true;
     }
 
     void setNds(melonDS::NDS* Nds) {nds = Nds;};
+    virtual std::string saveFilePath()
+    {
+        const char* saveFilePathStr = std::getenv("MELON_MIX_SAVE");
+        if (saveFilePathStr != nullptr)
+        {
+            return std::string(saveFilePathStr);
+        }
+        return "";
+    }
     virtual void onLoadROM();
     virtual void onLoadState();
 
@@ -157,13 +168,14 @@ public:
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
     virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
 
-    virtual bool gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, ShapeData3D shape, int vertexIndex);
+    virtual bool gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, float xCenter, float yCenter, ShapeData3D shape, int vertexIndex);
     virtual bool gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
 
     void buildShapes();
     virtual void renderer_beforeBuildingShapes() { };
-    virtual std::vector<ShapeData2D> renderer_2DShapes() { return std::vector<ShapeData2D>(); };
-    virtual std::vector<ShapeData3D> renderer_3DShapes() { return std::vector<ShapeData3D>(); };
+    virtual std::vector<ShapeData2D> renderer_composition() { return std::vector<ShapeData2D>(); };
+    virtual std::vector<ShapeData2D> renderer_topScreen_2DShapes() { return std::vector<ShapeData2D>(); };
+    virtual std::vector<ShapeData3D> renderer_topScreen_3DShapes() { return std::vector<ShapeData3D>(); };
     virtual void renderer_afterBuildingShapes() { };
     virtual int renderer_gameSceneState() { return 0; };
     virtual int renderer_screenLayout() { return 0; };
@@ -188,7 +200,7 @@ public:
     bool shouldExportTextures() {
         return ExportTextures;
     }
-    bool shouldStartInFullscreen() {
+    virtual bool shouldStartInFullscreen() {
         return FullscreenOnStartup;
     }
 
@@ -375,6 +387,7 @@ protected:
     int CameraSensitivity = 0;
     bool EnhancedGraphics = true;
     bool SingleScreenMode = true;
+    bool AutomaticallyMapJoysticks = false;
     bool DisableReplacementTextures = false;
     bool FastForwardLoadingScreens = false;
     bool DaysDisableHisMemories = false;
