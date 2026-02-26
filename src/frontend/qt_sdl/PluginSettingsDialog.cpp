@@ -26,6 +26,9 @@
 #include "main.h"
 
 #include "PluginSettingsDialog.h"
+
+#include <QMessageBox>
+
 #include "ui_PluginSettingsDialog.h"
 
 
@@ -184,6 +187,14 @@ void PluginSettingsDialog::on_cbFFLoadingScreens_stateChanged(int state)
 
 void PluginSettingsDialog::on_cbAutoMapJoysticks_stateChanged(int state)
 {
+    if (oldAutoMapJoysticks == 0 && state != 0 && emuInstance->emuIsActive()
+                && QMessageBox::warning(this, "Restart necessary to apply changes",
+                    "The emulator will need to be restarted for the changes to take place.",
+                    QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok) {
+        ui->cbAutoMapJoysticks->setChecked(false);
+        return;
+    }
+
     auto plugin = emuInstance->plugin;
     std::string root = plugin->tomlUniqueIdentifier();
 
