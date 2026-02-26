@@ -1,11 +1,11 @@
-#include "KingdomHeartsHDCollection.h"
+#include "../../../plugins/KingdomHeartsHDCollection.h"
 
 #include <iostream>
 #include <fstream>
 #include <regex>
 #include <SDL2/SDL.h>
 
-#include "../Platform.h"
+#include "../../../Platform.h"
 
 #ifdef _WIN32
 #include <windows.h>
