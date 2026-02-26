@@ -311,18 +311,97 @@ inline int GetAxisBinding(SDL_GameController* controller, SDL_GameControllerAxis
     return -1;
 }
 
-inline int GetButtonBinding(SDL_GameController* controller, std::vector<SDL_GameControllerButton> preferences) {
-    for (auto button : preferences) {
-        SDL_GameControllerButtonBind bind = SDL_GameControllerGetBindForButton(controller, button);
+inline int GetButtonBinding(SDL_GameController* controller, SDL_GameControllerButton button) {
+    SDL_GameControllerButtonBind bind = SDL_GameControllerGetBindForButton(controller, button);
 
-        if (bind.bindType == SDL_CONTROLLER_BINDTYPE_HAT) {
-            int hatIndex = bind.value.hat.hat;
-            int hatMask  = bind.value.hat.hat_mask;
-            return 0x100 | hatMask | (hatIndex << 4);
+    if (bind.bindType == SDL_CONTROLLER_BINDTYPE_HAT) {
+        int hatIndex = bind.value.hat.hat;
+        int hatMask  = bind.value.hat.hat_mask;
+        return 0x100 | hatMask | (hatIndex << 4);
+    }
+
+    if (bind.bindType == SDL_CONTROLLER_BINDTYPE_BUTTON) {
+        return bind.value.button;
+    }
+
+    return -1;
+}
+
+inline int GetBinding(SDL_GameController* controller, std::vector<KingdomHeartsHDCollection::Plugin_GameControllerButton> preferences) {
+    int value = -1;
+    for (auto button : preferences)
+    {
+        switch (button)
+        {
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_A:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_A); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_B:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_B); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_X:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_X); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_Y:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_Y); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_BACK:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_BACK); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_GUIDE:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_GUIDE); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_START:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_START); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSTICK:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_LEFTSTICK); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSTICK:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_RIGHTSTICK); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSHOULDER:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_LEFTSHOULDER); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSHOULDER:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_UP:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_DPAD_UP); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_DOWN:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_DPAD_DOWN); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_LEFT:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_DPAD_LEFT); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_RIGHT:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_MISC1:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_MISC1); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_PADDLE1:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_PADDLE1); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_PADDLE2:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_PADDLE2); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_PADDLE3:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_PADDLE3); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_PADDLE4:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_PADDLE4); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_BUTTON_TOUCHPAD:
+                value = GetButtonBinding(controller, SDL_CONTROLLER_BUTTON_TOUCHPAD); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_LEFT_AXIS_LEFT:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTX, true); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_LEFT_AXIS_RIGHT:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTX, false); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_LEFT_AXIS_UP:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTY, true); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_LEFT_AXIS_DOWN:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTY, false); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_LEFT:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTX, true); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_RIGHT:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTX, false); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_UP:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTY, true); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_DOWN:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTY, false); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_LEFT_TRIGGER:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT, true); break;
+            case KingdomHeartsHDCollection::PLUGIN_GAME_CONTROLLER_RIGHT_TRIGGER:
+                value = GetAxisBinding(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, true); break;
+            default:
+                break;
         }
 
-        if (bind.bindType == SDL_CONTROLLER_BINDTYPE_BUTTON) {
-            return bind.value.button;
+        if (value != -1)
+        {
+            return value;
         }
     }
     return -1;
@@ -341,32 +420,32 @@ void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::st
 
             std::string prefix = "Instance0.Joystick." + std::to_string(controllerID) + ".";
 
-            setIntConfig(prefix + "A", GetButtonBinding(controller, {bAsConfirmButton ? SDL_CONTROLLER_BUTTON_B : SDL_CONTROLLER_BUTTON_A}));
-            setIntConfig(prefix + "B", GetButtonBinding(controller, {bAsConfirmButton ? SDL_CONTROLLER_BUTTON_A : SDL_CONTROLLER_BUTTON_B}));
-            setIntConfig(prefix + "Y", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_Y}));
-            setIntConfig(prefix + "X", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_X}));
+            setIntConfig(prefix + "A", GetBinding(controller, {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_B : PLUGIN_GAME_CONTROLLER_BUTTON_A}));
+            setIntConfig(prefix + "B", GetBinding(controller, {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_A : PLUGIN_GAME_CONTROLLER_BUTTON_B}));
+            setIntConfig(prefix + "Y", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_Y}));
+            setIntConfig(prefix + "X", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_X}));
             // TODO: KH holdToOpenShortcuts
-            setIntConfig(prefix + "HK_RLockOn", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_RIGHTSHOULDER}));
-            setIntConfig(prefix + "HK_LSwitchTarget", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT, true));
-            setIntConfig(prefix + "HK_RSwitchTarget", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, true));
-            setIntConfig(prefix + "Up",    GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTY, true));
-            setIntConfig(prefix + "Down",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTY, false));
-            setIntConfig(prefix + "Left",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTX, true));
-            setIntConfig(prefix + "Right", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_LEFTX, false));
+            setIntConfig(prefix + "HK_RLockOn",       GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSHOULDER}));
+            setIntConfig(prefix + "HK_LSwitchTarget", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_TRIGGER}));
+            setIntConfig(prefix + "HK_RSwitchTarget", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_TRIGGER}));
+            setIntConfig(prefix + "Up",    GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_UP}));
+            setIntConfig(prefix + "Down",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_DOWN}));
+            setIntConfig(prefix + "Left",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_LEFT}));
+            setIntConfig(prefix + "Right", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_RIGHT}));
             // TODO: KH holdToWalk
-            setIntConfig(prefix + "HK_HUDToggle", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_LEFTSTICK}));
-            setIntConfig(prefix + "CameraUp",    GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTY, true));
-            setIntConfig(prefix + "CameraDown",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTY, false));
-            setIntConfig(prefix + "CameraLeft",  GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTX, true));
-            setIntConfig(prefix + "CameraRight", GetAxisBinding(controller, SDL_CONTROLLER_AXIS_RIGHTX, false));
+            setIntConfig(prefix + "HK_HUDToggle", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSTICK}));
+            setIntConfig(prefix + "CameraUp",    GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_UP}));
+            setIntConfig(prefix + "CameraDown",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_DOWN}));
+            setIntConfig(prefix + "CameraLeft",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_LEFT}));
+            setIntConfig(prefix + "CameraRight", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_RIGHT}));
             // TODO: KH resetCamera
-            setIntConfig(prefix + "HK_CommandMenuUp",    GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_UP}));
-            setIntConfig(prefix + "HK_CommandMenuDown",  GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_DOWN}));
-            setIntConfig(prefix + "HK_CommandMenuLeft",  GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_LEFT}));
-            setIntConfig(prefix + "HK_CommandMenuRight", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_DPAD_RIGHT}));
-            setIntConfig(prefix + "Start", GetButtonBinding(controller, {SDL_CONTROLLER_BUTTON_START}));
-            setIntConfig(prefix + "HK_FullscreenMapToggle", GetButtonBinding(controller,
-                { SDL_CONTROLLER_BUTTON_TOUCHPAD, SDL_CONTROLLER_BUTTON_BACK, SDL_CONTROLLER_BUTTON_GUIDE }));
+            setIntConfig(prefix + "HK_CommandMenuUp",    GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_UP}));
+            setIntConfig(prefix + "HK_CommandMenuDown",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_DOWN}));
+            setIntConfig(prefix + "HK_CommandMenuLeft",  GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_LEFT}));
+            setIntConfig(prefix + "HK_CommandMenuRight", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_DPAD_RIGHT}));
+            setIntConfig(prefix + "Start", GetBinding(controller, {PLUGIN_GAME_CONTROLLER_BUTTON_START}));
+            setIntConfig(prefix + "HK_FullscreenMapToggle", GetBinding(controller,
+                { PLUGIN_GAME_CONTROLLER_BUTTON_TOUCHPAD, PLUGIN_GAME_CONTROLLER_BUTTON_BACK, PLUGIN_GAME_CONTROLLER_BUTTON_GUIDE }));
 
             setIntConfig(prefix + "HK_AttackInteract", -1);
             setIntConfig(prefix + "HK_Jump",       -1);
