@@ -80,6 +80,8 @@ public:
         std::function<void(std::string, int)> setIntConfig,
         std::function<void(std::string, std::string)> setStringConfig
     ) override;
+
+    void overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
 private:
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;

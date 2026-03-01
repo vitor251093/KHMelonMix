@@ -439,8 +439,8 @@ void InputConfigDialog::on_cbAutoMapJoysticksForGame_stateChanged(int state)
     if (plugin != nullptr)
     {
         std::string root = plugin->tomlUniqueIdentifier();
-        auto& cfg = emuInstance->getGlobalConfig();
-        cfg.SetBool(root + ".DisableAutomaticJoystickMapping", state == 0);
+        auto& globalCfg = emuInstance->getGlobalConfig();
+        globalCfg.SetBool(root + ".DisableAutomaticJoystickMapping", state == 0);
     }
 }
 

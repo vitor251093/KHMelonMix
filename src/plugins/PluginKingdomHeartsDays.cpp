@@ -355,7 +355,7 @@ void PluginKingdomHeartsDays::overrideConfigs(
 {
     if (AutomaticallyMapJoysticks)
     {
-        KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+        overrideJoystickMappings(setIntConfig);
     }
 
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
@@ -396,11 +396,18 @@ void PluginKingdomHeartsDays::overrideConfigs(
 
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
+}
 
-    if (AutomaticallyMapJoysticks)
+void PluginKingdomHeartsDays::overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig)
+{
+    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
+    if (config == nullptr)
     {
-        KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(config, setIntConfig);
+        KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+        return;
     }
+
+    KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(config, setIntConfig);
 }
 
 std::string PluginKingdomHeartsDays::saveFilePath()

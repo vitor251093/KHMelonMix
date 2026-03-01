@@ -348,6 +348,10 @@ public:
         std::function<void(std::string, std::string)> setStringConfig
     ) {}
 
+    virtual void overrideJoystickMappings(
+        std::function<void(std::string, int)> setIntConfig
+    ) {}
+
     virtual void hudToggle() {}
 
     void replacementTexturesToggle() {
