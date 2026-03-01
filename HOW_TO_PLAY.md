@@ -112,8 +112,10 @@
 * (Add-ons tab) Map "Lock On" to the R1/RB button in your controller
 * (Add-ons tab) Map "Switch Target - Right" to the R2/RL button in your controller
 * (Add-ons tab) Map "Fullscreen Map Toggle" to the Select/Share/View button in your controller
-* (Add-ons tab) Map "HUD Toggle" to the R3/R button in your controller
+* (Add-ons tab) Map "HUD Toggle" to the L3/L button in your controller
 * (General hotkeys) Map "Toggle fullscreen" to an available button of your preference
+
+Note: don't add the same game controller key to two DS inputs, or neither of them will work properly.
 
 # How to dump DS cart into an NDS file
 There are multiple ways to do so. Those are some of them:
