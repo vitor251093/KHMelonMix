@@ -27,6 +27,7 @@
 #include <string>
 #include <utility>
 #include <fstream>
+#include <filesystem>
 
 #include <QDateTime>
 
@@ -2297,10 +2298,22 @@ u32 EmuInstance::gameCodeFromNdsFileAtPath(QStringList filepath)
 
 std::string EmuInstance::ndsSaveFilePath()
 {
+    std::string ogSavname = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
     std::string savname = plugin->saveFilePath();
     if (savname.empty())
     {
-        savname = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav");
+        return ogSavname;
+    }
+    if (!Platform::FileExists(savname) && Platform::FileExists(ogSavname))
+    {
+        try
+        {
+            std::filesystem::copy_file(ogSavname, savname);
+        }
+        catch (std::filesystem::filesystem_error& e)
+        {
+            savname = ogSavname;
+        }
     }
     return savname;
 }
