@@ -397,7 +397,10 @@ void PluginKingdomHeartsDays::overrideConfigs(
     setIntConfig("Audio.Volume", (config->sound.masterVolume == 1) ? 0 : (config->sound.masterVolume*256)/100);
     setIntConfig("Audio.BGMVolume", (config->sound.bgmVolume == 1) ? 0 : (config->sound.bgmVolume*10));
 
-    KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(config, setIntConfig);
+    if (AutomaticallyMapJoysticks)
+    {
+        KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(config, setIntConfig);
+    }
 }
 
 std::string PluginKingdomHeartsDays::saveFilePath()

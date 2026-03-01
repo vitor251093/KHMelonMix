@@ -76,7 +76,7 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
         auto& cfg = emuInstance->getGlobalConfig();
         oldEnhancedGraphics = !cfg.GetBool(root + ".DisableEnhancedGraphics");
         oldSingleScreenMode = !cfg.GetBool(root + ".DisableSingleScreenMode");
-        oldAutoMapJoysticks = cfg.GetBool(root + ".AutomaticallyMapJoysticks");
+        oldAutoMapJoysticks = !cfg.GetBool(root + ".DisableAutomaticJoystickMapping");
         oldFFLoadingScreens = cfg.GetBool(root + ".FastForwardLoadingScreens");
         oldDaysDisableHisMemories = cfg.GetBool(root + ".DaysDisableHisMemories");
         oldAudioPack = cfg.GetString(root + ".AudioPack");
@@ -141,7 +141,7 @@ void PluginSettingsDialog::on_PluginSettingsDialog_rejected()
     auto& cfg = emuInstance->getGlobalConfig();
     cfg.SetBool(root + ".DisableEnhancedGraphics", !oldEnhancedGraphics);
     cfg.SetBool(root + ".DisableSingleScreenMode", !oldSingleScreenMode);
-    cfg.SetBool(root + ".AutomaticallyMapJoysticks", oldAutoMapJoysticks);
+    cfg.SetBool(root + ".DisableAutomaticJoystickMapping", !oldAutoMapJoysticks);
     cfg.SetBool(root + ".FastForwardLoadingScreens", oldFFLoadingScreens);
     cfg.SetString(root + ".AudioPack", oldAudioPack);
     cfg.SetInt(root + ".HUDScale", oldHUDSize);
@@ -199,7 +199,7 @@ void PluginSettingsDialog::on_cbAutoMapJoysticks_stateChanged(int state)
     std::string root = plugin->tomlUniqueIdentifier();
 
     auto& cfg = emuInstance->getGlobalConfig();
-    cfg.SetBool(root + ".AutomaticallyMapJoysticks", state != 0);
+    cfg.SetBool(root + ".DisableAutomaticJoystickMapping", state == 0);
 
     emit updatePluginSettings();
 }
