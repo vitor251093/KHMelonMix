@@ -171,7 +171,7 @@ void InputConfigDialog::setupAddonsPage()
 {
     Config::Table& instcfg = emuInstance->getLocalConfig();
     Config::Table keycfg = instcfg.GetTable("Keyboard");
-    Config::Table joycfg = instcfg.GetTable("Joystick");
+    Config::Table joycfg = instcfg.GetTable("Joystick." + std::to_string(joystickUniqueID));
 
     auto plugin = emuInstance->plugin;
     if (plugin != nullptr)
