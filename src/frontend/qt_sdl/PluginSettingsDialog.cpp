@@ -76,7 +76,6 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
         auto& cfg = emuInstance->getGlobalConfig();
         oldEnhancedGraphics = !cfg.GetBool(root + ".DisableEnhancedGraphics");
         oldSingleScreenMode = !cfg.GetBool(root + ".DisableSingleScreenMode");
-        oldAutoMapJoysticks = !cfg.GetBool(root + ".DisableAutomaticJoystickMapping");
         oldFFLoadingScreens = cfg.GetBool(root + ".FastForwardLoadingScreens");
         oldDaysDisableHisMemories = cfg.GetBool(root + ".DaysDisableHisMemories");
         oldAudioPack = cfg.GetString(root + ".AudioPack");
@@ -87,7 +86,6 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
 
         ui->cbEnhancedGraphics->setChecked(oldEnhancedGraphics != 0);
         ui->cbSingleScreenMode->setChecked(oldSingleScreenMode != 0);
-        ui->cbAutoMapJoysticks->setChecked(oldAutoMapJoysticks != 0);
         ui->cbFFLoadingScreens->setChecked(oldFFLoadingScreens != 0);
         ui->cbDaysDisableHisMemories->setChecked(oldDaysDisableHisMemories != 0);
 
@@ -141,7 +139,6 @@ void PluginSettingsDialog::on_PluginSettingsDialog_rejected()
     auto& cfg = emuInstance->getGlobalConfig();
     cfg.SetBool(root + ".DisableEnhancedGraphics", !oldEnhancedGraphics);
     cfg.SetBool(root + ".DisableSingleScreenMode", !oldSingleScreenMode);
-    cfg.SetBool(root + ".DisableAutomaticJoystickMapping", !oldAutoMapJoysticks);
     cfg.SetBool(root + ".FastForwardLoadingScreens", oldFFLoadingScreens);
     cfg.SetString(root + ".AudioPack", oldAudioPack);
     cfg.SetInt(root + ".HUDScale", oldHUDSize);
@@ -181,25 +178,6 @@ void PluginSettingsDialog::on_cbFFLoadingScreens_stateChanged(int state)
 
     auto& cfg = emuInstance->getGlobalConfig();
     cfg.SetBool(root + ".FastForwardLoadingScreens", state != 0);
-
-    emit updatePluginSettings();
-}
-
-void PluginSettingsDialog::on_cbAutoMapJoysticks_stateChanged(int state)
-{
-    if (oldAutoMapJoysticks == 0 && state != 0 && emuInstance->emuIsActive()
-                && QMessageBox::warning(this, "Restart necessary to apply changes",
-                    "The emulator will need to be restarted for the changes to take place.",
-                    QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok) {
-        ui->cbAutoMapJoysticks->setChecked(false);
-        return;
-    }
-
-    auto plugin = emuInstance->plugin;
-    std::string root = plugin->tomlUniqueIdentifier();
-
-    auto& cfg = emuInstance->getGlobalConfig();
-    cfg.SetBool(root + ".DisableAutomaticJoystickMapping", state == 0);
 
     emit updatePluginSettings();
 }

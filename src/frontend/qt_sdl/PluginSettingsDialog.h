@@ -62,7 +62,6 @@ private slots:
     void on_cbEnhancedGraphics_stateChanged(int state);
     void on_cbSingleScreenMode_stateChanged(int state);
     void on_cbFFLoadingScreens_stateChanged(int state);
-    void on_cbAutoMapJoysticks_stateChanged(int state);
     void on_cbDaysDisableHisMemories_stateChanged(int state);
     void on_cbxAudioPack_currentTextChanged(const QString &text);
 
@@ -77,7 +76,6 @@ private:
     bool isPluginLoaded;
     int oldEnhancedGraphics;
     int oldSingleScreenMode;
-    int oldAutoMapJoysticks;
     int oldFFLoadingScreens;
     int oldDaysDisableHisMemories;
     std::string oldAudioPack;

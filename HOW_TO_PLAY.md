@@ -15,8 +15,8 @@
 7. The next steps are only necessary if you are launching Melon Mix for the first time;
     1. In the future, launch the Melon Mix using "MelonMix_KHDays.bat" or "MelonMix_KHReCoded.bat", but, right now, launch "MelonMix.exe";
     2. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences. We recommend keeping "Automatically map joysticks" enabled;
-    4. If you don't want your controllers to be mapped automatically, press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below);
+    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
+    4. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
 
 ## Linux / Steam Deck (without the 1.5+2.5 collection)
 
@@ -34,8 +34,8 @@
 8. The next steps are only necessary if you are launching Melon Mix for the first time;
     1. In the future, launch the Melon Mix using "MelonMix_KHDays.sh" or "MelonMix_KHReCoded.sh", but, right now, launch the binary/AppImage;
     2. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences. We recommend keeping "Automatically map joysticks" enabled;
-    4. If you don't want your controllers to be mapped automatically, press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below);
+    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
+    4. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
 
 ## macOS (without the 1.5+2.5 collection)
 
@@ -53,8 +53,8 @@
 8. Now you just need to launch the Melon Mix app, and open the desired NDS file with it;
 9. The next steps are only necessary if you are launching Melon Mix for the first time;
     1. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    2. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences. We recommend keeping "Automatically map joysticks" enabled;
-    3. If you don't want your controllers to be mapped automatically, press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below);
+    2. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
+    3. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
 
 ## Windows (from the 1.5+2.5 collection) (Steam only)
 
@@ -72,11 +72,11 @@
     1. Dump an original copy of "Re:Coded" and copy the NDS file to your computer (instructions at "How to dump DS cart into an NDS file" down below);
     2. Rename that NDS file to "recoded.nds", place it inside the `roms` folder;
 10. Place [this assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing) next to the Melon Mix executable file (optional; only if you want to upgrade the audio / cutscenes / textures / sprites);
-11. The next steps are only necessary if you want to customize your experience;
+11. The next steps are only necessary if you want to customize your experience, or if you plan to play with a keyboard;
     1. Open the Melon Mix directly through `MelonMix.exe`;
     2. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences. We recommend keeping "Automatically map joysticks" enabled;
-    4. If you don't want your controllers to be mapped automatically, press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below);
+    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
+    4. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
 
 ## Linux / Steam Deck (from the 1.5+2.5 collection) (Steam only)
 
@@ -95,11 +95,11 @@
     2. Rename that NDS file to "recoded.nds", place it inside the `roms` folder;
 10. Place [this assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing) next to the Melon Mix executable file (optional; only if you want to upgrade the audio / cutscenes / textures / sprites);
 11. Right-click the AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox;
-12. The next steps are only necessary if you want to customize your experience;
+12. The next steps are only necessary if you want to customize your experience, or if you plan to play with a keyboard;
     1. Open the Melon Mix directly through `MelonMix.AppImage`;
     2. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences. We recommend keeping "Automatically map joysticks" enabled;
-    4. If you don't want your controllers to be mapped automatically, press **Config** -> **Input and hotkeys** to configure the controls (recommended mappings at the "Recommended controller binds" guide below);
+    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
+    4. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
 
 # Recommended Controller Binds
 * (DS Keypad tab) Map the DS D-Pad to your controller's left analog stick

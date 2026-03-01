@@ -29,6 +29,9 @@
 #include "Platform.h"
 
 #include "InputConfigDialog.h"
+
+#include <QMessageBox>
+
 #include "ui_InputConfigDialog.h"
 #include "MapButton.h"
 
@@ -120,6 +123,15 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
     setupAddonsPage();
     setupTouchScreenPage();
 
+    auto plugin = emuInstance->plugin;
+    if (plugin != nullptr)
+    {
+        std::string root = plugin->tomlUniqueIdentifier();
+        auto& globalCfg = emuInstance->getGlobalConfig();
+        enableAutomaticJoystickMappingForGame = !globalCfg.GetBool(root + ".DisableAutomaticJoystickMapping");
+        ui->cbAutoMapJoysticksForGame->setChecked(enableAutomaticJoystickMappingForGame);
+    }
+
     int inst = emuInstance->getInstanceID();
     if (inst > 0)
         ui->lblInstanceNum->setText(QString("Configuring mappings for instance %1").arg(inst+1));
@@ -162,7 +174,8 @@ void InputConfigDialog::setupAddonsPage()
     Config::Table joycfg = instcfg.GetTable("Joystick");
 
     auto plugin = emuInstance->plugin;
-    if (plugin != nullptr) {
+    if (plugin != nullptr)
+    {
         for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
         {
             const char* btn = plugin->customKeyMappingNames[i];
@@ -171,7 +184,8 @@ void InputConfigDialog::setupAddonsPage()
         }
     }
 
-    if (plugin != nullptr && plugin->customKeyMappingNames.size() > 0) {
+    if (plugin != nullptr && plugin->customKeyMappingNames.size() > 0)
+    {
         auto labels = plugin->customKeyMappingLabels;
         populatePage(ui->tabAddons, labels, pluginKeyMap, pluginJoyMap);
     }
@@ -274,7 +288,8 @@ void InputConfigDialog::on_InputConfigDialog_accepted()
     }
 
     auto plugin = emuInstance->plugin;
-    if (plugin != nullptr) {
+    if (plugin != nullptr)
+    {
         for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
         {
             const char* btn = plugin->customKeyMappingNames[i];
@@ -300,6 +315,14 @@ void InputConfigDialog::on_InputConfigDialog_accepted()
 
 void InputConfigDialog::on_InputConfigDialog_rejected()
 {
+    auto plugin = emuInstance->plugin;
+    if (plugin != nullptr)
+    {
+        std::string root = plugin->tomlUniqueIdentifier();
+        auto& glocalCfg = emuInstance->getGlobalConfig();
+        glocalCfg.SetBool(root + ".DisableAutomaticJoystickMapping", !enableAutomaticJoystickMappingForGame);
+    }
+
     Config::Table& instcfg = emuInstance->getLocalConfig();
     emuInstance->setJoystickByUniqueId(instcfg.GetInt("JoystickUniqueID"));
 
@@ -399,6 +422,26 @@ void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
     }
 
     emuInstance->inputLoadConfig();
+}
+
+
+void InputConfigDialog::on_cbAutoMapJoysticksForGame_stateChanged(int state)
+{
+    if (enableAutomaticJoystickMappingForGame == 0 && state != 0 && emuInstance->emuIsActive()
+                && QMessageBox::warning(this, "Restart necessary to apply changes",
+                    "The emulator will need to be restarted for the changes to take place.",
+                    QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok) {
+        ui->cbAutoMapJoysticksForGame->setChecked(false);
+        return;
+    }
+
+    auto plugin = emuInstance->plugin;
+    if (plugin != nullptr)
+    {
+        std::string root = plugin->tomlUniqueIdentifier();
+        auto& cfg = emuInstance->getGlobalConfig();
+        cfg.SetBool(root + ".DisableAutomaticJoystickMapping", state == 0);
+    }
 }
 
 SDL_Joystick* InputConfigDialog::getJoystick()
