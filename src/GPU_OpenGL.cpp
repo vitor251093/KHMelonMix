@@ -68,8 +68,11 @@ bool GLRenderer::Init()
 
     // compile shaders
 
+    const char* kFinalPassFS_Custom = GamePlugin == nullptr ? nullptr : GamePlugin->gpuOpenGL_FinalPassFS();
+    const char* kFinalPassFS_Final = kFinalPassFS_Custom == nullptr ? kFinalPassFS : kFinalPassFS_Custom;
+
     if (!OpenGL::CompileVertexFragmentProgram(FPShader,
-                                              kFinalPassVS, kFinalPassFS,
+                                              kFinalPassVS, kFinalPassFS_Final,
                                               "2DFinalPassShader",
                                               {{"vPosition", 0}},
                                               {{"oTopColor", 0}, {"oBottomColor", 1}}))

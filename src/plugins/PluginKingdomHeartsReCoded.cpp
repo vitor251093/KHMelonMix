@@ -2306,13 +2306,13 @@ bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
 
 bool PluginKingdomHeartsReCoded::isComboLimitVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 12, 146) && !has2DOnTopOf3DAt(buffer, 35, 185);
 }
 
 bool PluginKingdomHeartsReCoded::isSpeedComboFinisherVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 65, 60) && has2DOnTopOf3DAt(buffer, 65, 75) &&
                                     has2DOnTopOf3DAt(buffer, 65, 90) && has2DOnTopOf3DAt(buffer, 65, 120);
 }

@@ -127,7 +127,18 @@ const char* Plugin::gpuOpenGL_FS()
         return nullptr;
     }
 
-    return kCompositorFS_Plugin;
+    return nullptr;
+    // return kCompositorFS_Plugin;
+}
+
+const char* Plugin::gpuOpenGL_FinalPassFS()
+{
+    bool disable = !EnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
+    return kFinalPassFS_Plugin;
 }
 
 void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
