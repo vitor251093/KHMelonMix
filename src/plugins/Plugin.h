@@ -165,9 +165,12 @@ public:
     virtual std::string tomlUniqueIdentifier() {return gameFolderName();};
 
     virtual const char* gpuOpenGL_FS();
-    virtual const char* gpuOpenGL_FinalPassFS();
     virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
     virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
+
+    virtual const char* gpuOpenGL_FinalPassFS();
+    virtual void gpuOpenGL_FinalPassFS_initVariables(GLuint CompShader);
+    virtual void gpuOpenGL_FinalPassFS_updateVariables(GLuint CompShader);
 
     virtual bool gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, float xCenter, float yCenter, ShapeData3D shape, int vertexIndex);
     virtual bool gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
@@ -378,6 +381,7 @@ protected:
     std::map<u32, GLuint> CompUbo3DLoc{};
     bool CompUbo3DLocInit = false;
 
+    std::vector<ShapeData2D> currentCompositionShapes;
     std::vector<ShapeData2D> current2DShapes;
     std::vector<ShapeData3D> current3DShapes;
 

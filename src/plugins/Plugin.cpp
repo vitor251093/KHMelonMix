@@ -131,16 +131,6 @@ const char* Plugin::gpuOpenGL_FS()
     // return kCompositorFS_Plugin;
 }
 
-const char* Plugin::gpuOpenGL_FinalPassFS()
-{
-    bool disable = !EnhancedGraphics;
-    if (disable) {
-        return nullptr;
-    }
-
-    return kFinalPassFS_Plugin;
-}
-
 void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock2D");
     glUniformBlockBinding(CompShader, blockIndex, 1);
@@ -181,6 +171,59 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
     void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
     if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * current2DShapes.size());
+    glUnmapBuffer(GL_UNIFORM_BUFFER);
+}
+
+const char* Plugin::gpuOpenGL_FinalPassFS()
+{
+    bool disable = !EnhancedGraphics;
+    if (disable) {
+        return nullptr;
+    }
+
+    return kFinalPassFS_Plugin;
+}
+
+void Plugin::gpuOpenGL_FinalPassFS_initVariables(GLuint CompShader) {
+    GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock2D");
+    glUniformBlockBinding(CompShader, blockIndex, 1);
+
+    GLuint uboBuffer;
+    glGenBuffers(1, &uboBuffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData2D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
+    CompUboLoc[CompShader] = uboBuffer;
+
+    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
+}
+
+void Plugin::gpuOpenGL_FinalPassFS_updateVariables(GLuint CompShader) {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    float forcedAspectRatio = renderer_forcedAspectRatio() / (4.f / 3.f);
+    bool showOriginalHud = renderer_showOriginalUI();
+    int screenLayout = renderer_screenLayout();
+    int brightnessMode = renderer_brightnessMode();
+
+    glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
+    glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
+    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
+    glUniform1i(CompGpuLoc[CompShader][3], showOriginalHud ? 1 : 0);
+    glUniform1i(CompGpuLoc[CompShader][4], screenLayout);
+    glUniform1i(CompGpuLoc[CompShader][5], brightnessMode);
+    glUniform1i(CompGpuLoc[CompShader][6], currentCompositionShapes.size());
+
+    currentCompositionShapes.resize(SHAPES_DATA_ARRAY_SIZE);
+    auto shadersData = currentCompositionShapes.data();
+    glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
+    void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
+    if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * currentCompositionShapes.size());
     glUnmapBuffer(GL_UNIFORM_BUFFER);
 }
 
@@ -1265,12 +1308,9 @@ void Plugin::buildShapes()
 {
     renderer_beforeBuildingShapes();
     GameSceneState = renderer_gameSceneState();
+    currentCompositionShapes = renderer_composition();
     current2DShapes = renderer_topScreen_2DShapes();
     current3DShapes = renderer_topScreen_3DShapes();
-
-    std::vector<ShapeData2D> currentCompositionShapes = renderer_composition();
-    current2DShapes.insert(current2DShapes.begin(), currentCompositionShapes.begin(), currentCompositionShapes.end());
-
     renderer_afterBuildingShapes();
 }
 

@@ -214,6 +214,10 @@ bool GLRenderer::Init()
     uniloc = glGetUniformBlockIndex(FPShader, "ubFinalPassConfig");
     glUniformBlockBinding(FPShader, uniloc, 30);
 
+    if (GamePlugin != nullptr) {
+        GamePlugin->gpuOpenGL_FinalPassFS_initVariables(FPShader);
+    }
+
 
     glUseProgram(CaptureShader);
 
@@ -551,6 +555,10 @@ void GLRenderer::RenderScreen(int ystart, int yend)
     else
     {
         glUseProgram(FPShader);
+
+        if (GamePlugin != nullptr) {
+            GamePlugin->gpuOpenGL_FinalPassFS_updateVariables(FPShader);
+        }
 
         FinalPassConfig.uScaleFactor = ScaleFactor;
         FinalPassConfig.uDispModeA = (DispCntA >> 16) & 0x3;
