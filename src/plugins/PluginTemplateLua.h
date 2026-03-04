@@ -36,8 +36,9 @@ public:
         return std::to_string(GameCode);
     }
     int renderer_gameSceneState();
-    std::vector<ShapeData2D> renderer_2DShapes();
-    std::vector<ShapeData3D> renderer_3DShapes();
+    std::vector<ShapeData2D> renderer_composition();
+    std::vector<ShapeData2D> renderer_topScreen_2DShapes();
+    std::vector<ShapeData3D> renderer_topScreen_3DShapes();
     int renderer_screenLayout();
     int renderer_brightnessMode();
     bool renderer_showOriginalUI();

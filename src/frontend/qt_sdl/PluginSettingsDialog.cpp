@@ -26,6 +26,9 @@
 #include "main.h"
 
 #include "PluginSettingsDialog.h"
+
+#include <QMessageBox>
+
 #include "ui_PluginSettingsDialog.h"
 
 

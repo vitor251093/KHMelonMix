@@ -63,8 +63,9 @@ Join our [Discord](https://discord.gg/AhRscvkqB9) to keep in touch with the late
 <p align="center"><i>From melonDS with a widescreen cheat to KH Melon Mix v0.7.1</i></p>
 
 ## Team
-* **Programmers:** @vitor251093 and @justedni
+* **Programmers:** @vitor251093, @justedni and @Kite2810
 * **Designers:** @sandwichwater and @DaniKH1
+* **Moderators:** BlazeFaia
 
 ## Credits
 

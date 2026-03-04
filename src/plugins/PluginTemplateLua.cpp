@@ -123,12 +123,18 @@ int PluginTemplateLua::renderer_gameSceneState(){
     return gamescene;
 }
 
-std::vector<ShapeData2D> PluginTemplateLua::renderer_2DShapes() {    
+std::vector<ShapeData2D> PluginTemplateLua::renderer_composition()
+{
+    auto shapes = std::vector<ShapeData2D>();
+    return shapes;
+}
+
+std::vector<ShapeData2D> PluginTemplateLua::renderer_topScreen_2DShapes() {
     std::vector<ShapeData2D> shapes = Current2DShapes;
     return shapes;
 }
 
-std::vector<ShapeData3D> PluginTemplateLua::renderer_3DShapes() {
+std::vector<ShapeData3D> PluginTemplateLua::renderer_topScreen_3DShapes() {
     std::vector<ShapeData3D> shapes = Current3DShapes;
     return shapes;
 }

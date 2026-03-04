@@ -24,15 +24,18 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
 
     void loadLocalization();
+    std::string saveFilePath();
+    bool shouldStartInFullscreen() override;
     void onLoadROM() override;
 
     std::string gameFolderName() override;
     std::string tomlUniqueIdentifier() override;
 
-    void renderer_2DShapes_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
 
-    std::vector<ShapeData2D> renderer_2DShapes() override;
-    std::vector<ShapeData3D> renderer_3DShapes() override;
+    std::vector<ShapeData2D> renderer_composition() override;
+    std::vector<ShapeData2D> renderer_topScreen_2DShapes() override;
+    std::vector<ShapeData3D> renderer_topScreen_3DShapes() override;
     int renderer_gameSceneState() override;
     int renderer_screenLayout() override;
     int renderer_brightnessMode() override;
@@ -43,7 +46,7 @@ public:
 
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
-    
+
     bool overrideMouseTouchCoords_singleScreen(int width, int height, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords_horizontalDualScreen(int width, int height, bool invert, int& x, int& y, bool& touching);
     bool overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) override;
@@ -70,9 +73,15 @@ public:
 
         std::string root = tomlUniqueIdentifier();
 
-        KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
         TextLanguage = getStringConfig(root + ".Language");
     }
+    void overrideConfigs(
+        std::function<void(std::string, bool)> setBoolConfig,
+        std::function<void(std::string, int)> setIntConfig,
+        std::function<void(std::string, std::string)> setStringConfig
+    ) override;
+
+    void overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
 private:
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;
@@ -103,7 +112,6 @@ private:
     u32 LastLockOnPress, LastSwitchTargetPress, LastScreenTogglePress;
 
     std::array<CutsceneEntry, 15> Cutscenes;
-    std::string KH_15_25_Remix_Location = "";
     std::string TextLanguage = "";
 
     int detectGameScene() override;
@@ -164,12 +172,17 @@ private:
 
     bool isResultScreenVisible();
     bool isDeweyDialogVisible();
+    bool isBugLevelVisibleOnTopScreen();
     bool isMissionInformationVisibleOnTopScreen();
     bool isDialogVisible();
     bool isMinimapVisible();
     bool isBugSector();
     bool isChallengeMeterVisible();
     bool isCommandMenuVisible();
+    bool isComboLimitVisible();
+    bool isSpeedComboFinisherVisible();
+    bool isStarRaveFinisherVisible();
+    bool isSpinnerSawFinisherVisible();
     bool isHealthVisible();
     ivec2 minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY);
     ivec2 minimapCenter();

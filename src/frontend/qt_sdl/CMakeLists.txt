@@ -70,6 +70,8 @@ set(SOURCES_QT_SDL
     LANDialog.cpp
     NetplayDialog.cpp
 
+    plugins/PluginJoystick.cpp
+
     LuaMain.cpp
 )
 

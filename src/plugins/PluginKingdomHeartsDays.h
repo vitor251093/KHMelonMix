@@ -27,6 +27,8 @@ public:
     bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROM()[0x1E] == 1; };
 
     void loadLocalization();
+    std::string saveFilePath();
+    bool shouldStartInFullscreen() override;
     void onLoadROM() override;
     void onLoadState() override;
 
@@ -35,8 +37,9 @@ public:
     std::string tomlUniqueIdentifier() override;
 
     void renderer_beforeBuildingShapes() override;
-    std::vector<ShapeData2D> renderer_2DShapes() override;
-    std::vector<ShapeData3D> renderer_3DShapes() override;
+    std::vector<ShapeData2D> renderer_composition() override;
+    std::vector<ShapeData2D> renderer_topScreen_2DShapes() override;
+    std::vector<ShapeData3D> renderer_topScreen_3DShapes() override;
     void renderer_afterBuildingShapes() override;
     int renderer_gameSceneState() override;
     int renderer_screenLayout() override;
@@ -77,7 +80,6 @@ public:
 
         std::string root = tomlUniqueIdentifier();
 
-        KH_15_25_Remix_Location = getStringConfig(root + ".Kingdom_Hearts_HD_1_5_2_5_Remix_Location");
         TextLanguage = getStringConfig(root + ".Language");
     }
     void overrideConfigs(
@@ -85,6 +87,8 @@ public:
         std::function<void(std::string, int)> setIntConfig,
         std::function<void(std::string, std::string)> setStringConfig
     ) override;
+
+    void overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
 private:
     bool PausedInGame = false;
     bool isCharacterControllable = false;
@@ -131,7 +135,6 @@ private:
     std::array<CutsceneEntry, 46> Cutscenes;
     u32 cutscenesAddressOffset = 0;
 
-    std::string KH_15_25_Remix_Location = "";
     std::string TextLanguage = "";
 
     int detectGameScene() override;
@@ -198,11 +201,11 @@ private:
     int dialogBoxHeight();
     bool has2DOnTopOf3DAt(void* buffer, int x, int y);
 
-    void renderer_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
-    void renderer_2DShapes_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
-    void renderer_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
-    void renderer_2DShapes_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
-    void renderer_2DShapes_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_topScreen_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_topScreen_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
 
     void hudToggle() override;
     void toggleFullscreenMap();

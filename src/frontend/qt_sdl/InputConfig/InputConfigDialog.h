@@ -143,6 +143,8 @@ private slots:
     void on_btnJoyMapSwitch_clicked();
     void on_cbxJoystick_currentIndexChanged(int id);
 
+    void on_cbAutoMapJoysticksForGame_stateChanged(int state);
+
 private:
     void populatePage(QWidget* page,
         std::vector<const char*> labels,
@@ -161,6 +163,8 @@ private:
     int pluginKeyMap[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT], pluginJoyMap[PLUGIN_ADDON_KEYS_ARRAY_SIZE_LIMIT];
     int touchScreenKeyMap[4], touchScreenJoyMap[4];
     int joystickID;
+    int joystickUniqueID;
+    int enableAutomaticJoystickMappingForGame;
 };
 
 
