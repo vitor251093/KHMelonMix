@@ -1510,10 +1510,10 @@ ivec4 getTopScreenColor(vec2 pos)
                     }
                 }
 
-                ivec2 textureBeginning = ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy;
-                bool isBottomScreen = textureBeginning.y >= 192;
+                vec2 textureBeginning = finalPos + vec2(shapes[shapeIndex].squareInitialCoords.xy);
+                bool isBottomScreen = textureBeginning.y >= 192.0;
                 if (isBottomScreen) {
-                    textureBeginning.y = textureBeginning.y - 192;
+                    textureBeginning.y = textureBeginning.y - 192.0;
                 }
 
                 // single color to alpha
