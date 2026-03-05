@@ -39,23 +39,24 @@ Join our [Discord](https://discord.gg/AhRscvkqB9) to keep in touch with the late
 - Command menu controls
 - Camera controls (analog stick)
 - Lock On and Switch target as separate controls
-- DS cutscene to HD cutscene replacement (Days only, for now)
-- Remastered BGM replacement
+- Optional DS cutscene to HD cutscene replacement (Days only, for now)
+- Optional remastered BGM replacement
+- Optional integration with the 1.5+2.5 collection
 
 ## Which other features are being worked on?
-- Texture replacement
+- Optional sprite and texture replacement
+- Optional in-engine cutscene with HD cutscene replacement
 - Camera Mode
-- In-engine cutscene with HD cutscene replacement
 - Menus adapted to a single screen
 - Camera controls (mouse/touchpad)
 - Pause functionality to HD cutscenes
 
 ## Which other features are being considered?
 - Lua support
-- 3D models replacement (do not expect modern games quality on that one, it still needs to run on the DS CPU)
+- Optional 3D models replacement (do not expect modern games quality on that one, it still needs to run on the DS CPU)
 - Rumble to joystick controllers
 - Support to RetroAchievements
-- Command Menu should reflect the mission world (toggleable feature)
+- Optional Command Menu that reflect the mission world
 
 <hr>
 
