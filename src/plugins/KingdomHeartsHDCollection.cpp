@@ -297,8 +297,8 @@ void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::st
     std::map<std::string, std::vector<PluginJoystickInput>> map = {
         {"A",                     {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_B : PLUGIN_GAME_CONTROLLER_BUTTON_A}},
         {"B",                     {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_A : PLUGIN_GAME_CONTROLLER_BUTTON_B}},
-        {"Y",                     {PLUGIN_GAME_CONTROLLER_BUTTON_Y}},
-        {"X",                     {PLUGIN_GAME_CONTROLLER_BUTTON_X}},
+        {"Y",                     {PLUGIN_GAME_CONTROLLER_BUTTON_X}},
+        {"X",                     {PLUGIN_GAME_CONTROLLER_BUTTON_Y}},
         {"L",                     {PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSHOULDER}},
         {"HK_LSwitchTarget",      {PLUGIN_GAME_CONTROLLER_LEFT_TRIGGER}},
         {"HK_RLockOn",            {PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSHOULDER}},
