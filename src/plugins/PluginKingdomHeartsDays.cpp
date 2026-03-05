@@ -20,6 +20,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_MAIN_MENU_JP      0x0204288d
 #define IS_MAIN_MENU_JP_REV1 0x0204284d
 
+#define DIALOG_ADDRESS_US      0x02042444 // may also be 0x020423fc, 0x02047348, 0x0204bc14
+#define DIALOG_ADDRESS_EU      0x02042464 // TODO: KH Unconfirmed (calculated)
+#define DIALOG_ADDRESS_JP      0x020428a4 // TODO: KH Unconfirmed (calculated)
+#define DIALOG_ADDRESS_JP_REV1 0x02042864 // TODO: KH Unconfirmed (calculated)
+
 // 0x00 => cannot control (ingame cutscenes, or not ingame at all); 0x01 => can control
 #define IS_CHARACTER_CONTROLLABLE_US      0x02042460
 #define IS_CHARACTER_CONTROLLABLE_EU      0x02042480 // TODO: KH Unconfirmed (calculated)
@@ -58,6 +63,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define PAUSE_SCREEN_ADDRESS_EU      0x0204bd84
 #define PAUSE_SCREEN_ADDRESS_JP      0x0204c1c4
 #define PAUSE_SCREEN_ADDRESS_JP_REV1 0x0204c184
+
+#define MID_GAME_DIALOG_ADDRESS_US      0x0204bd65
+#define MID_GAME_DIALOG_ADDRESS_EU      0x0204bd85
+#define MID_GAME_DIALOG_ADDRESS_JP      0x0204c1c5
+#define MID_GAME_DIALOG_ADDRESS_JP_REV1 0x0204c185
 
 #define PAUSE_SCREEN_VALUE_NONE       0x00
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
@@ -2166,9 +2176,25 @@ bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 
 bool PluginKingdomHeartsDays::isDialogVisible()
 {
-    void* buffer = topScreen2DTexture();
-    for (int y = 161; y >= 141; y--) {
-        if (has2DOnTopOf3DAt(buffer, 128, y)) {
+    bool _isCharacterControllable = nds->ARM7Read8(
+            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
+    if (!_isCharacterControllable)
+    {
+        u32 cutsceneAddressValue = getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
+        if (cutsceneAddressValue != 0)
+        {
+            // dialogs that look like cutscenes
+            return true;
+        }
+    }
+    else
+    {
+        bool isMidGameDialog = nds->ARM7Read8(
+            getAnyByCart(MID_GAME_DIALOG_ADDRESS_US, MID_GAME_DIALOG_ADDRESS_EU, MID_GAME_DIALOG_ADDRESS_JP, MID_GAME_DIALOG_ADDRESS_JP_REV1)) == 0x00;
+        if (isMidGameDialog)
+        {
+            // dialogs triggered by the player that quickly interrupts gameplay
+            // TODO: KH This is not perfect; for a few frames, before and after the dialog, it affects the regular HUD
             return true;
         }
     }
