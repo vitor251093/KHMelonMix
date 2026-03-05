@@ -2159,7 +2159,7 @@ void* PluginKingdomHeartsDays::bottomScreen2DTexture()
 {
     void* topBuffer; void* bottomBuffer;
     bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return bottomBuffer;
+    return topBuffer; // TODO: KH WTF
 }
 
 bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()

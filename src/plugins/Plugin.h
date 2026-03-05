@@ -373,6 +373,9 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
+    std::map<GLuint, GLuint[20]> CompGpuCompositionLoc{};
+    std::map<GLuint, GLuint> CompUboCompositionLoc{};
+
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
     std::map<GLuint, GLuint> CompUboLoc{};
 

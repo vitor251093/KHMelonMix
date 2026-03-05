@@ -127,8 +127,7 @@ const char* Plugin::gpuOpenGL_FS()
         return nullptr;
     }
 
-    return nullptr;
-    // return kCompositorFS_Plugin;
+    return k2DCompositorFS_Plugin;
 }
 
 void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
@@ -193,15 +192,15 @@ void Plugin::gpuOpenGL_FinalPassFS_initVariables(GLuint CompShader) {
     glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData2D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
-    CompUboLoc[CompShader] = uboBuffer;
+    CompUboCompositionLoc[CompShader] = uboBuffer;
 
-    CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
+    CompGpuCompositionLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
+    CompGpuCompositionLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
+    CompGpuCompositionLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
+    CompGpuCompositionLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
+    CompGpuCompositionLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
+    CompGpuCompositionLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
+    CompGpuCompositionLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
 }
 
 void Plugin::gpuOpenGL_FinalPassFS_updateVariables(GLuint CompShader) {
@@ -211,17 +210,17 @@ void Plugin::gpuOpenGL_FinalPassFS_updateVariables(GLuint CompShader) {
     int screenLayout = renderer_screenLayout();
     int brightnessMode = renderer_brightnessMode();
 
-    glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
-    glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
-    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
-    glUniform1i(CompGpuLoc[CompShader][3], showOriginalHud ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][4], screenLayout);
-    glUniform1i(CompGpuLoc[CompShader][5], brightnessMode);
-    glUniform1i(CompGpuLoc[CompShader][6], currentCompositionShapes.size());
+    glUniform1f(CompGpuCompositionLoc[CompShader][0], aspectRatio);
+    glUniform1f(CompGpuCompositionLoc[CompShader][1], forcedAspectRatio);
+    glUniform1i(CompGpuCompositionLoc[CompShader][2], UIScale);
+    glUniform1i(CompGpuCompositionLoc[CompShader][3], showOriginalHud ? 1 : 0);
+    glUniform1i(CompGpuCompositionLoc[CompShader][4], screenLayout);
+    glUniform1i(CompGpuCompositionLoc[CompShader][5], brightnessMode);
+    glUniform1i(CompGpuCompositionLoc[CompShader][6], currentCompositionShapes.size());
 
     currentCompositionShapes.resize(SHAPES_DATA_ARRAY_SIZE);
     auto shadersData = currentCompositionShapes.data();
-    glBindBuffer(GL_UNIFORM_BUFFER, CompUboLoc[CompShader]);
+    glBindBuffer(GL_UNIFORM_BUFFER, CompUboCompositionLoc[CompShader]);
     void* unibuf = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
     if (unibuf) memcpy(unibuf, shadersData, sizeof(ShapeData2D) * currentCompositionShapes.size());
     glUnmapBuffer(GL_UNIFORM_BUFFER);
