@@ -132,13 +132,13 @@ const char* Plugin::gpuOpenGL_FS()
 
 void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock2D");
-    glUniformBlockBinding(CompShader, blockIndex, 1);
+    glUniformBlockBinding(CompShader, blockIndex, 41);
 
     GLuint uboBuffer;
     glGenBuffers(1, &uboBuffer);
     glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData2D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 41, uboBuffer);
     CompUboLoc[CompShader] = uboBuffer;
 
     CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
@@ -185,13 +185,13 @@ const char* Plugin::gpuOpenGL_FinalPassFS()
 
 void Plugin::gpuOpenGL_FinalPassFS_initVariables(GLuint CompShader) {
     GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock2D");
-    glUniformBlockBinding(CompShader, blockIndex, 1);
+    glUniformBlockBinding(CompShader, blockIndex, 40);
 
     GLuint uboBuffer;
     glGenBuffers(1, &uboBuffer);
     glBindBuffer(GL_UNIFORM_BUFFER, uboBuffer);
     glBufferData(GL_UNIFORM_BUFFER, sizeof(ShapeData2D) * SHAPES_DATA_ARRAY_SIZE, nullptr, GL_STATIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboBuffer);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 40, uboBuffer);
     CompUboCompositionLoc[CompShader] = uboBuffer;
 
     CompGpuCompositionLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
