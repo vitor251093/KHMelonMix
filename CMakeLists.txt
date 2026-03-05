@@ -17,7 +17,7 @@ if (USE_VCPKG)
 endif()
 
 project(melonDS
-    VERSION 0.8.1
+    VERSION 0.8.2
     DESCRIPTION "DS emulator, sorta"
     HOMEPAGE_URL "https://github.com/vitor251093/KHMelonMix"
     LANGUAGES C CXX)
