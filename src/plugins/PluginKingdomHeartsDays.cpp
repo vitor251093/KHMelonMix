@@ -2202,11 +2202,20 @@ bool PluginKingdomHeartsDays::isDialogVisible()
 }
 
 bool PluginKingdomHeartsDays::isMinimapVisible() {
-    u32 pixel = getPixel(bottomScreen2DTexture(), 99, 53, 0);
-    if (GameScene == gameScene_PauseMenu) {
-        return ((pixel >> 0) & 0x3F) == 0x1F && ((pixel >> 8) & 0x3F) == 0x1F && ((pixel >> 16) & 0x3F) == 0x1F;
+    bool _isCharacterControllable = nds->ARM7Read8(
+            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
+    if (!_isCharacterControllable)
+    {
+        u32 cutsceneAddressValue = getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
+        if (cutsceneAddressValue != 0)
+        {
+            // dialogs that look like cutscenes
+            // TODO: KH This looks a bit broken upon joining missions, or finishing a tutorial
+            return false;
+        }
     }
-    return ((pixel >> 0) & 0x3F) == 0x3E && ((pixel >> 8) & 0x3F) == 0x3E && ((pixel >> 16) & 0x3F) == 0x3E;
+
+    return true;
 }
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
