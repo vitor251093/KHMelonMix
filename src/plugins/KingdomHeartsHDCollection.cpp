@@ -299,15 +299,14 @@ void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::st
         {"B",                     {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_A : PLUGIN_GAME_CONTROLLER_BUTTON_B}},
         {"Y",                     {PLUGIN_GAME_CONTROLLER_BUTTON_Y}},
         {"X",                     {PLUGIN_GAME_CONTROLLER_BUTTON_X}},
-        // TODO: KH holdToOpenShortcuts
-        {"HK_RLockOn",            {PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSHOULDER}},
+        {"L",                     {PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSHOULDER}},
         {"HK_LSwitchTarget",      {PLUGIN_GAME_CONTROLLER_LEFT_TRIGGER}},
+        {"HK_RLockOn",            {PLUGIN_GAME_CONTROLLER_BUTTON_RIGHTSHOULDER}},
         {"HK_RSwitchTarget",      {PLUGIN_GAME_CONTROLLER_RIGHT_TRIGGER}},
         {"Up",                    {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_UP}},
         {"Down",                  {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_DOWN}},
         {"Left",                  {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_LEFT}},
         {"Right",                 {PLUGIN_GAME_CONTROLLER_LEFT_AXIS_RIGHT}},
-        // TODO: KH holdToWalk
         {"HK_HUDToggle",          {PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSTICK}},
         {"CameraUp",              {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_UP}},
         {"CameraDown",            {PLUGIN_GAME_CONTROLLER_RIGHT_AXIS_DOWN}},
@@ -324,7 +323,6 @@ void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::st
         {"HK_Jump",               {}},
         {"HK_GuardCombo",         {}},
         {"Select",                {}},
-        {"L",                     {}},
         {"R",                     {}}
     };
     PluginJoystick::applyMappings(setIntConfig, map);
