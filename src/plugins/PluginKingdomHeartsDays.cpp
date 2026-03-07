@@ -2174,7 +2174,7 @@ bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
     return isBufferBlack((unsigned int*)bottomScreen2DTexture());
 }
 
-bool PluginKingdomHeartsDays::isDialogVisible()
+bool PluginKingdomHeartsDays::isCutsceneLikeDialogVisible()
 {
     bool _isCharacterControllable = nds->ARM7Read8(
             getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
@@ -2183,39 +2183,37 @@ bool PluginKingdomHeartsDays::isDialogVisible()
         u32 cutsceneAddressValue = getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
         if (cutsceneAddressValue != 0)
         {
-            // dialogs that look like cutscenes
             return true;
         }
     }
-    else
+
+    return false;
+}
+
+bool PluginKingdomHeartsDays::isDialogVisible()
+{
+    bool _isCharacterControllable = nds->ARM7Read8(
+            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
+    if (!_isCharacterControllable)
     {
-        bool isMidGameDialog = nds->ARM7Read8(
-            getAnyByCart(MID_GAME_DIALOG_ADDRESS_US, MID_GAME_DIALOG_ADDRESS_EU, MID_GAME_DIALOG_ADDRESS_JP, MID_GAME_DIALOG_ADDRESS_JP_REV1)) == 0x00;
-        if (isMidGameDialog)
-        {
-            // dialogs triggered by the player that quickly interrupts gameplay
-            // TODO: KH This is not perfect; for a few frames, before and after the dialog, it affects the regular HUD
-            return true;
-        }
+        // dialogs that look like cutscenes
+        return isCutsceneLikeDialogVisible();
+    }
+
+    bool isMidGameDialog = nds->ARM7Read8(
+        getAnyByCart(MID_GAME_DIALOG_ADDRESS_US, MID_GAME_DIALOG_ADDRESS_EU, MID_GAME_DIALOG_ADDRESS_JP, MID_GAME_DIALOG_ADDRESS_JP_REV1)) == 0x00;
+    if (isMidGameDialog)
+    {
+        // dialogs triggered by the player that quickly interrupts gameplay
+        // TODO: KH This is not perfect; for a few frames, before and after the dialog, it affects the regular HUD
+        return true;
     }
     return false;
 }
 
 bool PluginKingdomHeartsDays::isMinimapVisible() {
-    bool _isCharacterControllable = nds->ARM7Read8(
-            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
-    if (!_isCharacterControllable)
-    {
-        u32 cutsceneAddressValue = getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
-        if (cutsceneAddressValue != 0)
-        {
-            // dialogs that look like cutscenes
-            // TODO: KH This looks a bit broken upon joining missions, or finishing a tutorial
-            return false;
-        }
-    }
-
-    return true;
+    // TODO: KH This is not perfect; sometimes the minimap appears as a white square (black screen with inverted colors)
+    return !isCutsceneLikeDialogVisible();
 }
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
@@ -2285,22 +2283,14 @@ bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 {
-    void* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 0,   2) &&  has2DOnTopOf3DAt(buffer, 64,  2) &&
-          !has2DOnTopOf3DAt(buffer, 128, 2) && !has2DOnTopOf3DAt(buffer, 192, 2) &&
-          !has2DOnTopOf3DAt(buffer, 255, 2) &&
-           has2DOnTopOf3DAt(buffer, 0,   4) &&  has2DOnTopOf3DAt(buffer, 64,  4) &&
-           has2DOnTopOf3DAt(buffer, 128, 4) &&  has2DOnTopOf3DAt(buffer, 192, 4) &&
-           has2DOnTopOf3DAt(buffer, 255, 4) &&
-           has2DOnTopOf3DAt(buffer, 0,   6) &&  has2DOnTopOf3DAt(buffer, 64,  6) &&
-          !has2DOnTopOf3DAt(buffer, 128, 6) && !has2DOnTopOf3DAt(buffer, 192, 6) &&
-          !has2DOnTopOf3DAt(buffer, 255, 6);
+    // TODO: KH Untested
+    return isCutsceneLikeDialogVisible();
 }
 
 bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 {
-    u32 pixel = getPixel(topScreen2DTexture(), 250, 183, 0);
-    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
+    // TODO: KH Untested
+    return isCutsceneLikeDialogVisible();
 }
 
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()

@@ -189,6 +189,7 @@ private:
     bool isBottomScreen2DTextureBlack();
 
     bool ShouldShowBottomScreen = false;
+    bool isCutsceneLikeDialogVisible();
     bool isDialogVisible();
     bool isMinimapVisible();
     bool isMissionInformationVisibleOnTopScreen();
