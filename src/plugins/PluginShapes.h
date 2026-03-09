@@ -499,24 +499,24 @@ public:
     }
     ShapeBuilder2D& colorToAlpha(int red, int green, int blue) {
         shapeData.effects |= 0x20;
-        shapeData.colorToAlpha.x = red >> 2;
-        shapeData.colorToAlpha.y = green >> 2;
-        shapeData.colorToAlpha.z = blue >> 2;
+        shapeData.colorToAlpha.x = red;
+        shapeData.colorToAlpha.y = green;
+        shapeData.colorToAlpha.z = blue;
         shapeData.colorToAlpha.w = 1;
         return *this;
     }
     ShapeBuilder2D& singleColorToAlpha(int red, int green, int blue, float alpha) {
         shapeData.effects |= 0x20;
         shapeData.singleColorToAlpha[_colorIndex] = ivec4();
-        shapeData.singleColorToAlpha[_colorIndex].x = red >> 2;
-        shapeData.singleColorToAlpha[_colorIndex].y = green >> 2;
-        shapeData.singleColorToAlpha[_colorIndex].z = blue >> 2;
-        shapeData.singleColorToAlpha[_colorIndex].w = (int)(alpha * 64);
+        shapeData.singleColorToAlpha[_colorIndex].x = red;
+        shapeData.singleColorToAlpha[_colorIndex].y = green;
+        shapeData.singleColorToAlpha[_colorIndex].z = blue;
+        shapeData.singleColorToAlpha[_colorIndex].w = (int)(alpha * 255);
         _colorIndex++;
         return *this;
     }
     ShapeBuilder2D& singleColorToAlpha(int red, int green, int blue) {
-        return singleColorToAlpha(red, green, blue, 1.0/64);
+        return singleColorToAlpha(red, green, blue, 1.0/255);
     }
 
     void precompute3DCoordinatesOf2DSquareShape(float aspectRatio)
