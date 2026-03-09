@@ -164,6 +164,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_JP_REV1 0x02193DA3
 
+#define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_US      0x0219fa5c
+#define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_EU      0x021a083c // TODO: KH Unconfirmed (calculated)
+#define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP      0x0219ebbc // TODO: KH Unconfirmed (calculated)
+#define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP_REV1 0x0219eb3c // TODO: KH Unconfirmed (calculated)
+
 #define getAnyByCart(usAddress,euAddress,jpAddress,jpRev1Address) (isUsaCart() ? (usAddress) : (isEuropeCart() ? (euAddress) : (isJapanCartRev1() ? (jpRev1Address) : (jpAddress))))
 
 enum
@@ -2228,25 +2233,48 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 {
-    void* buffer = bottomScreen2DTexture();
-    u32 pixel = getPixel(buffer, 5, 4, 0);
-    if (((pixel >> 0) & 0x3F) >= 15 && ((pixel >> 8) & 0x3F) >= 15 && ((pixel >> 16) & 0x3F) >= 15)
-    {
-        u32 pixel2 = getPixel(buffer, 128, 4, 0);
-        if (!(((pixel2 >> 0) & 0x3F) >= 15 && ((pixel2 >> 8) & 0x3F) >= 15 && ((pixel2 >> 16) & 0x3F) >= 15))
-        {
-            bool onlyBlack = true;
-            for (int x = 0; x < 128; x++) {
-                u32 pixel3 = getPixel(buffer, x, 16, 0);
-                if (!(((pixel3 >> 0) & 0x3F) < 5 && ((pixel3 >> 8) & 0x3F) < 5 && ((pixel3 >> 16) & 0x3F) < 5))
-                {
-                    onlyBlack = false;
-                }
-            }
-            return !onlyBlack;
-        }
-    }
-    return false;
+    // TODO: KH I still don't know if that's the ideal logic, but I seem to be in the right track
+
+    // Lobby (no mission information)
+    // 0x0219fa5c: 0x00000000
+    // 0x0219fa70: 0x00000001
+    // 0x0219fac4: 0x00000001
+    // 0x0219faf0: 0x00000001
+    // 0x0219faf8: 0x00000001
+
+    // Next to final lobby (with no mission information)
+    // 0x0219fa5c: 0x00000000
+    // 0x0219fa70: 0x00000001
+    // 0x0219fac4: 0x00000001
+    // 0x0219faf0: 0x00000001
+    // 0x0219faf8: 0x00000001
+
+    // Final lobby (with mission information)
+    // 0x0219fa5c: 0x00000002
+    // 0x0219fa70: 0x00000040
+    // 0x0219fac4: 0x20737365
+    // 0x0219faf0: 0x274c0a53
+    // 0x0219faf8: 0x2e65676f
+
+    // Xion fight (with mission information)
+    // 0x0219fa5c: 0x00050000
+    // 0x0219fa70: 0x00050000
+    // 0x0219fac4: 0x00000540
+    // 0x0219faf0: 0x00000000
+    // 0x0219faf8: 0x00000001
+
+    // First mission (with mission information)
+    // 0x0219fa5c: 0x00000004
+    // 0x0219fa70: 0x72746e45
+    // 0x0219fac4: 0x6575654e
+    // 0x0219faf0: 0x64612079
+    // 0x0219faf8: 0x52206f74
+
+    return nds->ARM7Read32(getAnyByCart(
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_US,
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_EU,
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP,
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP_REV1)) == 0;
 }
 
 bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
