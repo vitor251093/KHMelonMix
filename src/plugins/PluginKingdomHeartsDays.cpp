@@ -134,6 +134,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_INGAME_MENU_VIEW_JP      0x020b19ac
 #define CURRENT_INGAME_MENU_VIEW_JP_REV1 0x020b196c
 
+#define INGAME_HUD_ADDRESS_US      0x0207ec20
+#define INGAME_HUD_ADDRESS_EU      0x0207ec40 // TODO: KH Unconfirmed (calculated)
+#define INGAME_HUD_ADDRESS_JP      0x0207eb20 // TODO: KH Unconfirmed (calculated)
+#define INGAME_HUD_ADDRESS_JP_REV1 0x0207eae0 // TODO: KH Unconfirmed (calculated)
+
 #define TUTORIAL_ADDRESS_US      0x0207f9dc
 #define TUTORIAL_ADDRESS_EU      0x0207f9fc
 #define TUTORIAL_ADDRESS_JP      0x0207f8dc
@@ -2218,9 +2223,7 @@ bool PluginKingdomHeartsDays::isMinimapVisible() {
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
 {
-    void* buffer = topScreen2DTexture();
-    return (has2DOnTopOf3DAt(buffer, 0, 0) && has2DOnTopOf3DAt(buffer, 128, 0) && has2DOnTopOf3DAt(buffer, 254, 0)) ||
-           (has2DOnTopOf3DAt(buffer, 0, 8) && has2DOnTopOf3DAt(buffer, 128, 8) && has2DOnTopOf3DAt(buffer, 254, 8));
+    return nds->ARM7Read32(getAnyByCart(INGAME_HUD_ADDRESS_US, INGAME_HUD_ADDRESS_EU, INGAME_HUD_ADDRESS_JP, INGAME_HUD_ADDRESS_JP_REV1)) == 0;
 }
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
