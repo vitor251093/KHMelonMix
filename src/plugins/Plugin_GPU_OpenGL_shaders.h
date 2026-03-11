@@ -300,6 +300,39 @@ void CalcSpriteMosaic(in ivec2 coord, out ivec4 objflags, out vec4 objcolor)
     }
 }
 
+// RGBA; all values from 0.0 to 1.0
+vec4 fetchBG0ColorAt(vec2 texcoord)
+{
+    vec2 bgcoord = vec2(texcoord.x, fract(texcoord.y));
+    int line = int(texcoord.y);
+    return BG0CalcAndFetch(bgcoord, line);
+}
+
+// RGBA; all values from 0.0 to 1.0
+vec4 fetchBG1ColorAt(vec2 texcoord)
+{
+    vec2 bgcoord = vec2(texcoord.x, fract(texcoord.y));
+    int line = int(texcoord.y);
+    return BG1CalcAndFetch(bgcoord, line);
+}
+
+// RGBA; all values from 0.0 to 1.0
+vec4 fetchBG2ColorAt(vec2 texcoord)
+{
+    vec2 bgcoord = vec2(texcoord.x, fract(texcoord.y));
+    int line = int(texcoord.y);
+    return BG2CalcAndFetch(bgcoord, line);
+}
+
+// RGBA; all values from 0.0 to 1.0
+vec4 fetchBG3ColorAt(vec2 texcoord)
+{
+    vec2 bgcoord = vec2(texcoord.x, fract(texcoord.y));
+    int line = int(texcoord.y);
+    return BG3CalcAndFetch(bgcoord, line);
+}
+
+// RGBA; all values from 0.0 to 1.0
 vec4 fetchColorAt(vec2 texcoord, int layerIndex)
 {
     vec2 bgcoord = vec2(texcoord.x, fract(texcoord.y));
@@ -473,8 +506,8 @@ vec4 fetchFinalColorAt(vec2 pos, int index)
                     }
                 }
 
-                vec2 textureBeginning = vec2(ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy) / vec2(256.0, 192.0);
-                vec4 alphaColor = fetchColorAt(textureBeginning, 2);
+                vec2 textureBeginning = finalPos + vec2(shapes[shapeIndex].squareInitialCoords.xy);
+                vec4 alphaColor = fetchBG2ColorAt(textureBeginning);
                 if ((effects & 0x100) == 0 && (alphaColor.a == 0x0)) {
                     continue; // invisible pixel; ignore it
                 }
@@ -485,7 +518,7 @@ vec4 fetchFinalColorAt(vec2 pos, int index)
                     ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha[colorIndex];
                     if (singleColorToAlpha.a > 0)
                     {
-                        vec4 colorZero = fetchColorAt(textureBeginning, 0);
+                        vec4 colorZero = fetchBG0ColorAt(textureBeginning);
                         if (colorZero.r == singleColorToAlpha.r &&
                             colorZero.g == singleColorToAlpha.g &&
                             colorZero.b == singleColorToAlpha.b) {
@@ -498,14 +531,14 @@ vec4 fetchFinalColorAt(vec2 pos, int index)
                     continue;
                 }
 
-                if (index == 0 || index == 3) {
-                    vec4 color = fetchColorAt(textureBeginning, index);
+                if (index == 0) {
+                    vec4 color = fetchBG0ColorAt(textureBeginning);
 
                     // invert gray scale colors
                     if ((effects & 0x1) != 0) {
-                        bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+                        bool isShadeOfGray = (abs(color.r - color.g) < 0.0625) && (abs(color.r - color.b) < 0.0625) && (abs(color.g - color.b) < 0.0625);
                         if (isShadeOfGray) {
-                            color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+                            color = vec4(1.0 - color.r, 1.0 - color.g, 1.0 - color.b, color.a);
                         }
                     }
 
@@ -517,10 +550,10 @@ vec4 fetchFinalColorAt(vec2 pos, int index)
                     return color;
                 }
                 else if (index == 1) {
-                    return fetchColorAt(textureBeginning, 1);
+                    return fetchBG1ColorAt(textureBeginning);
                 }
-                else { // index == 2
-                    vec4 color = fetchColorAt(textureBeginning, 2);
+                else if (index == 2) {
+                    vec4 color = fetchBG2ColorAt(textureBeginning);
 
                     // TODO: KH I will add support to full transparency afterwards
                     // provides full transparency support to the transparency layer
@@ -546,11 +579,11 @@ vec4 fetchFinalColorAt(vec2 pos, int index)
 
                             float xBlur = min(leftBlurFactor, rightBlurFactor);
                             float yBlur = min(topBlurFactor, bottomBlurFactor);
-                            int visibilityOf2D = (shapes[shapeIndex].squareInitialCoords.y >= 192 || color.a > 0x4) ? 63 : (color.a == 0x4 ? 0 : (int(color.g) << 2 - 1));
+                            int visibilityOf2D = (shapes[shapeIndex].squareInitialCoords.y >= 192 || color.a > 0.125) ? 63 : (color.a == 0.125 ? 0 : (int(color.g * 64) << 2 - 1));
                             float visibilityOf2DFactor = xBlur * yBlur;
 
-                            int blurVal = int(visibilityOf2DFactor * visibilityOf2D * opacity);
-                            color = vec4(color.r, blurVal /* 2D visibility */, 63 - blurVal /* 3D visibility */, 0x01);
+                            float blurVal = (visibilityOf2DFactor * visibilityOf2D * opacity) / 63;
+                            color = vec4(color.r, blurVal /* 2D visibility */, 1.0 - blurVal /* 3D visibility */, 1.0);
 
                             // TODO: The fade does not work properly if you need this shape to blend with another shape
                         }
@@ -558,14 +591,18 @@ vec4 fetchFinalColorAt(vec2 pos, int index)
                         ivec4 colorToAlpha = shapes[shapeIndex].colorToAlpha;
                         if (colorToAlpha.a == 1)
                         {
-                            ivec4 colorZero = ivec4(fetchColorAt(textureBeginning, 0) * 255.0);
+                            ivec4 colorZero = ivec4(fetchBG0ColorAt(textureBeginning) * 255.0);
                             int blur = ((abs(colorToAlpha.r - colorZero.r) +
                                          abs(colorToAlpha.g - colorZero.g) +
                                          abs(colorToAlpha.b - colorZero.b))*2)/3;
-                            color = vec4(color.r, blur, 64 - blur, 0x01);
+                            float blurFloat = float(blur) / 64;
+                            color = vec4(color.r, blurFloat, 1.0 - blurFloat, 1.0);
                         }
                     }
                     return color;
+                }
+                else if (index == 3) {
+                    return fetchBG3ColorAt(textureBeginning);
                 }
             }
         }
