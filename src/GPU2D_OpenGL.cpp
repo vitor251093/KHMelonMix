@@ -91,7 +91,7 @@ bool GLRenderer2D::Init()
                                                   {{"oColor", 0}, {"oFlags", 1}}))
             return false;
 
-        const char* k2DCompositorFS_Custom = (GamePlugin == nullptr || ScreenIndex == 2) ? nullptr : GamePlugin->gpuOpenGL_2DCompositorFS();
+        const char* k2DCompositorFS_Custom = (GamePlugin == nullptr) ? nullptr : GamePlugin->gpuOpenGL_2DCompositorFS();
         const char* k2DCompositorFS_Final = k2DCompositorFS_Custom == nullptr ? k2DCompositorFS : k2DCompositorFS_Custom;
 
         if (!OpenGL::CompileVertexFragmentProgram(CompositorShader,
@@ -172,7 +172,7 @@ bool GLRenderer2D::Init()
 
         CompositorScaleULoc = glGetUniformLocation(CompositorShader, "uScaleFactor");
 
-        if (GamePlugin != nullptr && ScreenIndex == 1) {
+        if (GamePlugin != nullptr) {
             GamePlugin->gpuOpenGL_2DCompositorFS_initVariables(ScreenIndex, CompositorShader);
         }
 
@@ -1791,7 +1791,7 @@ void GLRenderer2D::RenderScreen(int ystart, int yend)
 
     glUseProgram(CompositorShader);
 
-    if (GamePlugin != nullptr && ScreenIndex == 1) {
+    if (GamePlugin != nullptr) {
         GamePlugin->gpuOpenGL_2DCompositorFS_updateVariables(ScreenIndex, CompositorShader);
     }
 

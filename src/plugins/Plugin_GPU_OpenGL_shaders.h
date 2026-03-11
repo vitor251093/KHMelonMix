@@ -58,6 +58,7 @@ uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertica
 uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = horizontal, 4 = no brightness
 
 uniform int shapeCount;
+uniform int screenIndex;
 
 
 uniform sampler2D BGLayerTex[4];
@@ -395,6 +396,10 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
 
 vec4 fetchFinalColorAt(vec2 pos, int index)
 {
+    if (screenIndex == 2) {
+        return fetchColorAt(pos, index);
+    }
+
     float xpos = pos.x;
     float ypos = pos.y;
     if (showOriginalHud) {
@@ -986,6 +991,7 @@ ivec4 getRegularScreenColor(vec2 textureBeginning, bool isBottomScreen) {
     return ivec4(texture(MainInputTexA, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
 }
 
+// RGB; all values from 0 to 255
 ivec4 getTopScreenColor(vec2 pos)
 {
     float xpos = pos.x * 256.0;

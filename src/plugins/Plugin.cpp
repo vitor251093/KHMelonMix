@@ -148,6 +148,7 @@ void Plugin::gpuOpenGL_2DCompositorFS_initVariables(int ScreenIndex, GLuint Comp
     CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
     CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
+    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "screenIndex");
 }
 
 void Plugin::gpuOpenGL_2DCompositorFS_updateVariables(int ScreenIndex, GLuint CompShader) {
@@ -164,6 +165,7 @@ void Plugin::gpuOpenGL_2DCompositorFS_updateVariables(int ScreenIndex, GLuint Co
     glUniform1i(CompGpuLoc[CompShader][4], screenLayout);
     glUniform1i(CompGpuLoc[CompShader][5], brightnessMode);
     glUniform1i(CompGpuLoc[CompShader][6], current2DShapes.size());
+    glUniform1i(CompGpuLoc[CompShader][7], ScreenIndex);
 
     current2DShapes.resize(SHAPES_DATA_ARRAY_SIZE);
     auto shadersData = current2DShapes.data();
