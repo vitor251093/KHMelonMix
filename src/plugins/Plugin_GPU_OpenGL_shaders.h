@@ -300,9 +300,8 @@ void CalcSpriteMosaic(in ivec2 coord, out ivec4 objflags, out vec4 objcolor)
     }
 }
 
-vec4 fetchColorAt(vec2 texcoord)
+vec4 fetchColorAt(vec2 texcoord, ivec2 coord3dRender)
 {
-    ivec2 coord = ivec2(fTexcoord.zw);
     vec2 bgcoord = vec2(texcoord.x, fract(texcoord.y));
     int xpos = int(texcoord.x);
     int line = int(texcoord.y);
@@ -325,12 +324,12 @@ vec4 fetchColorAt(vec2 texcoord)
     ivec4 objflags;
     if (uScanline[line].MosaicSize.z > 0)
     {
-        CalcSpriteMosaic(ivec2(texcoord.xy), objflags, layercol[4]);
+        CalcSpriteMosaic(ivec2(texcoord.xy), objflags, layercol[4]); // TODO: KH That may need some adjustments
     }
     else
     {
-        layercol[4] = texelFetch(OBJLayerTex, ivec3(coord, 0), 0);
-        layercol[5] = texelFetch(OBJLayerTex, ivec3(coord, 1), 0);
+        layercol[4] = texelFetch(OBJLayerTex, ivec3(coord3dRender, 0), 0);
+        layercol[5] = texelFetch(OBJLayerTex, ivec3(coord3dRender, 1), 0);
         objflags = ivec4(layercol[5] * 255.0);
     }
 
@@ -493,6 +492,7 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
 
 vec4 fetchFinalColorAt(vec2 pos)
 {
+    ivec2 coord3dRender = ivec2(fTexcoord.zw);
     float xpos = pos.x * 256.0;
     float ypos = pos.y * 192.0;
     if (showOriginalHud || shapeCount == 0) {
@@ -510,7 +510,7 @@ vec4 fetchFinalColorAt(vec2 pos)
             }
         }
 
-        return fetchColorAt(pos);
+        return fetchColorAt(pos, coord3dRender);
     }
 
     float heightScale = 1.0/currentAspectRatio;
@@ -591,7 +591,7 @@ vec4 fetchFinalColorAt(vec2 pos)
                 }
 
                 vec2 textureBeginning = vec2(ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy) / vec2(256.0, 192.0);
-                vec4 color = fetchColorAt(textureBeginning);
+                vec4 color = fetchColorAt(textureBeginning, coord3dRender);
                 if ((effects & 0x100) == 0 && (color.a == 0x0)) {
                     continue; // invisible pixel; ignore it
                 }

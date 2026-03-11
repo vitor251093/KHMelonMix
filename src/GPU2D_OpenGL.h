@@ -32,7 +32,7 @@ class GLRenderer;
 class GLRenderer2D : public Renderer2D
 {
 public:
-    GLRenderer2D(melonDS::GPU2D& gpu2D, Plugins::Plugin* plugin, GLRenderer& parent);
+    GLRenderer2D(melonDS::GPU2D& gpu2D, Plugins::Plugin* plugin, int screenIndex, GLRenderer& parent);
     ~GLRenderer2D() override;
     bool Init() override;
     void Reset() override;
@@ -52,6 +52,7 @@ private:
     friend class GLRenderer;
     GLRenderer& Parent;
 
+    int ScreenIndex;
     int ScaleFactor;
     int ScreenW, ScreenH;
 

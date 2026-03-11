@@ -41,8 +41,8 @@ GLRenderer::GLRenderer(melonDS::NDS& nds, Plugins::Plugin* plugin, bool compute)
     AuxInputBuffer[0] = new u16[256 * 256];
     AuxInputBuffer[1] = new u16[256 * 192];
 
-    Rend2D_A = std::make_unique<GLRenderer2D>(GPU.GPU2D_A, plugin, *this);
-    Rend2D_B = std::make_unique<GLRenderer2D>(GPU.GPU2D_B, plugin, *this);
+    Rend2D_A = std::make_unique<GLRenderer2D>(GPU.GPU2D_A, plugin, 1, *this);
+    Rend2D_B = std::make_unique<GLRenderer2D>(GPU.GPU2D_B, plugin, 2, *this);
 
     // TODO, eventually: figure out a nicer way to support different 3D renderers?
     IsCompute = compute;

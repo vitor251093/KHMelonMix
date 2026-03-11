@@ -120,7 +120,7 @@ std::filesystem::path Plugin::gameAssetsFolderPath()
     return assetsPath / assetsFolderName;
 }
 
-const char* Plugin::gpuOpenGL_FS()
+const char* Plugin::gpuOpenGL_2DCompositorFS()
 {
     bool disable = !EnhancedGraphics;
     if (disable) {
@@ -130,7 +130,7 @@ const char* Plugin::gpuOpenGL_FS()
     return k2DCompositorFS_Plugin;
 }
 
-void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
+void Plugin::gpuOpenGL_2DCompositorFS_initVariables(int ScreenIndex, GLuint CompShader) {
     GLint blockIndex = glGetUniformBlockIndex(CompShader, "ShapeBlock2D");
     glUniformBlockBinding(CompShader, blockIndex, 41);
 
@@ -150,7 +150,7 @@ void Plugin::gpuOpenGL_FS_initVariables(GLuint CompShader) {
     CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
 }
 
-void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
+void Plugin::gpuOpenGL_2DCompositorFS_updateVariables(int ScreenIndex, GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     float forcedAspectRatio = renderer_forcedAspectRatio() / (4.f / 3.f);
     bool showOriginalHud = renderer_showOriginalUI();

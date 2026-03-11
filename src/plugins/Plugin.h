@@ -164,9 +164,9 @@ public:
     std::filesystem::path gameAssetsFolderPath();
     virtual std::string tomlUniqueIdentifier() {return gameFolderName();};
 
-    virtual const char* gpuOpenGL_FS();
-    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
-    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
+    virtual const char* gpuOpenGL_2DCompositorFS();
+    virtual void gpuOpenGL_2DCompositorFS_initVariables(int ScreenIndex, GLuint CompShader);
+    virtual void gpuOpenGL_2DCompositorFS_updateVariables(int ScreenIndex, GLuint CompShader);
 
     virtual const char* gpuOpenGL_FinalPassFS();
     virtual void gpuOpenGL_FinalPassFS_initVariables(GLuint CompShader);

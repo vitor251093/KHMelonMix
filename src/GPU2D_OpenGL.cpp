@@ -48,11 +48,12 @@ GLint GLRenderer2D::CompositorScaleULoc = 0;
 GLuint GLRenderer2D::MosaicTex = 0;
 
 
-GLRenderer2D::GLRenderer2D(melonDS::GPU2D& gpu2D, Plugins::Plugin* plugin, GLRenderer& parent)
+GLRenderer2D::GLRenderer2D(melonDS::GPU2D& gpu2D, Plugins::Plugin* plugin, int screenIndex, GLRenderer& parent)
     : Renderer2D(gpu2D), Parent(parent)
 {
     GamePlugin = plugin;
     ScaleFactor = 0;
+    ScreenIndex = screenIndex;
 }
 
 #define glDefaultTexParams(target) \
@@ -90,8 +91,8 @@ bool GLRenderer2D::Init()
                                                   {{"oColor", 0}, {"oFlags", 1}}))
             return false;
 
-        const char* kCompositorFS_Custom = GamePlugin == nullptr ? nullptr : GamePlugin->gpuOpenGL_FS();
-        const char* k2DCompositorFS_Final = kCompositorFS_Custom == nullptr ? k2DCompositorFS : kCompositorFS_Custom;
+        const char* k2DCompositorFS_Custom = (GamePlugin == nullptr || ScreenIndex == 2) ? nullptr : GamePlugin->gpuOpenGL_2DCompositorFS();
+        const char* k2DCompositorFS_Final = k2DCompositorFS_Custom == nullptr ? k2DCompositorFS : k2DCompositorFS_Custom;
 
         if (!OpenGL::CompileVertexFragmentProgram(CompositorShader,
                                                   k2DCompositorVS, k2DCompositorFS_Final,
@@ -171,8 +172,8 @@ bool GLRenderer2D::Init()
 
         CompositorScaleULoc = glGetUniformLocation(CompositorShader, "uScaleFactor");
 
-        if (GamePlugin != nullptr) {
-            GamePlugin->gpuOpenGL_FS_initVariables(CompositorShader);
+        if (GamePlugin != nullptr && ScreenIndex == 1) {
+            GamePlugin->gpuOpenGL_2DCompositorFS_initVariables(ScreenIndex, CompositorShader);
         }
 
         // generate mosaic lookup texture
@@ -1790,8 +1791,8 @@ void GLRenderer2D::RenderScreen(int ystart, int yend)
 
     glUseProgram(CompositorShader);
 
-    if (GamePlugin != nullptr) {
-        GamePlugin->gpuOpenGL_FS_updateVariables(CompositorShader);
+    if (GamePlugin != nullptr && ScreenIndex == 1) {
+        GamePlugin->gpuOpenGL_2DCompositorFS_updateVariables(ScreenIndex, CompositorShader);
     }
 
     glBindBufferBase(GL_UNIFORM_BUFFER, 20, LayerConfigUBO);
