@@ -300,14 +300,297 @@ void CalcSpriteMosaic(in ivec2 coord, out ivec4 objflags, out vec4 objcolor)
     }
 }
 
-vec4 fetchColorAt(vec2 texcoord, ivec2 coord3dRender)
+vec4 fetchColorAt(vec2 texcoord, int layerIndex)
 {
     vec2 bgcoord = vec2(texcoord.x, fract(texcoord.y));
-    int xpos = int(texcoord.x);
     int line = int(texcoord.y);
 
+    if (layerIndex == 0) {
+        return BG0CalcAndFetch(bgcoord, line);
+    }
+    if (layerIndex == 1) {
+        return BG1CalcAndFetch(bgcoord, line);
+    }
+    if (layerIndex == 2) {
+        return BG2CalcAndFetch(bgcoord, line);
+    }
+    if (layerIndex == 3) {
+        return BG3CalcAndFetch(bgcoord, line);
+    }
+    return vec4(0, 0, 0, 0);
+}
+
+bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, ivec2 squareInitialSize) {
+    return (finalPos.x + finalPos.y >= cropSquareCorners[0]) &&
+           ((0 - finalPos.x + squareInitialSize[0]) + finalPos.y >= cropSquareCorners[1]) &&
+           (finalPos.x + (0 - finalPos.y + squareInitialSize[1]) >= cropSquareCorners[2]) &&
+           ((0 - finalPos.x + squareInitialSize[0]) + (0 - finalPos.y + squareInitialSize[1]) >= cropSquareCorners[3]);
+}
+
+bool isInsideRoundedCorner(vec2 pos, vec2 center, float radius) {
+    return (pos.x - center.x) * (pos.x - center.x) +
+           (pos.y - center.y) * (pos.y - center.y) < radius * radius;
+}
+
+bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squareInitialSize) {
+    bool validArea = true;
+    float squareWidth = squareInitialSize[0];
+    float squareHeight = squareInitialSize[1];
+
+    // Top-left corner
+    if (finalPos.x < radius[0] && finalPos.y < radius[0]) {
+        validArea = isInsideRoundedCorner(finalPos, vec2(radius[0], radius[0]), radius[0]);
+    }
+
+    // Top-right corner
+    else if (finalPos.x > squareWidth - radius[1] && finalPos.y < radius[1]) {
+        validArea = isInsideRoundedCorner(finalPos, vec2(squareWidth - radius[1], radius[1]), radius[1]);
+    }
+
+    // Bottom-left corner
+    else if (finalPos.x < radius[2] && finalPos.y > squareHeight - radius[2]) {
+        validArea = isInsideRoundedCorner(finalPos, vec2(radius[2], squareHeight - radius[2]), radius[2]);
+    }
+
+    // Bottom-right corner
+    else if (finalPos.x > squareWidth - radius[3] && finalPos.y > squareHeight - radius[3]) {
+        validArea = isInsideRoundedCorner(finalPos, vec2(squareWidth - radius[3], squareHeight - radius[3]), radius[3]);
+    }
+
+    return validArea;
+}
+
+vec4 fetchFinalColorAt(vec2 pos, int index)
+{
+    float xpos = pos.x;
+    float ypos = pos.y;
+    if (showOriginalHud) {
+        vec2 textureBeginning = vec2(xpos, ypos);
+        if (currentAspectRatio != forcedAspectRatio) {
+            float heightScale = (1.0/forcedAspectRatio)/currentAspectRatio;
+
+            float sourceScreenWidth = 256.0;
+            float screenLeftMargin = (sourceScreenWidth - sourceScreenWidth/heightScale)/2;
+            float screenFinalWidth = xpos/heightScale;
+
+            textureBeginning.x = int(screenLeftMargin + screenFinalWidth);
+            if (textureBeginning.x < 0 || textureBeginning.x > screenFinalWidth) {
+                if (index == 2)
+                {
+                    return vec4(0, 0, 63, 0x01);
+                }
+                return vec4(0, 0, 0, 0);
+            }
+        }
+
+        return fetchColorAt(pos, index);
+        // TODO: KH I will add support to full transparency afterwards
+        /*
+        ivec4 color = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
+        if (index == 2) {
+            // provides full transparency support to the transparency layer
+            color.g = color.g << 2;
+            color.b = color.b << 2;
+        }
+        return color;
+        */
+    }
+
+    float heightScale = 1.0/currentAspectRatio;
+    float widthScale = currentAspectRatio;
+    vec2 fixStretch = vec2(widthScale, 1.0);
+
+    float uiTexScale = (6.0/((float(hudScale) - 4) / 2 + 4));
+    vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
+
+    for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
+        vec4 squareFinalCoords = shapes[shapeIndex].squareFinalCoords;
+
+        if ((all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) &&
+                all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) || ((shapes[shapeIndex].effects & 0x40) != 0)) {
+            int effects = shapes[shapeIndex].effects;
+            bool shouldRotate = ((effects & 0x200) != 0) || ((effects & 0x400) != 0);
+
+            vec2 finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
+            bool validArea = true;
+
+            // repeat as background
+            if ((effects & 0x40) != 0 || (effects & 0x80) != 0) {
+                finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
+                vec2 limits = (fixStretch/shapes[shapeIndex].sourceScale)*(squareFinalCoords.zw - squareFinalCoords.xy);
+                if ((effects & 0x40) != 0) {
+                    while (finalPos.x >= limits.x) {
+                        finalPos.x -= limits.x;
+                    }
+                }
+                if ((effects & 0x80) != 0) {
+                    while (finalPos.y >= limits.y) {
+                        finalPos.y -= limits.y;
+                    }
+                }
+            }
+
+            // crop corner as triangle
+            if ((effects & 0x2) != 0) {
+                ivec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
+                if (shouldRotate) {
+                    cropAreaSize = shapes[shapeIndex].squareInitialCoords.wz;
+                }
+                validArea = isValidConsideringCropSquareCorners(finalPos, shapes[shapeIndex].squareCornersModifier, cropAreaSize);
+            }
+            // rounded corners
+            if ((effects & 0x4) != 0) {
+                ivec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
+                if (shouldRotate) {
+                    cropAreaSize = shapes[shapeIndex].squareInitialCoords.wz;
+                }
+                validArea = isValidConsideringSquareBorderRadius(finalPos, shapes[shapeIndex].squareCornersModifier, cropAreaSize);
+            }
+
+            if (validArea) {
+                // mirror X
+                if ((effects & 0x8) != 0) {
+                    finalPos.x = shapes[shapeIndex].squareInitialCoords.z - finalPos.x;
+                }
+                // mirror Y
+                if ((effects & 0x10) != 0) {
+                    finalPos.y = shapes[shapeIndex].squareInitialCoords.w - finalPos.y;
+                }
+                if (shouldRotate) {
+                    // rotate to the left
+                    if ((effects & 0x200) != 0) {
+                        float newFinalPosX = shapes[shapeIndex].squareInitialCoords.z - finalPos.y;
+                        float newFinalPosY = finalPos.x;
+                        finalPos.x = newFinalPosX;
+                        finalPos.y = newFinalPosY;
+                    }
+                    // rotate to the right
+                    if ((effects & 0x400) != 0) {
+                        float newFinalPosX = finalPos.y;
+                        float newFinalPosY = shapes[shapeIndex].squareInitialCoords.w - finalPos.x;
+                        finalPos.x = newFinalPosX;
+                        finalPos.y = newFinalPosY;
+                    }
+                }
+
+                vec2 textureBeginning = vec2(ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy) / vec2(256.0, 192.0);
+                vec4 alphaColor = fetchColorAt(textureBeginning, 2);
+                if ((effects & 0x100) == 0 && (alphaColor.a == 0x0)) {
+                    continue; // invisible pixel; ignore it
+                }
+
+                // single color to alpha
+                bool shouldSkipColor = false;
+                for (int colorIndex = 0; colorIndex < SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE; colorIndex++) {
+                    ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha[colorIndex];
+                    if (singleColorToAlpha.a > 0)
+                    {
+                        vec4 colorZero = fetchColorAt(textureBeginning, 0);
+                        if (colorZero.r == singleColorToAlpha.r &&
+                            colorZero.g == singleColorToAlpha.g &&
+                            colorZero.b == singleColorToAlpha.b) {
+                            shouldSkipColor = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSkipColor) {
+                    continue;
+                }
+
+                if (index == 0 || index == 3) {
+                    vec4 color = fetchColorAt(textureBeginning, index);
+
+                    // invert gray scale colors
+                    if ((effects & 0x1) != 0) {
+                        bool isShadeOfGray = (abs(color.r - color.g) < 5) && (abs(color.r - color.b) < 5) && (abs(color.g - color.b) < 5);
+                        if (isShadeOfGray) {
+                            color = ivec4(64 - color.r, 64 - color.g, 64 - color.b, color.a);
+                        }
+                    }
+
+                    // TODO: KH I will add support to brightnessMode_Auto afterwards
+                    /*if (brightnessMode == 6) { // brightnessMode_Auto
+                        color = applyBrightness(color, ivec4(texelFetch(ScreenTex, ivec2(256*3, int(textureBeginning.y)), 0)));
+                    }*/
+
+                    return color;
+                }
+                else if (index == 1) {
+                    return fetchColorAt(textureBeginning, 1);
+                }
+                else { // index == 2
+                    vec4 color = fetchColorAt(textureBeginning, 2);
+
+                    // TODO: KH I will add support to full transparency afterwards
+                    // provides full transparency support to the transparency layer
+                    // color.g = color.g << 2;
+                    // color.b = color.b << 2;
+
+                    // manipulate transparency
+                    if ((effects & 0x20) != 0)
+                    {
+                        vec4 fadeBorderSize = shapes[shapeIndex].fadeBorderSize;
+                        float opacity = shapes[shapeIndex].opacity;
+                        if (any(greaterThan(fadeBorderSize, vec4(0))) || opacity < 1.0)
+                        {
+                            float leftDiff = texPosition3d.x - squareFinalCoords[0];
+                            float rightDiff = squareFinalCoords[2] - texPosition3d.x;
+                            float topDiff = texPosition3d.y - squareFinalCoords[1];
+                            float bottomDiff = squareFinalCoords[3] - texPosition3d.y;
+
+                            float leftBlurFactor   = fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (fadeBorderSize[0] * heightScale), 0.0, 1.0);
+                            float topBlurFactor    = fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  fadeBorderSize[1], 0.0, 1.0);
+                            float rightBlurFactor  = fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (fadeBorderSize[2] * heightScale), 0.0, 1.0);
+                            float bottomBlurFactor = fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  fadeBorderSize[3], 0.0, 1.0);
+
+                            float xBlur = min(leftBlurFactor, rightBlurFactor);
+                            float yBlur = min(topBlurFactor, bottomBlurFactor);
+                            int visibilityOf2D = (shapes[shapeIndex].squareInitialCoords.y >= 192 || color.a > 0x4) ? 63 : (color.a == 0x4 ? 0 : (int(color.g) << 2 - 1));
+                            float visibilityOf2DFactor = xBlur * yBlur;
+
+                            int blurVal = int(visibilityOf2DFactor * visibilityOf2D * opacity);
+                            color = vec4(color.r, blurVal /* 2D visibility */, 63 - blurVal /* 3D visibility */, 0x01);
+
+                            // TODO: The fade does not work properly if you need this shape to blend with another shape
+                        }
+
+                        ivec4 colorToAlpha = shapes[shapeIndex].colorToAlpha;
+                        if (colorToAlpha.a == 1)
+                        {
+                            ivec4 colorZero = ivec4(fetchColorAt(textureBeginning, 0) * 255.0);
+                            int blur = ((abs(colorToAlpha.r - colorZero.r) +
+                                         abs(colorToAlpha.g - colorZero.g) +
+                                         abs(colorToAlpha.b - colorZero.b))*2)/3;
+                            color = vec4(color.r, blur, 64 - blur, 0x01);
+                        }
+                    }
+                    return color;
+                }
+            }
+        }
+    }
+
+    return fetchColorAt(pos, index);
+    // TODO: I can't even remember why this is needed
+    /*
+    if (index == 2)
+    {
+        return vec4(0, 0, 63, 0x01);
+    }
+    return vec4(0, 0, 0, 0);
+    */
+}
+
+vec4 CompositeLayers()
+{
+    vec2 coord2dLayer = vec2(fTexcoord.xy);   // MAX: 256, 192
+    ivec2 coord3dLayer = ivec2(fTexcoord.zw); // MAX: 256*uScaleFactor, 192*uScaleFactor
+    int xpos = int(fTexcoord.x);
+    int line = int(fTexcoord.y);
+
     if (uScanline[line].MosaicSize.x > 0)
-        MosaicX = texelFetch(MosaicTex, ivec2(bgcoord.x, uScanline[line].MosaicSize.x), 0).r;
+        MosaicX = texelFetch(MosaicTex, ivec2(fTexcoord.x, uScanline[line].MosaicSize.x), 0).r;
 
     ivec4 col1 = ivec4(ConvertColor(uScanline[line].BackColor), 0x20);
     int mask1 = 0x20;
@@ -316,20 +599,20 @@ vec4 fetchColorAt(vec2 texcoord, ivec2 coord3dRender)
     bool specialcase = false;
 
     vec4 layercol[6];
-    layercol[0] = BG0CalcAndFetch(bgcoord, line);
-    layercol[1] = BG1CalcAndFetch(bgcoord, line);
-    layercol[2] = BG2CalcAndFetch(bgcoord, line);
-    layercol[3] = BG3CalcAndFetch(bgcoord, line);
+    layercol[0] = fetchFinalColorAt(coord2dLayer, 0);
+    layercol[1] = fetchFinalColorAt(coord2dLayer, 1);
+    layercol[2] = fetchFinalColorAt(coord2dLayer, 2);
+    layercol[3] = fetchFinalColorAt(coord2dLayer, 3);
 
     ivec4 objflags;
     if (uScanline[line].MosaicSize.z > 0)
     {
-        CalcSpriteMosaic(ivec2(texcoord.xy), objflags, layercol[4]); // TODO: KH That may need some adjustments
+        CalcSpriteMosaic(ivec2(fTexcoord.xy), objflags, layercol[4]);
     }
     else
     {
-        layercol[4] = texelFetch(OBJLayerTex, ivec3(coord3dRender, 0), 0);
-        layercol[5] = texelFetch(OBJLayerTex, ivec3(coord3dRender, 1), 0);
+        layercol[4] = texelFetch(OBJLayerTex, ivec3(coord3dLayer, 0), 0);
+        layercol[5] = texelFetch(OBJLayerTex, ivec3(coord3dLayer, 1), 0);
         objflags = ivec4(layercol[5] * 255.0);
     }
 
@@ -448,239 +731,6 @@ vec4 fetchColorAt(vec2 texcoord, ivec2 coord3dRender)
     }
 
     return vec4(vec3(col1.rgb << 2) / 255.0, 1);
-}
-
-bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, ivec2 squareInitialSize) {
-    return (finalPos.x + finalPos.y >= cropSquareCorners[0]) &&
-           ((0 - finalPos.x + squareInitialSize[0]) + finalPos.y >= cropSquareCorners[1]) &&
-           (finalPos.x + (0 - finalPos.y + squareInitialSize[1]) >= cropSquareCorners[2]) &&
-           ((0 - finalPos.x + squareInitialSize[0]) + (0 - finalPos.y + squareInitialSize[1]) >= cropSquareCorners[3]);
-}
-
-bool isInsideRoundedCorner(vec2 pos, vec2 center, float radius) {
-    return (pos.x - center.x) * (pos.x - center.x) +
-           (pos.y - center.y) * (pos.y - center.y) < radius * radius;
-}
-
-bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squareInitialSize) {
-    bool validArea = true;
-    float squareWidth = squareInitialSize[0];
-    float squareHeight = squareInitialSize[1];
-
-    // Top-left corner
-    if (finalPos.x < radius[0] && finalPos.y < radius[0]) {
-        validArea = isInsideRoundedCorner(finalPos, vec2(radius[0], radius[0]), radius[0]);
-    }
-
-    // Top-right corner
-    else if (finalPos.x > squareWidth - radius[1] && finalPos.y < radius[1]) {
-        validArea = isInsideRoundedCorner(finalPos, vec2(squareWidth - radius[1], radius[1]), radius[1]);
-    }
-
-    // Bottom-left corner
-    else if (finalPos.x < radius[2] && finalPos.y > squareHeight - radius[2]) {
-        validArea = isInsideRoundedCorner(finalPos, vec2(radius[2], squareHeight - radius[2]), radius[2]);
-    }
-
-    // Bottom-right corner
-    else if (finalPos.x > squareWidth - radius[3] && finalPos.y > squareHeight - radius[3]) {
-        validArea = isInsideRoundedCorner(finalPos, vec2(squareWidth - radius[3], squareHeight - radius[3]), radius[3]);
-    }
-
-    return validArea;
-}
-
-vec4 fetchFinalColorAt(vec2 pos)
-{
-    ivec2 coord3dRender = ivec2(fTexcoord.zw);
-    float xpos = pos.x * 256.0;
-    float ypos = pos.y * 192.0;
-    if (showOriginalHud || shapeCount == 0) {
-        vec2 textureBeginning = vec2(xpos, ypos);
-        if (currentAspectRatio != forcedAspectRatio) {
-            float heightScale = (1.0/forcedAspectRatio)/currentAspectRatio;
-
-            float sourceScreenWidth = 256.0;
-            float screenLeftMargin = (sourceScreenWidth - sourceScreenWidth/heightScale)/2;
-            float screenFinalWidth = fTexcoord.x/heightScale; // TODO: KH fTexcoord shouldn't be used here
-
-            textureBeginning.x = int(screenLeftMargin + screenFinalWidth);
-            if (textureBeginning.x < 0 || textureBeginning.x > screenFinalWidth) {
-                return vec4(0, 0, 0, 1);
-            }
-        }
-
-        return fetchColorAt(pos, coord3dRender);
-    }
-
-    float heightScale = 1.0/currentAspectRatio;
-    float widthScale = currentAspectRatio;
-    vec2 fixStretch = vec2(widthScale, 1.0);
-
-    float uiTexScale = (6.0/((float(hudScale) - 4) / 2 + 4));
-    vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
-
-    for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
-        vec4 squareFinalCoords = shapes[shapeIndex].squareFinalCoords;
-
-        if ((all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) &&
-                all(lessThanEqual(texPosition3d, squareFinalCoords.zw))) || ((shapes[shapeIndex].effects & 0x40) != 0)) {
-            int effects = shapes[shapeIndex].effects;
-            bool shouldRotate = ((effects & 0x200) != 0) || ((effects & 0x400) != 0);
-
-            vec2 finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
-            bool validArea = true;
-
-            // repeat as background
-            if ((effects & 0x40) != 0 || (effects & 0x80) != 0) {
-                finalPos = (fixStretch/shapes[shapeIndex].sourceScale)*(texPosition3d - squareFinalCoords.xy);
-                vec2 limits = (fixStretch/shapes[shapeIndex].sourceScale)*(squareFinalCoords.zw - squareFinalCoords.xy);
-                if ((effects & 0x40) != 0) {
-                    while (finalPos.x >= limits.x) {
-                        finalPos.x -= limits.x;
-                    }
-                }
-                if ((effects & 0x80) != 0) {
-                    while (finalPos.y >= limits.y) {
-                        finalPos.y -= limits.y;
-                    }
-                }
-            }
-
-            // crop corner as triangle
-            if ((effects & 0x2) != 0) {
-                ivec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
-                if (shouldRotate) {
-                    cropAreaSize = shapes[shapeIndex].squareInitialCoords.wz;
-                }
-                validArea = isValidConsideringCropSquareCorners(finalPos, shapes[shapeIndex].squareCornersModifier, cropAreaSize);
-            }
-            // rounded corners
-            if ((effects & 0x4) != 0) {
-                ivec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
-                if (shouldRotate) {
-                    cropAreaSize = shapes[shapeIndex].squareInitialCoords.wz;
-                }
-                validArea = isValidConsideringSquareBorderRadius(finalPos, shapes[shapeIndex].squareCornersModifier, cropAreaSize);
-            }
-
-            if (validArea) {
-                // mirror X
-                if ((effects & 0x8) != 0) {
-                    finalPos.x = shapes[shapeIndex].squareInitialCoords.z - finalPos.x;
-                }
-                // mirror Y
-                if ((effects & 0x10) != 0) {
-                    finalPos.y = shapes[shapeIndex].squareInitialCoords.w - finalPos.y;
-                }
-                if (shouldRotate) {
-                    // rotate to the left
-                    if ((effects & 0x200) != 0) {
-                        float newFinalPosX = shapes[shapeIndex].squareInitialCoords.z - finalPos.y;
-                        float newFinalPosY = finalPos.x;
-                        finalPos.x = newFinalPosX;
-                        finalPos.y = newFinalPosY;
-                    }
-                    // rotate to the right
-                    if ((effects & 0x400) != 0) {
-                        float newFinalPosX = finalPos.y;
-                        float newFinalPosY = shapes[shapeIndex].squareInitialCoords.w - finalPos.x;
-                        finalPos.x = newFinalPosX;
-                        finalPos.y = newFinalPosY;
-                    }
-                }
-
-                vec2 textureBeginning = vec2(ivec2(finalPos) + shapes[shapeIndex].squareInitialCoords.xy) / vec2(256.0, 192.0);
-                vec4 color = fetchColorAt(textureBeginning, coord3dRender);
-                if ((effects & 0x100) == 0 && (color.a == 0x0)) {
-                    continue; // invisible pixel; ignore it
-                }
-
-                // single color to alpha
-                bool shouldSkipColor = false;
-                for (int colorIndex = 0; colorIndex < SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE; colorIndex++) {
-                    vec4 singleColorToAlpha = vec4(shapes[shapeIndex].singleColorToAlpha[colorIndex]) / 255.0;
-                    if (singleColorToAlpha.a > 0)
-                    {
-                        if (color.r == singleColorToAlpha.r &&
-                            color.g == singleColorToAlpha.g &&
-                            color.b == singleColorToAlpha.b) {
-                            shouldSkipColor = true;
-                            break;
-                        }
-                    }
-                }
-                if (shouldSkipColor) {
-                    continue;
-                }
-
-                // invert gray scale colors
-                if ((effects & 0x1) != 0) {
-                    bool isShadeOfGray = (abs(color.r - color.g) < 0.0625) && (abs(color.r - color.b) < 0.0625) && (abs(color.g - color.b) < 0.0625);
-                    if (isShadeOfGray) {
-                        color = vec4(1.0 - color.r, 1.0 - color.g, 1.0 - color.b, color.a);
-                    }
-                }
-
-                // TODO: KH brightnessMode_Auto
-                /*if (brightnessMode == 6) { // brightnessMode_Auto
-                    color = applyBrightness(color, ivec4(texelFetch(ScreenTex, ivec2(256*3, int(textureBeginning.y)), 0)));
-                }*/
-
-                // manipulate transparency
-                if ((effects & 0x20) != 0) {
-                    // TODO: KH manipulate transparency
-                    // I will need to reimplement that, merging colors based on transparency
-                    return color;
-
-                    /*
-                    vec4 fadeBorderSize = shapes[shapeIndex].fadeBorderSize;
-                    float opacity = shapes[shapeIndex].opacity;
-                    if (any(greaterThan(fadeBorderSize, vec4(0))) || opacity < 1.0)
-                    {
-                        float leftDiff = texPosition3d.x - squareFinalCoords[0];
-                        float rightDiff = squareFinalCoords[2] - texPosition3d.x;
-                        float topDiff = texPosition3d.y - squareFinalCoords[1];
-                        float bottomDiff = squareFinalCoords[3] - texPosition3d.y;
-
-                        float leftBlurFactor   = fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (fadeBorderSize[0] * heightScale), 0.0, 1.0);
-                        float topBlurFactor    = fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  fadeBorderSize[1], 0.0, 1.0);
-                        float rightBlurFactor  = fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (fadeBorderSize[2] * heightScale), 0.0, 1.0);
-                        float bottomBlurFactor = fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  fadeBorderSize[3], 0.0, 1.0);
-
-                        float xBlur = min(leftBlurFactor, rightBlurFactor);
-                        float yBlur = min(topBlurFactor, bottomBlurFactor);
-                        int visibilityOf2D = (shapes[shapeIndex].squareInitialCoords.y >= 192 || color.a > 0x4) ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1));
-                        float visibilityOf2DFactor = xBlur * yBlur;
-
-                        int blurVal = int(visibilityOf2DFactor * visibilityOf2D * opacity);
-                        color = ivec4(color.r, blurVal // 2D visibility //, 63 - blurVal // 3D visibility //, 0x01);
-
-                        // TODO: The fade does not work properly if you need this shape to blend with another shape
-                    }
-
-                    ivec4 colorToAlpha = shapes[shapeIndex].colorToAlpha;
-                    if (colorToAlpha.a == 1)
-                    {
-                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                        int blur = ((abs(colorToAlpha.r - colorZero.r) +
-                                     abs(colorToAlpha.g - colorZero.g) +
-                                     abs(colorToAlpha.b - colorZero.b))*2)/3;
-                        color = ivec4(color.r, blur, 64 - blur, 0x01);
-                    }
-                    */
-                }
-                return color;
-            }
-        }
-    }
-
-    return vec4(0, 0, 0, 1);
-}
-
-vec4 CompositeLayers()
-{
-    return fetchFinalColorAt(vec2(fTexcoord.x, fTexcoord.y));
 }
 
 void main()
