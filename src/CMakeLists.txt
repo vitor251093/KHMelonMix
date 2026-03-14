@@ -102,7 +102,8 @@ endif()
 if (ENABLE_OGLRENDERER)
     add_subdirectory(OpenGL_shaders)
     target_sources(core PRIVATE
-        plugins/Plugin_GPU_OpenGL_shaders.h
+        plugins/Plugin_OGL_2DCompositorFS.h
+        plugins/Plugin_OGL_FinalPassFS.h
 
         GPU_OpenGL.cpp
         GPU2D_OpenGL.cpp

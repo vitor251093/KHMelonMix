@@ -1,6 +1,7 @@
 #include "Plugin.h"
 
-#include "Plugin_GPU_OpenGL_shaders.h"
+#include "Plugin_OGL_2DCompositorFS.h"
+#include "Plugin_OGL_FinalPassFS.h"
 #include "AudioUtils.h"
 
 #include <cstdlib>
