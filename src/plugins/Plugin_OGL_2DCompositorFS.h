@@ -373,7 +373,7 @@ vec4 applyShapes(vec4 base)
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    for (int si = 0; si < shapeCount; si++)
+    for (int si = shapeCount - 1; si >= 0; si--)
     {
         vec4 finalCoords = shapes[si].squareFinalCoords;
         int  effects = shapes[si].effects;
@@ -498,8 +498,16 @@ vec4 applyShapes(vec4 base)
             }
         }
 
-        base = mix(base, vec4(color.rgb, 1.0), clamp(blendFactor, 0.0, 1.0));
-        return base;
+        blendFactor = clamp(blendFactor, 0.0, 1.0);
+        if (blendFactor == 0.0) {
+            continue;
+        }
+
+        base = mix(base, vec4(color.rgb, 1.0), blendFactor);
+
+        if ((effects & 0x100) != 0) {
+            return base;
+        }
     }
 
     return base;

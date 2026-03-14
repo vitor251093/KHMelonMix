@@ -1001,41 +1001,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
             break;
 
         case gameScene_WorldSelector:
-            // header left corner
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(0, 0)
-                    .withSize(128, 25)
-                    .placeAtCorner(corner_TopLeft)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
-            // header right corner
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(128, 0)
-                    .withSize(128, 25)
-                    .placeAtCorner(corner_TopRight)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
-            // header middle
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(123, 0)
-                    .withSize(10, 25)
-                    .placeAtCorner(corner_Top)
-                    .sourceScale(1000.0, 1.0)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
-            // world name and rank
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(0, 176)
-                    .withSize(256, 16)
-                    .placeAtCorner(corner_BottomLeft)
-                    .squareBorderRadius(5.0, 5.0, 5.0, 5.0)
-                    .withMargin(20.0, 0.0, 0.0, 10.0)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
             // mission selector
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
@@ -1443,6 +1408,44 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_topScreen_2DShapes() 
             break;
     
         case gameScene_WorldSelector:
+            if (SingleScreenMode)
+            {
+                // header left corner
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(128, 25)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // header right corner
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(128, 0)
+                        .withSize(128, 25)
+                        .placeAtCorner(corner_TopRight)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // header middle
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(123, 0)
+                        .withSize(10, 25)
+                        .placeAtCorner(corner_Top)
+                        .sourceScale(1000.0, 1.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // world name and rank
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 176)
+                        .withSize(256, 16)
+                        .placeAtCorner(corner_BottomLeft)
+                        .squareBorderRadius(5.0, 5.0, 5.0, 5.0)
+                        .withMargin(20.0, 0.0, 0.0, 10.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+            }
+
             break;
 
         case gameScene_SaveMenu:

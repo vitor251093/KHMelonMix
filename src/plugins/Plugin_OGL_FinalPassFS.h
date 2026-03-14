@@ -284,7 +284,6 @@ ivec4 getTopScreenColor(vec2 pos)
     vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
 
     ivec4 currentColor = ivec4(texture(MainInputTexA, fTexcoord.xy, 0) * 255.0);
-    currentColor.w = 255;
 
     for (int shapeIndex = shapeCount - 1; shapeIndex >= 0; shapeIndex--) {
         vec4 squareFinalCoords = shapes[shapeIndex].squareFinalCoords;
@@ -391,7 +390,7 @@ ivec4 getTopScreenColor(vec2 pos)
             if ((effects & 0x1) != 0) {
                 bool isShadeOfGray = (abs(color.r - color.g) < 20) && (abs(color.r - color.b) < 20) && (abs(color.g - color.b) < 20);
                 if (isShadeOfGray) {
-                    color = ivec4(255 - color.r, 255 - color.g, 255 - color.b, color.a);
+                    color.rgb = 255 - color.rgb;
                 }
             }
 
