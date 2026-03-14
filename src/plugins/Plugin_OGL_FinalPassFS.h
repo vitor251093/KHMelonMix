@@ -226,9 +226,13 @@ vec3 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos)
 
 ivec4 getRegularScreenColor(vec2 textureBeginning, bool isBottomScreen) {
     if (isBottomScreen) {
-        return ivec4(texture(MainInputTexB, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
+        ivec4 color = ivec4(texture(MainInputTexB, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
+        color.a = 255;
+        return color;
     }
-    return ivec4(texture(MainInputTexA, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
+    ivec4 color = ivec4(texture(MainInputTexA, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
+    color.a = 255;
+    return color;
 }
 
 // RGB; all values from 0 to 255
@@ -279,7 +283,10 @@ ivec4 getTopScreenColor(vec2 pos)
     float uiTexScale = (6.0/((float(hudScale) - 4) / 2 + 4));
     vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
 
-    for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++) {
+    ivec4 currentColor = ivec4(texture(MainInputTexA, fTexcoord.xy, 0) * 255.0);
+    currentColor.w = 255;
+
+    for (int shapeIndex = shapeCount - 1; shapeIndex >= 0; shapeIndex--) {
         vec4 squareFinalCoords = shapes[shapeIndex].squareFinalCoords;
 
         if ((all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) &&
@@ -323,125 +330,121 @@ ivec4 getTopScreenColor(vec2 pos)
                 validArea = isValidConsideringSquareBorderRadius(finalPos, shapes[shapeIndex].squareCornersModifier, cropAreaSize);
             }
 
-            if (validArea) {
-                // mirror X
-                if ((effects & 0x8) != 0) {
-                    finalPos.x = shapes[shapeIndex].squareInitialCoords.z - finalPos.x;
-                }
-                // mirror Y
-                if ((effects & 0x10) != 0) {
-                    finalPos.y = shapes[shapeIndex].squareInitialCoords.w - finalPos.y;
-                }
-                if (shouldRotate) {
-                    // rotate to the left
-                    if ((effects & 0x200) != 0) {
-                        float newFinalPosX = shapes[shapeIndex].squareInitialCoords.z - finalPos.y;
-                        float newFinalPosY = finalPos.x;
-                        finalPos.x = newFinalPosX;
-                        finalPos.y = newFinalPosY;
-                    }
-                    // rotate to the right
-                    if ((effects & 0x400) != 0) {
-                        float newFinalPosX = finalPos.y;
-                        float newFinalPosY = shapes[shapeIndex].squareInitialCoords.w - finalPos.x;
-                        finalPos.x = newFinalPosX;
-                        finalPos.y = newFinalPosY;
-                    }
-                }
-
-                vec2 textureBeginning = finalPos + vec2(shapes[shapeIndex].squareInitialCoords.xy);
-                bool isBottomScreen = textureBeginning.y >= 192.0;
-                if (isBottomScreen) {
-                    textureBeginning.y = textureBeginning.y - 192.0;
-                }
-
-                // single color to alpha
-                bool shouldSkipColor = false;
-                for (int colorIndex = 0; colorIndex < SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE; colorIndex++) {
-                    ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha[colorIndex];
-                    if (singleColorToAlpha.a > 0)
-                    {
-                        ivec4 colorZero = getRegularScreenColor(textureBeginning.xy, isBottomScreen);
-                        if (colorZero.r == singleColorToAlpha.r &&
-                            colorZero.g == singleColorToAlpha.g &&
-                            colorZero.b == singleColorToAlpha.b) {
-                            shouldSkipColor = true;
-                            break;
-                        }
-                    }
-                }
-                if (shouldSkipColor) {
-                    continue;
-                }
-
-                ivec4 color = getRegularScreenColor(textureBeginning.xy, isBottomScreen);
-
-                // invert gray scale colors
-                if ((effects & 0x1) != 0) {
-                    bool isShadeOfGray = (abs(color.r - color.g) < 20) && (abs(color.r - color.b) < 20) && (abs(color.g - color.b) < 20);
-                    if (isShadeOfGray) {
-                        color = ivec4(255 - color.r, 255 - color.g, 255 - color.b, color.a);
-                    }
-                }
-
-                // TODO: KH brightnessMode_Auto
-                /*if (brightnessMode == 6) { // brightnessMode_Auto
-                    color = applyBrightness(color, ivec4(texelFetch(ScreenTex, ivec2(256*3, int(textureBeginning.y)), 0)));
-                }*/
-
-                // manipulate transparency
-                if ((effects & 0x20) != 0) {
-                    // TODO: KH manipulate transparency
-                    // I will need to reimplement that, merging colors based on transparency
-                    return color;
-
-                    /*
-                    ivec2 coordinates = textureBeginning + ivec2(512,0);
-                    ivec4 color = ivec4(texelFetch(ScreenTex, coordinates, 0));
-
-                    vec4 fadeBorderSize = shapes[shapeIndex].fadeBorderSize;
-                    float opacity = shapes[shapeIndex].opacity;
-                    if (any(greaterThan(fadeBorderSize, vec4(0))) || opacity < 1.0)
-                    {
-                        float leftDiff = texPosition3d.x - squareFinalCoords[0];
-                        float rightDiff = squareFinalCoords[2] - texPosition3d.x;
-                        float topDiff = texPosition3d.y - squareFinalCoords[1];
-                        float bottomDiff = squareFinalCoords[3] - texPosition3d.y;
-
-                        float leftBlurFactor   = fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (fadeBorderSize[0] * heightScale), 0.0, 1.0);
-                        float topBlurFactor    = fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  fadeBorderSize[1], 0.0, 1.0);
-                        float rightBlurFactor  = fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (fadeBorderSize[2] * heightScale), 0.0, 1.0);
-                        float bottomBlurFactor = fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  fadeBorderSize[3], 0.0, 1.0);
-
-                        float xBlur = min(leftBlurFactor, rightBlurFactor);
-                        float yBlur = min(topBlurFactor, bottomBlurFactor);
-                        int visibilityOf2D = (shapes[shapeIndex].squareInitialCoords.y >= 192 || color.a > 0x4) ? 63 : (color.a == 0x4 ? 0 : (color.g << 2 - 1));
-                        float visibilityOf2DFactor = xBlur * yBlur;
-
-                        int blurVal = int(visibilityOf2DFactor * visibilityOf2D * opacity);
-                        color = ivec4(color.r, blurVal // 2D visibility //, 63 - blurVal // 3D visibility //, 0x01);
-
-                        // TODO: The fade does not work properly if you need this shape to blend with another shape
-                    }
-
-                    ivec4 colorToAlpha = shapes[shapeIndex].colorToAlpha;
-                    if (colorToAlpha.a == 1)
-                    {
-                        ivec4 colorZero = ivec4(texelFetch(ScreenTex, textureBeginning, 0));
-                        int blur = ((abs(colorToAlpha.r - colorZero.r) +
-                                     abs(colorToAlpha.g - colorZero.g) +
-                                     abs(colorToAlpha.b - colorZero.b))*2)/3;
-                        color = ivec4(color.r, blur, 64 - blur, 0x01);
-                    }
-                    */
-                }
-
-                return color;
+            if (!validArea)
+            {
+                continue;
             }
+
+            // mirror X
+            if ((effects & 0x8) != 0) {
+                finalPos.x = shapes[shapeIndex].squareInitialCoords.z - finalPos.x;
+            }
+            // mirror Y
+            if ((effects & 0x10) != 0) {
+                finalPos.y = shapes[shapeIndex].squareInitialCoords.w - finalPos.y;
+            }
+            if (shouldRotate) {
+                // rotate to the left
+                if ((effects & 0x200) != 0) {
+                    float newFinalPosX = shapes[shapeIndex].squareInitialCoords.z - finalPos.y;
+                    float newFinalPosY = finalPos.x;
+                    finalPos.x = newFinalPosX;
+                    finalPos.y = newFinalPosY;
+                }
+                // rotate to the right
+                if ((effects & 0x400) != 0) {
+                    float newFinalPosX = finalPos.y;
+                    float newFinalPosY = shapes[shapeIndex].squareInitialCoords.w - finalPos.x;
+                    finalPos.x = newFinalPosX;
+                    finalPos.y = newFinalPosY;
+                }
+            }
+
+            vec2 textureBeginning = finalPos + vec2(shapes[shapeIndex].squareInitialCoords.xy);
+            bool isBottomScreen = textureBeginning.y >= 192.0;
+            if (isBottomScreen) {
+                textureBeginning.y = textureBeginning.y - 192.0;
+            }
+
+            // single color to alpha
+            bool shouldSkipColor = false;
+            for (int colorIndex = 0; colorIndex < SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE; colorIndex++) {
+                ivec4 singleColorToAlpha = shapes[shapeIndex].singleColorToAlpha[colorIndex];
+                if (singleColorToAlpha.a > 0)
+                {
+                    ivec4 colorZero = getRegularScreenColor(textureBeginning.xy, isBottomScreen);
+                    if (colorZero.r == singleColorToAlpha.r &&
+                        colorZero.g == singleColorToAlpha.g &&
+                        colorZero.b == singleColorToAlpha.b) {
+                        shouldSkipColor = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSkipColor) {
+                continue;
+            }
+
+            ivec4 color = getRegularScreenColor(textureBeginning.xy, isBottomScreen);
+
+            // invert gray scale colors
+            if ((effects & 0x1) != 0) {
+                bool isShadeOfGray = (abs(color.r - color.g) < 20) && (abs(color.r - color.b) < 20) && (abs(color.g - color.b) < 20);
+                if (isShadeOfGray) {
+                    color = ivec4(255 - color.r, 255 - color.g, 255 - color.b, color.a);
+                }
+            }
+
+            // TODO: KH brightnessMode_Auto
+            /*if (brightnessMode == 6) { // brightnessMode_Auto
+                color = applyBrightness(color, ivec4(texelFetch(ScreenTex, ivec2(256*3, int(textureBeginning.y)), 0)));
+            }*/
+
+            // manipulate transparency
+            if ((effects & 0x20) == 0)
+            {
+                currentColor = ivec4(mix(currentColor, color, color.a / 255.0));
+                continue;
+            }
+
+            ivec4 colorToAlpha = shapes[shapeIndex].colorToAlpha;
+            if (colorToAlpha.a == 1)
+            {
+                int blur = ((abs(colorToAlpha.r - color.r) +
+                             abs(colorToAlpha.g - color.g) +
+                             abs(colorToAlpha.b - color.b))*2)/3;
+                color.a = min(blur, 255);
+            }
+
+            vec4 fadeBorderSize = shapes[shapeIndex].fadeBorderSize;
+            float opacity = shapes[shapeIndex].opacity;
+            if (any(greaterThan(fadeBorderSize, vec4(0))) || opacity < 1.0)
+            {
+                float leftDiff = texPosition3d.x - squareFinalCoords[0];
+                float topDiff  = texPosition3d.y - squareFinalCoords[1];
+                float rightDiff  = squareFinalCoords[2] - texPosition3d.x;
+                float bottomDiff = squareFinalCoords[3] - texPosition3d.y;
+
+                float leftBlurFactor   = fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (fadeBorderSize[0] * heightScale), 0.0, 1.0);
+                float topBlurFactor    = fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  fadeBorderSize[1], 0.0, 1.0);
+                float rightBlurFactor  = fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (fadeBorderSize[2] * heightScale), 0.0, 1.0);
+                float bottomBlurFactor = fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  fadeBorderSize[3], 0.0, 1.0);
+
+                float xBlur = min(leftBlurFactor, rightBlurFactor);
+                float yBlur = min(topBlurFactor, bottomBlurFactor);
+                color.a = int(xBlur * yBlur * opacity * color.a);
+            }
+
+            if (color.a == 0)
+            {
+                continue;
+            }
+
+            currentColor = ivec4(mix(currentColor, color, color.a / 255.0));
         }
     }
 
-    return ivec4(texture(MainInputTexA, fTexcoord.xy, 0) * 255.0);
+    return currentColor;
 }
 
 ivec3 MasterBrightness(ivec3 color, int brightmode, int evy)
