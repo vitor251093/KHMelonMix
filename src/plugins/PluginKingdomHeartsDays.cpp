@@ -1401,8 +1401,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_topScreen_2DShapes() 
                     .fromPosition(118, 182)
                     .withSize(20, 10)
                     .placeAtCorner(corner_Center)
-                    .sourceScale(1000.0)
                     .hudScale(hudScale)
+                    .repeatAsBackground()
                     .build(aspectRatio));
 
             break;
