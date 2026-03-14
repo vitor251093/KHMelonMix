@@ -401,43 +401,35 @@ ivec4 getTopScreenColor(vec2 pos)
             }*/
 
             // manipulate transparency
-            if ((effects & 0x20) == 0)
+            if ((effects & 0x20) != 0)
             {
-                currentColor = ivec4(mix(currentColor, color, color.a / 255.0));
-                continue;
-            }
+                ivec4 colorToAlpha = shapes[shapeIndex].colorToAlpha;
+                if (colorToAlpha.a == 1)
+                {
+                    int blur = ((abs(colorToAlpha.r - color.r) +
+                                 abs(colorToAlpha.g - color.g) +
+                                 abs(colorToAlpha.b - color.b))*2)/3;
+                    color.a = min(blur, 255);
+                }
 
-            ivec4 colorToAlpha = shapes[shapeIndex].colorToAlpha;
-            if (colorToAlpha.a == 1)
-            {
-                int blur = ((abs(colorToAlpha.r - color.r) +
-                             abs(colorToAlpha.g - color.g) +
-                             abs(colorToAlpha.b - color.b))*2)/3;
-                color.a = min(blur, 255);
-            }
+                vec4 fadeBorderSize = shapes[shapeIndex].fadeBorderSize;
+                float opacity = shapes[shapeIndex].opacity;
+                if (any(greaterThan(fadeBorderSize, vec4(0))) || opacity < 1.0)
+                {
+                    float leftDiff = texPosition3d.x - squareFinalCoords[0];
+                    float topDiff  = texPosition3d.y - squareFinalCoords[1];
+                    float rightDiff  = squareFinalCoords[2] - texPosition3d.x;
+                    float bottomDiff = squareFinalCoords[3] - texPosition3d.y;
 
-            vec4 fadeBorderSize = shapes[shapeIndex].fadeBorderSize;
-            float opacity = shapes[shapeIndex].opacity;
-            if (any(greaterThan(fadeBorderSize, vec4(0))) || opacity < 1.0)
-            {
-                float leftDiff = texPosition3d.x - squareFinalCoords[0];
-                float topDiff  = texPosition3d.y - squareFinalCoords[1];
-                float rightDiff  = squareFinalCoords[2] - texPosition3d.x;
-                float bottomDiff = squareFinalCoords[3] - texPosition3d.y;
+                    float leftBlurFactor   = fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (fadeBorderSize[0] * heightScale), 0.0, 1.0);
+                    float topBlurFactor    = fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  fadeBorderSize[1], 0.0, 1.0);
+                    float rightBlurFactor  = fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (fadeBorderSize[2] * heightScale), 0.0, 1.0);
+                    float bottomBlurFactor = fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  fadeBorderSize[3], 0.0, 1.0);
 
-                float leftBlurFactor   = fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (fadeBorderSize[0] * heightScale), 0.0, 1.0);
-                float topBlurFactor    = fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  fadeBorderSize[1], 0.0, 1.0);
-                float rightBlurFactor  = fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (fadeBorderSize[2] * heightScale), 0.0, 1.0);
-                float bottomBlurFactor = fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  fadeBorderSize[3], 0.0, 1.0);
-
-                float xBlur = min(leftBlurFactor, rightBlurFactor);
-                float yBlur = min(topBlurFactor, bottomBlurFactor);
-                color.a = int(xBlur * yBlur * opacity * color.a);
-            }
-
-            if (color.a == 0)
-            {
-                continue;
+                    float xBlur = min(leftBlurFactor, rightBlurFactor);
+                    float yBlur = min(topBlurFactor, bottomBlurFactor);
+                    color.a = int(xBlur * yBlur * opacity * color.a);
+                }
             }
 
             currentColor = ivec4(mix(currentColor, color, color.a / 255.0));
