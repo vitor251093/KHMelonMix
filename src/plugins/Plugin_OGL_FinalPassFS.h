@@ -490,8 +490,14 @@ void main()
         output_sub = col_sub.rgb;
     }
 
-    if (uDispModeA != 0)
-        output_main = MasterBrightness(output_main, uBrightModeA, uBrightFactorA);
+    if (uDispModeA != 0) {
+        if (brightnessMode == 2) {
+            output_main = MasterBrightness(output_main, uBrightModeB, uBrightFactorB);
+        }
+        else {
+            output_main = MasterBrightness(output_main, uBrightModeA, uBrightFactorA);
+        }
+    }
     if (uDispModeB != 0)
         output_sub = MasterBrightness(output_sub, uBrightModeB, uBrightFactorB);
 
