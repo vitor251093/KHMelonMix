@@ -360,9 +360,15 @@ vec4 applyBrightnessToColor(vec4 col, int brightmode, int evy)
 vec4 fetch2DLayer(vec2 srcPos)
 {
     vec4 bg3 = texture(BGLayerTex[3], srcPos / vec2(uBGConfig[3].Size));
+    vec4 bg2 = texture(BGLayerTex[2], srcPos / vec2(uBGConfig[2].Size));
     vec4 bg1 = texture(BGLayerTex[1], srcPos / vec2(uBGConfig[1].Size));
-    float a1 = bg1.a;
-    return vec4(mix(bg3.rgb, bg1.rgb, a1), max(bg3.a, a1));
+    vec3 col = bg3.rgb;
+    float a  = bg3.a;
+    col = mix(col, bg2.rgb, bg2.a);
+    a   = max(a, bg2.a);
+    col = mix(col, bg1.rgb, bg1.a);
+    a   = max(a, bg1.a);
+    return vec4(col, a);
 }
 
 vec4 applyShapes(vec4 base)
@@ -533,7 +539,7 @@ vec4 CompositeLayers()
     vec4 layercol[6];
     layercol[0] = BG0CalcAndFetch(bgcoord, line);
     layercol[1] = useShapes ? vec4(0.0) : BG1CalcAndFetch(bgcoord, line);
-    layercol[2] = BG2CalcAndFetch(bgcoord, line);
+    layercol[2] = useShapes ? vec4(0.0) : BG2CalcAndFetch(bgcoord, line);
     layercol[3] = useShapes ? vec4(0.0) : BG3CalcAndFetch(bgcoord, line);
 
     ivec4 objflags;
