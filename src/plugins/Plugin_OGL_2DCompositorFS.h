@@ -587,6 +587,9 @@ vec4 CompositeLayers()
         }
     }
 
+    col1.rgb <<= 2;
+    col2.rgb <<= 2;
+
     if (effect == 1)
     {
         if (opacityModifier2d != 1.0) {
@@ -595,26 +598,26 @@ vec4 CompositeLayers()
         }
 
         // blending
-        col1 = ((col1 * eva) + (col2 * evb) + 0x8) >> 4;
-        col1 = min(col1, 0x3F);
+        col1 = ((col1 * eva) + (col2 * evb) + 0x20) >> 4;
+        col1 = min(col1, 0xFF);
     }
     else if (effect == 2)
     {
         // brightness up
-        col1 = col1 + ((((0x3F - col1) * evy) + 0x8) >> 4);
+        col1 = col1 + ((((0xFF - col1) * evy) + 0x20) >> 4);
     }
     else if (effect == 3)
     {
         // brightness down
-        col1 = col1 - (((col1 * evy) + 0x7) >> 4);
+        col1 = col1 - (((col1 * evy) + 0x1C) >> 4);
     }
     else if (effect == 4)
     {
         // 3D layer blending
-        col1 = ((col1 * eva) + (col2 * evb) + 0x10) >> 5;
+        col1 = ((col1 * eva) + (col2 * evb) + 0x40) >> 5;
     }
 
-    return vec4(vec3(col1.rgb << 2) / 255.0, 1);
+    return vec4(vec3(col1.rgb) / 255.0, 1);
 }
 
 void main()
