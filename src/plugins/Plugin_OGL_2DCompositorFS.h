@@ -550,6 +550,9 @@ vec4 CompositeLayers()
 
     int effect = 0;
     int eva, evb, evy = uBlendCoef[2];
+    ivec2 uBlendCoefEx = uBlendCoef.xy << 3;
+    if (uBlendCoefEx[0] != 0) uBlendCoefEx[0] |= 0x7;
+    if (uBlendCoefEx[1] != 0) uBlendCoefEx[1] |= 0x7;
 
     if (specialcase && (uBlendCnt & mask2) != 0)
     {
@@ -564,8 +567,8 @@ vec4 CompositeLayers()
         {
             // semi-transparent sprite
             effect = 1;
-            eva = uBlendCoef[0] << 3;
-            evb = uBlendCoef[1] << 3;
+            eva = uBlendCoefEx[0];
+            evb = uBlendCoefEx[1];
         }
         else //if (objflags.r == 2)
         {
@@ -582,8 +585,8 @@ vec4 CompositeLayers()
         {
             if ((uBlendCnt & mask2) != 0)
             {
-                eva = uBlendCoef[0] << 3;
-                evb = uBlendCoef[1] << 3;
+                eva = uBlendCoefEx[0];
+                evb = uBlendCoefEx[1];
             }
             else
                 effect = 0;
