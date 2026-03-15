@@ -465,7 +465,7 @@ vec4 CompositeLayers()
     int xpos = coord2dInt.x;
     int line = coord2dInt.y;
 
-    ivec4 col1 = ivec4(ConvertColor(uScanline[line].BackColor), 0x20);
+    ivec4 col1 = ivec4(ConvertColor(uScanline[line].BackColor), 0x20) << ivec4(2,2,2,3);
     int mask1 = 0x20;
     ivec4 col2 = ivec4(0);
     int mask2 = 0;
@@ -529,7 +529,7 @@ vec4 CompositeLayers()
             {
                 col2 = col1;
                 mask2 = mask1 << 8;
-                col1 = ivec4(layercol[bg] * 255.0) >> ivec4(2,2,2,3);
+                col1 = ivec4(layercol[bg] * 255.0);
                 mask1 = (1 << bg);
                 specialcase = (bg == 0) && uEnable3D;
             }
@@ -539,14 +539,11 @@ vec4 CompositeLayers()
         {
             col2 = col1;
             mask2 = mask1 << 8;
-            col1 = ivec4(layercol[4] * 255.0) >> ivec4(2,2,2,3);
+            col1 = ivec4(layercol[4] * 255.0);
             mask1 = (1 << 4);
             specialcase = (objflags.r != 0);
         }
     }
-
-    col1 <<= ivec4(2, 2, 2, 3);
-    col2 <<= ivec4(2, 2, 2, 3);
 
     int effect = 0;
     int eva, evb, evy = uBlendCoef[2];
