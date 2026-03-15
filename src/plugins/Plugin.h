@@ -13,7 +13,7 @@
 #define DEBUG_MODE_ENABLED false
 #define ERROR_LOG_FILE_ENABLED true
 
-#define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
+#define getPixel(buffer, x, y, layer) ((u32*)buffer)[(256*3 + 1)*(y) + (x) + 256*(layer)]
 
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 #define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
@@ -164,9 +164,13 @@ public:
     std::filesystem::path gameAssetsFolderPath();
     virtual std::string tomlUniqueIdentifier() {return gameFolderName();};
 
-    virtual const char* gpuOpenGL_FS();
-    virtual void gpuOpenGL_FS_initVariables(GLuint CompShader);
-    virtual void gpuOpenGL_FS_updateVariables(GLuint CompShader);
+    virtual const char* gpuOpenGL_2DCompositorFS();
+    virtual void gpuOpenGL_2DCompositorFS_initVariables(int ScreenIndex, GLuint CompShader);
+    virtual void gpuOpenGL_2DCompositorFS_updateVariables(int ScreenIndex, GLuint CompShader);
+
+    virtual const char* gpuOpenGL_FinalPassFS();
+    virtual void gpuOpenGL_FinalPassFS_initVariables(GLuint CompShader);
+    virtual void gpuOpenGL_FinalPassFS_updateVariables(GLuint CompShader);
 
     virtual bool gpuOpenGL_applyChangesToPolygonVertex(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon, float xCenter, float yCenter, ShapeData3D shape, int vertexIndex);
     virtual bool gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPositions[10][2], melonDS::Polygon* polygon);
@@ -369,6 +373,9 @@ public:
 
     void ramSearch(melonDS::NDS* nds, u32 HotkeyPress);
 protected:
+    std::map<GLuint, GLuint[20]> CompGpuCompositionLoc{};
+    std::map<GLuint, GLuint> CompUboCompositionLoc{};
+
     std::map<GLuint, GLuint[20]> CompGpuLoc{};
     std::map<GLuint, GLuint> CompUboLoc{};
 
@@ -377,6 +384,7 @@ protected:
     std::map<u32, GLuint> CompUbo3DLoc{};
     bool CompUbo3DLocInit = false;
 
+    std::vector<ShapeData2D> currentCompositionShapes;
     std::vector<ShapeData2D> current2DShapes;
     std::vector<ShapeData3D> current3DShapes;
 

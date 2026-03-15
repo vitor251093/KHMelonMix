@@ -425,12 +425,13 @@ void EmuInstance::releaseGL()
     }
 }
 
-void EmuInstance::drawScreenGL()
+
+void EmuInstance::drawScreen()
 {
     for (int i = 0; i < kMaxWindows; i++)
     {
         if (windowList[i])
-            windowList[i]->drawScreenGL();
+            windowList[i]->drawScreen();
     }
 }
 
@@ -1380,7 +1381,7 @@ bool EmuInstance::updateConsole() noexcept
 
         nds->Reset();
         loadRTCData();
-        //emuThread->updateVideoRenderer(); // not actually needed?
+        emuThread->updateVideoRenderer();
     }
     else
     {
@@ -2014,7 +2015,8 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
     plugin->setNds(nds);
     plugin->onLoadROM();
 
-    static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
+    // TODO: KH blackmagic3 temporary disabling it
+    //static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
 
     cartType = 0;
     ndsSave = std::make_unique<SaveManager>(savname);

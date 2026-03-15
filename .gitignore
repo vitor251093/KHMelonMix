@@ -1,6 +1,7 @@
 # Build and run artifacts
 debug.log
 error.log
+shaderfail-fragment-*.log
 build
 build*/
 bin

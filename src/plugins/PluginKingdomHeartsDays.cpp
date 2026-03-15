@@ -20,6 +20,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_MAIN_MENU_JP      0x0204288d
 #define IS_MAIN_MENU_JP_REV1 0x0204284d
 
+#define DIALOG_ADDRESS_US      0x02042444 // may also be 0x020423fc, 0x02047348, 0x0204bc14
+#define DIALOG_ADDRESS_EU      0x02042464 // TODO: KH Unconfirmed (calculated)
+#define DIALOG_ADDRESS_JP      0x020428a4 // TODO: KH Unconfirmed (calculated)
+#define DIALOG_ADDRESS_JP_REV1 0x02042864 // TODO: KH Unconfirmed (calculated)
+
 // 0x00 => cannot control (ingame cutscenes, or not ingame at all); 0x01 => can control
 #define IS_CHARACTER_CONTROLLABLE_US      0x02042460
 #define IS_CHARACTER_CONTROLLABLE_EU      0x02042480 // TODO: KH Unconfirmed (calculated)
@@ -58,6 +63,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define PAUSE_SCREEN_ADDRESS_EU      0x0204bd84
 #define PAUSE_SCREEN_ADDRESS_JP      0x0204c1c4
 #define PAUSE_SCREEN_ADDRESS_JP_REV1 0x0204c184
+
+#define MID_GAME_DIALOG_ADDRESS_US      0x0204bd65
+#define MID_GAME_DIALOG_ADDRESS_EU      0x0204bd85
+#define MID_GAME_DIALOG_ADDRESS_JP      0x0204c1c5
+#define MID_GAME_DIALOG_ADDRESS_JP_REV1 0x0204c185
 
 #define PAUSE_SCREEN_VALUE_NONE       0x00
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
@@ -124,6 +134,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_INGAME_MENU_VIEW_JP      0x020b19ac
 #define CURRENT_INGAME_MENU_VIEW_JP_REV1 0x020b196c
 
+#define INGAME_HUD_ADDRESS_US      0x0207ec20
+#define INGAME_HUD_ADDRESS_EU      0x0207ec40 // TODO: KH Unconfirmed (calculated)
+#define INGAME_HUD_ADDRESS_JP      0x0207eb20 // TODO: KH Unconfirmed (calculated)
+#define INGAME_HUD_ADDRESS_JP_REV1 0x0207eae0 // TODO: KH Unconfirmed (calculated)
+
 #define TUTORIAL_ADDRESS_US      0x0207f9dc
 #define TUTORIAL_ADDRESS_EU      0x0207f9fc
 #define TUTORIAL_ADDRESS_JP      0x0207f8dc
@@ -148,6 +163,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_EU      0x02195AA3
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_JP      0x02193E23
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_JP_REV1 0x02193DA3
+
+#define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_US      0x0219fa5c
+#define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_EU      0x021a083c // TODO: KH Unconfirmed (calculated)
+#define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP      0x0219ebbc // TODO: KH Unconfirmed (calculated)
+#define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP_REV1 0x0219eb3c // TODO: KH Unconfirmed (calculated)
 
 #define getAnyByCart(usAddress,euAddress,jpAddress,jpRev1Address) (isUsaCart() ? (usAddress) : (isEuropeCart() ? (euAddress) : (isJapanCartRev1() ? (jpRev1Address) : (jpAddress))))
 
@@ -419,9 +439,6 @@ std::string PluginKingdomHeartsDays::saveFilePath()
     {
         return std::string(saveFilePathStrPtr);
     }
-
-    // TODO: KH add empty early return if the user already has a sav 
-    //  file on the default location
     
     std::string saveFilePathStr = "";
     std::filesystem::path saveFilePath = KingdomHeartsHDCollection::configFolderPath();
@@ -613,7 +630,7 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
     {
         bool has3DOnTopScreen = (nds->PowerControl9 >> 15) == 1;
 
-        u16 bottomScreenMasterBrightness = has3DOnTopScreen ? nds->GPU.GPU2D_B.MasterBrightness : nds->GPU.GPU2D_A.MasterBrightness;
+        u16 bottomScreenMasterBrightness = has3DOnTopScreen ? nds->GPU.MasterBrightnessB : nds->GPU.MasterBrightnessA;
         _hasVisible3DOnBottomScreen = true;
 
         // fade from/to white, on "Mission Complete"
@@ -984,41 +1001,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
             break;
 
         case gameScene_WorldSelector:
-            // header left corner
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(0, 0)
-                    .withSize(128, 25)
-                    .placeAtCorner(corner_TopLeft)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
-            // header right corner
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(128, 0)
-                    .withSize(128, 25)
-                    .placeAtCorner(corner_TopRight)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
-            // header middle
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(123, 0)
-                    .withSize(10, 25)
-                    .placeAtCorner(corner_Top)
-                    .sourceScale(1000.0, 1.0)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
-            // world name and rank
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromPosition(0, 176)
-                    .withSize(256, 16)
-                    .placeAtCorner(corner_BottomLeft)
-                    .squareBorderRadius(5.0, 5.0, 5.0, 5.0)
-                    .withMargin(20.0, 0.0, 0.0, 10.0)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-
             // mission selector
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
@@ -1172,7 +1154,9 @@ void PluginKingdomHeartsDays::renderer_topScreen_2DShapes_component_characterDia
     // will have the original look from the NDS
     float dialogScale = 5.333/hudScale;
 
-    if ((GameSceneState & (1 << gameSceneState_dialogPortraitLabelVisible)) > 0)
+    int boxHeight = dialogBoxHeight();
+
+    if (boxHeight > 0 && (GameSceneState & (1 << gameSceneState_dialogPortraitLabelVisible)) > 0)
     {
         // dialog (portrait label right side)
         shapes->push_back(ShapeBuilder2D::square()
@@ -1186,8 +1170,6 @@ void PluginKingdomHeartsDays::renderer_topScreen_2DShapes_component_characterDia
                 .build(aspectRatio));
     }
 
-    int boxHeight = dialogBoxHeight();
-
     // dialog (biggest part)
     shapes->push_back(ShapeBuilder2D::square()
             .fromPosition(0, 30)
@@ -1198,49 +1180,52 @@ void PluginKingdomHeartsDays::renderer_topScreen_2DShapes_component_characterDia
             .hudScale(hudScale)
             .build(aspectRatio));
 
-    // dialog (left side border)
-    shapes->push_back(ShapeBuilder2D::square()
-            .fromPosition(0, 192 - 8 - 4)
-            .withSize(boxHeight, 4)
-            .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale)
-            .rotateToTheRight()
-            .cropSquareCorners(0.0, 4.0, 0.0, 4.0)
-            .withMargin(0.0, 0.0, 136 * dialogScale, bottomMargin + 8 * dialogScale)
-            .hudScale(hudScale)
-            .build(aspectRatio));
+    if (boxHeight > 0)
+    {
+        // dialog (left side border)
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(0, 192 - 8 - 4)
+                .withSize(boxHeight, 4)
+                .placeAtCorner(corner_Bottom)
+                .sourceScale(dialogScale)
+                .rotateToTheRight()
+                .cropSquareCorners(0.0, 4.0, 0.0, 4.0)
+                .withMargin(0.0, 0.0, 136 * dialogScale, bottomMargin + 8 * dialogScale)
+                .hudScale(hudScale)
+                .build(aspectRatio));
 
-    // dialog (left side)
-    shapes->push_back(ShapeBuilder2D::square()
-            .fromPosition(0, 30)
-            .withSize(3, 162)
-            .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale * 6.5, dialogScale)
-            .withMargin(0.0, 0.0, 128 * dialogScale, bottomMargin)
-            .hudScale(hudScale)
-            .build(aspectRatio));
+        // dialog (left side)
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(0, 30)
+                .withSize(3, 162)
+                .placeAtCorner(corner_Bottom)
+                .sourceScale(dialogScale * 6.5, dialogScale)
+                .withMargin(0.0, 0.0, 128 * dialogScale, bottomMargin)
+                .hudScale(hudScale)
+                .build(aspectRatio));
 
-    // dialog (right side border)
-    shapes->push_back(ShapeBuilder2D::square()
-            .fromPosition(0, 192 - 8 - 4)
-            .withSize(boxHeight, 4)
-            .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale)
-            .rotateToTheLeft()
-            .cropSquareCorners(4.0, 0.0, 4.0, 0.0)
-            .withMargin(136 * dialogScale, 0.0, 0.0, bottomMargin + 8 * dialogScale)
-            .hudScale(hudScale)
-            .build(aspectRatio));
+        // dialog (right side border)
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(0, 192 - 8 - 4)
+                .withSize(boxHeight, 4)
+                .placeAtCorner(corner_Bottom)
+                .sourceScale(dialogScale)
+                .rotateToTheLeft()
+                .cropSquareCorners(4.0, 0.0, 4.0, 0.0)
+                .withMargin(136 * dialogScale, 0.0, 0.0, bottomMargin + 8 * dialogScale)
+                .hudScale(hudScale)
+                .build(aspectRatio));
 
-    // dialog (right side)
-    shapes->push_back(ShapeBuilder2D::square()
-            .fromPosition(0, 30)
-            .withSize(3, 162)
-            .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale * 6.5, dialogScale)
-            .withMargin(128 * dialogScale, 0.0, 0.0, bottomMargin)
-            .hudScale(hudScale)
-            .build(aspectRatio));
+        // dialog (right side)
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(0, 30)
+                .withSize(3, 162)
+                .placeAtCorner(corner_Bottom)
+                .sourceScale(dialogScale * 6.5, dialogScale)
+                .withMargin(128 * dialogScale, 0.0, 0.0, bottomMargin)
+                .hudScale(hudScale)
+                .build(aspectRatio));
+    }
 
     // background
     shapes->push_back(ShapeBuilder2D::square()
@@ -1419,13 +1404,51 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_topScreen_2DShapes() 
                     .fromPosition(118, 182)
                     .withSize(20, 10)
                     .placeAtCorner(corner_Center)
-                    .sourceScale(1000.0)
                     .hudScale(hudScale)
+                    .repeatAsBackground()
                     .build(aspectRatio));
 
             break;
     
         case gameScene_WorldSelector:
+            if (SingleScreenMode)
+            {
+                // header left corner
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 0)
+                        .withSize(128, 25)
+                        .placeAtCorner(corner_TopLeft)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // header right corner
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(128, 0)
+                        .withSize(128, 25)
+                        .placeAtCorner(corner_TopRight)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // header middle
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(123, 0)
+                        .withSize(10, 25)
+                        .placeAtCorner(corner_Top)
+                        .sourceScale(1000.0, 1.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+
+                // world name and rank
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromPosition(0, 176)
+                        .withSize(256, 16)
+                        .placeAtCorner(corner_BottomLeft)
+                        .squareBorderRadius(5.0, 5.0, 5.0, 5.0)
+                        .withMargin(20.0, 0.0, 0.0, 10.0)
+                        .hudScale(hudScale)
+                        .build(aspectRatio));
+            }
+
             break;
 
         case gameScene_SaveMenu:
@@ -2148,81 +2171,121 @@ bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
     return foundAny;
 }
 
-u32* PluginKingdomHeartsDays::topScreen2DTexture()
+void* PluginKingdomHeartsDays::topScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 == 1) {
-        FrontBuffer = FrontBuffer ? 0 : 1;
-    }
-    return nds->GPU.Framebuffer[FrontBuffer][0].get();
+    void* topBuffer; void* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return topBuffer;
 }
 
-u32* PluginKingdomHeartsDays::bottomScreen2DTexture()
+void* PluginKingdomHeartsDays::bottomScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    if (GameScene == gameScene_InGameWithDouble3D && nds->PowerControl9 >> 15 == 1) {
-        FrontBuffer = FrontBuffer ? 0 : 1;
-    }
-    return nds->GPU.Framebuffer[FrontBuffer][1].get();
+    void* topBuffer; void* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return topBuffer; // TODO: KH WTF
 }
 
 bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
 {
-    return isBufferBlack(bottomScreen2DTexture());
+    return isBufferBlack((unsigned int*)bottomScreen2DTexture());
+}
+
+bool PluginKingdomHeartsDays::isCutsceneLikeDialogVisible()
+{
+    bool _isCharacterControllable = nds->ARM7Read8(
+            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
+    if (!_isCharacterControllable)
+    {
+        u32 cutsceneAddressValue = getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
+        if (cutsceneAddressValue != 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool PluginKingdomHeartsDays::isDialogVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    for (int y = 161; y >= 141; y--) {
-        if (has2DOnTopOf3DAt(buffer, 128, y)) {
-            return true;
-        }
+    bool _isCharacterControllable = nds->ARM7Read8(
+            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
+    if (!_isCharacterControllable)
+    {
+        // dialogs that look like cutscenes
+        return isCutsceneLikeDialogVisible();
+    }
+
+    bool isMidGameDialog = nds->ARM7Read8(
+        getAnyByCart(MID_GAME_DIALOG_ADDRESS_US, MID_GAME_DIALOG_ADDRESS_EU, MID_GAME_DIALOG_ADDRESS_JP, MID_GAME_DIALOG_ADDRESS_JP_REV1)) == 0x00;
+    if (isMidGameDialog)
+    {
+        // dialogs triggered by the player that quickly interrupts gameplay
+        // TODO: KH This is not perfect; for a few frames, before and after the dialog, it affects the regular HUD
+        return true;
     }
     return false;
 }
 
 bool PluginKingdomHeartsDays::isMinimapVisible() {
-    u32 pixel = getPixel(bottomScreen2DTexture(), 99, 53, 0);
-    if (GameScene == gameScene_PauseMenu) {
-        return ((pixel >> 0) & 0x3F) == 0x1F && ((pixel >> 8) & 0x3F) == 0x1F && ((pixel >> 16) & 0x3F) == 0x1F;
-    }
-    return ((pixel >> 0) & 0x3F) == 0x3E && ((pixel >> 8) & 0x3F) == 0x3E && ((pixel >> 16) & 0x3F) == 0x3E;
+    // TODO: KH This is not perfect; sometimes the minimap appears as a white square (black screen with inverted colors)
+    return !isCutsceneLikeDialogVisible();
 }
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
 {
-    u32* buffer = topScreen2DTexture();
-    return (has2DOnTopOf3DAt(buffer, 0, 0) && has2DOnTopOf3DAt(buffer, 128, 0) && has2DOnTopOf3DAt(buffer, 254, 0)) ||
-           (has2DOnTopOf3DAt(buffer, 0, 8) && has2DOnTopOf3DAt(buffer, 128, 8) && has2DOnTopOf3DAt(buffer, 254, 8));
+    return nds->ARM7Read32(getAnyByCart(INGAME_HUD_ADDRESS_US, INGAME_HUD_ADDRESS_EU, INGAME_HUD_ADDRESS_JP, INGAME_HUD_ADDRESS_JP_REV1)) == 0;
 }
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 {
-    u32* buffer = bottomScreen2DTexture();
-    u32 pixel = getPixel(buffer, 5, 4, 0);
-    if (((pixel >> 0) & 0x3F) >= 15 && ((pixel >> 8) & 0x3F) >= 15 && ((pixel >> 16) & 0x3F) >= 15)
-    {
-        u32 pixel2 = getPixel(buffer, 128, 4, 0);
-        if (!(((pixel2 >> 0) & 0x3F) >= 15 && ((pixel2 >> 8) & 0x3F) >= 15 && ((pixel2 >> 16) & 0x3F) >= 15))
-        {
-            bool onlyBlack = true;
-            for (int x = 0; x < 128; x++) {
-                u32 pixel3 = getPixel(buffer, x, 16, 0);
-                if (!(((pixel3 >> 0) & 0x3F) < 5 && ((pixel3 >> 8) & 0x3F) < 5 && ((pixel3 >> 16) & 0x3F) < 5))
-                {
-                    onlyBlack = false;
-                }
-            }
-            return !onlyBlack;
-        }
-    }
-    return false;
+    // TODO: KH I still don't know if that's the ideal logic, but I seem to be in the right track
+
+    // Lobby (no mission information)
+    // 0x0219fa5c: 0x00000000
+    // 0x0219fa70: 0x00000001
+    // 0x0219fac4: 0x00000001
+    // 0x0219faf0: 0x00000001
+    // 0x0219faf8: 0x00000001
+
+    // Next to final lobby (with no mission information)
+    // 0x0219fa5c: 0x00000000
+    // 0x0219fa70: 0x00000001
+    // 0x0219fac4: 0x00000001
+    // 0x0219faf0: 0x00000001
+    // 0x0219faf8: 0x00000001
+
+    // Final lobby (with mission information)
+    // 0x0219fa5c: 0x00000002
+    // 0x0219fa70: 0x00000040
+    // 0x0219fac4: 0x20737365
+    // 0x0219faf0: 0x274c0a53
+    // 0x0219faf8: 0x2e65676f
+
+    // Xion fight (with mission information)
+    // 0x0219fa5c: 0x00050000
+    // 0x0219fa70: 0x00050000
+    // 0x0219fac4: 0x00000540
+    // 0x0219faf0: 0x00000000
+    // 0x0219faf8: 0x00000001
+
+    // First mission (with mission information)
+    // 0x0219fa5c: 0x00000004
+    // 0x0219fa70: 0x72746e45
+    // 0x0219fac4: 0x6575654e
+    // 0x0219faf0: 0x64612079
+    // 0x0219faf8: 0x52206f74
+
+    return nds->ARM7Read32(getAnyByCart(
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_US,
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_EU,
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP,
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP_REV1)) == 0;
 }
 
 bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
 {
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     bool onlyBlack = true;
     for (int x = 10; x < 128; x++) {
         u32 pixel3 = getPixel(buffer, x, 188, 0);
@@ -2238,7 +2301,7 @@ bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
 {
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     bool onlyGrayscale = true;
     for (int x = 48; x < 88; x++) {
         u32 pixel3 = getPixel(buffer, x, 56, 0);
@@ -2257,27 +2320,19 @@ bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 0,   2) &&  has2DOnTopOf3DAt(buffer, 64,  2) &&
-          !has2DOnTopOf3DAt(buffer, 128, 2) && !has2DOnTopOf3DAt(buffer, 192, 2) &&
-          !has2DOnTopOf3DAt(buffer, 255, 2) &&
-           has2DOnTopOf3DAt(buffer, 0,   4) &&  has2DOnTopOf3DAt(buffer, 64,  4) &&
-           has2DOnTopOf3DAt(buffer, 128, 4) &&  has2DOnTopOf3DAt(buffer, 192, 4) &&
-           has2DOnTopOf3DAt(buffer, 255, 4) &&
-           has2DOnTopOf3DAt(buffer, 0,   6) &&  has2DOnTopOf3DAt(buffer, 64,  6) &&
-          !has2DOnTopOf3DAt(buffer, 128, 6) && !has2DOnTopOf3DAt(buffer, 192, 6) &&
-          !has2DOnTopOf3DAt(buffer, 255, 6);
+    // TODO: KH Untested
+    return isCutsceneLikeDialogVisible();
 }
 
 bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 {
-    u32 pixel = getPixel(topScreen2DTexture(), 250, 183, 0);
-    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 5 && ((pixel >> 16) & 0x3F) < 5;
+    // TODO: KH Untested
+    return isCutsceneLikeDialogVisible();
 }
 
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 {
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     u32 pixel1 = getPixel(buffer, 206, 134, 0);
     u32 pixel2 = getPixel(buffer, 206, 140, 0);
     return ((pixel1 >> 0) & 0x3F) < 5 && ((pixel1 >> 8) & 0x3F) < 5 && ((pixel1 >> 16) & 0x3F) < 5 &&
@@ -2286,7 +2341,10 @@ bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 
 int PluginKingdomHeartsDays::dialogBoxHeight()
 {
-    u32* buffer = topScreen2DTexture();
+    // TODO: KH Temporary workaround until we can detect the dialog height again
+    return 0;
+
+    void* buffer = topScreen2DTexture();
     int x = 100;
     int topY = 0;
     int bottomY = 0;
@@ -2305,7 +2363,7 @@ int PluginKingdomHeartsDays::dialogBoxHeight()
     return bottomY - topY;
 }
 
-bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(u32* buffer, int x, int y)
+bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(void* buffer, int x, int y)
 {
     /*
      * If it matches that condition, there is no 2D on top of 3D
@@ -2563,7 +2621,7 @@ int PluginKingdomHeartsDays::detectGameScene()
             return gameScene_DayCounter;
         }
 
-        if (nds->GPU.GPU2D_B.MasterBrightness == 32784) // TODO: KH Replace with memory detection
+        if (nds->GPU.MasterBrightnessB == 32784) // TODO: KH Replace with memory detection
         {
             return gameScene_RoxasThoughts;
         }

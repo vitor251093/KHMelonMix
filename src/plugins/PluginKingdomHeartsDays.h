@@ -184,11 +184,12 @@ private:
     bool isSaveLoaded();
 
     bool isBufferBlack(unsigned int* buffer);
-    u32* topScreen2DTexture();
-    u32* bottomScreen2DTexture();
+    void* topScreen2DTexture();
+    void* bottomScreen2DTexture();
     bool isBottomScreen2DTextureBlack();
 
     bool ShouldShowBottomScreen = false;
+    bool isCutsceneLikeDialogVisible();
     bool isDialogVisible();
     bool isMinimapVisible();
     bool isMissionInformationVisibleOnTopScreen();
@@ -199,7 +200,7 @@ private:
     bool isDialogPortraitLabelVisible();
     bool isLoadScreenDeletePromptVisible();
     int dialogBoxHeight();
-    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
+    bool has2DOnTopOf3DAt(void* buffer, int x, int y);
 
     void renderer_composition_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
     void renderer_composition_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
