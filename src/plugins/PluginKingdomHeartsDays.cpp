@@ -1154,7 +1154,9 @@ void PluginKingdomHeartsDays::renderer_topScreen_2DShapes_component_characterDia
     // will have the original look from the NDS
     float dialogScale = 5.333/hudScale;
 
-    if ((GameSceneState & (1 << gameSceneState_dialogPortraitLabelVisible)) > 0)
+    int boxHeight = dialogBoxHeight();
+
+    if (boxHeight > 0 && (GameSceneState & (1 << gameSceneState_dialogPortraitLabelVisible)) > 0)
     {
         // dialog (portrait label right side)
         shapes->push_back(ShapeBuilder2D::square()
@@ -1168,8 +1170,6 @@ void PluginKingdomHeartsDays::renderer_topScreen_2DShapes_component_characterDia
                 .build(aspectRatio));
     }
 
-    int boxHeight = dialogBoxHeight();
-
     // dialog (biggest part)
     shapes->push_back(ShapeBuilder2D::square()
             .fromPosition(0, 30)
@@ -1180,49 +1180,52 @@ void PluginKingdomHeartsDays::renderer_topScreen_2DShapes_component_characterDia
             .hudScale(hudScale)
             .build(aspectRatio));
 
-    // dialog (left side border)
-    shapes->push_back(ShapeBuilder2D::square()
-            .fromPosition(0, 192 - 8 - 4)
-            .withSize(boxHeight, 4)
-            .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale)
-            .rotateToTheRight()
-            .cropSquareCorners(0.0, 4.0, 0.0, 4.0)
-            .withMargin(0.0, 0.0, 136 * dialogScale, bottomMargin + 8 * dialogScale)
-            .hudScale(hudScale)
-            .build(aspectRatio));
+    if (boxHeight > 0)
+    {
+        // dialog (left side border)
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(0, 192 - 8 - 4)
+                .withSize(boxHeight, 4)
+                .placeAtCorner(corner_Bottom)
+                .sourceScale(dialogScale)
+                .rotateToTheRight()
+                .cropSquareCorners(0.0, 4.0, 0.0, 4.0)
+                .withMargin(0.0, 0.0, 136 * dialogScale, bottomMargin + 8 * dialogScale)
+                .hudScale(hudScale)
+                .build(aspectRatio));
 
-    // dialog (left side)
-    shapes->push_back(ShapeBuilder2D::square()
-            .fromPosition(0, 30)
-            .withSize(3, 162)
-            .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale * 6.5, dialogScale)
-            .withMargin(0.0, 0.0, 128 * dialogScale, bottomMargin)
-            .hudScale(hudScale)
-            .build(aspectRatio));
+        // dialog (left side)
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(0, 30)
+                .withSize(3, 162)
+                .placeAtCorner(corner_Bottom)
+                .sourceScale(dialogScale * 6.5, dialogScale)
+                .withMargin(0.0, 0.0, 128 * dialogScale, bottomMargin)
+                .hudScale(hudScale)
+                .build(aspectRatio));
 
-    // dialog (right side border)
-    shapes->push_back(ShapeBuilder2D::square()
-            .fromPosition(0, 192 - 8 - 4)
-            .withSize(boxHeight, 4)
-            .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale)
-            .rotateToTheLeft()
-            .cropSquareCorners(4.0, 0.0, 4.0, 0.0)
-            .withMargin(136 * dialogScale, 0.0, 0.0, bottomMargin + 8 * dialogScale)
-            .hudScale(hudScale)
-            .build(aspectRatio));
+        // dialog (right side border)
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(0, 192 - 8 - 4)
+                .withSize(boxHeight, 4)
+                .placeAtCorner(corner_Bottom)
+                .sourceScale(dialogScale)
+                .rotateToTheLeft()
+                .cropSquareCorners(4.0, 0.0, 4.0, 0.0)
+                .withMargin(136 * dialogScale, 0.0, 0.0, bottomMargin + 8 * dialogScale)
+                .hudScale(hudScale)
+                .build(aspectRatio));
 
-    // dialog (right side)
-    shapes->push_back(ShapeBuilder2D::square()
-            .fromPosition(0, 30)
-            .withSize(3, 162)
-            .placeAtCorner(corner_Bottom)
-            .sourceScale(dialogScale * 6.5, dialogScale)
-            .withMargin(128 * dialogScale, 0.0, 0.0, bottomMargin)
-            .hudScale(hudScale)
-            .build(aspectRatio));
+        // dialog (right side)
+        shapes->push_back(ShapeBuilder2D::square()
+                .fromPosition(0, 30)
+                .withSize(3, 162)
+                .placeAtCorner(corner_Bottom)
+                .sourceScale(dialogScale * 6.5, dialogScale)
+                .withMargin(128 * dialogScale, 0.0, 0.0, bottomMargin)
+                .hudScale(hudScale)
+                .build(aspectRatio));
+    }
 
     // background
     shapes->push_back(ShapeBuilder2D::square()
@@ -2338,6 +2341,9 @@ bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 
 int PluginKingdomHeartsDays::dialogBoxHeight()
 {
+    // TODO: KH Temporary workaround until we can detect the dialog height again
+    return 0;
+
     void* buffer = topScreen2DTexture();
     int x = 100;
     int topY = 0;
