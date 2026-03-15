@@ -346,91 +346,86 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
     return true;
 }
 
-vec2 remapCoords(vec2 coords)
-{
-    float uiTexScale = 6.0 / ((float(hudScale) - 4.0) / 2.0 + 4.0);
-    vec2 texPos = coords * uiTexScale;
-
-    float widthScale = currentAspectRatio;
-    vec2 fixStretch = vec2(widthScale, 1.0);
-
-    if (shapeCount == 0) {
-        return coords;
-    }
-
-    for (int si = 0; si < shapeCount; si++)
-    {
-        vec4 finalCoords = shapes[si].squareFinalCoords;
-        int  effects = shapes[si].effects;
-        bool shouldRotate = ((effects & 0x200) != 0) || ((effects & 0x400) != 0);
-        bool isRepeatBG = (effects & 0x40) != 0;
-
-        if (!isRepeatBG && !(all(greaterThanEqual(texPos, finalCoords.xy)) && all(lessThanEqual(texPos, finalCoords.zw))))
-            continue;
-
-        vec2 finalPos = (fixStretch / shapes[si].sourceScale) * (texPos - finalCoords.xy);
-
-        // repeat as background
-        if ((effects & 0x40) != 0 || (effects & 0x80) != 0)
-        {
-            vec2 limits = (fixStretch / shapes[si].sourceScale) *
-                          (finalCoords.zw - finalCoords.xy);
-            if ((effects & 0x40) != 0) finalPos.x = mod(finalPos.x, limits.x);
-            if ((effects & 0x80) != 0) finalPos.y = mod(finalPos.y, limits.y);
-        }
-
-        bool validArea = true;
-
-        // crop corner as triangle
-        if ((effects & 0x2) != 0)
-        {
-            ivec2 csz = shouldRotate ? shapes[si].squareInitialCoords.wz
-                                     : shapes[si].squareInitialCoords.zw;
-            validArea = isValidConsideringCropSquareCorners(
-                finalPos, shapes[si].squareCornersModifier, csz);
-        }
-
-        // rounded corners
-        if ((effects & 0x4) != 0)
-        {
-            ivec2 csz = shouldRotate ? shapes[si].squareInitialCoords.wz
-                                     : shapes[si].squareInitialCoords.zw;
-            validArea = isValidConsideringSquareBorderRadius(
-                finalPos, shapes[si].squareCornersModifier, csz);
-        }
-
-        if (!validArea) continue;
-
-        // mirror X / Y
-        if ((effects & 0x8)  != 0) finalPos.x = float(shapes[si].squareInitialCoords.z) - finalPos.x;
-        if ((effects & 0x10) != 0) finalPos.y = float(shapes[si].squareInitialCoords.w) - finalPos.y;
-
-        // rotate to the left
-        if ((effects & 0x200) != 0)
-        {
-            float nx = float(shapes[si].squareInitialCoords.z) - finalPos.y;
-            finalPos = vec2(nx, finalPos.x);
-        }
-        // rotate to the right
-        else if ((effects & 0x400) != 0)
-        {
-            float ny = float(shapes[si].squareInitialCoords.w) - finalPos.x;
-            finalPos = vec2(finalPos.y, ny);
-        }
-
-        return vec2(shapes[si].squareInitialCoords.xy) + finalPos;
-    }
-
-    return vec2(-1, -1);
-}
-
 vec4 CompositeLayers()
 {
+    vec2 coord2d = fTexcoord.xy;
     bool useShapes = (screenIndex == 1 && shapeCount != 0);
-    vec2 coord2d = useShapes ? remapCoords(fTexcoord.xy) : fTexcoord.xy;
-    bool shouldReturnNo2DElements = coord2d.x == -1 && coord2d.y == -1;
-    if (shouldReturnNo2DElements) {
-        coord2d = fTexcoord.xy;
+    bool shouldReturnNo2DElements = false;
+
+    if (useShapes && shapeCount > 0)
+    {
+        shouldReturnNo2DElements = true;
+
+        float uiTexScale = 6.0 / ((float(hudScale) - 4.0) / 2.0 + 4.0);
+        vec2 texPos = coord2d * uiTexScale;
+
+        float widthScale = currentAspectRatio;
+        vec2 fixStretch = vec2(widthScale, 1.0);
+
+        for (int si = 0; si < shapeCount; si++)
+        {
+            vec4 finalCoords = shapes[si].squareFinalCoords;
+            int  effects = shapes[si].effects;
+            bool shouldRotate = ((effects & 0x200) != 0) || ((effects & 0x400) != 0);
+            bool isRepeatBG = (effects & 0x40) != 0;
+
+            if (!isRepeatBG && !(all(greaterThanEqual(texPos, finalCoords.xy)) && all(lessThanEqual(texPos, finalCoords.zw))))
+                continue;
+
+            vec2 finalPos = (fixStretch / shapes[si].sourceScale) * (texPos - finalCoords.xy);
+
+            // repeat as background
+            if ((effects & 0x40) != 0 || (effects & 0x80) != 0)
+            {
+                vec2 limits = (fixStretch / shapes[si].sourceScale) *
+                              (finalCoords.zw - finalCoords.xy);
+                if ((effects & 0x40) != 0) finalPos.x = mod(finalPos.x, limits.x);
+                if ((effects & 0x80) != 0) finalPos.y = mod(finalPos.y, limits.y);
+            }
+
+            bool validArea = true;
+
+            // crop corner as triangle
+            if ((effects & 0x2) != 0)
+            {
+                ivec2 csz = shouldRotate ? shapes[si].squareInitialCoords.wz
+                                         : shapes[si].squareInitialCoords.zw;
+                validArea = isValidConsideringCropSquareCorners(
+                    finalPos, shapes[si].squareCornersModifier, csz);
+            }
+
+            // rounded corners
+            if ((effects & 0x4) != 0)
+            {
+                ivec2 csz = shouldRotate ? shapes[si].squareInitialCoords.wz
+                                         : shapes[si].squareInitialCoords.zw;
+                validArea = isValidConsideringSquareBorderRadius(
+                    finalPos, shapes[si].squareCornersModifier, csz);
+            }
+
+            if (!validArea) continue;
+
+            // mirror X / Y
+            if ((effects & 0x8)  != 0) finalPos.x = float(shapes[si].squareInitialCoords.z) - finalPos.x;
+            if ((effects & 0x10) != 0) finalPos.y = float(shapes[si].squareInitialCoords.w) - finalPos.y;
+
+            // rotate to the left
+            if ((effects & 0x200) != 0)
+            {
+                float nx = float(shapes[si].squareInitialCoords.z) - finalPos.y;
+                finalPos = vec2(nx, finalPos.x);
+            }
+            // rotate to the right
+            else if ((effects & 0x400) != 0)
+            {
+                float ny = float(shapes[si].squareInitialCoords.w) - finalPos.x;
+                finalPos = vec2(finalPos.y, ny);
+            }
+
+            coord2d = vec2(shapes[si].squareInitialCoords.xy) + finalPos;
+            shouldReturnNo2DElements = false;
+            break;
+        }
     }
 
     ivec2 coord3d = ivec2(fTexcoord.zw);
@@ -439,17 +434,17 @@ vec4 CompositeLayers()
     int xpos = coord2dInt.x;
     int line = coord2dInt.y;
 
-    vec2 bg0Bgcoord = vec2(fTexcoord.x, fract(fTexcoord.y));
-    int bg0Line = int(fTexcoord.y);
-
-    if (uScanline[line].MosaicSize.x > 0)
-        MosaicX = texelFetch(MosaicTex, ivec2(bgcoord.x, uScanline[line].MosaicSize.x), 0).r;
-
     ivec4 col1 = ivec4(ConvertColor(uScanline[line].BackColor), 0x20);
     int mask1 = 0x20;
     ivec4 col2 = ivec4(0);
     int mask2 = 0;
     bool specialcase = false;
+
+    if (uScanline[line].MosaicSize.x > 0)
+        MosaicX = texelFetch(MosaicTex, ivec2(bgcoord.x, uScanline[line].MosaicSize.x), 0).r;
+
+    vec2 bg0Bgcoord = vec2(fTexcoord.x, fract(fTexcoord.y));
+    int bg0Line = int(fTexcoord.y);
 
     vec4 layercol[6];
     layercol[0] = BG0CalcAndFetch(bg0Bgcoord, bg0Line);
