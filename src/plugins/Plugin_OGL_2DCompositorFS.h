@@ -351,34 +351,36 @@ vec4 CompositeLayers()
     vec2 coord2d = fTexcoord.xy;
     bool useShapes = (screenIndex == 1 && shapeCount != 0);
     bool shouldReturnNo2DElements = false;
+    float opacityModifier2d = 1.0;
 
     if (useShapes && shapeCount > 0)
     {
         shouldReturnNo2DElements = true;
 
         float uiTexScale = 6.0 / ((float(hudScale) - 4.0) / 2.0 + 4.0);
-        vec2 texPos = coord2d * uiTexScale;
+        vec2 texPosition3d = coord2d * uiTexScale;
 
+        float heightScale = 1.0/currentAspectRatio;
         float widthScale = currentAspectRatio;
         vec2 fixStretch = vec2(widthScale, 1.0);
 
-        for (int si = 0; si < shapeCount; si++)
+        for (int shapeIndex = 0; shapeIndex < shapeCount; shapeIndex++)
         {
-            vec4 finalCoords = shapes[si].squareFinalCoords;
-            int  effects = shapes[si].effects;
+            vec4 squareFinalCoords = shapes[shapeIndex].squareFinalCoords;
+            int  effects = shapes[shapeIndex].effects;
             bool shouldRotate = ((effects & 0x200) != 0) || ((effects & 0x400) != 0);
             bool isRepeatBG = (effects & 0x40) != 0;
 
-            if (!isRepeatBG && !(all(greaterThanEqual(texPos, finalCoords.xy)) && all(lessThanEqual(texPos, finalCoords.zw))))
+            if (!isRepeatBG && !(all(greaterThanEqual(texPosition3d, squareFinalCoords.xy)) && all(lessThanEqual(texPosition3d, squareFinalCoords.zw))))
                 continue;
 
-            vec2 finalPos = (fixStretch / shapes[si].sourceScale) * (texPos - finalCoords.xy);
+            vec2 finalPos = (fixStretch / shapes[shapeIndex].sourceScale) * (texPosition3d - squareFinalCoords.xy);
 
             // repeat as background
             if ((effects & 0x40) != 0 || (effects & 0x80) != 0)
             {
-                vec2 limits = (fixStretch / shapes[si].sourceScale) *
-                              (finalCoords.zw - finalCoords.xy);
+                vec2 limits = (fixStretch / shapes[shapeIndex].sourceScale) *
+                              (squareFinalCoords.zw - squareFinalCoords.xy);
                 if ((effects & 0x40) != 0) finalPos.x = mod(finalPos.x, limits.x);
                 if ((effects & 0x80) != 0) finalPos.y = mod(finalPos.y, limits.y);
             }
@@ -388,42 +390,71 @@ vec4 CompositeLayers()
             // crop corner as triangle
             if ((effects & 0x2) != 0)
             {
-                ivec2 csz = shouldRotate ? shapes[si].squareInitialCoords.wz
-                                         : shapes[si].squareInitialCoords.zw;
+                ivec2 csz = shouldRotate ? shapes[shapeIndex].squareInitialCoords.wz
+                                         : shapes[shapeIndex].squareInitialCoords.zw;
                 validArea = isValidConsideringCropSquareCorners(
-                    finalPos, shapes[si].squareCornersModifier, csz);
+                    finalPos, shapes[shapeIndex].squareCornersModifier, csz);
             }
 
             // rounded corners
             if ((effects & 0x4) != 0)
             {
-                ivec2 csz = shouldRotate ? shapes[si].squareInitialCoords.wz
-                                         : shapes[si].squareInitialCoords.zw;
+                ivec2 csz = shouldRotate ? shapes[shapeIndex].squareInitialCoords.wz
+                                         : shapes[shapeIndex].squareInitialCoords.zw;
                 validArea = isValidConsideringSquareBorderRadius(
-                    finalPos, shapes[si].squareCornersModifier, csz);
+                    finalPos, shapes[shapeIndex].squareCornersModifier, csz);
             }
 
             if (!validArea) continue;
 
             // mirror X / Y
-            if ((effects & 0x8)  != 0) finalPos.x = float(shapes[si].squareInitialCoords.z) - finalPos.x;
-            if ((effects & 0x10) != 0) finalPos.y = float(shapes[si].squareInitialCoords.w) - finalPos.y;
+            if ((effects & 0x8)  != 0) finalPos.x = float(shapes[shapeIndex].squareInitialCoords.z) - finalPos.x;
+            if ((effects & 0x10) != 0) finalPos.y = float(shapes[shapeIndex].squareInitialCoords.w) - finalPos.y;
 
             // rotate to the left
             if ((effects & 0x200) != 0)
             {
-                float nx = float(shapes[si].squareInitialCoords.z) - finalPos.y;
+                float nx = float(shapes[shapeIndex].squareInitialCoords.z) - finalPos.y;
                 finalPos = vec2(nx, finalPos.x);
             }
             // rotate to the right
             else if ((effects & 0x400) != 0)
             {
-                float ny = float(shapes[si].squareInitialCoords.w) - finalPos.x;
+                float ny = float(shapes[shapeIndex].squareInitialCoords.w) - finalPos.x;
                 finalPos = vec2(finalPos.y, ny);
             }
 
-            coord2d = vec2(shapes[si].squareInitialCoords.xy) + finalPos;
+            coord2d = vec2(shapes[shapeIndex].squareInitialCoords.xy) + finalPos;
             shouldReturnNo2DElements = false;
+
+            // TODO: KH single color to alpha
+            // TODO: KH invert gray scale colors
+
+            // manipulate transparency
+            if ((effects & 0x20) != 0)
+            {
+                // TODO: KH colorToAlpha
+
+                vec4 fadeBorderSize = shapes[shapeIndex].fadeBorderSize;
+                float opacity = shapes[shapeIndex].opacity;
+                if (any(greaterThan(fadeBorderSize, vec4(0))) || opacity < 1.0)
+                {
+                    float leftDiff = texPosition3d.x - squareFinalCoords[0];
+                    float topDiff  = texPosition3d.y - squareFinalCoords[1];
+                    float rightDiff  = squareFinalCoords[2] - texPosition3d.x;
+                    float bottomDiff = squareFinalCoords[3] - texPosition3d.y;
+
+                    float leftBlurFactor   = fadeBorderSize[0] == 0 ? 1.0 : clamp(leftDiff   / (fadeBorderSize[0] * heightScale), 0.0, 1.0);
+                    float topBlurFactor    = fadeBorderSize[1] == 0 ? 1.0 : clamp(topDiff    /  fadeBorderSize[1], 0.0, 1.0);
+                    float rightBlurFactor  = fadeBorderSize[2] == 0 ? 1.0 : clamp(rightDiff  / (fadeBorderSize[2] * heightScale), 0.0, 1.0);
+                    float bottomBlurFactor = fadeBorderSize[3] == 0 ? 1.0 : clamp(bottomDiff /  fadeBorderSize[3], 0.0, 1.0);
+
+                    float xBlur = min(leftBlurFactor, rightBlurFactor);
+                    float yBlur = min(topBlurFactor, bottomBlurFactor);
+                    opacityModifier2d = xBlur * yBlur * opacity;
+                }
+            }
+
             break;
         }
     }
@@ -558,6 +589,11 @@ vec4 CompositeLayers()
 
     if (effect == 1)
     {
+        if (opacityModifier2d != 1.0) {
+            eva = int(0x1F * opacityModifier2d) + 1;
+            evb = 16 - eva;
+        }
+
         // blending
         col1 = ((col1 * eva) + (col2 * evb) + 0x8) >> 4;
         col1 = min(col1, 0x3F);
