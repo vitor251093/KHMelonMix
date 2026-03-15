@@ -545,6 +545,9 @@ vec4 CompositeLayers()
         }
     }
 
+    col1 <<= ivec4(2, 2, 2, 3);
+    col2 <<= ivec4(2, 2, 2, 3);
+
     int effect = 0;
     int eva, evb, evy = uBlendCoef[2];
 
@@ -554,22 +557,22 @@ vec4 CompositeLayers()
         {
             // 3D layer blending
             effect = 4;
-            eva = (col1.a & 0x1F) + 1;
-            evb = 32 - eva;
+            eva = (col1.a & 0xFF) + 1;
+            evb = 256 - eva;
         }
         else if (objflags.r == 1)
         {
             // semi-transparent sprite
             effect = 1;
-            eva = uBlendCoef[0];
-            evb = uBlendCoef[1];
+            eva = uBlendCoef[0] << 3;
+            evb = uBlendCoef[1] << 3;
         }
         else //if (objflags.r == 2)
         {
             // bitmap sprite
             effect = 1;
             eva = col1.a;
-            evb = 16 - eva;
+            evb = 128 - eva;
         }
     }
     else if (((uBlendCnt & mask1) != 0) && ((winsel & (1u << 5)) != 0u))
@@ -579,26 +582,23 @@ vec4 CompositeLayers()
         {
             if ((uBlendCnt & mask2) != 0)
             {
-                eva = uBlendCoef[0];
-                evb = uBlendCoef[1];
+                eva = uBlendCoef[0] << 3;
+                evb = uBlendCoef[1] << 3;
             }
             else
                 effect = 0;
         }
     }
 
-    col1.rgb <<= 2;
-    col2.rgb <<= 2;
-
     if (effect == 1)
     {
         if (opacityModifier2d != 1.0) {
-            eva = int(0x1F * opacityModifier2d) + 1;
-            evb = 16 - eva;
+            eva = int(0xFF * opacityModifier2d) + 1;
+            evb = 128 - eva;
         }
 
         // blending
-        col1 = ((col1 * eva) + (col2 * evb) + 0x20) >> 4;
+        col1 = ((col1 * eva) + (col2 * evb) + 0x100) >> 7;
         col1 = min(col1, 0xFF);
     }
     else if (effect == 2)
@@ -614,7 +614,7 @@ vec4 CompositeLayers()
     else if (effect == 4)
     {
         // 3D layer blending
-        col1 = ((col1 * eva) + (col2 * evb) + 0x40) >> 5;
+        col1 = ((col1 * eva) + (col2 * evb) + 0x200) >> 8;
     }
 
     return vec4(vec3(col1.rgb) / 255.0, 1);
