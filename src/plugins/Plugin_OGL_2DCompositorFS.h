@@ -346,40 +346,19 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
     return true;
 }
 
-vec4 applyBrightnessToColor(vec4 col, int brightmode, int evy)
-{
-    if (evy > 16) evy = 16;
-    float f = float(evy) / 16.0;
-    if (brightmode == 1) // up
-        col.rgb = col.rgb + (1.0 - col.rgb) * f;
-    else if (brightmode == 2) // down
-        col.rgb = col.rgb * (1.0 - f);
-    return col;
-}
-
-vec4 fetch2DLayer(vec2 srcPos)
-{
-    vec4 bg3 = texture(BGLayerTex[3], srcPos / vec2(uBGConfig[3].Size));
-    vec4 bg2 = texture(BGLayerTex[2], srcPos / vec2(uBGConfig[2].Size));
-    vec4 bg1 = texture(BGLayerTex[1], srcPos / vec2(uBGConfig[1].Size));
-    vec3 col = bg3.rgb;
-    float a  = bg3.a;
-    col = mix(col, bg2.rgb, bg2.a);
-    a   = max(a, bg2.a);
-    col = mix(col, bg1.rgb, bg1.a);
-    a   = max(a, bg1.a);
-    return vec4(col, a);
-}
-
-vec4 applyShapes(vec4 base)
+vec2 remapCoords(vec2 coords)
 {
     float uiTexScale = 6.0 / ((float(hudScale) - 4.0) / 2.0 + 4.0);
-    vec2 texPos = vec2(fTexcoord.x, fTexcoord.y) * uiTexScale;
+    vec2 texPos = coords * uiTexScale;
 
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    for (int si = shapeCount - 1; si >= 0; si--)
+    if (shapeCount == 0) {
+        return coords;
+    }
+
+    for (int si = 0; si < shapeCount; si++)
     {
         vec4 finalCoords = shapes[si].squareFinalCoords;
         int  effects = shapes[si].effects;
@@ -430,101 +409,38 @@ vec4 applyShapes(vec4 base)
         if ((effects & 0x200) != 0)
         {
             float nx = float(shapes[si].squareInitialCoords.z) - finalPos.y;
-            finalPos  = vec2(nx, finalPos.x);
+            finalPos = vec2(nx, finalPos.x);
         }
         // rotate to the right
         else if ((effects & 0x400) != 0)
         {
             float ny = float(shapes[si].squareInitialCoords.w) - finalPos.x;
-            finalPos  = vec2(finalPos.y, ny);
+            finalPos = vec2(finalPos.y, ny);
         }
 
-        vec2 srcPos = vec2(shapes[si].squareInitialCoords.xy) + finalPos;
-
-        vec4 color = fetch2DLayer(srcPos);
-        if (color.a <= 0.0) continue; // invisible pixel; ignore it
-
-        // single color to alpha
-        bool shouldSkip = false;
-        for (int ci = 0; ci < SINGLE_COLOR_TO_ALPHA_ARRAY_SIZE; ci++)
-        {
-            ivec4 sc = shapes[si].singleColorToAlpha[ci];
-            if (sc.a > 0)
-            {
-                vec3 refCol = vec3(sc.rgb) / 255.0;
-                if (all(lessThan(abs(color.rgb - refCol), vec3(0.02))))
-                {
-                    shouldSkip = true;
-                    break;
-                }
-            }
-        }
-        if (shouldSkip) continue;
-
-        // invert gray scale colors
-        if ((effects & 0x1) != 0)
-        {
-            bool isGray = (abs(color.r - color.g) < 0.02) &&
-                          (abs(color.r - color.b) < 0.02) &&
-                          (abs(color.g - color.b) < 0.02);
-            if (isGray) color.rgb = 1.0 - color.rgb;
-        }
-
-        // fade borders / opacity
-        float blendFactor = color.a;
-        if ((effects & 0x20) != 0)
-        {
-            vec4  fbs     = shapes[si].fadeBorderSize;
-            float opacity = shapes[si].opacity;
-
-            if (any(greaterThan(fbs, vec4(0.0))) || opacity < 1.0)
-            {
-                float ld = texPos.x - finalCoords[0];
-                float rd = finalCoords[2] - texPos.x;
-                float td = texPos.y - finalCoords[1];
-                float bd = finalCoords[3] - texPos.y;
-
-                float lf = fbs[0] == 0.0 ? 1.0 : clamp(ld / fbs[0], 0.0, 1.0);
-                float tf = fbs[1] == 0.0 ? 1.0 : clamp(td / fbs[1], 0.0, 1.0);
-                float rf = fbs[2] == 0.0 ? 1.0 : clamp(rd / fbs[2], 0.0, 1.0);
-                float bf = fbs[3] == 0.0 ? 1.0 : clamp(bd / fbs[3], 0.0, 1.0);
-
-                blendFactor = min(lf, rf) * min(tf, bf) * opacity * color.a;
-            }
-
-            // color to alpha
-            ivec4 cta = shapes[si].colorToAlpha;
-            if (cta.a == 1)
-            {
-                vec3  refCol = vec3(cta.rgb) / 255.0;
-                float dist   = (abs(refCol.r - color.r) +
-                                abs(refCol.g - color.g) +
-                                abs(refCol.b - color.b)) / 3.0;
-                blendFactor = clamp(dist * 2.0, 0.0, 1.0);
-            }
-        }
-
-        blendFactor = clamp(blendFactor, 0.0, 1.0);
-        if (blendFactor == 0.0) {
-            continue;
-        }
-
-        base = mix(base, vec4(color.rgb, 1.0), blendFactor);
-
-        if ((effects & 0x100) != 0) {
-            return base;
-        }
+        return vec2(shapes[si].squareInitialCoords.xy) + finalPos;
     }
 
-    return base;
+    return vec2(-1, -1);
 }
 
 vec4 CompositeLayers()
 {
-    ivec2 coord = ivec2(fTexcoord.zw);
-    vec2 bgcoord = vec2(fTexcoord.x, fract(fTexcoord.y));
-    int xpos = int(fTexcoord.x);
-    int line = int(fTexcoord.y);
+    bool useShapes = (screenIndex == 1 && shapeCount != 0);
+    vec2 coord2d = useShapes ? remapCoords(fTexcoord.xy) : fTexcoord.xy;
+    bool shouldReturnNo2DElements = coord2d.x == -1 && coord2d.y == -1;
+    if (shouldReturnNo2DElements) {
+        coord2d = fTexcoord.xy;
+    }
+
+    ivec2 coord3d = ivec2(fTexcoord.zw);
+    vec2 bgcoord = vec2(coord2d.x, fract(coord2d.y));
+    ivec2 coord2dInt = ivec2(coord2d.xy);
+    int xpos = coord2dInt.x;
+    int line = coord2dInt.y;
+
+    vec2 bg0Bgcoord = vec2(fTexcoord.x, fract(fTexcoord.y));
+    int bg0Line = int(fTexcoord.y);
 
     if (uScanline[line].MosaicSize.x > 0)
         MosaicX = texelFetch(MosaicTex, ivec2(bgcoord.x, uScanline[line].MosaicSize.x), 0).r;
@@ -534,23 +450,22 @@ vec4 CompositeLayers()
     ivec4 col2 = ivec4(0);
     int mask2 = 0;
     bool specialcase = false;
-    bool useShapes = (screenIndex == 1 && shapeCount != 0);
 
     vec4 layercol[6];
-    layercol[0] = BG0CalcAndFetch(bgcoord, line);
-    layercol[1] = useShapes ? vec4(0.0) : BG1CalcAndFetch(bgcoord, line);
-    layercol[2] = useShapes ? vec4(0.0) : BG2CalcAndFetch(bgcoord, line);
-    layercol[3] = useShapes ? vec4(0.0) : BG3CalcAndFetch(bgcoord, line);
+    layercol[0] = BG0CalcAndFetch(bg0Bgcoord, bg0Line);
+    layercol[1] = shouldReturnNo2DElements ? vec4(0.0) : BG1CalcAndFetch(bgcoord, line);
+    layercol[2] = shouldReturnNo2DElements ? vec4(0.0) : BG2CalcAndFetch(bgcoord, line);
+    layercol[3] = shouldReturnNo2DElements ? vec4(0.0) : BG3CalcAndFetch(bgcoord, line);
 
     ivec4 objflags;
     if (uScanline[line].MosaicSize.z > 0)
     {
-        CalcSpriteMosaic(ivec2(fTexcoord.xy), objflags, layercol[4]);
+        CalcSpriteMosaic(ivec2(coord2d.xy), objflags, layercol[4]);
     }
     else
     {
-        layercol[4] = texelFetch(OBJLayerTex, ivec3(coord, 0), 0);
-        layercol[5] = texelFetch(OBJLayerTex, ivec3(coord, 1), 0);
+        layercol[4] = texelFetch(OBJLayerTex, ivec3(coord3d, 0), 0);
+        layercol[5] = texelFetch(OBJLayerTex, ivec3(coord3d, 1), 0);
         objflags = ivec4(layercol[5] * 255.0);
     }
 
@@ -673,33 +588,7 @@ vec4 CompositeLayers()
 
 void main()
 {
-    vec4 col = CompositeLayers();
-    if (screenIndex != 1 || shapeCount == 0)
-    {
-        oColor = col;
-        return;
-    }
-
-    col = applyShapes(col);
-
-    int brightmode = 0;
-    int evy = 0;
-
-    if (brightnessMode == 4) // forced black screen
-    {
-        brightmode = 2;
-        evy = 16;
-    }
-    else if (brightnessMode != 5 && brightnessMode != 0)
-    {
-        brightmode = (uBlendEffect == 2) ? 1 :
-                     (uBlendEffect == 3) ? 2 : 0;
-        evy = uBlendCoef[2];
-    }
-
-    col = applyBrightnessToColor(col, brightmode, evy);
-
-    oColor = col;
+    oColor = CompositeLayers();
 }
 )";
 
