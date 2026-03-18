@@ -818,7 +818,7 @@ void PluginKingdomHeartsDays::renderer_composition_component_bottomMissionInform
             .fromPosition(0, 0)
             .withSize(75, 24)
             .placeAtCorner(corner_TopLeft)
-            .singleColorToAlpha(32, 32, 32)
+            .singleColorToAlpha(32, 32, 32) // TODO: This isn't working
             .hudScale(hudScale)
             .build(aspectRatio));
 
@@ -2249,6 +2249,11 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 {
+    if (isCutsceneLikeDialogVisible())
+    {
+        return false;
+    }
+
     // TODO: KH I still don't know if that's the ideal logic, but I seem to be in the right track
 
     // Lobby (no mission information)
@@ -2287,10 +2292,10 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
     // 0x0219faf8: 0x52206f74
 
     return nds->ARM7Read32(getAnyByCart(
-        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_US,
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_US, // 0x0219fa5c
         BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_EU,
         BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP,
-        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP_REV1)) == 0;
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP_REV1)) != 0;
 }
 
 bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
