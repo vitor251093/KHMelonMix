@@ -169,6 +169,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP      0x0219ebbc // TODO: KH Unconfirmed (calculated)
 #define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP_REV1 0x0219eb3c // TODO: KH Unconfirmed (calculated)
 
+// If you want to understand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
+#define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
+#define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
+#define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
+
 #define getAnyByCart(usAddress,euAddress,jpAddress,jpRev1Address) (isUsaCart() ? (usAddress) : (isEuropeCart() ? (euAddress) : (isJapanCartRev1() ? (jpRev1Address) : (jpAddress))))
 
 enum
@@ -2228,8 +2233,13 @@ bool PluginKingdomHeartsDays::isDialogVisible()
 }
 
 bool PluginKingdomHeartsDays::isMinimapVisible() {
-    // TODO: KH This is not perfect; sometimes the minimap appears as a white square (black screen with inverted colors)
-    return !isCutsceneLikeDialogVisible();
+    if (isCutsceneLikeDialogVisible())
+    {
+        return false;
+    }
+
+    u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.MasterBrightnessB);
+    return botScreenBrightness == 0xF;
 }
 
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
