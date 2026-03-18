@@ -2254,45 +2254,8 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
         return false;
     }
 
-    // TODO: KH I still don't know if that's the ideal logic, but I seem to be in the right track
-
-    // Lobby (no mission information)
-    // 0x0219fa5c: 0x00000000
-    // 0x0219fa70: 0x00000001
-    // 0x0219fac4: 0x00000001
-    // 0x0219faf0: 0x00000001
-    // 0x0219faf8: 0x00000001
-
-    // Next to final lobby (with no mission information)
-    // 0x0219fa5c: 0x00000000
-    // 0x0219fa70: 0x00000001
-    // 0x0219fac4: 0x00000001
-    // 0x0219faf0: 0x00000001
-    // 0x0219faf8: 0x00000001
-
-    // Final lobby (with mission information)
-    // 0x0219fa5c: 0x00000002
-    // 0x0219fa70: 0x00000040
-    // 0x0219fac4: 0x20737365
-    // 0x0219faf0: 0x274c0a53
-    // 0x0219faf8: 0x2e65676f
-
-    // Xion fight (with mission information)
-    // 0x0219fa5c: 0x00050000
-    // 0x0219fa70: 0x00050000
-    // 0x0219fac4: 0x00000540
-    // 0x0219faf0: 0x00000000
-    // 0x0219faf8: 0x00000001
-
-    // First mission (with mission information)
-    // 0x0219fa5c: 0x00000004
-    // 0x0219fa70: 0x72746e45
-    // 0x0219fac4: 0x6575654e
-    // 0x0219faf0: 0x64612079
-    // 0x0219faf8: 0x52206f74
-
     return nds->ARM7Read32(getAnyByCart(
-        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_US, // 0x0219fa5c
+        BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_US,
         BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_EU,
         BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP,
         BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP_REV1)) != 0;
