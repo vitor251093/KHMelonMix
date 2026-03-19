@@ -2176,6 +2176,7 @@ bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
     return foundAny;
 }
 
+// TODO: KH Everything that depends on this function, shouldn't
 void* PluginKingdomHeartsDays::topScreen2DTexture()
 {
     void* topBuffer; void* bottomBuffer;
@@ -2183,6 +2184,7 @@ void* PluginKingdomHeartsDays::topScreen2DTexture()
     return topBuffer;
 }
 
+// TODO: KH Everything that depends on this function, shouldn't
 void* PluginKingdomHeartsDays::bottomScreen2DTexture()
 {
     void* topBuffer; void* bottomBuffer;
@@ -2263,6 +2265,12 @@ bool PluginKingdomHeartsDays::isMissionInformationVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
 {
+    if (isCutsceneLikeDialogVisible())
+    {
+        return false;
+    }
+
+    // TODO: KH Not working
     void* buffer = bottomScreen2DTexture();
     bool onlyBlack = true;
     for (int x = 10; x < 128; x++) {
@@ -2279,6 +2287,12 @@ bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
 {
+    if (isCutsceneLikeDialogVisible())
+    {
+        return false;
+    }
+
+    // TODO: KH Not working
     void* buffer = bottomScreen2DTexture();
     bool onlyGrayscale = true;
     for (int x = 48; x < 88; x++) {
