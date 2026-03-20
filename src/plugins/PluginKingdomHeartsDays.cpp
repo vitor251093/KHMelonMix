@@ -766,7 +766,8 @@ void PluginKingdomHeartsDays::renderer_composition_component_targetView(std::vec
     float targetScale = 0.666;
     int targetLabelMargin = 12;
     int targetWidth = 64;
-    int targetRightMargin = 70;
+    float targetRightMargin = 87;
+    float targetTopMargin = 35;
 
     // target label (part 1)
     shapes->push_back(ShapeBuilder2D::square()
@@ -774,7 +775,7 @@ void PluginKingdomHeartsDays::renderer_composition_component_targetView(std::vec
             .fromPosition(32, 51)
             .withSize(targetLabelMargin, 9)
             .placeAtCorner(corner_TopRight)
-            .withMargin(0.0, 30.0, 9.0 + targetWidth*targetScale - targetLabelMargin*targetScale + targetRightMargin, 0.0)
+            .withMargin(0.0, targetTopMargin, targetWidth*targetScale - targetLabelMargin*targetScale + targetRightMargin, 0.0)
             .sourceScale(targetScale)
             .colorToAlpha(248, 248, 248)
             .hudScale(hudScale)
@@ -786,7 +787,7 @@ void PluginKingdomHeartsDays::renderer_composition_component_targetView(std::vec
             .fromPosition(32 + targetLabelMargin, 51)
             .withSize(targetWidth - targetLabelMargin*2, 9)
             .placeAtCorner(corner_TopRight)
-            .withMargin(0.0, 30.0, 9.0 + targetLabelMargin*targetScale + targetRightMargin, 0.0)
+            .withMargin(0.0, targetTopMargin, targetLabelMargin*targetScale + targetRightMargin, 0.0)
             .sourceScale(targetScale)
             .hudScale(hudScale)
             .build(aspectRatio));
@@ -797,7 +798,7 @@ void PluginKingdomHeartsDays::renderer_composition_component_targetView(std::vec
             .fromPosition(32 + targetWidth - targetLabelMargin, 51)
             .withSize(targetLabelMargin, 9)
             .placeAtCorner(corner_TopRight)
-            .withMargin(0.0, 30.0, 9.0 + targetRightMargin, 0.0)
+            .withMargin(0.0, targetTopMargin, targetRightMargin, 0.0)
             .sourceScale(targetScale)
             .colorToAlpha(248, 248, 248)
             .hudScale(hudScale)
@@ -809,7 +810,7 @@ void PluginKingdomHeartsDays::renderer_composition_component_targetView(std::vec
             .fromPosition(32, 64)
             .withSize(targetWidth, 76)
             .placeAtCorner(corner_TopRight)
-            .withMargin(0.0, 38.0, 9.0 + targetRightMargin, 0.0)
+            .withMargin(0.0, targetTopMargin + 8.0, targetRightMargin, 0.0)
             .sourceScale(targetScale)
             .hudScale(hudScale)
             .build(aspectRatio));
