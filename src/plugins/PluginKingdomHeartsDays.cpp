@@ -169,6 +169,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP      0x0219ebbc // TODO: KH Unconfirmed (calculated)
 #define BOTTOM_SCREEN_MISSION_INFORMATION_ADDRESS_JP_REV1 0x0219eb3c // TODO: KH Unconfirmed (calculated)
 
+#define MISSION_GAUGE_ADDRESS_US      0x0219faf8
+#define MISSION_GAUGE_ADDRESS_EU      0x021a08d8 // TODO: KH Unconfirmed (calculated)
+#define MISSION_GAUGE_ADDRESS_JP      0x0219ec58 // TODO: KH Unconfirmed (calculated)
+#define MISSION_GAUGE_ADDRESS_JP_REV1 0x0219ebd8 // TODO: KH Unconfirmed (calculated)
+
 // If you want to understand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -2270,17 +2275,11 @@ bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
         return false;
     }
 
-    // TODO: KH Not working
-    void* buffer = bottomScreen2DTexture();
-    bool onlyBlack = true;
-    for (int x = 10; x < 128; x++) {
-        u32 pixel3 = getPixel(buffer, x, 188, 0);
-        if (!(((pixel3 >> 0) & 0x3F) < 5 && ((pixel3 >> 8) & 0x3F) < 5 && ((pixel3 >> 16) & 0x3F) < 5))
-        {
-            onlyBlack = false;
-        }
-    }
-    return !onlyBlack;
+    // values with a gauge:    0x00000002 or 0x00000000 or 0x00030e02
+    // values without a gauge: 0x00000001
+
+    // TODO: KH Experimental; requires more testing
+    return (nds->ARM7Read32(getAnyByCart(MISSION_GAUGE_ADDRESS_US, MISSION_GAUGE_ADDRESS_EU, MISSION_GAUGE_ADDRESS_JP, MISSION_GAUGE_ADDRESS_JP_REV1)) & 0x1) == 0;
 }
 
 #define DIFF(val1, val2) ((val1 > val2) ? (val1 - val2) : (val2 - val1))
