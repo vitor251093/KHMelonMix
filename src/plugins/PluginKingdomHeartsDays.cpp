@@ -2292,20 +2292,45 @@ bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
         return false;
     }
 
-    // TODO: KH Not working
-    void* buffer = bottomScreen2DTexture();
-    bool onlyGrayscale = true;
-    for (int x = 48; x < 88; x++) {
-        u32 pixel3 = getPixel(buffer, x, 56, 0);
-        u32 r = (pixel3 >> 0) & 0x3F;
-        u32 g = (pixel3 >> 8) & 0x3F;
-        u32 b = (pixel3 >> 16) & 0x3F;
-        if (!((DIFF(r, g) < 5) && (DIFF(r, b) < 5) && (DIFF(g, b) < 5)))
-        {
-            onlyGrayscale = false;
-        }
-    }
-    return !onlyGrayscale;
+    std::vector<u8> missionsWithTarget = {
+        8, // day 15
+        11, // day 22
+        12, // day 23
+        13, // day 24
+        14, // day 25
+        16, 17, 19, // day 51
+        20, // day 71
+        22, // day 73
+        25, 26, // day 75
+        29, // day 94
+        31, // day 96
+        32, 24, // day 97
+        40, 41, // day 119
+        43, // day 150
+        44, // day 151
+        48, // day 152
+        50, // day 171
+        51, // day 172
+        53, 54, // day 173
+        56, // day 193
+        57, 58, 60, // day 194
+        61, // day 224
+        62, 63, 64, // day 225
+        65, // day 255
+        67, // dau 256
+        69, 70, // day 277
+        74, // day 297
+        75, // day 298
+        76, // day 299
+        77, // day 300
+        78, 79, 80, // day 301
+        82, // day 321
+        84, 86, 87, // day 322
+        88, // day 352
+        89, // day 353
+    };
+    u8 curMission = getCurrentMission();
+    return std::find(missionsWithTarget.begin(), missionsWithTarget.end(), curMission) != missionsWithTarget.end();
 }
 
 #undef DIFF(val1, val2)
