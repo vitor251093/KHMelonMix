@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <sstream>
 
 #include "plugins/PluginManager.h"
 
