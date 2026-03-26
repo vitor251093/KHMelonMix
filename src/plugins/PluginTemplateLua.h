@@ -40,7 +40,6 @@ public:
     std::vector<ShapeData2D> renderer_topScreen_2DShapes();
     std::vector<ShapeData3D> renderer_topScreen_3DShapes();
     int renderer_brightnessMode();
-    bool renderer_showOriginalUI();
 
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
     void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask);

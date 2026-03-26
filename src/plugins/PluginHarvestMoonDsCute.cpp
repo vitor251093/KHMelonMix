@@ -176,11 +176,7 @@ std::vector<ShapeData2D> PluginHarvestMoonDsCute::renderer_topScreen_2DShapes() 
 }
 
 int PluginHarvestMoonDsCute::renderer_brightnessMode() {
-    return brightnessMode_TopScreen;
-}
-
-bool PluginHarvestMoonDsCute::renderer_showOriginalUI() {
-    return true;
+    return brightnessMode_Default;
 }
 
 void PluginHarvestMoonDsCute::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {

@@ -50,12 +50,10 @@ layout(std140) uniform ShapeBlock2D {
 };
 
 uniform float currentAspectRatio;
-uniform float forcedAspectRatio;
 
 uniform int hudScale;
-uniform bool showOriginalHud;
 uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
-uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = horizontal, 4 = no brightness
+uniform int brightnessMode;
 
 uniform int shapeCount;
 
@@ -83,10 +81,15 @@ smooth in vec3 fTexcoord;
 out vec4 oTopColor;
 out vec4 oBottomColor;
 
-ivec4 AdditionalMasterBrightness(ivec4 color, int brightmode, int evy)
+ivec4 MasterBrightnessWithAlpha(ivec4 color, int dispMode, int brightmode, int evy)
 {
     int alpha = color.a;
 
+    if (dispMode == 0)
+    {
+        // screen disabled (white)
+        return ivec4(0xFF, 0xFF, 0xFF, alpha);
+    }
     if (brightmode == 1)
     {
         // up
@@ -142,26 +145,29 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
     return validArea;
 }
 
+ivec4 applyBrightness(ivec4 color, bool isBottomScreen) {
+    int offset = isBottomScreen ? 0 : 4;
+    if (((brightnessMode & (1 << offset)) > 0 && (uBrightModeA == 1 || uDispModeA == 0)) ||
+        ((brightnessMode & (2 << offset)) > 0 && (uBrightModeA == 2))) {
+        color = MasterBrightnessWithAlpha(color, uDispModeA, uBrightModeA, uBrightFactorA);
+    }
+    if (((brightnessMode & (4 << offset)) > 0 && (uBrightModeB == 1 || uDispModeB == 0)) ||
+        ((brightnessMode & (8 << offset)) > 0 && (uBrightModeB == 2))) {
+        color = MasterBrightnessWithAlpha(color, uDispModeB, uBrightModeB, uBrightFactorB);
+    }
+    return color;
+}
+
 ivec4 getRegularScreenColor(vec2 textureBeginning, bool isBottomScreen) {
     if (isBottomScreen) {
         ivec4 color = ivec4(texture(MainInputTexB, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
         color.a = 255;
-
-        if (uDispModeB != 0)
-            color = AdditionalMasterBrightness(color, uBrightModeB, uBrightFactorB);
-
+        color = applyBrightness(color, isBottomScreen);
         return color;
     }
     ivec4 color = ivec4(texture(MainInputTexA, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
     color.a = 255;
-
-    if (uDispModeB != 0 && brightnessMode == 3) {
-        // if the bottom screen darkens, darken both screens
-        if (uBrightModeB == 2 && uBrightModeA != 2) {
-            color = AdditionalMasterBrightness(color, uBrightModeB, uBrightFactorB);
-        }
-    }
-
+    color = applyBrightness(color, isBottomScreen);
     return color;
 }
 
@@ -171,24 +177,6 @@ ivec4 getTopScreenColor(vec2 pos)
     float xpos = pos.x * 256.0;
     float ypos = pos.y * 192.0;
 
-    if (showOriginalHud) {
-        vec2 textureBeginning = vec2(xpos, ypos);
-        if (currentAspectRatio != forcedAspectRatio) {
-            float heightScale = (1.0/forcedAspectRatio)/currentAspectRatio;
-
-            float sourceScreenWidth = 256.0;
-            float screenLeftMargin = (sourceScreenWidth - sourceScreenWidth/heightScale)/2;
-            float screenFinalWidth = fTexcoord.x/heightScale; // TODO: KH fTexcoord shouldn't be used here
-
-            textureBeginning.x = int(screenLeftMargin + screenFinalWidth);
-            if (textureBeginning.x < 0 || textureBeginning.x > screenFinalWidth) {
-                return ivec4(0, 0, 0, 0);
-            }
-        }
-
-        return getRegularScreenColor(textureBeginning.xy, false);
-    }
-
     float heightScale = 1.0/currentAspectRatio;
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
@@ -196,7 +184,7 @@ ivec4 getTopScreenColor(vec2 pos)
     float uiTexScale = (6.0/((float(hudScale) - 4) / 2 + 4));
     vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
 
-    ivec4 currentColor = ivec4(texture(MainInputTexA, fTexcoord.xy, 0) * 255.0);
+    ivec4 currentColor = getRegularScreenColor(vec2(xpos, ypos), false);
 
     for (int shapeIndex = shapeCount - 1; shapeIndex >= 0; shapeIndex--) {
         vec4 squareFinalCoords = shapes[shapeIndex].squareFinalCoords;
@@ -307,11 +295,6 @@ ivec4 getTopScreenColor(vec2 pos)
                 }
             }
 
-            // TODO: KH brightnessMode_Auto
-            /*if (brightnessMode == 6) { // brightnessMode_Auto
-                color = applyBrightness(color, ivec4(texelFetch(ScreenTex, ivec2(256*3, int(textureBeginning.y)), 0)));
-            }*/
-
             // manipulate transparency
             if ((effects & 0x20) != 0)
             {
@@ -351,8 +334,13 @@ ivec4 getTopScreenColor(vec2 pos)
     return currentColor;
 }
 
-ivec3 MasterBrightness(ivec3 color, int brightmode, int evy)
+ivec3 MasterBrightness(ivec3 color, int dispMode, int brightmode, int evy)
 {
+    if (dispMode == 0)
+    {
+        // screen disabled (white)
+        return ivec3(63, 63, 63);
+    }
     if (brightmode == 1)
     {
         // up
@@ -369,51 +357,37 @@ ivec3 MasterBrightness(ivec3 color, int brightmode, int evy)
 
 void main()
 {
-    // ivec4 col_main = ivec4(texture(MainInputTexA, fTexcoord.xy, 0) * 255.0) >> 2;
-    ivec4 col_main = getTopScreenColor(fTexcoord.xy) >> 2;
     ivec4 col_sub = ivec4(texture(MainInputTexB, fTexcoord.xy, 0) * 255.0) >> 2;
 
     ivec3 output_main, output_sub;
 
-    if (uDispModeA == 0)
-    {
-        // screen disabled (white)
-        output_main = ivec3(63, 63, 63);
-    }
-    else if (uDispModeA == 1)
+    if (uDispModeA <= 1)
     {
         // BG/OBJ layers
+        ivec4 col_main = getTopScreenColor(fTexcoord.xy);
+        // ivec4 col_main = ivec4(texture(MainInputTexA, fTexcoord.xy, 0) * 255.0);
         output_main = col_main.rgb;
     }
     else
     {
         // VRAM display / mainmem FIFO
         output_main = ivec3(texture(AuxInputTex, vec3(fTexcoord.xz, uAuxLayer)).rgb * uAuxColorFactor);
-    }
 
-    if (uDispModeB == 0)
-    {
-        // screen disabled (white)
-        output_sub = ivec3(63, 63, 63);
-    }
-    else
-    {
-        // BG/OBJ layers
-        output_sub = col_sub.rgb;
-    }
-
-    if (uDispModeA != 0) {
-        if (brightnessMode == 2) {
-            output_main = MasterBrightness(output_main, uBrightModeB, uBrightFactorB);
+        if (((uDispModeA == 0 || uBrightModeA == 1) && (brightnessMode & (1 << 4)) > 0) ||
+            (uBrightModeA == 2 && (brightnessMode & (2 << 4)) > 0)) {
+            output_main = MasterBrightness(output_main, uDispModeA, uBrightModeA, uBrightFactorA);
         }
-        else {
-            output_main = MasterBrightness(output_main, uBrightModeA, uBrightFactorA);
+        if (((uDispModeB == 0 || uBrightModeB == 1) && (brightnessMode & (4 << 4)) > 0) ||
+            (uBrightModeB == 2 && (brightnessMode & (8 << 4)) > 0)) {
+            output_main = MasterBrightness(output_main, uDispModeB, uBrightModeB, uBrightFactorB);
         }
-    }
-    if (uDispModeB != 0)
-        output_sub = MasterBrightness(output_sub, uBrightModeB, uBrightFactorB);
 
-    output_main = (output_main << 2) | (output_main >> 6);
+        output_main = (output_main << 2) | (output_main >> 6);
+    }
+
+    // BG/OBJ layers
+    output_sub = col_sub.rgb;
+    output_sub = MasterBrightness(output_sub, uDispModeB, uBrightModeB, uBrightFactorB);
     output_sub = (output_sub << 2) | (output_sub >> 6);
 
     int line = int(fTexcoord.y * 192);

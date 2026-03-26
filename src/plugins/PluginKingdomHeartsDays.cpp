@@ -1865,59 +1865,25 @@ int PluginKingdomHeartsDays::renderer_brightnessMode()
     }
 
     if (_ShouldHideScreenForTransitions) {
-        return brightnessMode_BlackScreen;
+        return brightnessMode_None;
     }
     if (GameScene == gameScene_PauseMenu                ||
         GameScene == gameScene_InGameWithDouble3D       ||
         GameScene == gameScene_MultiplayerMissionReview ||
         GameScene == gameScene_Shop                     ||
         GameScene == gameScene_RoxasThoughts            ||
-        GameScene == gameScene_DeathScreen              ||
-        GameScene == gameScene_Other) {
+        GameScene == gameScene_DeathScreen) {
         return brightnessMode_TopScreen;
     }
-    if (GameScene == gameScene_IntroLoadMenu ||
-        GameScene == gameScene_Tutorial      ||
-        GameScene == gameScene_LoadingScreen) {
-        return brightnessMode_BottomScreen;
-    }
-    if (GameScene == gameScene_Intro ||
-        GameScene == gameScene_TitleScreen ||
-        GameScene == gameScene_TheEnd) {
-        return brightnessMode_Horizontal;
-    }
-    if (GameScene == gameScene_Cutscene) {
-        return brightnessMode_Auto;
+    if (GameScene == gameScene_TitleScreen) {
+        return compoundBrightnessMode((brightnessModeComponents_BottomScreenBlack | brightnessModeComponents_TopScreenWhite | brightnessModeComponents_TopScreenBlack),
+                                    (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack));
     }
     if (GameScene == gameScene_WorldSelector) {
-        return brightnessMode_Auto;
+        return compoundBrightnessMode((brightnessModeComponents_TopScreenWhite | brightnessModeComponents_TopScreenBlack),
+                                    (brightnessModeComponents_TopScreenBlack | brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack));
     }
     return brightnessMode_Default;
-}
-
-float PluginKingdomHeartsDays::renderer_forcedAspectRatio()
-{
-    if (!SingleScreenMode && shouldPreserveDsTopScreenWhileOnDualScreenModeForGameScene()) {
-        return (4.0/3);
-    }
-    return (GameScene == gameScene_DayCounter) ? (4.0/3) : AspectRatio;
-}
-
-bool PluginKingdomHeartsDays::renderer_showOriginalUI()
-{
-    if (!SingleScreenMode && shouldPreserveDsTopScreenWhileOnDualScreenModeForGameScene()) {
-        return true;
-    }
-    return false;
-}
-
-bool PluginKingdomHeartsDays::shouldPreserveDsTopScreenWhileOnDualScreenModeForGameScene()
-{
-    return GameScene != gameScene_InGameWithMap &&
-           GameScene != gameScene_DeathScreen &&
-           GameScene != gameScene_PauseMenu &&
-           GameScene != gameScene_Tutorial &&
-           GameScene != gameScene_InGameWithDouble3D;
 }
 
 void PluginKingdomHeartsDays::applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress)

@@ -50,12 +50,10 @@ layout(std140) uniform ShapeBlock2D {
 };
 
 uniform float currentAspectRatio;
-uniform float forcedAspectRatio;
 
 uniform int hudScale;
-uniform bool showOriginalHud;
 uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
-uniform int brightnessMode; // 0 = default, 1 = top screen, 2 = bottom screen, 3 = horizontal, 4 = no brightness
+uniform int brightnessMode;
 
 uniform int shapeCount;
 uniform int screenIndex;

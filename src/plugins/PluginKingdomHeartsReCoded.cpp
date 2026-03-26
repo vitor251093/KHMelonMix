@@ -1880,57 +1880,9 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode()
     }
 
     if (_ShouldHideScreenForTransitions) {
-        return brightnessMode_BlackScreen;
-    }
-    if (GameScene == gameScene_InGameWithMap            ||
-        GameScene == gameScene_PauseMenu                ||
-        GameScene == gameScene_CutsceneWithStaticImages ||
-        GameScene == gameScene_InGameSaveMenu           ||
-        GameScene == gameScene_InGameDialog             ||
-        GameScene == gameScene_InGameOlympusBattle      ||
-        GameScene == gameScene_ResultScreen             ||
-        GameScene == gameScene_Other2D) {
-        return brightnessMode_TopScreen;
-    }
-    if (GameScene == gameScene_Tutorial ||
-        GameScene == gameScene_WorldSelection) {
-        return brightnessMode_BottomScreen;
-    }
-    if (GameScene == gameScene_Intro          ||
-        GameScene == gameScene_WorldSelection ||
-        GameScene == gameScene_Shop           ||
-        GameScene == gameScene_TheEnd         ||
-        GameScene == gameScene_Other2D        ||
-        GameScene == gameScene_Other) {
-        return brightnessMode_Horizontal;
-    }
-    if (GameScene == gameScene_Cutscene) {
-        return brightnessMode_DisableBrightnessControl;
-    }
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        switch (mainMenuView) {
-            case 0:  // nothing
-            case 2:  // main menu root (save menu)
-            case 6:  // config
-            case 13: // quest list
-            case 17: // challenge view
-                return brightnessMode_TopScreen;
-
-            default:
-                return brightnessMode_Horizontal;
-        }
+        return brightnessMode_None;
     }
     return brightnessMode_Default;
-}
-
-float PluginKingdomHeartsReCoded::renderer_forcedAspectRatio()
-{
-    return (GameScene == gameScene_CutsceneWithStaticImages) ? (4.0/3) : AspectRatio;
-};
-
-bool PluginKingdomHeartsReCoded::renderer_showOriginalUI() {
-    return false;
 }
 
 void PluginKingdomHeartsReCoded::onLoadState() {

@@ -37,13 +37,27 @@ enum
 
 enum
 {
-    brightnessMode_Default,
-    brightnessMode_TopScreen,
-    brightnessMode_BottomScreen,
-    brightnessMode_Horizontal,
-    brightnessMode_BlackScreen,
-    brightnessMode_DisableBrightnessControl,
-    brightnessMode_Auto
+    brightnessModeComponents_None = 0,
+    brightnessModeComponents_TopScreenWhite = 1,
+    brightnessModeComponents_TopScreenBlack = 2,
+    brightnessModeComponents_BottomScreenWhite = 4,
+    brightnessModeComponents_BottomScreenBlack = 8,
+};
+
+inline constexpr int compoundBrightnessMode(int top, int bottom)
+{
+    return (top << 4 | bottom);
+}
+
+enum
+{
+    brightnessMode_None = 0,
+    brightnessMode_TopScreen = compoundBrightnessMode((brightnessModeComponents_TopScreenWhite    | brightnessModeComponents_TopScreenBlack   ),
+                                                    (brightnessModeComponents_TopScreenWhite    | brightnessModeComponents_TopScreenBlack   )),
+    brightnessMode_BottomScreen = compoundBrightnessMode((brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack),
+                                                       (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack)),
+    brightnessMode_Default = compoundBrightnessMode((brightnessModeComponents_TopScreenWhite    | brightnessModeComponents_TopScreenBlack   ),
+                                                  (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack)),
 };
 
 enum

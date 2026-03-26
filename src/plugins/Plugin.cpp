@@ -143,27 +143,21 @@ void Plugin::gpuOpenGL_2DCompositorFS_initVariables(int ScreenIndex, GLuint Comp
     CompUboLoc[CompShader] = uboBuffer;
 
     CompGpuLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
-    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
-    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
-    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "brightnessMode");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "shapeCount");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "screenIndex");
+    CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "hudScale");
+    CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "brightnessMode");
+    CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "shapeCount");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenIndex");
 }
 
 void Plugin::gpuOpenGL_2DCompositorFS_updateVariables(int ScreenIndex, GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    float forcedAspectRatio = renderer_forcedAspectRatio() / (4.f / 3.f);
-    bool showOriginalHud = renderer_showOriginalUI();
     int brightnessMode = renderer_brightnessMode();
 
     glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
-    glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
-    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
-    glUniform1i(CompGpuLoc[CompShader][3], showOriginalHud ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][4], brightnessMode);
-    glUniform1i(CompGpuLoc[CompShader][5], current2DShapes.size());
-    glUniform1i(CompGpuLoc[CompShader][6], ScreenIndex);
+    glUniform1i(CompGpuLoc[CompShader][1], UIScale);
+    glUniform1i(CompGpuLoc[CompShader][2], brightnessMode);
+    glUniform1i(CompGpuLoc[CompShader][3], current2DShapes.size());
+    glUniform1i(CompGpuLoc[CompShader][4], ScreenIndex);
 
     current2DShapes.resize(SHAPES_DATA_ARRAY_SIZE);
     auto shadersData = current2DShapes.data();
@@ -195,25 +189,19 @@ void Plugin::gpuOpenGL_FinalPassFS_initVariables(GLuint CompShader) {
     CompUboCompositionLoc[CompShader] = uboBuffer;
 
     CompGpuCompositionLoc[CompShader][0] = glGetUniformLocation(CompShader, "currentAspectRatio");
-    CompGpuCompositionLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
-    CompGpuCompositionLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
-    CompGpuCompositionLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
-    CompGpuCompositionLoc[CompShader][4] = glGetUniformLocation(CompShader, "brightnessMode");
-    CompGpuCompositionLoc[CompShader][5] = glGetUniformLocation(CompShader, "shapeCount");
+    CompGpuCompositionLoc[CompShader][1] = glGetUniformLocation(CompShader, "hudScale");
+    CompGpuCompositionLoc[CompShader][2] = glGetUniformLocation(CompShader, "brightnessMode");
+    CompGpuCompositionLoc[CompShader][3] = glGetUniformLocation(CompShader, "shapeCount");
 }
 
 void Plugin::gpuOpenGL_FinalPassFS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
-    float forcedAspectRatio = renderer_forcedAspectRatio() / (4.f / 3.f);
-    bool showOriginalHud = renderer_showOriginalUI();
     int brightnessMode = renderer_brightnessMode();
 
     glUniform1f(CompGpuCompositionLoc[CompShader][0], aspectRatio);
-    glUniform1f(CompGpuCompositionLoc[CompShader][1], forcedAspectRatio);
-    glUniform1i(CompGpuCompositionLoc[CompShader][2], UIScale);
-    glUniform1i(CompGpuCompositionLoc[CompShader][3], showOriginalHud ? 1 : 0);
-    glUniform1i(CompGpuCompositionLoc[CompShader][4], brightnessMode);
-    glUniform1i(CompGpuCompositionLoc[CompShader][5], currentCompositionShapes.size());
+    glUniform1i(CompGpuCompositionLoc[CompShader][1], UIScale);
+    glUniform1i(CompGpuCompositionLoc[CompShader][2], brightnessMode);
+    glUniform1i(CompGpuCompositionLoc[CompShader][3], currentCompositionShapes.size());
 
     currentCompositionShapes.resize(SHAPES_DATA_ARRAY_SIZE);
     auto shadersData = currentCompositionShapes.data();
