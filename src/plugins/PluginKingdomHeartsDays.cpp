@@ -1875,6 +1875,10 @@ int PluginKingdomHeartsDays::renderer_brightnessMode()
         GameScene == gameScene_DeathScreen) {
         return brightnessMode_TopScreen;
     }
+    if (GameScene == gameScene_IntroLoadMenu) {
+        return compoundBrightnessMode((brightnessModeComponents_TopScreenWhite | brightnessModeComponents_TopScreenBlack | brightnessModeComponents_BottomScreenBlack),
+                                    (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack));
+    }
     if (GameScene == gameScene_TitleScreen) {
         return compoundBrightnessMode((brightnessModeComponents_BottomScreenBlack | brightnessModeComponents_TopScreenWhite | brightnessModeComponents_TopScreenBlack),
                                     (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack));
