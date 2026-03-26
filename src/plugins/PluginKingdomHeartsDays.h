@@ -183,11 +183,6 @@ private:
     u32 getCurrentMap();
     bool isSaveLoaded();
 
-    bool isBufferBlack(unsigned int* buffer);
-    void* topScreen2DTexture();
-    void* bottomScreen2DTexture();
-    bool isBottomScreen2DTextureBlack();
-
     bool ShouldShowBottomScreen = false;
     bool isCutsceneLikeDialogVisible();
     bool isDialogVisible();

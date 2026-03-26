@@ -656,7 +656,7 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
 
         _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
         _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
-        _ignore3DOnBottomScreen = isBottomScreen2DTextureBlack();
+        _ignore3DOnBottomScreen = false; // isBottomScreen2DTextureBlack();
 
         ShouldShowBottomScreen = _hasVisible3DOnBottomScreen && (!_ignore3DOnBottomScreen || !_priorIgnore3DOnBottomScreen || !_priorPriorIgnore3DOnBottomScreen);
 
@@ -1858,7 +1858,6 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
     return state;
 };
 
-// TODO: KH renderer_screenLayout needs to be deprecated; screen layouts should be done using shapes
 int PluginKingdomHeartsDays::renderer_screenLayout()
 {
     if (!SingleScreenMode) {
@@ -2280,49 +2279,6 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
     }
 }
 
-bool PluginKingdomHeartsDays::isBufferBlack(unsigned int* buffer)
-{
-    if (!buffer) {
-        return true;
-    }
-
-    bool foundAny = false;
-    for (int x = 0; x < 256; x+=4) {
-        for (int y = 0; y < 192; y+=4) {
-            if (has2DOnTopOf3DAt(buffer, x, y)) {
-                foundAny = true;
-                u32 color = getPixel(buffer, x, y, 0) & 0xFFFFFF;
-                if (!(color == 0 || color == 0x000080 || color == 0x010000 || (color & 0xFFFFE0) == 0x018000)) {
-                    return false;
-                }
-            }
-        }
-    }
-
-    return foundAny;
-}
-
-// TODO: KH Everything that depends on this function, shouldn't
-void* PluginKingdomHeartsDays::topScreen2DTexture()
-{
-    void* topBuffer; void* bottomBuffer;
-    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return topBuffer;
-}
-
-// TODO: KH Everything that depends on this function, shouldn't
-void* PluginKingdomHeartsDays::bottomScreen2DTexture()
-{
-    void* topBuffer; void* bottomBuffer;
-    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return topBuffer; // TODO: KH WTF
-}
-
-bool PluginKingdomHeartsDays::isBottomScreen2DTextureBlack()
-{
-    return isBufferBlack((unsigned int*)bottomScreen2DTexture());
-}
-
 bool PluginKingdomHeartsDays::isCutsceneLikeDialogVisible()
 {
     bool _isCharacterControllable = nds->ARM7Read8(
@@ -2468,13 +2424,18 @@ bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
     return isCutsceneLikeDialogVisible();
 }
 
+// TODO: KH Needs to be refactored
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 {
+    return false;
+
+    /*
     void* buffer = bottomScreen2DTexture();
     u32 pixel1 = getPixel(buffer, 206, 134, 0);
     u32 pixel2 = getPixel(buffer, 206, 140, 0);
     return ((pixel1 >> 0) & 0x3F) < 5 && ((pixel1 >> 8) & 0x3F) < 5 && ((pixel1 >> 16) & 0x3F) < 5 &&
            ((pixel2 >> 0) & 0x3F) < 5 && ((pixel2 >> 8) & 0x3F) < 5 && ((pixel2 >> 16) & 0x3F) < 5;
+    */
 }
 
 int PluginKingdomHeartsDays::dialogBoxHeight()
@@ -2482,6 +2443,7 @@ int PluginKingdomHeartsDays::dialogBoxHeight()
     // TODO: KH Temporary workaround until we can detect the dialog height again
     return 0;
 
+    /*
     void* buffer = topScreen2DTexture();
     int x = 100;
     int topY = 0;
@@ -2499,6 +2461,7 @@ int PluginKingdomHeartsDays::dialogBoxHeight()
         }
     }
     return bottomY - topY;
+    */
 }
 
 bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(void* buffer, int x, int y)
