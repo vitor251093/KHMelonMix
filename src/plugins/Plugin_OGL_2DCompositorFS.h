@@ -349,6 +349,8 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
 vec4 CompositeLayers()
 {
     vec2 coord2d = fTexcoord.xy;
+    vec2 coord2dBg0 = fTexcoord.xy;
+    ivec2 coord3d = ivec2(fTexcoord.zw);
     bool useShapes = (screenIndex == 1 && shapeCount != 0);
     bool shouldReturnNo2DElements = false;
     float opacityModifier2d = 1.0;
@@ -425,6 +427,12 @@ vec4 CompositeLayers()
             }
 
             coord2d = vec2(shapes[shapeIndex].squareInitialCoords.xy) + finalPos;
+            if ((effects & 0x800) != 0) {
+                coord2dBg0 = coord2d;
+            }
+            if ((effects & 0x1000) != 0) {
+                coord3d = ivec2(coord2d * uScaleFactor);
+            }
             shouldReturnNo2DElements = false;
 
             // TODO: KH single color to alpha
@@ -459,7 +467,6 @@ vec4 CompositeLayers()
         }
     }
 
-    ivec2 coord3d = ivec2(fTexcoord.zw);
     vec2 bgcoord = vec2(coord2d.x, fract(coord2d.y));
     ivec2 coord2dInt = ivec2(coord2d.xy);
     int xpos = coord2dInt.x;
@@ -474,8 +481,8 @@ vec4 CompositeLayers()
     if (uScanline[line].MosaicSize.x > 0)
         MosaicX = texelFetch(MosaicTex, ivec2(bgcoord.x, uScanline[line].MosaicSize.x), 0).r;
 
-    vec2 bg0Bgcoord = vec2(fTexcoord.x, fract(fTexcoord.y));
-    int bg0Line = int(fTexcoord.y);
+    vec2 bg0Bgcoord = vec2(coord2dBg0.x, fract(coord2dBg0.y));
+    int bg0Line = int(coord2dBg0.y);
 
     vec4 layercol[6];
     layercol[0] = BG0CalcAndFetch(bg0Bgcoord, bg0Line);

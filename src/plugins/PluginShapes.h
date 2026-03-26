@@ -469,6 +469,14 @@ public:
         shapeData.effects |= 0x400;
         return *this;
     }
+    ShapeBuilder2D& applyToBg0LayerToo() {
+        shapeData.effects |= 0x800;
+        return *this;
+    }
+    ShapeBuilder2D& applyToObjLayerToo() {
+        shapeData.effects |= 0x1000;
+        return *this;
+    }
     ShapeBuilder2D& mirror(int mirror) {
         shapeData.effects |= mirror;
         return *this;

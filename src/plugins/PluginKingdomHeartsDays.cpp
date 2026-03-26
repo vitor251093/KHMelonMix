@@ -1379,6 +1379,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_topScreen_2DShapes() 
         case gameScene_DayCounter:
         case gameScene_RoxasThoughts:
             shapes.push_back(ShapeBuilder2D::square()
+                    .applyToBg0LayerToo()
+                    .applyToObjLayerToo()
                     .placeAtCorner(corner_Center)
                     .hudScale(hudScale)
                     .preserveDsScale()
