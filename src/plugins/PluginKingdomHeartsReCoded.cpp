@@ -1771,20 +1771,6 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout()
     }
 
     switch (GameScene) {
-        case gameScene_InGameWithMap:
-        case gameScene_PauseMenu:
-        case gameScene_CutsceneWithStaticImages:
-        case gameScene_InGameSaveMenu:
-        case gameScene_InGameDialog:
-        case gameScene_InGameOlympusBattle:
-        case gameScene_ResultScreen:
-            return screenLayout_Top;
-
-        case gameScene_IntroLoadMenu:
-        case gameScene_Tutorial:
-        case gameScene_LoadingScreen:
-            return screenLayout_Bottom;
-
         case gameScene_Intro:
         case gameScene_TitleScreen:
         case gameScene_WorldSelection:
