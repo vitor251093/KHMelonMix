@@ -1161,6 +1161,37 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
                     .hudScale(hudScale)
                     .build(aspectRatio));
             break;
+
+        case gameScene_Shop:
+        case gameScene_TheEnd: {
+            float doubleScreenScale = aspectRatio * 0.5;
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Left)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Right)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .withSize(1, 1)
+                    .placeAtCorner(corner_TopLeft)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .repeatAsBackground()
+                    .build(aspectRatio));
+
+            break;
+        }
     }
 
     return shapes;
@@ -1774,10 +1805,6 @@ int PluginKingdomHeartsDays::renderer_screenLayout()
         case gameScene_MultiplayerMissionReview:
             return screenLayout_BothVertical;
 
-        case gameScene_Shop:
-        case gameScene_TheEnd:
-            return screenLayout_BothHorizontal;
-        
         case gameScene_Cutscene:
             if (nds->ARM7Read8(getAnyByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10) {
                 return screenLayout_BothHorizontal;
