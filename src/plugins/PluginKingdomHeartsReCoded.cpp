@@ -791,16 +791,55 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_composition()
 
             break;
 
-        case gameScene_Cutscene:
-            if ((GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
+        case gameScene_Cutscene: {
+            if ((GameSceneState & (1 << gameSceneState_topScreenCutscene)) == 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
                         .placeAtCorner(corner_Center)
                         .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
+
+                break;
             }
+            if ((GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) == 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                break;
+            }
+
+            float doubleScreenScale = aspectRatio * 0.5;
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Left)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Right)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .withSize(8, 8)
+                    .placeAtCorner(corner_TopLeft)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .repeatAsBackground()
+                    .build(aspectRatio));
+
             break;
+        }
 
         case gameScene_InGameSaveMenu:
             {
@@ -1060,44 +1099,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_composition()
 
             break;
 
-        case gameScene_LoadingScreen:
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromBottomScreen()
-                    .placeAtCorner(corner_BottomRight)
-                    .hudScale(hudScale)
-                    .build(aspectRatio));
-            break;
-
-    }
-
-    return shapes;
-}
-
-std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes() {
-    float aspectRatio = AspectRatio / (4.f / 3.f);
-    auto shapes = std::vector<ShapeData2D>();
-    float hudScale = (((float)UIScale) - 4) / 2 + 4;
-    int fullscreenMapTransitionDuration = 20;
-
-    switch (GameScene) {
-        case gameScene_Cutscene:
-            if ((GameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-            }
-            break;
-
-        case gameScene_CutsceneWithStaticImages:
-            shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-            break;
-
         case gameScene_InGameMenu: {
             u32 mainMenuView = getCurrentMainMenuView();
             switch (mainMenuView) {
@@ -1141,6 +1142,80 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes
             }
             break;
         }
+
+        case gameScene_Intro:
+        case gameScene_TitleScreen:
+        case gameScene_WorldSelection:
+        case gameScene_Shop:
+        case gameScene_TheEnd:
+        case gameScene_Other2D:
+        case gameScene_Other: {
+            float doubleScreenScale = aspectRatio * 0.5;
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Left)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Right)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .withSize(1, 1)
+                    .placeAtCorner(corner_TopLeft)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .repeatAsBackground()
+                    .build(aspectRatio));
+
+            break;
+        }
+
+        case gameScene_LoadingScreen:
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_BottomRight)
+                    .hudScale(hudScale)
+                    .build(aspectRatio));
+            break;
+
+    }
+
+    return shapes;
+}
+
+std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes() {
+    float aspectRatio = AspectRatio / (4.f / 3.f);
+    auto shapes = std::vector<ShapeData2D>();
+    float hudScale = (((float)UIScale) - 4) / 2 + 4;
+    int fullscreenMapTransitionDuration = 20;
+
+    switch (GameScene) {
+        case gameScene_Cutscene:
+            if ((GameSceneState & (1 << gameSceneState_topScreenCutscene)) > 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            }
+            break;
+
+        case gameScene_CutsceneWithStaticImages:
+            shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+            break;
 
         case gameScene_ResultScreen:
             // review/result screens of different kinds
@@ -1802,20 +1877,6 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout()
 {
     if (!SingleScreenMode) {
         return screenLayout_Top;
-    }
-
-    switch (GameScene) {
-        case gameScene_Intro:
-        case gameScene_TitleScreen:
-        case gameScene_WorldSelection:
-        case gameScene_Shop:
-        case gameScene_TheEnd:
-        case gameScene_Other2D:
-        case gameScene_Other:
-            return screenLayout_BothHorizontal;
-
-        case gameScene_Cutscene:
-            return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
     }
 
     return screenLayout_Top;

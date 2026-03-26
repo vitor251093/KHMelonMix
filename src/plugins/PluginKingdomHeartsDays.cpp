@@ -1195,6 +1195,36 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
                     .build(aspectRatio));
             break;
 
+        case gameScene_MultiplayerMissionReview: {
+            float doubleScreenScale = 0.5;
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Top)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Bottom)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .withSize(1, 1)
+                    .placeAtCorner(corner_TopLeft)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .repeatAsBackground()
+                    .build(aspectRatio));
+
+            break;
+        }
+
         case gameScene_Shop:
         case gameScene_TheEnd: {
             float doubleScreenScale = aspectRatio * 0.5;
@@ -1833,11 +1863,6 @@ int PluginKingdomHeartsDays::renderer_screenLayout()
 {
     if (!SingleScreenMode) {
         return screenLayout_Top;
-    }
-
-    switch (GameScene) {
-        case gameScene_MultiplayerMissionReview:
-            return screenLayout_BothVertical;
     }
 
     return screenLayout_Top;
