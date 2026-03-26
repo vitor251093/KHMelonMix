@@ -2186,7 +2186,20 @@ bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_horizontalDualScreen(i
     return true;
 }
 bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {
-    if (renderer_screenLayout() == screenLayout_BothHorizontal) {
+    if (GameScene == gameScene_InGameMenu) {
+        u32 mainMenuView = getCurrentMainMenuView();
+        switch (mainMenuView) {
+            case 6:  // config
+            case 13: // quest list
+            case 17: // challenge view
+                break;
+
+            default:
+                return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
+        }
+    }
+
+    if (GameScene == gameScene_TitleScreen || GameScene == gameScene_WorldSelection || GameScene == gameScene_Shop) {
         return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
     }
     return false;
