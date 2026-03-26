@@ -853,6 +853,37 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
     int fullscreenMapTransitionDuration = 20;
 
     switch (GameScene) {
+        case gameScene_Intro:
+        case gameScene_TitleScreen: {
+            float doubleScreenScale = aspectRatio * 0.5;
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Left)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Right)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .withSize(8, 8)
+                    .placeAtCorner(corner_TopLeft)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .repeatAsBackground()
+                    .build(aspectRatio));
+
+            break;
+        }
+
         case gameScene_IntroLoadMenu:
             renderer_composition_loadScreenMenu(&shapes, aspectRatio, hudScale);
             break;
@@ -1090,8 +1121,35 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
 
                     break;
                 }
-                default:
+                default: {
+                    float doubleScreenScale = aspectRatio * 0.5;
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .placeAtCorner(corner_Left)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .placeAtCorner(corner_Right)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+
+                    // background
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromPosition(248, 184)
+                            .withSize(8, 8)
+                            .placeAtCorner(corner_TopLeft)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .repeatAsBackground()
+                            .build(aspectRatio));
                     break;
+                }
             }
             break;
         }
@@ -1712,29 +1770,9 @@ int PluginKingdomHeartsDays::renderer_screenLayout()
     }
 
     switch (GameScene) {
-        case gameScene_SaveMenu:
-        case gameScene_ConfigMenu:
-        case gameScene_DayCounter:
-        case gameScene_RoxasThoughts:
-        case gameScene_InGameWithMap:
-        case gameScene_PauseMenu:
-        case gameScene_InGameWithDouble3D:
-        case gameScene_DeathScreen:
-        case gameScene_WorldSelector:
-        case gameScene_Other:
-            return screenLayout_Top;
-        
-        case gameScene_IntroLoadMenu:
-        case gameScene_Tutorial:
-        case gameScene_LoadingScreen:
-            return screenLayout_Bottom;
-        
         case gameScene_MultiplayerMissionReview:
             return screenLayout_BothVertical;
 
-        case gameScene_Intro:
-        case gameScene_TitleScreen:
-        case gameScene_InGameMenu:
         case gameScene_Shop:
         case gameScene_TheEnd:
             return screenLayout_BothHorizontal;
