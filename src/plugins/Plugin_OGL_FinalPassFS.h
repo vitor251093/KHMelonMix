@@ -142,107 +142,6 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
     return validArea;
 }
 
-vec3 getHorizontalDualScreen2DTextureCoordinates(float xpos, float ypos)
-{
-    int screenScale = 2;
-    vec2 texPosition3d = vec2(xpos*screenScale, ypos*screenScale);
-    float heightScale = 1.0/currentAspectRatio;
-    float widthScale = currentAspectRatio;
-    vec2 fixStretch = vec2(1.0, heightScale);
-
-    // screen 1
-    {
-        int sourceScreenHeight = 192;
-        int sourceScreenWidth = 256;
-        int sourceScreenTopMargin = 0;
-        int sourceScreenLeftMargin = 0;
-        int screenHeight = int(sourceScreenHeight*widthScale);
-        int screenWidth = sourceScreenWidth;
-        int screenTopMargin = (192*screenScale - screenHeight)/2;
-        int screenLeftMargin = 0;
-        if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) &&
-            texPosition3d.y <= (screenHeight + screenTopMargin) &&
-            texPosition3d.y >= screenTopMargin) {
-            vec2 result = fixStretch*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin));
-            return vec3(result.x, result.y, 1);
-        }
-    }
-
-    // screen 2
-    {
-        int sourceScreenHeight = 192;
-        int sourceScreenWidth = 256;
-        int sourceScreenTopMargin = 0;
-        int sourceScreenLeftMargin = 0;
-        int screenHeight = int(sourceScreenHeight*widthScale);
-        int screenWidth = sourceScreenWidth;
-        int screenTopMargin = (192*screenScale - screenHeight)/2;
-        int screenLeftMargin = 256;
-        if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) &&
-            texPosition3d.y <= (screenHeight + screenTopMargin) &&
-            texPosition3d.y >= screenTopMargin) {
-            vec2 result = fixStretch*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin));
-            return vec3(result.x, result.y, 2);
-        }
-    }
-
-
-    // nothing (clear screen)
-    return vec3(0, 0, 0);
-}
-
-vec3 getVerticalDualScreen2DTextureCoordinates(float xpos, float ypos)
-{
-    int screenScale = 2;
-    vec2 texPosition3d = vec2(xpos*screenScale, ypos*screenScale);
-    float heightScale = 1.0/currentAspectRatio;
-    float widthScale = currentAspectRatio;
-    vec2 fixStretch = vec2(widthScale, 1.0);
-
-    // screen 1
-    {
-        int sourceScreenHeight = 192;
-        int sourceScreenWidth = 256;
-        int sourceScreenTopMargin = 0;
-        int sourceScreenLeftMargin = 0;
-        int screenHeight = sourceScreenHeight;
-        int screenWidth = int(sourceScreenWidth*heightScale);
-        int screenTopMargin = 0;
-        int screenLeftMargin = (256*screenScale - screenWidth)/2;
-        if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) &&
-            texPosition3d.y <= (screenHeight + screenTopMargin) &&
-            texPosition3d.y >= screenTopMargin) {
-            vec2 result = fixStretch*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin));
-            return vec3(result.x, result.y, 1);
-        }
-    }
-
-    // screen 2
-    {
-        int sourceScreenHeight = 192;
-        int sourceScreenWidth = 256;
-        int sourceScreenTopMargin = 0;
-        int sourceScreenLeftMargin = 0;
-        int screenHeight = sourceScreenHeight;
-        int screenWidth = int(sourceScreenWidth*heightScale);
-        int screenTopMargin = 192;
-        int screenLeftMargin = (256*screenScale - screenWidth)/2;
-        if (texPosition3d.x >= screenLeftMargin &&
-            texPosition3d.x < (screenWidth + screenLeftMargin) &&
-            texPosition3d.y <= (screenHeight + screenTopMargin) &&
-            texPosition3d.y >= screenTopMargin) {
-            vec2 result = fixStretch*vec2(texPosition3d - vec2(screenLeftMargin, screenTopMargin));
-            return vec3(result.x, result.y, 2);
-        }
-    }
-
-    // nothing (clear screen)
-    return vec3(0, 0, 0);
-}
-
 ivec4 getRegularScreenColor(vec2 textureBeginning, bool isBottomScreen) {
     if (isBottomScreen) {
         ivec4 color = ivec4(texture(MainInputTexB, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
@@ -271,23 +170,6 @@ ivec4 getTopScreenColor(vec2 pos)
 {
     float xpos = pos.x * 256.0;
     float ypos = pos.y * 192.0;
-    if (screenLayout == 2) { // vertical
-        vec3 textureBeginning = getVerticalDualScreen2DTextureCoordinates(xpos, ypos);
-        if (textureBeginning.z == 0) {
-            return ivec4(0, 0, 0, 0);
-        }
-
-        return getRegularScreenColor(textureBeginning.xy, textureBeginning.z == 2);
-    }
-
-    if (screenLayout == 3) { // horizontal
-        vec3 textureBeginning = getHorizontalDualScreen2DTextureCoordinates(xpos, ypos);
-        if (textureBeginning.z == 0) {
-            return ivec4(0, 0, 0, 0);
-        }
-
-        return getRegularScreenColor(textureBeginning.xy, textureBeginning.z == 2);
-    }
 
     if (showOriginalHud) {
         vec2 textureBeginning = vec2(xpos, ypos);
@@ -304,7 +186,7 @@ ivec4 getTopScreenColor(vec2 pos)
             }
         }
 
-        return getRegularScreenColor(textureBeginning.xy, screenLayout == 1);
+        return getRegularScreenColor(textureBeginning.xy, false);
     }
 
     float heightScale = 1.0/currentAspectRatio;
