@@ -1098,15 +1098,49 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes
                         .build(aspectRatio));
             break;
 
-        case gameScene_InGameMenu:
-            // config and quest list; the others are in horizontal style
-            shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .force()
-                    .build(aspectRatio));
+        case gameScene_InGameMenu: {
+            u32 mainMenuView = getCurrentMainMenuView();
+            switch (mainMenuView) {
+                case 6:  // config
+                case 13: // quest list
+                case 17: // challenge view
+                    shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .force()
+                        .build(aspectRatio));
+                    break;
+
+                default:
+                    float doubleScreenScale = aspectRatio * 0.5;
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .placeAtCorner(corner_Left)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .placeAtCorner(corner_Right)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+
+                    // background
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .withSize(1, 1)
+                            .placeAtCorner(corner_TopLeft)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .repeatAsBackground()
+                            .build(aspectRatio));
+            }
             break;
+        }
 
         case gameScene_ResultScreen:
             // review/result screens of different kinds
@@ -1782,19 +1816,6 @@ int PluginKingdomHeartsReCoded::renderer_screenLayout()
 
         case gameScene_Cutscene:
             return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
-    }
-
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        switch (mainMenuView) {
-            case 6:  // config
-            case 13: // quest list
-            case 17: // challenge view
-                return screenLayout_Top;
-
-            default:
-                return screenLayout_BothHorizontal;
-        }
     }
 
     return screenLayout_Top;
