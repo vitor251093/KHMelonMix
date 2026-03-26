@@ -73,10 +73,6 @@ std::vector<ShapeData3D> PluginTemplate::renderer_topScreen_3DShapes() {
     return shapes;
 }
 
-int PluginTemplate::renderer_screenLayout() {
-    return screenLayout_Top;
-};
-
 int PluginTemplate::renderer_brightnessMode() {
     return brightnessMode_TopScreen;
 }

@@ -146,27 +146,24 @@ void Plugin::gpuOpenGL_2DCompositorFS_initVariables(int ScreenIndex, GLuint Comp
     CompGpuLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
     CompGpuLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
     CompGpuLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
-    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
-    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
-    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
-    CompGpuLoc[CompShader][7] = glGetUniformLocation(CompShader, "screenIndex");
+    CompGpuLoc[CompShader][4] = glGetUniformLocation(CompShader, "brightnessMode");
+    CompGpuLoc[CompShader][5] = glGetUniformLocation(CompShader, "shapeCount");
+    CompGpuLoc[CompShader][6] = glGetUniformLocation(CompShader, "screenIndex");
 }
 
 void Plugin::gpuOpenGL_2DCompositorFS_updateVariables(int ScreenIndex, GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     float forcedAspectRatio = renderer_forcedAspectRatio() / (4.f / 3.f);
     bool showOriginalHud = renderer_showOriginalUI();
-    int screenLayout = renderer_screenLayout();
     int brightnessMode = renderer_brightnessMode();
 
     glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
     glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
     glUniform1i(CompGpuLoc[CompShader][2], UIScale);
     glUniform1i(CompGpuLoc[CompShader][3], showOriginalHud ? 1 : 0);
-    glUniform1i(CompGpuLoc[CompShader][4], screenLayout);
-    glUniform1i(CompGpuLoc[CompShader][5], brightnessMode);
-    glUniform1i(CompGpuLoc[CompShader][6], current2DShapes.size());
-    glUniform1i(CompGpuLoc[CompShader][7], ScreenIndex);
+    glUniform1i(CompGpuLoc[CompShader][4], brightnessMode);
+    glUniform1i(CompGpuLoc[CompShader][5], current2DShapes.size());
+    glUniform1i(CompGpuLoc[CompShader][6], ScreenIndex);
 
     current2DShapes.resize(SHAPES_DATA_ARRAY_SIZE);
     auto shadersData = current2DShapes.data();
@@ -201,25 +198,22 @@ void Plugin::gpuOpenGL_FinalPassFS_initVariables(GLuint CompShader) {
     CompGpuCompositionLoc[CompShader][1] = glGetUniformLocation(CompShader, "forcedAspectRatio");
     CompGpuCompositionLoc[CompShader][2] = glGetUniformLocation(CompShader, "hudScale");
     CompGpuCompositionLoc[CompShader][3] = glGetUniformLocation(CompShader, "showOriginalHud");
-    CompGpuCompositionLoc[CompShader][4] = glGetUniformLocation(CompShader, "screenLayout");
-    CompGpuCompositionLoc[CompShader][5] = glGetUniformLocation(CompShader, "brightnessMode");
-    CompGpuCompositionLoc[CompShader][6] = glGetUniformLocation(CompShader, "shapeCount");
+    CompGpuCompositionLoc[CompShader][4] = glGetUniformLocation(CompShader, "brightnessMode");
+    CompGpuCompositionLoc[CompShader][5] = glGetUniformLocation(CompShader, "shapeCount");
 }
 
 void Plugin::gpuOpenGL_FinalPassFS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     float forcedAspectRatio = renderer_forcedAspectRatio() / (4.f / 3.f);
     bool showOriginalHud = renderer_showOriginalUI();
-    int screenLayout = renderer_screenLayout();
     int brightnessMode = renderer_brightnessMode();
 
     glUniform1f(CompGpuCompositionLoc[CompShader][0], aspectRatio);
     glUniform1f(CompGpuCompositionLoc[CompShader][1], forcedAspectRatio);
     glUniform1i(CompGpuCompositionLoc[CompShader][2], UIScale);
     glUniform1i(CompGpuCompositionLoc[CompShader][3], showOriginalHud ? 1 : 0);
-    glUniform1i(CompGpuCompositionLoc[CompShader][4], screenLayout);
-    glUniform1i(CompGpuCompositionLoc[CompShader][5], brightnessMode);
-    glUniform1i(CompGpuCompositionLoc[CompShader][6], currentCompositionShapes.size());
+    glUniform1i(CompGpuCompositionLoc[CompShader][4], brightnessMode);
+    glUniform1i(CompGpuCompositionLoc[CompShader][5], currentCompositionShapes.size());
 
     currentCompositionShapes.resize(SHAPES_DATA_ARRAY_SIZE);
     auto shadersData = currentCompositionShapes.data();

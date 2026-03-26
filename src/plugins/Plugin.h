@@ -182,7 +182,6 @@ public:
     virtual std::vector<ShapeData3D> renderer_topScreen_3DShapes() { return std::vector<ShapeData3D>(); };
     virtual void renderer_afterBuildingShapes() { };
     virtual int renderer_gameSceneState() { return 0; };
-    virtual int renderer_screenLayout() { return 0; }; // TODO: KH Deprecated
     virtual int renderer_brightnessMode() { return 0; };
     virtual float renderer_forcedAspectRatio() {return AspectRatio;};
     virtual bool renderer_showOriginalUI() { return true; };

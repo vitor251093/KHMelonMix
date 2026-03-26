@@ -175,10 +175,6 @@ std::vector<ShapeData2D> PluginHarvestMoonDsCute::renderer_topScreen_2DShapes() 
     return shapes;
 }
 
-int PluginHarvestMoonDsCute::renderer_screenLayout() {
-    return screenLayout_Top;
-};
-
 int PluginHarvestMoonDsCute::renderer_brightnessMode() {
     return brightnessMode_TopScreen;
 }

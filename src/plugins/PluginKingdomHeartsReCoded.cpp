@@ -1873,15 +1873,6 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
     return state;
 }
 
-int PluginKingdomHeartsReCoded::renderer_screenLayout()
-{
-    if (!SingleScreenMode) {
-        return screenLayout_Top;
-    }
-
-    return screenLayout_Top;
-};
-
 int PluginKingdomHeartsReCoded::renderer_brightnessMode()
 {
     if (!SingleScreenMode) {

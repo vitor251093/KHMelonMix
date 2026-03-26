@@ -427,10 +427,6 @@ int run_ShapeBuilderTests(){
     return allGood;
 }
 
-int PluginTemplateLua::renderer_screenLayout() {
-    return screenLayout_Top;
-};
-
 int PluginTemplateLua::renderer_brightnessMode() {
     return brightnessMode_TopScreen;
 }

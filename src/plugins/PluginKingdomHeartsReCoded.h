@@ -37,7 +37,6 @@ public:
     std::vector<ShapeData2D> renderer_topScreen_2DShapes() override;
     std::vector<ShapeData3D> renderer_topScreen_3DShapes() override;
     int renderer_gameSceneState() override;
-    int renderer_screenLayout() override;
     int renderer_brightnessMode() override;
     float renderer_forcedAspectRatio() override;
     bool renderer_showOriginalUI() override;

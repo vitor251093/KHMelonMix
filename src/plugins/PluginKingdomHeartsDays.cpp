@@ -1858,15 +1858,6 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
     return state;
 };
 
-int PluginKingdomHeartsDays::renderer_screenLayout()
-{
-    if (!SingleScreenMode) {
-        return screenLayout_Top;
-    }
-
-    return screenLayout_Top;
-};
-
 int PluginKingdomHeartsDays::renderer_brightnessMode()
 {
     if (!SingleScreenMode) {
