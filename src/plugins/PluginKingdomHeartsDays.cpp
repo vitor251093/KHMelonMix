@@ -889,6 +889,39 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
             break;
 
         case gameScene_Cutscene:
+            if (nds->ARM7Read8(getAnyByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10 ||
+                (GameSceneState & (1 << gameSceneState_topScreenCutscene)) == 0 ||
+                (GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
+
+                float doubleScreenScale = aspectRatio * 0.5;
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Left)
+                        .sourceScale(doubleScreenScale, doubleScreenScale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                shapes.push_back(ShapeBuilder2D::square()
+                        .fromBottomScreen()
+                        .placeAtCorner(corner_Right)
+                        .sourceScale(doubleScreenScale, doubleScreenScale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // background
+                shapes.push_back(ShapeBuilder2D::square()
+                        .withSize(8, 8)
+                        .placeAtCorner(corner_TopLeft)
+                        .sourceScale(doubleScreenScale, doubleScreenScale)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .repeatAsBackground()
+                        .build(aspectRatio));
+
+                break;
+            }
+
             if ((GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
@@ -1341,7 +1374,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_topScreen_2DShapes() 
     float aspectRatio = AspectRatio / (4.f / 3.f);
     auto shapes = std::vector<ShapeData2D>();
     float hudScale = (((float)UIScale) - 4) / 2 + 4;
-    int fullscreenMapTransitionDuration = 20;
 
     switch (GameScene) {
         case gameScene_DayCounter:
@@ -1804,12 +1836,6 @@ int PluginKingdomHeartsDays::renderer_screenLayout()
     switch (GameScene) {
         case gameScene_MultiplayerMissionReview:
             return screenLayout_BothVertical;
-
-        case gameScene_Cutscene:
-            if (nds->ARM7Read8(getAnyByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10) {
-                return screenLayout_BothHorizontal;
-            }
-            return (detectTopScreenMobiCutscene() == nullptr) ? screenLayout_BothHorizontal : ((detectBottomScreenMobiCutscene() == nullptr) ? screenLayout_Top : screenLayout_BothHorizontal);
     }
 
     return screenLayout_Top;
