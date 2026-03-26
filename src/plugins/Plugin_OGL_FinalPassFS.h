@@ -83,6 +83,25 @@ smooth in vec3 fTexcoord;
 out vec4 oTopColor;
 out vec4 oBottomColor;
 
+ivec4 AdditionalMasterBrightness(ivec4 color, int brightmode, int evy)
+{
+    int alpha = color.a;
+
+    if (brightmode == 1)
+    {
+        // up
+        color += (((0xFF - color) * evy) >> 4);
+    }
+    else if (brightmode == 2)
+    {
+        // down
+        color -= (((color * evy) + 0xF) >> 4);
+    }
+
+    color.a = alpha;
+    return color;
+}
+
 bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, ivec2 squareInitialSize) {
     return (finalPos.x + finalPos.y >= cropSquareCorners[0]) &&
            ((0 - finalPos.x + squareInitialSize[0]) + finalPos.y >= cropSquareCorners[1]) &&
@@ -228,10 +247,22 @@ ivec4 getRegularScreenColor(vec2 textureBeginning, bool isBottomScreen) {
     if (isBottomScreen) {
         ivec4 color = ivec4(texture(MainInputTexB, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
         color.a = 255;
+
+        if (uDispModeB != 0)
+            color = AdditionalMasterBrightness(color, uBrightModeB, uBrightFactorB);
+
         return color;
     }
     ivec4 color = ivec4(texture(MainInputTexA, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
     color.a = 255;
+
+    if (uDispModeB != 0 && brightnessMode == 3) {
+        // if the bottom screen darkens, darken both screens
+        if (uBrightModeB == 2 && uBrightModeA != 2) {
+            color = AdditionalMasterBrightness(color, uBrightModeB, uBrightFactorB);
+        }
+    }
+
     return color;
 }
 

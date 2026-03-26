@@ -1763,6 +1763,7 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
     return state;
 };
 
+// TODO: KH renderer_screenLayout needs to be deprecated; screen layouts should be done using shapes
 int PluginKingdomHeartsDays::renderer_screenLayout()
 {
     if (!SingleScreenMode) {
@@ -1811,6 +1812,7 @@ int PluginKingdomHeartsDays::renderer_brightnessMode()
         return brightnessMode_BottomScreen;
     }
     if (GameScene == gameScene_Intro ||
+        GameScene == gameScene_TitleScreen ||
         GameScene == gameScene_TheEnd) {
         return brightnessMode_Horizontal;
     }
