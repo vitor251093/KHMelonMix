@@ -81,9 +81,27 @@ smooth in vec3 fTexcoord;
 out vec4 oTopColor;
 out vec4 oBottomColor;
 
-ivec4 MasterBrightnessWithAlpha(ivec4 color, int dispMode, int brightmode, int evy)
+ivec4 MasterBrightnessWithAlpha(ivec4 color, int dispMode, int brightmode, int evy, bool evyToAlpha)
 {
     int alpha = color.a;
+
+    if (evyToAlpha)
+    {
+        if (dispMode == 0)
+        {
+            // screen disabled (white)
+            alpha = 0;
+        }
+
+        if (brightmode == 1 || brightmode == 2)
+        {
+            int evyFactor = (evy == 0) ? 0 : ((evy + 1) << 3) - 1;
+            alpha = (alpha * evyFactor) / 255;
+        }
+
+        color.a = alpha;
+        return color;
+    }
 
     if (dispMode == 0)
     {
@@ -102,6 +120,27 @@ ivec4 MasterBrightnessWithAlpha(ivec4 color, int dispMode, int brightmode, int e
     }
 
     color.a = alpha;
+    return color;
+}
+
+ivec3 MasterBrightness(ivec3 color, int dispMode, int brightmode, int evy)
+{
+    if (dispMode == 0)
+    {
+        // screen disabled (white)
+        return ivec3(63, 63, 63);
+    }
+    if (brightmode == 1)
+    {
+        // up
+        color += (((0x3F - color) * evy) >> 4);
+    }
+    else if (brightmode == 2)
+    {
+        // down
+        color -= (((color * evy) + 0xF) >> 4);
+    }
+
     return color;
 }
 
@@ -145,15 +184,36 @@ bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squa
     return validArea;
 }
 
-ivec4 applyBrightness(ivec4 color, bool isBottomScreen) {
+ivec4 ApplyBrightnessWithAlpha(ivec4 color, bool isBottomScreen) {
+    int offset = isBottomScreen ? 0 : 8;
+    if ((brightnessMode & (1 << offset)) > 0 && (uBrightModeA == 1 || uDispModeA == 0)) {
+        bool evyToAlpha = (brightnessMode & (4 << offset)) > 0;
+        color = MasterBrightnessWithAlpha(color, uDispModeA, uBrightModeA, uBrightFactorA, evyToAlpha);
+    }
+    if ((brightnessMode & (2 << offset)) > 0 && (uBrightModeA == 2)) {
+        bool evyToAlpha = (brightnessMode & (8 << offset)) > 0;
+        color = MasterBrightnessWithAlpha(color, uDispModeA, uBrightModeA, uBrightFactorA, evyToAlpha);
+    }
+    if ((brightnessMode & (16 << offset)) > 0 && (uBrightModeB == 1 || uDispModeB == 0)) {
+        bool evyToAlpha = (brightnessMode & (64 << offset)) > 0;
+        color = MasterBrightnessWithAlpha(color, uDispModeB, uBrightModeB, uBrightFactorB, evyToAlpha);
+    }
+    if ((brightnessMode & (32 << offset)) > 0 && (uBrightModeB == 2)) {
+        bool evyToAlpha = (brightnessMode & (128 << offset)) > 0;
+        color = MasterBrightnessWithAlpha(color, uDispModeB, uBrightModeB, uBrightFactorB, evyToAlpha);
+    }
+    return color;
+}
+
+ivec3 ApplyBrightness(ivec3 color, bool isBottomScreen) {
     int offset = isBottomScreen ? 0 : 4;
     if (((brightnessMode & (1 << offset)) > 0 && (uBrightModeA == 1 || uDispModeA == 0)) ||
         ((brightnessMode & (2 << offset)) > 0 && (uBrightModeA == 2))) {
-        color = MasterBrightnessWithAlpha(color, uDispModeA, uBrightModeA, uBrightFactorA);
+        color = MasterBrightness(color, uDispModeA, uBrightModeA, uBrightFactorA);
     }
-    if (((brightnessMode & (4 << offset)) > 0 && (uBrightModeB == 1 || uDispModeB == 0)) ||
-        ((brightnessMode & (8 << offset)) > 0 && (uBrightModeB == 2))) {
-        color = MasterBrightnessWithAlpha(color, uDispModeB, uBrightModeB, uBrightFactorB);
+    if (((brightnessMode & (16 << offset)) > 0 && (uBrightModeB == 1 || uDispModeB == 0)) ||
+        ((brightnessMode & (32 << offset)) > 0 && (uBrightModeB == 2))) {
+        color = MasterBrightness(color, uDispModeB, uBrightModeB, uBrightFactorB);
     }
     return color;
 }
@@ -162,12 +222,12 @@ ivec4 getRegularScreenColor(vec2 textureBeginning, bool isBottomScreen) {
     if (isBottomScreen) {
         ivec4 color = ivec4(texture(MainInputTexB, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
         color.a = 255;
-        color = applyBrightness(color, isBottomScreen);
+        color = ApplyBrightnessWithAlpha(color, isBottomScreen);
         return color;
     }
     ivec4 color = ivec4(texture(MainInputTexA, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
     color.a = 255;
-    color = applyBrightness(color, isBottomScreen);
+    color = ApplyBrightnessWithAlpha(color, isBottomScreen);
     return color;
 }
 
@@ -334,27 +394,6 @@ ivec4 getTopScreenColor(vec2 pos)
     return currentColor;
 }
 
-ivec3 MasterBrightness(ivec3 color, int dispMode, int brightmode, int evy)
-{
-    if (dispMode == 0)
-    {
-        // screen disabled (white)
-        return ivec3(63, 63, 63);
-    }
-    if (brightmode == 1)
-    {
-        // up
-        color += (((0x3F - color) * evy) >> 4);
-    }
-    else if (brightmode == 2)
-    {
-        // down
-        color -= (((color * evy) + 0xF) >> 4);
-    }
-
-    return color;
-}
-
 void main()
 {
     ivec4 col_sub = ivec4(texture(MainInputTexB, fTexcoord.xy, 0) * 255.0) >> 2;
@@ -372,16 +411,7 @@ void main()
     {
         // VRAM display / mainmem FIFO
         output_main = ivec3(texture(AuxInputTex, vec3(fTexcoord.xz, uAuxLayer)).rgb * uAuxColorFactor);
-
-        if (((uDispModeA == 0 || uBrightModeA == 1) && (brightnessMode & (1 << 4)) > 0) ||
-            (uBrightModeA == 2 && (brightnessMode & (2 << 4)) > 0)) {
-            output_main = MasterBrightness(output_main, uDispModeA, uBrightModeA, uBrightFactorA);
-        }
-        if (((uDispModeB == 0 || uBrightModeB == 1) && (brightnessMode & (4 << 4)) > 0) ||
-            (uBrightModeB == 2 && (brightnessMode & (8 << 4)) > 0)) {
-            output_main = MasterBrightness(output_main, uDispModeB, uBrightModeB, uBrightFactorB);
-        }
-
+        output_main = ApplyBrightness(output_main, false);
         output_main = (output_main << 2) | (output_main >> 6);
     }
 

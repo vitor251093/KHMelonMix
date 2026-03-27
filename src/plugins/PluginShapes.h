@@ -37,16 +37,20 @@ enum
 
 enum
 {
-    brightnessModeComponents_None = 0,
-    brightnessModeComponents_TopScreenWhite = 1,
-    brightnessModeComponents_TopScreenBlack = 2,
-    brightnessModeComponents_BottomScreenWhite = 4,
-    brightnessModeComponents_BottomScreenBlack = 8,
+    brightnessModeComponents_None = 0x0,
+    brightnessModeComponents_TopScreenWhite = 0x1,
+    brightnessModeComponents_TopScreenBlack = 0x2,
+    brightnessModeComponents_TopScreenWhiteToOpacity = 0x4,
+    brightnessModeComponents_TopScreenBlackToOpacity = 0x8,
+    brightnessModeComponents_BottomScreenWhite = 0x10,
+    brightnessModeComponents_BottomScreenBlack = 0x20,
+    brightnessModeComponents_BottomScreenWhiteToOpacity = 0x40,
+    brightnessModeComponents_BottomScreenBlackToOpacity = 0x80,
 };
 
 inline constexpr int compoundBrightnessMode(int top, int bottom)
 {
-    return (top << 4 | bottom);
+    return (top << 8 | bottom);
 }
 
 enum

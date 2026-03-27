@@ -2290,6 +2290,7 @@ bool PluginKingdomHeartsDays::isMinimapVisible() {
 bool PluginKingdomHeartsDays::isMissionInformationVisibleOnTopScreen()
 {
     // TODO: KH Not working properly; first lobby returns a false positive
+    //  And I've seen more than one situation where it returns a false negative
     return nds->ARM7Read32(getAnyByCart(INGAME_HUD_ADDRESS_US, INGAME_HUD_ADDRESS_EU, INGAME_HUD_ADDRESS_JP, INGAME_HUD_ADDRESS_JP_REV1)) == 0;
 }
 
