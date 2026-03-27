@@ -1073,8 +1073,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
         case gameScene_InGameMenu:
         {
             u32 curMenu = getCurrentMainMenuView();
-            // the others are in horizontal style
-
             switch (curMenu) {
                 case 3:   // roxas's diary
                 case 4: { // enemy profile
@@ -2323,14 +2321,6 @@ bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 {
     return false;
-
-    /*
-    void* buffer = bottomScreen2DTexture();
-    u32 pixel1 = getPixel(buffer, 206, 134, 0);
-    u32 pixel2 = getPixel(buffer, 206, 140, 0);
-    return ((pixel1 >> 0) & 0x3F) < 5 && ((pixel1 >> 8) & 0x3F) < 5 && ((pixel1 >> 16) & 0x3F) < 5 &&
-           ((pixel2 >> 0) & 0x3F) < 5 && ((pixel2 >> 8) & 0x3F) < 5 && ((pixel2 >> 16) & 0x3F) < 5;
-    */
 }
 
 int PluginKingdomHeartsDays::dialogBoxHeight()
