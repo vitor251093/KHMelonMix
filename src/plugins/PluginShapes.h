@@ -29,14 +29,6 @@ enum
 
 enum
 {
-    screenLayout_Top,
-    screenLayout_Bottom,
-    screenLayout_BothVertical,
-    screenLayout_BothHorizontal
-};
-
-enum
-{
     brightnessModeComponents_None = 0x0,
     brightnessModeComponents_TopScreenWhite = 0x1,
     brightnessModeComponents_TopScreenBlack = 0x2,
