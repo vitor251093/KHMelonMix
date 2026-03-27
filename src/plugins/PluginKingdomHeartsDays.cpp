@@ -2253,8 +2253,6 @@ bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
     return (nds->ARM7Read32(getAnyByCart(MISSION_GAUGE_ADDRESS_US, MISSION_GAUGE_ADDRESS_EU, MISSION_GAUGE_ADDRESS_JP, MISSION_GAUGE_ADDRESS_JP_REV1)) & 0x1) == 0;
 }
 
-#define DIFF(val1, val2) ((val1 > val2) ? (val1 - val2) : (val2 - val1))
-
 bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
 {
     if (isCutsceneLikeDialogVisible())
@@ -2302,8 +2300,6 @@ bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
     u8 curMission = getCurrentMission();
     return std::find(missionsWithTarget.begin(), missionsWithTarget.end(), curMission) != missionsWithTarget.end();
 }
-
-#undef DIFF(val1, val2)
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 {
