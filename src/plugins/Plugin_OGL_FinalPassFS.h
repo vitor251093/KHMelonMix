@@ -50,9 +50,7 @@ layout(std140) uniform ShapeBlock2D {
 };
 
 uniform float currentAspectRatio;
-
 uniform float hudScale;
-uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
 uniform int brightnessMode;
 
 uniform int shapeCount;
@@ -241,8 +239,7 @@ ivec4 getTopScreenColor(vec2 pos)
     float widthScale = currentAspectRatio;
     vec2 fixStretch = vec2(widthScale, 1.0);
 
-    float uiTexScale = hudScale;
-    vec2 texPosition3d = vec2(xpos, ypos)*uiTexScale;
+    vec2 texPosition3d = vec2(xpos, ypos)*hudScale;
 
     ivec4 currentColor = getRegularScreenColor(vec2(xpos, ypos), false);
 
