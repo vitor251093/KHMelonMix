@@ -195,6 +195,7 @@ private:
     void renderer_composition_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
     void renderer_composition_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
     void renderer_composition_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_component_bothScreensHorizontal(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale, int blankX, int blankY);
     void renderer_topScreen_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
     void renderer_topScreen_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
 

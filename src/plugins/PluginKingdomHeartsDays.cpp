@@ -840,6 +840,36 @@ void PluginKingdomHeartsDays::renderer_composition_component_bottomMissionInform
             .build(aspectRatio));
 }
 
+void PluginKingdomHeartsDays::renderer_composition_component_bothScreensHorizontal(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale, int blankX, int blankY)
+{
+    float doubleScreenScale = aspectRatio * 0.5;
+    shapes->push_back(ShapeBuilder2D::square()
+            .placeAtCorner(corner_Left)
+            .sourceScale(doubleScreenScale, doubleScreenScale)
+            .hudScale(hudScale)
+            .preserveDsScale()
+            .build(aspectRatio));
+
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromBottomScreen()
+            .placeAtCorner(corner_Right)
+            .sourceScale(doubleScreenScale, doubleScreenScale)
+            .hudScale(hudScale)
+            .preserveDsScale()
+            .build(aspectRatio));
+
+    // background
+    shapes->push_back(ShapeBuilder2D::square()
+            .fromPosition(blankX, blankY)
+            .withSize(1, 1)
+            .placeAtCorner(corner_TopLeft)
+            .sourceScale(doubleScreenScale, doubleScreenScale)
+            .hudScale(hudScale)
+            .preserveDsScale()
+            .repeatAsBackground()
+            .build(aspectRatio));
+}
+
 std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
 {
     auto shapes = std::vector<ShapeData2D>();
@@ -855,32 +885,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
     switch (GameScene) {
         case gameScene_Intro:
         case gameScene_TitleScreen: {
-            float doubleScreenScale = aspectRatio * 0.5;
-            shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Left)
-                    .sourceScale(doubleScreenScale, doubleScreenScale)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
-
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromBottomScreen()
-                    .placeAtCorner(corner_Right)
-                    .sourceScale(doubleScreenScale, doubleScreenScale)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
-
-            // background
-            shapes.push_back(ShapeBuilder2D::square()
-                    .withSize(8, 8)
-                    .placeAtCorner(corner_TopLeft)
-                    .sourceScale(doubleScreenScale, doubleScreenScale)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .repeatAsBackground()
-                    .build(aspectRatio));
-
+            renderer_composition_component_bothScreensHorizontal(&shapes, aspectRatio, hudScale, 0, 0);
             break;
         }
 
@@ -893,32 +898,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
                 (GameSceneState & (1 << gameSceneState_topScreenCutscene)) == 0 ||
                 (GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
 
-                float doubleScreenScale = aspectRatio * 0.5;
-                shapes.push_back(ShapeBuilder2D::square()
-                        .placeAtCorner(corner_Left)
-                        .sourceScale(doubleScreenScale, doubleScreenScale)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromBottomScreen()
-                        .placeAtCorner(corner_Right)
-                        .sourceScale(doubleScreenScale, doubleScreenScale)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
-
-                // background
-                shapes.push_back(ShapeBuilder2D::square()
-                        .withSize(8, 8)
-                        .placeAtCorner(corner_TopLeft)
-                        .sourceScale(doubleScreenScale, doubleScreenScale)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .repeatAsBackground()
-                        .build(aspectRatio));
-
+                renderer_composition_component_bothScreensHorizontal(&shapes, aspectRatio, hudScale, 0, 0);
                 break;
             }
 
@@ -1155,32 +1135,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
                     break;
                 }
                 default: {
-                    float doubleScreenScale = aspectRatio * 0.5;
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .placeAtCorner(corner_Left)
-                            .sourceScale(doubleScreenScale, doubleScreenScale)
-                            .hudScale(hudScale)
-                            .preserveDsScale()
-                            .build(aspectRatio));
-
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromBottomScreen()
-                            .placeAtCorner(corner_Right)
-                            .sourceScale(doubleScreenScale, doubleScreenScale)
-                            .hudScale(hudScale)
-                            .preserveDsScale()
-                            .build(aspectRatio));
-
-                    // background
-                    shapes.push_back(ShapeBuilder2D::square()
-                            .fromPosition(248, 184)
-                            .withSize(8, 8)
-                            .placeAtCorner(corner_TopLeft)
-                            .sourceScale(doubleScreenScale, doubleScreenScale)
-                            .hudScale(hudScale)
-                            .preserveDsScale()
-                            .repeatAsBackground()
-                            .build(aspectRatio));
+                    renderer_composition_component_bothScreensHorizontal(&shapes, aspectRatio, hudScale, 255, 191);
                     break;
                 }
             }
