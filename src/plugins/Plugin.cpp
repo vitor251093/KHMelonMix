@@ -152,9 +152,10 @@ void Plugin::gpuOpenGL_2DCompositorFS_initVariables(int ScreenIndex, GLuint Comp
 void Plugin::gpuOpenGL_2DCompositorFS_updateVariables(int ScreenIndex, GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     int brightnessMode = renderer_brightnessMode();
+    float hudScale = (6.0/(((float)UIScale - 4) / 2 + 4));
 
     glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
-    glUniform1i(CompGpuLoc[CompShader][1], UIScale);
+    glUniform1f(CompGpuLoc[CompShader][1], hudScale);
     glUniform1i(CompGpuLoc[CompShader][2], brightnessMode);
     glUniform1i(CompGpuLoc[CompShader][3], current2DShapes.size());
     glUniform1i(CompGpuLoc[CompShader][4], ScreenIndex);
@@ -197,9 +198,10 @@ void Plugin::gpuOpenGL_FinalPassFS_initVariables(GLuint CompShader) {
 void Plugin::gpuOpenGL_FinalPassFS_updateVariables(GLuint CompShader) {
     float aspectRatio = AspectRatio / (4.f / 3.f);
     int brightnessMode = renderer_brightnessMode();
+    float hudScale = (6.0/(((float)UIScale - 4) / 2 + 4));
 
     glUniform1f(CompGpuCompositionLoc[CompShader][0], aspectRatio);
-    glUniform1i(CompGpuCompositionLoc[CompShader][1], UIScale);
+    glUniform1f(CompGpuCompositionLoc[CompShader][1], hudScale);
     glUniform1i(CompGpuCompositionLoc[CompShader][2], brightnessMode);
     glUniform1i(CompGpuCompositionLoc[CompShader][3], currentCompositionShapes.size());
 

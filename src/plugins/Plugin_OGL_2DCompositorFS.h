@@ -51,7 +51,7 @@ layout(std140) uniform ShapeBlock2D {
 
 uniform float currentAspectRatio;
 
-uniform int hudScale;
+uniform float hudScale;
 uniform int screenLayout; // 0 = top screen, 1 = bottom screen, 2 = both vertical, 3 = both horizontal
 uniform int brightnessMode;
 
@@ -357,7 +357,7 @@ vec4 CompositeLayers()
     {
         shouldReturnNo2DElements = true;
 
-        float uiTexScale = 6.0 / ((float(hudScale) - 4.0) / 2.0 + 4.0);
+        float uiTexScale = hudScale;
         vec2 texPosition3d = coord2d * uiTexScale;
 
         float heightScale = 1.0/currentAspectRatio;
