@@ -1181,35 +1181,12 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
         }
 
         case gameScene_Shop:
-        case gameScene_TheEnd: {
-            float doubleScreenScale = aspectRatio * 0.5;
-            shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Left)
-                    .sourceScale(doubleScreenScale, doubleScreenScale)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
-
-            shapes.push_back(ShapeBuilder2D::square()
-                    .fromBottomScreen()
-                    .placeAtCorner(corner_Right)
-                    .sourceScale(doubleScreenScale, doubleScreenScale)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .build(aspectRatio));
-
-            // background
-            shapes.push_back(ShapeBuilder2D::square()
-                    .withSize(1, 1)
-                    .placeAtCorner(corner_TopLeft)
-                    .sourceScale(doubleScreenScale, doubleScreenScale)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .repeatAsBackground()
-                    .build(aspectRatio));
-
+            renderer_composition_component_bothScreensHorizontal(&shapes, aspectRatio, hudScale, 255, 191);
             break;
-        }
+
+        case gameScene_TheEnd:
+            renderer_composition_component_bothScreensHorizontal(&shapes, aspectRatio, hudScale, 0, 0);
+            break;
     }
 
     return shapes;
