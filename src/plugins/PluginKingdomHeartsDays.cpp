@@ -159,6 +159,17 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define STRM_ADDRESS_JP      0x0204BB14
 #define STRM_ADDRESS_JP_REV1 0x0204BAD4
 
+// 0x7a2e -> dialog visible; 0x7274 -> dialog not visible; 0x0000 -> no hud visible
+#define IS_DIALOG_VISIBLE_ADDRESS_US      0x020d741c
+#define IS_DIALOG_VISIBLE_ADDRESS_EU      0x020d743c // TODO: KH Unconfirmed (calculated)
+#define IS_DIALOG_VISIBLE_ADDRESS_JP      0x020d787c // TODO: KH Unconfirmed (calculated)
+#define IS_DIALOG_VISIBLE_ADDRESS_JP_REV1 0x020d783c // TODO: KH Unconfirmed (calculated)
+
+#define IS_DIALOG_VISIBLE_VALUE_US      0x7a2e
+#define IS_DIALOG_VISIBLE_VALUE_EU      0x7a2e // TODO: KH Unconfirmed
+#define IS_DIALOG_VISIBLE_VALUE_JP      0x7a2e // TODO: KH Unconfirmed
+#define IS_DIALOG_VISIBLE_VALUE_JP_REV1 0x7a2e // TODO: KH Unconfirmed
+
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_EU      0x02195AA3
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_JP      0x02193E23
@@ -2200,9 +2211,13 @@ bool PluginKingdomHeartsDays::isDialogVisible()
         getAnyByCart(MID_GAME_DIALOG_ADDRESS_US, MID_GAME_DIALOG_ADDRESS_EU, MID_GAME_DIALOG_ADDRESS_JP, MID_GAME_DIALOG_ADDRESS_JP_REV1)) == 0x00;
     if (isMidGameDialog)
     {
-        // dialogs triggered by the player that quickly interrupts gameplay
-        // TODO: KH This is not perfect; for a few frames, before and after the dialog, it affects the regular HUD
-        return true;
+        bool isDialogAlreadyVisible = nds->ARM7Read16(
+            getAnyByCart(IS_DIALOG_VISIBLE_ADDRESS_US, IS_DIALOG_VISIBLE_ADDRESS_EU, IS_DIALOG_VISIBLE_ADDRESS_JP, IS_DIALOG_VISIBLE_ADDRESS_JP_REV1)) ==
+                getAnyByCart(IS_DIALOG_VISIBLE_VALUE_US, IS_DIALOG_VISIBLE_VALUE_EU, IS_DIALOG_VISIBLE_VALUE_JP, IS_DIALOG_VISIBLE_VALUE_JP_REV1);
+
+        if (isDialogAlreadyVisible) {
+            return true;
+        }
     }
     return false;
 }
