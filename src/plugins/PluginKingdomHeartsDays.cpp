@@ -2318,7 +2318,7 @@ bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 {
-    // TODO: KH Untested
+    // TODO: KH Untested, but shouldn't work because of the 'any player can press start to skip' message from multiplayer
     return isCutsceneLikeDialogVisible();
 }
 
@@ -2328,9 +2328,9 @@ bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
     return isCutsceneLikeDialogVisible();
 }
 
-// TODO: KH Needs to be refactored
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 {
+    // TODO: KH Needs to be refactored
     return false;
 }
 
