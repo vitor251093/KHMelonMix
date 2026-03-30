@@ -1808,8 +1808,11 @@ int PluginKingdomHeartsDays::renderer_brightnessMode()
     if (_ShouldHideScreenForTransitions) {
         return brightnessMode_None;
     }
+    if (GameScene == gameScene_InGameWithDouble3D ||
+        GameScene == gameScene_InGameWithMap) {
+        return brightnessMode_TopScreen;
+    }
     if (GameScene == gameScene_PauseMenu                ||
-        GameScene == gameScene_InGameWithDouble3D       ||
         GameScene == gameScene_MultiplayerMissionReview ||
         GameScene == gameScene_Shop                     ||
         GameScene == gameScene_RoxasThoughts            ||
@@ -1822,10 +1825,6 @@ int PluginKingdomHeartsDays::renderer_brightnessMode()
     }
     if (GameScene == gameScene_TitleScreen) {
         return compoundBrightnessMode((brightnessModeComponents_BottomScreenBlack | brightnessModeComponents_TopScreenWhite | brightnessModeComponents_TopScreenBlack),
-                                    (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack));
-    }
-    if (GameScene == gameScene_WorldSelector) {
-        return compoundBrightnessMode((brightnessModeComponents_TopScreenWhite    | brightnessModeComponents_TopScreenBlack),
                                     (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack));
     }
     return brightnessMode_Default;
