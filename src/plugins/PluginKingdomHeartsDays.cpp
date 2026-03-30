@@ -2216,6 +2216,7 @@ bool PluginKingdomHeartsDays::isDialogVisible()
                 getAnyByCart(IS_DIALOG_VISIBLE_VALUE_US, IS_DIALOG_VISIBLE_VALUE_EU, IS_DIALOG_VISIBLE_VALUE_JP, IS_DIALOG_VISIBLE_VALUE_JP_REV1);
 
         if (isDialogAlreadyVisible) {
+            // dialogs triggered by the player that quickly interrupts gameplay
             return true;
         }
     }
