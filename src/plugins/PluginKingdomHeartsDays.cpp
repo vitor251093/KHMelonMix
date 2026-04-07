@@ -185,6 +185,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define MISSION_GAUGE_ADDRESS_JP      0x0219ec58 // TODO: KH Unconfirmed (calculated)
 #define MISSION_GAUGE_ADDRESS_JP_REV1 0x0219ebd8 // TODO: KH Unconfirmed (calculated)
 
+#define LOAD_SCREEN_ADDRESS_US      0x021c8710
+#define LOAD_SCREEN_ADDRESS_EU      0x021c94f0 // TODO: KH Unconfirmed (calculated)
+#define LOAD_SCREEN_ADDRESS_JP      0x021c7870 // TODO: KH Unconfirmed (calculated)
+#define LOAD_SCREEN_ADDRESS_JP_REV1 0x021c77f0 // TODO: KH Unconfirmed (calculated)
+
 // If you want to understand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
@@ -2333,8 +2338,7 @@ bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 {
-    // TODO: KH Needs to be refactored
-    return false;
+    return nds->ARM7Read32(getAnyByCart(LOAD_SCREEN_ADDRESS_US, LOAD_SCREEN_ADDRESS_EU, LOAD_SCREEN_ADDRESS_JP, LOAD_SCREEN_ADDRESS_JP_REV1)) == 0x7;
 }
 
 int PluginKingdomHeartsDays::dialogBoxHeight()
