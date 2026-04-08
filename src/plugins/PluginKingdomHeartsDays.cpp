@@ -241,6 +241,21 @@ enum
 
 enum
 {
+    mainMenuView_None,
+    mainMenuView_Root,
+    mainMenuView_Panel,
+    mainMenuView_RoxasDiary,
+    mainMenuView_EnemyProfile,
+    mainMenuView_Tutorials,
+    mainMenuView_Config, // replaced by gameScene_ConfigMenu
+    mainMenuView_Save, // replaced by gameScene_SaveMenu
+    mainMenuView_WorldSelector, // replaced by gameScene_WorldSelector
+    mainMenuView_CharacterSelector,
+    mainMenuView_MissionReview
+};
+
+enum
+{
     HK_AttackInteract,
     HK_Jump,
     HK_GuardCombo,
@@ -1090,8 +1105,8 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
         {
             u32 curMenu = getCurrentMainMenuView();
             switch (curMenu) {
-                case 3:   // roxas's diary
-                case 4: { // enemy profile
+                case mainMenuView_RoxasDiary:
+                case mainMenuView_EnemyProfile: {
                     // header left corner
                     shapes.push_back(ShapeBuilder2D::square()
                             .fromPosition(0, 0)
@@ -1148,10 +1163,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
 
                     break;
                 }
-                default: {
+
+                default:
                     renderer_composition_component_bothScreensHorizontal(&shapes, aspectRatio, hudScale, 255, 191);
                     break;
-                }
             }
             break;
         }
@@ -2367,43 +2382,6 @@ int PluginKingdomHeartsDays::dialogBoxHeight()
     */
 }
 
-bool PluginKingdomHeartsDays::has2DOnTopOf3DAt(void* buffer, int x, int y)
-{
-    /*
-     * If it matches that condition, there is no 2D on top of 3D
-        (alphaColor.a == 0x0) ||
-        (alphaColor.a == 0x1 && _3dpix.a > 0 && alphaColor.g == 0) ||
-        (alphaColor.a == 0x2 && _3dpix.a > 0 && alphaColor.g < 4) ||
-        (alphaColor.a == 0x3 && _3dpix.a > 0 && alphaColor.g < 4) ||
-        (alphaColor.a == 0x4 && (_3dpix.a & 0x1F) == 0x1F)
-    */
-
-    u32 pixel = getPixel(buffer, x, y, 2);
-    u32 pixelAlpha = (pixel >> (8*3)) & 0xFF;
-    if (pixelAlpha > 0x4) {
-        return true;
-    }
-    if (pixelAlpha == 0x4) {
-        return false;
-    }
-    if (((pixel >> 8) & 0xFF) == 0) {
-        return false;
-    }
-
-    u32 colorPixel = getPixel(buffer, x, y, 0);
-    u32 colorPixelAlpha = (colorPixel >> (8*3)) & 0xFF;
-    if (colorPixelAlpha == 0x20) {
-        return false;
-    }
-    if (colorPixelAlpha == 0x04) {
-        return false;
-    }
-    if (colorPixelAlpha == 0x07) {
-        return false;
-    }
-    return true;
-}
-
 bool PluginKingdomHeartsDays::shouldRenderFrame()
 {
     if (!_superShouldRenderFrame())
@@ -2494,7 +2472,7 @@ int PluginKingdomHeartsDays::detectGameScene()
             {
                 if (mayBeMainMenu)
                 {
-                    return gameScene_TitleScreen;
+                    return gameScene_TitleScreen; // TODO: KH This condition is causing a false positive to the character selector
                 }
             }
 
@@ -2602,15 +2580,15 @@ int PluginKingdomHeartsDays::detectGameScene()
     if (isUnplayableArea)
     {
         u32 mainMenuView = getCurrentMainMenuView();
-        if (mainMenuView == 6)
+        if (mainMenuView == mainMenuView_Config)
         {
             return gameScene_ConfigMenu;
         }
-        if (mainMenuView == 7)
+        if (mainMenuView == mainMenuView_Save)
         {
             return gameScene_SaveMenu;
         }
-        if (mainMenuView == 8)
+        if (mainMenuView == mainMenuView_WorldSelector)
         {
             return gameScene_WorldSelector;
         }
@@ -2942,54 +2920,42 @@ u32 PluginKingdomHeartsDays::getCurrentMission()
     return nds->ARM7Read8(getAnyByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
 }
 
-// The states below also happen in multiple other places outside the main menu menus
-// 0 -> none
-// 1 -> main menu root
-// 2 -> panel
-// 3 -> roxas's diary
-// 4 -> enemy profile
-// 5 -> tutorials
-// 6 -> config (replaced by gameScene_ConfigMenu)
-// 7 -> save (replaced by gameScene_SaveMenu)
-// 8 -> world selector (replaced by gameScene_WorldSelector)
-// 9 -> character selection
-// 10 -> mission review
 u32 PluginKingdomHeartsDays::getCurrentMainMenuView()
 {
     if (GameScene == -1)
     {
-        return 0;
+        return mainMenuView_None;
     }
 
     u8 val1 = nds->ARM7Read8(getAnyByCart(CURRENT_INGAME_MENU_VIEW_1_US, CURRENT_INGAME_MENU_VIEW_1_EU, CURRENT_INGAME_MENU_VIEW_1_JP, CURRENT_INGAME_MENU_VIEW_1_JP_REV1));
     u8 val2 = nds->ARM7Read8(getAnyByCart(CURRENT_INGAME_MENU_VIEW_2_US, CURRENT_INGAME_MENU_VIEW_2_EU, CURRENT_INGAME_MENU_VIEW_2_JP, CURRENT_INGAME_MENU_VIEW_2_JP_REV1));
     if (val1 == 0x10 && val2 == 0x01) {
-        return 1; // main menu root
+        return mainMenuView_Root;
     }
     if (val1 == 0x02 && val2 == 0x10) {
-        return 2; // panel
+        return mainMenuView_Panel;
     }
     if (val1 == 0x01 && val2 == 0x02) {
         // TODO: That specific part probably can be improved
         u8 val3 = nds->ARM7Read8(getAnyByCart(CURRENT_INGAME_MENU_VIEW_US, CURRENT_INGAME_MENU_VIEW_EU, CURRENT_INGAME_MENU_VIEW_JP, CURRENT_INGAME_MENU_VIEW_JP_REV1));
-        if (val3 == 0x07) return 4; // roxas's diary / enemy profile
-        if (val3 == 0x06) return 5; // tutorials
-        return 6; // config
+        if (val3 == 0x07) return mainMenuView_RoxasDiary; // TODO: KH Can also be mainMenuView_EnemyProfile
+        if (val3 == 0x06) return mainMenuView_Tutorials;
+        return mainMenuView_Config;
     }
     if (val1 == 0x02 && val2 == 0x01) {
-        return 7; // save
+        return mainMenuView_Save;
     }
     if (val1 == 0x20 && val2 == 0x40) {
-        return 8; // world selector
+        return mainMenuView_WorldSelector;
     }
     if (val1 == 0x03 && val2 == 0x70) {
-        return 9; // character selection
+        return mainMenuView_CharacterSelector;
     }
     if (val1 == 0x01 && val2 == 0x10) {
-        return 10; // mission review
+        return mainMenuView_MissionReview;
     }
 
-    return 0;
+    return mainMenuView_None;
 }
 
 // map == 0 => No map

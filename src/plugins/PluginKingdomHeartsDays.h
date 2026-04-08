@@ -190,7 +190,6 @@ private:
     bool isDialogPortraitLabelVisible();
     bool isLoadScreenDeletePromptVisible();
     int dialogBoxHeight();
-    bool has2DOnTopOf3DAt(void* buffer, int x, int y);
 
     void renderer_composition_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
     void renderer_composition_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
