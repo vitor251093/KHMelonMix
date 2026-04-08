@@ -265,14 +265,6 @@ vec4 BG3CalcAndFetch(vec2 coord, int line)
     return BG3Fetch(bgpos / vec2(uBGConfig[3].Size));
 }
 
-vec4 OBJ1CalcAndFetch(ivec2 coord3d) {
-    return texelFetch(OBJLayerTex, ivec3(coord3d, 0), 0);
-}
-
-vec4 OBJ2CalcAndFetch(ivec2 coord3d) {
-    return texelFetch(OBJLayerTex, ivec3(coord3d, 1), 0);
-}
-
 void CalcSpriteMosaic(in ivec2 coord, out ivec4 objflags, out vec4 objcolor)
 {
     for (int i = 0; i < 16; i++)
@@ -433,9 +425,6 @@ vec4 CompositeLayers()
             if ((effects & 0x800) != 0) {
                 coord2dBg0 = coord2d;
             }
-            if ((effects & 0x1000) != 0) {
-                coord3d = ivec2(coord2d * uScaleFactor);
-            }
             shouldReturnNo2DElements = false;
 
             // TODO: KH single color to alpha
@@ -488,22 +477,34 @@ vec4 CompositeLayers()
     int bg0Line = int(coord2dBg0.y);
 
     vec4 layercol[6];
-    layercol[0] = BG0CalcAndFetch(bg0Bgcoord, bg0Line);
-    layercol[1] = shouldReturnNo2DElements ? vec4(0.0) : BG1CalcAndFetch(bgcoord, line);
-    layercol[2] = shouldReturnNo2DElements ? vec4(0.0) : BG2CalcAndFetch(bgcoord, line);
-    layercol[3] = shouldReturnNo2DElements ? vec4(0.0) : BG3CalcAndFetch(bgcoord, line);
-
     ivec4 objflags;
-    if (uScanline[line].MosaicSize.z > 0)
-    {
-        CalcSpriteMosaic(ivec2(coord2d.xy), objflags, layercol[4]);
+
+    layercol[0] = BG0CalcAndFetch(bg0Bgcoord, bg0Line);
+
+    if (shouldReturnNo2DElements) {
+        layercol[1] = vec4(0.0);
+        layercol[2] = vec4(0.0);
+        layercol[3] = vec4(0.0);
+        layercol[4] = vec4(0.0);
+        layercol[5] = vec4(0.0);
+        objflags = ivec4(0);
     }
-    else
-    {
-        coord3d = ivec2(coord2d * uScaleFactor);
-        layercol[4] = shouldReturnNo2DElements ? vec4(0.0) : OBJ1CalcAndFetch(coord3d);
-        layercol[5] = shouldReturnNo2DElements ? vec4(0.0) : OBJ2CalcAndFetch(coord3d);
-        objflags = ivec4(layercol[5] * 255.0);
+    else {
+        layercol[1] = BG1CalcAndFetch(bgcoord, line);
+        layercol[2] = BG2CalcAndFetch(bgcoord, line);
+        layercol[3] = BG3CalcAndFetch(bgcoord, line);
+
+        if (uScanline[line].MosaicSize.z > 0)
+        {
+            CalcSpriteMosaic(ivec2(coord2d.xy), objflags, layercol[4]);
+        }
+        else
+        {
+            coord3d = ivec2(coord2d * uScaleFactor);
+            layercol[4] = texelFetch(OBJLayerTex, ivec3(coord3d, 0), 0);
+            layercol[5] = texelFetch(OBJLayerTex, ivec3(coord3d, 1), 0);
+            objflags = ivec4(layercol[5] * 255.0);
+        }
     }
 
     int winmask = uScanline[line].WinMask;
