@@ -265,6 +265,14 @@ vec4 BG3CalcAndFetch(vec2 coord, int line)
     return BG3Fetch(bgpos / vec2(uBGConfig[3].Size));
 }
 
+vec4 OBJ1CalcAndFetch(ivec2 coord3d) {
+    return texelFetch(OBJLayerTex, ivec3(coord3d, 0), 0);
+}
+
+vec4 OBJ2CalcAndFetch(ivec2 coord3d) {
+    return texelFetch(OBJLayerTex, ivec3(coord3d, 1), 0);
+}
+
 void CalcSpriteMosaic(in ivec2 coord, out ivec4 objflags, out vec4 objcolor)
 {
     for (int i = 0; i < 16; i++)
@@ -492,8 +500,9 @@ vec4 CompositeLayers()
     }
     else
     {
-        layercol[4] = texelFetch(OBJLayerTex, ivec3(coord3d, 0), 0);
-        layercol[5] = texelFetch(OBJLayerTex, ivec3(coord3d, 1), 0);
+        coord3d = ivec2(coord2d * uScaleFactor);
+        layercol[4] = shouldReturnNo2DElements ? vec4(0.0) : OBJ1CalcAndFetch(coord3d);
+        layercol[5] = shouldReturnNo2DElements ? vec4(0.0) : OBJ2CalcAndFetch(coord3d);
         objflags = ivec4(layercol[5] * 255.0);
     }
 
