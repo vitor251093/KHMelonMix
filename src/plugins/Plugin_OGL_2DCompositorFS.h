@@ -34,7 +34,7 @@ struct ShapeData2D {
 
     float opacity;
 
-    ivec4 squareInitialCoords;
+    vec4 squareInitialCoords;
     vec4 squareFinalCoords;
 
     vec4 fadeBorderSize;
@@ -301,7 +301,7 @@ void CalcSpriteMosaic(in ivec2 coord, out ivec4 objflags, out vec4 objcolor)
     }
 }
 
-bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, ivec2 squareInitialSize)
+bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, vec2 squareInitialSize)
 {
     return (finalPos.x + finalPos.y >= cropSquareCorners[0]) &&
            ((0 - finalPos.x + squareInitialSize[0]) + finalPos.y >= cropSquareCorners[1]) &&
@@ -315,7 +315,7 @@ bool isInsideRoundedCorner(vec2 pos, vec2 center, float radius)
     return dot(d, d) < radius * radius;
 }
 
-bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squareInitialSize) {
+bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, vec2 squareInitialSize) {
     float squareWidth = squareInitialSize[0];
     float squareHeight = squareInitialSize[1];
 
@@ -387,8 +387,8 @@ vec4 CompositeLayers()
             // crop corner as triangle
             if ((effects & 0x2) != 0)
             {
-                ivec2 csz = shouldRotate ? shapes[shapeIndex].squareInitialCoords.wz
-                                         : shapes[shapeIndex].squareInitialCoords.zw;
+                vec2 csz = shouldRotate ? shapes[shapeIndex].squareInitialCoords.wz
+                                        : shapes[shapeIndex].squareInitialCoords.zw;
                 validArea = isValidConsideringCropSquareCorners(
                     finalPos, shapes[shapeIndex].squareCornersModifier, csz);
             }
@@ -396,8 +396,8 @@ vec4 CompositeLayers()
             // rounded corners
             if ((effects & 0x4) != 0)
             {
-                ivec2 csz = shouldRotate ? shapes[shapeIndex].squareInitialCoords.wz
-                                         : shapes[shapeIndex].squareInitialCoords.zw;
+                vec2 csz = shouldRotate ? shapes[shapeIndex].squareInitialCoords.wz
+                                        : shapes[shapeIndex].squareInitialCoords.zw;
                 validArea = isValidConsideringSquareBorderRadius(
                     finalPos, shapes[shapeIndex].squareCornersModifier, csz);
             }
@@ -405,23 +405,23 @@ vec4 CompositeLayers()
             if (!validArea) continue;
 
             // mirror X / Y
-            if ((effects & 0x8)  != 0) finalPos.x = float(shapes[shapeIndex].squareInitialCoords.z) - finalPos.x;
-            if ((effects & 0x10) != 0) finalPos.y = float(shapes[shapeIndex].squareInitialCoords.w) - finalPos.y;
+            if ((effects & 0x8)  != 0) finalPos.x = shapes[shapeIndex].squareInitialCoords.z - finalPos.x;
+            if ((effects & 0x10) != 0) finalPos.y = shapes[shapeIndex].squareInitialCoords.w - finalPos.y;
 
             // rotate to the left
             if ((effects & 0x200) != 0)
             {
-                float nx = float(shapes[shapeIndex].squareInitialCoords.z) - finalPos.y;
+                float nx = shapes[shapeIndex].squareInitialCoords.z - finalPos.y;
                 finalPos = vec2(nx, finalPos.x);
             }
             // rotate to the right
             else if ((effects & 0x400) != 0)
             {
-                float ny = float(shapes[shapeIndex].squareInitialCoords.w) - finalPos.x;
+                float ny = shapes[shapeIndex].squareInitialCoords.w - finalPos.x;
                 finalPos = vec2(finalPos.y, ny);
             }
 
-            coord2d = vec2(shapes[shapeIndex].squareInitialCoords.xy) + finalPos;
+            coord2d = shapes[shapeIndex].squareInitialCoords.xy + finalPos;
             if ((effects & 0x800) != 0) {
                 coord2dBg0 = coord2d;
             }

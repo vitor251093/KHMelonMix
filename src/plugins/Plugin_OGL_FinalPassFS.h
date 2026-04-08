@@ -34,7 +34,7 @@ struct ShapeData2D {
 
     float opacity;
 
-    ivec4 squareInitialCoords;
+    vec4 squareInitialCoords;
     vec4 squareFinalCoords;
 
     vec4 fadeBorderSize;
@@ -167,7 +167,7 @@ ivec3 MasterBrightness(ivec3 color, int dispMode, int brightmode, int evy)
     return color;
 }
 
-bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, ivec2 squareInitialSize) {
+bool isValidConsideringCropSquareCorners(vec2 finalPos, vec4 cropSquareCorners, vec2 squareInitialSize) {
     return (finalPos.x + finalPos.y >= cropSquareCorners[0]) &&
            ((0 - finalPos.x + squareInitialSize[0]) + finalPos.y >= cropSquareCorners[1]) &&
            (finalPos.x + (0 - finalPos.y + squareInitialSize[1]) >= cropSquareCorners[2]) &&
@@ -179,7 +179,7 @@ bool isInsideRoundedCorner(vec2 pos, vec2 center, float radius) {
            (pos.y - center.y) * (pos.y - center.y) < radius * radius;
 }
 
-bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, ivec2 squareInitialSize) {
+bool isValidConsideringSquareBorderRadius(vec2 finalPos, vec4 radius, vec2 squareInitialSize) {
     bool validArea = true;
     float squareWidth = squareInitialSize[0];
     float squareHeight = squareInitialSize[1];
@@ -316,7 +316,7 @@ ivec4 getTopScreenColor(vec2 pos, bool shouldSwapScreens)
 
             // crop corner as triangle
             if ((effects & 0x2) != 0) {
-                ivec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
+                vec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
                 if (shouldRotate) {
                     cropAreaSize = shapes[shapeIndex].squareInitialCoords.wz;
                 }
@@ -324,7 +324,7 @@ ivec4 getTopScreenColor(vec2 pos, bool shouldSwapScreens)
             }
             // rounded corners
             if ((effects & 0x4) != 0) {
-                ivec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
+                vec2 cropAreaSize = shapes[shapeIndex].squareInitialCoords.zw;
                 if (shouldRotate) {
                     cropAreaSize = shapes[shapeIndex].squareInitialCoords.wz;
                 }
@@ -361,7 +361,7 @@ ivec4 getTopScreenColor(vec2 pos, bool shouldSwapScreens)
                 }
             }
 
-            vec2 textureBeginning = finalPos + vec2(shapes[shapeIndex].squareInitialCoords.xy);
+            vec2 textureBeginning = finalPos + shapes[shapeIndex].squareInitialCoords.xy;
             bool isBottomScreen = textureBeginning.y >= 192.0;
             if (isBottomScreen) {
                 textureBeginning.y = textureBeginning.y - 192.0;
