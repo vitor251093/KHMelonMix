@@ -94,6 +94,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define CURRENT_MISSION_JP      0x0204C67C
 #define CURRENT_MISSION_JP_REV1 0x0204C63C
 
+// 0x1 -> challenge; 0x0 -> not challenge
+#define IS_CHALLENGE_US      0x0204c226
+#define IS_CHALLENGE_EU      0x0204c246 // TODO: KH Unconfirmed (calculated)
+#define IS_CHALLENGE_JP      0x0204c686 // TODO: KH Unconfirmed (calculated)
+#define IS_CHALLENGE_JP_REV1 0x0204c646 // TODO: KH Unconfirmed (calculated)
+
 #define CURRENT_WORLD_US      0x0204C2CF
 #define CURRENT_WORLD_EU      0x0204C2EF
 #define CURRENT_WORLD_JP      0x0204C72F
@@ -2337,8 +2343,11 @@ bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
 
 bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 {
-    // TODO: KH Untested, but shouldn't work because of the 'any player can press start to skip' message from multiplayer
-    return isCutsceneLikeDialogVisible();
+    if (nds->ARM7Read16(getAnyByCart(IS_CHALLENGE_US, IS_CHALLENGE_EU, IS_CHALLENGE_JP, IS_CHALLENGE_JP_REV1)) == 1) {
+        return isCutsceneLikeDialogVisible();
+    }
+
+    return false;
 }
 
 bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
