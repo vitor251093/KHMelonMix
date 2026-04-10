@@ -693,7 +693,11 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
 
         _priorPriorIgnore3DOnBottomScreen = _priorIgnore3DOnBottomScreen;
         _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
-        _ignore3DOnBottomScreen = false; // isBottomScreen2DTextureBlack();
+
+        // TODO: KH Not working properly;
+        //  returning false negative when this is caused by a black texture (?).
+        u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.MasterBrightnessB);
+        _ignore3DOnBottomScreen = botScreenBrightness == 0;
 
         ShouldShowBottomScreen = _hasVisible3DOnBottomScreen && (!_ignore3DOnBottomScreen || !_priorIgnore3DOnBottomScreen || !_priorPriorIgnore3DOnBottomScreen);
 
@@ -1058,7 +1062,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
                 }
             }
 
-            /*if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
+            if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
                 // background
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
@@ -1069,7 +1073,7 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
                         .build(aspectRatio));
 
                 break;
-            }*/
+            }
 
             break;
 
@@ -2395,13 +2399,6 @@ bool PluginKingdomHeartsDays::shouldRenderFrame()
     if (!_superShouldRenderFrame())
     {
         return false;
-    }
-    if (GameScene == gameScene_InGameWithDouble3D)
-    {
-        if (!SingleScreenMode) {
-            return (nds->PowerControl9 >> 15 == 1);
-        }
-        return (nds->PowerControl9 >> 15 == 1) ? !ShouldShowBottomScreen : ShouldShowBottomScreen;
     }
 
     return true;
