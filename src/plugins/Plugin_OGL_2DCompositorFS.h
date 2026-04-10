@@ -599,6 +599,10 @@ vec4 CompositeLayers()
         }
     }
 
+    bool isBottomScreen = screenIndex == 2;
+    int offset = isBottomScreen ? 0 : 8;
+
+    float alpha = 1.0;
     if (effect == 1)
     {
         if (opacityModifier2d != 1.0) {
@@ -613,12 +617,24 @@ vec4 CompositeLayers()
     else if (effect == 2)
     {
         // brightness up
-        col1 = col1 + ((((0xFF - col1) * evy) + 0x20) >> 4);
+        if ((brightnessMode & (64 << offset)) > 0) { // white to opacity
+            int evyFactor = (evy == 0) ? 0 : ((evy + 1) << 3) - 1;
+            alpha = float(255 - evyFactor)/255;
+        }
+        else {
+            col1 = col1 + ((((0xFF - col1) * evy) + 0x20) >> 4);
+        }
     }
     else if (effect == 3)
     {
         // brightness down
-        col1 = col1 - (((col1 * evy) + 0x1C) >> 4);
+        if ((brightnessMode & (128 << offset)) > 0) { // black to opacity
+            int evyFactor = (evy == 0) ? 0 : ((evy + 1) << 3) - 1;
+            alpha = float(255 - evyFactor)/255;
+        }
+        else {
+            col1 = col1 - (((col1 * evy) + 0x1C) >> 4);
+        }
     }
     else if (effect == 4)
     {
@@ -626,7 +642,7 @@ vec4 CompositeLayers()
         col1 = ((col1 * eva) + (col2 * evb) + 0x200) >> 8;
     }
 
-    return vec4(vec3(col1.rgb) / 255.0, 1);
+    return vec4(vec3(col1.rgb) / 255.0, alpha);
 }
 
 void main()

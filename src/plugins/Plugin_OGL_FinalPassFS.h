@@ -119,7 +119,7 @@ ivec4 MasterBrightnessWithAlpha(ivec4 color, int dispMode, int brightmode, int e
         if (brightmode == 1 || brightmode == 2)
         {
             int evyFactor = (evy == 0) ? 0 : ((evy + 1) << 3) - 1;
-            alpha = (alpha * evyFactor) / 255;
+            alpha = (alpha * (255 - evyFactor)) / 255;
         }
 
         color.a = alpha;
@@ -260,7 +260,6 @@ ivec4 getRegularScreenColor(vec2 textureBeginning, bool shouldSwapScreens, bool 
         ivec4 color = shouldSwapScreens ?
                 ivec4(texture(MainInputTexA, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0) :
                 ivec4(texture(MainInputTexB, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
-        color.a = 255;
         color = ApplyBrightnessWithAlpha(color, shouldSwapScreens, isBottomScreen);
         return color;
     }
@@ -268,7 +267,6 @@ ivec4 getRegularScreenColor(vec2 textureBeginning, bool shouldSwapScreens, bool 
     ivec4 color = shouldSwapScreens ?
             ivec4(texture(MainInputTexB, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0) :
             ivec4(texture(MainInputTexA, textureBeginning.xy / vec2(256.0, 192.0), 0) * 255.0);
-    color.a = 255;
     color = ApplyBrightnessWithAlpha(color, shouldSwapScreens, isBottomScreen);
     return color;
 }

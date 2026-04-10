@@ -686,8 +686,7 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
         }
         // fade from/to black, on victory pose
         // cheshire cat dialog
-        if ((bottomScreenMasterBrightness & (1 << 15)) &&
-            ((bottomScreenMasterBrightness & 0x10) == 1 || (bottomScreenMasterBrightness & 0xF) < 4)) {
+        if ((bottomScreenMasterBrightness & (1 << 15)) && ((bottomScreenMasterBrightness & 0xF) < 4)) {
             _hasVisible3DOnBottomScreen = false;
         }
 
@@ -696,8 +695,7 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
 
         // TODO: KH Not working properly;
         //  returning false negative when this is caused by a black texture (?).
-        u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.MasterBrightnessB);
-        _ignore3DOnBottomScreen = botScreenBrightness == 0;
+        _ignore3DOnBottomScreen = (bottomScreenMasterBrightness & (1 << 15)) && ((bottomScreenMasterBrightness & 0xF) >= 0xE);
 
         ShouldShowBottomScreen = _hasVisible3DOnBottomScreen && (!_ignore3DOnBottomScreen || !_priorIgnore3DOnBottomScreen || !_priorPriorIgnore3DOnBottomScreen);
 
@@ -1063,9 +1061,18 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
             }
 
             if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
-                // background
+                // background (bottom screen)
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
+                        .sourceScale(aspectRatio, 1.0)
+                        .placeAtCorner(corner_Center)
+                        .singleColorToAlpha(0, 0, 0)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                // background (top screen)
+                shapes.push_back(ShapeBuilder2D::square()
                         .sourceScale(aspectRatio, 1.0)
                         .placeAtCorner(corner_Center)
                         .hudScale(hudScale)
@@ -1399,10 +1406,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_topScreen_2DShapes() 
 
         case gameScene_Tutorial:
         case gameScene_InGameWithDouble3D:
-            if (SingleScreenMode && (GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
-                break;
-            }
-
         case gameScene_InGameWithMap:
             if ((GameSceneState & (1 << gameSceneState_cutsceneFromChallengeMission)) > 0)
             {
@@ -1837,9 +1840,12 @@ int PluginKingdomHeartsDays::renderer_brightnessMode()
     if (_ShouldHideScreenForTransitions) {
         return brightnessMode_None;
     }
-    if (GameScene == gameScene_InGameWithDouble3D ||
-        GameScene == gameScene_InGameWithMap) {
+    if (GameScene == gameScene_InGameWithMap) {
         return brightnessMode_TopScreen;
+    }
+    if (GameScene == gameScene_InGameWithDouble3D) {
+        return compoundBrightnessMode((brightnessModeComponents_TopScreenWhite    | brightnessModeComponents_TopScreenBlack),
+                                    (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack | brightnessModeComponents_BottomScreenBlackToOpacity));
     }
     if (GameScene == gameScene_PauseMenu                ||
         GameScene == gameScene_MultiplayerMissionReview ||
