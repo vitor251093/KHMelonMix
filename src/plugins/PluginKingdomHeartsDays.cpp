@@ -694,7 +694,10 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
         _priorIgnore3DOnBottomScreen = _ignore3DOnBottomScreen;
 
         // TODO: KH Not working properly;
-        //  returning false negative when this is caused by a black texture (?).
+        //  Returning false negative when this is caused by a black 2D layer.
+        //  Also, I need to find a way to detect that the transition is happening;
+        //  so I can place the HUD of the top screen on top of the bottom screen
+        //  only while the transition isn't happening.
         _ignore3DOnBottomScreen = (bottomScreenMasterBrightness & (1 << 15)) && ((bottomScreenMasterBrightness & 0xF) >= 0xE);
 
         ShouldShowBottomScreen = _hasVisible3DOnBottomScreen && (!_ignore3DOnBottomScreen || !_priorIgnore3DOnBottomScreen || !_priorPriorIgnore3DOnBottomScreen);
