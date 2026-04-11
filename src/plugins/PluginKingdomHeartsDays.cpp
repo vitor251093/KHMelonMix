@@ -1064,6 +1064,10 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
             }
 
             if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
+                // TODO: KH This should be used for the transition only;
+                //  Non-transition should be the other way around, with
+                //  everything but the HUD removed from the top screen.
+
                 // background (bottom screen)
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
