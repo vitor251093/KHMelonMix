@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2025 melonDS team
+    Copyright 2016-2026 melonDS team
 
     This file is part of melonDS.
 
@@ -189,7 +189,7 @@ private:
     QString verifyDSiBIOS();
     QString verifyDSFirmware();
     QString verifyDSiFirmware();
-    QString verifyDSiNAND();
+    QString verifyDSiNAND(bool isoptional);
 
     std::string getEffectiveFirmwareSavePath();
     void initFirmwareSaveManager() noexcept;
@@ -325,7 +325,6 @@ private:
 
     std::unique_ptr<melonDS::Savestate> backupState;
     bool savestateLoaded;
-    std::string previousSaveFile;
 
     std::unique_ptr<melonDS::ARCodeFile> cheatFile;
     bool cheatsOn;

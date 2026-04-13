@@ -32,7 +32,7 @@ jobs:
     runs-on: ${{ matrix.arch.runner }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       name: Check out sources
     - name: Set Version Suffix
       run: |
@@ -69,7 +69,7 @@ jobs:
         cp ./res/scripts/MelonMix_KHDays.sh       ./dist/MelonMix_KHDays.sh
         cp ./res/scripts/MelonMix_KHReCoded.sh    ./dist/MelonMix_KHReCoded.sh
         cp ./res/scripts/MelonMix_GameSelector.sh ./dist/MelonMix_GameSelector.sh
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: MelonMix-ubuntu-${{ matrix.arch.name }}
         path: dist
@@ -110,7 +110,7 @@ jobs:
       run: |
         x86_64-w64-mingw32-g++ ./tools/winebridge/winebridge.cpp -std=c++17 -static -static-libgcc -static-libstdc++ -lstdc++fs -o ./dist_appimage/MelonMix.exe
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: MelonMix-appimage-${{ matrix.arch.name }}
         path: dist_appimage
