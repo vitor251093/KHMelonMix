@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2025 melonDS team
+    Copyright 2016-2026 melonDS team
 
     This file is part of melonDS.
 
@@ -29,6 +29,7 @@
 
 #include "CheatImportDialog.h"
 #include "ui_CheatImportDialog.h"
+#include "ARCodeQDecl.h"
 
 using namespace melonDS;
 using Platform::Log;

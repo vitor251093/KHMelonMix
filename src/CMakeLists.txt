@@ -34,17 +34,16 @@ add_library(core STATIC
     GBACart.cpp
     GBACartMotionPak.cpp
     GPU.cpp
+    GPU_Soft.cpp
     GPU2D.cpp
     GPU2D_Soft.cpp
     GPU3D.cpp
     GPU3D_Soft.cpp
     GPU3D_Texcache.cpp
     GPU3D_Texcache.h
-    melonDLDI.h
     Mic.cpp
     NDS.cpp
     NDSCart.cpp
-    NDSCartR4.cpp
     Platform.h
     ROMList.h
     ROMList.cpp
@@ -65,6 +64,15 @@ add_library(core STATIC
     DSP_HLE/AACUcode.cpp
     DSP_HLE/G711Ucode.cpp
     DSP_HLE/GraphicsUcode.cpp
+
+    NDSCart/CartCommon.cpp
+    NDSCart/CartRetail.cpp
+    NDSCart/CartRetailNAND.cpp
+    NDSCart/CartRetailIR.cpp
+    NDSCart/CartRetailBT.cpp
+    NDSCart/CartSD.cpp
+    NDSCart/CartHomebrew.cpp
+    NDSCart/CartR4.cpp
 
     fatfs/ff.c
     fatfs/ffsystem.c
@@ -87,14 +95,14 @@ if (ENABLE_GDBSTUB)
 endif()
 
 if (ENABLE_OGLRENDERER)
+    add_subdirectory(OpenGL_shaders)
     target_sources(core PRIVATE
         GPU_OpenGL.cpp
-        GPU_OpenGL_shaders.h
+        GPU2D_OpenGL.cpp
         GPU3D_OpenGL.cpp
         GPU3D_Compute.cpp
         GPU3D_TexcacheOpenGL.cpp
         GPU3D_TexcacheOpenGL.h
-        GPU3D_OpenGL_shaders.h
         OpenGLSupport.cpp)
 
     target_compile_definitions(core PUBLIC OGLRENDERER_ENABLED)
