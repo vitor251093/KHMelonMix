@@ -117,6 +117,8 @@ private:
 
     // should render frame utils
     bool _hasVisible3DOnBottomScreen = false;
+    bool _isBottomScreenBlackThroughHardware = false;
+    bool _isBottomScreenBlackThroughSoftware = false;
     bool _ignore3DOnBottomScreen = false;
     bool _priorIgnore3DOnBottomScreen = false;
     bool _priorPriorIgnore3DOnBottomScreen = false;

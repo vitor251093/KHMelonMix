@@ -241,6 +241,7 @@ enum
     gameSceneState_showBottomScreenMissionInformation,
     gameSceneState_loadScreenDeletePrompt,
     gameSceneState_bottomScreenSora,
+    gameSceneState_bottomScreenSoraTransition,
     gameSceneState_bottomScreenCutscene,
     gameSceneState_topScreenCutscene
 };
@@ -698,7 +699,9 @@ void PluginKingdomHeartsDays::renderer_beforeBuildingShapes()
         //  Also, I need to find a way to detect that the transition is happening;
         //  so I can place the HUD of the top screen on top of the bottom screen
         //  only while the transition isn't happening.
-        _ignore3DOnBottomScreen = (bottomScreenMasterBrightness & (1 << 15)) && ((bottomScreenMasterBrightness & 0xF) >= 0xE);
+        _isBottomScreenBlackThroughHardware = (bottomScreenMasterBrightness & (1 << 15)) && ((bottomScreenMasterBrightness & 0xF) >= 0xE);
+        _isBottomScreenBlackThroughSoftware = false;
+        _ignore3DOnBottomScreen = _isBottomScreenBlackThroughHardware || _isBottomScreenBlackThroughSoftware;
 
         ShouldShowBottomScreen = _hasVisible3DOnBottomScreen && (!_ignore3DOnBottomScreen || !_priorIgnore3DOnBottomScreen || !_priorPriorIgnore3DOnBottomScreen);
 
@@ -1064,27 +1067,50 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_composition()
             }
 
             if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0) {
-                // TODO: KH This should be used for the transition only;
-                //  Non-transition should be the other way around, with
-                //  everything but the HUD removed from the top screen.
+                if ((GameSceneState & (1 << gameSceneState_bottomScreenSoraTransition)) > 0)
+                {
+                    // background (bottom screen)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .sourceScale(aspectRatio, 1.0)
+                            .placeAtCorner(corner_Center)
+                            .singleColorToAlpha(0, 0, 0)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
 
-                // background (bottom screen)
-                shapes.push_back(ShapeBuilder2D::square()
-                        .fromBottomScreen()
-                        .sourceScale(aspectRatio, 1.0)
-                        .placeAtCorner(corner_Center)
-                        .singleColorToAlpha(0, 0, 0)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
+                    // background (top screen)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .sourceScale(aspectRatio, 1.0)
+                            .placeAtCorner(corner_Center)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+                }
+                else
+                {
+                    // TODO: KH Non-transition should remove everything but the HUD from the top screen.
 
-                // background (top screen)
-                shapes.push_back(ShapeBuilder2D::square()
-                        .sourceScale(aspectRatio, 1.0)
-                        .placeAtCorner(corner_Center)
-                        .hudScale(hudScale)
-                        .preserveDsScale()
-                        .build(aspectRatio));
+                    // background (top screen)
+                    /*
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .sourceScale(aspectRatio, 1.0)
+                            .placeAtCorner(corner_Center)
+                            .singleColorToAlpha(0, 0, 0)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+                    */
+
+                    // background (bottom screen)
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .sourceScale(aspectRatio, 1.0)
+                            .placeAtCorner(corner_Center)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+                }
 
                 break;
             }
@@ -1640,6 +1666,12 @@ std::vector<ShapeData3D> PluginKingdomHeartsDays::renderer_topScreen_3DShapes() 
         case gameScene_Tutorial:
         case gameScene_InGameWithMap:
         case gameScene_InGameWithDouble3D:
+            if ((GameSceneState & (1 << gameSceneState_bottomScreenSora)) > 0 &&
+                (GameSceneState & (1 << gameSceneState_bottomScreenSoraTransition)) == 0)
+            {
+                // TODO: KH I need someway to know if I'm rendering the top or bottom screen
+            }
+
             if ((gameSceneState & (1 << gameSceneState_showHud)) > 0)
             {
                 // aim
@@ -1741,6 +1773,12 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
             if (ShouldShowBottomScreen) {
                 state |= (1 << gameSceneState_bottomScreenSora);
                 state |= (1 << gameSceneState_showHud);
+
+                if (true) // TODO: KH Needs a proper condition
+                {
+                    state |= (1 << gameSceneState_bottomScreenSoraTransition);
+                }
+
                 break;
             }
 
