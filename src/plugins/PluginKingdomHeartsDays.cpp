@@ -2349,8 +2349,9 @@ bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
     // values with a gauge:    0x00000002 or 0x00000000 or 0x00030e02
     // values without a gauge: 0x00000001
 
-    // TODO: KH Experimental; requires more testing;
-    //  if that fails, I will just make an implementation similar to isTargetVisibleOnBottomScreen
+    // TODO: KH Causes false negatives in mission 23, day 74
+    //  I will just make an implementation similar to isTargetVisibleOnBottomScreen
+
     return (nds->ARM7Read32(getAnyByCart(MISSION_GAUGE_ADDRESS_US, MISSION_GAUGE_ADDRESS_EU, MISSION_GAUGE_ADDRESS_JP, MISSION_GAUGE_ADDRESS_JP_REV1)) & 0x1) == 0;
 }
 
@@ -2429,6 +2430,11 @@ bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
 
 int PluginKingdomHeartsDays::dialogBoxHeight()
 {
+    if (isDialogPortraitLabelVisible())
+    {
+        return 56;
+    }
+
     // TODO: KH Temporary workaround until we can detect the dialog height again
     return 0;
 
