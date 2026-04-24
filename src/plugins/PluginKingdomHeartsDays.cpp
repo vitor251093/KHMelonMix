@@ -59,6 +59,12 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_PLAYABLE_AREA_JP      0x02044b26
 #define IS_PLAYABLE_AREA_JP_REV1 0x02044ae6
 
+// 0x0 => no portrait; not 0x0 => portrait
+#define IS_DIALOG_WITH_PORTRAIT_US      0x02046a44
+#define IS_DIALOG_WITH_PORTRAIT_EU      0x02046a64 // TODO: KH Unconfirmed (calculated)
+#define IS_DIALOG_WITH_PORTRAIT_JP      0x02046ea4 // TODO: KH Unconfirmed (calculated)
+#define IS_DIALOG_WITH_PORTRAIT_JP_REV1 0x02046e64 // TODO: KH Unconfirmed (calculated)
+
 #define PAUSE_SCREEN_ADDRESS_US      0x0204bd64
 #define PAUSE_SCREEN_ADDRESS_EU      0x0204bd84
 #define PAUSE_SCREEN_ADDRESS_JP      0x0204c1c4
@@ -2407,11 +2413,13 @@ bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 
 bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 {
-    // TODO: KH Not perfect. Sometimes in cutscenes characters dont have portraits when its supposed to be ambiguous as to who it is.
+    // TODO: KH Experimental; requires more testing;
+    //  Sometimes in cutscenes characters dont have portraits when its supposed to be ambiguous as to who it is.
     //  Some examples are Axel talking to Roxas in the cutscene where he came back from Castle Oblivion,
-    //  Xigbar turning out to be your opponent in the games,
-    //  and Pete scheming in Neverland to resurrect Ruler of the Sky.
-    return isCutsceneLikeDialogVisible();
+    //  Xigbar turning out to be your opponent in the games, and Pete scheming in Neverland to resurrect Ruler of the Sky.
+    //  The first two scenarios described here were tested, but we may still have false negatives for this function.
+    return isCutsceneLikeDialogVisible() && nds->ARM7Read32(getAnyByCart(
+        IS_DIALOG_WITH_PORTRAIT_US, IS_DIALOG_WITH_PORTRAIT_EU, IS_DIALOG_WITH_PORTRAIT_JP, IS_DIALOG_WITH_PORTRAIT_JP_REV1)) != 0;
 }
 
 bool PluginKingdomHeartsDays::isLoadScreenDeletePromptVisible()
