@@ -2268,9 +2268,10 @@ const char* PluginKingdomHeartsDays::getGameSceneName()
 
 bool PluginKingdomHeartsDays::isCutsceneLikeDialogVisible()
 {
+    bool isPauseScreen = nds->ARM7Read8(getAnyByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP, PAUSE_SCREEN_ADDRESS_JP_REV1)) != 0;
     bool _isCharacterControllable = nds->ARM7Read8(
             getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
-    if (!_isCharacterControllable)
+    if (!_isCharacterControllable || isPauseScreen)
     {
         u32 cutsceneAddressValue = getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
         if (cutsceneAddressValue != 0)
@@ -2346,13 +2347,23 @@ bool PluginKingdomHeartsDays::isMissionGaugeVisibleOnBottomScreen()
         return false;
     }
 
-    // values with a gauge:    0x00000002 or 0x00000000 or 0x00030e02
-    // values without a gauge: 0x00000001
+    // TODO: KH Still not covering the scenarios where the mission gauge isn't visible outside the missions,
+    //  which is not the case all the time
 
-    // TODO: KH Causes false negatives in mission 23, day 74
-    //  I will just make an implementation similar to isTargetVisibleOnBottomScreen
-
-    return (nds->ARM7Read32(getAnyByCart(MISSION_GAUGE_ADDRESS_US, MISSION_GAUGE_ADDRESS_EU, MISSION_GAUGE_ADDRESS_JP, MISSION_GAUGE_ADDRESS_JP_REV1)) & 0x1) == 0;
+    std::vector<u8> missionsWithoutMissionGauge = {
+        6, // day 13
+        10, // day 15
+        37, // day 118
+        53, // day 173
+        58, // day 194
+        71, // day 277
+        77, // day 300
+        78, // day 301
+        92, // day 357
+        93, // day 358
+    };
+    u8 curMission = getCurrentMission();
+    return std::find(missionsWithoutMissionGauge.begin(), missionsWithoutMissionGauge.end(), curMission) == missionsWithoutMissionGauge.end();
 }
 
 bool PluginKingdomHeartsDays::isTargetVisibleOnBottomScreen()
