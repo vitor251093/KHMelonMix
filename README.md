@@ -50,9 +50,9 @@ Join our [Discord](https://discord.gg/AhRscvkqB9) to keep in touch with the late
 - Menus adapted to a single screen
 - Camera controls (mouse/touchpad)
 - Pause functionality to HD cutscenes
+- Lua support
 
 ## Which other features are being considered?
-- Lua support
 - Optional 3D models replacement (do not expect modern games quality on that one, it still needs to run on the DS CPU)
 - Rumble to joystick controllers
 - Support to RetroAchievements
