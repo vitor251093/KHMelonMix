@@ -1,4 +1,5 @@
 #!/bin/bash
+goto="Start"
 function Start {
 	while true; do
 		echo -e "\033]0;MelonMix - Select a game\007"
@@ -12,11 +13,13 @@ function Start {
 			"1" | "kingdom hearts 358/2 days" | "358/2 days" | "days")
 				gamename="Kingdom Hearts 358/2 Days"
 				game="days"
+				goto="Fullscreen"
 				break
 			;;
 			"2" | "kingdom hearts re:coded" | "kingdom hearts recoded" | "re:coded" | "recoded" | "coded")
 				gamename="Kingdom Hearts Re:Coded"
 				game="recoded"
+				goto="Fullscreen"
 				break
 			;;
 			"3" | "n" | "no" | "q" | "quit" | "c" | "close" | "cancel" | "exit" | "x" | "end")
@@ -33,7 +36,7 @@ function Fullscreen {
 	while true; do
 		echo -e "\033]0;MelonMix - ${gamename}\007"
 		echo
-		toggle="1"
+		toggle=""
 		echo "${gamename}:"
 		echo "1) Fullscreen"
 		echo "2) Windowed"
@@ -43,14 +46,17 @@ function Fullscreen {
 		case "${toggle,,}" in
 			"1" | "fullscreen")
 				fullscreen="-f"
+				goto="Game"
 				break
 			;;
 			"2" | "windowed")
 				fullscreen=""
+				goto="Game"
 				break
 			;;
 			"3" | "b" | "back" | "n" | "no" | "cancel")
-				Start
+				goto="Start"
+				break
 			;;
 			"4" | "q" | "quit" | "c" | "close" | "exit" | "x" | "end")
 				exit 0
@@ -63,21 +69,18 @@ function Fullscreen {
 }
 
 function Game {
-	while true; do
+	echo
+	if [[ -f "roms/${game}.nds" ]]; then
+		echo "Starting ${gamename}"
+		./MelonMix ${fullscreen} "roms/${game}.nds"
+		exit 0
+	else
+		echo "Error: ${game}.nds was not found in roms folder..."
 		echo
-		if [[ -f roms/${game}.nds ]]; then
-			echo "Starting ${gamename}"
-			./MelonMix ${fullscreen} roms/${game}.nds
-			exit 0
-		else
-			echo "Error: ${game}.nds was not found in roms folder..."
-			echo
-			Start
-			Fullscreen
-		fi
-	done
+		goto="Start"
+	fi
 }
 
-Start
-Fullscreen
-Game
+while true; do
+	$goto
+done
