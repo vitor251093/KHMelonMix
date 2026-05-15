@@ -164,7 +164,7 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
 
-// If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
+// If you want to understand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
 #define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
@@ -791,16 +791,55 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_composition()
 
             break;
 
-        case gameScene_Cutscene:
-            if ((GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
+        case gameScene_Cutscene: {
+            if ((GameSceneState & (1 << gameSceneState_topScreenCutscene)) == 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
                         .placeAtCorner(corner_Center)
                         .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
+
+                break;
             }
+            if ((GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) == 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                break;
+            }
+
+            float doubleScreenScale = aspectRatio * 0.5;
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Left)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Right)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .withSize(8, 8)
+                    .placeAtCorner(corner_TopLeft)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .repeatAsBackground()
+                    .build(aspectRatio));
+
             break;
+        }
 
         case gameScene_InGameSaveMenu:
             {
@@ -1060,6 +1099,86 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_composition()
 
             break;
 
+        case gameScene_InGameMenu: {
+            u32 mainMenuView = getCurrentMainMenuView();
+            switch (mainMenuView) {
+                case 6:  // config
+                case 13: // quest list
+                case 17: // challenge view
+                    shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .force()
+                        .build(aspectRatio));
+                    break;
+
+                default:
+                    float doubleScreenScale = aspectRatio * 0.5;
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .placeAtCorner(corner_Left)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .placeAtCorner(corner_Right)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+
+                    // background
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .withSize(1, 1)
+                            .placeAtCorner(corner_TopLeft)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .repeatAsBackground()
+                            .build(aspectRatio));
+            }
+            break;
+        }
+
+        case gameScene_Intro:
+        case gameScene_TitleScreen:
+        case gameScene_WorldSelection:
+        case gameScene_Shop:
+        case gameScene_TheEnd:
+        case gameScene_Other2D:
+        case gameScene_Other: {
+            float doubleScreenScale = aspectRatio * 0.5;
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Left)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Right)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .withSize(1, 1)
+                    .placeAtCorner(corner_TopLeft)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .repeatAsBackground()
+                    .build(aspectRatio));
+
+            break;
+        }
+
         case gameScene_LoadingScreen:
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
@@ -1096,16 +1215,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes
                         .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
-            break;
-
-        case gameScene_InGameMenu:
-            // config and quest list; the others are in horizontal style
-            shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .force()
-                    .build(aspectRatio));
             break;
 
         case gameScene_ResultScreen:
@@ -1764,56 +1873,6 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
     return state;
 }
 
-int PluginKingdomHeartsReCoded::renderer_screenLayout()
-{
-    if (!SingleScreenMode) {
-        return screenLayout_Top;
-    }
-
-    switch (GameScene) {
-        case gameScene_InGameWithMap:
-        case gameScene_PauseMenu:
-        case gameScene_CutsceneWithStaticImages:
-        case gameScene_InGameSaveMenu:
-        case gameScene_InGameDialog:
-        case gameScene_InGameOlympusBattle:
-        case gameScene_ResultScreen:
-            return screenLayout_Top;
-
-        case gameScene_IntroLoadMenu:
-        case gameScene_Tutorial:
-        case gameScene_LoadingScreen:
-            return screenLayout_Bottom;
-
-        case gameScene_Intro:
-        case gameScene_TitleScreen:
-        case gameScene_WorldSelection:
-        case gameScene_Shop:
-        case gameScene_TheEnd:
-        case gameScene_Other2D:
-        case gameScene_Other:
-            return screenLayout_BothHorizontal;
-
-        case gameScene_Cutscene:
-            return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
-    }
-
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        switch (mainMenuView) {
-            case 6:  // config
-            case 13: // quest list
-            case 17: // challenge view
-                return screenLayout_Top;
-
-            default:
-                return screenLayout_BothHorizontal;
-        }
-    }
-
-    return screenLayout_Top;
-};
-
 int PluginKingdomHeartsReCoded::renderer_brightnessMode()
 {
     if (!SingleScreenMode) {
@@ -1821,57 +1880,9 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode()
     }
 
     if (_ShouldHideScreenForTransitions) {
-        return brightnessMode_BlackScreen;
-    }
-    if (GameScene == gameScene_InGameWithMap            ||
-        GameScene == gameScene_PauseMenu                ||
-        GameScene == gameScene_CutsceneWithStaticImages ||
-        GameScene == gameScene_InGameSaveMenu           ||
-        GameScene == gameScene_InGameDialog             ||
-        GameScene == gameScene_InGameOlympusBattle      ||
-        GameScene == gameScene_ResultScreen             ||
-        GameScene == gameScene_Other2D) {
-        return brightnessMode_TopScreen;
-    }
-    if (GameScene == gameScene_Tutorial ||
-        GameScene == gameScene_WorldSelection) {
-        return brightnessMode_BottomScreen;
-    }
-    if (GameScene == gameScene_Intro          ||
-        GameScene == gameScene_WorldSelection ||
-        GameScene == gameScene_Shop           ||
-        GameScene == gameScene_TheEnd         ||
-        GameScene == gameScene_Other2D        ||
-        GameScene == gameScene_Other) {
-        return brightnessMode_Horizontal;
-    }
-    if (GameScene == gameScene_Cutscene) {
-        return brightnessMode_DisableBrightnessControl;
-    }
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        switch (mainMenuView) {
-            case 0:  // nothing
-            case 2:  // main menu root (save menu)
-            case 6:  // config
-            case 13: // quest list
-            case 17: // challenge view
-                return brightnessMode_TopScreen;
-
-            default:
-                return brightnessMode_Horizontal;
-        }
+        return brightnessMode_None;
     }
     return brightnessMode_Default;
-}
-
-float PluginKingdomHeartsReCoded::renderer_forcedAspectRatio()
-{
-    return (GameScene == gameScene_CutsceneWithStaticImages) ? (4.0/3) : AspectRatio;
-};
-
-bool PluginKingdomHeartsReCoded::renderer_showOriginalUI() {
-    return false;
 }
 
 void PluginKingdomHeartsReCoded::onLoadState() {
@@ -2118,7 +2129,20 @@ bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_horizontalDualScreen(i
     return true;
 }
 bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {
-    if (renderer_screenLayout() == screenLayout_BothHorizontal) {
+    if (GameScene == gameScene_InGameMenu) {
+        u32 mainMenuView = getCurrentMainMenuView();
+        switch (mainMenuView) {
+            case 6:  // config
+            case 13: // quest list
+            case 17: // challenge view
+                break;
+
+            default:
+                return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
+        }
+    }
+
+    if (GameScene == gameScene_TitleScreen || GameScene == gameScene_WorldSelection || GameScene == gameScene_Shop) {
         return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
     }
     return false;
@@ -2214,30 +2238,32 @@ bool PluginKingdomHeartsReCoded::isBufferBlack(unsigned int* buffer)
     return !newIsNullScreen && newIsBlackScreen;
 }
 
-u32* PluginKingdomHeartsReCoded::topScreen2DTexture()
+void* PluginKingdomHeartsReCoded::topScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    return nds->GPU.Framebuffer[FrontBuffer][0].get();
+    void* topBuffer; void* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return topBuffer;
 }
 
-u32* PluginKingdomHeartsReCoded::bottomScreen2DTexture()
+void* PluginKingdomHeartsReCoded::bottomScreen2DTexture()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    return nds->GPU.Framebuffer[FrontBuffer][1].get();
+    void* topBuffer; void* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return bottomBuffer;
 }
 
 bool PluginKingdomHeartsReCoded::isTopScreen2DTextureBlack()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
-    return isBufferBlack(topBuffer);
+    void* topBuffer; void* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return isBufferBlack((unsigned int*)topBuffer);
 }
 
 bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
 {
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
-    return isBufferBlack(bottomBuffer);
+    void* topBuffer; void* bottomBuffer;
+    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
+    return isBufferBlack((unsigned int*)bottomBuffer);
 }
 
 bool PluginKingdomHeartsReCoded::isResultScreenVisible()
@@ -2249,7 +2275,7 @@ bool PluginKingdomHeartsReCoded::isResultScreenVisible()
 
 bool PluginKingdomHeartsReCoded::isDeweyDialogVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return (has2DOnTopOf3DAt(buffer, 50, 40) && has2DOnTopOf3DAt(buffer, 140, 40)) ||
            (has2DOnTopOf3DAt(buffer, 50, 70) && has2DOnTopOf3DAt(buffer, 140, 70)) ||
            (has2DOnTopOf3DAt(buffer, 140, 40) && has2DOnTopOf3DAt(buffer, 190, 40)) ||
@@ -2258,7 +2284,7 @@ bool PluginKingdomHeartsReCoded::isDeweyDialogVisible()
 
 bool PluginKingdomHeartsReCoded::isBugLevelVisibleOnTopScreen()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return (has2DOnTopOf3DAt(buffer, 64,  0) || has2DOnTopOf3DAt(buffer, 64,  10)) &&
            (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10)) &&
           !(has2DOnTopOf3DAt(buffer, 170, 0) || has2DOnTopOf3DAt(buffer, 170, 10));
@@ -2266,7 +2292,7 @@ bool PluginKingdomHeartsReCoded::isBugLevelVisibleOnTopScreen()
 
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return (has2DOnTopOf3DAt(buffer, 64,  0) || has2DOnTopOf3DAt(buffer, 64,  10)) &&
            (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10)) &&
            (has2DOnTopOf3DAt(buffer, 170, 0) || has2DOnTopOf3DAt(buffer, 170, 10));
@@ -2274,13 +2300,13 @@ bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
 
 bool PluginKingdomHeartsReCoded::isDialogVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 128, 155);
 }
 
 bool PluginKingdomHeartsReCoded::isMinimapVisible()
 {
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     u32 pixel = getPixel(buffer, 1, 190, 0);
     return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) > 39;
 }
@@ -2292,25 +2318,25 @@ bool PluginKingdomHeartsReCoded::isBugSector()
 
 bool PluginKingdomHeartsReCoded::isChallengeMeterVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 12, 12);
 }
 
 bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 35, 185);
 }
 
 bool PluginKingdomHeartsReCoded::isComboLimitVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 12, 146) && !has2DOnTopOf3DAt(buffer, 35, 185);
 }
 
 bool PluginKingdomHeartsReCoded::isSpeedComboFinisherVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 65, 60) && has2DOnTopOf3DAt(buffer, 65, 75) &&
                                     has2DOnTopOf3DAt(buffer, 65, 90) && has2DOnTopOf3DAt(buffer, 65, 120);
 }
@@ -2354,7 +2380,7 @@ bool PluginKingdomHeartsReCoded::isSpinnerSawFinisherVisible()
 
 bool PluginKingdomHeartsReCoded::isHealthVisible()
 {
-    u32* buffer = topScreen2DTexture();
+    void* buffer = topScreen2DTexture();
     return has2DOnTopOf3DAt(buffer, 233, 175);
 }
 
@@ -2391,7 +2417,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, i
     };
 
     std::vector<ivec4> possibilities;
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     for (int y = minY; y < maxY; y++) {
         for (int x = minX; x < maxX; x++) {
             if ((getPixel(buffer, x, y, 0) == 0x1000343e) || (getPixel(buffer, x, y, 0) == 0x1000383e)) {
@@ -2479,7 +2505,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
     return result;
 }
 
-bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
+bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(void* buffer, int x, int y)
 {
     /*
      * If it matches that condition, there is no 2D on top of 3D
@@ -2568,10 +2594,6 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     u8 gameState2 = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
     bool isWorldSelection = gameState2 == 0x03;
-
-    // Scale of brightness, from 0 (black) to 15 (every element is visible)
-    u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
-    u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);
 
     if (isCutscene)
     {
@@ -2947,8 +2969,8 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
         return 0;
     }
 
-    u32* topScreen = topScreen2DTexture();
-    u32* bottomScreen = bottomScreen2DTexture();
+    void* topScreen = topScreen2DTexture();
+    void* bottomScreen = bottomScreen2DTexture();
     u32 pixel_2_8 = getPixel(topScreen, 2, 8, 0);
     if (pixel_2_8 == 0x04020e1e) { // debug reports
         return 10; // 7, 8, 9, 10, 11, 12
