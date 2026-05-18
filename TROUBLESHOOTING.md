@@ -25,6 +25,13 @@ You need to dump your own DS cartridge. There are multiple ways to do so. Those 
 2. If you are using the bat/sh file, be sure that you are running those from the folder where the Melon Mix application is. They won't work otherwise.
 3. If you are running the Melon Mix from Steam, open the game properties through Steam, and be sure that you filled the "Start in" field with the folder where the Melon Mix application is. It won't work otherwise.
 
+## If I launch Melon Mix through the bat files, it says the ROM was not detected
+
+1. Confirm if your `roms/days.nds` and/or `roms/recoded.nds` files are in the correct location, and have the correct names.
+2. Double-check if they don't have any hidden extensions (one of them may be named `days.nds.nds`, for example). You can verify that in the file Properties.
+3. If you are using Windows 11, check if Smart App Control isn't blocking the bat file from working properly.
+4. If you are using Windows 11, also try rebooting your computer; bricky updates can cause that kind of issue.
+
 ## I can't see one or more cutscenes in Re:Coded
 
 We are currently only replacing the Days cutscenes, and not the Re:Coded ones. If you were not aware of that, double check if you really have an issue.
