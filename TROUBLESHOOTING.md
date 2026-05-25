@@ -42,5 +42,13 @@ We are currently only replacing the Days cutscenes, and not the Re:Coded ones. I
 2. Try reducing the internal resolution.
 3. Try enabling the JIT Recompiler (Emu Settings -> CPU emulation).
 
+## I was playing using the HD Collection, but now I want to play without it, and Melon Mix can't find my save
+That's because the HD collection uses the cloud save location. If you want to stop using the HD collection, you need to get the save, and then move it to the roms folders.
+
+1. On Windows, go to your user's Documents folder. On Linux, right click the game on Steam, press Manage -> Browse local files, go up two folders, and then open "compatdata" / "2552430" / "pfx" / "drive_c" / "users" / "steamuser" / "Documents".
+2. Open "My Games" / "KINGDOM HEARTS HD 1.5+2.5 ReMIX" / "Steam". You will find a single folder there; open it.
+3. Inside that folder, you will find the save files and configs of the 1.5+2.5 collection, plus your Days save, named KHDAYS_WW.sav.
+4. Copy it to your roms folder, rename it to days.sav (you will need to rename the other days.sav file in there to something else) and you will be good to go.
+
 ## How can I play the game in ultrawide aspect ratio?
 On the title bar menu, go to View -> "Aspect Ratio" and change the aspect ratio to "Top window". Then, resize the window to fill your monitor, and reset the game. Upon loading your save, the game is going to run in whichever aspect ratio the window is at this moment.
