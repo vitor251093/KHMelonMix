@@ -102,6 +102,11 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
         connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         connect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
+
+        connect(this, SIGNAL(windowShowCutsceneSkipMenu(int)), window, SLOT(asyncShowCutsceneSkipMenu(int)));
+        connect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
+        connect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
+        connect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
     }
 }
 
@@ -135,6 +140,11 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
         disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         disconnect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
+
+        disconnect(this, SIGNAL(windowShowCutsceneSkipMenu(int)), window, SLOT(asyncShowCutsceneSkipMenu(int)));
+        disconnect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
+        disconnect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
+        disconnect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
     }
 }
 
@@ -875,6 +885,33 @@ void EmuThread::refreshPluginState()
 
     if (emuInstance->plugin->ShouldUnpauseReplacementCutscene()) {
         emit windowUnpauseVideo();
+    }
+
+    if (emuInstance->plugin->ShouldPauseCutsceneEmulation()) {
+        // Freeze the whole emulator (not just the video) while the cutscene is
+        // paused, so the background DS emulation stays in sync with the video.
+        emuStatus = emuStatus_Paused;
+    }
+
+    if (emuInstance->plugin->ShouldResumeCutsceneEmulation()) {
+        emuStatus = emuStatus_Running;
+        enableInvisibleFastMode = true;
+    }
+
+    if (emuInstance->plugin->ShouldShowCutsceneSkipMenu()) {
+        emit windowShowCutsceneSkipMenu(emuInstance->plugin->CutsceneSkipMenuSelection());
+    }
+
+    if (emuInstance->plugin->ShouldUpdateCutsceneSkipMenu()) {
+        emit windowUpdateCutsceneSkipMenu(emuInstance->plugin->CutsceneSkipMenuSelection());
+    }
+
+    if (emuInstance->plugin->ShouldHideCutsceneSkipMenu()) {
+        emit windowHideCutsceneSkipMenu();
+    }
+
+    if (int menuSound = emuInstance->plugin->CutsceneMenuSoundToPlay()) {
+        emit windowPlayCutsceneMenuSound(menuSound);
     }
 
     if (emuInstance->plugin->ShouldReturnToGameAfterCutscene()) {

@@ -4,5 +4,11 @@
     <file>ds_back.svg</file>
     <file>KHGummi.ttf</file>
     <file>KHMenu.ttf</file>
+    <file>menu_hand.png</file>
+    <file>menu_light.png</file>
+    <file>sfx_menu_enter.wav</file>
+    <file>sfx_menu_continue.wav</file>
+    <file>sfx_menu_move.wav</file>
+    <file>sfx_menu_select.wav</file>
   </qresource>
 </RCC>

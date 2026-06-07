@@ -1798,6 +1798,11 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
         return;
     }
 
+    // While the cutscene Skip/Continue menu is open, the d-pad navigates it.
+    if (_superApplyAddonKeysToCutsceneMenu(AddonMask, AddonPress, HK_CommandMenuUp, HK_CommandMenuDown)) {
+        return;
+    }
+
     if ((*AddonPress) & (1 << HK_HUDToggle)) {
         hudToggle();
     }

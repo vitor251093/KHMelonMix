@@ -189,6 +189,11 @@ public:
     std::vector<const char*> customKeyMappingLabels = {};
 
     bool _superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
+    // Lets the Skip/Continue menu be navigated with the d-pad, which games map to
+    // "command menu" addon keys (a different path than InputMask). Returns true
+    // when the menu is open, so the caller should consume these keys and skip its
+    // own addon handling. upBit/downBit are the addon-key indices for up/down.
+    bool _superApplyAddonKeysToCutsceneMenu(u32* AddonMask, u32* AddonPress, int upBit, int downBit);
     virtual void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress);
     virtual void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* AddonMask, u32* AddonPress) {};
 
@@ -224,6 +229,20 @@ public:
     bool ShouldReturnToGameAfterCutscene();
     bool ShouldUnmuteAfterCutscene();
     CutsceneEntry* CurrentCutscene();
+
+    inline bool ShouldShowCutsceneSkipMenu() { return checkAndResetBool(_ShouldShowCutsceneSkipMenu); }
+    inline bool ShouldHideCutsceneSkipMenu() { return checkAndResetBool(_ShouldHideCutsceneSkipMenu); }
+    inline bool ShouldUpdateCutsceneSkipMenu() { return checkAndResetBool(_ShouldUpdateCutsceneSkipMenu); }
+    inline int CutsceneSkipMenuSelection() { return _CutsceneSkipMenuSelection; }
+
+    // One-shot sound request for the cutscene pause menu.
+    // 1 = enter, 2 = move (up/down), 3 = continue, 4 = select; 0 = none.
+    inline int CutsceneMenuSoundToPlay() { int v = _CutsceneMenuSoundRequest; _CutsceneMenuSoundRequest = 0; return v; }
+
+    // Pause/resume the whole emulator (not just the video) while an HD cutscene is
+    // paused, so the background DS emulation and the video can't drift out of sync.
+    inline bool ShouldPauseCutsceneEmulation() { return checkAndResetBool(_ShouldPauseCutsceneEmulation); }
+    inline bool ShouldResumeCutsceneEmulation() { return checkAndResetBool(_ShouldResumeCutsceneEmulation); }
 
     virtual CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
     virtual u32 detectTopScreenMobiCutsceneAddress() {return 0;};
@@ -397,6 +416,7 @@ protected:
     bool DaysDisableHisMemories = false;
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
+    bool PauseInsteadOfSkipOnStart = true;
     std::string SelectedAudioPack = "";
 
     bool _LastTouchScreenMovementWasByPlugin = false;
@@ -420,6 +440,17 @@ protected:
     bool _ShouldReturnToGameAfterCutscene = false;
     bool _ShouldUnmuteAfterCutscene = false;
     bool _ShouldHideScreenForTransitions = false;
+
+    bool _ShowingCutsceneSkipMenu = false;
+    int _CutsceneSkipMenuSelection = 0; // 0 = Continue, 1 = Skip
+    bool _ShouldShowCutsceneSkipMenu = false;
+    bool _ShouldHideCutsceneSkipMenu = false;
+    bool _ShouldUpdateCutsceneSkipMenu = false;
+    bool _ShouldPauseCutsceneEmulation = false;
+    bool _ShouldResumeCutsceneEmulation = false;
+    u32 _LastCutsceneMenuButtons = 0; // held-button snapshot for rising-edge detection
+    int _CutsceneMenuSoundRequest = 0; // 1=enter, 2=move, 3=continue, 4=select; 0=none
+
     CutsceneEntry* _CurrentCutscene = nullptr;
     CutsceneEntry* _NextCutscene = nullptr;
     CutsceneEntry* _LastCutscene = nullptr;

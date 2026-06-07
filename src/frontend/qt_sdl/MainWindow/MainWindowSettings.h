@@ -22,14 +22,15 @@
 #include <QMainWindow>
 #include <QStackedWidget>
 #include <QMediaPlayer>
-#include <QVideoWidget>
 #include <QAudioOutput>
 #include <QMediaDevices>
 #include <QAudioDevice>
+#include <QByteArray>
 #include <QPushButton>
 #include <initializer_list>
 
 #include "Config.h"
+#include "CutsceneVideoView.h"
 
 class EmuInstance;
 
@@ -74,6 +75,18 @@ public slots:
     void pauseVideo();
     void unpauseVideo();
 
+    void asyncShowCutsceneSkipMenu(int selection);
+    void asyncUpdateCutsceneSkipMenu(int selection);
+    void asyncHideCutsceneSkipMenu();
+
+    void showCutsceneSkipMenu(int selection);
+    void updateCutsceneSkipMenu(int selection);
+    void hideCutsceneSkipMenu();
+
+    // kind: 1 = enter, 2 = move (up/down), 3 = continue, 4 = select
+    void asyncPlayCutsceneMenuSound(int kind);
+    void playCutsceneMenuSound(int kind);
+
 private slots:
     void onBgmFadeOutCompleted(melonMix::AudioPlayer* playerStopped);
     void startBgmMusicDelayed(quint16 bgmId, quint8 volume, bool bResumePos, QString bgmMusicFilePath);
@@ -98,7 +111,7 @@ private:
     QScopedPointer<QMediaDevices> mediaDevices;
     QAudioDevice currentOutputDevice;
 
-    QScopedPointer<QVideoWidget> playerWidget;
+    CutsceneVideoView* playerView = nullptr;
     QScopedPointer<QAudioOutput> playerAudioOutput;
     QScopedPointer<QMediaPlayer> player;
 
@@ -107,7 +120,17 @@ private:
     quint16 bgmToResumeId = 0;
     quint64 bgmToResumePosition = 0;
 
+    // Menu sound effects, indexed by sound kind 1..4 (slot 0 unused). We preload the
+    // decoded PCM and play it through a dedicated SDL audio device using the queue API.
+    // Qt Multimedia (QSoundEffect / QAudioSink) was unusable here: its Linux GStreamer
+    // backend either degrades the sound on repeated playback or churns GObjects (one
+    // "g_object_unref" critical per replay). SDL is already our audio backend and the
+    // clear+queue API restarts the clip cleanly with no object churn.
+    QByteArray m_sfxPcm[5];
+    unsigned int m_sfxAudioDevice = 0; // SDL_AudioDeviceID (0 = not open)
+
     void createVideoPlayer();
+    void createMenuSounds();
     qreal getBgmMusicVolume(quint8 ramVolume);
 };
 

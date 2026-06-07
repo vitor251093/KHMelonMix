@@ -299,11 +299,17 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
 bool Plugin::togglePause()
 {
     if (_RunningReplacementCutscene) {
+        if (_ShowingCutsceneSkipMenu) {
+            // the Skip/Continue menu owns pause state; ignore the pause hotkey
+            return true;
+        }
         if (_PausedReplacementCutscene) {
             _ShouldUnpauseReplacementCutscene = true;
+            _ShouldResumeCutsceneEmulation = true;
         }
         else {
             _ShouldPauseReplacementCutscene = true;
+            _ShouldPauseCutsceneEmulation = true;
         }
         return true;
     }
@@ -328,7 +334,78 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         return false;
     }
 
-    if (_RunningReplacementCutscene && !_PausedReplacementCutscene && (_SkipDsCutscene || (~(*InputMask)) & (1 << 3)) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
+    // New behavior: pressing Start during an HD cutscene opens a Skip/Continue menu
+    // (pausing the video) instead of skipping immediately. Gated by a setting so the
+    // classic instant-skip behavior can be restored.
+    if (PauseInsteadOfSkipOnStart && _RunningReplacementCutscene && _CanSkipHdCutscene) {
+        const u32 BTN_A     = (1 << 0);
+        const u32 BTN_START = (1 << 3);
+        const u32 BTN_UP    = (1 << 6);
+        const u32 BTN_DOWN  = (1 << 7);
+
+        u32 pressed = (~(*InputMask)) & 0xFFF;
+        u32 justPressed = pressed & ~_LastCutsceneMenuButtons; // rising edge only
+        _LastCutsceneMenuButtons = pressed;
+
+        if (!_ShowingCutsceneSkipMenu) {
+            if (!_PausedReplacementCutscene && (justPressed & BTN_START)) {
+                // open the menu and pause both the video and the emulator (so the
+                // background DS cutscene can't drift out of sync while the menu is up)
+                _ShowingCutsceneSkipMenu = true;
+                _CutsceneSkipMenuSelection = 0; // default to Continue
+                _ShouldShowCutsceneSkipMenu = true;
+                _ShouldPauseReplacementCutscene = true;
+                _ShouldPauseCutsceneEmulation = true;
+                _CutsceneMenuSoundRequest = 1; // enter
+            }
+        }
+        else {
+            if (justPressed & (BTN_UP | BTN_DOWN)) {
+                _CutsceneSkipMenuSelection = _CutsceneSkipMenuSelection == 0 ? 1 : 0;
+                _ShouldUpdateCutsceneSkipMenu = true;
+                _CutsceneMenuSoundRequest = 2; // move
+            }
+            else if (justPressed & BTN_START) {
+                // Start always means Continue (matches the in-game menu)
+                _ShowingCutsceneSkipMenu = false;
+                _ShouldHideCutsceneSkipMenu = true;
+                _ShouldUnpauseReplacementCutscene = true;
+                _ShouldResumeCutsceneEmulation = true;
+                _CutsceneMenuSoundRequest = 3; // continue
+            }
+            else if (justPressed & BTN_A) {
+                _ShowingCutsceneSkipMenu = false;
+                _ShouldHideCutsceneSkipMenu = true;
+                _CutsceneMenuSoundRequest = 4; // select
+                if (_CutsceneSkipMenuSelection == 1) {
+                    // Skip: keep the video paused/silent and hand off to the skip flow.
+                    _PausedReplacementCutscene = false; // let the skip branch below run
+                    _ShouldResumeCutsceneEmulation = true;
+                    _SkipDsCutscene = true;
+                }
+                else {
+                    // Continue: resume both video and emulation
+                    _ShouldUnpauseReplacementCutscene = true;
+                    _ShouldResumeCutsceneEmulation = true;
+                }
+            }
+            // B (and everything else) does nothing while the menu is open
+        }
+
+        // While an HD cutscene is playing with the menu enabled, these buttons are
+        // reserved for the menu (open / navigate / confirm / continue) and must
+        // never reach the background DS - not only on the open/close frames but for
+        // as long as they stay held afterwards. Otherwise a Start still held for a
+        // few frames after continuing leaks through and pauses/disrupts the DS
+        // cutscene. The skip sequence below re-asserts Start when it must feed it.
+        *InputMask |= BTN_A | BTN_START | BTN_UP | BTN_DOWN;
+    }
+
+    // In menu mode a raw Start press must never skip directly; only the menu's
+    // "Skip" option (which sets _SkipDsCutscene) is allowed to trigger a skip.
+    bool startSkipPress = !PauseInsteadOfSkipOnStart && (((~(*InputMask)) & (1 << 3)) != 0);
+
+    if (_RunningReplacementCutscene && !_PausedReplacementCutscene && (_SkipDsCutscene || startSkipPress) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
         _SkipDsCutscene = true;
         if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
             _SkipDsCutscene = false;
@@ -365,6 +442,24 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         }
     }
 
+    return true;
+}
+
+bool Plugin::_superApplyAddonKeysToCutsceneMenu(u32* AddonMask, u32* AddonPress, int upBit, int downBit)
+{
+    if (!_ShowingCutsceneSkipMenu) {
+        return false;
+    }
+
+    u32 navPress = (*AddonPress) & (((u32)1 << upBit) | ((u32)1 << downBit));
+    if (navPress != 0) {
+        _CutsceneSkipMenuSelection = _CutsceneSkipMenuSelection == 0 ? 1 : 0;
+        _ShouldUpdateCutsceneSkipMenu = true;
+        _CutsceneMenuSoundRequest = 2; // move
+    }
+
+    // While the menu is open it owns input; don't let command-menu keys reach the game.
+    *AddonMask = 0;
     return true;
 }
 
@@ -793,6 +888,15 @@ void Plugin::onReplacementCutsceneEnd() {
     _ShouldStopReplacementCutscene = false;
     _ShouldReturnToGameAfterCutscene = true;
     _ShouldHideScreenForTransitions = false;
+
+    // Tear down the skip/continue menu if the cutscene ended while it was open
+    if (_ShowingCutsceneSkipMenu) {
+        _ShouldHideCutsceneSkipMenu = true;
+    }
+    _ShowingCutsceneSkipMenu = false;
+    _CutsceneSkipMenuSelection = 0;
+    _LastCutsceneMenuButtons = 0;
+    _ShouldPauseCutsceneEmulation = false; // returning to game already resumes the emulator
 }
 void Plugin::onReturnToGameAfterCutscene() {
     printf("Returning to the game\n");
@@ -1237,6 +1341,7 @@ void Plugin::_superLoadConfigs(
     DaysDisableHisMemories = getBoolConfig(root + ".DaysDisableHisMemories");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
+    PauseInsteadOfSkipOnStart = !getBoolConfig(root + ".InstantSkipCutsceneOnStart");
     UIScale = getIntConfig(root + ".HUDScale");
     UIScale = (UIScale == 0) ? 4 : UIScale;
     SelectedAudioPack = getStringConfig(root + ".AudioPack");

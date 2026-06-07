@@ -22,6 +22,9 @@
 #include <QDebug>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QTimer>
+#include <QFile>
+#include <QGraphicsVideoItem>
 
 #include <SDL2/SDL.h>
 
@@ -43,7 +46,6 @@ MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
     localCfg(inst->getLocalConfig()),
     ui(new Ui::MainWindowSettings),
     mediaDevices(new QMediaDevices()),
-    playerWidget(new QVideoWidget(this)),
     playerAudioOutput(new QAudioOutput(this)),
     player(new QMediaPlayer(this))
 {
@@ -59,6 +61,10 @@ MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
 MainWindowSettings::~MainWindowSettings()
 {
     disconnect(mediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &MainWindowSettings::onAudioOutputsChanged);
+    if (m_sfxAudioDevice) {
+        SDL_CloseAudioDevice(m_sfxAudioDevice);
+        m_sfxAudioDevice = 0;
+    }
 }
 
 void MainWindowSettings::initWidgets()
@@ -257,10 +263,9 @@ void MainWindowSettings::onBgmFadeOutCompleted(melonMix::AudioPlayer* playerStop
 
 void MainWindowSettings::createVideoPlayer()
 {
-    playerWidget->setCursor(Qt::BlankCursor);
-
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    centralWidget->addWidget(playerWidget.get());
+    playerView = new CutsceneVideoView(this);
+    centralWidget->addWidget(playerView);
 
     connect(player.get(), &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         printf("======= MediaStatus: %d\n", status);
@@ -286,8 +291,70 @@ void MainWindowSettings::createVideoPlayer()
     });
 #endif
 
-    player->setVideoOutput(playerWidget.get());
+    player->setVideoOutput(playerView->videoItem());
     player->setAudioOutput(playerAudioOutput.get());
+
+    createMenuSounds();
+}
+
+// Reads the raw PCM sample bytes from a 16-bit/44.1kHz/stereo WAV resource, parsing the
+// RIFF chunks (so a non-canonical header / metadata chunk is handled gracefully).
+static QByteArray loadWavPcm(const QString& path)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly)) {
+        return {};
+    }
+    const QByteArray all = f.readAll();
+    f.close();
+
+    auto u32 = [&](int o) {
+        return (quint32)((quint8)all[o] | ((quint8)all[o + 1] << 8) |
+                         ((quint8)all[o + 2] << 16) | ((quint32)(quint8)all[o + 3] << 24));
+    };
+
+    if (all.size() < 12 || all.left(4) != "RIFF" || all.mid(8, 4) != "WAVE") {
+        return {};
+    }
+
+    int pos = 12;
+    while (pos + 8 <= all.size()) {
+        const QByteArray id = all.mid(pos, 4);
+        const quint32 sz = u32(pos + 4);
+        const int body = pos + 8;
+        if (id == "data") {
+            return all.mid(body, sz);
+        }
+        pos = body + sz + (sz & 1); // chunks are word-aligned
+    }
+    return {};
+}
+
+void MainWindowSettings::createMenuSounds()
+{
+    static const char* sources[5] = {
+        nullptr,                       // 0: unused
+        ":/ds/sfx_menu_enter.wav",     // 1: enter
+        ":/ds/sfx_menu_move.wav",      // 2: move (up/down)
+        ":/ds/sfx_menu_continue.wav",  // 3: continue
+        ":/ds/sfx_menu_select.wav",    // 4: select
+    };
+    for (int i = 1; i < 5; i++) {
+        m_sfxPcm[i] = loadWavPcm(QString::fromLatin1(sources[i]));
+    }
+
+    // Dedicated SDL audio device for menu SFX (the WAVs are s16le / 44.1kHz / stereo).
+    SDL_AudioSpec want, got;
+    memset(&want, 0, sizeof(want));
+    want.freq = 44100;
+    want.format = AUDIO_S16LSB;
+    want.channels = 2;
+    want.samples = 1024;
+    want.callback = nullptr; // use the SDL_QueueAudio API instead of a callback
+    m_sfxAudioDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &got, 0);
+    if (m_sfxAudioDevice) {
+        SDL_PauseAudioDevice(m_sfxAudioDevice, 0); // unpause: play queued audio
+    }
 }
 
 void MainWindowSettings::asyncStartVideo(QString videoFilePath)
@@ -304,7 +371,7 @@ void MainWindowSettings::startVideo(QString videoFilePath)
 #endif
 
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-    centralWidget->setCurrentWidget(playerWidget.get());
+    centralWidget->setCurrentWidget(playerView);
 
     int volume = localCfg.GetInt("Audio.Volume");
     playerAudioOutput->setVolume(volume / 256.0);
@@ -319,10 +386,13 @@ void MainWindowSettings::asyncStopVideo()
 
 void MainWindowSettings::stopVideo()
 {
-    bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
-    if (isCutscenePlaying) {
+    // Stop regardless of whether the video is playing or paused, so a cutscene
+    // skipped from the (paused) menu doesn't leave its audio playing.
+    if (player->playbackState() != QMediaPlayer::PlaybackState::StoppedState) {
         player->stop();
     }
+
+    hideCutsceneSkipMenu();
 
     showGame();
 
@@ -347,6 +417,69 @@ void MainWindowSettings::asyncUnpauseVideo()
 void MainWindowSettings::unpauseVideo()
 {
     player->play();
+}
+
+void MainWindowSettings::asyncShowCutsceneSkipMenu(int selection)
+{
+    QMetaObject::invokeMethod(this, "showCutsceneSkipMenu", Qt::QueuedConnection, Q_ARG(int, selection));
+}
+
+void MainWindowSettings::showCutsceneSkipMenu(int selection)
+{
+    if (!playerView) {
+        return;
+    }
+    playerView->setMenuSelection(selection);
+    playerView->setMenuVisible(true);
+}
+
+void MainWindowSettings::asyncUpdateCutsceneSkipMenu(int selection)
+{
+    QMetaObject::invokeMethod(this, "updateCutsceneSkipMenu", Qt::QueuedConnection, Q_ARG(int, selection));
+}
+
+void MainWindowSettings::updateCutsceneSkipMenu(int selection)
+{
+    if (!playerView) {
+        return;
+    }
+    playerView->setMenuSelection(selection);
+}
+
+void MainWindowSettings::asyncHideCutsceneSkipMenu()
+{
+    QMetaObject::invokeMethod(this, "hideCutsceneSkipMenu", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::hideCutsceneSkipMenu()
+{
+    if (playerView) {
+        playerView->setMenuVisible(false);
+    }
+}
+
+void MainWindowSettings::asyncPlayCutsceneMenuSound(int kind)
+{
+    QMetaObject::invokeMethod(this, "playCutsceneMenuSound", Qt::QueuedConnection, Q_ARG(int, kind));
+}
+
+void MainWindowSettings::playCutsceneMenuSound(int kind)
+{
+    if (kind < 1 || kind > 4 || m_sfxPcm[kind].isEmpty() || !m_sfxAudioDevice) {
+        return;
+    }
+
+    // Scale to the configured output volume (SDL mix volume is 0..128).
+    int vol = qBound(0, localCfg.GetInt("Audio.Volume") / 2, SDL_MIX_MAXVOLUME);
+    const QByteArray& pcm = m_sfxPcm[kind];
+    QByteArray scaled(pcm.size(), '\0');
+    SDL_MixAudioFormat(reinterpret_cast<Uint8*>(scaled.data()),
+                       reinterpret_cast<const Uint8*>(pcm.constData()),
+                       AUDIO_S16LSB, (Uint32)pcm.size(), vol);
+
+    // Clear any still-queued clip so a new press restarts immediately (responsive nav).
+    SDL_ClearQueuedAudio(m_sfxAudioDevice);
+    SDL_QueueAudio(m_sfxAudioDevice, scaled.constData(), (Uint32)scaled.size());
 }
 
 void MainWindowSettings::keyPressEvent(QKeyEvent* event)
