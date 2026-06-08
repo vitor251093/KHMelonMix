@@ -178,6 +178,11 @@ signals:
     void windowPauseVideo();
     void windowUnpauseVideo();
 
+    void windowShowCutsceneSkipMenu(int selection);
+    void windowUpdateCutsceneSkipMenu(int selection);
+    void windowHideCutsceneSkipMenu();
+    void windowPlayCutsceneMenuSound(int kind);
+
 private:
     MainWindow* mainWindow;
 
