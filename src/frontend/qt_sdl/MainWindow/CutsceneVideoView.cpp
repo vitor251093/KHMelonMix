@@ -82,11 +82,39 @@ static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
     }
 }
 
+// Localized pause-menu strings, indexed by DS firmware Language order
+// (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es). "Continue" wording matches the KH HD Collection's own
+// movie/pause menu; "Skip" has no collection equivalent (its theater uses "Return to Title
+// Screen"), so it uses standard translations - Italian "Salta" and Spanish "Saltar" do match
+// the collection's in-game skip wording. The title is the stylized "PAUSE" header: uppercased
+// to match the English logo (none of these words carry accents, so all-caps is safe) and using
+// the title *noun* per language (Pause/Pausa) rather than the collection's verb action label
+// ("Pausieren"/"Metti in pausa"). Japanese katakana ポーズ has no case. Stored as UTF-8 narrow
+// literals (this file is UTF-8, like subtitleLanguageFolder's folder names) and decoded via
+// QString::fromUtf8 at use.
+struct CutsceneMenuStrings { const char* title; const char* cont; const char* skip; };
+static CutsceneMenuStrings cutsceneMenuStrings(int language)
+{
+    static const CutsceneMenuStrings table[6] = {
+        { "ポーズ",  "つづける",     "スキップ" },        // 0 Japanese
+        { "PAUSE",  "Continue",    "Skip" },            // 1 English
+        { "PAUSE",  "Continuer",   "Passer" },          // 2 French
+        { "PAUSE",  "Fortfahren",  "Überspringen" },    // 3 German
+        { "PAUSA",  "Continua",    "Salta" },           // 4 Italian
+        { "PAUSA",  "Continuar",   "Saltar" },          // 5 Spanish
+    };
+    if (language < 0 || language >= 6) language = 1; // English fallback
+    return table[language];
+}
+
 // Paints the Skip/Continue menu in device (pixel) coordinates over a w*h area.
 // 't' is the animation clock in seconds, used to drive the hand bob and the glow
-// orbit so the selected entry matches the live KH2 pause menu.
-static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, double t)
+// orbit so the selected entry matches the live KH2 pause menu. 'language' selects the
+// localized labels (firmware Language order; see cutsceneMenuStrings).
+static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, double t, int language)
 {
+    const CutsceneMenuStrings strings = cutsceneMenuStrings(language);
+
     ensureCutsceneMenuAssets();
     static const QPixmap handPixmap(":/ds/menu_hand.png");
     static const QPixmap lightPixmap(":/ds/menu_light.png");
@@ -107,7 +135,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     titleFont.setItalic(true);
     p.setFont(titleFont);
 
-    const QString title = "PAUSE";
+    const QString title = QString::fromUtf8(strings.title);
     QFontMetrics tfm(titleFont);
     int titleW = tfm.horizontalAdvance(title);
     int titleH = tfm.height();
@@ -132,7 +160,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     p.drawLine(cx - lineHalf, lineYBot, cx + lineHalf, lineYBot);
 
     // Continue / Skip buttons in the rounded KH menu-entry font
-    const char* labels[2] = { "Continue", "Skip" };
+    const QString labels[2] = { QString::fromUtf8(strings.cont), QString::fromUtf8(strings.skip) };
     int btnW = (int)(w * 0.26);
     int btnH = (int)qMax(28.0, h * 0.075);
     int spacing = (int)(btnH * 0.35);
@@ -140,6 +168,18 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
 
     QFont btnFont("KHMenu");
     btnFont.setPixelSize((int)qMax(15.0, h * 0.040));
+    // Some localized labels are wider than the English ones (e.g. German "Überspringen").
+    // Shrink the font until the widest label fits the button's flat area - the rounded caps
+    // eat ~btnH of width - so labels stay inside the button rather than being clipped.
+    {
+        const qreal avail = btnW - btnH;
+        QFontMetrics bfm(btnFont);
+        int widest = 0;
+        for (const QString& l : labels) widest = qMax(widest, bfm.horizontalAdvance(l));
+        if (widest > avail && avail > 0) {
+            btnFont.setPixelSize(qMax(10, (int)(btnFont.pixelSize() * avail / widest)));
+        }
+    }
     p.setFont(btnFont);
 
     for (int i = 0; i < 2; i++)
@@ -271,6 +311,14 @@ void CutsceneVideoView::setMenuSelection(int selection)
     }
 }
 
+void CutsceneVideoView::setMenuLanguage(int language)
+{
+    m_menuLanguage = language;
+    if (m_menuVisible && viewport()) {
+        viewport()->update();
+    }
+}
+
 void CutsceneVideoView::resizeEvent(QResizeEvent* event)
 {
     QGraphicsView::resizeEvent(event);
@@ -318,7 +366,7 @@ void CutsceneVideoView::drawForeground(QPainter* painter, const QRectF& rect)
     const double t = m_animClock.isValid() ? m_animClock.elapsed() / 1000.0 : 0.0;
     painter->save();
     painter->resetTransform();
-    paintCutsceneSkipMenu(*painter, viewport()->width(), viewport()->height(), m_menuSelection, t);
+    paintCutsceneSkipMenu(*painter, viewport()->width(), viewport()->height(), m_menuSelection, t, m_menuLanguage);
     painter->restore();
 }
 

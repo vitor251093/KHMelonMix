@@ -365,13 +365,13 @@ void MainWindowSettings::createMenuSounds()
     }
 }
 
-void MainWindowSettings::asyncStartVideo(QString videoFilePath, QString subtitlesFilePath)
+void MainWindowSettings::asyncStartVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage)
 {
     QMetaObject::invokeMethod(this, "startVideo", Qt::QueuedConnection,
-        Q_ARG(QString, videoFilePath), Q_ARG(QString, subtitlesFilePath));
+        Q_ARG(QString, videoFilePath), Q_ARG(QString, subtitlesFilePath), Q_ARG(int, menuLanguage));
 }
 
-void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFilePath)
+void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     player->setMedia(QUrl::fromLocalFile(videoFilePath));
@@ -381,6 +381,8 @@ void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFile
 
     // Load subtitles for this cutscene (an empty path clears any previous cues).
     playerView->loadSubtitles(subtitlesFilePath);
+    // Localize the pause menu to match the cutscene's language.
+    playerView->setMenuLanguage(menuLanguage);
 
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(playerView);

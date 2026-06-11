@@ -173,7 +173,7 @@ signals:
     void windowUpdateBgmMusicVolume(quint8 volume);
     void windowStopAllBgm();
 
-    void windowStartVideo(QString videoFilePath, QString subtitlesFilePath);
+    void windowStartVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage);
     void windowStopVideo();
     void windowPauseVideo();
     void windowUnpauseVideo();

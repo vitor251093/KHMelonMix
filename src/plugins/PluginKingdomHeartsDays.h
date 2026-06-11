@@ -61,6 +61,7 @@ public:
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) override;
     std::string replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) override;
+    int cutsceneMenuLanguage() override;
     std::string subtitleLanguageFolder();
     std::string localizationFilePath(std::string language) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
