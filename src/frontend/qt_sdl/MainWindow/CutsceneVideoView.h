@@ -21,6 +21,10 @@
 
 #include <QGraphicsView>
 #include <QElapsedTimer>
+#include <QVector>
+#include <QString>
+#include <QPixmap>
+#include <QSize>
 
 class QGraphicsScene;
 class QGraphicsVideoItem;
@@ -40,15 +44,33 @@ public:
     void setMenuVisible(bool visible);
     void setMenuSelection(int selection);
 
+    // Parses a SubRip (.srt) subtitle file (empty path clears subtitles). See loadSubtitles.
+    void loadSubtitles(const QString& filePath);
+    // Updates the active cue from the current playback position (milliseconds), repainting on change.
+    void setPlaybackPosition(qint64 ms);
+
 protected:
     void resizeEvent(QResizeEvent* event) override;
     void drawForeground(QPainter* painter, const QRectF& rect) override;
 
 private:
+    struct SubtitleCue { qint64 startMs; qint64 endMs; QString text; };
+
     QGraphicsScene* m_scene = nullptr;
     QGraphicsVideoItem* m_videoItem = nullptr;
     bool m_menuVisible = false;
     int m_menuSelection = 0; // 0 = Continue, 1 = Skip
+
+    // Subtitle cues for the current cutscene, sorted by start time, and the active one (-1 = none).
+    QVector<SubtitleCue> m_cues;
+    int m_activeCue = -1;
+
+    // The active cue is pre-rendered (text + outline) into a pixmap and cached, so the per-video-
+    // frame repaint is just a blit rather than rebuilding/stroking a QPainterPath every frame.
+    // Rebuilt only when the cue text or the viewport size changes.
+    QPixmap m_subtitlePixmap;
+    QString m_subtitleCacheText;
+    QSize m_subtitleCacheSize;
 
     // Drives the hand-bob and glow-orbit animations while the menu is visible.
     QTimer* m_animTimer = nullptr;

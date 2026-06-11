@@ -44,6 +44,7 @@ void PluginSettingsDialog::setEnabled()
         ui->cbFFLoadingScreens->setEnabled(false);
         ui->cbDaysDisableHisMemories->setEnabled(false);
         ui->cbInstantSkipCutscene->setEnabled(false);
+        ui->cbShowSubtitles->setEnabled(false);
         ui->cbxAudioPack->setEnabled(false);
         ui->sbHUDSize->setEnabled(false);
         ui->sbCameraSensitivity->setEnabled(false);
@@ -80,6 +81,7 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
         oldFFLoadingScreens = cfg.GetBool(root + ".FastForwardLoadingScreens");
         oldDaysDisableHisMemories = cfg.GetBool(root + ".DaysDisableHisMemories");
         oldInstantSkipCutscene = cfg.GetBool(root + ".InstantSkipCutsceneOnStart");
+        oldShowSubtitles = cfg.GetBool(root + ".SubtitlesEnabled");
         oldAudioPack = cfg.GetString(root + ".AudioPack");
         oldHUDSize = cfg.GetInt(root + ".HUDScale");
         oldHUDSize = (oldHUDSize == 0) ? 4 : oldHUDSize;
@@ -91,6 +93,7 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
         ui->cbFFLoadingScreens->setChecked(oldFFLoadingScreens != 0);
         ui->cbDaysDisableHisMemories->setChecked(oldDaysDisableHisMemories != 0);
         ui->cbInstantSkipCutscene->setChecked(oldInstantSkipCutscene != 0);
+        ui->cbShowSubtitles->setChecked(oldShowSubtitles != 0);
 
         auto audioPackNames = plugin->audioPackNames();
         ui->cbxAudioPack->addItem(QString::fromStdString("None"));
@@ -145,6 +148,7 @@ void PluginSettingsDialog::on_PluginSettingsDialog_rejected()
     cfg.SetBool(root + ".FastForwardLoadingScreens", oldFFLoadingScreens);
     cfg.SetBool(root + ".DaysDisableHisMemories", oldDaysDisableHisMemories);
     cfg.SetBool(root + ".InstantSkipCutsceneOnStart", oldInstantSkipCutscene);
+    cfg.SetBool(root + ".SubtitlesEnabled", oldShowSubtitles);
     cfg.SetString(root + ".AudioPack", oldAudioPack);
     cfg.SetInt(root + ".HUDScale", oldHUDSize);
     cfg.SetInt(root + ".CameraSensitivity", oldCameraSensitivity);
@@ -205,6 +209,17 @@ void PluginSettingsDialog::on_cbInstantSkipCutscene_stateChanged(int state)
 
     auto& cfg = emuInstance->getGlobalConfig();
     cfg.SetBool(root + ".InstantSkipCutsceneOnStart", state != 0);
+
+    emit updatePluginSettings();
+}
+
+void PluginSettingsDialog::on_cbShowSubtitles_stateChanged(int state)
+{
+    auto plugin = emuInstance->plugin;
+    std::string root = plugin->tomlUniqueIdentifier();
+
+    auto& cfg = emuInstance->getGlobalConfig();
+    cfg.SetBool(root + ".SubtitlesEnabled", state != 0);
 
     emit updatePluginSettings();
 }
