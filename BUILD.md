@@ -40,19 +40,29 @@
 5. Install dependencies:  
    Replace `<prefix>` below with `mingw-w64-ucrt-x86_64` on x64 systems, or `mingw-w64-clang-aarch64` on ARM64 systems.
    ```bash
-   pacman -S <prefix>-{toolchain,cmake,SDL2,libarchive,enet,zstd,faad2,flac,lua}
+   pacman -S <prefix>-{toolchain,cmake,ninja,SDL2,libarchive,enet,zstd,faad2,flac,lua}
    ```
-6. Install Qt and configure the build directory
-   * Dynamic builds (with DLLs)
-     1. Install Qt: `pacman -S <prefix>-{qt6-base,qt6-svg,qt6-multimedia,qt6-svg,qt6-tools}`
-     2. Set up the build directory with `cmake -B build`
-   * Static builds (without DLLs, standalone executable)
-     1. Install Qt: `pacman -S <prefix>-qt5-static`  
-        (Note: As of writing, the `qt6-static` package does not work.)
-     2. Set up the build directory with `cmake -B build -DBUILD_STATIC=ON -DUSE_QT6=OFF -DCMAKE_PREFIX_PATH=$MSYSTEM_PREFIX/qt5-static`
-7. Compile: `cmake --build build`
+6. Install Qt 6:
+   The frontend requires Qt 6 (it uses the Qt 6 multimedia API); Qt 5 is no longer supported.
+   ```bash
+   pacman -S <prefix>-{qt6-base,qt6-svg,qt6-multimedia,qt6-tools}
+   ```
+7. Configure and compile:
+   ```bash
+   cmake -B build
+   cmake --build build
+   ```
 
-If everything went well, KH Melon Mix should now be in the `build` folder. For dynamic builds, you may need to run melonDS from the MSYS2 terminal in order for it to find the required DLLs.
+If everything went well, `melonDS.exe` should now be in the `build` folder. This is a dynamically-linked build, so run it from the MSYS2 UCRT64 terminal (or copy the required DLLs next to the executable) so it can find the Qt/SDL DLLs.
+
+### Standalone (static) builds
+The distributable Windows builds produced by CI are statically linked so they run without any MSYS2 DLLs. These builds use vcpkg to compile the dependencies from source through a CMake preset - the same path as [`.github/workflows/build-windows.yml`](.github/workflows/build-windows.yml).
+```bash
+pacman -S <prefix>-{toolchain,cmake,ninja,git}
+cmake --preset=release-mingw-x86_64
+cmake --build --preset=release-mingw-x86_64
+```
+The first configure is slow because vcpkg builds every dependency, including Qt 6, from source. The resulting standalone `melonDS.exe` is placed in `build/release-mingw-x86_64`.
 
 ## macOS
 1. Install the [Homebrew Package Manager](https://brew.sh)

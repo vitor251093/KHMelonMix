@@ -94,6 +94,18 @@ find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(Lua REQUIRED)
 
+if (USE_VCPKG AND WIN32)
+    # On MSYS2 the `cmake` package depends on libarchive, so a system libarchive.pc
+    # lives on pkg-config's default search path. Its libarchive.a is built to pull in
+    # zlib as a DLL, so in a static vcpkg build it shadows vcpkg's own libarchive and
+    # leaves zlib symbols (__imp_inflate, ...) unresolved at link time. Search vcpkg's
+    # pkgconfig directory first so the vcpkg-built, statically-consistent libs win.
+    if (NOT DEFINED _VCPKG_INSTALLED_DIR)
+        set(_VCPKG_INSTALLED_DIR "${CMAKE_BINARY_DIR}/vcpkg_installed")
+    endif()
+    set(ENV{PKG_CONFIG_PATH} "${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/pkgconfig")
+endif()
+
 if (BUILD_STATIC)
     list(APPEND PKG_CONFIG_EXECUTABLE "--static")
 endif()
