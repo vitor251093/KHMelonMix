@@ -291,6 +291,14 @@ void MainWindowSettings::createVideoPlayer()
     });
 #endif
 
+    // Drive subtitle cue switching off the playback clock. positionChanged fires roughly
+    // per frame during playback; the view only repaints when the active cue actually changes.
+    connect(player.get(), &QMediaPlayer::positionChanged, this, [this](qint64 pos) {
+        if (playerView) {
+            playerView->setPlaybackPosition(pos);
+        }
+    });
+
     player->setVideoOutput(playerView->videoItem());
     player->setAudioOutput(playerAudioOutput.get());
 
@@ -357,18 +365,22 @@ void MainWindowSettings::createMenuSounds()
     }
 }
 
-void MainWindowSettings::asyncStartVideo(QString videoFilePath)
+void MainWindowSettings::asyncStartVideo(QString videoFilePath, QString subtitlesFilePath)
 {
-    QMetaObject::invokeMethod(this, "startVideo", Qt::QueuedConnection, Q_ARG(QString, videoFilePath));
+    QMetaObject::invokeMethod(this, "startVideo", Qt::QueuedConnection,
+        Q_ARG(QString, videoFilePath), Q_ARG(QString, subtitlesFilePath));
 }
 
-void MainWindowSettings::startVideo(QString videoFilePath)
+void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFilePath)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     player->setMedia(QUrl::fromLocalFile(videoFilePath));
 #else
     player->setSource(QUrl::fromLocalFile(videoFilePath));
 #endif
+
+    // Load subtitles for this cutscene (an empty path clears any previous cues).
+    playerView->loadSubtitles(subtitlesFilePath);
 
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(playerView);
@@ -393,6 +405,9 @@ void MainWindowSettings::stopVideo()
     }
 
     hideCutsceneSkipMenu();
+
+    // Drop any subtitle cues so a finished cutscene doesn't leave stale text behind.
+    playerView->loadSubtitles("");
 
     showGame();
 

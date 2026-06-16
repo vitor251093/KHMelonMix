@@ -2720,6 +2720,49 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
     return "";
 }
 
+// The subtitle language folder follows the cart region: USA is always English and JP always
+// Japanese, while the EU cart picks its language from the DS system (firmware) settings - the
+// same value the EU game itself reads to choose its in-game language.
+std::string PluginKingdomHeartsDays::subtitleLanguageFolder() {
+    if (isUsaCart()) {
+        return "English";
+    }
+    if (isJapanCart()) {
+        return "日本語";
+    }
+    // EU cart: map the firmware language (see Firmware::Language) to the subtitle folder.
+    int language = nds->SPI.GetFirmware().GetEffectiveUserData().Settings & 0x7;
+    switch (language) {
+        case 0:  return "日本語";   // Japanese
+        case 2:  return "Français"; // French
+        case 3:  return "Deutsch";  // German
+        case 4:  return "Italiano"; // Italian
+        case 5:  return "Español";  // Spanish
+        default: return "English";  // English (1) and anything unexpected
+    }
+}
+
+std::string PluginKingdomHeartsDays::replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) {
+    if (!SubtitlesEnabled) {
+        return "";
+    }
+    // The language folder name is UTF-8 (e.g. "Français", "日本語"). Build it via u8path so the
+    // bytes are decoded as UTF-8 on every platform; a plain std::string would be interpreted as
+    // the system ANSI code page on Windows and never match the on-disk folder.
+    std::filesystem::path subtitlesFolderPath = gameAssetsFolderPath() / "subtitles" /
+        std::filesystem::u8path(subtitleLanguageFolder()) / "cinematics";
+    // Match the cutscene the same way replacementCutsceneFilePath does: MmName, then DsName.
+    for (const char* name : { cutscene->MmName, cutscene->DsName }) {
+        std::filesystem::path fullPath = subtitlesFolderPath / (std::string(name) + ".srt");
+        if (std::filesystem::exists(fullPath)) {
+            // Return UTF-8 (not the ANSI .string()): the caller passes this through
+            // QString::fromUtf8, and .string() can also throw for non-ANSI paths on Windows.
+            return fullPath.u8string();
+        }
+    }
+    return "";
+}
+
 bool PluginKingdomHeartsDays::isUnskippableMobiCutscene(CutsceneEntry* cutscene) {
     return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }

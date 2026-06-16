@@ -1345,6 +1345,7 @@ void Plugin::_superLoadConfigs(
     UIScale = getIntConfig(root + ".HUDScale");
     UIScale = (UIScale == 0) ? 4 : UIScale;
     SelectedAudioPack = getStringConfig(root + ".AudioPack");
+    SubtitlesEnabled = getBoolConfig(root + ".SubtitlesEnabled");
 }
 void Plugin::loadConfigs(
     std::function<bool(std::string)> getBoolConfig,

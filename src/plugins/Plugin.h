@@ -217,6 +217,7 @@ public:
     virtual std::string tmpTextureFilePath(std::string texture);
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
+    virtual std::string replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) {return "";}
 
     bool ShouldTerminateIngameCutscene();
     bool StoppedIngameCutscene();
@@ -417,6 +418,7 @@ protected:
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
     bool PauseInsteadOfSkipOnStart = true;
+    bool SubtitlesEnabled = false;
     std::string SelectedAudioPack = "";
 
     bool _LastTouchScreenMovementWasByPlugin = false;

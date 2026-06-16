@@ -65,12 +65,12 @@ public slots:
 
     void updateBgmMusicVolume(quint8 ramVolume);
 
-    void asyncStartVideo(QString videoFilePath);
+    void asyncStartVideo(QString videoFilePath, QString subtitlesFilePath);
     void asyncStopVideo();
     void asyncPauseVideo();
     void asyncUnpauseVideo();
 
-    void startVideo(QString videoFilePath);
+    void startVideo(QString videoFilePath, QString subtitlesFilePath);
     void stopVideo();
     void pauseVideo();
     void unpauseVideo();
