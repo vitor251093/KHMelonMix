@@ -218,6 +218,9 @@ public:
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     virtual std::string replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) {return "";}
+    // Language for the HD cutscene pause menu, in DS firmware Language order
+    // (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es). Defaults to English.
+    virtual int cutsceneMenuLanguage() { return 1; }
 
     bool ShouldTerminateIngameCutscene();
     bool StoppedIngameCutscene();

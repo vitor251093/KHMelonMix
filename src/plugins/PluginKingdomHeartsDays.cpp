@@ -2720,25 +2720,34 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
     return "";
 }
 
-// The subtitle language folder follows the cart region: USA is always English and JP always
+// The active language for cutscenes follows the cart region: USA is always English and JP always
 // Japanese, while the EU cart picks its language from the DS system (firmware) settings - the
-// same value the EU game itself reads to choose its in-game language.
-std::string PluginKingdomHeartsDays::subtitleLanguageFolder() {
+// same value the EU game itself reads to choose its in-game language. Returned in DS firmware
+// Language order (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es); shared by the subtitle folder and the
+// pause-menu localization.
+int PluginKingdomHeartsDays::cutsceneMenuLanguage() {
     if (isUsaCart()) {
-        return "English";
+        return 1; // English
     }
     if (isJapanCart()) {
-        return "日本語";
+        return 0; // Japanese
     }
-    // EU cart: map the firmware language (see Firmware::Language) to the subtitle folder.
+    // EU cart: map the firmware language (see Firmware::Language) to a 0-5 index.
     int language = nds->SPI.GetFirmware().GetEffectiveUserData().Settings & 0x7;
-    switch (language) {
+    if (language < 0 || language > 5) {
+        return 1; // English for anything unexpected
+    }
+    return language;
+}
+
+std::string PluginKingdomHeartsDays::subtitleLanguageFolder() {
+    switch (cutsceneMenuLanguage()) {
         case 0:  return "日本語";   // Japanese
         case 2:  return "Français"; // French
         case 3:  return "Deutsch";  // German
         case 4:  return "Italiano"; // Italian
         case 5:  return "Español";  // Spanish
-        default: return "English";  // English (1) and anything unexpected
+        default: return "English";  // English (1)
     }
 }
 

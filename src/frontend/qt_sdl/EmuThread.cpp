@@ -98,7 +98,7 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
         connect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
 
-        connect(this, SIGNAL(windowStartVideo(QString,QString)), window, SLOT(asyncStartVideo(QString,QString)));
+        connect(this, SIGNAL(windowStartVideo(QString,QString,int)), window, SLOT(asyncStartVideo(QString,QString,int)));
         connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
         connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         connect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
@@ -136,7 +136,7 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
         disconnect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
 
-        disconnect(this, SIGNAL(windowStartVideo(QString,QString)), window, SLOT(asyncStartVideo(QString,QString)));
+        disconnect(this, SIGNAL(windowStartVideo(QString,QString,int)), window, SLOT(asyncStartVideo(QString,QString,int)));
         disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
         disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         disconnect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
@@ -941,7 +941,7 @@ void EmuThread::refreshPluginState()
                 QString filePath = QString::fromUtf8(path.c_str());
                 std::string subtitlesPath = emuInstance->plugin->replacementCutsceneSubtitlesFilePath(cutscene);
                 QString subtitlesFilePath = QString::fromUtf8(subtitlesPath.c_str());
-                emit windowStartVideo(filePath, subtitlesFilePath);
+                emit windowStartVideo(filePath, subtitlesFilePath, emuInstance->plugin->cutsceneMenuLanguage());
             }
         }
     }
