@@ -58,12 +58,13 @@ static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
     QFont font;
     font.setFamilies({ "Comic Hearts" });
     font.setStyleHint(QFont::SansSerif);
-    qreal px = qMax(18.0, h * 0.045);
+    qreal px = qMax(18.0, h * 0.049);
     font.setPixelSize((int)px);
-    font.setBold(true);
+    font.setLetterSpacing(QFont::AbsoluteSpacing, px / 16.0);
+    font.setWordSpacing(px / 3.5);
     QFontMetricsF fm(font);
 
-    const qreal outline = qMax(2.0, px * 0.10);
+    const qreal outline = qMax(2.0, px * 0.15);
     const QStringList lines = text.split('\n');
     const qreal lineH = fm.height();
 
@@ -71,14 +72,14 @@ static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
     // is taller, equal, or larger than the cutscenes in height.
     float viewportAspectRatio = ((float)w)/(float)h;
     float videoAspectRatio = 16.0/9.0;
-    qreal bottomline = h * 0.88;
+    qreal bottomline = h * 0.90;
     if (viewportAspectRatio < videoAspectRatio)
     {
         float videoHeight = ((float)w)/videoAspectRatio;
         bottomline = (((float)h) - videoHeight)/2 + (videoHeight * 0.88);
     }
 
-    // Anchor the bottom line near 88% of the height; stack earlier lines above it.
+    // Anchor the bottom line near 90% of the height; stack earlier lines above it.
     qreal baseline = bottomline + fm.ascent() - (lines.size() - 1) * lineH;
 
     for (const QString& line : lines) {
