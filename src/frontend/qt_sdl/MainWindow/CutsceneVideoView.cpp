@@ -55,10 +55,15 @@ static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
     p.setRenderHint(QPainter::Antialiasing, true);
     p.setRenderHint(QPainter::TextAntialiasing, true);
 
+    float viewportAspectRatio = ((float)w)/(float)h;
+    float videoAspectRatio = 16.0/9.0;
+    bool shorterThanWidescreen = viewportAspectRatio < videoAspectRatio;
+    float videoHeight = shorterThanWidescreen ? ((float)w)/videoAspectRatio : (float)h;
+
     QFont font;
     font.setFamilies({ "Comic Hearts" });
     font.setStyleHint(QFont::SansSerif);
-    qreal px = qMax(18.0, h * 0.049);
+    qreal px = videoHeight * 0.049;
     font.setPixelSize((int)px);
     font.setLetterSpacing(QFont::AbsoluteSpacing, px / 16.0);
     font.setWordSpacing(px / 3.5);
@@ -70,12 +75,9 @@ static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
 
     // The KH HD cutscenes are always in 16:9, so the baseline depends if the viewport
     // is taller, equal, or shorter than the cutscenes in height.
-    float viewportAspectRatio = ((float)w)/(float)h;
-    float videoAspectRatio = 16.0/9.0;
     qreal bottomline = h * 0.89;
-    if (viewportAspectRatio < videoAspectRatio)
+    if (shorterThanWidescreen)
     {
-        float videoHeight = ((float)w)/videoAspectRatio;
         bottomline = (((float)h) - videoHeight)/2 + (videoHeight * 0.89);
     }
 
