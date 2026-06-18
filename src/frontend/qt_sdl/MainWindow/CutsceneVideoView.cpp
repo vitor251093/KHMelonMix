@@ -69,7 +69,7 @@ static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
     const qreal lineH = fm.height();
 
     // The KH HD cutscenes are always in 16:9, so the baseline depends if the viewport
-    // is taller, equal, or larger than the cutscenes in height.
+    // is taller, equal, or shorter than the cutscenes in height.
     float viewportAspectRatio = ((float)w)/(float)h;
     float videoAspectRatio = 16.0/9.0;
     qreal bottomline = h * 0.89;
