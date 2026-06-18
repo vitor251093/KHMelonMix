@@ -67,7 +67,7 @@ jobs:
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
-        cp -r ../assets ./dist/assets
+        cp -r ../../assets ./dist/assets
         mv ./melonDS.exe ./dist/MelonMix.exe
         cp ../../res/*.exe          ./dist/
         cp ../../res/khDaysMM.ico   ./dist/MelonMix_KHDays.ico
