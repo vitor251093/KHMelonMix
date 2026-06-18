@@ -42,8 +42,7 @@ static void ensureCutsceneMenuAssets()
     loaded = true;
     QFontDatabase::addApplicationFont(":/ds/KHMenu.ttf");
     QFontDatabase::addApplicationFont(":/ds/KHGummi.ttf");
-    // Bundled Comic Neue (SIL OFL) is the guaranteed-available fallback for "Comic Sans MS",
-    QFontDatabase::addApplicationFont(":/ds/ComicNeue.ttf");
+    QFontDatabase::addApplicationFont(":/ds/ComicHearts.otf");
 }
 
 // Paints the active subtitle line(s) near the bottom of a w*h area: white fill with a black
@@ -56,10 +55,8 @@ static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
     p.setRenderHint(QPainter::Antialiasing, true);
     p.setRenderHint(QPainter::TextAntialiasing, true);
 
-    // Prefer the real "Comic Sans MS" where the user has it; otherwise fall back to the bundled
-    // Comic Neue (always available via addApplicationFont above).
     QFont font;
-    font.setFamilies({ "Comic Sans MS", "Comic Neue" });
+    font.setFamilies({ "Comic Hearts" });
     font.setStyleHint(QFont::SansSerif);
     qreal px = qMax(18.0, h * 0.045);
     font.setPixelSize((int)px);
@@ -69,8 +66,20 @@ static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
     const qreal outline = qMax(2.0, px * 0.10);
     const QStringList lines = text.split('\n');
     const qreal lineH = fm.height();
+
+    // The KH HD cutscenes are always in 16:9, so the baseline depends if the viewport
+    // is taller, equal, or larger than the cutscenes in height.
+    float viewportAspectRatio = ((float)w)/(float)h;
+    float videoAspectRatio = 16.0/9.0;
+    qreal bottomline = h * 0.88;
+    if (viewportAspectRatio < videoAspectRatio)
+    {
+        float videoHeight = ((float)w)/videoAspectRatio;
+        bottomline = (((float)h) - videoHeight)/2 + (videoHeight * 0.88);
+    }
+
     // Anchor the bottom line near 88% of the height; stack earlier lines above it.
-    qreal baseline = h * 0.88 + fm.ascent() - (lines.size() - 1) * lineH;
+    qreal baseline = bottomline + fm.ascent() - (lines.size() - 1) * lineH;
 
     for (const QString& line : lines) {
         QPainterPath path;
