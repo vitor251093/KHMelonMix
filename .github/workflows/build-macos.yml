@@ -20,6 +20,7 @@ env:
 jobs:
   build-macos:
     strategy:
+      fail-fast: false
       matrix:
         arch: [x86_64, arm64]
 
@@ -31,14 +32,7 @@ jobs:
 
     steps:
       - name: Check out sources
-        uses: actions/checkout@v3
-      - name: Set Version Suffix
-        run: |
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            TIMESTAMP=$(date +'%Y%m%d%H%M')
-            BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
-            echo "MELONDS_VERSION_SUFFIX=-$BRANCH_NAME-$TIMESTAMP" >> $GITHUB_ENV
-          fi
+        uses: actions/checkout@v6
       - name: Install dependencies for package building
         run: |
           brew install autoconf automake autoconf-archive libtool python-setuptools flac
@@ -54,6 +48,13 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: vcpkg.json
+      - name: Set Version Suffix
+        run: |
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            TIMESTAMP=$(date +'%Y%m%d%H%M')
+            BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+            echo "MELONDS_VERSION_SUFFIX=-$BRANCH_NAME-$TIMESTAMP" >> $GITHUB_ENV
+          fi
       - name: Build
         uses: lukka/run-cmake@v10
         with:
@@ -65,13 +66,14 @@ jobs:
         run: |
           cd build/release-mac-${{ matrix.arch }}
           mv melonDS.app MelonMix.app
-          zip -r -y ../../macOS-${{ matrix.arch }}.zip MelonMix.app
+          zip -r -y ../../MelonMix-macOS-${{ matrix.arch }}.zip MelonMix.app
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MelonMix-macOS-${{ matrix.arch }}
-          path: macOS-${{ matrix.arch }}.zip
+          path: MelonMix-macOS-${{ matrix.arch }}.zip
           retention-days: 1
+          archive: false
       - name: Save vcpkg cache
         uses: actions/cache/save@v4
         with:
@@ -87,13 +89,15 @@ jobs:
       - name: Download x86_64
         uses: actions/download-artifact@v4
         with:
-          name: MelonMix-macOS-x86_64
+          name: MelonMix-macOS-x86_64.zip
           path: x86_64
+          skip-decompress: true
       - name: Download arm64
         uses: actions/download-artifact@v4
         with:
-          name: MelonMix-macOS-arm64
+          name: MelonMix-macOS-arm64.zip
           path: arm64
+          skip-decompress: true
       - name: Combine app bundles
         shell: bash
         run: |
@@ -104,9 +108,9 @@ jobs:
           rm MelonMix.app/Contents/MacOS/melonDS
           cp melonDS MelonMix.app/Contents/MacOS/melonDS
           codesign -s - --deep MelonMix.app
-          zip -r -y macOS-universal.zip MelonMix.app
+          zip -r -y MelonMix-macOS-universal.zip MelonMix.app
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: MelonMix-macOS-universal
-          path: macOS-universal.zip
+          path: MelonMix-macOS-universal.zip
