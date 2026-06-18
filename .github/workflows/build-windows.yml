@@ -46,6 +46,7 @@ jobs:
       with:
         vcpkgJsonGlob: vcpkg.json
     - name: Set Version Suffix
+      shell: bash
       run: |
         if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
           TIMESTAMP=$(date +'%Y%m%d%H%M')
@@ -59,6 +60,7 @@ jobs:
         configurePresetAdditionalArgs: "['-DENABLE_DEBUG_DEPS=OFF', '-DMELONDS_EMBED_BUILD_INFO=ON']"
         buildPreset: release-windows-${{ matrix.arch.name }}
     - name: Preparing artifacts
+      shell: bash
       working-directory: ${{runner.workspace}}\KHMelonMix\build\release-windows-${{ matrix.arch.name }}
       run: |
         rm -rf dist || true
