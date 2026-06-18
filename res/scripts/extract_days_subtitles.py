@@ -57,12 +57,12 @@ MARE_LIST_URL = ("https://raw.githubusercontent.com/OpenKH/OpenKh/"
 
 # LANGUAGE_xx (as used in the .exia2) -> (ctd path prefix in the archive, output folder endonym).
 LANGUAGES = {
-    "LANGUAGE_JP": ("jp/message/jp", "日本語"),
-    "LANGUAGE_EN": ("uk/message/en", "English"),
-    "LANGUAGE_GE": ("gr/message/de", "Deutsch"),
-    "LANGUAGE_FR": ("fr/message/fr", "Français"),
-    "LANGUAGE_IT": ("it/message/it", "Italiano"),
-    "LANGUAGE_SP": ("sp/message/sp", "Español"),
+    "LANGUAGE_JP": ("jp/message/jp", "jp"),
+    "LANGUAGE_EN": ("uk/message/en", "en"),
+    "LANGUAGE_GE": ("gr/message/de", "de"),
+    "LANGUAGE_FR": ("fr/message/fr", "fr"),
+    "LANGUAGE_IT": ("it/message/it", "it"),
+    "LANGUAGE_SP": ("sp/message/sp", "es"),
 }
 
 EXIA2_INVENTORY = re.compile(r"uk/event/en/hd/(hd8[0-9a-z]+)/\1\.exia2")

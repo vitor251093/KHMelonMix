@@ -2742,12 +2742,13 @@ int PluginKingdomHeartsDays::cutsceneMenuLanguage() {
 
 std::string PluginKingdomHeartsDays::subtitleLanguageFolder() {
     switch (cutsceneMenuLanguage()) {
-        case 0:  return "日本語";   // Japanese
-        case 2:  return "Français"; // French
-        case 3:  return "Deutsch";  // German
-        case 4:  return "Italiano"; // Italian
-        case 5:  return "Español";  // Spanish
-        default: return "English";  // English (1)
+        // BCP 47/IETF
+        case 0:  return "jp"; // Japanese
+        case 2:  return "fr"; // French
+        case 3:  return "de"; // German
+        case 4:  return "it"; // Italian
+        case 5:  return "es"; // Spanish
+        default: return "en"; // English (1)
     }
 }
 
@@ -2755,17 +2756,11 @@ std::string PluginKingdomHeartsDays::replacementCutsceneSubtitlesFilePath(Cutsce
     if (!SubtitlesEnabled) {
         return "";
     }
-    // The language folder name is UTF-8 (e.g. "Français", "日本語"). Build it via u8path so the
-    // bytes are decoded as UTF-8 on every platform; a plain std::string would be interpreted as
-    // the system ANSI code page on Windows and never match the on-disk folder.
     std::filesystem::path subtitlesFolderPath = gameAssetsFolderPath() / "subtitles" /
         std::filesystem::u8path(subtitleLanguageFolder()) / "cinematics";
-    // Match the cutscene the same way replacementCutsceneFilePath does: MmName, then DsName.
     for (const char* name : { cutscene->MmName, cutscene->DsName }) {
         std::filesystem::path fullPath = subtitlesFolderPath / (std::string(name) + ".srt");
         if (std::filesystem::exists(fullPath)) {
-            // Return UTF-8 (not the ANSI .string()): the caller passes this through
-            // QString::fromUtf8, and .string() can also throw for non-ANSI paths on Windows.
             return fullPath.u8string();
         }
     }
