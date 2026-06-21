@@ -358,6 +358,7 @@ void PluginKingdomHeartsReCoded::overrideConfigs(
     if (AutomaticallyMapJoysticks)
     {
         overrideJoystickMappings(setIntConfig);
+        setBoolConfig(tomlUniqueIdentifier() + ".JoystickDefaultsApplied", true);
     }
 
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
@@ -405,7 +406,8 @@ void PluginKingdomHeartsReCoded::overrideJoystickMappings(std::function<void(std
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
     if (config == nullptr)
     {
-        KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+        if (!JoystickDefaultsApplied)
+            KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
         return;
     }
 
