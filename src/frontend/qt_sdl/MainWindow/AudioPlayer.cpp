@@ -56,7 +56,7 @@ void AudioPlayer::createAudioSink(const QAudioDevice& audioOutput) {
 }
 
 void AudioPlayer::restartAudioSink(const QAudioDevice& audioOutput) {
-    if (m_playing && m_audioSource) {
+    if (m_audioOutput && m_audioOutput->state() != QAudio::StoppedState && m_audioSource) {
         m_audioOutput->stop();
         createAudioSink(audioOutput);
         m_audioOutput->start(m_audioSource.get());
@@ -84,10 +84,16 @@ void AudioPlayer::stop(int fadeOutMs)
     if (!m_audioOutput) {
         return;
     }
+    m_playing = false;
     if (fadeOutMs == 0) {
         onFadeOutCompleted();
     } else {
         m_audioSource->startFadeOut(fadeOutMs);
+        m_cleanupTimer.reset(new QTimer());
+        m_cleanupTimer->setSingleShot(true);
+        m_cleanupTimer->setInterval(fadeOutMs + 2000);
+        QObject::connect(m_cleanupTimer.get(), &QTimer::timeout, this, &AudioPlayer::onFadeOutCompleted);
+        m_cleanupTimer->start();
     }
 }
 
@@ -99,10 +105,16 @@ qint64 AudioPlayer::getCurrentPlayingPos() const
 
 void AudioPlayer::onFadeOutCompleted()
 {
+    if (m_cleanupTimer) {
+        m_cleanupTimer->stop();
+        m_cleanupTimer.reset();
+    }
+    if (m_fadeCompleted) return;
+    m_fadeCompleted = true;
+
     if (m_audioOutput) {
         m_audioOutput->stop();
         m_audioSource->onStopped();
-        m_playing = false;
     }
 
     QMetaObject::invokeMethod(parent(), "onBgmFadeOutCompleted", Qt::QueuedConnection, Q_ARG(melonMix::AudioPlayer*, this));

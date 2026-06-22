@@ -103,6 +103,12 @@ void MainWindowSettings::startBgmMusic(quint16 bgmId, quint8 volume, bool bResum
     if (bgmMusicFilePath.isEmpty())
         return;
 
+    for (auto* player : bgmPlayers) {
+        if (player->getBgmId() == bgmId && player->isPlaying()) {
+            return;
+        }
+    }
+
     melonMix::AudioPlayer* bgmPlayer = new melonMix::AudioPlayer(this, bgmId);
     bgmPlayer->loadFile(bgmMusicFilePath);
 
@@ -259,6 +265,7 @@ void MainWindowSettings::onBgmFadeOutCompleted(melonMix::AudioPlayer* playerStop
             it++;
         }
     }
+    printf("BGM players remaining after cleanup: %d\n", (int)bgmPlayers.size());
 }
 
 void MainWindowSettings::createVideoPlayer()
