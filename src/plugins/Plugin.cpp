@@ -1336,6 +1336,7 @@ void Plugin::_superLoadConfigs(
     EnhancedGraphics = !getBoolConfig(root + ".DisableEnhancedGraphics");
     SingleScreenMode = !getBoolConfig(root + ".DisableSingleScreenMode");
     AutomaticallyMapJoysticks = !getBoolConfig(root + ".DisableAutomaticJoystickMapping");
+    JoystickDefaultsApplied = getBoolConfig(root + ".JoystickDefaultsApplied");
     DisableReplacementTextures = false;
     FastForwardLoadingScreens = getBoolConfig(root + ".FastForwardLoadingScreens");
     DaysDisableHisMemories = getBoolConfig(root + ".DaysDisableHisMemories");

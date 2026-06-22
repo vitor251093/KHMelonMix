@@ -415,6 +415,7 @@ protected:
     bool EnhancedGraphics = true;
     bool SingleScreenMode = true;
     bool AutomaticallyMapJoysticks = false;
+    bool JoystickDefaultsApplied = false;
     bool DisableReplacementTextures = false;
     bool FastForwardLoadingScreens = false;
     bool DaysDisableHisMemories = false;

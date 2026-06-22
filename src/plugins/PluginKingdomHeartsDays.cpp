@@ -356,6 +356,7 @@ void PluginKingdomHeartsDays::overrideConfigs(
     if (AutomaticallyMapJoysticks)
     {
         overrideJoystickMappings(setIntConfig);
+        setBoolConfig(tomlUniqueIdentifier() + ".JoystickDefaultsApplied", true);
     }
 
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
@@ -403,7 +404,8 @@ void PluginKingdomHeartsDays::overrideJoystickMappings(std::function<void(std::s
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
     if (config == nullptr)
     {
-        KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+        if (!JoystickDefaultsApplied)
+            KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
         return;
     }
 

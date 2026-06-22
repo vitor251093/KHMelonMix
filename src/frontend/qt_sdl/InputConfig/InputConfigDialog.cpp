@@ -104,6 +104,7 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
 
     populatePage(ui->tabHotkeysGeneral, std::vector<const char*>(hk_general_labels), hkGeneralKeyMap, hkGeneralJoyMap);
 
+    ui->cbxJoystick->blockSignals(true);
     if (njoy > 0)
     {
         for (int i = 0; i < njoy; i++)
@@ -118,10 +119,14 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
         ui->cbxJoystick->addItem("(no joysticks available)");
         ui->cbxJoystick->setEnabled(false);
     }
+    ui->cbxJoystick->blockSignals(false);
 
     setupKeypadPage();
     setupAddonsPage();
     setupTouchScreenPage();
+
+    joystickBindingModified = false;
+    originalJoystickDefaultsApplied = false;
 
     auto plugin = emuInstance->plugin;
     if (plugin != nullptr)
@@ -129,7 +134,10 @@ InputConfigDialog::InputConfigDialog(QWidget* parent) : QDialog(parent), ui(new 
         std::string root = plugin->tomlUniqueIdentifier();
         auto& globalCfg = emuInstance->getGlobalConfig();
         enableAutomaticJoystickMappingForGame = !globalCfg.GetBool(root + ".DisableAutomaticJoystickMapping");
+        originalJoystickDefaultsApplied = globalCfg.GetBool(root + ".JoystickDefaultsApplied");
+        ui->cbAutoMapJoysticksForGame->blockSignals(true);
         ui->cbAutoMapJoysticksForGame->setChecked(enableAutomaticJoystickMappingForGame);
+        ui->cbAutoMapJoysticksForGame->blockSignals(false);
     }
 
     int inst = emuInstance->getInstanceID();
@@ -305,6 +313,15 @@ void InputConfigDialog::on_InputConfigDialog_accepted()
         joycfg.SetInt(btn, touchScreenJoyMap[i]);
     }
 
+    if (joystickBindingModified && plugin != nullptr
+            && ui->cbAutoMapJoysticksForGame->isChecked())
+    {
+        std::string root = plugin->tomlUniqueIdentifier();
+        auto& globalCfg = emuInstance->getGlobalConfig();
+        globalCfg.SetBool(root + ".DisableAutomaticJoystickMapping", true);
+        globalCfg.SetBool(root + ".JoystickDefaultsApplied", false);
+    }
+
     instcfg.SetInt("JoystickUniqueID", joystickUniqueID);
     Config::Save();
 
@@ -321,6 +338,7 @@ void InputConfigDialog::on_InputConfigDialog_rejected()
         std::string root = plugin->tomlUniqueIdentifier();
         auto& glocalCfg = emuInstance->getGlobalConfig();
         glocalCfg.SetBool(root + ".DisableAutomaticJoystickMapping", !enableAutomaticJoystickMappingForGame);
+        glocalCfg.SetBool(root + ".JoystickDefaultsApplied", originalJoystickDefaultsApplied);
     }
 
     Config::Table& instcfg = emuInstance->getLocalConfig();
@@ -341,7 +359,6 @@ void InputConfigDialog::on_btnJoyMapSwitch_clicked()
 
 void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
 {
-    // prevent a spurious change
     if (ui->cbxJoystick->count() < 2) return;
 
     Config::Table& instcfg = emuInstance->getLocalConfig();
@@ -412,13 +429,13 @@ void InputConfigDialog::on_cbxJoystick_currentIndexChanged(int id)
     if (plugin != nullptr) {
         for (i = 0; i < plugin->customKeyMappingNames.size(); i++)
         {
-            joycfg.SetInt(plugin->customKeyMappingNames[i], pluginJoyMap[i]);
+            pluginJoyMap[i] = joycfg.GetInt(plugin->customKeyMappingNames[i]);
         }
     }
 
     for (i = 0; i < touchscreen_num; i++)
     {
-        joycfg.SetInt(EmuInstance::touchButtonNames[dstouchkeyorder[i]], touchScreenJoyMap[i]);
+        touchScreenJoyMap[i] = joycfg.GetInt(EmuInstance::touchButtonNames[dstouchkeyorder[i]]);
     }
 
     emuInstance->inputLoadConfig();
@@ -441,6 +458,8 @@ void InputConfigDialog::on_cbAutoMapJoysticksForGame_stateChanged(int state)
         std::string root = plugin->tomlUniqueIdentifier();
         auto& globalCfg = emuInstance->getGlobalConfig();
         globalCfg.SetBool(root + ".DisableAutomaticJoystickMapping", state == 0);
+        if (state != 0)
+            globalCfg.SetBool(root + ".JoystickDefaultsApplied", false);
     }
 }
 
@@ -449,7 +468,23 @@ SDL_Joystick* InputConfigDialog::getJoystick()
     return emuInstance->getJoystick();
 }
 
+SDL_GameController* InputConfigDialog::getController()
+{
+    return emuInstance->getController();
+}
+
 std::shared_ptr<SDL_mutex> InputConfigDialog::getJoyMutex()
 {
     return emuInstance->getJoyMutex();
+}
+
+const melonDS::u8* InputConfigDialog::pollAndGetHidReport()
+{
+    emuInstance->pollHidReport();
+    return emuInstance->getHidReport();
+}
+
+void InputConfigDialog::notifyJoystickBindingChanged()
+{
+    joystickBindingModified = true;
 }

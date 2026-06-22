@@ -115,7 +115,11 @@ public:
     ~InputConfigDialog();
 
     SDL_Joystick* getJoystick();
+    SDL_GameController* getController();
     std::shared_ptr<SDL_mutex> getJoyMutex();
+    const melonDS::u8* pollAndGetHidReport();
+
+    void notifyJoystickBindingChanged();
 
     static InputConfigDialog* currentDlg;
     static InputConfigDialog* openDlg(QWidget* parent)
@@ -165,6 +169,8 @@ private:
     int joystickID;
     int joystickUniqueID;
     int enableAutomaticJoystickMappingForGame;
+    bool originalJoystickDefaultsApplied;
+    bool joystickBindingModified;
 };
 
 
