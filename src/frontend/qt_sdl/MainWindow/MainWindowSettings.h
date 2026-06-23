@@ -95,10 +95,6 @@ protected:
     void onAudioOutputsChanged();
     void keyPressEvent(QKeyEvent* event) override;
 
-    QWidget* settingsWidget;
-    QStackedWidget* settingWidgetOptions;
-    bool showingSettings;
-
     void initWidgets();
 
     virtual void showGame() = 0;

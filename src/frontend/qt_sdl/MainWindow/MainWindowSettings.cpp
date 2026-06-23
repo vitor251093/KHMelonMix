@@ -51,10 +51,6 @@ MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
 {
     ui->setupUi(this);
 
-    settingsWidget = findChild<QWidget*>("settingsWidget");
-    settingWidgetOptions = findChild<QStackedWidget*>("settingWidgetOptions");
-    showingSettings = false;
-
     connect(mediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &MainWindowSettings::onAudioOutputsChanged);
 }
 
@@ -508,29 +504,4 @@ void MainWindowSettings::playCutsceneMenuSound(int kind)
 
 void MainWindowSettings::keyPressEvent(QKeyEvent* event)
 {
-    /*if (event->key() == Qt::Key_Escape) {
-        QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-
-        if (showingSettings) {
-            if (player->playbackState() == QMediaPlayer::PlaybackState::PausedState) {
-                player->play();
-                centralWidget->setCurrentWidget(playerWidget);
-            }
-            else {
-                showGame();
-            }
-        }
-        else {
-            bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
-            if (isCutscenePlaying) {
-                // player->stop();
-                // asyncStopVideo();
-                showingSettings = !showingSettings;
-            }
-            else {
-                centralWidget->setCurrentWidget(settingsWidget);
-            }
-        }
-        showingSettings = !showingSettings;
-    }*/
 }
