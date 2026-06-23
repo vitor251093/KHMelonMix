@@ -254,6 +254,10 @@ private slots:
     void onFullscreenToggled();
     void onScreenEmphasisToggled();
 
+    void onOpenSettingsOverlay();
+    void onSettingsClosed();
+    void onQuitGameConfirmed();
+
 private:
     virtual void closeEvent(QCloseEvent* event) override;
 

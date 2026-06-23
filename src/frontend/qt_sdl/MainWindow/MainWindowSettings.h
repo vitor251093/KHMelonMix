@@ -33,6 +33,7 @@
 #include "CutsceneVideoView.h"
 
 class EmuInstance;
+class SettingsView;
 
 namespace melonMix {
 class AudioPlayer;
@@ -48,6 +49,8 @@ class MainWindowSettings : public QMainWindow
 public:
     explicit MainWindowSettings(EmuInstance* inst, QWidget* parent);
     ~MainWindowSettings();
+
+    EmuInstance* getEmuInstance() { return emuInstance; }
 
 public slots:
     void asyncStartBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, quint32 delayAtStart, QString bgmMusicFilePath);
@@ -99,6 +102,9 @@ protected:
 
     virtual void showGame() = 0;
 
+    SettingsView* settingsView = nullptr;
+    QWidget* m_previousWidget = nullptr;
+
 private:
     QScopedPointer<Ui::MainWindowSettings> ui;
     Config::Table& localCfg;
@@ -126,6 +132,7 @@ private:
     unsigned int m_sfxAudioDevice = 0; // SDL_AudioDeviceID (0 = not open)
 
     void createVideoPlayer();
+    void createSettingsView();
     void createMenuSounds();
     qreal getBgmMusicVolume(quint8 ramVolume);
 };

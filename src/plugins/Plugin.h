@@ -123,6 +123,8 @@ struct TextureEntry
 };
 
 
+struct ThemeColor { u8 r, g, b; };
+
 class Plugin
 {
 protected:
@@ -182,6 +184,7 @@ public:
     virtual int renderer_brightnessMode() { return 0; };
     virtual float renderer_forcedAspectRatio() {return AspectRatio;};
     virtual bool renderer_showOriginalUI() { return true; };
+    virtual ThemeColor defaultThemeColor() { return {60, 60, 60}; };
 
     bool togglePause();
 

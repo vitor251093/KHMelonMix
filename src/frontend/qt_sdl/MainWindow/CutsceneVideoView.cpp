@@ -24,7 +24,6 @@
 #include <QPainterPath>
 #include <QPolygonF>
 #include <QPixmap>
-#include <QFontDatabase>
 #include <QGraphicsScene>
 #include <QGraphicsVideoItem>
 #include <QResizeEvent>
@@ -35,14 +34,6 @@
 // Registers the KH fonts (once) so the families are usable by name below.
 static void ensureCutsceneMenuAssets()
 {
-    static bool loaded = false;
-    if (loaded) {
-        return;
-    }
-    loaded = true;
-    QFontDatabase::addApplicationFont(":/ds/KHMenu.ttf");
-    QFontDatabase::addApplicationFont(":/ds/KHGummi.ttf");
-    QFontDatabase::addApplicationFont(":/ds/ComicHearts.otf");
 }
 
 // Paints the active subtitle line(s) near the bottom of a w*h area: white fill with a black

@@ -183,6 +183,8 @@ signals:
     void windowHideCutsceneSkipMenu();
     void windowPlayCutsceneMenuSound(int kind);
 
+    void windowOpenSettings();
+
 private:
     MainWindow* mainWindow;
 

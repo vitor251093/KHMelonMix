@@ -32,6 +32,7 @@
 #include "Platform.h"
 
 #include "MainWindowSettings.h"
+#include "SettingsView.h"
 #include "ui_MainWindowSettings.h"
 
 #include "EmuInstance.h"
@@ -66,6 +67,14 @@ MainWindowSettings::~MainWindowSettings()
 void MainWindowSettings::initWidgets()
 {
     createVideoPlayer();
+    createSettingsView();
+}
+
+void MainWindowSettings::createSettingsView()
+{
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    settingsView = new SettingsView(this);
+    centralWidget->addWidget(settingsView);
 }
 
 void MainWindowSettings::asyncStartBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, quint32 delayAtStart, QString bgmMusicFilePath)

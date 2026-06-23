@@ -67,7 +67,8 @@ const char* EmuInstance::hotkeyNames[HK_MAX] =
     "HK_GuitarGripGreen",
     "HK_GuitarGripRed",
     "HK_GuitarGripYellow",
-    "HK_GuitarGripBlue"
+    "HK_GuitarGripBlue",
+    "HK_OpenSettings"
 };
 
 const char* EmuInstance::touchButtonNames[4] =

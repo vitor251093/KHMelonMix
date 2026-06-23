@@ -35,6 +35,7 @@
 #include <QMimeData>
 #include <QVector>
 #include <QCommandLineParser>
+#include <QFontDatabase>
 #include <QStandardPaths>
 #ifndef _WIN32
 #include <QGuiApplication>
@@ -370,6 +371,10 @@ int main(int argc, char** argv)
     setMPInterface(MPInterface_Local);
 
     NetInit();
+
+    QFontDatabase::addApplicationFont(":/ds/KHMenu.ttf");
+    QFontDatabase::addApplicationFont(":/ds/KHGummi.ttf");
+    QFontDatabase::addApplicationFont(":/ds/ComicHearts.otf");
 
     createEmuInstance();
 

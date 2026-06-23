@@ -56,6 +56,7 @@
 #include "EmuSettingsDialog.h"
 #include "InputConfig/InputConfigDialog.h"
 #include "MainWindow/MainWindowSettings.h"
+#include "MainWindow/SettingsView.h"
 #include "PluginSettingsDialog.h"
 #include "VideoSettingsDialog.h"
 #include "CameraSettingsDialog.h"
@@ -818,6 +819,9 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     updateMPInterface(MPInterface::GetType());
 
     initWidgets();
+
+    connect(settingsView, SIGNAL(settingsClosed()), this, SLOT(onSettingsClosed()));
+    connect(settingsView, SIGNAL(quitGameConfirmed()), this, SLOT(onQuitGameConfirmed()));
 }
 
 MainWindow::~MainWindow()
@@ -2308,6 +2312,31 @@ void MainWindow::onScreenEmphasisToggled()
     windowCfg.SetInt("ScreenSizing", currentSizing);
 
     emit screenLayoutChange();
+}
+
+void MainWindow::onOpenSettingsOverlay()
+{
+    QStackedWidget* cw = (QStackedWidget*)centralWidget();
+    if (cw->currentWidget() == settingsView) return;
+    m_previousWidget = cw->currentWidget();
+    emuThread->emuPause();
+    cw->setCurrentWidget(settingsView);
+    settingsView->setFocus();
+    settingsView->resetToFirstScreen();
+}
+
+void MainWindow::onSettingsClosed()
+{
+    QStackedWidget* cw = (QStackedWidget*)centralWidget();
+    if (m_previousWidget)
+        cw->setCurrentWidget(m_previousWidget);
+    emuThread->emuUnpause();
+}
+
+void MainWindow::onQuitGameConfirmed()
+{
+    emuThread->emuStop(false);
+    onSettingsClosed();
 }
 
 void MainWindow::onEmuStart()

@@ -46,6 +46,7 @@ public:
     int renderer_brightnessMode() override;
     float renderer_forcedAspectRatio() override;
     bool renderer_showOriginalUI() override;
+    ThemeColor defaultThemeColor() override { return {192, 16, 16}; }
 
     bool shouldPreserveDsTopScreenWhileOnDualScreenModeForGameScene();
 
