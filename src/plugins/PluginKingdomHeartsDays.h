@@ -28,9 +28,7 @@ public:
 
     void loadLocalization();
     std::string saveFilePath();
-    int startupWindowMode() override;
-    int startupWindowWidth() override;
-    int startupWindowHeight() override;
+    StartupWindowConfig startupWindowConfig() override;
     void onLoadROM() override;
     void onLoadState() override;
 

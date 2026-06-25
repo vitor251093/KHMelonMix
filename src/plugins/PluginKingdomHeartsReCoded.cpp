@@ -446,38 +446,19 @@ std::string PluginKingdomHeartsReCoded::saveFilePath()
     return saveFilePathStr + saveFileName;
 }
 
-int PluginKingdomHeartsReCoded::startupWindowMode()
+StartupWindowConfig PluginKingdomHeartsReCoded::startupWindowConfig()
 {
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
     if (config == nullptr) {
-        return FullscreenOnStartup ? 1 : -1;
+        return { FullscreenOnStartup ? 1 : -1, 0, 0 };
     }
     // Launcher display mode: 0 = fullscreen, 1 = borderless, 2 = windowed.
-    int mode = config->windowMode;
+    StartupWindowConfig result;
+    result.mode = config->windowMode;
+    result.width = config->resolutionWidth;
+    result.height = config->resolutionHeight;
     delete config;
-    return mode;
-}
-
-int PluginKingdomHeartsReCoded::startupWindowWidth()
-{
-    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
-    if (config == nullptr) {
-        return 0;
-    }
-    int width = config->resolutionWidth;
-    delete config;
-    return width;
-}
-
-int PluginKingdomHeartsReCoded::startupWindowHeight()
-{
-    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
-    if (config == nullptr) {
-        return 0;
-    }
-    int height = config->resolutionHeight;
-    delete config;
-    return height;
+    return result;
 }
 
 void PluginKingdomHeartsReCoded::loadLocalization() {

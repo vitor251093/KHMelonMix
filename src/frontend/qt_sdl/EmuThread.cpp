@@ -249,11 +249,9 @@ void EmuThread::run()
                 // Apply the launcher's chosen display mode at game start
                 // (0 = fullscreen, 1 = borderless, 2 = windowed; -1 = leave as-is).
                 // The launcher's resolution sizes the window in windowed mode.
-                int displayMode = emuInstance->plugin->startupWindowMode();
-                if (displayMode >= 0) {
-                    emit windowSetDisplayMode(displayMode,
-                        emuInstance->plugin->startupWindowWidth(),
-                        emuInstance->plugin->startupWindowHeight());
+                Plugins::StartupWindowConfig windowConfig = emuInstance->plugin->startupWindowConfig();
+                if (windowConfig.mode >= 0) {
+                    emit windowSetDisplayMode(windowConfig.mode, windowConfig.width, windowConfig.height);
                 }
                 emuInstance->inputLoadConfig();
 
