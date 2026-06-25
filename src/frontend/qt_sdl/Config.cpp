@@ -131,7 +131,7 @@ DefaultList<bool> DefaultBools =
     {"3D.GL.HiresCoordinates", true},
     {"LimitFPS", true},
     {"Instance*.Window*.ShowOSD", true},
-    {"Instance*.Window*.FullscreenBorderless", true},
+    {"Instance*.Window*.FullscreenBorderless", false},
     {"Emu.DirectBoot", true},
     {"Mouse.Hide", true},
     {"Instance*.DS.Battery.LevelOkay", true},
