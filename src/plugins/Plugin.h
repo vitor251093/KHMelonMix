@@ -52,6 +52,16 @@ struct BgmEntry
     char Name[40];
 };
 
+// Display mode + window size the HD Collection launcher requests at game start.
+// mode: -1 = leave as-is; 0 = fullscreen, 1 = borderless, 2 = windowed.
+// width/height: 0 = unset (keep the current/previous window size).
+struct StartupWindowConfig
+{
+    int mode = -1;
+    int width = 0;
+    int height = 0;
+};
+
 enum EMidiState : u8 {
     Stopped = 0x00,
     LoadSequence  = 0x01,
@@ -205,8 +215,14 @@ public:
     bool shouldExportTextures() {
         return ExportTextures;
     }
-    virtual bool shouldStartInFullscreen() {
-        return FullscreenOnStartup;
+    // Desired display mode at game start, matching the HD Collection launcher's
+    // display-mode setting: 0 = fullscreen (exclusive), 1 = borderless windowed,
+    // 2 = windowed, -1 = no preference (leave the emulator window as-is).
+    // Display mode + window size the launcher requests at game start. Returns a
+    // single struct so the override reads KingdomHeartsHDCollection::config()
+    // only once (it isn't cached, and this is only used once, at game start).
+    virtual StartupWindowConfig startupWindowConfig() {
+        return { FullscreenOnStartup ? 1 : -1, 0, 0 };
     }
 
     virtual std::string localizationFilePath(std::string language) {return "";}

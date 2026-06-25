@@ -81,6 +81,7 @@ void EmuThread::attachWindow(MainWindow* window)
     connect(this, SIGNAL(windowEmuReset()), window, SLOT(onEmuReset()));
     connect(this, SIGNAL(autoScreenSizingChange(int)), window->panel, SLOT(onAutoScreenSizingChanged(int)));
     connect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
+    connect(this, SIGNAL(windowSetDisplayMode(int,int,int)), window, SLOT(onSetDisplayMode(int,int,int)));
     connect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
     if (window->winHasMenu())
@@ -119,6 +120,7 @@ void EmuThread::detachWindow(MainWindow* window)
     disconnect(this, SIGNAL(windowEmuReset()), window, SLOT(onEmuReset()));
     disconnect(this, SIGNAL(autoScreenSizingChange(int)), window->panel, SLOT(onAutoScreenSizingChanged(int)));
     disconnect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
+    disconnect(this, SIGNAL(windowSetDisplayMode(int,int,int)), window, SLOT(onSetDisplayMode(int,int,int)));
     disconnect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
     if (window->winHasMenu())
@@ -244,8 +246,12 @@ void EmuThread::run()
             }
             if (shouldStartPlugin)
             {
-                if (emuInstance->plugin->shouldStartInFullscreen()) {
-                    emit windowFullscreenToggle();
+                // Apply the launcher's chosen display mode at game start
+                // (0 = fullscreen, 1 = borderless, 2 = windowed; -1 = leave as-is).
+                // The launcher's resolution sizes the window in windowed mode.
+                Plugins::StartupWindowConfig windowConfig = emuInstance->plugin->startupWindowConfig();
+                if (windowConfig.mode >= 0) {
+                    emit windowSetDisplayMode(windowConfig.mode, windowConfig.width, windowConfig.height);
                 }
                 emuInstance->inputLoadConfig();
 

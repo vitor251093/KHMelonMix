@@ -859,7 +859,12 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     if (!emuInstance) return;
 
-    QByteArray geom = saveGeometry();
+    // If we are closing while in borderless fullscreen, persist the underlying
+    // windowed geometry (saved when entering it) instead of the screen-covering
+    // frameless one, so the window reopens at its normal size.
+    QByteArray geom = (fullscreenActive && (windowFlags() & Qt::FramelessWindowHint) && !savedGeometry.isEmpty())
+        ? savedGeometry
+        : saveGeometry();
     QByteArray enc = geom.toBase64(QByteArray::Base64Encoding);
     windowCfg.SetString("Geometry", enc.toStdString());
     Config::Save();
@@ -2265,28 +2270,104 @@ void MainWindow::onTitleUpdate(QString title)
     setWindowTitle(title);
 }
 
-void MainWindow::toggleFullscreen()
+void MainWindow::setFullscreenMode(int mode, int width, int height)
 {
-    if (!isFullScreen())
+    // mode: 0 = fullscreen (exclusive), 1 = borderless windowed, 2 = windowed.
+    // Mirrors the HD Collection launcher's display-mode setting. width/height
+    // (when > 0) size the window in windowed mode, matching the launcher's
+    // configured resolution.
+    bool wasBorderless = (windowFlags() & Qt::FramelessWindowHint);
+
+    if (mode == 2)
     {
-        showFullScreen();
-        if (hasMenu)
-            menuBar()->setFixedHeight(0); // Don't use hide() as menubar actions stop working
-    }
-    else
-    {
+        // -> windowed. Drop the frameless flag first if we were borderless.
+        if (wasBorderless)
+            setWindowFlag(Qt::FramelessWindowHint, false);
         showNormal();
+
+        if (width > 0 && height > 0)
+        {
+            // Size the window to the launcher's resolution, centered on the
+            // screen it currently sits on.
+            QRect avail = screen()->availableGeometry();
+            int x = avail.x() + (avail.width()  - width)  / 2;
+            int y = avail.y() + (avail.height() - height) / 2;
+            setGeometry(x, y, width, height);
+        }
+        else if (wasBorderless && !savedGeometry.isEmpty())
+        {
+            restoreGeometry(savedGeometry);
+        }
+
         if (hasMenu)
         {
             int menuBarHeight = menuBar()->sizeHint().height();
             menuBar()->setFixedHeight(menuBarHeight);
         }
+        fullscreenActive = false;
+        return;
+    }
+
+    // mode 0 or 1: remember the windowed geometry the first time we go fullscreen.
+    if (!fullscreenActive)
+        savedGeometry = saveGeometry();
+
+    if (mode == 1)
+    {
+        // True borderless windowed: a frameless top-level window covering the
+        // screen it currently sits on. This never uses Qt's WindowFullScreen
+        // state, so there is no exclusive-mode switch.
+        //
+        // IMPORTANT: a frameless window whose rect EXACTLY matches the monitor
+        // gets promoted by Windows to "fullscreen optimization" (DirectFlip),
+        // which behaves like exclusive fullscreen and flickers on alt-tab. To
+        // keep it a real, DWM-composited borderless window (no flicker, instant
+        // alt-tab), we make it 1px taller than the screen so its rect is not an
+        // exact monitor match. That extra row sits just off the bottom edge and
+        // is never visible.
+        QRect screenGeo = screen()->geometry();
+        setWindowState(windowState() & ~(Qt::WindowFullScreen | Qt::WindowMaximized));
+        setWindowFlag(Qt::FramelessWindowHint, true);
+        setGeometry(screenGeo.x(), screenGeo.y(), screenGeo.width(), screenGeo.height() + 1);
+        show();
+        raise();
+        activateWindow();
+    }
+    else // mode 0: classic (exclusive) Qt fullscreen
+    {
+        if (wasBorderless)
+            setWindowFlag(Qt::FramelessWindowHint, false);
+        showFullScreen();
+    }
+
+    if (hasMenu)
+        menuBar()->setFixedHeight(0); // Don't use hide() as menubar actions stop working
+
+    fullscreenActive = true;
+}
+
+void MainWindow::toggleFullscreen()
+{
+    if (fullscreenActive)
+    {
+        setFullscreenMode(2); // back to windowed
+    }
+    else
+    {
+        // "FullscreenBorderless" (default on) decides the flavour used by the
+        // fullscreen hotkey: borderless windowed (1) vs classic Qt fullscreen (0).
+        setFullscreenMode(windowCfg.GetBool("FullscreenBorderless") ? 1 : 0);
     }
 }
 
 void MainWindow::onFullscreenToggled()
 {
     toggleFullscreen();
+}
+
+void MainWindow::onSetDisplayMode(int mode, int width, int height)
+{
+    setFullscreenMode(mode, width, height);
 }
 
 void MainWindow::onScreenEmphasisToggled()

@@ -27,7 +27,7 @@ public:
 
     void loadLocalization();
     std::string saveFilePath();
-    bool shouldStartInFullscreen() override;
+    StartupWindowConfig startupWindowConfig() override;
     void onLoadROM() override;
 
     std::string gameFolderName() override;
