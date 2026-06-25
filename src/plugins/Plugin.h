@@ -205,9 +205,16 @@ public:
     bool shouldExportTextures() {
         return ExportTextures;
     }
-    virtual bool shouldStartInFullscreen() {
-        return FullscreenOnStartup;
+    // Desired display mode at game start, matching the HD Collection launcher's
+    // display-mode setting: 0 = fullscreen (exclusive), 1 = borderless windowed,
+    // 2 = windowed, -1 = no preference (leave the emulator window as-is).
+    virtual int startupWindowMode() {
+        return FullscreenOnStartup ? 1 : -1;
     }
+    // Window size (in pixels) the launcher requests; used to size the window in
+    // windowed mode. 0 means "unset" (keep the current/previous window size).
+    virtual int startupWindowWidth() { return 0; }
+    virtual int startupWindowHeight() { return 0; }
 
     virtual std::string localizationFilePath(std::string language) {return "";}
 
