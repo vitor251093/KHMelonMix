@@ -12,5 +12,6 @@
     <file>sfx_menu_move.wav</file>
     <file>sfx_menu_select.wav</file>
     <file>settings_bg.png</file>
+    <file>gear.svg</file>
   </qresource>
 </RCC>

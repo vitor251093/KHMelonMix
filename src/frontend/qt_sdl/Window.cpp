@@ -44,6 +44,7 @@
 #include <QStackedWidget>
 #ifndef _WIN32
 #include <QGuiApplication>
+#include <QShortcut>
 #include <QSocketNotifier>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -822,6 +823,16 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
 
     connect(settingsView, SIGNAL(settingsClosed()), this, SLOT(onSettingsClosed()));
     connect(settingsView, SIGNAL(quitGameConfirmed()), this, SLOT(onQuitGameConfirmed()));
+
+    QShortcut* f10sc = new QShortcut(QKeySequence(Qt::Key_F10), this);
+    connect(f10sc, &QShortcut::activated, this, [this]() {
+        QStackedWidget* cw = (QStackedWidget*)centralWidget();
+        if (settingsView && cw->currentWidget() == settingsView) return;
+        if (emuThread->emuIsActive())
+            emuInstance->triggerHotkeyPress(HK_OpenSettings);
+        else
+            onOpenSettingsOverlay();
+    });
 }
 
 MainWindow::~MainWindow()
@@ -1006,14 +1017,25 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     // TODO!! REMOVE ME IN RELEASE BUILDS!!
     //if (event->key() == Qt::Key_F11) emuInstance->getNDS()->debug(0);
 
-    MainWindowSettings::keyPressEvent(event);
+    QStackedWidget* cw = (QStackedWidget*)centralWidget();
+    if (settingsView && cw->currentWidget() == settingsView)
+    {
+        if (event->type() == QEvent::KeyPress)
+            QApplication::sendEvent(settingsView, event);
+        return;
+    }
 
+    MainWindowSettings::keyPressEvent(event);
     emuInstance->onKeyPress(event);
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent* event)
 {
     if (event->isAutoRepeat()) return;
+
+    QStackedWidget* cw = (QStackedWidget*)centralWidget();
+    if (settingsView && cw->currentWidget() == settingsView)
+        return;
 
     emuInstance->onKeyRelease(event);
 }
@@ -2319,23 +2341,34 @@ void MainWindow::onOpenSettingsOverlay()
     QStackedWidget* cw = (QStackedWidget*)centralWidget();
     if (cw->currentWidget() == settingsView) return;
     m_previousWidget = cw->currentWidget();
-    emuThread->emuPause();
+    if (isVideoPlaying())
+    {
+        pauseVideo();
+        m_videoPausedBySelf = true;
+    }
     cw->setCurrentWidget(settingsView);
-    settingsView->setFocus();
     settingsView->resetToFirstScreen();
 }
 
 void MainWindow::onSettingsClosed()
 {
     QStackedWidget* cw = (QStackedWidget*)centralWidget();
+    emuInstance->settingsViewOpen = false;
+    if (m_videoPausedBySelf)
+    {
+        m_videoPausedBySelf = false;
+        if (isVideoPaused())
+            unpauseVideo();
+    }
     if (m_previousWidget)
         cw->setCurrentWidget(m_previousWidget);
-    emuThread->emuUnpause();
 }
 
 void MainWindow::onQuitGameConfirmed()
 {
-    emuThread->emuStop(false);
+    emuThread->emuStop(true);
+    stopAllBgm();
+    m_videoPausedBySelf = false;
     onSettingsClosed();
 }
 

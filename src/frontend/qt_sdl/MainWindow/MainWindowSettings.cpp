@@ -448,6 +448,16 @@ void MainWindowSettings::unpauseVideo()
     player->play();
 }
 
+bool MainWindowSettings::isVideoPlaying() const
+{
+    return player && player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
+}
+
+bool MainWindowSettings::isVideoPaused() const
+{
+    return player && player->playbackState() == QMediaPlayer::PlaybackState::PausedState;
+}
+
 void MainWindowSettings::asyncShowCutsceneSkipMenu(int selection)
 {
     QMetaObject::invokeMethod(this, "showCutsceneSkipMenu", Qt::QueuedConnection, Q_ARG(int, selection));

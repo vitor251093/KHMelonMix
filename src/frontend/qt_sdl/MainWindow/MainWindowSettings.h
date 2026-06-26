@@ -77,6 +77,8 @@ public slots:
     void stopVideo();
     void pauseVideo();
     void unpauseVideo();
+    bool isVideoPlaying() const;
+    bool isVideoPaused() const;
 
     void asyncShowCutsceneSkipMenu(int selection);
     void asyncUpdateCutsceneSkipMenu(int selection);
@@ -104,6 +106,7 @@ protected:
 
     SettingsView* settingsView = nullptr;
     QWidget* m_previousWidget = nullptr;
+    bool m_videoPausedBySelf = false;
 
 private:
     QScopedPointer<Ui::MainWindowSettings> ui;

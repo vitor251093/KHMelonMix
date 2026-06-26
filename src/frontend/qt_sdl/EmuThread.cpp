@@ -199,11 +199,16 @@ void EmuThread::run()
     emuInstance->fastForwardToggled = false;
     emuInstance->slowmoToggled = false;
 
+    bool settingsPausedEmu = false;
+    EmuStatusKind settingsPrevStatus = emuStatus_Running;
+
     while (emuStatus != emuStatus_Exit)
     {
         if (emuInstance->instanceID == 0)
             MPInterface::Get().Process();
 
+        if (!emuInstance->settingsViewOpen)
+        {
         emuInstance->inputProcess();
 
         auto nds = emuInstance->getNDS();
@@ -280,7 +285,19 @@ void EmuThread::run()
         if (emuInstance->hotkeyPressed(HK_SwapScreens)) emit swapScreensToggle();
         if (emuInstance->hotkeyPressed(HK_SwapScreenEmphasis)) emit screenEmphasisToggle();
 
-        if (emuInstance->hotkeyPressed(HK_OpenSettings)) emit windowOpenSettings();
+        if (emuInstance->hotkeyPressed(HK_OpenSettings))
+        {
+            emuInstance->settingsViewOpen = true;
+            settingsPrevStatus = emuStatus;
+            settingsPausedEmu = true;
+            emuStatus = emuStatus_Paused;
+            emit windowOpenSettings();
+        }
+
+        } // !settingsViewOpen
+
+        if (settingsPausedEmu && emuInstance->settingsViewOpen)
+            emuStatus = emuStatus_Paused;
 
         if (emuStatus == emuStatus_Running || emuStatus == emuStatus_FrameStep)
         {
@@ -577,9 +594,28 @@ void EmuThread::run()
             if (emuInstance->plugin != nullptr) {
                 refreshPluginState();
             }
+
+            if (settingsPausedEmu)
+            {
+                if (emuInstance->settingsViewOpen)
+                    emuStatus = emuStatus_Paused;
+                else
+                {
+                    settingsPausedEmu = false;
+                    emuStatus = settingsPrevStatus;
+                }
+            }
         }
 
         handleMessages();
+
+        if (settingsPausedEmu)
+        {
+            if (!emuActive)
+                settingsPausedEmu = false;
+            else if (emuStatus == emuStatus_Running)
+                settingsPrevStatus = emuStatus_Running;
+        }
 
         //Lua Script Stuff (-for now happens at the end of each frame regardless of emuStatus)
         emit signalLuaUpdate();
