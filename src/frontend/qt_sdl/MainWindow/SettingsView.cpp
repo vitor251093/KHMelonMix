@@ -28,11 +28,10 @@
 #include <QUrl>
 
 #include "SettingsView.h"
+#include "SettingsLocale.h"
 #include "MainWindowSettings.h"
 #include "EmuInstance.h"
 #include "plugins/Plugin.h"
-#include "plugins/PluginKingdomHeartsDays.h"
-#include "plugins/PluginKingdomHeartsReCoded.h"
 
 using namespace Plugins;
 
@@ -72,17 +71,6 @@ static void addArrowPillPath(QPainterPath& path, QRectF r)
 
 // ─── data ─────────────────────────────────────────────────────────────────────
 
-static const char* kSidebarLabels[] = {
-    "Game",
-    "Emulation",
-    "Display",
-    "Sound",
-    "Gamepad",
-    "Keyboard",
-    "System",
-    "Before You Stream\xE2\x80\xA6",
-    "Quit Game",
-};
 static constexpr int kSidebarCount = 9;
 
 // Sidebar indices for special-cased categories
@@ -95,18 +83,6 @@ static constexpr int kIdxKeyboard   = 5;
 static constexpr int kIdxSystem     = 6;
 static constexpr int kIdxStream     = 7;
 static constexpr int kIdxQuit       = 8;
-
-static const char* kSectionOverview[] = {
-    "Settings specific to the loaded Kingdom Hearts game.",
-    "Configure console type, frame rate, and runtime behavior.",
-    "Renderer, resolution, synchronization, and visual theme.",
-    "Volume, audio quality, and microphone input.",
-    "Remap controller buttons and analog stick assignments.",
-    "Remap keyboard bindings for DS buttons and hotkeys.",
-    "Network mode, battery simulation, and firmware options.",
-    "Streaming guidelines and copyright information.",
-    "Exit the current game session.",
-};
 
 struct ThemePreset { const char* label; QRgb rgb; };
 static const ThemePreset kThemePresets[] = {
@@ -207,139 +183,374 @@ static QString keyBindingText(int key)
 QVector<SettingRow> SettingsView::rowsFor(int idx) const
 {
     QVector<SettingRow> rows;
+    const SettingsLocale& loc = locale();
     EmuInstance* emu = m_mainWindow ? m_mainWindow->getEmuInstance() : nullptr;
 
     switch (idx)
     {
     case kIdxGame:
     {
-        if (!emu || !emu->plugin) break;
-        u32 gc = emu->plugin->getGameCode();
-        bool isDays    = PluginKingdomHeartsDays::isCart(gc);
-        bool isReCoded = PluginKingdomHeartsReCoded::isCart(gc);
-        if (!isDays && !isReCoded) break;
+        if (!emu) break;
+        auto* gcfg = &emu->getGlobalConfig();
 
-        rows.append({ SettingRow::Type::Combobox, "Language",
-            "Firmware language used for cutscene subtitles and pause menus.",
-            {"English", "Japanese", "French", "German", "Italian", "Spanish"}, 0, 0 });
-        rows.append({ SettingRow::Type::Toggle, "Fast-forward Loading",
-            "Speed through loading screens automatically.", {}, 0, 0 });
-        rows.append({ SettingRow::Type::Toggle, "Skip Cutscenes Instantly",
-            "Press a button during a cutscene to skip it immediately.", {}, 0, 0 });
+        // Language is always available regardless of which ROM is loaded
+        rows.append({ SettingRow::Type::Combobox, loc.gameLanguageLabel,
+            loc.gameLanguageDesc,
+            {"English", "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e", "Fran\xc3\xa7" "ais", "Deutsch", "Italiano", "Espa\xc3\xb1ol"} });
+        rows.last().read  = [gcfg]() {
+            int v = gcfg->GetInt("Instance0.Firmware.Language");
+            return (v == 1) ? 0 : (v == 0) ? 1 : v; // stored: Eng=1,Jap=0; displayed: Eng=0,Jap=1
+        };
+        rows.last().write = [gcfg, emu](int v) {
+            gcfg->SetInt("Instance0.Firmware.Language", (v == 0) ? 1 : (v == 1) ? 0 : v);
+            Config::Save();
+            if (emu->plugin) emu->plugin->shouldInvalidateConfigs = true;
+        };
+
+        // KH-specific rows — only when Days or Re:coded is actively running
+        if (!emu->plugin || !emu->emuIsActive()) break;
+        u32 gc = emu->plugin->getGameCode();
+        if (!emu->plugin->supportsKHExtendedSettings()) break;
+        bool isDays = emu->plugin->isKHDays();
+
+        std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
+        auto pluginSave = [emu]() { Config::Save(); emu->plugin->shouldInvalidateConfigs = true; };
+
+        rows.append({ SettingRow::Type::Toggle, loc.gameFastForwardLabel,
+            loc.gameFastForwardDesc });
+        rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "FastForwardLoadingScreens") ? 1 : 0; };
+        rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "FastForwardLoadingScreens", v); pluginSave(); };
+
+        rows.append({ SettingRow::Type::Toggle, loc.gameSkipCutscenesLabel,
+            loc.gameSkipCutscenesDesc });
+        rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "InstantSkipCutsceneOnStart") ? 1 : 0; };
+        rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "InstantSkipCutsceneOnStart", v); pluginSave(); };
+
         if (isDays)
-            rows.append({ SettingRow::Type::Toggle, "Disable \"His\" Memories",
-                "Remove the additional memory episodes added by this port.", {}, 0, 0 });
+        {
+            rows.append({ SettingRow::Type::Toggle, loc.gameHisMemoriesLabel,
+                loc.gameHisMemoriesDesc });
+            rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DaysDisableHisMemories") ? 1 : 0; };
+            rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "DaysDisableHisMemories", v); pluginSave(); };
+        }
         break;
     }
     case kIdxEmulation:
+    {
+        if (!emu) break;
+        auto* gcfg = &emu->getGlobalConfig();
+        auto saveOnly = []() { Config::Save(); };
+
         rows.append({ SettingRow::Type::Combobox, "Console Type",
             "Emulated console. Changes take effect after restarting the game.",
-            {"DS", "DSi"}, 0, 0 });
+            {"DS", "DSi"} });
+        rows.last().read  = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType"); };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetInt("Emu.ConsoleType", v); saveOnly(); };
+
         rows.append({ SettingRow::Type::Toggle, "Direct Boot",
-            "Skip the DS boot sequence and launch the game directly.", {}, 0, 0 });
+            "Skip the DS boot sequence and launch the game directly." });
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("Emu.DirectBoot") ? 1 : 0; };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("Emu.DirectBoot", v != 0); saveOnly(); };
+
         rows.append({ SettingRow::Type::Toggle, "FPS Limit",
-            "Cap emulation speed to the target frame rate.", {}, 0, 0 });
+            "Cap emulation speed to the target frame rate." });
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("LimitFPS") ? 1 : 0; };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("LimitFPS", v != 0); saveOnly(); };
+
         rows.append({ SettingRow::Type::Combobox, "Target FPS",
             "Frame rate cap for normal play.",
-            {"30", "60", "120"}, 0, 0 });
+            {"30", "60", "120"} });
+        rows.last().read  = [gcfg]() {
+            double v = gcfg->GetDouble("TargetFPS");
+            for (int i = 0; i < kTargetFPSCount; i++) if (qAbs(v - kTargetFPSPresets[i]) < 0.5) return i;
+            return 1;
+        };
+        rows.last().write = [gcfg, saveOnly](int v) {
+            if (v < kTargetFPSCount) gcfg->SetDouble("TargetFPS", kTargetFPSPresets[v]);
+            saveOnly();
+        };
+
         rows.append({ SettingRow::Type::Combobox, "Fast-forward FPS",
             "Speed cap while fast-forward is held.",
-            {"2\xC3\x97", "4\xC3\x97", "8\xC3\x97", "Unlimited"}, 0, 0 });
+            {"2\xC3\x97", "4\xC3\x97", "8\xC3\x97", "Unlimited"} });
+        rows.last().read  = [gcfg]() {
+            double v = gcfg->GetDouble("FastForwardFPS");
+            for (int i = 0; i < kFFPSCount; i++) if (qAbs(v - kFFPSPresets[i]) < 0.5) return i;
+            return 3;
+        };
+        rows.last().write = [gcfg, saveOnly](int v) {
+            if (v < kFFPSCount) gcfg->SetDouble("FastForwardFPS", kFFPSPresets[v]);
+            saveOnly();
+        };
+
         rows.append({ SettingRow::Type::Combobox, "Slowmo FPS",
             "Frame rate cap while slow-motion is active.",
-            {"25%", "50%", "75%"}, 0, 0 });
+            {"25%", "50%", "75%"} });
+        rows.last().read  = [gcfg]() {
+            double v = gcfg->GetDouble("SlowmoFPS");
+            for (int i = 0; i < kSlowmoFPSCount; i++) if (qAbs(v - kSlowmoFPSPresets[i]) < 0.5) return i;
+            return 1;
+        };
+        rows.last().write = [gcfg, saveOnly](int v) {
+            if (v < kSlowmoFPSCount) gcfg->SetDouble("SlowmoFPS", kSlowmoFPSPresets[v]);
+            saveOnly();
+        };
+
         rows.append({ SettingRow::Type::Toggle, "Mute Fast-forward",
-            "Silence audio while fast-forward is held.", {}, 0, 0 });
+            "Silence audio while fast-forward is held." });
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("MuteFastForward") ? 1 : 0; };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("MuteFastForward", v != 0); saveOnly(); };
+
         rows.append({ SettingRow::Type::Toggle, "Pause on Lost Focus",
-            "Pause emulation when the window loses focus.", {}, 0, 0 });
+            "Pause emulation when the window loses focus." });
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("PauseLostFocus") ? 1 : 0; };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("PauseLostFocus", v != 0); saveOnly(); };
+
         rows.append({ SettingRow::Type::Toggle, "Hide Mouse",
-            "Hide the mouse cursor while the emulator window is active.", {}, 0, 0 });
+            "Hide the mouse cursor while the emulator window is active." });
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("Mouse.Hide") ? 1 : 0; };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("Mouse.Hide", v != 0); saveOnly(); };
+
         rows.append({ SettingRow::Type::Combobox, "Hide Mouse After",
             "Automatically hide the cursor after this period of inactivity.",
-            {"3 seconds", "5 seconds", "10 seconds", "30 seconds"}, 0, 0 });
+            {"3 seconds", "5 seconds", "10 seconds", "30 seconds"} });
+        rows.last().read  = [gcfg]() {
+            int v = gcfg->GetInt("Mouse.HideSeconds");
+            for (int i = 0; i < kMouseHideCount; i++) if (v == kMouseHidePresets[i]) return i;
+            return 0;
+        };
+        rows.last().write = [gcfg, saveOnly](int v) {
+            if (v < kMouseHideCount) gcfg->SetInt("Mouse.HideSeconds", kMouseHidePresets[v]);
+            saveOnly();
+        };
         break;
+    }
     case kIdxDisplay:
+    {
+        if (!emu) break;
+        auto* gcfg    = &emu->getGlobalConfig();
+        auto saveVideo = [emu]() { Config::Save(); emu->getEmuThread()->updateVideoSettings(); };
+        auto saveOnly  = []()    { Config::Save(); };
+
         rows.append({ SettingRow::Type::Combobox, "3D Renderer",
             "Graphics renderer for 3D scenes. OpenGL modes require GPU support.",
-            {"Software", "OpenGL", "OpenGL Compute"}, 0, 0 });
+            {"Software", "OpenGL", "OpenGL Compute"} });
+        rows.last().read  = [gcfg]() { return gcfg->GetInt("3D.Renderer"); };
+        rows.last().write = [gcfg, saveVideo](int v) { gcfg->SetInt("3D.Renderer", v); saveVideo(); };
+
         rows.append({ SettingRow::Type::Combobox, "3D Resolution",
             "Internal rendering scale for 3D graphics.",
-            {"1\xC3\x97", "2\xC3\x97",  "3\xC3\x97",  "4\xC3\x97",
-             "5\xC3\x97", "6\xC3\x97",  "7\xC3\x97",  "8\xC3\x97",
-             "9\xC3\x97", "10\xC3\x97", "11\xC3\x97", "12\xC3\x97",
-             "13\xC3\x97","14\xC3\x97", "15\xC3\x97", "16\xC3\x97"}, 0, 0 });
+            {"1x native (256x192)",   "2x native (512x384)",   "3x native (768x576)",   "4x native (1024x768)",
+             "5x native (1280x960)",  "6x native (1536x1152)", "7x native (1792x1344)", "8x native (2048x1536)",
+             "9x native (2304x1728)", "10x native (2560x1920)","11x native (2816x2112)","12x native (3072x2304)",
+             "13x native (3328x2496)","14x native (3584x2688)","15x native (3840x2880)","16x native (4096x3072)"} });
+        rows.last().read  = [gcfg]() { return qBound(0, gcfg->GetInt("3D.GL.ScaleFactor") - 1, 15); };
+        rows.last().write = [gcfg, saveVideo](int v) { gcfg->SetInt("3D.GL.ScaleFactor", v + 1); saveVideo(); };
+
         rows.append({ SettingRow::Type::Toggle, "VSync",
-            "Synchronize rendering to your display refresh rate.", {}, 0, 0 });
+            "Synchronize rendering to your display refresh rate." });
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("Screen.VSync") ? 1 : 0; };
+        rows.last().write = [gcfg, saveVideo](int v) { gcfg->SetBool("Screen.VSync", v != 0); saveVideo(); };
+
         rows.append({ SettingRow::Type::Combobox, "Theme Color",
             "Settings menu accent color inspired by each Kingdom Hearts title.",
             {"Auto", "358/2 Days", "Re:coded", "Kingdom Hearts",
              "Birth by Sleep", "KH III", "Dream Drop Distance", "Melody of Memory", "KH IV"},
-            0, 0 });
-        if (emu && emu->plugin)
-        {
-            u32 gc2 = emu->plugin->getGameCode();
-            if (PluginKingdomHeartsDays::isCart(gc2) || PluginKingdomHeartsReCoded::isCart(gc2))
+            0, 0, SettingRow::Tag::ThemeColorPicker });
+        rows.last().read  = [gcfg]() {
+            QString saved = gcfg->GetQString("KHSettings.ThemeColor");
+            if (!saved.isEmpty())
             {
-                rows.append({ SettingRow::Type::Toggle, "Enhanced Graphics",
-                    "Enable high-resolution backgrounds and models.", {}, 0, 0 });
-                rows.append({ SettingRow::Type::Toggle, "Single Screen Mode",
-                    "Display only the top screen, scaled to fill the window.", {}, 0, 0 });
-                rows.append({ SettingRow::Type::Toggle, "Show Subtitles",
-                    "Display subtitles during HD cutscene playback.", {}, 0, 0 });
-                rows.append({ SettingRow::Type::Slider, "HUD Scale",
-                    "Scale the heads-up display elements.", {}, 1, 10 });
+                QColor c(saved);
+                for (int i = 1; i < kThemePresetCount; i++)
+                    if (QColor(kThemePresets[i].rgb).rgb() == c.rgb()) return i;
+            }
+            return 0;
+        };
+        rows.last().write = [gcfg, saveOnly](int v) {
+            if (v >= 0 && v < kThemePresetCount)
+            {
+                if (v == 0) gcfg->SetQString("KHSettings.ThemeColor", QString());
+                else        gcfg->SetQString("KHSettings.ThemeColor", QColor(kThemePresets[v].rgb).name());
+            }
+            saveOnly();
+        };
+
+        if (emu->plugin && emu->emuIsActive())
+        {
+            if (emu->plugin->supportsKHExtendedSettings())
+            {
+                std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
+                auto savePlugin = [emu]() { Config::Save(); emu->plugin->shouldInvalidateConfigs = true; };
+
+                rows.append({ SettingRow::Type::Toggle, loc.displayEnhancedLabel,
+                    loc.displayEnhancedDesc });
+                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableEnhancedGraphics") ? 0 : 1; };
+                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableEnhancedGraphics", !v); savePlugin(); };
+
+                rows.append({ SettingRow::Type::Toggle, loc.displaySingleScreenLabel,
+                    loc.displaySingleScreenDesc });
+                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableSingleScreenMode") ? 0 : 1; };
+                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableSingleScreenMode", !v); savePlugin(); };
+
+                rows.append({ SettingRow::Type::Toggle, loc.displaySubtitlesLabel,
+                    loc.displaySubtitlesDesc });
+                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "SubtitlesEnabled") ? 1 : 0; };
+                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "SubtitlesEnabled", v); savePlugin(); };
+
+                rows.append({ SettingRow::Type::Slider, loc.displayHUDScaleLabel,
+                    loc.displayHUDScaleDesc, {}, 1, 10 });
+                rows.last().read  = [gcfg, prefix]() { int v = gcfg->GetInt(prefix + "HUDScale"); return v == 0 ? 4 : v; };
+                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetInt(prefix + "HUDScale", v); savePlugin(); };
             }
         }
         break;
+    }
     case kIdxSound:
+    {
+        if (!emu) break;
+        auto* gcfg = &emu->getGlobalConfig();
+        auto* lcfg = &emu->getLocalConfig();
+        auto saveAudio = [emu]() { Config::Save(); emu->applyAudioSettings(); };
+
         rows.append({ SettingRow::Type::Slider, "Volume",
             "Game audio output level.", {}, 0, 10 });
+        rows.last().read  = [lcfg]()      { return lcfg->GetInt("Audio.Volume") / 25; };
+        rows.last().write = [emu, lcfg, saveAudio](int v) {
+            int vol = qBound(0, v * 25, 256);
+            lcfg->SetInt("Audio.Volume", vol);
+            emu->setAudioVolume(vol);
+            saveAudio();
+        };
+
         rows.append({ SettingRow::Type::Combobox, "Interpolation",
             "Audio resampling quality. Higher settings improve fidelity but use more CPU.",
-            {"None", "Linear", "Cosine", "Cubic", "Gaussian"}, 0, 0 });
+            {"None", "Linear", "Cosine", "Cubic", "Gaussian"} });
+        rows.last().read  = [gcfg]()      { return gcfg->GetInt("Audio.Interpolation"); };
+        rows.last().write = [gcfg, saveAudio](int v) { gcfg->SetInt("Audio.Interpolation", v); saveAudio(); };
+
         rows.append({ SettingRow::Type::Combobox, "Bit Depth",
             "Audio sample bit depth. 10-bit mimics original DS hardware.",
-            {"Auto", "10-bit", "16-bit"}, 0, 0 });
+            {"Auto", "10-bit", "16-bit"} });
+        rows.last().read  = [gcfg]()      { return gcfg->GetInt("Audio.BitDepth"); };
+        rows.last().write = [gcfg, saveAudio](int v) { gcfg->SetInt("Audio.BitDepth", v); saveAudio(); };
+
         rows.append({ SettingRow::Type::Toggle, "DSi Volume Sync",
-            "Sync DS audio volume with the DSi firmware volume level.", {}, 0, 0 });
+            "Sync DS audio volume with the DSi firmware volume level." });
+        rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 1; };
+        rows.last().read  = [lcfg]()      { return lcfg->GetBool("Audio.DSiVolumeSync") ? 1 : 0; };
+        rows.last().write = [lcfg, saveAudio](int v) { lcfg->SetBool("Audio.DSiVolumeSync", v != 0); saveAudio(); };
+
         rows.append({ SettingRow::Type::Combobox, "Mic Input",
             "Microphone input source for games that use the DS microphone.",
-            {"None", "External", "Noise", "WAV"}, 0, 0 });
-        if (emu && emu->plugin)
+            {"None", "External", "Noise", "WAV"} });
+        rows.last().read  = [gcfg]()      { return gcfg->GetInt("Mic.InputType"); };
+        rows.last().write = [gcfg, saveAudio](int v) { gcfg->SetInt("Mic.InputType", v); saveAudio(); };
+
+        if (emu->plugin && emu->emuIsActive())
         {
             u32 gc2 = emu->plugin->getGameCode();
-            if (PluginKingdomHeartsDays::isCart(gc2) || PluginKingdomHeartsReCoded::isCart(gc2))
-                rows.append({ SettingRow::Type::Combobox, "Audio Pack",
-                    "Replacement music pack for in-game audio.", {}, 0, 0 });
+            if (emu->plugin->supportsKHExtendedSettings())
+            {
+                rows.append({ SettingRow::Type::Combobox, loc.soundAudioPackLabel,
+                    loc.soundAudioPackDesc });
+                rows.last().isDynamic = true;
+                rows.last().read  = [this, gcfg, emu]() -> int {
+                    if (!emu->plugin || m_audioPackNames.isEmpty()) return 0;
+                    std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
+                    QString saved = gcfg->GetQString(prefix + "AudioPack");
+                    if (saved.isEmpty()) return 0;
+                    for (int i = 1; i < m_audioPackNames.size(); i++)
+                        if (m_audioPackNames[i] == saved) return i;
+                    return 0;
+                };
+                rows.last().write = [this, gcfg, emu, saveAudio](int v) {
+                    if (!emu->plugin) return;
+                    std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
+                    if (v == 0)
+                        gcfg->SetQString(prefix + "AudioPack", QString());
+                    else if (v > 0 && v < m_audioPackNames.size())
+                        gcfg->SetQString(prefix + "AudioPack", m_audioPackNames[v]);
+                    emu->plugin->shouldInvalidateConfigs = true;
+                    saveAudio();
+                };
+            }
         }
         break;
+    }
     case kIdxKeyboard:
     {
-        if (!emu || !emu->plugin) break;
-        u32 gc = emu->plugin->getGameCode();
-        if (!PluginKingdomHeartsDays::isCart(gc) && !PluginKingdomHeartsReCoded::isCart(gc)) break;
-        rows.append({ SettingRow::Type::Slider, "Camera Sensitivity",
-            "Speed of the touch-screen camera controls.", {}, 1, 10 });
-        rows.append({ SettingRow::Type::Navigate, "Key Bindings",
-            "Assign keyboard keys to DS buttons and hotkeys.", {}, 0, 0 });
+        if (!emu || !emu->plugin || !emu->emuIsActive()) break;
+        if (!emu->plugin->supportsKHExtendedSettings()) break;
+        auto* gcfg = &emu->getGlobalConfig();
+        std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
+        auto savePlugin = [emu]() { Config::Save(); emu->plugin->shouldInvalidateConfigs = true; };
+
+        rows.append({ SettingRow::Type::Slider, loc.keyboardCamSensLabel,
+            loc.keyboardCamSensDesc, {}, 1, 10 });
+        rows.last().read  = [gcfg, prefix]() { int v = gcfg->GetInt(prefix + "CameraSensitivity"); return v == 0 ? 3 : v; };
+        rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetInt(prefix + "CameraSensitivity", v); savePlugin(); };
+
+        rows.append({ SettingRow::Type::Navigate, loc.keyboardBindingsLabel,
+            loc.keyboardBindingsDesc });
         break;
     }
     case kIdxSystem:
+    {
+        if (!emu) break;
+        auto* gcfg = &emu->getGlobalConfig();
+        auto saveOnly = []() { Config::Save(); };
+
         rows.append({ SettingRow::Type::Combobox, "WiFi Mode",
             "Connection mode for wireless features.",
-            {"Indirect", "Direct"}, 0, 0 });
+            {"Indirect", "Direct"} });
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("LAN.DirectMode") ? 1 : 0; };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("LAN.DirectMode", v != 0); saveOnly(); };
+
         rows.append({ SettingRow::Type::Combobox, "WiFi Adapter",
-            "Network adapter used for Direct Mode. Only active when Direct is selected.",
-            {}, 0, 0 }); // options populated dynamically
+            "Network adapter used for Direct Mode. Only active when Direct is selected." });
+        rows.last().isDynamic = true;
+        rows.last().enabled = [gcfg]() { return gcfg->GetBool("LAN.DirectMode"); };
+        rows.last().read  = [this, gcfg]() {
+            QString saved = gcfg->GetQString("LAN.Device");
+            for (int i = 0; i < m_wifiAdapters.size(); i++)
+                if (m_wifiAdapters[i] == saved) return i;
+            return 0;
+        };
+        rows.last().write = [this, gcfg, saveOnly](int v) {
+            if (v >= 0 && v < m_wifiAdapters.size())
+                gcfg->SetQString("LAN.Device", m_wifiAdapters[v]);
+            saveOnly();
+        };
+
         rows.append({ SettingRow::Type::Combobox, "DS Battery",
             "Simulated DS battery level for games that check it.",
-            {"Low", "Okay"}, 0, 0 });
+            {"Low", "Okay"} });
+        rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 0; };
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("DS.Battery.LevelOkay") ? 1 : 0; };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("DS.Battery.LevelOkay", v != 0); saveOnly(); };
+
         rows.append({ SettingRow::Type::Combobox, "DSi Battery Level",
             "Simulated DSi battery charge level.",
-            {"Almost Empty", "Low", "Half", "High", "Full"}, 0, 0 });
+            {"Almost Empty", "Low", "Half", "High", "Full"} });
+        rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 1; };
+        rows.last().read  = [gcfg]() {
+            int v = gcfg->GetInt("DSi.Battery.Level");
+            for (int i = 0; i < kDsiBattCount; i++) if (v == kDsiBattLevels[i]) return i;
+            return 2;
+        };
+        rows.last().write = [gcfg, saveOnly](int v) {
+            if (v < kDsiBattCount) gcfg->SetInt("DSi.Battery.Level", kDsiBattLevels[v]);
+            saveOnly();
+        };
+
         rows.append({ SettingRow::Type::Toggle, "DSi Charging",
-            "Whether the simulated DSi battery is charging.", {}, 0, 0 });
+            "Whether the simulated DSi battery is charging." });
+        rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 1; };
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("DSi.Battery.Charging") ? 1 : 0; };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("DSi.Battery.Charging", v != 0); saveOnly(); };
         break;
+    }
     default:
         break;
     }
@@ -374,6 +585,7 @@ void SettingsView::resetToFirstScreen()
     sidebarIndex      = 0;
     detailIndex       = 0;
     optionIndex       = 0;
+
     m_pendingClose    = false;
     m_waitingForBind  = false;
     m_resettingBindings = false;
@@ -419,7 +631,7 @@ QColor SettingsView::currentThemeColor() const
     {
         QVector<SettingRow> rows = rowsFor(sidebarIndex);
         if (detailIndex >= 0 && detailIndex < rows.size() &&
-            rows[detailIndex].label == "Theme Color" &&
+            rows[detailIndex].tag == SettingRow::Tag::ThemeColorPicker &&
             optionIndex > 0 && optionIndex < kThemePresetCount)
         {
             return QColor(kThemePresets[optionIndex].rgb);
@@ -440,6 +652,39 @@ QColor SettingsView::currentThemeColor() const
     }
 
     return QColor(60, 60, 60);
+}
+
+const SettingsLocale& SettingsView::locale() const
+{
+    EmuInstance* emu = m_mainWindow ? m_mainWindow->getEmuInstance() : nullptr;
+    int fw  = emu ? emu->getGlobalConfig().GetInt("Instance0.Firmware.Language") : 1;
+    int idx = (fw == 1) ? 0 : (fw == 0) ? 1 : fw;
+    return kLocales[qBound(0, idx, 5)];
+}
+
+void SettingsView::scrollOptionToIdx(int idx)
+{
+    int dX_, dW_, sY_, bH_, sp_;
+    computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
+    const int h_ = height();
+    const qreal topLineY_    = (int)(h_ * 0.11) + (int)(h_ * 0.045) / 2.0;
+    const qreal bottomLineY_ = h_ - topLineY_;
+    int labelH_ = qMax(12, (int)(bH_ * 0.68));
+    int intraGap_ = qMax(2, (int)(bH_ * 0.10));
+    int optStartY_ = sY_ + labelH_ + intraGap_;
+    int visH = (int)(bottomLineY_) - optStartY_ - (int)(h_ * 0.04);
+    int optY = idx * (bH_ + sp_);
+    if (optY < m_optionScrollOffset)
+        m_optionScrollOffset = optY;
+    else if (optY + bH_ + sp_ > m_optionScrollOffset + visH)
+        m_optionScrollOffset = optY + bH_ + sp_ - visH;
+    m_optionScrollOffset = qMax(0, m_optionScrollOffset);
+    QStringList opts_ = currentOptionList();
+    int n_ = opts_.size();
+    int maxOff_ = qMax(0, n_ * (bH_ + sp_) - visH);
+    m_optionScrollOffset = qMin(m_optionScrollOffset, maxOff_);
+    if (idx == 0)      m_optionScrollOffset = 0;
+    if (idx == n_ - 1) m_optionScrollOffset = maxOff_;
 }
 
 // ─── geometry ─────────────────────────────────────────────────────────────────
@@ -478,321 +723,32 @@ void SettingsView::computeDetailGeometry(int& dX, int& dW, int& sY,
 
 int SettingsView::readRowValue(int sidebar, int row) const
 {
-    EmuInstance* emu = m_mainWindow->getEmuInstance();
-    if (!emu) return 0;
-    auto& gcfg = emu->getGlobalConfig();
-    auto& lcfg = emu->getLocalConfig();
-
-    switch (sidebar)
-    {
-    case kIdxGame:
-    {
-        if (!emu->plugin) return 0;
-        std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-        switch (row)
-        {
-        case 0: // Language — stored: 0=Jap 1=Eng 2=Fr 3=Ger 4=It 5=Sp
-        {        //           display: 0=Eng 1=Jap 2=Fr 3=Ger 4=It 5=Sp
-            int v = gcfg.GetInt("Instance0.Firmware.Language");
-            if (v == 1) return 0; // English
-            if (v == 0) return 1; // Japanese
-            return v;
-        }
-        case 1: return gcfg.GetBool(prefix + "FastForwardLoadingScreens") ? 1 : 0;
-        case 2: return gcfg.GetBool(prefix + "InstantSkipCutsceneOnStart") ? 1 : 0;
-        case 3: return gcfg.GetBool(prefix + "DaysDisableHisMemories")     ? 1 : 0;
-        }
-        break;
-    }
-    case kIdxEmulation:
-        switch (row)
-        {
-        case 0: return gcfg.GetInt("Emu.ConsoleType");
-        case 1: return gcfg.GetBool("Emu.DirectBoot") ? 1 : 0;
-        case 2: return gcfg.GetBool("LimitFPS")        ? 1 : 0;
-        case 3: // Target FPS
-        {
-            double v = gcfg.GetDouble("TargetFPS");
-            for (int i = 0; i < kTargetFPSCount; i++)
-                if (qAbs(v - kTargetFPSPresets[i]) < 0.5) return i;
-            return 1; // default 60
-        }
-        case 4: // Fast-forward FPS
-        {
-            double v = gcfg.GetDouble("FastForwardFPS");
-            for (int i = 0; i < kFFPSCount; i++)
-                if (qAbs(v - kFFPSPresets[i]) < 0.5) return i;
-            return 3; // default Unlimited
-        }
-        case 5: // Slowmo FPS
-        {
-            double v = gcfg.GetDouble("SlowmoFPS");
-            for (int i = 0; i < kSlowmoFPSCount; i++)
-                if (qAbs(v - kSlowmoFPSPresets[i]) < 0.5) return i;
-            return 1; // default 50%
-        }
-        case 6: return gcfg.GetBool("MuteFastForward")  ? 1 : 0;
-        case 7: return gcfg.GetBool("PauseLostFocus")   ? 1 : 0;
-        case 8: return gcfg.GetBool("Mouse.Hide")       ? 1 : 0;
-        case 9: // Hide Mouse After
-        {
-            int v = gcfg.GetInt("Mouse.HideSeconds");
-            for (int i = 0; i < kMouseHideCount; i++)
-                if (v == kMouseHidePresets[i]) return i;
-            return 0;
-        }
-        }
-        break;
-    case kIdxDisplay:
-        switch (row)
-        {
-        case 0: return gcfg.GetInt("3D.Renderer");
-        case 1: return qBound(0, gcfg.GetInt("3D.GL.ScaleFactor") - 1, 15);
-        case 2: return gcfg.GetBool("Screen.VSync") ? 1 : 0;
-        case 3:
-        {
-            QString saved = gcfg.GetQString("KHSettings.ThemeColor");
-            if (!saved.isEmpty())
-            {
-                QColor c(saved);
-                for (int i = 1; i < kThemePresetCount; i++)
-                    if (QColor(kThemePresets[i].rgb).rgb() == c.rgb()) return i;
-            }
-            return 0;
-        }
-        case 4: case 5: case 6: case 7:
-        {
-            if (!emu->plugin) return 0;
-            std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-            if (row == 4) return gcfg.GetBool(prefix + "DisableEnhancedGraphics") ? 0 : 1;
-            if (row == 5) return gcfg.GetBool(prefix + "DisableSingleScreenMode") ? 0 : 1;
-            if (row == 6) return gcfg.GetBool(prefix + "SubtitlesEnabled")        ? 1 : 0;
-            if (row == 7) { int v = gcfg.GetInt(prefix + "HUDScale"); return v == 0 ? 4 : v; }
-            return 0;
-        }
-        }
-        break;
-    case kIdxSound:
-        switch (row)
-        {
-        case 0: return lcfg.GetInt("Audio.Volume") / 25;
-        case 1: return gcfg.GetInt("Audio.Interpolation");
-        case 2: return gcfg.GetInt("Audio.BitDepth");
-        case 3: return lcfg.GetBool("Audio.DSiVolumeSync") ? 1 : 0;
-        case 4: return gcfg.GetInt("Mic.InputType");
-        case 5: // Audio Pack (dynamic combobox; moved from kIdxGame)
-        {
-            if (!emu->plugin) return 0;
-            if (m_audioPackNames.isEmpty())
-            {
-                m_audioPackNames.clear();
-                m_audioPackNames.append("None");
-                auto names = emu->plugin->audioPackNames();
-                for (const auto& n : names)
-                    m_audioPackNames.append(QString::fromStdString(n));
-            }
-            std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-            QString saved = gcfg.GetQString(prefix + "AudioPack");
-            if (saved.isEmpty()) return 0;
-            for (int i = 1; i < m_audioPackNames.size(); i++)
-                if (m_audioPackNames[i] == saved) return i;
-            return 0;
-        }
-        }
-        break;
-    case kIdxKeyboard:
-    {
-        if (!emu->plugin) return 0;
-        std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-        switch (row)
-        {
-        case 0: { int v = gcfg.GetInt(prefix + "CameraSensitivity"); return v == 0 ? 3 : v; }
-        }
-        break;
-    }
-    case kIdxSystem:
-        switch (row)
-        {
-        case 0: return gcfg.GetBool("LAN.DirectMode") ? 1 : 0;
-        case 1: // WiFi Adapter (dynamic)
-        {
-            QString saved = gcfg.GetQString("LAN.Device");
-            for (int i = 0; i < m_wifiAdapters.size(); i++)
-                if (m_wifiAdapters[i] == saved) return i;
-            return 0;
-        }
-        case 2: return gcfg.GetBool("DS.Battery.LevelOkay") ? 1 : 0;
-        case 3: // DSi Battery Level (0-15 → 5 presets)
-        {
-            int v = gcfg.GetInt("DSi.Battery.Level");
-            for (int i = 0; i < kDsiBattCount; i++)
-                if (v == kDsiBattLevels[i]) return i;
-            return 2; // default Half
-        }
-        case 4: return gcfg.GetBool("DSi.Battery.Charging") ? 1 : 0;
-        }
-        break;
-    }
-    return 0;
+    auto rows = rowsFor(sidebar);
+    if (row < 0 || row >= rows.size() || !rows[row].read) return 0;
+    return rows[row].read();
 }
 
 void SettingsView::writeRowValue(int sidebar, int row, int newValue)
 {
-    EmuInstance* emu = m_mainWindow->getEmuInstance();
-    if (!emu) return;
-    auto& gcfg = emu->getGlobalConfig();
-    auto& lcfg = emu->getLocalConfig();
-
-    switch (sidebar)
-    {
-    case kIdxGame:
-    {
-        if (!emu->plugin) break;
-        std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-        switch (row)
-        {
-        case 0: // Language — display: 0=Eng 1=Jap 2-5 same
-        {
-            int stored = (newValue == 0) ? 1 : (newValue == 1) ? 0 : newValue;
-            gcfg.SetInt("Instance0.Firmware.Language", stored);
-            break;
-        }
-        case 1: gcfg.SetBool(prefix + "FastForwardLoadingScreens",  newValue); break;
-        case 2: gcfg.SetBool(prefix + "InstantSkipCutsceneOnStart", newValue); break;
-        case 3: gcfg.SetBool(prefix + "DaysDisableHisMemories",     newValue); break;
-        }
-        Config::Save();
-        emu->plugin->shouldInvalidateConfigs = true;
-        break;
-    }
-    case kIdxEmulation:
-        switch (row)
-        {
-        case 0: gcfg.SetInt("Emu.ConsoleType", newValue); break;
-        case 1: gcfg.SetBool("Emu.DirectBoot", newValue != 0); break;
-        case 2: gcfg.SetBool("LimitFPS", newValue != 0); break;
-        case 3: if (newValue < kTargetFPSCount)
-                    gcfg.SetDouble("TargetFPS", kTargetFPSPresets[newValue]); break;
-        case 4: if (newValue < kFFPSCount)
-                    gcfg.SetDouble("FastForwardFPS", kFFPSPresets[newValue]); break;
-        case 5: if (newValue < kSlowmoFPSCount)
-                    gcfg.SetDouble("SlowmoFPS", kSlowmoFPSPresets[newValue]); break;
-        case 6: gcfg.SetBool("MuteFastForward", newValue != 0); break;
-        case 7: gcfg.SetBool("PauseLostFocus",  newValue != 0); break;
-        case 8: gcfg.SetBool("Mouse.Hide",      newValue != 0); break;
-        case 9: if (newValue < kMouseHideCount)
-                    gcfg.SetInt("Mouse.HideSeconds", kMouseHidePresets[newValue]); break;
-        }
-        Config::Save();
-        break;
-    case kIdxDisplay:
-        switch (row)
-        {
-        case 0:
-            gcfg.SetInt("3D.Renderer", newValue);
-            emu->getEmuThread()->updateVideoSettings();
-            break;
-        case 1:
-            gcfg.SetInt("3D.GL.ScaleFactor", newValue + 1);
-            emu->getEmuThread()->updateVideoSettings();
-            break;
-        case 2:
-            gcfg.SetBool("Screen.VSync", newValue != 0);
-            emu->getEmuThread()->updateVideoSettings();
-            break;
-        case 3:
-            if (newValue >= 0 && newValue < kThemePresetCount)
-            {
-                if (newValue == 0)
-                    gcfg.SetQString("KHSettings.ThemeColor", QString());
-                else
-                    gcfg.SetQString("KHSettings.ThemeColor",
-                                    QColor(kThemePresets[newValue].rgb).name());
-            }
-            break;
-        case 4: case 5: case 6: case 7:
-            if (emu->plugin)
-            {
-                std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-                if (row == 4) gcfg.SetBool(prefix + "DisableEnhancedGraphics", !newValue);
-                else if (row == 5) gcfg.SetBool(prefix + "DisableSingleScreenMode", !newValue);
-                else if (row == 6) gcfg.SetBool(prefix + "SubtitlesEnabled",         newValue);
-                else if (row == 7) gcfg.SetInt(prefix + "HUDScale",                  newValue);
-                emu->plugin->shouldInvalidateConfigs = true;
-            }
-            break;
-        }
-        Config::Save();
-        break;
-    case kIdxSound:
-        switch (row)
-        {
-        case 0:
-        {
-            int vol = qBound(0, newValue * 25, 256);
-            lcfg.SetInt("Audio.Volume", vol);
-            emu->setAudioVolume(vol);
-            break;
-        }
-        case 1: gcfg.SetInt("Audio.Interpolation", newValue); break;
-        case 2: gcfg.SetInt("Audio.BitDepth",       newValue); break;
-        case 3: lcfg.SetBool("Audio.DSiVolumeSync", newValue != 0); break;
-        case 4: gcfg.SetInt("Mic.InputType",        newValue); break;
-        case 5: // Audio Pack (moved from kIdxGame)
-            if (emu->plugin)
-            {
-                std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-                if (newValue == 0)
-                    gcfg.SetQString(prefix + "AudioPack", QString());
-                else if (newValue > 0 && newValue < m_audioPackNames.size())
-                    gcfg.SetQString(prefix + "AudioPack", m_audioPackNames[newValue]);
-                emu->plugin->shouldInvalidateConfigs = true;
-            }
-            break;
-        }
-        Config::Save();
-        emu->applyAudioSettings();
-        break;
-    case kIdxKeyboard:
-        if (emu->plugin && row == 0)
-        {
-            std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-            gcfg.SetInt(prefix + "CameraSensitivity", newValue);
-            Config::Save();
-            emu->plugin->shouldInvalidateConfigs = true;
-        }
-        break;
-    case kIdxSystem:
-        switch (row)
-        {
-        case 0: gcfg.SetBool("LAN.DirectMode", newValue != 0); break;
-        case 1: // WiFi Adapter
-            if (newValue >= 0 && newValue < m_wifiAdapters.size())
-                gcfg.SetQString("LAN.Device",
-                                m_wifiAdapters[newValue]);
-            break;
-        case 2: gcfg.SetBool("DS.Battery.LevelOkay", newValue != 0); break;
-        case 3: if (newValue < kDsiBattCount)
-                    gcfg.SetInt("DSi.Battery.Level", kDsiBattLevels[newValue]); break;
-        case 4: gcfg.SetBool("DSi.Battery.Charging", newValue != 0); break;
-        }
-        Config::Save();
-        break;
-    }
+    auto rows = rowsFor(sidebar);
+    if (row < 0 || row >= rows.size() || !rows[row].write) return;
+    rows[row].write(newValue);
 }
 
 QString SettingsView::rowDynamicValueText(int sidebar, int row) const
 {
+    QVector<SettingRow> rows = rowsFor(sidebar);
+    if (row < 0 || row >= rows.size() || !rows[row].isDynamic) return {};
     EmuInstance* emu = m_mainWindow->getEmuInstance();
     if (!emu) return {};
     auto& gcfg = emu->getGlobalConfig();
-    if (sidebar == kIdxSound && row == 5 && emu->plugin)
+    if (sidebar == kIdxSound && emu->plugin)
     {
         std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
         QString saved = gcfg.GetQString(prefix + "AudioPack");
-        return saved.isEmpty() ? "None" : saved;
+        return saved.isEmpty() ? QString::fromUtf8(locale().none) : saved;
     }
-    if (sidebar == kIdxSystem && row == 1)
+    if (sidebar == kIdxSystem)
         return gcfg.GetQString("LAN.Device");
     return {};
 }
@@ -803,9 +759,9 @@ QStringList SettingsView::currentOptionList() const
     if (detailIndex < 0 || detailIndex >= rows.size()) return {};
     const SettingRow& row = rows[detailIndex];
     if (!row.options.isEmpty()) return row.options;
-    // Dynamic lists
-    if (sidebarIndex == kIdxSound  && detailIndex == 5) return m_audioPackNames;
-    if (sidebarIndex == kIdxSystem && detailIndex == 1) return m_wifiAdapters;
+    if (!row.isDynamic) return {};
+    if (sidebarIndex == kIdxSound)  return m_audioPackNames;
+    if (sidebarIndex == kIdxSystem) return m_wifiAdapters;
     return {};
 }
 
@@ -819,7 +775,7 @@ void SettingsView::populateWifiAdapters()
 void SettingsView::populateAudioPacks()
 {
     m_audioPackNames.clear();
-    m_audioPackNames.append("None");
+    m_audioPackNames.append(locale().none);
     EmuInstance* emu = m_mainWindow->getEmuInstance();
     if (!emu || !emu->plugin) return;
     auto names = emu->plugin->audioPackNames();
@@ -868,7 +824,7 @@ void SettingsView::buildRemapList()
         if (!labels.empty())
         {
             addHeader("ADD-ONS");
-            for (int i = 0; i < (int)labels.size(); i++)
+            for (int i = 0; i < (int)std::min(labels.size(), keys.size()); i++)
                 addAction(QString::fromUtf8(labels[i]),
                           std::string(keys[i]));
         }
@@ -979,12 +935,14 @@ void SettingsView::resetSectionToDefaults(int idx)
     {
     case kIdxGame:
     {
-        if (!emu->plugin) return;
+        gcfg.SetInt("Instance0.Firmware.Language", 1); // English — always reset
+        if (!emu->plugin || !emu->emuIsActive()) break;
         std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-        gcfg.SetInt("Instance0.Firmware.Language",          1); // English
-        gcfg.SetBool(prefix + "FastForwardLoadingScreens", false);
+        bool isDays = emu->plugin->isKHDays();
+        gcfg.SetBool(prefix + "FastForwardLoadingScreens",  false);
         gcfg.SetBool(prefix + "InstantSkipCutsceneOnStart", false);
-        gcfg.SetBool(prefix + "DaysDisableHisMemories",    false);
+        if (isDays)
+            gcfg.SetBool(prefix + "DaysDisableHisMemories", false);
         emu->plugin->shouldInvalidateConfigs = true;
         break;
     }
@@ -999,7 +957,6 @@ void SettingsView::resetSectionToDefaults(int idx)
         gcfg.SetBool("PauseLostFocus",              false);
         gcfg.SetBool("Mouse.Hide",                  true);
         gcfg.SetInt("Mouse.HideSeconds",            3);
-        gcfg.SetInt("Instance0.Firmware.Language",  1);
         if (emu->plugin) emu->plugin->shouldInvalidateConfigs = true;
         break;
     case kIdxDisplay:
@@ -1039,6 +996,18 @@ void SettingsView::resetSectionToDefaults(int idx)
         gcfg.SetInt("DSi.Battery.Level",            15);
         gcfg.SetBool("DSi.Battery.Charging",        true);
         break;
+    case kIdxGamepad:
+    {
+        if (!emu->plugin) break;
+        int uid = lcfg.GetInt("JoystickUniqueID");
+        if (uid <= 0) break;
+        Config::Table joycfg = lcfg.GetTable("Joystick." + std::to_string(uid));
+        auto setIntCfg = [&joycfg](std::string key, int value) { joycfg.SetInt(key, value); };
+        emu->plugin->applyRecommendedJoystickMappings(setIntCfg);
+        Config::Save();
+        emu->inputLoadConfig();
+        break;
+    }
     }
 }
 
@@ -1062,10 +1031,10 @@ int SettingsView::hitTestDetail(QPoint pos) const
     int dX, dW, sY, bH, sp;
     computeDetailGeometry(dX, dW, sY, bH, sp);
     if (pos.x() < dX) return -1;
-    int rowPillW = (int)(dW * 0.56);
+    int rowPillW = (int)(dW * 0.56) - (int)(bH * 1.7);
     if (pos.x() > dX + rowPillW) return -1;
 
-    int labelH   = qMax(10, (int)(bH * 0.45));
+    int labelH   = qMax(12, (int)(bH * 0.68));
     int intraGap = qMax(2,  (int)(bH * 0.10));
     int stride   = labelH + intraGap + bH + sp;
 
@@ -1083,12 +1052,12 @@ int SettingsView::hitTestOptionList(QPoint pos) const
     int dX, dW, sY, bH, sp;
     computeDetailGeometry(dX, dW, sY, bH, sp);
 
-    int rowPillW  = (int)(dW * 0.56);
+    int rowPillW  = (int)(dW * 0.56) - (int)(bH * 1.7);
     int optGapW   = (int)(dW * 0.06);
     int optPanelX = dX + rowPillW + optGapW;
     if (pos.x() < optPanelX) return -1;
 
-    int labelH    = qMax(10, (int)(bH * 0.45));
+    int labelH    = qMax(12, (int)(bH * 0.68));
     int intraGap  = qMax(2,  (int)(bH * 0.10));
     int optStartY = sY + labelH + intraGap;
 
@@ -1133,8 +1102,9 @@ void SettingsView::pollJoystick()
     if (!joy) return;
     SDL_JoystickUpdate();
 
-    if (m_waitingForBind && m_remapIsJoystick)
+    if (m_waitingForBind)
     {
+        if (!m_remapIsJoystick) return; // ignore controller input while waiting for a keyboard key
         int numButtons = SDL_JoystickNumButtons(joy);
         for (int i = 0; i < numButtons; i++)
         {
@@ -1253,7 +1223,7 @@ void SettingsView::handleNavigation(int direction)
             }
             else playSound(3);
             m_resettingSection = false;
-            update();
+                       update();
             break;
         case 5: m_resettingSection = false; playSound(3); update(); break;
         default: break;
@@ -1272,7 +1242,7 @@ void SettingsView::handleNavigation(int direction)
             if (m_resettingConfirmIndex == 0) { resetAllRemapBindings(); playSound(4); }
             else                               playSound(3);
             m_resettingBindings = false;
-            update();
+                       update();
             break;
         case 5: m_resettingBindings = false; playSound(3); update(); break;
         default: break;
@@ -1394,7 +1364,7 @@ void SettingsView::handleNavigation(int direction)
             const int h = height();
             const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
             const qreal bottomLineY = h - topLineY;
-            int labelH   = qMax(10, (int)(bH * 0.45));
+            int labelH   = qMax(12, (int)(bH * 0.68));
             int intraGap = qMax(2,  (int)(bH * 0.10));
             int stride   = labelH + intraGap + bH + sp;
             int footerH  = (int)(h * 0.08) + (int)(h * 0.01);
@@ -1406,6 +1376,42 @@ void SettingsView::handleNavigation(int direction)
             else if (rowBot > m_detailScrollOffset + visibleH)
                 m_detailScrollOffset = rowBot - visibleH;
             m_detailScrollOffset = qMax(0, m_detailScrollOffset);
+            int maxOff = qMax(0, (int)rows.size() * stride - visibleH);
+            m_detailScrollOffset = qMin(m_detailScrollOffset, maxOff);
+            if (idx == 0)                      m_detailScrollOffset = 0;
+            if (idx == (int)rows.size() - 1)   m_detailScrollOffset = maxOff;
+        };
+
+        // True when the focused row should ignore right/confirm interaction
+        auto isRowBlocked = [&]() -> bool {
+            const SettingRow& r = rows[detailIndex];
+            return r.enabled && !r.enabled();
+        };
+
+        // Open the option list for the focused Combobox row
+        auto openCurrentRow = [&]() {
+            if (rows[detailIndex].isDynamic)
+            {
+                if (sidebarIndex == kIdxSystem) populateWifiAdapters();
+                if (sidebarIndex == kIdxSound)  populateAudioPacks();
+            }
+            m_optionScrollOffset = 0;
+            optionIndex = readRowValue(sidebarIndex, detailIndex);
+            scrollOptionToIdx(optionIndex);
+            currentScreen = Screen::OptionList;
+            playSound(1);
+            update();
+        };
+
+        // Open the keyboard remap screen from a Navigate row
+        auto openKeyboardRemap = [&]() {
+            m_remapIsJoystick   = false;
+            m_remapScrollOffset = 0;
+            detailIndex         = 0;
+            buildRemapList();
+            currentScreen = Screen::Remap;
+            playSound(1);
+            update();
         };
 
         switch (direction)
@@ -1434,20 +1440,7 @@ void SettingsView::handleNavigation(int direction)
             break;
         case 3:
         {
-            // Fix 14/15: block interaction with greyed rows
-            if (sidebarIndex == kIdxSystem)
-            {
-                EmuInstance* emu_ = m_mainWindow->getEmuInstance();
-                int ct = emu_ ? emu_->getGlobalConfig().GetInt("Emu.ConsoleType") : 0;
-                if ((detailIndex == 2 && ct == 1) || (detailIndex == 3 && ct == 0) ||
-                    (detailIndex == 4 && ct == 0)) break;
-            }
-            if (sidebarIndex == kIdxSound && detailIndex == 3)
-            {
-                EmuInstance* emu_ = m_mainWindow->getEmuInstance();
-                int ct = emu_ ? emu_->getGlobalConfig().GetInt("Emu.ConsoleType") : 0;
-                if (ct == 0) break;
-            }
+            if (isRowBlocked()) break;
             if (row.type == SettingRow::Type::Slider)
             {
                 int cur = readRowValue(sidebarIndex, detailIndex);
@@ -1455,47 +1448,14 @@ void SettingsView::handleNavigation(int direction)
                 if (nv != cur) { writeRowValue(sidebarIndex, detailIndex, nv); update(); }
             }
             else if (row.type == SettingRow::Type::Combobox)
-            {
-                if (sidebarIndex == kIdxSystem && detailIndex == 1 &&
-                    readRowValue(kIdxSystem, 0) == 0) break;
-                if (sidebarIndex == kIdxSystem && detailIndex == 1)
-                    populateWifiAdapters();
-                if (sidebarIndex == kIdxSound && detailIndex == 5)
-                    populateAudioPacks();
-                m_optionScrollOffset = 0;
-                optionIndex = readRowValue(sidebarIndex, detailIndex);
-                currentScreen = Screen::OptionList;
-                playSound(1);
-                update();
-            }
+                openCurrentRow();
             else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxKeyboard)
-            {
-                m_remapIsJoystick   = false;
-                m_remapScrollOffset = 0;
-                detailIndex         = 0;
-                buildRemapList();
-                currentScreen = Screen::Remap;
-                playSound(1);
-                update();
-            }
+                openKeyboardRemap();
             break;
         }
         case 4:
         {
-            // Fix 14/15: block interaction with greyed rows
-            if (sidebarIndex == kIdxSystem)
-            {
-                EmuInstance* emu_ = m_mainWindow->getEmuInstance();
-                int ct = emu_ ? emu_->getGlobalConfig().GetInt("Emu.ConsoleType") : 0;
-                if ((detailIndex == 2 && ct == 1) || (detailIndex == 3 && ct == 0) ||
-                    (detailIndex == 4 && ct == 0)) break;
-            }
-            if (sidebarIndex == kIdxSound && detailIndex == 3)
-            {
-                EmuInstance* emu_ = m_mainWindow->getEmuInstance();
-                int ct = emu_ ? emu_->getGlobalConfig().GetInt("Emu.ConsoleType") : 0;
-                if (ct == 0) break;
-            }
+            if (isRowBlocked()) break;
             if (row.type == SettingRow::Type::Toggle)
             {
                 int cur = readRowValue(sidebarIndex, detailIndex);
@@ -1504,29 +1464,9 @@ void SettingsView::handleNavigation(int direction)
                 update();
             }
             else if (row.type == SettingRow::Type::Combobox)
-            {
-                if (sidebarIndex == kIdxSystem && detailIndex == 1 &&
-                    readRowValue(kIdxSystem, 0) == 0) break;
-                if (sidebarIndex == kIdxSystem && detailIndex == 1)
-                    populateWifiAdapters();
-                if (sidebarIndex == kIdxSound && detailIndex == 5)
-                    populateAudioPacks();
-                m_optionScrollOffset = 0;
-                optionIndex = readRowValue(sidebarIndex, detailIndex);
-                currentScreen = Screen::OptionList;
-                playSound(1);
-                update();
-            }
+                openCurrentRow();
             else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxKeyboard)
-            {
-                m_remapIsJoystick   = false;
-                m_remapScrollOffset = 0;
-                detailIndex         = 0;
-                buildRemapList();
-                currentScreen = Screen::Remap;
-                playSound(1);
-                update();
-            }
+                openKeyboardRemap();
             break;
         }
         case 5:
@@ -1534,19 +1474,10 @@ void SettingsView::handleNavigation(int direction)
             playSound(3);
             update();
             break;
-        case 6: // Fix 13: X — Reset section to defaults
+        case 6:
             if (sidebarIndex != kIdxStream && sidebarIndex != kIdxQuit &&
                 sidebarIndex != kIdxGamepad && sidebarIndex != kIdxKeyboard)
             {
-                // Suppress for Game section when no KH ROM is loaded
-                if (sidebarIndex == kIdxGame)
-                {
-                    EmuInstance* emu_ = m_mainWindow->getEmuInstance();
-                    bool khLoaded = emu_ && emu_->plugin &&
-                        (PluginKingdomHeartsDays::isCart(emu_->plugin->getGameCode()) ||
-                         PluginKingdomHeartsReCoded::isCart(emu_->plugin->getGameCode()));
-                    if (!khLoaded) break;
-                }
                 m_resettingSection      = true;
                 m_resettingConfirmIndex = 1;
                 playSound(1);
@@ -1565,23 +1496,6 @@ void SettingsView::handleNavigation(int direction)
         int optCount = opts.size();
         if (optCount == 0) { currentScreen = Screen::Detail; update(); return; }
 
-        auto scrollOptionToIdx = [&](int idx) {
-            int dX_, dW_, sY_, bH_, sp_;
-            computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
-            const int h_ = height();
-            const qreal topLineY_    = (int)(h_ * 0.11) + (int)(h_ * 0.045) / 2.0;
-            const qreal bottomLineY_ = h_ - topLineY_;
-            int labelH_ = qMax(10, (int)(bH_ * 0.45));
-            int intraGap_ = qMax(2, (int)(bH_ * 0.10));
-            int optStartY_ = sY_ + labelH_ + intraGap_;
-            int visH = (int)(bottomLineY_) - optStartY_ - (int)(h_ * 0.04);
-            int optY = idx * (bH_ + sp_);
-            if (optY < m_optionScrollOffset)
-                m_optionScrollOffset = optY;
-            else if (optY + bH_ + sp_ > m_optionScrollOffset + visH)
-                m_optionScrollOffset = optY + bH_ + sp_ - visH;
-            m_optionScrollOffset = qMax(0, m_optionScrollOffset);
-        };
 
         switch (direction)
         {
@@ -1634,13 +1548,18 @@ void SettingsView::handleNavigation(int direction)
             const int h  = height();
             const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
             const qreal bottomLineY = h - topLineY;
-            int visibleH = (int)(bottomLineY) - sY - bH * 2;
+            int visibleH = (int)(bottomLineY) - sY - bH * 3 - sp;
             int itemY = itemIdx * stride;
             if (itemY < m_remapScrollOffset)
                 m_remapScrollOffset = itemY;
             else if (itemY + stride > m_remapScrollOffset + visibleH)
                 m_remapScrollOffset = itemY + stride - visibleH;
             m_remapScrollOffset = qMax(0, m_remapScrollOffset);
+            int maxOff = qMax(0, (int)m_remapItems.size() * stride - visibleH);
+            m_remapScrollOffset = qMin(m_remapScrollOffset, maxOff);
+            int actionCount_ = (int)m_remapActionToItemIdx.size();
+            if (actionIdx == 0)              m_remapScrollOffset = 0;
+            if (actionIdx == actionCount_-1) m_remapScrollOffset = maxOff;
         };
 
         switch (direction)
@@ -1769,9 +1688,33 @@ void SettingsView::keyPressEvent(QKeyEvent* event)
 
 // ─── mouse events ─────────────────────────────────────────────────────────────
 
+void SettingsView::confirmPopupRects(QRect& box, QRect& yesRect, QRect& noRect) const
+{
+    const int w = width(), h = height();
+    const int boxW  = (int)(w * 0.50);
+    const int boxH  = (int)(h * 0.38);
+    box = QRect((w - boxW) / 2, (h - boxH) / 2, boxW, boxH);
+    const int btnH   = (int)qMax(24.0, boxH * 0.20);
+    const int btnW   = (int)(boxW * 0.32);
+    const int btnY   = box.y() + (int)(boxH * 0.68);
+    const int btnGap = (int)(boxW * 0.06);
+    const int startX = box.x() + (boxW - btnW * 2 - btnGap) / 2;
+    yesRect = QRect(startX, btnY, btnW, btnH);
+    noRect  = QRect(startX + btnW + btnGap, btnY, btnW, btnH);
+}
+
 void SettingsView::mouseMoveEvent(QMouseEvent* event)
 {
     QPoint pos = event->pos();
+
+    if (m_resettingSection || m_resettingBindings)
+    {
+        QRect box, yesRect, noRect;
+        confirmPopupRects(box, yesRect, noRect);
+        int hit = yesRect.contains(pos) ? 0 : noRect.contains(pos) ? 1 : -1;
+        if (hit >= 0 && hit != m_resettingConfirmIndex) { m_resettingConfirmIndex = hit; update(); }
+        return;
+    }
 
     if (m_draggingSlider)
     {
@@ -1838,7 +1781,7 @@ void SettingsView::wheelEvent(QWheelEvent* event)
     if (currentScreen == Screen::Detail)
     {
         QVector<SettingRow> rows = rowsFor(sidebarIndex);
-        int labelH_   = qMax(10, (int)(bH_ * 0.45));
+        int labelH_   = qMax(12, (int)(bH_ * 0.68));
         int intraGap_ = qMax(2,  (int)(bH_ * 0.10));
         int stride_   = labelH_ + intraGap_ + bH_ + sp_;
         int footerTop_ = (int)(bottomLineY_) - (int)(h_ * 0.09);
@@ -1856,7 +1799,7 @@ void SettingsView::wheelEvent(QWheelEvent* event)
     }
     else if (currentScreen == Screen::OptionList)
     {
-        int labelH_    = qMax(10, (int)(bH_ * 0.45));
+        int labelH_    = qMax(12, (int)(bH_ * 0.68));
         int intraGap_  = qMax(2,  (int)(bH_ * 0.10));
         int optStartY_ = sY_ + labelH_ + intraGap_;
         int visH_  = (int)(bottomLineY_) - optStartY_ - (int)(h_ * 0.04);
@@ -1877,9 +1820,18 @@ void SettingsView::mousePressEvent(QMouseEvent* event)
 
     if (m_resettingBindings || m_resettingSection)
     {
-        if (pos.x() < width() / 2) handleNavigation(2);
-        else                        handleNavigation(3);
-        handleNavigation(4);
+        QRect box, yesRect, noRect;
+        confirmPopupRects(box, yesRect, noRect);
+        if (yesRect.contains(pos))
+        {
+            m_resettingConfirmIndex = 0;
+            handleNavigation(4);
+        }
+        else if (noRect.contains(pos))
+        {
+            m_resettingConfirmIndex = 1;
+            handleNavigation(4);
+        }
         return;
     }
 
@@ -1904,8 +1856,8 @@ void SettingsView::mousePressEvent(QMouseEvent* event)
         int hit = hitTestSidebar(pos);
         if (hit >= 0)
         {
-            sidebarIndex = hit;
-            detailIndex  = 0;
+            sidebarIndex      = hit;
+            detailIndex       = 0;
             m_detailScrollOffset = 0;
             handleNavigation(4);
         }
@@ -1937,12 +1889,12 @@ void SettingsView::mousePressEvent(QMouseEvent* event)
                 // Compute track geometry matching paintDetailArea
                 int dX, dW, sY, bH, sp;
                 computeDetailGeometry(dX, dW, sY, bH, sp);
-                int labelH   = qMax(10, (int)(bH * 0.45));
+                int labelH   = qMax(12, (int)(bH * 0.68));
                 int intraGap = qMax(2,  (int)(bH * 0.10));
-                int rowPillW_ = (int)(dW * 0.56);
-                int numPad_  = (int)(bH * 0.75);
-                int trackX   = dX + numPad_ + (int)(rowPillW_ * 0.28) + (int)(bH * 0.15);
-                int trackEndX = dX + rowPillW_ - (int)(bH * 0.4);
+                int rowPillW_ = (int)(dW * 0.56) - (int)(bH * 1.7);
+                int numPad_  = (int)(bH * 1.1);
+                int trackX   = dX + numPad_ + (int)(bH * 1.5) + (int)(bH * 0.05);
+                int trackEndX = dX + rowPillW_ - (int)(bH * 1.5);
                 int trackW   = qMax(1, trackEndX - trackX);
                 float frac   = qBound(0.0f, (float)(pos.x() - trackX) / trackW, 1.0f);
                 int steps    = row.sliderMax - row.sliderMin + 1;
@@ -2044,7 +1996,7 @@ QColor SettingsView::paintPillFill(QPainter& p, const QPainterPath& path,
 }
 
 void SettingsView::paintPillButton(QPainter& p, QRect r, const QString& label,
-                                    bool selected, bool /*highlighted*/,
+                                    bool selected,
                                     QColor swatchColor, bool dimUnselected)
 {
     const qreal radius = r.height() / 2.0;
@@ -2214,7 +2166,7 @@ void SettingsView::paintTitleBar(QPainter& p)
     const qreal iconW = iconSize;
     const qreal textX = (int)(barH * 0.28) + iconW + (int)(barH * 0.12);
     p.drawText(QRectF(textX, barY, barW - textX, barH),
-               Qt::AlignVCenter | Qt::AlignLeft, "GAME SETTINGS");
+               Qt::AlignVCenter | Qt::AlignLeft, locale().titleGameSettings);
 
     const qreal lineY = barY + barH / 2.0;
     QColor lineColor = themeColor;
@@ -2255,9 +2207,7 @@ void SettingsView::paintSidebar(QPainter& p)
     font.setPixelSize(qMax(11, (int)(btnH * 0.50)));
     p.setFont(font);
 
-    // Fix 1: indent is always active for the selected item
     const int activeIndent = (int)(w * 0.025);
-    // Fix 3: dim unselected items once a section is entered
     bool dimUnselected = (currentScreen != Screen::Sidebar);
 
     for (int i = 0; i < kSidebarCount; i++)
@@ -2268,10 +2218,9 @@ void SettingsView::paintSidebar(QPainter& p)
         int pillLeft  = sidebarX + indent;
         int pillRight = sidebarX + sidebarW + (selected ? activeIndent : 0);
         QRect btnRect(pillLeft, y, pillRight - pillLeft, btnH);
-        paintPillButton(p, btnRect, QString::fromUtf8(kSidebarLabels[i]), selected, false,
+        paintPillButton(p, btnRect, QString::fromUtf8(locale().sidebarLabels[i]), selected,
                         QColor(), dimUnselected);
 
-        // Fix 2: orb only visible in Sidebar screen on selected item
         if (selected && currentScreen == Screen::Sidebar)
         {
             const qreal capR  = btnH / 2.0;
@@ -2306,26 +2255,121 @@ void SettingsView::paintDetailArea(QPainter& p)
     const qreal bottomLineY = h - topLineY;
 
     QFont rowFont("KHMenu");
-    rowFont.setPixelSize(qMax(11, (int)(btnH * 0.48)));
+    rowFont.setPixelSize(qMax(13, (int)(btnH * 0.53)));
 
-    // Fix 9 geometry
-    int rowPillW  = (int)(detailW * 0.56);
+    int rowPillW  = (int)(detailW * 0.56) - (int)(btnH * 1.7);
     int optGapW   = (int)(detailW * 0.06);
     int optPanelX = detailX + rowPillW + optGapW;
     int optPanelW = detailW - rowPillW - optGapW;
 
     int scrollbarW = 4;
 
-    // Fix 11 — overview text when in Sidebar screen
+    // Sidebar screen: show a dimmed preview of the selected section's rows
     if (currentScreen == Screen::Sidebar)
     {
-        QFont overviewFont("KHMenu");
-        overviewFont.setPixelSize(qMax(10, (int)(btnH * 0.42)));
-        p.setFont(overviewFont);
-        p.setPen(QColor(180, 180, 185));
-        p.drawText(QRect(detailX, startY, detailW, (int)(h * 0.30)),
-                   Qt::AlignCenter | Qt::AlignVCenter | Qt::TextWordWrap,
-                   kSectionOverview[sidebarIndex]);
+        QVector<SettingRow> sRows = rowsFor(sidebarIndex);
+        if (!sRows.isEmpty())
+        {
+            int lH  = qMax(12, (int)(btnH * 0.68));
+            int iG  = qMax(2,  (int)(btnH * 0.10));
+            int str = lH + iG + btnH + spacing;
+            QFont lf("KHMenu"); lf.setPixelSize(qMax(11, (int)(btnH * 0.57)));
+            QFont rf("KHMenu"); rf.setPixelSize(qMax(13, (int)(btnH * 0.53)));
+            int footerTop = (int)(bottomLineY) - (int)(h * 0.09);
+
+            for (int i = 0; i < sRows.size(); i++)
+            {
+                const SettingRow& row = sRows[i];
+                int lY = startY + i * str;
+                int pY = lY + lH + iG;
+                if (pY + btnH > footerTop) break;
+                if (pY < startY) continue;
+
+                QColor dimLabel(themeColor.red() * 45/100,
+                                themeColor.green() * 45/100,
+                                themeColor.blue() * 45/100);
+                p.setFont(lf);
+                p.setPen(dimLabel);
+                p.drawText(QRect(detailX, lY, rowPillW, lH), Qt::AlignVCenter | Qt::AlignLeft, row.label);
+
+                QRect pr(detailX, pY, rowPillW, btnH);
+                if (row.type == SettingRow::Type::Slider)
+                {
+                    QPainterPath sp_;
+                    addRoundedPillPath(sp_, QRectF(pr));
+                    paintPillFill(p, sp_, pr, false, false);
+
+                    int v = row.read ? row.read() : 0;
+                    p.setFont(rf);
+                    p.setPen(QColor(80, 80, 85));
+                    int numPad = (int)(btnH * 1.1);
+                    p.drawText(QRect(detailX + numPad, pY, (int)(btnH * 1.5), btnH),
+                               Qt::AlignVCenter | Qt::AlignLeft, QString::number(v));
+                    int tX = detailX + numPad + (int)(btnH * 1.5) + (int)(btnH * 0.05);
+                    int tW = qMax(1, detailX + rowPillW - (int)(btnH * 1.5) - tX);
+                    int tH = qMax(3, (int)(btnH * 0.12));
+                    int tMY = pY + btnH / 2;
+                    float frac = (row.sliderMax > row.sliderMin)
+                                 ? (float)(v - row.sliderMin) / (row.sliderMax - row.sliderMin) : 0.f;
+                    int fW = (int)(frac * tW);
+                    p.setPen(Qt::NoPen);
+                    p.setBrush(QColor(40, 40, 40, 200));
+                    p.drawRoundedRect(tX, tMY - tH/2, tW, tH, tH/2.0, tH/2.0);
+                    if (fW > 0) { p.setBrush(themeColor.darker(160)); p.drawRect(tX, tMY - tH/2, fW, tH); }
+                    int hW = qMax(4, (int)(btnH * 0.14)), hH = qMax(6, (int)(btnH * 0.52));
+                    p.setBrush(QColor(160, 160, 165));
+                    p.drawRect(tX + fW - hW/2, tMY - hH/2, hW, hH);
+                    p.setBrush(Qt::NoBrush);
+                }
+                else
+                {
+                    QPainterPath pp_;
+                    addRoundedPillPath(pp_, QRectF(pr));
+                    QColor tc = paintPillFill(p, pp_, pr, false, false);
+                    QString valStr;
+                    if (row.type == SettingRow::Type::Navigate)
+                    {
+                        valStr = "\xe2\x86\x92";
+                    }
+                    else if (row.read)
+                    {
+                        int v = row.read();
+                        if (row.type == SettingRow::Type::Toggle)
+                            valStr = v ? locale().on : locale().off;
+                        else if (row.type == SettingRow::Type::Combobox)
+                            valStr = (!row.options.isEmpty() && v >= 0 && v < row.options.size())
+                                     ? row.options[v] : rowDynamicValueText(sidebarIndex, i);
+                    }
+                    QColor dimTc(tc.red() * 45/100, tc.green() * 45/100, tc.blue() * 45/100);
+                    p.setFont(rf);
+                    p.setPen(dimTc);
+                    int pad = (int)(btnH * 0.5);
+                    p.drawText(QRect(detailX + pad, pY, rowPillW - pad*2, btnH),
+                               Qt::AlignVCenter | Qt::AlignLeft, valStr);
+                }
+            }
+
+            // Section overview at footer position (same slot as row description in Detail mode)
+            int descY = (int)(bottomLineY) - (int)(h * 0.08);
+            QFont descFont("KHMenu");
+            descFont.setPixelSize(qMax(11, (int)(btnH * 0.43)));
+            p.setFont(descFont);
+            p.setPen(QColor(180, 180, 185));
+            p.drawText(QRect(detailX, descY, detailW, (int)(h * 0.06)),
+                       Qt::AlignCenter | Qt::AlignVCenter | Qt::TextWordWrap,
+                       locale().sectionOverview[sidebarIndex]);
+        }
+        else
+        {
+            // Sections with no rows (Quit, Gamepad, etc.) — show centered overview
+            QFont overviewFont("KHMenu");
+            overviewFont.setPixelSize(qMax(12, (int)(btnH * 0.47)));
+            p.setFont(overviewFont);
+            p.setPen(QColor(180, 180, 185));
+            p.drawText(QRect(detailX, startY, detailW, (int)(h * 0.30)),
+                       Qt::AlignCenter | Qt::AlignVCenter | Qt::TextWordWrap,
+                       locale().sectionOverview[sidebarIndex]);
+        }
         return;
     }
 
@@ -2354,7 +2398,7 @@ void SettingsView::paintDetailArea(QPainter& p)
             if (item.isHeader)
             {
                 QFont hdrFont("KHMenu");
-                hdrFont.setPixelSize(qMax(9, (int)(btnH * 0.36)));
+                hdrFont.setPixelSize(qMax(11, (int)(btnH * 0.41)));
                 p.setFont(hdrFont);
                 p.setPen(themeColor);
                 p.drawText(QRect(detailX, itemY, detailW, btnH),
@@ -2411,14 +2455,14 @@ void SettingsView::paintDetailArea(QPainter& p)
 
         // Instructional text above hint footer
         QFont instrFont("KHMenu");
-        instrFont.setPixelSize(qMax(9, (int)(btnH * 0.40)));
+        instrFont.setPixelSize(qMax(11, (int)(btnH * 0.45)));
         p.setFont(instrFont);
         p.setPen(QColor(180, 180, 185));
         p.drawText(QRect(detailX, (int)(bottomLineY - btnH * 2 - spacing), detailW, btnH),
                    Qt::AlignVCenter | Qt::AlignLeft, "Select an action to assign.");
 
         QFont hintFont("KHMenu");
-        hintFont.setPixelSize(qMax(9, (int)(btnH * 0.35)));
+        hintFont.setPixelSize(qMax(11, (int)(btnH * 0.40)));
         p.setFont(hintFont);
         p.setPen(QColor(120, 120, 125));
         p.drawText(QRect(detailX, (int)(bottomLineY - btnH - spacing), detailW, btnH),
@@ -2434,7 +2478,7 @@ void SettingsView::paintDetailArea(QPainter& p)
         const int pillMargin = (int)(detailW * 0.13);  // inner margin: body text, URL pill
 
         QFont titleFont("KHGummi");
-        titleFont.setPixelSize(qMax(12, (int)(btnH * 0.55)));
+        titleFont.setPixelSize(qMax(14, (int)(btnH * 0.60)));
         p.setFont(titleFont);
         p.setPen(themeColor);
         p.drawText(QRect(detailX + margin, startY, detailW - margin * 2, btnH),
@@ -2523,7 +2567,7 @@ void SettingsView::paintDetailArea(QPainter& p)
     {
         const int margin = (int)(detailW * 0.07);
         QFont titleFont("KHGummi");
-        titleFont.setPixelSize(qMax(12, (int)(btnH * 0.55)));
+        titleFont.setPixelSize(qMax(14, (int)(btnH * 0.60)));
         p.setFont(titleFont);
         p.setPen(themeColor);
         p.drawText(QRect(detailX + margin, startY, detailW - margin * 2, btnH),
@@ -2544,7 +2588,7 @@ void SettingsView::paintDetailArea(QPainter& p)
             p.drawLine(lLeft, lineY, lRight, lineY);
         }
         QFont bodyFont("KHMenu");
-        bodyFont.setPixelSize(qMax(9, (int)(btnH * 0.42)));
+        bodyFont.setPixelSize(qMax(11, (int)(btnH * 0.47)));
         p.setFont(bodyFont);
         p.setPen(QColor(180, 180, 185));
         p.drawText(QRect(detailX + margin, lineY + spacing, detailW - margin * 2, (int)(h * 0.35)),
@@ -2554,78 +2598,14 @@ void SettingsView::paintDetailArea(QPainter& p)
         return;
     }
 
-    // ── Game placeholder (no KH game running) ─────────────────────────────────
-    if (sidebarIndex == kIdxGame)
-    {
-        EmuInstance* emu = m_mainWindow->getEmuInstance();
-        bool khLoaded = emu && emu->plugin &&
-                        (PluginKingdomHeartsDays::isCart(emu->plugin->getGameCode()) ||
-                         PluginKingdomHeartsReCoded::isCart(emu->plugin->getGameCode()));
-        if (!khLoaded)
-        {
-            QColor tc = currentThemeColor();
-            const int margin     = (int)(detailW * 0.04);
-            const int pillMargin = (int)(detailW * 0.13);
-
-            QFont titleFont("KHGummi");
-            titleFont.setPixelSize(qMax(12, (int)(btnH * 0.55)));
-
-            QString titleText = "No Kingdom Hearts Game Loaded";
-            int titleW = QFontMetrics(titleFont).horizontalAdvance(titleText);
-            if (titleW > detailW - margin * 2)
-            {
-                titleText = "No Game Loaded";
-                titleW = QFontMetrics(titleFont).horizontalAdvance(titleText);
-            }
-
-            p.setFont(titleFont);
-            p.setPen(tc);
-            p.drawText(QRect(detailX + margin, startY, detailW - margin * 2, btnH),
-                       Qt::AlignVCenter | Qt::AlignCenter, titleText);
-
-            int lineY = startY + btnH + spacing / 2;
-            {
-                int pad   = (int)(detailW * 0.04);
-                int lLeft  = detailX + (detailW - titleW) / 2 - pad;
-                int lRight = lLeft + titleW + 2 * pad;
-                QColor lc = tc; lc.setAlpha(180);
-                QLinearGradient g(lLeft, 0, lRight, 0);
-                g.setColorAt(0.0,  Qt::transparent);
-                g.setColorAt(0.06, lc);
-                g.setColorAt(0.94, lc);
-                g.setColorAt(1.0,  Qt::transparent);
-                p.setPen(QPen(QBrush(g), 1));
-                p.drawLine(lLeft, lineY, lRight, lineY);
-            }
-
-            QFont noGameBodyFont("KHMenu");
-            noGameBodyFont.setPixelSize(qMax(9, (int)(btnH * 0.42)));
-            p.setFont(noGameBodyFont);
-            p.setPen(QColor(180, 180, 185));
-            p.drawText(QRect(detailX + pillMargin, lineY + spacing, detailW - pillMargin * 2, (int)(h * 0.30)),
-                       Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap,
-                       "No Kingdom Hearts game is currently running.\n"
-                       "Open a ROM from File \xE2\x80\xBA Open ROM to get started.");
-            return;
-        }
-    }
 
     // ── Row layout constants ───────────────────────────────────────────────────
-    int labelH   = qMax(10, (int)(btnH * 0.45));
+    int labelH   = qMax(12, (int)(btnH * 0.68));
     int intraGap = qMax(2,  (int)(btnH * 0.10));
     int stride   = labelH + intraGap + btnH + spacing;
 
     QFont labelFont("KHMenu");
-    labelFont.setPixelSize(qMax(9, (int)(btnH * 0.42)));
-
-    // Greying helpers
-    bool wifiDirect = (sidebarIndex == kIdxSystem) ? (readRowValue(kIdxSystem, 0) == 1) : true;
-    int consoleType = 0;
-    if (sidebarIndex == kIdxSystem || sidebarIndex == kIdxSound)
-    {
-        EmuInstance* emu = m_mainWindow->getEmuInstance();
-        if (emu) consoleType = emu->getGlobalConfig().GetInt("Emu.ConsoleType");
-    }
+    labelFont.setPixelSize(qMax(11, (int)(btnH * 0.57)));
 
     // ── Regular rows ──────────────────────────────────────────────────────────
     QVector<SettingRow> rows = rowsFor(sidebarIndex);
@@ -2646,22 +2626,21 @@ void SettingsView::paintDetailArea(QPainter& p)
         bool focused = (i == detailIndex);
         if (focused) focusedPillY = pillY;
 
-        // Fix 14: DS/DSi greying in System
-        bool greyed = (sidebarIndex == kIdxSystem && i == 1 && !wifiDirect);
-        if (sidebarIndex == kIdxSystem)
-        {
-            if (i == 2 && consoleType == 1) greyed = true; // DS Battery in DSi mode
-            if (i == 3 && consoleType == 0) greyed = true; // DSi Battery in DS mode
-            if (i == 4 && consoleType == 0) greyed = true; // DSi Charging in DS mode
-        }
-        // Fix 15: DSi Volume Sync greying
-        if (sidebarIndex == kIdxSound && i == 3 && consoleType == 0) greyed = true;
+        bool greyed = row.enabled && !row.enabled();
 
         if (greyed) p.setOpacity(0.35);
 
-        // Label above pill (dimmed when OptionList is open for another row)
         p.setFont(labelFont);
-        p.setPen(inOptionList && i != detailIndex ? QColor(70, 65, 55) : themeColor);
+        if (inOptionList && i != detailIndex)
+        {
+            p.setPen(QColor(themeColor.red() * 45/100,
+                            themeColor.green() * 45/100,
+                            themeColor.blue() * 45/100));
+        }
+        else
+        {
+            p.setPen(themeColor);
+        }
         p.drawText(QRect(detailX, labelY, rowPillW, labelH),
                    Qt::AlignVCenter | Qt::AlignLeft, row.label);
 
@@ -2669,7 +2648,7 @@ void SettingsView::paintDetailArea(QPainter& p)
         int val = readRowValue(sidebarIndex, i);
         QString valStr;
         if (row.type == SettingRow::Type::Toggle)
-            valStr = val ? "On" : "Off";
+            valStr = val ? locale().on : locale().off;
         else if (row.type == SettingRow::Type::Combobox)
         {
             if (!row.options.isEmpty() && val >= 0 && val < row.options.size())
@@ -2682,10 +2661,8 @@ void SettingsView::paintDetailArea(QPainter& p)
         else if (row.type == SettingRow::Type::Navigate)
             valStr = "\xe2\x86\x92"; // →
 
-        // Fix 6: rounded pills; arrow pill for open row
         QRect pillRect(detailX, pillY, rowPillW, btnH);
         bool isOpenRow = inOptionList && i == detailIndex;
-        // Fix 7: dim non-active rows during OptionList
         bool dimRow = inOptionList && i != detailIndex;
 
         if (row.type == SettingRow::Type::Slider)
@@ -2695,13 +2672,13 @@ void SettingsView::paintDetailArea(QPainter& p)
             QColor textCol = paintPillFill(p, sp2, pillRect, focused, dimRow);
             p.setFont(rowFont);
 
-            int numPad   = (int)(btnH * 0.75);
+            int numPad   = (int)(btnH * 1.1);
             p.setPen(textCol);
-            p.drawText(QRect(detailX + numPad, pillY, (int)(rowPillW * 0.28), btnH),
+            p.drawText(QRect(detailX + numPad, pillY, (int)(btnH * 1.5), btnH),
                        Qt::AlignVCenter | Qt::AlignLeft, valStr);
 
-            int trackX    = detailX + numPad + (int)(rowPillW * 0.28) + (int)(btnH * 0.15);
-            int trackEndX = detailX + rowPillW - (int)(btnH * 0.4);
+            int trackX    = detailX + numPad + (int)(btnH * 1.5) + (int)(btnH * 0.05);
+            int trackEndX = detailX + rowPillW - (int)(btnH * 1.5);
             int trackW    = qMax(1, trackEndX - trackX);
             int trackMidY = pillY + btnH / 2;
             int trackH    = qMax(3, (int)(btnH * 0.12));
@@ -2718,7 +2695,7 @@ void SettingsView::paintDetailArea(QPainter& p)
                 p.setBrush(focused ? themeColor : themeColor.darker(160));
                 p.drawRect(trackX, trackMidY - trackH / 2, fillW, trackH);
             }
-            int handleW_ = qMax(3, (int)(btnH * 0.10));
+            int handleW_ = qMax(4, (int)(btnH * 0.14));
             int handleH_ = qMax(6, (int)(btnH * 0.52));
             p.setBrush(focused ? themeColor.lighter(140) : QColor(160, 160, 165));
             p.drawRect(trackX + fillW - handleW_ / 2, trackMidY - handleH_ / 2,
@@ -2743,7 +2720,26 @@ void SettingsView::paintDetailArea(QPainter& p)
         if (greyed) p.setOpacity(1.0);
     }
 
-    // Fix 2: orb on focused detail row pill (only in Detail screen, only when rows non-empty)
+    // Compact note in Game section when no KH ROM is loaded (Language row still shows above)
+    if (sidebarIndex == kIdxGame)
+    {
+        EmuInstance* emu_ = m_mainWindow->getEmuInstance();
+        bool khLoaded = emu_ && emu_->plugin && emu_->emuIsActive() &&
+            emu_->plugin->supportsKHExtendedSettings();
+        if (!khLoaded)
+        {
+            int noteY = startY + rows.size() * stride + spacing;
+            QFont noteFont("KHMenu");
+            noteFont.setPixelSize(qMax(11, (int)(btnH * 0.45)));
+            p.setFont(noteFont);
+            p.setPen(QColor(120, 115, 105));
+            p.drawText(QRect(detailX + (int)(detailW * 0.06), noteY,
+                             detailW - (int)(detailW * 0.12), (int)(h * 0.25)),
+                       Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap,
+                       QString::fromUtf8(locale().noKHGameNote));
+        }
+    }
+
     if (currentScreen == Screen::Detail && focusedPillY >= 0)
     {
         qreal capR  = btnH / 2.0;
@@ -2771,9 +2767,7 @@ void SettingsView::paintDetailArea(QPainter& p)
         bool isThemeColor = (detailIndex >= 0 && detailIndex < rows.size() &&
                              rows[detailIndex].label == "Theme Color");
 
-        int labelH2   = qMax(10, (int)(btnH * 0.45));
-        int intraGap2 = qMax(2,  (int)(btnH * 0.10));
-        int optStartY = startY + labelH2 + intraGap2;
+        int optStartY = startY + labelH + intraGap;
         int optVisH   = (int)(bottomLineY) - optStartY - (int)(h * 0.04);
         int totalOptH = opts.size() * (btnH + spacing);
 
@@ -2819,7 +2813,6 @@ void SettingsView::paintDetailArea(QPainter& p)
             }
         }
 
-        // Fix 2: orb on focused option pill
         if (focusedOptY >= 0)
         {
             qreal capR  = btnH / 2.0;
@@ -2837,12 +2830,11 @@ void SettingsView::paintDetailArea(QPainter& p)
         }
     }
 
-    // Fix 10: description footer — centered
     if (currentScreen == Screen::Detail && detailIndex >= 0 && detailIndex < rows.size())
     {
         int descY = (int)(bottomLineY - (int)(h * 0.08));
         QFont descFont("KHMenu");
-        descFont.setPixelSize(qMax(9, (int)(btnH * 0.38)));
+        descFont.setPixelSize(qMax(11, (int)(btnH * 0.43)));
         p.setFont(descFont);
         p.setPen(QColor(180, 180, 185));
         p.drawText(QRect(detailX, descY, detailW, (int)(h * 0.06)),
@@ -2868,42 +2860,43 @@ void SettingsView::paintActionBar(QPainter& p)
         if (hintCount < 8) { hintGlyphs[hintCount] = g; hintLabels[hintCount] = l; hintCount++; }
     };
 
+    const SettingsLocale& loc = locale();
     if (m_waitingForBind)
     {
-        pushHint("B", "Cancel");
+        pushHint("B", loc.hintCancel);
     }
     else if (m_resettingBindings || m_resettingSection)
     {
-        pushHint("A", "Yes");
-        pushHint("B", "No");
+        pushHint("A", loc.hintYes);
+        pushHint("B", loc.hintNo);
     }
     else if (currentScreen == Screen::Sidebar)
     {
-        pushHint("A", "Enter");
-        pushHint("B", "Close");
+        pushHint("A", loc.hintEnter);
+        pushHint("B", loc.hintClose);
     }
     else if (currentScreen == Screen::OptionList)
     {
-        pushHint("A", "Confirm");
-        pushHint("B", "Cancel");
+        pushHint("A", loc.hintConfirm);
+        pushHint("B", loc.hintCancel);
     }
     else if (currentScreen == Screen::Remap)
     {
-        pushHint("A", "Rebind");
-        pushHint("X", "Reset All");
-        pushHint("B", "Back");
+        pushHint("A", loc.hintRebind);
+        pushHint("X", loc.hintResetAll);
+        pushHint("B", loc.hintBack);
     }
     else if (currentScreen == Screen::Detail)
     {
         if (sidebarIndex == kIdxStream)
         {
-            pushHint("A", "Open Website");
-            pushHint("B", "Back");
+            pushHint("A", loc.hintOpenWebsite);
+            pushHint("B", loc.hintBack);
         }
         else if (sidebarIndex == kIdxQuit)
         {
-            pushHint("A", "Quit Game");
-            pushHint("B", "Back");
+            pushHint("A", loc.hintQuitGame);
+            pushHint("B", loc.hintBack);
         }
         else
         {
@@ -2912,16 +2905,16 @@ void SettingsView::paintActionBar(QPainter& p)
             {
                 const SettingRow& row = rows[detailIndex];
                 if (row.type == SettingRow::Type::Toggle)
-                    pushHint("A", "Toggle");
+                    pushHint("A", loc.hintToggle);
                 else if (row.type == SettingRow::Type::Combobox)
-                    pushHint("A", "Select");
+                    pushHint("A", loc.hintSelect);
                 else if (row.type == SettingRow::Type::Slider)
-                    pushHint("\xE2\x97\x80 \xE2\x96\xB6", "Adjust");
+                    pushHint("\xE2\x97\x80 \xE2\x96\xB6", loc.hintAdjust);
             }
             if (sidebarIndex != kIdxStream && sidebarIndex != kIdxQuit &&
                 sidebarIndex != kIdxGamepad && sidebarIndex != kIdxKeyboard)
-                pushHint("X", "Reset");
-            pushHint("B", "Back");
+                pushHint("X", loc.hintReset);
+            pushHint("B", loc.hintBack);
         }
     }
 
@@ -2973,40 +2966,38 @@ void SettingsView::paintActionBar(QPainter& p)
 
 void SettingsView::paintResetConfirmation(QPainter& p)
 {
-    const int w = width();
-    const int h = height();
-    p.fillRect(0, 0, w, h, QColor(0, 0, 0, 160));
+    p.fillRect(0, 0, width(), height(), QColor(0, 0, 0, 160));
 
-    const int boxW = (int)(w * 0.50);
-    const int boxH = (int)(h * 0.28);
-    const QRect box((w - boxW) / 2, (h - boxH) / 2, boxW, boxH);
+    QRect box, yesRect, noRect;
+    confirmPopupRects(box, yesRect, noRect);
+    const int boxW = box.width(), boxH = box.height();
+
     p.fillRect(box, QColor(20, 20, 30, 220));
     p.setPen(QPen(QColor(200, 200, 200), 2));
     p.drawRect(box);
 
     QFont titleFont("KHMenu");
-    titleFont.setPixelSize(qMax(13, (int)(boxH * 0.22)));
+    titleFont.setPixelSize(qMax(13, (int)(boxH * 0.12)));
+    const SettingsLocale& loc = locale();
     p.setFont(titleFont);
     p.setPen(Qt::white);
     QString confirmText = m_resettingSection
-        ? QString("Reset %1 to defaults?").arg(kSidebarLabels[sidebarIndex])
-        : "Reset all bindings?";
-    p.drawText(QRect(box.x(), box.y() + (int)(boxH * 0.10), boxW, (int)(boxH * 0.35)),
-               Qt::AlignCenter, confirmText);
+        ? QString::fromUtf8(loc.resetSectionPrompt).arg(QString::fromUtf8(loc.sidebarLabels[sidebarIndex]))
+        : QString::fromUtf8(loc.resetAllBindings);
+    p.drawText(QRect(box.x() + (int)(boxW * 0.05), box.y() + (int)(boxH * 0.08),
+                     (int)(boxW * 0.90), (int)(boxH * 0.52)),
+               Qt::AlignHCenter | Qt::AlignTop | Qt::TextWordWrap, confirmText);
 
-    const int btnH = (int)qMax(24.0, boxH * 0.22);
-    const int btnW = (int)(boxW * 0.32);
-    const int btnY = box.y() + (int)(boxH * 0.58);
-    const int btnGap = (int)(boxW * 0.06);
-    const int startX = box.x() + (boxW - btnW * 2 - btnGap) / 2;
-
+    const int btnH = yesRect.height();
     QFont btnFont("KHMenu");
     btnFont.setPixelSize(qMax(12, (int)(btnH * 0.50)));
     p.setFont(btnFont);
-    paintPillButton(p, QRect(startX, btnY, btnW, btnH),
-                    "A Yes", m_resettingConfirmIndex == 0, false);
-    paintPillButton(p, QRect(startX + btnW + btnGap, btnY, btnW, btnH),
-                    "B No", m_resettingConfirmIndex == 1, false);
+    paintPillButton(p, yesRect,
+                    QString("A ") + QString::fromUtf8(loc.pillYes),
+                    m_resettingConfirmIndex == 0);
+    paintPillButton(p, noRect,
+                    QString("B ") + QString::fromUtf8(loc.pillNo),
+                    m_resettingConfirmIndex == 1);
 }
 
 void SettingsView::paintCaptureOverlay(QPainter& p)
@@ -3018,9 +3009,9 @@ void SettingsView::paintCaptureOverlay(QPainter& p)
     QFont font("KHMenu");
     font.setPixelSize(qMax(14, (int)(h * 0.028)));
     p.setFont(font);
+    const SettingsLocale& loc = locale();
     p.setPen(Qt::white);
-    QString prompt = m_remapIsJoystick ? "Press a controller button\xE2\x80\xA6"
-                                       : "Press a key\xE2\x80\xA6";
+    QString prompt = QString::fromUtf8(m_remapIsJoystick ? loc.captureController : loc.captureKey);
     p.drawText(QRect(0, 0, w, h), Qt::AlignCenter, prompt);
 
     QFont subFont("KHMenu");
@@ -3028,7 +3019,7 @@ void SettingsView::paintCaptureOverlay(QPainter& p)
     p.setFont(subFont);
     p.setPen(QColor(0xA0, 0x98, 0x80));
     p.drawText(QRect(0, h / 2 + (int)(h * 0.04), w, (int)(h * 0.04)),
-               Qt::AlignCenter, "Press B to cancel");
+               Qt::AlignCenter, QString::fromUtf8(loc.captureCancel));
 }
 
 void SettingsView::paintEvent(QPaintEvent* /*event*/)

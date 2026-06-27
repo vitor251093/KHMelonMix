@@ -19,8 +19,10 @@
 #ifndef SETTINGSVIEW_H
 #define SETTINGSVIEW_H
 
+#include <functional>
 #include <string>
 #include <QWidget>
+#include "SettingsLocale.h"
 #include <QVector>
 #include <QStringList>
 #include <QElapsedTimer>
@@ -38,12 +40,18 @@ class MainWindowSettings;
 struct SettingRow
 {
     enum class Type { Toggle, Combobox, Slider, Readonly, Navigate };
+    enum class Tag  { None, ThemeColorPicker };
     Type        type;
     QString     label;
     QString     description;
     QStringList options;
-    int         sliderMin;
-    int         sliderMax;
+    int         sliderMin = 0;
+    int         sliderMax = 0;
+    Tag         tag  = Tag::None;
+    bool        isDynamic = false;
+    std::function<bool()>    enabled;
+    std::function<int()>     read;
+    std::function<void(int)> write;
 };
 
 struct RemapItem
@@ -122,6 +130,8 @@ private:
     MainWindowSettings* m_mainWindow;
 
     QColor currentThemeColor() const;
+    const SettingsLocale& locale() const;
+    void scrollOptionToIdx(int idx);
 
     void paintBackground(QPainter& p);
     void paintTitleBar(QPainter& p);
@@ -132,14 +142,14 @@ private:
     QColor paintPillFill(QPainter& p, const QPainterPath& path,
                          QRect r, bool selected, bool dimUnselected);
     void paintPillButton(QPainter& p, QRect r, const QString& label,
-                         bool selected, bool highlighted,
-                         QColor swatchColor = QColor(),
+                         bool selected, QColor swatchColor = QColor(),
                          bool dimUnselected = false);
     void paintOrbAt(QPainter& p, qreal capCx, qreal capCy, qreal capR);
     void paintScrollbar(QPainter& p, int x, int y, int w, int h,
                         int offset, int totalH, int visibleH);
     void paintResetConfirmation(QPainter& p);
     void paintCaptureOverlay(QPainter& p);
+    void confirmPopupRects(QRect& box, QRect& yesRect, QRect& noRect) const;
 
     void computeSidebarGeometry(int& sidebarX, int& sidebarW,
                                 int& startY, int& btnH, int& spacing,

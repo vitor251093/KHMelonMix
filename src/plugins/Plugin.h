@@ -378,6 +378,13 @@ public:
         std::function<void(std::string, int)> setIntConfig
     ) {}
 
+    virtual void applyRecommendedJoystickMappings(
+        std::function<void(std::string, int)> setIntConfig
+    ) {}
+
+    virtual bool supportsKHExtendedSettings() const { return false; }
+    virtual bool isKHDays() const { return false; }
+
     virtual void hudToggle() {}
 
     void replacementTexturesToggle() {
