@@ -667,7 +667,9 @@ void SettingsView::scrollOptionToIdx(int idx)
     int dX_, dW_, sY_, bH_, sp_;
     computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
     const int h_ = height();
-    const qreal topLineY_    = (int)(h_ * 0.11) + (int)(h_ * 0.045) / 2.0;
+    int barY__, barH__;
+    computeTitleBarGeometry(barY__, barH__);
+    const qreal topLineY_    = barY__ + barH__ / 2.0;
     const qreal bottomLineY_ = h_ - topLineY_;
     int labelH_ = qMax(12, (int)(bH_ * 0.68));
     int intraGap_ = qMax(2, (int)(bH_ * 0.10));
@@ -689,13 +691,19 @@ void SettingsView::scrollOptionToIdx(int idx)
 
 // ─── geometry ─────────────────────────────────────────────────────────────────
 
+void SettingsView::computeTitleBarGeometry(int& barY, int& barH) const
+{
+    barY = (int)(height() * 0.11);
+    barH = (int)(height() * 0.045);
+}
+
 void SettingsView::computeSidebarGeometry(int& sX, int& sW, int& sY,
                                            int& bH, int& sp, int& dX) const
 {
     const int w = width();
     const int h = height();
-    const int barY_d   = (int)(h * 0.11);
-    const int barH_d   = (int)(h * 0.045);
+    int barY_d, barH_d;
+    computeTitleBarGeometry(barY_d, barH_d);
     const int circleR  = 3;
     const int divGap   = (int)(h * 0.042);
     const int divStart = barY_d + barH_d + divGap;
@@ -1210,7 +1218,9 @@ void SettingsView::scrollDetailToRow(int idx, const QVector<SettingRow>& rows)
     int dX, dW, sY, bH, sp;
     computeDetailGeometry(dX, dW, sY, bH, sp);
     const int h = height();
-    const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
+    int barY_, barH_;
+    computeTitleBarGeometry(barY_, barH_);
+    const qreal topLineY    = barY_ + barH_ / 2.0;
     const qreal bottomLineY = h - topLineY;
     int labelH   = qMax(12, (int)(bH * 0.68));
     int intraGap = qMax(2,  (int)(bH * 0.10));
@@ -1238,7 +1248,9 @@ void SettingsView::scrollRemapToAction(int actionIdx)
     computeDetailGeometry(dX, dW, sY, bH, sp);
     int stride   = bH + sp;
     const int h  = height();
-    const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
+    int barY_, barH_;
+    computeTitleBarGeometry(barY_, barH_);
+    const qreal topLineY    = barY_ + barH_ / 2.0;
     const qreal bottomLineY = h - topLineY;
     int visibleH = (int)(bottomLineY) - sY - bH * 3 - sp;
     int itemY = itemIdx * stride;
@@ -1517,7 +1529,9 @@ void SettingsView::handleNavRemap(int direction)
             int dX_, dW_, sY_, bH_, sp_;
             computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
             const int h_ = height();
-            const qreal botY_ = h_ - ((int)(h_ * 0.11) + (int)(h_ * 0.045) / 2.0);
+            int barY__, barH__;
+            computeTitleBarGeometry(barY__, barH__);
+            const qreal botY_ = h_ - (barY__ + barH__ / 2.0);
             int visH_ = (int)(botY_) - sY_ - bH_ * 3 - sp_;
             m_remapScrollOffset = qMax(0, (int)m_remapItems.size() * (bH_ + sp_) - visH_);
             detailIndex = actionCount - 1;
@@ -1772,7 +1786,9 @@ void SettingsView::wheelEvent(QWheelEvent* event)
     int dX_, dW_, sY_, bH_, sp_;
     computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
     const int h_ = height();
-    const qreal topLineY_    = (int)(h_ * 0.11) + (int)(h_ * 0.045) / 2.0;
+    int barY__, barH__;
+    computeTitleBarGeometry(barY__, barH__);
+    const qreal topLineY_    = barY__ + barH__ / 2.0;
     const qreal bottomLineY_ = h_ - topLineY_;
     int delta = -event->angleDelta().y() / 4;
 
@@ -2132,10 +2148,9 @@ void SettingsView::paintBackground(QPainter& p)
 
 void SettingsView::paintTitleBar(QPainter& p)
 {
-    const int w    = width();
-    const int h    = height();
-    const int barH = (int)(h * 0.045);
-    const int barY = (int)(h * 0.11);
+    const int w = width();
+    int barY, barH;
+    computeTitleBarGeometry(barY, barH);
     const int barW = (int)(w * 0.40);
 
     QColor themeColor = currentThemeColor();
@@ -2177,7 +2192,9 @@ void SettingsView::paintBottomLine(QPainter& p)
 {
     const int w = width();
     const int h = height();
-    const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
+    int barY_, barH_;
+    computeTitleBarGeometry(barY_, barH_);
+    const qreal topLineY    = barY_ + barH_ / 2.0;
     const qreal bottomLineY = h - topLineY;
     QColor lineColor = currentThemeColor();
     lineColor.setAlpha(200);
@@ -2193,8 +2210,8 @@ void SettingsView::paintSidebar(QPainter& p)
     int sidebarX, sidebarW, startY, btnH, spacing, divX;
     computeSidebarGeometry(sidebarX, sidebarW, startY, btnH, spacing, divX);
 
-    const int   barY_d   = (int)(h * 0.11);
-    const int   barH_d   = (int)(h * 0.045);
+    int barY_d, barH_d;
+    computeTitleBarGeometry(barY_d, barH_d);
     const int   circleR  = 3;
     const int   divGap   = (int)(h * 0.042);
     const int   divStart = barY_d + barH_d + divGap;
@@ -2245,7 +2262,9 @@ SettingsView::DetailLayout SettingsView::computeDetailLayout() const
     L.h = height();
     computeDetailGeometry(L.detailX, L.detailW, L.startY, L.btnH, L.spacing);
     L.themeColor = currentThemeColor();
-    L.topLineY    = (int)(L.h * 0.11) + (int)(L.h * 0.045) / 2.0;
+    int barY_, barH_;
+    computeTitleBarGeometry(barY_, barH_);
+    L.topLineY    = barY_ + barH_ / 2.0;
     L.bottomLineY = L.h - L.topLineY;
     L.rowFont = QFont("KHMenu");
     L.rowFont.setPixelSize(qMax(13, (int)(L.btnH * 0.53)));
@@ -2900,7 +2919,9 @@ void SettingsView::paintActionBar(QPainter& p)
 {
     const int w = width();
     const int h = height();
-    const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
+    int barY_, barH_;
+    computeTitleBarGeometry(barY_, barH_);
+    const qreal topLineY    = barY_ + barH_ / 2.0;
     const qreal bottomLineY = h - topLineY;
     const int barY = (int)(bottomLineY + (int)(h * 0.010));
 

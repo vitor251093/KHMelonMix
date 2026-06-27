@@ -290,12 +290,15 @@ void EmuThread::run()
             emuInstance->settingsViewOpen = true;
             settingsPrevStatus = emuStatus;
             settingsPausedEmu = true;
-            emuStatus = emuStatus_Paused;
             emit windowOpenSettings();
         }
 
         } // !settingsViewOpen
 
+        // While the settings overlay is open, hold emuStatus at Paused regardless of
+        // anything handleMessages() may have set (e.g. PauseLostFocus). Pause/run
+        // requests that arrive during settings are intentionally discarded; the emu
+        // always resumes at settingsPrevStatus when the overlay closes.
         if (settingsPausedEmu && emuInstance->settingsViewOpen)
             emuStatus = emuStatus_Paused;
 

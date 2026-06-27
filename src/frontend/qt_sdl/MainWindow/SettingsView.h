@@ -168,6 +168,7 @@ private:
     void paintCaptureOverlay(QPainter& p);
     void confirmPopupRects(QRect& box, QRect& yesRect, QRect& noRect) const;
 
+    void computeTitleBarGeometry(int& barY, int& barH) const;
     void computeSidebarGeometry(int& sidebarX, int& sidebarW,
                                 int& startY, int& btnH, int& spacing,
                                 int& divX) const;
