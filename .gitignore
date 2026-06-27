@@ -31,7 +31,6 @@ CMakeCache.txt
 
 # Assets
 assets/
-!assets/.keep
 
 # ROMs
 roms/*

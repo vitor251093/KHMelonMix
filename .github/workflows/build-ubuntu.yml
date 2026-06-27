@@ -64,7 +64,8 @@ jobs:
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
-        cp -r ./assets ./dist/assets
+        mkdir -p ./dist/assets
+        touch ./dist/assets/DELETE_ME
         cp AppDir/usr/bin/MelonMix ./dist/MelonMix
         cp ./res/scripts/MelonMix_KHDays.sh       ./dist/MelonMix_KHDays.sh
         cp ./res/scripts/MelonMix_KHReCoded.sh    ./dist/MelonMix_KHReCoded.sh
@@ -95,7 +96,8 @@ jobs:
         mkdir dist_appimage
         mkdir -p ./dist_appimage/roms
         touch ./dist_appimage/roms/DELETE_ME
-        cp -r ./assets ./dist_appimage/assets
+        mkdir -p ./dist_appimage/assets
+        touch ./dist_appimage/assets/DELETE_ME
         mv MelonMix*.AppImage ./dist_appimage/MelonMix.AppImage
         cp ./res/*.exe ./dist_appimage/
         cp ./res/scripts/MelonMix_KHDays_AppImage.sh    ./dist_appimage/MelonMix_KHDays.sh
