@@ -129,6 +129,18 @@ private:
 
     MainWindowSettings* m_mainWindow;
 
+    struct DetailLayout {
+        int h;
+        int detailX, detailW;
+        int startY, btnH, spacing;
+        qreal topLineY, bottomLineY;
+        QFont rowFont;
+        QColor themeColor;
+        int rowPillW, optGapW, optPanelX, optPanelW;
+        int scrollbarW = 4;
+    };
+    DetailLayout computeDetailLayout() const;
+
     QColor currentThemeColor() const;
     const SettingsLocale& locale() const;
     void scrollOptionToIdx(int idx);
@@ -138,6 +150,11 @@ private:
     void paintBottomLine(QPainter& p);
     void paintSidebar(QPainter& p);
     void paintDetailArea(QPainter& p);
+    void paintDetailSidebarPreview(QPainter& p, const DetailLayout& L);
+    void paintDetailRemap(QPainter& p, const DetailLayout& L);
+    void paintDetailStream(QPainter& p, const DetailLayout& L);
+    void paintDetailQuit(QPainter& p, const DetailLayout& L);
+    void paintDetailRows(QPainter& p, const DetailLayout& L);
     void paintActionBar(QPainter& p);
     QColor paintPillFill(QPainter& p, const QPainterPath& path,
                          QRect r, bool selected, bool dimUnselected);
@@ -178,6 +195,12 @@ private:
     void resetSectionToDefaults(int idx);
 
     void handleNavigation(int direction);
+    void handleNavSidebar(int direction);
+    void handleNavDetail(int direction);
+    void handleNavOptionList(int direction);
+    void handleNavRemap(int direction);
+    void scrollDetailToRow(int idx, const QVector<SettingRow>& rows);
+    void scrollRemapToAction(int actionIdx);
     void playSound(int kind);
     void pollJoystick();
 };

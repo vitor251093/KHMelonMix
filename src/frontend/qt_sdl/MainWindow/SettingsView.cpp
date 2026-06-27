@@ -1203,11 +1203,394 @@ void SettingsView::playSound(int kind)
     m_mainWindow->playCutsceneMenuSound(kind);
 }
 
-// ─── navigation ───────────────────────────────────────────────────────────────
+// ─── navigation helpers ───────────────────────────────────────────────────────
+
+void SettingsView::scrollDetailToRow(int idx, const QVector<SettingRow>& rows)
+{
+    int dX, dW, sY, bH, sp;
+    computeDetailGeometry(dX, dW, sY, bH, sp);
+    const int h = height();
+    const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
+    const qreal bottomLineY = h - topLineY;
+    int labelH   = qMax(12, (int)(bH * 0.68));
+    int intraGap = qMax(2,  (int)(bH * 0.10));
+    int stride   = labelH + intraGap + bH + sp;
+    int footerH  = (int)(h * 0.08) + (int)(h * 0.01);
+    int visibleH = (int)(bottomLineY) - sY - footerH;
+    int rowTop   = idx * stride;
+    int rowBot   = rowTop + stride;
+    if (rowTop < m_detailScrollOffset)
+        m_detailScrollOffset = rowTop;
+    else if (rowBot > m_detailScrollOffset + visibleH)
+        m_detailScrollOffset = rowBot - visibleH;
+    m_detailScrollOffset = qMax(0, m_detailScrollOffset);
+    int maxOff = qMax(0, (int)rows.size() * stride - visibleH);
+    m_detailScrollOffset = qMin(m_detailScrollOffset, maxOff);
+    if (idx == 0)                    m_detailScrollOffset = 0;
+    if (idx == (int)rows.size() - 1) m_detailScrollOffset = maxOff;
+}
+
+void SettingsView::scrollRemapToAction(int actionIdx)
+{
+    if (actionIdx < 0 || actionIdx >= m_remapActionToItemIdx.size()) return;
+    int itemIdx = m_remapActionToItemIdx[actionIdx];
+    int dX, dW, sY, bH, sp;
+    computeDetailGeometry(dX, dW, sY, bH, sp);
+    int stride   = bH + sp;
+    const int h  = height();
+    const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
+    const qreal bottomLineY = h - topLineY;
+    int visibleH = (int)(bottomLineY) - sY - bH * 3 - sp;
+    int itemY = itemIdx * stride;
+    if (itemY < m_remapScrollOffset)
+        m_remapScrollOffset = itemY;
+    else if (itemY + stride > m_remapScrollOffset + visibleH)
+        m_remapScrollOffset = itemY + stride - visibleH;
+    m_remapScrollOffset = qMax(0, m_remapScrollOffset);
+    int maxOff = qMax(0, (int)m_remapItems.size() * stride - visibleH);
+    m_remapScrollOffset = qMin(m_remapScrollOffset, maxOff);
+    int actionCount = (int)m_remapActionToItemIdx.size();
+    if (actionIdx == 0)              m_remapScrollOffset = 0;
+    if (actionIdx == actionCount - 1) m_remapScrollOffset = maxOff;
+}
+
+// ─── per-screen navigation ────────────────────────────────────────────────────
+
+void SettingsView::handleNavSidebar(int direction)
+{
+    switch (direction)
+    {
+    case 0:
+        sidebarIndex = (sidebarIndex - 1 + kSidebarCount) % kSidebarCount;
+        detailIndex = 0;
+        m_detailScrollOffset = 0;
+        playSound(2);
+        update();
+        break;
+    case 1:
+        sidebarIndex = (sidebarIndex + 1) % kSidebarCount;
+        detailIndex = 0;
+        m_detailScrollOffset = 0;
+        playSound(2);
+        update();
+        break;
+    case 3:
+    case 4:
+        if (sidebarIndex == kIdxQuit)
+        {
+            currentScreen = Screen::Detail;
+            playSound(1);
+            update();
+        }
+        else if (sidebarIndex == kIdxGamepad || sidebarIndex == kIdxKeyboard)
+        {
+            QVector<SettingRow> kbRows = rowsFor(sidebarIndex);
+            if (sidebarIndex == kIdxKeyboard && !kbRows.isEmpty())
+            {
+                currentScreen        = Screen::Detail;
+                detailIndex          = 0;
+                m_detailScrollOffset = 0;
+                playSound(1);
+                update();
+            }
+            else
+            {
+                m_remapIsJoystick   = (sidebarIndex == kIdxGamepad);
+                m_remapScrollOffset = 0;
+                detailIndex         = 0;
+                buildRemapList();
+                currentScreen = Screen::Remap;
+                playSound(1);
+                update();
+            }
+        }
+        else if (sidebarIndex == kIdxStream)
+        {
+            currentScreen = Screen::Detail;
+            playSound(1);
+            update();
+        }
+        else
+        {
+            QVector<SettingRow> rows = rowsFor(sidebarIndex);
+            if (rows.isEmpty()) break;
+            currentScreen  = Screen::Detail;
+            detailIndex    = 0;
+            m_detailScrollOffset = 0;
+            playSound(1);
+            update();
+        }
+        break;
+    case 5:
+        playSound(3);
+        emit settingsClosed();
+        break;
+    default: break;
+    }
+}
+
+void SettingsView::handleNavDetail(int direction)
+{
+    if (sidebarIndex == kIdxStream)
+    {
+        if (direction == 5 || direction == 2)
+        { currentScreen = Screen::Sidebar; playSound(3); update(); }
+        else if (direction == 4)
+            QDesktopServices::openUrl(QUrl("https://www.kingdomhearts.com/1525/us/"));
+        return;
+    }
+
+    if (sidebarIndex == kIdxQuit)
+    {
+        if (direction == 5 || direction == 2)
+        { currentScreen = Screen::Sidebar; playSound(3); update(); }
+        else if (direction == 3 || direction == 4)
+        { playSound(4); emit quitGameConfirmed(); }
+        return;
+    }
+
+    QVector<SettingRow> rows = rowsFor(sidebarIndex);
+    int rowCount = rows.size();
+    if (rowCount == 0)
+    {
+        if (direction == 5 || direction == 2)
+        { currentScreen = Screen::Sidebar; update(); }
+        return;
+    }
+
+    const SettingRow& row = rows[detailIndex];
+
+    auto isRowBlocked = [&]() -> bool {
+        const SettingRow& r = rows[detailIndex];
+        return r.enabled && !r.enabled();
+    };
+
+    auto openCurrentRow = [&]() {
+        if (rows[detailIndex].isDynamic)
+        {
+            if (sidebarIndex == kIdxSystem) populateWifiAdapters();
+            if (sidebarIndex == kIdxSound)  populateAudioPacks();
+        }
+        m_optionScrollOffset = 0;
+        optionIndex = readRowValue(sidebarIndex, detailIndex);
+        scrollOptionToIdx(optionIndex);
+        currentScreen = Screen::OptionList;
+        playSound(1);
+        update();
+    };
+
+    auto openKeyboardRemap = [&]() {
+        m_remapIsJoystick   = false;
+        m_remapScrollOffset = 0;
+        detailIndex         = 0;
+        buildRemapList();
+        currentScreen = Screen::Remap;
+        playSound(1);
+        update();
+    };
+
+    switch (direction)
+    {
+    case 0:
+        detailIndex = (detailIndex - 1 + rowCount) % rowCount;
+        scrollDetailToRow(detailIndex, rows);
+        playSound(2);
+        update();
+        break;
+    case 1:
+        detailIndex = (detailIndex + 1) % rowCount;
+        scrollDetailToRow(detailIndex, rows);
+        playSound(2);
+        update();
+        break;
+    case 2:
+        if (row.type == SettingRow::Type::Slider)
+        {
+            int cur = readRowValue(sidebarIndex, detailIndex);
+            int nv  = qMax(row.sliderMin, cur - 1);
+            if (nv != cur) { writeRowValue(sidebarIndex, detailIndex, nv); update(); }
+        }
+        else
+        { currentScreen = Screen::Sidebar; playSound(3); update(); }
+        break;
+    case 3:
+    {
+        if (isRowBlocked()) break;
+        if (row.type == SettingRow::Type::Slider)
+        {
+            int cur = readRowValue(sidebarIndex, detailIndex);
+            int nv  = qMin(row.sliderMax, cur + 1);
+            if (nv != cur) { writeRowValue(sidebarIndex, detailIndex, nv); update(); }
+        }
+        else if (row.type == SettingRow::Type::Combobox)
+            openCurrentRow();
+        else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxKeyboard)
+            openKeyboardRemap();
+        break;
+    }
+    case 4:
+    {
+        if (isRowBlocked()) break;
+        if (row.type == SettingRow::Type::Toggle)
+        {
+            int cur = readRowValue(sidebarIndex, detailIndex);
+            writeRowValue(sidebarIndex, detailIndex, cur ? 0 : 1);
+            playSound(4);
+            update();
+        }
+        else if (row.type == SettingRow::Type::Combobox)
+            openCurrentRow();
+        else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxKeyboard)
+            openKeyboardRemap();
+        break;
+    }
+    case 5:
+        currentScreen = Screen::Sidebar;
+        playSound(3);
+        update();
+        break;
+    case 6:
+        if (sidebarIndex != kIdxStream && sidebarIndex != kIdxQuit &&
+            sidebarIndex != kIdxGamepad && sidebarIndex != kIdxKeyboard)
+        {
+            m_resettingSection      = true;
+            m_resettingConfirmIndex = 1;
+            playSound(1);
+            update();
+        }
+        break;
+    default: break;
+    }
+}
+
+void SettingsView::handleNavOptionList(int direction)
+{
+    QStringList opts = currentOptionList();
+    int optCount = opts.size();
+    if (optCount == 0) { currentScreen = Screen::Detail; update(); return; }
+
+    switch (direction)
+    {
+    case 0:
+        optionIndex = (optionIndex - 1 + optCount) % optCount;
+        scrollOptionToIdx(optionIndex);
+        playSound(2);
+        update();
+        break;
+    case 1:
+        optionIndex = (optionIndex + 1) % optCount;
+        scrollOptionToIdx(optionIndex);
+        playSound(2);
+        update();
+        break;
+    case 4:
+        writeRowValue(sidebarIndex, detailIndex, optionIndex);
+        currentScreen = Screen::Detail;
+        playSound(4);
+        update();
+        break;
+    case 5:
+    case 2:
+        optionIndex = readRowValue(sidebarIndex, detailIndex);
+        currentScreen = Screen::Detail;
+        playSound(3);
+        update();
+        break;
+    default: break;
+    }
+}
+
+void SettingsView::handleNavRemap(int direction)
+{
+    int actionCount = m_remapActionToItemIdx.size();
+    if (actionCount == 0)
+    {
+        if (direction == 5) { currentScreen = Screen::Sidebar; update(); }
+        return;
+    }
+
+    switch (direction)
+    {
+    case 0:
+        if (detailIndex == 0)
+        {
+            int dX_, dW_, sY_, bH_, sp_;
+            computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
+            const int h_ = height();
+            const qreal botY_ = h_ - ((int)(h_ * 0.11) + (int)(h_ * 0.045) / 2.0);
+            int visH_ = (int)(botY_) - sY_ - bH_ * 3 - sp_;
+            m_remapScrollOffset = qMax(0, (int)m_remapItems.size() * (bH_ + sp_) - visH_);
+            detailIndex = actionCount - 1;
+        }
+        else
+        {
+            detailIndex -= 1;
+            scrollRemapToAction(detailIndex);
+        }
+        playSound(2);
+        update();
+        break;
+    case 1:
+        if (detailIndex == actionCount - 1)
+        {
+            m_remapScrollOffset = 0;
+            detailIndex = 0;
+        }
+        else
+        {
+            detailIndex += 1;
+            scrollRemapToAction(detailIndex);
+        }
+        playSound(2);
+        update();
+        break;
+    case 4:
+    {
+        if (m_remapIsJoystick)
+        {
+            EmuInstance* emu = m_mainWindow->getEmuInstance();
+            SDL_Joystick* joy = emu ? emu->getJoystick() : nullptr;
+            if (joy)
+            {
+                int numAxes = qMin(SDL_JoystickNumAxes(joy), 16);
+                for (int i = 0; i < numAxes; i++)
+                    m_axesRest[i] = SDL_JoystickGetAxis(joy, i);
+            }
+        }
+        m_bindTarget     = detailIndex;
+        m_waitingForBind = true;
+        playSound(1);
+        update();
+        break;
+    }
+    case 5:
+        if (sidebarIndex == kIdxKeyboard && !rowsFor(kIdxKeyboard).isEmpty())
+        {
+            currentScreen        = Screen::Detail;
+            detailIndex          = 0;
+            m_detailScrollOffset = 0;
+        }
+        else
+        {
+            currentScreen = Screen::Sidebar;
+        }
+        playSound(3);
+        update();
+        break;
+    case 6:
+        m_resettingBindings     = true;
+        m_resettingConfirmIndex = 1;
+        playSound(1);
+        update();
+        break;
+    default: break;
+    }
+}
+
+// ─── main navigation dispatcher ───────────────────────────────────────────────
 
 void SettingsView::handleNavigation(int direction)
 {
-    // ── Section Reset confirmation ─────────────────────────────────────────────
     if (m_resettingSection)
     {
         switch (direction)
@@ -1223,7 +1606,7 @@ void SettingsView::handleNavigation(int direction)
             }
             else playSound(3);
             m_resettingSection = false;
-                       update();
+            update();
             break;
         case 5: m_resettingSection = false; playSound(3); update(); break;
         default: break;
@@ -1231,7 +1614,6 @@ void SettingsView::handleNavigation(int direction)
         return;
     }
 
-    // ── Reset All confirmation ─────────────────────────────────────────────────
     if (m_resettingBindings)
     {
         switch (direction)
@@ -1242,7 +1624,7 @@ void SettingsView::handleNavigation(int direction)
             if (m_resettingConfirmIndex == 0) { resetAllRemapBindings(); playSound(4); }
             else                               playSound(3);
             m_resettingBindings = false;
-                       update();
+            update();
             break;
         case 5: m_resettingBindings = false; playSound(3); update(); break;
         default: break;
@@ -1250,396 +1632,12 @@ void SettingsView::handleNavigation(int direction)
         return;
     }
 
-    // ── Sidebar ────────────────────────────────────────────────────────────────
-    if (currentScreen == Screen::Sidebar)
-    {
-        switch (direction)
-        {
-        case 0:
-            sidebarIndex = (sidebarIndex - 1 + kSidebarCount) % kSidebarCount;
-            detailIndex = 0;
-            m_detailScrollOffset = 0;
-            playSound(2);
-            update();
-            break;
-        case 1:
-            sidebarIndex = (sidebarIndex + 1) % kSidebarCount;
-            detailIndex = 0;
-            m_detailScrollOffset = 0;
-            playSound(2);
-            update();
-            break;
-        case 3:
-        case 4:
-            if (sidebarIndex == kIdxQuit)
-            {
-                currentScreen = Screen::Detail;
-                playSound(1);
-                update();
-            }
-            else if (sidebarIndex == kIdxGamepad || sidebarIndex == kIdxKeyboard)
-            {
-                QVector<SettingRow> kbRows = rowsFor(sidebarIndex);
-                if (sidebarIndex == kIdxKeyboard && !kbRows.isEmpty())
-                {
-                    currentScreen        = Screen::Detail;
-                    detailIndex          = 0;
-                    m_detailScrollOffset = 0;
-                    playSound(1);
-                    update();
-                }
-                else
-                {
-                    m_remapIsJoystick   = (sidebarIndex == kIdxGamepad);
-                    m_remapScrollOffset = 0;
-                    detailIndex         = 0;
-                    buildRemapList();
-                    currentScreen = Screen::Remap;
-                    playSound(1);
-                    update();
-                }
-            }
-            else if (sidebarIndex == kIdxStream)
-            {
-                currentScreen = Screen::Detail;
-                playSound(1);
-                update();
-            }
-            else
-            {
-                QVector<SettingRow> rows = rowsFor(sidebarIndex);
-                if (rows.isEmpty()) break;
-                currentScreen  = Screen::Detail;
-                detailIndex    = 0;
-                m_detailScrollOffset = 0;
-                playSound(1);
-                update();
-            }
-            break;
-        case 5:
-            playSound(3);
-            emit settingsClosed();
-            break;
-        default: break;
-        }
-        return;
-    }
-
-    // ── Detail ─────────────────────────────────────────────────────────────────
-    if (currentScreen == Screen::Detail)
-    {
-        if (sidebarIndex == kIdxStream)
-        {
-            if (direction == 5 || direction == 2)
-            { currentScreen = Screen::Sidebar; playSound(3); update(); }
-            else if (direction == 4)
-                QDesktopServices::openUrl(QUrl("https://www.kingdomhearts.com/1525/us/"));
-            return;
-        }
-
-        if (sidebarIndex == kIdxQuit)
-        {
-            if (direction == 5 || direction == 2)
-            { currentScreen = Screen::Sidebar; playSound(3); update(); }
-            else if (direction == 3 || direction == 4)
-            { playSound(4); emit quitGameConfirmed(); }
-            return;
-        }
-
-        QVector<SettingRow> rows = rowsFor(sidebarIndex);
-        int rowCount = rows.size();
-        if (rowCount == 0)
-        {
-            if (direction == 5 || direction == 2)
-            { currentScreen = Screen::Sidebar; update(); }
-            return;
-        }
-
-        const SettingRow& row = rows[detailIndex];
-
-        // ─ helpers ─────────────────────────────────────────────────────────────
-        auto scrollDetailToRow = [&](int idx) {
-            int dX, dW, sY, bH, sp;
-            computeDetailGeometry(dX, dW, sY, bH, sp);
-            const int h = height();
-            const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
-            const qreal bottomLineY = h - topLineY;
-            int labelH   = qMax(12, (int)(bH * 0.68));
-            int intraGap = qMax(2,  (int)(bH * 0.10));
-            int stride   = labelH + intraGap + bH + sp;
-            int footerH  = (int)(h * 0.08) + (int)(h * 0.01);
-            int visibleH = (int)(bottomLineY) - sY - footerH;
-            int rowTop   = idx * stride;
-            int rowBot   = rowTop + stride;
-            if (rowTop < m_detailScrollOffset)
-                m_detailScrollOffset = rowTop;
-            else if (rowBot > m_detailScrollOffset + visibleH)
-                m_detailScrollOffset = rowBot - visibleH;
-            m_detailScrollOffset = qMax(0, m_detailScrollOffset);
-            int maxOff = qMax(0, (int)rows.size() * stride - visibleH);
-            m_detailScrollOffset = qMin(m_detailScrollOffset, maxOff);
-            if (idx == 0)                      m_detailScrollOffset = 0;
-            if (idx == (int)rows.size() - 1)   m_detailScrollOffset = maxOff;
-        };
-
-        // True when the focused row should ignore right/confirm interaction
-        auto isRowBlocked = [&]() -> bool {
-            const SettingRow& r = rows[detailIndex];
-            return r.enabled && !r.enabled();
-        };
-
-        // Open the option list for the focused Combobox row
-        auto openCurrentRow = [&]() {
-            if (rows[detailIndex].isDynamic)
-            {
-                if (sidebarIndex == kIdxSystem) populateWifiAdapters();
-                if (sidebarIndex == kIdxSound)  populateAudioPacks();
-            }
-            m_optionScrollOffset = 0;
-            optionIndex = readRowValue(sidebarIndex, detailIndex);
-            scrollOptionToIdx(optionIndex);
-            currentScreen = Screen::OptionList;
-            playSound(1);
-            update();
-        };
-
-        // Open the keyboard remap screen from a Navigate row
-        auto openKeyboardRemap = [&]() {
-            m_remapIsJoystick   = false;
-            m_remapScrollOffset = 0;
-            detailIndex         = 0;
-            buildRemapList();
-            currentScreen = Screen::Remap;
-            playSound(1);
-            update();
-        };
-
-        switch (direction)
-        {
-        case 0:
-            detailIndex = (detailIndex - 1 + rowCount) % rowCount;
-            scrollDetailToRow(detailIndex);
-            playSound(2);
-            update();
-            break;
-        case 1:
-            detailIndex = (detailIndex + 1) % rowCount;
-            scrollDetailToRow(detailIndex);
-            playSound(2);
-            update();
-            break;
-        case 2:
-            if (row.type == SettingRow::Type::Slider)
-            {
-                int cur = readRowValue(sidebarIndex, detailIndex);
-                int nv  = qMax(row.sliderMin, cur - 1);
-                if (nv != cur) { writeRowValue(sidebarIndex, detailIndex, nv); update(); }
-            }
-            else
-            { currentScreen = Screen::Sidebar; playSound(3); update(); }
-            break;
-        case 3:
-        {
-            if (isRowBlocked()) break;
-            if (row.type == SettingRow::Type::Slider)
-            {
-                int cur = readRowValue(sidebarIndex, detailIndex);
-                int nv  = qMin(row.sliderMax, cur + 1);
-                if (nv != cur) { writeRowValue(sidebarIndex, detailIndex, nv); update(); }
-            }
-            else if (row.type == SettingRow::Type::Combobox)
-                openCurrentRow();
-            else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxKeyboard)
-                openKeyboardRemap();
-            break;
-        }
-        case 4:
-        {
-            if (isRowBlocked()) break;
-            if (row.type == SettingRow::Type::Toggle)
-            {
-                int cur = readRowValue(sidebarIndex, detailIndex);
-                writeRowValue(sidebarIndex, detailIndex, cur ? 0 : 1);
-                playSound(4);
-                update();
-            }
-            else if (row.type == SettingRow::Type::Combobox)
-                openCurrentRow();
-            else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxKeyboard)
-                openKeyboardRemap();
-            break;
-        }
-        case 5:
-            currentScreen = Screen::Sidebar;
-            playSound(3);
-            update();
-            break;
-        case 6:
-            if (sidebarIndex != kIdxStream && sidebarIndex != kIdxQuit &&
-                sidebarIndex != kIdxGamepad && sidebarIndex != kIdxKeyboard)
-            {
-                m_resettingSection      = true;
-                m_resettingConfirmIndex = 1;
-                playSound(1);
-                update();
-            }
-            break;
-        default: break;
-        }
-        return;
-    }
-
-    // ── Option List ────────────────────────────────────────────────────────────
-    if (currentScreen == Screen::OptionList)
-    {
-        QStringList opts = currentOptionList();
-        int optCount = opts.size();
-        if (optCount == 0) { currentScreen = Screen::Detail; update(); return; }
-
-
-        switch (direction)
-        {
-        case 0:
-            optionIndex = (optionIndex - 1 + optCount) % optCount;
-            scrollOptionToIdx(optionIndex);
-            playSound(2);
-            update();
-            break;
-        case 1:
-            optionIndex = (optionIndex + 1) % optCount;
-            scrollOptionToIdx(optionIndex);
-            playSound(2);
-            update();
-            break;
-        case 4:
-            writeRowValue(sidebarIndex, detailIndex, optionIndex);
-            currentScreen = Screen::Detail;
-            playSound(4);
-            update();
-            break;
-        case 5:
-        case 2:
-            optionIndex = readRowValue(sidebarIndex, detailIndex);
-            currentScreen = Screen::Detail;
-            playSound(3);
-            update();
-            break;
-        default: break;
-        }
-        return;
-    }
-
-    // ── Remap ──────────────────────────────────────────────────────────────────
-    if (currentScreen == Screen::Remap)
-    {
-        int actionCount = m_remapActionToItemIdx.size();
-        if (actionCount == 0)
-        {
-            if (direction == 5) { currentScreen = Screen::Sidebar; update(); }
-            return;
-        }
-
-        auto scrollRemapToAction = [&](int actionIdx) {
-            if (actionIdx < 0 || actionIdx >= m_remapActionToItemIdx.size()) return;
-            int itemIdx = m_remapActionToItemIdx[actionIdx];
-            int dX, dW, sY, bH, sp;
-            computeDetailGeometry(dX, dW, sY, bH, sp);
-            int stride   = bH + sp;
-            const int h  = height();
-            const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
-            const qreal bottomLineY = h - topLineY;
-            int visibleH = (int)(bottomLineY) - sY - bH * 3 - sp;
-            int itemY = itemIdx * stride;
-            if (itemY < m_remapScrollOffset)
-                m_remapScrollOffset = itemY;
-            else if (itemY + stride > m_remapScrollOffset + visibleH)
-                m_remapScrollOffset = itemY + stride - visibleH;
-            m_remapScrollOffset = qMax(0, m_remapScrollOffset);
-            int maxOff = qMax(0, (int)m_remapItems.size() * stride - visibleH);
-            m_remapScrollOffset = qMin(m_remapScrollOffset, maxOff);
-            int actionCount_ = (int)m_remapActionToItemIdx.size();
-            if (actionIdx == 0)              m_remapScrollOffset = 0;
-            if (actionIdx == actionCount_-1) m_remapScrollOffset = maxOff;
-        };
-
-        switch (direction)
-        {
-        case 0:
-            if (detailIndex == 0)
-            {
-                int dX_, dW_, sY_, bH_, sp_;
-                computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
-                const int h_ = height();
-                const qreal botY_ = h_ - ((int)(h_ * 0.11) + (int)(h_ * 0.045) / 2.0);
-                int visH_ = (int)(botY_) - sY_ - bH_ * 3 - sp_;
-                m_remapScrollOffset = qMax(0, (int)m_remapItems.size() * (bH_ + sp_) - visH_);
-                detailIndex = actionCount - 1;
-            }
-            else
-            {
-                detailIndex -= 1;
-                scrollRemapToAction(detailIndex);
-            }
-            playSound(2);
-            update();
-            break;
-        case 1:
-            if (detailIndex == actionCount - 1)
-            {
-                m_remapScrollOffset = 0;
-                detailIndex = 0;
-            }
-            else
-            {
-                detailIndex += 1;
-                scrollRemapToAction(detailIndex);
-            }
-            playSound(2);
-            update();
-            break;
-        case 4:
-        {
-            if (m_remapIsJoystick)
-            {
-                EmuInstance* emu = m_mainWindow->getEmuInstance();
-                SDL_Joystick* joy = emu ? emu->getJoystick() : nullptr;
-                if (joy)
-                {
-                    int numAxes = qMin(SDL_JoystickNumAxes(joy), 16);
-                    for (int i = 0; i < numAxes; i++)
-                        m_axesRest[i] = SDL_JoystickGetAxis(joy, i);
-                }
-            }
-            m_bindTarget     = detailIndex;
-            m_waitingForBind = true;
-            playSound(1);
-            update();
-            break;
-        }
-        case 5:
-            if (sidebarIndex == kIdxKeyboard && !rowsFor(kIdxKeyboard).isEmpty())
-            {
-                currentScreen        = Screen::Detail;
-                detailIndex          = 0;
-                m_detailScrollOffset = 0;
-            }
-            else
-            {
-                currentScreen = Screen::Sidebar;
-            }
-            playSound(3);
-            update();
-            break;
-        case 6: // Y — Reset All
-            m_resettingBindings     = true;
-            m_resettingConfirmIndex = 1;
-            playSound(1);
-            update();
-            break;
-        default: break;
-        }
-    }
+    if (currentScreen == Screen::Sidebar)    { handleNavSidebar(direction);    return; }
+    if (currentScreen == Screen::Detail)     { handleNavDetail(direction);     return; }
+    if (currentScreen == Screen::OptionList) { handleNavOptionList(direction); return; }
+    if (currentScreen == Screen::Remap)      { handleNavRemap(direction); }
 }
+
 
 // ─── key events ───────────────────────────────────────────────────────────────
 
@@ -2241,33 +2239,49 @@ void SettingsView::paintSidebar(QPainter& p)
     p.setBrush(Qt::NoBrush);
 }
 
+SettingsView::DetailLayout SettingsView::computeDetailLayout() const
+{
+    DetailLayout L;
+    L.h = height();
+    computeDetailGeometry(L.detailX, L.detailW, L.startY, L.btnH, L.spacing);
+    L.themeColor = currentThemeColor();
+    L.topLineY    = (int)(L.h * 0.11) + (int)(L.h * 0.045) / 2.0;
+    L.bottomLineY = L.h - L.topLineY;
+    L.rowFont = QFont("KHMenu");
+    L.rowFont.setPixelSize(qMax(13, (int)(L.btnH * 0.53)));
+    L.rowPillW  = (int)(L.detailW * 0.56) - (int)(L.btnH * 1.7);
+    L.optGapW   = (int)(L.detailW * 0.06);
+    L.optPanelX = L.detailX + L.rowPillW + L.optGapW;
+    L.optPanelW = L.detailW - L.rowPillW - L.optGapW;
+    L.scrollbarW = 4;
+    return L;
+}
+
 void SettingsView::paintDetailArea(QPainter& p)
 {
-    const int w = width();
-    const int h = height();
+    const DetailLayout L = computeDetailLayout();
 
-    int detailX, detailW, startY, btnH, spacing;
-    computeDetailGeometry(detailX, detailW, startY, btnH, spacing);
+    if (currentScreen == Screen::Sidebar)          { paintDetailSidebarPreview(p, L); return; }
+    if (currentScreen == Screen::Remap)            { paintDetailRemap(p, L); return; }
+    if (sidebarIndex == kIdxStream)                { paintDetailStream(p, L); return; }
+    if (sidebarIndex == kIdxQuit)                  { paintDetailQuit(p, L); return; }
 
-    QColor themeColor = currentThemeColor();
+    paintDetailRows(p, L);
+}
 
-    const qreal topLineY    = (int)(h * 0.11) + (int)(h * 0.045) / 2.0;
-    const qreal bottomLineY = h - topLineY;
+void SettingsView::paintDetailSidebarPreview(QPainter& p, const DetailLayout& L)
+{
+    const int& h          = L.h;
+    const int& detailX    = L.detailX;
+    const int& detailW    = L.detailW;
+    const int& startY     = L.startY;
+    const int& btnH       = L.btnH;
+    const int& spacing    = L.spacing;
+    const qreal& bottomLineY = L.bottomLineY;
+    const QColor& themeColor = L.themeColor;
+    const int& rowPillW  = L.rowPillW;
 
-    QFont rowFont("KHMenu");
-    rowFont.setPixelSize(qMax(13, (int)(btnH * 0.53)));
-
-    int rowPillW  = (int)(detailW * 0.56) - (int)(btnH * 1.7);
-    int optGapW   = (int)(detailW * 0.06);
-    int optPanelX = detailX + rowPillW + optGapW;
-    int optPanelW = detailW - rowPillW - optGapW;
-
-    int scrollbarW = 4;
-
-    // Sidebar screen: show a dimmed preview of the selected section's rows
-    if (currentScreen == Screen::Sidebar)
-    {
-        QVector<SettingRow> sRows = rowsFor(sidebarIndex);
+    QVector<SettingRow> sRows = rowsFor(sidebarIndex);
         if (!sRows.isEmpty())
         {
             int lH  = qMax(12, (int)(btnH * 0.68));
@@ -2373,10 +2387,21 @@ void SettingsView::paintDetailArea(QPainter& p)
         return;
     }
 
-    // ── Remap screen ──────────────────────────────────────────────────────────
-    if (currentScreen == Screen::Remap)
-    {
-        int remapPillW = rowPillW;
+void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
+{
+    const int& h          = L.h;
+    const int& detailX    = L.detailX;
+    const int& detailW    = L.detailW;
+    const int& startY     = L.startY;
+    const int& btnH       = L.btnH;
+    const int& spacing    = L.spacing;
+    const qreal& bottomLineY = L.bottomLineY;
+    const QFont& rowFont  = L.rowFont;
+    const QColor& themeColor = L.themeColor;
+    const int& scrollbarW = L.scrollbarW;
+    const int& rowPillW   = L.rowPillW;
+
+    int remapPillW = rowPillW;
         int stride     = btnH + spacing;
         int visibleH   = (int)(bottomLineY) - startY - btnH * 3 - spacing;
 
@@ -2468,14 +2493,22 @@ void SettingsView::paintDetailArea(QPainter& p)
         p.drawText(QRect(detailX, (int)(bottomLineY - btnH - spacing), detailW, btnH),
                    Qt::AlignLeft | Qt::AlignVCenter,
                    "X Reset All  |  B Back to Sidebar");
-        return;
-    }
+}
 
-    // ── Before You Stream ─────────────────────────────────────────────────────
-    if (sidebarIndex == kIdxStream)
-    {
-        const int margin     = (int)(detailW * 0.04);  // outer margin: title, lines
-        const int pillMargin = (int)(detailW * 0.13);  // inner margin: body text, URL pill
+void SettingsView::paintDetailStream(QPainter& p, const DetailLayout& L)
+{
+    const int& h          = L.h;
+    const int& detailX    = L.detailX;
+    const int& detailW    = L.detailW;
+    const int& startY     = L.startY;
+    const int& btnH       = L.btnH;
+    const int& spacing    = L.spacing;
+    const qreal& bottomLineY = L.bottomLineY;
+    const QFont& rowFont  = L.rowFont;
+    const QColor& themeColor = L.themeColor;
+
+    const int margin     = (int)(detailW * 0.04);  // outer margin: title, lines
+    const int pillMargin = (int)(detailW * 0.13);  // inner margin: body text, URL pill
 
         QFont titleFont("KHGummi");
         titleFont.setPixelSize(qMax(14, (int)(btnH * 0.60)));
@@ -2559,13 +2592,19 @@ void SettingsView::paintDetailArea(QPainter& p)
         p.drawText(QRect(detailX + pillMargin, line2Y + spacing / 2, detailW - pillMargin * 2, btnH),
                    Qt::AlignCenter | Qt::AlignVCenter,
                    "Open a browser to view the official website.");
-        return;
-    }
+}
 
-    // ── Quit Game ─────────────────────────────────────────────────────────────
-    if (sidebarIndex == kIdxQuit)
-    {
-        const int margin = (int)(detailW * 0.07);
+void SettingsView::paintDetailQuit(QPainter& p, const DetailLayout& L)
+{
+    const int& h          = L.h;
+    const int& detailX    = L.detailX;
+    const int& detailW    = L.detailW;
+    const int& startY     = L.startY;
+    const int& btnH       = L.btnH;
+    const int& spacing    = L.spacing;
+    const QColor& themeColor = L.themeColor;
+
+    const int margin = (int)(detailW * 0.07);
         QFont titleFont("KHGummi");
         titleFont.setPixelSize(qMax(14, (int)(btnH * 0.60)));
         p.setFont(titleFont);
@@ -2595,9 +2634,23 @@ void SettingsView::paintDetailArea(QPainter& p)
                    Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap,
                    "You are about to quit the current game. "
                    "Any progress since your last save will be lost.");
-        return;
-    }
+}
 
+void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
+{
+    const int& h          = L.h;
+    const int& detailX    = L.detailX;
+    const int& detailW    = L.detailW;
+    const int& startY     = L.startY;
+    const int& btnH       = L.btnH;
+    const int& spacing    = L.spacing;
+    const qreal& bottomLineY = L.bottomLineY;
+    const QFont& rowFont  = L.rowFont;
+    const QColor& themeColor = L.themeColor;
+    const int& rowPillW   = L.rowPillW;
+    const int& optPanelX  = L.optPanelX;
+    const int& optPanelW  = L.optPanelW;
+    const int& scrollbarW = L.scrollbarW;
 
     // ── Row layout constants ───────────────────────────────────────────────────
     int labelH   = qMax(12, (int)(btnH * 0.68));
