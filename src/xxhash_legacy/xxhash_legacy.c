@@ -4,6 +4,7 @@
 
 #include "xxhash_legacy.h"
 
+#define XXH_NAMESPACE KHLEGACY_
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash.h"
 
