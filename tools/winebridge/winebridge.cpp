@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
     std::string appImage = unixCwd + "/Image/melon/MelonMix.AppImage";
     std::string assetsFolderPath = unixCwd + "/Image/melon/assets";
     std::string signalPath = cwdStr + "\\.melonmix_signal";
-    bool enableDebug = true;
+    bool enableDebug = false;
 
     makeLinuxBinaryRunnable(appImage);
 
