@@ -301,7 +301,7 @@ public:
         Plugins::TextureEntry* texturePtr = nullptr;
         if (textureReplacementEnabled) {
             std::ostringstream oss0;
-            oss0 << "-3d-";
+            oss0 << "MM2-";
             for (int i = 0; i < 2; i++)
             {
                 if (entry.TextureRAMSize[i])
