@@ -5,6 +5,7 @@
 #include <memory>
 #include <array>
 #include <filesystem>
+#include <fstream>
 
 bool isRunningInsideWine()
 {
@@ -113,6 +114,18 @@ static void closeWaitTitleProject(PROCESS_INFORMATION& waitPi, std::string& sign
     CloseHandle(waitPi.hThread);
 }
 
+bool writeStringToFile(const std::string& path, const std::string& content)
+{
+    std::ofstream file(path, std::ios::binary);
+    if (!file.is_open())
+    {
+        return false;
+    }
+
+    file.write(content.data(), static_cast<std::streamsize>(content.size()));
+    return file.good();
+}
+
 int main(int argc, char* argv[])
 {
     if (!isRunningInsideWine()) {
@@ -131,7 +144,7 @@ int main(int argc, char* argv[])
     std::string appImage = unixCwd + "/Image/melon/MelonMix.AppImage";
     std::string assetsFolderPath = unixCwd + "/Image/melon/assets";
     std::string signalPath = cwdStr + "\\.melonmix_signal";
-    bool enableLogFile = false;
+    bool enableDebug = true;
 
     makeLinuxBinaryRunnable(appImage);
 
@@ -160,10 +173,17 @@ int main(int argc, char* argv[])
     linuxCmd = "export FUSERMOUNT_PROG=/usr/bin/fusermount; " + linuxCmd;
     linuxCmd = "export DISPLAY=:0; " + linuxCmd;
     linuxCmd = "export MELON_MIX_ASSETS=" + quote(assetsFolderPath) + "; " + linuxCmd;
-    if (enableLogFile) {
+
+    // #498 - Temporary workaround while Wayland support is broken
+    linuxCmd = "export QT_QPA_PLATFORM=xcb; " + linuxCmd;
+
+    if (enableDebug) {
         linuxCmd += " > " + quote(unixCwd + "/melon_mix.log") + " 2>&1";
     }
     std::string cmd = "start /unix /usr/bin/bash -c " + quote(linuxCmd);
+    if (enableDebug) {
+        writeStringToFile("melon_mix_cmd.log", cmd);
+    }
 
     STARTUPINFOA si{};
     PROCESS_INFORMATION pi{};

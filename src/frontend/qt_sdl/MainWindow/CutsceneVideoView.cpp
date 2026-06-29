@@ -54,7 +54,7 @@ static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
     QFont font;
     font.setFamilies({ "Comic Hearts" });
     font.setStyleHint(QFont::SansSerif);
-    qreal px = videoHeight * 0.049;
+    qreal px = qMax(2.0, videoHeight * 0.049);
     font.setPixelSize((int)px);
     font.setLetterSpacing(QFont::AbsoluteSpacing, px / 16.0);
     font.setWordSpacing(px / 3.5);

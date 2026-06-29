@@ -447,13 +447,19 @@ std::string PluginKingdomHeartsDays::saveFilePath()
     return saveFilePathStr + saveFileName;
 }
 
-bool PluginKingdomHeartsDays::shouldStartInFullscreen() {
+StartupWindowConfig PluginKingdomHeartsDays::startupWindowConfig()
+{
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
-    if (config == nullptr)
-    {
-        return FullscreenOnStartup;
+    if (config == nullptr) {
+        return { FullscreenOnStartup ? 1 : -1, 0, 0 };
     }
-    return config->windowMode == 0;
+    // Launcher display mode: 0 = fullscreen, 1 = borderless, 2 = windowed.
+    StartupWindowConfig result;
+    result.mode = config->windowMode;
+    result.width = config->resolutionWidth;
+    result.height = config->resolutionHeight;
+    delete config;
+    return result;
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {

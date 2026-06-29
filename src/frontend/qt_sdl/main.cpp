@@ -310,7 +310,10 @@ int main(int argc, char** argv)
     // http://stackoverflow.com/questions/14543333/joystick-wont-work-using-sdl
     SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI, "1");
+
+#ifdef SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC, "1");
+#endif
 
     SDL_SetHint(SDL_HINT_APP_NAME, "melonDS");
 

@@ -122,6 +122,9 @@ public:
     void saveEnabled(bool enabled);
 
     void toggleFullscreen();
+    // mode: 0 = fullscreen (exclusive), 1 = borderless windowed, 2 = windowed.
+    // width/height (when > 0) size the window in windowed mode.
+    void setFullscreenMode(int mode, int width = 0, int height = 0);
 
     bool hasOpenGL() { return hasOGL; }
     GL::Context* getOGLContext();
@@ -252,6 +255,7 @@ private slots:
     void onUpdateVideoSettings(bool glchange);
 
     void onFullscreenToggled();
+    void onSetDisplayMode(int mode, int width, int height);
     void onScreenEmphasisToggled();
 
     void onOpenSettingsOverlay();
@@ -287,6 +291,13 @@ private:
     bool enabledSaved;
 
     bool focused;
+
+    // Fullscreen state. fullscreenActive tracks whether we are currently in
+    // fullscreen regardless of mode (Qt fullscreen or borderless windowed).
+    // savedGeometry holds the windowed geometry to restore when leaving
+    // borderless mode (which never enters Qt's WindowFullScreen state).
+    bool fullscreenActive = false;
+    QByteArray savedGeometry;
 
     EmuInstance* emuInstance;
     EmuThread* emuThread;
