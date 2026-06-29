@@ -312,17 +312,33 @@ public:
             oss0 << palBase;
             std::string newIdentifierWithPal = oss0.str();
 
+            std::ostringstream oss1;
+            for (int i = 0; i < 2; i++)
+            {
+                if (entry.TextureRAMSize[i])
+                    oss1 << static_cast<char32_t>(KHLEG_XXH3_64bits(&gpu.VRAMFlat_Texture[entry.TextureRAMStart[i]], entry.TextureRAMSize[i]));
+            }
+            std::string oldIdentifierWithoutPal = oss1.str();
+            oss1 << "-";
+            oss1 << palBase;
+            std::string oldIdentifierWithPal = oss1.str();
+
             std::filesystem::path _assetsFolderPath = GamePlugin->gameAssetsFolderPath();
             std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
 
             Plugins::TextureEntry& newTextureWithPal = GamePlugin->textureById(newIdentifierWithPal);
             Plugins::TextureEntry& newTextureWithoutPal = GamePlugin->textureById(newIdentifierWithoutPal);
 
+            Plugins::TextureEntry& oldTextureWithPal = GamePlugin->textureById(oldIdentifierWithPal);
+            Plugins::TextureEntry& oldTextureWithoutPal = GamePlugin->textureById(oldIdentifierWithoutPal);
+
             int channels = 4;
             int r_width, r_height, r_channels;
             imageData = nullptr;
 
-            Plugins::TextureEntry* textures[] = {&newTextureWithPal, &newTextureWithoutPal};
+            Plugins::TextureEntry* textures[] = {
+                &newTextureWithPal, &newTextureWithoutPal, &oldTextureWithPal, &oldTextureWithoutPal,
+            };
             for (int i = 0; i < sizeof(textures) / sizeof(textures[0]); ++i) {
                 Plugins::TextureEntry* texture = textures[i];
                 auto& scene = texture->getNextScene();
