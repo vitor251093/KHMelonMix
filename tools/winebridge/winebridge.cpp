@@ -160,6 +160,10 @@ int main(int argc, char* argv[])
     linuxCmd = "export FUSERMOUNT_PROG=/usr/bin/fusermount; " + linuxCmd;
     linuxCmd = "export DISPLAY=:0; " + linuxCmd;
     linuxCmd = "export MELON_MIX_ASSETS=" + quote(assetsFolderPath) + "; " + linuxCmd;
+
+    // #498 - Temporary workaround while Wayland support is broken
+    linuxCmd = "export QT_QPA_PLATFORM=xcb; " + linuxCmd;
+
     if (enableLogFile) {
         linuxCmd += " > " + quote(unixCwd + "/melon_mix.log") + " 2>&1";
     }
