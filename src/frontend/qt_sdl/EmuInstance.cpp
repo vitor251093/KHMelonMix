@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2025 melonDS team
+    Copyright 2016-2026 melonDS team
 
     This file is part of melonDS.
 
@@ -53,6 +53,7 @@
 #include "Utils.h"
 
 #include "plugins/PluginManager.h"
+#include "NDSCart/CartSD.h"
 
 using std::make_unique;
 using std::pair;
@@ -425,12 +426,13 @@ void EmuInstance::releaseGL()
     }
 }
 
-void EmuInstance::drawScreenGL()
+
+void EmuInstance::drawScreen()
 {
     for (int i = 0; i < kMaxWindows; i++)
     {
         if (windowList[i])
-            windowList[i]->drawScreenGL();
+            windowList[i]->drawScreen();
     }
 }
 
@@ -616,7 +618,7 @@ QString EmuInstance::verifyDSiFirmware()
     return "";
 }
 
-QString EmuInstance::verifyDSiNAND()
+QString EmuInstance::verifyDSiNAND(bool isoptional)
 {
     FileHandle* f;
     long len;
@@ -624,6 +626,7 @@ QString EmuInstance::verifyDSiNAND()
     std::string nandpath = globalCfg.GetString("DSi.NANDPath");
 
     f = Platform::OpenLocalFile(nandpath, FileMode::ReadWriteExisting);
+    if (!f && isoptional) return "";
     if (!f) return "DSi NAND was not found or could not be accessed. Check your emu settings.";
 
     if (!Platform::CheckFileWritable(nandpath))
@@ -642,6 +645,8 @@ QString EmuInstance::verifySetup()
     QString res;
 
     bool extbios = globalCfg.GetBool("Emu.ExternalBIOSEnable");
+    bool extbiostwl = globalCfg.GetBool("DSi.ExternalBIOSEnable");
+    bool directboot = globalCfg.GetBool("Emu.DirectBoot");
     int console = globalCfg.GetInt("Emu.ConsoleType");
 
     if (extbios)
@@ -652,16 +657,16 @@ QString EmuInstance::verifySetup()
 
     if (console == 1)
     {
-        res = verifyDSiBIOS();
-        if (!res.isEmpty()) return res;
-
-        if (extbios)
+        if (extbiostwl)
         {
+            res = verifyDSiBIOS();
+            if (!res.isEmpty()) return res;
+
             res = verifyDSiFirmware();
             if (!res.isEmpty()) return res;
         }
 
-        res = verifyDSiNAND();
+        res = verifyDSiNAND(!extbiostwl || directboot);
         if (!res.isEmpty()) return res;
     }
     else
@@ -679,16 +684,16 @@ QString EmuInstance::verifySetup()
 
 std::string EmuInstance::getEffectiveFirmwareSavePath()
 {
-    if (!globalCfg.GetBool("Emu.ExternalBIOSEnable"))
-    {
-        return GetLocalFilePath(kWifiSettingsPath);
-    }
     if (consoleType == 1)
     {
+        if (!globalCfg.GetBool("DSi.ExternalBIOSEnable"))
+            return GetLocalFilePath(kWifiSettingsPath);
         return globalCfg.GetString("DSi.FirmwarePath");
     }
     else
     {
+        if (!globalCfg.GetBool("Emu.ExternalBIOSEnable"))
+            return GetLocalFilePath(kWifiSettingsPath);
         return globalCfg.GetString("DS.FirmwarePath");
     }
 }
@@ -765,16 +770,6 @@ bool EmuInstance::loadState(const std::string& filename)
     backupState = std::move(backup); // This will clean up any existing backup
     assert(backup == nullptr);
 
-    if (globalCfg.GetBool("Savestate.RelocSRAM") && ndsSave)
-    {
-        previousSaveFile = ndsSave->GetPath();
-
-        std::string savefile = filename.substr(lastSep(filename)+1);
-        savefile = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav", savefile);
-        savefile += instanceFileSuffix();
-        ndsSave->SetPath(savefile, true);
-    }
-
     savestateLoaded = true;
 
     plugin->onLoadState();
@@ -820,14 +815,6 @@ bool EmuInstance::saveState(const std::string& filename)
 
     Platform::CloseFile(file);
 
-    if (globalCfg.GetBool("Savestate.RelocSRAM") && ndsSave)
-    {
-        std::string savefile = filename.substr(lastSep(filename)+1);
-        savefile = getAssetPath(false, localCfg.GetString("SaveFilePath"), ".sav", savefile);
-        savefile += instanceFileSuffix();
-        ndsSave->SetPath(savefile, false);
-    }
-
     return true;
 }
 
@@ -837,15 +824,11 @@ void EmuInstance::undoStateLoad()
 
     // Rewind the backup state and put it in load mode
     backupState->Rewind(false);
+
     // pray that this works
     // what do we do if it doesn't???
     // but it should work.
     nds->DoSavestate(backupState.get());
-
-    if (ndsSave && (!previousSaveFile.empty()))
-    {
-        ndsSave->SetPath(previousSaveFile, true);
-    }
 }
 
 
@@ -878,7 +861,7 @@ std::unique_ptr<ARM9BIOSImage> EmuInstance::loadARM9BIOS() noexcept
 {
     if (!globalCfg.GetBool("Emu.ExternalBIOSEnable"))
     {
-        return std::make_unique<ARM9BIOSImage>(bios_arm9_bin);
+        return std::make_unique<ARM9BIOSImage>(FreeBIOSGetNtrArm9());
     }
 
     string path = globalCfg.GetString("DS.BIOS9Path");
@@ -901,7 +884,7 @@ std::unique_ptr<ARM7BIOSImage> EmuInstance::loadARM7BIOS() noexcept
 {
     if (!globalCfg.GetBool("Emu.ExternalBIOSEnable"))
     {
-        return std::make_unique<ARM7BIOSImage>(bios_arm7_bin);
+        return std::make_unique<ARM7BIOSImage>(FreeBIOSGetNtrArm7());
     }
 
     string path = globalCfg.GetString("DS.BIOS7Path");
@@ -921,6 +904,11 @@ std::unique_ptr<ARM7BIOSImage> EmuInstance::loadARM7BIOS() noexcept
 
 std::unique_ptr<DSiBIOSImage> EmuInstance::loadDSiARM9BIOS() noexcept
 {
+    if (!globalCfg.GetBool("DSi.ExternalBIOSEnable"))
+    {
+        return std::make_unique<DSiBIOSImage>(FreeBIOSGetTwlArm9());
+    }
+
     string path = globalCfg.GetString("DSi.BIOS9Path");
 
     if (FileHandle* f = OpenLocalFile(path, Read))
@@ -929,15 +917,6 @@ std::unique_ptr<DSiBIOSImage> EmuInstance::loadDSiARM9BIOS() noexcept
         FileRead(bios->data(), bios->size(), 1, f);
         CloseFile(f);
 
-        if (!globalCfg.GetBool("DSi.FullBIOSBoot"))
-        {
-            // herp
-            *(u32*)bios->data() = 0xEAFFFFFE; // overwrites the reset vector
-
-            // TODO!!!!
-            // hax the upper 32K out of the goddamn DSi
-            // done that :)  -pcy
-        }
         Log(Info, "ARM9i BIOS loaded from %s\n", path.c_str());
         return bios;
     }
@@ -948,6 +927,11 @@ std::unique_ptr<DSiBIOSImage> EmuInstance::loadDSiARM9BIOS() noexcept
 
 std::unique_ptr<DSiBIOSImage> EmuInstance::loadDSiARM7BIOS() noexcept
 {
+    if (!globalCfg.GetBool("DSi.ExternalBIOSEnable"))
+    {
+        return std::make_unique<DSiBIOSImage>(FreeBIOSGetTwlArm7());
+    }
+
     string path = globalCfg.GetString("DSi.BIOS7Path");
 
     if (FileHandle* f = OpenLocalFile(path, Read))
@@ -956,15 +940,6 @@ std::unique_ptr<DSiBIOSImage> EmuInstance::loadDSiARM7BIOS() noexcept
         FileRead(bios->data(), bios->size(), 1, f);
         CloseFile(f);
 
-        if (!globalCfg.GetBool("DSi.FullBIOSBoot"))
-        {
-            // herp
-            *(u32*)bios->data() = 0xEAFFFFFE; // overwrites the reset vector
-
-            // TODO!!!!
-            // hax the upper 32K out of the goddamn DSi
-            // done that :)  -pcy
-        }
         Log(Info, "ARM7i BIOS loaded from %s\n", path.c_str());
         return bios;
     }
@@ -1021,23 +996,19 @@ Firmware EmuInstance::generateFirmware(int type) noexcept
 
 std::optional<Firmware> EmuInstance::loadFirmware(int type) noexcept
 {
-    if (!globalCfg.GetBool("Emu.ExternalBIOSEnable"))
-    { // If we're using built-in firmware...
-        if (type == 1)
-        {
-            // TODO: support generating a firmware for DSi mode
-        }
-        else
-        {
-            return generateFirmware(type);
-        }
-    }
-
     string firmwarepath;
     if (type == 1)
+    {
+        if (!globalCfg.GetBool("DSi.ExternalBIOSEnable"))
+            return generateFirmware(type);
         firmwarepath = globalCfg.GetString("DSi.FirmwarePath");
+    }
     else
+    {
+        if (!globalCfg.GetBool("Emu.ExternalBIOSEnable"))
+            return generateFirmware(type);
         firmwarepath = globalCfg.GetString("DS.FirmwarePath");
+    }
 
     string fwpath_inst = firmwarepath + instanceFileSuffix();
 
@@ -1345,18 +1316,14 @@ bool EmuInstance::updateConsole() noexcept
             return false;
 
         auto nand = loadNAND(*arm7ibios);
-        if (!nand)
-            return false;
-
         auto sdcard = loadSDCard("DSi.SD");
 
         DSiArgs _dsiargs {
                 std::move(ndsargs),
                 std::move(arm9ibios),
                 std::move(arm7ibios),
-                std::move(*nand),
+                std::move(nand),
                 std::move(sdcard),
-                globalCfg.GetBool("DSi.FullBIOSBoot"),
                 globalCfg.GetBool("DSi.DSP.HLE")
         };
 
@@ -1380,7 +1347,7 @@ bool EmuInstance::updateConsole() noexcept
 
         nds->Reset();
         loadRTCData();
-        //emuThread->updateVideoRenderer(); // not actually needed?
+        emuThread->updateVideoRenderer();
     }
     else
     {
@@ -1397,7 +1364,6 @@ bool EmuInstance::updateConsole() noexcept
             DSi* dsi = (DSi*)nds;
             DSiArgs& _dsiargs = *dsiargs;
 
-            dsi->SetFullBIOSBoot(_dsiargs.FullBIOSBoot);
             dsi->SetDSPHLE(_dsiargs.DSPHLE);
             dsi->ARM7iBIOS = *_dsiargs.ARM7iBIOS;
             dsi->ARM9iBIOS = *_dsiargs.ARM9iBIOS;
@@ -1455,7 +1421,7 @@ void EmuInstance::reset()
     {
         std::string oldsave = firmwareSave->GetPath();
         string newsave;
-        if (globalCfg.GetBool("Emu.ExternalBIOSEnable"))
+        if (globalCfg.GetBool(consoleType == 1 ? "DSi.ExternalBIOSEnable" : "Emu.ExternalBIOSEnable"))
         {
             if (consoleType == 1)
                 newsave = globalCfg.GetString("DSi.FirmwarePath") + instanceFileSuffix();
@@ -1694,6 +1660,7 @@ void EmuInstance::customizeFirmware(Firmware& firmware, bool overridesettings) n
 {
     if (overridesettings)
     {
+        auto &currentHeader = firmware.GetHeader();
         auto &currentData = firmware.GetEffectiveUserData();
 
         auto firmcfg = localCfg.GetTable("Firmware");
@@ -1710,8 +1677,25 @@ void EmuInstance::customizeFirmware(Firmware& firmware, bool overridesettings) n
         auto language = static_cast<Firmware::Language>(firmcfg.GetInt("Language"));
         if (language != Firmware::Language::Reserved)
         { // If the frontend specifies a language (rather than using the existing value)...
-            currentData.Settings &= ~Firmware::Language::Reserved; // ..clear the existing language...
-            currentData.Settings |= language; // ...and set the new one.
+            bool extlang = language >= Firmware::Language::Chinese;
+
+            // ..clear the existing language...
+            currentData.Settings &= ~Firmware::Language::Reserved;
+
+            // ...and set the new one.
+            currentData.Settings |= extlang ? Firmware::Language::English : language;
+            currentData.ExtendedSettings.ExtendedLanguage = language;
+
+            if (extlang && !(currentHeader.ConsoleType & 0x40))
+            {
+                // enable the extended settings header if not present
+                if (currentHeader.ConsoleType == 0xFF)
+                    currentHeader.ConsoleType = 0x43;
+                else
+                    currentHeader.ConsoleType |= 0x43;
+                currentData.ExtendedSettings.Unknown0 = 0x01;
+                currentData.ExtendedSettings.SupportedLanguageMask = 0x7F;
+            }
         }
 
         // setting up color
@@ -2016,7 +2000,8 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
     plugin->setNds(nds);
     plugin->onLoadROM();
 
-    static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
+    // TODO: KH blackmagic3 temporary disabling it
+    //static_cast<GPU2D::SoftRenderer&>(nds->GPU.GetRenderer2D()).setPlugin(plugin);
 
     cartType = 0;
     ndsSave = std::make_unique<SaveManager>(savname);

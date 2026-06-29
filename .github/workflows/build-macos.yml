@@ -33,6 +33,13 @@ jobs:
     steps:
       - name: Check out sources
         uses: actions/checkout@v6
+      - name: Set Version Suffix
+        run: |
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            TIMESTAMP=$(date +'%Y%m%d%H%M')
+            BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+            echo "MELONDS_VERSION_SUFFIX=-$BRANCH_NAME-$TIMESTAMP" >> $GITHUB_ENV
+          fi
       - name: Install dependencies for package building
         run: |
           brew install autoconf automake autoconf-archive libtool python-setuptools flac
@@ -48,13 +55,6 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: vcpkg.json
-      - name: Set Version Suffix
-        run: |
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            TIMESTAMP=$(date +'%Y%m%d%H%M')
-            BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
-            echo "MELONDS_VERSION_SUFFIX=-$BRANCH_NAME-$TIMESTAMP" >> $GITHUB_ENV
-          fi
       - name: Build
         uses: lukka/run-cmake@v10
         with:

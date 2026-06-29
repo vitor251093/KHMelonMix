@@ -35,6 +35,14 @@ jobs:
     steps:
     - name: Check out sources
       uses: actions/checkout@v6
+    - name: Set Version Suffix
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+          TIMESTAMP=$(date +'%Y%m%d%H%M')
+          BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
+          echo "MELONDS_VERSION_SUFFIX=-$BRANCH_NAME-$TIMESTAMP" >> $GITHUB_ENV
+        fi
     - name: Restore vcpkg cache
       uses: actions/cache/restore@v4
       with:
@@ -45,14 +53,6 @@ jobs:
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgJsonGlob: vcpkg.json
-    - name: Set Version Suffix
-      shell: bash
-      run: |
-        if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-          TIMESTAMP=$(date +'%Y%m%d%H%M')
-          BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/\//-/g')
-          echo "MELONDS_VERSION_SUFFIX=-$BRANCH_NAME-$TIMESTAMP" >> $GITHUB_ENV
-        fi
     - name: Build
       uses: lukka/run-cmake@v10
       with:
@@ -69,13 +69,13 @@ jobs:
         touch ./dist/roms/DELETE_ME
         mkdir -p ./dist/assets
         touch ./dist/assets/DELETE_ME
-        mv ./melonDS.exe ./dist/MelonMix.exe
-        cp ../../res/*.exe          ./dist/
-        cp ../../res/khDaysMM.ico   ./dist/MelonMix_KHDays.ico
-        cp ../../res/khCodedMM.ico  ./dist/MelonMix_KHReCoded.ico
-        cp ../../res/scripts/MelonMix_KHDays.bat       ./dist/MelonMix_KHDays.bat
-        cp ../../res/scripts/MelonMix_KHReCoded.bat    ./dist/MelonMix_KHReCoded.bat
-        cp ../../res/scripts/MelonMix_GameSelector.bat ./dist/MelonMix_GameSelector.bat
+        mv ./release-mingw-x86_64/melonDS.exe ./dist/MelonMix.exe
+        cp ../res/*.exe          ./dist/
+        cp ../res/khDaysMM.ico   ./dist/MelonMix_KHDays.ico
+        cp ../res/khCodedMM.ico  ./dist/MelonMix_KHReCoded.ico
+        cp ../res/scripts/MelonMix_KHDays.bat       ./dist/MelonMix_KHDays.bat
+        cp ../res/scripts/MelonMix_KHReCoded.bat    ./dist/MelonMix_KHReCoded.bat
+        cp ../res/scripts/MelonMix_GameSelector.bat ./dist/MelonMix_GameSelector.bat
     - uses: actions/upload-artifact@v7
       with:
         name: MelonMix-windows-${{ matrix.arch.name }}

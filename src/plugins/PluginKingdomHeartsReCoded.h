@@ -39,10 +39,7 @@ public:
     std::vector<ShapeData2D> renderer_topScreen_2DShapes() override;
     std::vector<ShapeData3D> renderer_topScreen_3DShapes() override;
     int renderer_gameSceneState() override;
-    int renderer_screenLayout() override;
     int renderer_brightnessMode() override;
-    float renderer_forcedAspectRatio() override;
-    bool renderer_showOriginalUI() override;
 
     void onLoadState() override;
 
@@ -99,7 +96,6 @@ private:
     int fullscreenMapSelectPressStep = 0;
     bool fullscreenMapShouldPreserveZoom = false;
 
-    std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};
     std::map<u32, int[3]> CompGpu3DLastValues{};
 
@@ -167,8 +163,8 @@ private:
     void muteStreamedMusic() override;
 
     bool isBufferBlack(unsigned int* buffer);
-    u32* topScreen2DTexture();
-    u32* bottomScreen2DTexture();
+    void* topScreen2DTexture();
+    void* bottomScreen2DTexture();
     bool isTopScreen2DTextureBlack();
     bool isBottomScreen2DTextureBlack();
 
@@ -188,7 +184,7 @@ private:
     bool isHealthVisible();
     ivec2 minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY);
     ivec2 minimapCenter();
-    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
+    bool has2DOnTopOf3DAt(void* buffer, int x, int y);
 
     void hudToggle() override;
     void toggleFullscreenMap();
