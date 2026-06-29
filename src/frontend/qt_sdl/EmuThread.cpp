@@ -866,10 +866,6 @@ void EmuThread::refreshPluginState()
         }
     }
 
-    if (emuInstance->plugin->isMouseCursorGrabbed()) {
-        QPoint point = mainWindow->panel->mapToGlobal(mainWindow->panel->rect().center());
-        QCursor::setPos(point);
-    }
     if (emuInstance->plugin->ShouldGrabMouseCursor()) {
         mainWindow->panel->setMouseTracking(true);
         mainWindow->panel->grabMouse();
