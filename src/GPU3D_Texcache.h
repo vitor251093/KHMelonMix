@@ -18,6 +18,7 @@
 
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash/xxhash.h"
+#include "xxhash_legacy/xxhash_legacy.h"
 
 namespace melonDS
 {
