@@ -1900,6 +1900,8 @@ bool EmuInstance::loadROM(QStringList filepath, bool reset, QString& errorstr)
             Config::Table& ref = const_cast <Config::Table&>(cfg);
             ref.SetString(path, value);
         });
+
+        Config::Save();
     }
 
     ndsSave = nullptr;

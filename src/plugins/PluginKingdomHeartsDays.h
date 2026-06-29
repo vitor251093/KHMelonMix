@@ -28,7 +28,7 @@ public:
 
     void loadLocalization();
     std::string saveFilePath();
-    bool shouldStartInFullscreen() override;
+    StartupWindowConfig startupWindowConfig() override;
     void onLoadROM() override;
     void onLoadState() override;
 
@@ -55,6 +55,9 @@ public:
     void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) override;
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) override;
+    std::string replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) override;
+    int cutsceneMenuLanguage() override;
+    std::string subtitleLanguageFolder();
     std::string localizationFilePath(std::string language) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) override;

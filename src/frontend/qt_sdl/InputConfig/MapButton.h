@@ -174,6 +174,7 @@ public:
         connect(this, &JoyMapButton::clicked, this, &JoyMapButton::onClick);
 
         timerID = 0;
+        mappingAtStart = 0;
     }
 
     ~JoyMapButton()
@@ -285,6 +286,44 @@ protected:
                 return;
             }
         }
+
+        // Try SDL's GameController API first (works when triggers are in the GC mapping).
+        SDL_GameController* gc = parentDialog->getController();
+        if (gc)
+        {
+            const SDL_GameControllerAxis triggers[] = {
+                SDL_CONTROLLER_AXIS_TRIGGERLEFT,
+                SDL_CONTROLLER_AXIS_TRIGGERRIGHT
+            };
+            for (SDL_GameControllerAxis axis : triggers)
+            {
+                if (SDL_GameControllerGetAxis(gc, axis) > 16384)
+                {
+                    *mapping = (oldmap & 0xFFFF) | 0x10000 | (2 << 20) | ((int)axis << 24);
+                    click();
+                    return;
+                }
+            }
+        }
+
+        // Raw HID fallback for NSO SNES via CoreHID (GC descriptor has no trigger entries).
+        // ZL = report[1] bit 6 (0x40), ZR = report[2] bit 7 (0x80), confirmed empirically.
+        const melonDS::u8* hr = parentDialog->pollAndGetHidReport();
+        if (hr[0] == 0x3F)
+        {
+            if (hr[1] & 0x40)
+            {
+                *mapping = (oldmap & 0xFFFF) | 0x10000 | (2 << 20) | (SDL_CONTROLLER_AXIS_TRIGGERLEFT << 24);
+                click();
+                return;
+            }
+            if (hr[2] & 0x80)
+            {
+                *mapping = (oldmap & 0xFFFF) | 0x10000 | (2 << 20) | (SDL_CONTROLLER_AXIS_TRIGGERRIGHT << 24);
+                click();
+                return;
+            }
+        }
     }
 
     void timerEvent(QTimerEvent* event) override
@@ -302,6 +341,7 @@ private slots:
     {
         if (isChecked())
         {
+            mappingAtStart = *mapping;
             setText("[press button/axis]");
             timerID = startTimer(50);
 
@@ -325,6 +365,8 @@ private slots:
         {
             setText(mappingText());
             if (timerID) { killTimer(timerID); timerID = 0; }
+            if (*mapping != mappingAtStart && parentDialog)
+                parentDialog->notifyJoystickBindingChanged();
         }
     }
 
@@ -387,6 +429,7 @@ private:
     bool isHotkey;
 
     int timerID;
+    int mappingAtStart;
     int axesRest[16];
 };
 

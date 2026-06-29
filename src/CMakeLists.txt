@@ -94,6 +94,8 @@ add_library(core STATIC
     sha1/sha1.c
     tiny-AES-c/aes.c
     xxhash/xxhash.c
+    xxhash_legacy/xxhash.c
+    xxhash_legacy/xxhash_legacy.c
 
     blip-buf/blip_buf.c)
 

@@ -430,6 +430,7 @@ void PluginKingdomHeartsDays::overrideConfigs(
     if (AutomaticallyMapJoysticks)
     {
         overrideJoystickMappings(setIntConfig);
+        setBoolConfig(tomlUniqueIdentifier() + ".JoystickDefaultsApplied", true);
     }
 
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
@@ -477,7 +478,8 @@ void PluginKingdomHeartsDays::overrideJoystickMappings(std::function<void(std::s
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
     if (config == nullptr)
     {
-        KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+        if (!JoystickDefaultsApplied)
+            KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
         return;
     }
 
@@ -516,13 +518,19 @@ std::string PluginKingdomHeartsDays::saveFilePath()
     return saveFilePathStr + saveFileName;
 }
 
-bool PluginKingdomHeartsDays::shouldStartInFullscreen() {
+StartupWindowConfig PluginKingdomHeartsDays::startupWindowConfig()
+{
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
-    if (config == nullptr)
-    {
-        return FullscreenOnStartup;
+    if (config == nullptr) {
+        return { FullscreenOnStartup ? 1 : -1, 0, 0 };
     }
-    return config->windowMode == 0;
+    // Launcher display mode: 0 = fullscreen, 1 = borderless, 2 = windowed.
+    StartupWindowConfig result;
+    result.mode = config->windowMode;
+    result.width = config->resolutionWidth;
+    result.height = config->resolutionHeight;
+    delete config;
+    return result;
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
@@ -1938,6 +1946,11 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
         return;
     }
 
+    // While the cutscene Skip/Continue menu is open, the d-pad navigates it.
+    if (_superApplyAddonKeysToCutsceneMenu(AddonMask, AddonPress, HK_CommandMenuUp, HK_CommandMenuDown)) {
+        return;
+    }
+
     if ((*AddonPress) & (1 << HK_HUDToggle)) {
         hudToggle();
     }
@@ -2833,6 +2846,53 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
     }
     */
 
+    return "";
+}
+
+// The active language for cutscenes follows the cart region: USA is always English and JP always
+// Japanese, while the EU cart picks its language from the DS system (firmware) settings - the
+// same value the EU game itself reads to choose its in-game language. Returned in DS firmware
+// Language order (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es); shared by the subtitle folder and the
+// pause-menu localization.
+int PluginKingdomHeartsDays::cutsceneMenuLanguage() {
+    if (isUsaCart()) {
+        return 1; // English
+    }
+    if (isJapanCart()) {
+        return 0; // Japanese
+    }
+    // EU cart: map the firmware language (see Firmware::Language) to a 0-5 index.
+    int language = nds->SPI.GetFirmware().GetEffectiveUserData().Settings & 0x7;
+    if (language < 0 || language > 5) {
+        return 1; // English for anything unexpected
+    }
+    return language;
+}
+
+std::string PluginKingdomHeartsDays::subtitleLanguageFolder() {
+    switch (cutsceneMenuLanguage()) {
+        // BCP 47/IETF
+        case 0:  return "jp"; // Japanese
+        case 2:  return "fr"; // French
+        case 3:  return "de"; // German
+        case 4:  return "it"; // Italian
+        case 5:  return "es"; // Spanish
+        default: return "en"; // English (1)
+    }
+}
+
+std::string PluginKingdomHeartsDays::replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) {
+    if (!SubtitlesEnabled) {
+        return "";
+    }
+    std::filesystem::path subtitlesFolderPath = gameAssetsFolderPath() / "subtitles" /
+        std::filesystem::u8path(subtitleLanguageFolder()) / "cinematics";
+    for (const char* name : { cutscene->MmName, cutscene->DsName }) {
+        std::filesystem::path fullPath = subtitlesFolderPath / (std::string(name) + ".srt");
+        if (std::filesystem::exists(fullPath)) {
+            return fullPath.u8string();
+        }
+    }
     return "";
 }
 

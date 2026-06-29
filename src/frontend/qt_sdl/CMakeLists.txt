@@ -22,6 +22,7 @@ set(SOURCES_QT_SDL
     InputConfig/MapButton.h
     InputConfig/resources/ds.qrc
     MainWindow/MainWindowSettings.cpp
+    MainWindow/CutsceneVideoView.cpp
     MainWindow/MapButton.h
     MainWindow/resources/ds.qrc
     MainWindow/AudioSource.cpp

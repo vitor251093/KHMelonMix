@@ -155,6 +155,7 @@ signals:
     void autoScreenSizingChange(int sizing);
 
     void windowFullscreenToggle();
+    void windowSetDisplayMode(int mode, int width, int height);
 
     void swapScreensToggle();
     void screenEmphasisToggle();
@@ -170,10 +171,15 @@ signals:
     void windowUpdateBgmMusicVolume(quint8 volume);
     void windowStopAllBgm();
 
-    void windowStartVideo(QString videoFilePath);
+    void windowStartVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage);
     void windowStopVideo();
     void windowPauseVideo();
     void windowUnpauseVideo();
+
+    void windowShowCutsceneSkipMenu(int selection);
+    void windowUpdateCutsceneSkipMenu(int selection);
+    void windowHideCutsceneSkipMenu();
+    void windowPlayCutsceneMenuSound(int kind);
 
 private:
     MainWindow* mainWindow;

@@ -80,6 +80,7 @@ void EmuThread::attachWindow(MainWindow* window)
     connect(this, SIGNAL(windowEmuReset()), window, SLOT(onEmuReset()));
     connect(this, SIGNAL(autoScreenSizingChange(int)), window->panel, SLOT(onAutoScreenSizingChanged(int)));
     connect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
+    connect(this, SIGNAL(windowSetDisplayMode(int,int,int)), window, SLOT(onSetDisplayMode(int,int,int)));
     connect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
     if (window->winHasMenu())
@@ -97,10 +98,15 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
         connect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
 
-        connect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+        connect(this, SIGNAL(windowStartVideo(QString,QString,int)), window, SLOT(asyncStartVideo(QString,QString,int)));
         connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
         connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         connect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
+
+        connect(this, SIGNAL(windowShowCutsceneSkipMenu(int)), window, SLOT(asyncShowCutsceneSkipMenu(int)));
+        connect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
+        connect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
+        connect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
     }
 }
 
@@ -113,6 +119,7 @@ void EmuThread::detachWindow(MainWindow* window)
     disconnect(this, SIGNAL(windowEmuReset()), window, SLOT(onEmuReset()));
     disconnect(this, SIGNAL(autoScreenSizingChange(int)), window->panel, SLOT(onAutoScreenSizingChanged(int)));
     disconnect(this, SIGNAL(windowFullscreenToggle()), window, SLOT(onFullscreenToggled()));
+    disconnect(this, SIGNAL(windowSetDisplayMode(int,int,int)), window, SLOT(onSetDisplayMode(int,int,int)));
     disconnect(this, SIGNAL(screenEmphasisToggle()), window, SLOT(onScreenEmphasisToggled()));
 
     if (window->winHasMenu())
@@ -130,10 +137,15 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
         disconnect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
 
-        disconnect(this, SIGNAL(windowStartVideo(QString)), window, SLOT(asyncStartVideo(QString)));
+        disconnect(this, SIGNAL(windowStartVideo(QString,QString,int)), window, SLOT(asyncStartVideo(QString,QString,int)));
         disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
         disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         disconnect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
+
+        disconnect(this, SIGNAL(windowShowCutsceneSkipMenu(int)), window, SLOT(asyncShowCutsceneSkipMenu(int)));
+        disconnect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
+        disconnect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
+        disconnect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
     }
 }
 
@@ -233,8 +245,12 @@ void EmuThread::run()
             }
             if (shouldStartPlugin)
             {
-                if (emuInstance->plugin->shouldStartInFullscreen()) {
-                    emit windowFullscreenToggle();
+                // Apply the launcher's chosen display mode at game start
+                // (0 = fullscreen, 1 = borderless, 2 = windowed; -1 = leave as-is).
+                // The launcher's resolution sizes the window in windowed mode.
+                Plugins::StartupWindowConfig windowConfig = emuInstance->plugin->startupWindowConfig();
+                if (windowConfig.mode >= 0) {
+                    emit windowSetDisplayMode(windowConfig.mode, windowConfig.width, windowConfig.height);
                 }
                 emuInstance->inputLoadConfig();
 
@@ -862,6 +878,33 @@ void EmuThread::refreshPluginState()
         emit windowUnpauseVideo();
     }
 
+    if (emuInstance->plugin->ShouldPauseCutsceneEmulation()) {
+        // Freeze the whole emulator (not just the video) while the cutscene is
+        // paused, so the background DS emulation stays in sync with the video.
+        emuStatus = emuStatus_Paused;
+    }
+
+    if (emuInstance->plugin->ShouldResumeCutsceneEmulation()) {
+        emuStatus = emuStatus_Running;
+        enableInvisibleFastMode = true;
+    }
+
+    if (emuInstance->plugin->ShouldShowCutsceneSkipMenu()) {
+        emit windowShowCutsceneSkipMenu(emuInstance->plugin->CutsceneSkipMenuSelection());
+    }
+
+    if (emuInstance->plugin->ShouldUpdateCutsceneSkipMenu()) {
+        emit windowUpdateCutsceneSkipMenu(emuInstance->plugin->CutsceneSkipMenuSelection());
+    }
+
+    if (emuInstance->plugin->ShouldHideCutsceneSkipMenu()) {
+        emit windowHideCutsceneSkipMenu();
+    }
+
+    if (int menuSound = emuInstance->plugin->CutsceneMenuSoundToPlay()) {
+        emit windowPlayCutsceneMenuSound(menuSound);
+    }
+
     if (emuInstance->plugin->ShouldReturnToGameAfterCutscene()) {
         emuStatus = emuStatus_Running;
         disableInvisibleFastMode = true;
@@ -887,7 +930,9 @@ void EmuThread::refreshPluginState()
 
                 emuStatus = emuStatus_Paused;
                 QString filePath = QString::fromUtf8(path.c_str());
-                emit windowStartVideo(filePath);
+                std::string subtitlesPath = emuInstance->plugin->replacementCutsceneSubtitlesFilePath(cutscene);
+                QString subtitlesFilePath = QString::fromUtf8(subtitlesPath.c_str());
+                emit windowStartVideo(filePath, subtitlesFilePath, emuInstance->plugin->cutsceneMenuLanguage());
             }
         }
     }

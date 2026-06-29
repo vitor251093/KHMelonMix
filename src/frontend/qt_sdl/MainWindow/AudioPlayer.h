@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QAudioSink>
+#include <QScopedPointer>
+#include <QTimer>
 
 namespace melonMix {
 
@@ -38,9 +40,11 @@ private:
 
     QScopedPointer<AudioSource> m_audioSource;
     QScopedPointer<QAudioSink> m_audioOutput;
+    QScopedPointer<QTimer> m_cleanupTimer;
 
     quint16 m_bgmId = 0;
     bool m_playing = false;
+    bool m_fadeCompleted = false;
 };
 
 } // namespace melonMix

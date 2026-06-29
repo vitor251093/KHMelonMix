@@ -164,7 +164,10 @@ public:
     int getJoystickUniqueIdById(int id);
     int getJoystickIdByUniqueId(int uniqueId);
     SDL_Joystick* getJoystick() { return joystick; }
+    SDL_GameController* getController() { return controller; }
     std::shared_ptr<SDL_mutex> getJoyMutex() { return joyMutex; }
+    const melonDS::u8* getHidReport() const { return hidReport; }
+    void pollHidReport();
 
     std::vector<int> heldKeys;
     std::vector<int> keyStrokes;
@@ -381,6 +384,8 @@ private:
     int joystickUniqueID;
     SDL_Joystick* joystick;
     SDL_GameController* controller;
+    SDL_hid_device* hidDevice = nullptr;
+    melonDS::u8 hidReport[64];
     bool hasAccelerometer = false;
     bool hasGyroscope = false;
     bool hasRumble = false;

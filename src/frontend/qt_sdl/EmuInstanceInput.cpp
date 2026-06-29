@@ -114,6 +114,8 @@ void EmuInstance::inputInit()
 
     joystick = nullptr;
     controller = nullptr;
+    hidDevice = nullptr;
+    memset(hidReport, 0, sizeof(hidReport));
     hasRumble = false;
     hasAccelerometer = false;
     hasGyroscope = false;
@@ -132,10 +134,11 @@ void EmuInstance::inputDeInit()
 void EmuInstance::inputLoadConfig()
 {
     SDL_LockMutex(joyMutex.get());
-    setJoystickByUniqueId(localCfg.GetInt("JoystickUniqueID"));
+    int savedUniqueId = localCfg.GetInt("JoystickUniqueID");
+    setJoystickByUniqueId(savedUniqueId);
 
     Config::Table keycfg = localCfg.GetTable("Keyboard");
-    Config::Table joycfg = localCfg.GetTable("Joystick." + std::to_string(joystickUniqueID));
+    Config::Table joycfg = localCfg.GetTable("Joystick." + std::to_string(savedUniqueId));
 
     for (int i = 0; i < 12; i++)
     {
@@ -252,7 +255,7 @@ void EmuInstance::setJoystick(int id)
     SDL_LockMutex(joyMutex.get());
     joystickID = id;
     joystickUniqueID = uniqueId;
-    openJoystick();
+    closeJoystick();  // let EmuThread re-open on next inputProcess() — avoids blocking main thread
     SDL_UnlockMutex(joyMutex.get());
 }
 
@@ -268,7 +271,7 @@ void EmuInstance::setJoystickByUniqueId(int uniqueId)
     SDL_LockMutex(joyMutex.get());
     joystickID = id;
     joystickUniqueID = uniqueId;
-    openJoystick();
+    closeJoystick();  // let EmuThread re-open on next inputProcess() — avoids blocking main thread
     SDL_UnlockMutex(joyMutex.get());
 }
 
@@ -320,9 +323,7 @@ void EmuInstance::openJoystick()
     joystick = SDL_JoystickOpen(joystickID);
 
     if (SDL_IsGameController(joystickID))
-    {
         controller = SDL_GameControllerOpen(joystickID);
-    }
 
     if (controller)
     {
@@ -338,6 +339,33 @@ void EmuInstance::openJoystick()
         {
             hasGyroscope = SDL_GameControllerSetSensorEnabled(controller, SDL_SENSOR_GYRO, SDL_TRUE) == 0;
         }
+
+        // If the GC descriptor has no trigger mapping (CoreHID/Apple VID after device switch),
+        // open a raw HID channel to the Nintendo device for ZL/ZR detection.
+        SDL_GameControllerButtonBind trigBind =
+            SDL_GameControllerGetBindForAxis(controller, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+        if (trigBind.bindType == SDL_CONTROLLER_BINDTYPE_NONE)
+        {
+            if (hidDevice) { SDL_hid_close(hidDevice); hidDevice = nullptr; }
+            hidDevice = SDL_hid_open(0x057E, 0x2017, NULL);
+            if (hidDevice)
+            {
+                // Drain the initial wakeup report (byte-identical to ZL pressed).
+                // Without this drain hidReport[1] would stay 0x40 → persistent false ZL.
+                u8 drain[64];
+                SDL_hid_read_timeout(hidDevice, drain, sizeof(drain), 50);
+                if (SDL_hid_set_nonblocking(hidDevice, 1) != 0)
+                {
+                    SDL_hid_close(hidDevice);
+                    hidDevice = nullptr;
+                }
+                else
+                {
+                    while (SDL_hid_read(hidDevice, drain, sizeof(drain)) > 0) {}
+                }
+            }
+            memset(hidReport, 0, sizeof(hidReport));
+        }
     }
 }
 
@@ -350,12 +378,19 @@ void EmuInstance::closeJoystick()
         hasRumble = false;
         hasAccelerometer = false;
         hasGyroscope = false;
+        isRumbling = false;
     }
     if (joystick)
     {
         SDL_JoystickClose(joystick);
         joystick = nullptr;
     }
+    if (hidDevice)
+    {
+        SDL_hid_close(hidDevice);
+        hidDevice = nullptr;
+    }
+    memset(hidReport, 0, sizeof(hidReport));
 }
 
 
@@ -513,12 +548,39 @@ Sint16 EmuInstance::joystickButtonDown(int val)
             break;
 
         case 2: // trigger
-            if (axisval > 0) return 1;
+        {
+            Sint16 trigval;
+            if (controller && (axisnum == SDL_CONTROLLER_AXIS_TRIGGERLEFT
+                            || axisnum == SDL_CONTROLLER_AXIS_TRIGGERRIGHT))
+                trigval = SDL_GameControllerGetAxis(controller, (SDL_GameControllerAxis)axisnum);
+            else
+                trigval = axisval;
+            if (trigval == 0 && hidReport[0] == 0x3F)
+            {
+                bool pressed = (axisnum == SDL_CONTROLLER_AXIS_TRIGGERLEFT)
+                    ? (hidReport[1] & 0x40) != 0
+                    : (hidReport[2] & 0x80) != 0;
+                if (pressed) trigval = 32767;
+            }
+            if (trigval > 16384) return 1;
             break;
+        }
         }
     }
 
     return 0;
+}
+
+void EmuInstance::pollHidReport()
+{
+    if (!hidDevice) return;
+    u8 buf[64];
+    int n;
+    while ((n = SDL_hid_read(hidDevice, buf, sizeof(buf))) != 0)
+    {
+        if (n < 0) { SDL_hid_close(hidDevice); hidDevice = nullptr; memset(hidReport, 0, sizeof(hidReport)); break; }
+        if (n >= 3 && buf[0] == 0x3F) memcpy(hidReport, buf, n);
+    }
 }
 
 void EmuInstance::inputProcess()
@@ -538,6 +600,8 @@ void EmuInstance::inputProcess()
     {
         openJoystick();
     }
+
+    pollHidReport();
 
     joyInputMask = 0xFFF;
     joyTouchInputMask = 0xFFFF;

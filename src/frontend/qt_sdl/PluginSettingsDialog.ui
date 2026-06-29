@@ -147,7 +147,7 @@
       <string>Plugin settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="6" column="0">
+      <item row="10" column="0">
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Vertical</enum>
@@ -177,7 +177,7 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0" colspan="2">
+      <item row="9" column="0" colspan="2">
        <widget class="QComboBox" name="cbxAudioPack">
         <property name="whatsThis">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Replaces the audio tracks of the game with an installed audio pack. Requires a plugin to be properly developed for that specific game.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -206,7 +206,7 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0" colspan="2">
+      <item row="8" column="0" colspan="2">
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Replacement Audio Pack:</string>
@@ -227,6 +227,26 @@
        <widget class="QCheckBox" name="cbDaysDisableHisMemories">
         <property name="text">
          <string>(Days) Disable &quot;His&quot; Memories</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="2">
+       <widget class="QCheckBox" name="cbInstantSkipCutscene">
+        <property name="whatsThis">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, pressing Start during a pre-rendered HD cutscene skips it instantly. When disabled (default), Start pauses the cutscene and shows a Skip/Continue menu.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Skip cutscenes instantly on Start (no pause menu)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0" colspan="2">
+       <widget class="QCheckBox" name="cbShowSubtitles">
+        <property name="whatsThis">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, displays subtitles over HD cutscenes (when a subtitle file is available for the cutscene). The language follows the game's region/system language.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Show subtitles on HD cutscenes</string>
         </property>
        </widget>
       </item>

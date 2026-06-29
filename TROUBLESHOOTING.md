@@ -25,6 +25,13 @@ You need to dump your own DS cartridge. There are multiple ways to do so. Those 
 2. If you are using the bat/sh file, be sure that you are running those from the folder where the Melon Mix application is. They won't work otherwise.
 3. If you are running the Melon Mix from Steam, open the game properties through Steam, and be sure that you filled the "Start in" field with the folder where the Melon Mix application is. It won't work otherwise.
 
+## If I launch Melon Mix through the bat files, it says the ROM was not detected
+
+1. Confirm if your `roms/days.nds` and/or `roms/recoded.nds` files are in the correct location, and have the correct names.
+2. Double-check if they don't have any hidden extensions (one of them may be named `days.nds.nds`, for example). You can verify that in the file Properties.
+3. If you are using Windows 11, check if Smart App Control isn't blocking the bat file from working properly.
+4. If you are using Windows 11, also try rebooting your computer; bricky updates can cause that kind of issue.
+
 ## I can't see one or more cutscenes in Re:Coded
 
 We are currently only replacing the Days cutscenes, and not the Re:Coded ones. If you were not aware of that, double check if you really have an issue.
@@ -34,6 +41,14 @@ We are currently only replacing the Days cutscenes, and not the Re:Coded ones. I
 1. (Windows only) Using the Windows search function, open the system "Graphics Settings". Browse to the Melon Mix directory and select the executable (exe file). This will add it to the list. Edit its Options, and then switch it to "High performance".
 2. Try reducing the internal resolution.
 3. Try enabling the JIT Recompiler (Emu Settings -> CPU emulation).
+
+## I was playing using the HD Collection, but now I want to play without it, and Melon Mix can't find my save
+That's because the HD collection uses the cloud save location. If you want to stop using the HD collection, you need to get the save, and then move it to the roms folders.
+
+1. On Windows, go to your user's Documents folder. On Linux, right click the game on Steam, press Manage -> Browse local files, go up two folders, and then open "compatdata" / "2552430" / "pfx" / "drive_c" / "users" / "steamuser" / "Documents".
+2. Open "My Games" / "KINGDOM HEARTS HD 1.5+2.5 ReMIX" / "Steam". You will find a single folder there; open it.
+3. Inside that folder, you will find the save files and configs of the 1.5+2.5 collection, plus your Days save, named KHDAYS_WW.sav.
+4. Copy it to your roms folder, rename it to days.sav (you will need to rename the other days.sav file in there to something else) and you will be good to go.
 
 ## How can I play the game in ultrawide aspect ratio?
 On the title bar menu, go to View -> "Aspect Ratio" and change the aspect ratio to "Top window". Then, resize the window to fill your monitor, and reset the game. Upon loading your save, the game is going to run in whichever aspect ratio the window is at this moment.

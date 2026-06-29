@@ -358,6 +358,7 @@ void PluginKingdomHeartsReCoded::overrideConfigs(
     if (AutomaticallyMapJoysticks)
     {
         overrideJoystickMappings(setIntConfig);
+        setBoolConfig(tomlUniqueIdentifier() + ".JoystickDefaultsApplied", true);
     }
 
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
@@ -405,7 +406,8 @@ void PluginKingdomHeartsReCoded::overrideJoystickMappings(std::function<void(std
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
     if (config == nullptr)
     {
-        KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+        if (!JoystickDefaultsApplied)
+            KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
         return;
     }
 
@@ -444,13 +446,19 @@ std::string PluginKingdomHeartsReCoded::saveFilePath()
     return saveFilePathStr + saveFileName;
 }
 
-bool PluginKingdomHeartsReCoded::shouldStartInFullscreen() {
+StartupWindowConfig PluginKingdomHeartsReCoded::startupWindowConfig()
+{
     KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
-    if (config == nullptr)
-    {
-        return FullscreenOnStartup;
+    if (config == nullptr) {
+        return { FullscreenOnStartup ? 1 : -1, 0, 0 };
     }
-    return config->windowMode == 0;
+    // Launcher display mode: 0 = fullscreen, 1 = borderless, 2 = windowed.
+    StartupWindowConfig result;
+    result.mode = config->windowMode;
+    result.width = config->resolutionWidth;
+    result.height = config->resolutionHeight;
+    delete config;
+    return result;
 }
 
 void PluginKingdomHeartsReCoded::loadLocalization() {
@@ -1917,6 +1925,11 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
         return;
     }
 
+    // While the cutscene Skip/Continue menu is open, the d-pad navigates it.
+    if (_superApplyAddonKeysToCutsceneMenu(AddonMask, AddonPress, HK_CommandMenuUp, HK_CommandMenuDown)) {
+        return;
+    }
+
     if ((*AddonPress) & (1 << HK_HUDToggle)) {
         hudToggle();
     }
@@ -2757,6 +2770,24 @@ CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutscene
     }
 
     return cutscene1;
+}
+
+// Language for the HD cutscene pause menu, following the cart region (USA->English,
+// JP->Japanese, EU->firmware language). Returned in DS firmware Language order
+// (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es).
+int PluginKingdomHeartsReCoded::cutsceneMenuLanguage()
+{
+    if (isUsaCart()) {
+        return 1; // English
+    }
+    if (isJapanCart()) {
+        return 0; // Japanese
+    }
+    int language = nds->SPI.GetFirmware().GetEffectiveUserData().Settings & 0x7;
+    if (language < 0 || language > 5) {
+        return 1; // English for anything unexpected
+    }
+    return language;
 }
 
 u8 PluginKingdomHeartsReCoded::getU8ByCart(u8 usAddress, u8 euAddress, u8 jpAddress)

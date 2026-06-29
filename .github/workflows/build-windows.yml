@@ -19,22 +19,24 @@ env:
 
 jobs:
   build:
-    runs-on: windows-2025
-    defaults:
-      run:
-        shell: msys2 {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - name: x86_64
+            image: windows-2025-vs2026
+          - name: arm64
+            image: windows-11-arm
+
+    name: ${{ matrix.arch.name }}
+    runs-on: ${{ matrix.arch.image }}
     env:
       VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
     steps:
     - name: Check out sources
       uses: actions/checkout@v6
-    - name: Set up MSYS2
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: ucrt64
-        update: true
-        pacboy: gcc:p cmake:p ninja:p make:p
     - name: Set Version Suffix
+      shell: bash
       run: |
         if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
           TIMESTAMP=$(date +'%Y%m%d%H%M')
@@ -51,18 +53,22 @@ jobs:
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgJsonGlob: vcpkg.json
-    - name: Configure
-      run: cmake --preset=release-mingw-x86_64 -DMELONDS_EMBED_BUILD_INFO=ON
     - name: Build
-      run: cmake --build --preset=release-mingw-x86_64
+      uses: lukka/run-cmake@v10
+      with:
+        configurePreset: release-windows-${{ matrix.arch.name }}
+        configurePresetAdditionalArgs: "['-DENABLE_DEBUG_DEPS=OFF', '-DMELONDS_EMBED_BUILD_INFO=ON']"
+        buildPreset: release-windows-${{ matrix.arch.name }}
     - name: Preparing artifacts
-      working-directory: ${{runner.workspace}}\KHMelonMix\build
+      shell: bash
+      working-directory: ${{runner.workspace}}\KHMelonMix\build\release-windows-${{ matrix.arch.name }}
       run: |
         rm -rf dist || true
         mkdir dist
         mkdir -p ./dist/roms
         touch ./dist/roms/DELETE_ME
-        cp -r ../assets ./dist/assets
+        mkdir -p ./dist/assets
+        touch ./dist/assets/DELETE_ME
         mv ./release-mingw-x86_64/melonDS.exe ./dist/MelonMix.exe
         cp ../res/*.exe          ./dist/
         cp ../res/khDaysMM.ico   ./dist/MelonMix_KHDays.ico
@@ -72,10 +78,10 @@ jobs:
         cp ../res/scripts/MelonMix_GameSelector.bat ./dist/MelonMix_GameSelector.bat
     - uses: actions/upload-artifact@v7
       with:
-        name: MelonMix-windows-x86_64
-        path: ${{runner.workspace}}\KHMelonMix\build\dist
+        name: MelonMix-windows-${{ matrix.arch.name }}
+        path: ${{runner.workspace}}\KHMelonMix\build\release-windows-${{ matrix.arch.name }}\dist
     - name: Save vcpkg cache
       uses: actions/cache/save@v4
       with:
         path: ${{ github.workspace }}/vcpkg_cache
-        key: vcpkg-x86_64-mingw-${{ hashFiles('vcpkg.json') }}
+        key: vcpkg-${{ matrix.arch.name }}-windows-${{ hashFiles('vcpkg.json') }}
