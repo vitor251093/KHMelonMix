@@ -39,6 +39,7 @@ Join our [Discord](https://discord.gg/AhRscvkqB9) to keep in touch with the late
 - Command menu controls
 - Camera controls (analog stick)
 - Lock On and Switch target as separate controls
+- Pause functionality to HD cutscenes
 - Optional DS cutscene to HD cutscene replacement (Days only, for now)
 - Optional remastered BGM replacement
 - Optional integration with the 1.5+2.5 collection
@@ -49,7 +50,6 @@ Join our [Discord](https://discord.gg/AhRscvkqB9) to keep in touch with the late
 - Camera Mode
 - Menus adapted to a single screen
 - Camera controls (mouse/touchpad)
-- Pause functionality to HD cutscenes
 - Lua support
 
 ## Which other features are being considered?
