@@ -26,6 +26,7 @@ jobs:
 
     name: ${{ matrix.arch }}
     runs-on: macos-26
+    timeout-minutes: 90
 
     env:
       VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg_cache,readwrite
@@ -84,7 +85,7 @@ jobs:
     name: Universal binary
     needs: [build-macos]
     runs-on: macos-26
-    continue-on-error: true
+    timeout-minutes: 20
     steps:
       - name: Download x86_64
         uses: actions/download-artifact@v8
@@ -114,3 +115,4 @@ jobs:
         with:
           name: MelonMix-macOS-universal
           path: MelonMix-macOS-universal.zip
+          archive: false
