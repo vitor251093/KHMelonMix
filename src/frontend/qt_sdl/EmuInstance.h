@@ -164,7 +164,9 @@ public:
     int getJoystickUniqueIdById(int id);
     int getJoystickIdByUniqueId(int uniqueId);
     SDL_Joystick* getJoystick() { return joystick; }
+    void ensureJoystickOpen();  // close a detached handle and (re)open one if available; thread-safe
     int getJoyMapping(int index) const { return joyMapping[index]; }
+    int getHotkeyKey(int hk) const { return hkKeyMapping[hk]; }
     SDL_GameController* getController() { return controller; }
     std::shared_ptr<SDL_mutex> getJoyMutex() { return joyMutex; }
     const melonDS::u8* getHidReport() const { return hidReport; }
@@ -174,8 +176,7 @@ public:
     std::vector<int> keyStrokes;
 
     Plugins::Plugin* plugin = nullptr;
-    bool settingsViewOpen = false;
-    void triggerHotkeyPress(int hk) { keyHotkeyMask |= (1 << hk); }
+    std::atomic<bool> settingsViewOpen {false};
 
     void touchScreen(int x, int y);
     void releaseScreen();

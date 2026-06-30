@@ -42,9 +42,9 @@
 #include <QCommandLineParser>
 #include <QDesktopServices>
 #include <QStackedWidget>
+#include <QTimer>
 #ifndef _WIN32
 #include <QGuiApplication>
-#include <QShortcut>
 #include <QSocketNotifier>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -628,6 +628,10 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
         {
             QMenu * menu = menubar->addMenu("Config");
 
+            actGameSettings = menu->addAction("Game Settings...");
+            connect(actGameSettings, &QAction::triggered, this, &MainWindow::onToggleSettings);
+            menu->addSeparator();
+
             actPluginSettings = menu->addAction("Plugin settings");
             connect(actPluginSettings, &QAction::triggered, this, &MainWindow::onOpenPluginSettings);
 
@@ -824,14 +828,16 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
     connect(settingsView, SIGNAL(settingsClosed()), this, SLOT(onSettingsClosed()));
     connect(settingsView, SIGNAL(quitGameConfirmed()), this, SLOT(onQuitGameConfirmed()));
 
-    QShortcut* f10sc = new QShortcut(QKeySequence(Qt::Key_F10), this);
-    connect(f10sc, &QShortcut::activated, this, [this]() {
-        QStackedWidget* cw = (QStackedWidget*)centralWidget();
-        if (settingsView && cw->currentWidget() == settingsView) return;
-        if (emuThread->emuIsActive())
-            emuInstance->triggerHotkeyPress(HK_OpenSettings);
-        else
-            onOpenSettingsOverlay();
+    // Config is loaded by now (inputInit/inputLoadConfig runs before the window is built), so the
+    // Game Settings shortcut reflects the real HK_OpenSettings binding.
+    refreshSettingsShortcut();
+
+    // Become the macOS key window at launch even when started from a terminal/IDE (otherwise the
+    // window isn't focused until clicked). Deferred so it runs once the event loop / native window
+    // are ready.
+    QTimer::singleShot(0, this, [this]() {
+        raise();
+        activateWindow();
     });
 }
 
@@ -953,6 +959,9 @@ void MainWindow::showGame()
 {
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(panel);
+    // Give the game panel keyboard focus so F10 (and game input) works without a priming click.
+    // Reached at startup (via createScreenPanel) and on cutscene end.
+    if (panel) panel->setFocus();
 }
 
 GL::Context* MainWindow::getOGLContext()
@@ -1025,13 +1034,15 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     QStackedWidget* cw = (QStackedWidget*)centralWidget();
     if (settingsView && cw->currentWidget() == settingsView)
     {
-        if (event->type() == QEvent::KeyPress)
-            QApplication::sendEvent(settingsView, event);
+        QApplication::sendEvent(settingsView, event);
         return;
     }
 
     MainWindowSettings::keyPressEvent(event);
     emuInstance->onKeyPress(event);
+    // Opening the settings overlay by keyboard is handled by the "Game Settings" menu action's
+    // shortcut (onToggleSettings) so the key is claimed by Qt's shortcut system — a raw
+    // keyPressEvent check would miss bare function keys on macOS.
 }
 
 void MainWindow::keyReleaseEvent(QKeyEvent* event)
@@ -1154,6 +1165,11 @@ void MainWindow::onAppStateChanged(Qt::ApplicationState state)
     {
         if (pauseOnLostFocus && !pausedManually)
             emuThread->emuUnpause();
+        // Focus the visible page whenever the app becomes active (launch, Cmd-Tab) so the keyboard
+        // works without a priming click.
+        QStackedWidget* cw = (QStackedWidget*)centralWidget();
+        if (cw && cw->currentWidget())
+            cw->currentWidget()->setFocus();
     }
 }
 
@@ -1983,6 +1999,8 @@ void MainWindow::onOpenInputConfig()
 void MainWindow::onInputConfigFinished(int res)
 {
     emuThread->emuUnpause();
+    // HK_OpenSettings may have been rebound in the input config dialog.
+    refreshSettingsShortcut();
 }
 
 void MainWindow::onOpenPluginSettings()
@@ -2417,10 +2435,32 @@ void MainWindow::onScreenEmphasisToggled()
     emit screenLayoutChange();
 }
 
+// Single entry point for the Game Settings menu action and its keyboard shortcut. Toggles the
+// overlay (the same key/menu closes it); opening while a game runs goes through EmuThread so the
+// same pause bookkeeping as the HK_OpenSettings hotkey runs.
+void MainWindow::onToggleSettings()
+{
+    QStackedWidget* cw = (QStackedWidget*)centralWidget();
+    if (!settingsView) return;
+    if (cw->currentWidget() == settingsView) { onSettingsClosed(); return; } // toggle off
+    if (emuThread->emuIsActive())
+        emuThread->requestOpenSettings();
+    else
+        onOpenSettingsOverlay();
+}
+
+// Keep the Game Settings menu shortcut in sync with the configurable HK_OpenSettings binding.
+void MainWindow::refreshSettingsShortcut()
+{
+    if (actGameSettings)
+        actGameSettings->setShortcut(QKeySequence(emuInstance->getHotkeyKey(HK_OpenSettings)));
+}
+
 void MainWindow::onOpenSettingsOverlay()
 {
     QStackedWidget* cw = (QStackedWidget*)centralWidget();
     if (cw->currentWidget() == settingsView) return;
+    emuInstance->settingsViewOpen = true;
     m_previousWidget = cw->currentWidget();
     if (isVideoPlaying())
     {
@@ -2429,6 +2469,10 @@ void MainWindow::onOpenSettingsOverlay()
     }
     cw->setCurrentWidget(settingsView);
     settingsView->resetToFirstScreen();
+    // Grab keyboard focus so the overlay is navigable immediately (no extra click). The prior
+    // page is the native GL panel; if the first keypress is ever dropped, defer this one event
+    // loop turn via QTimer::singleShot(0, ...).
+    settingsView->setFocus();
 }
 
 void MainWindow::onSettingsClosed()
@@ -2442,7 +2486,14 @@ void MainWindow::onSettingsClosed()
             unpauseVideo();
     }
     if (m_previousWidget)
+    {
         cw->setCurrentWidget(m_previousWidget);
+        // Return keyboard focus to the restored page (game panel or cutscene view); both bubble
+        // key events up to MainWindow::keyPressEvent.
+        m_previousWidget->setFocus();
+    }
+    // A rebind made in the overlay's Keyboard screen may have changed HK_OpenSettings.
+    refreshSettingsShortcut();
 }
 
 void MainWindow::onQuitGameConfirmed()
@@ -2476,6 +2527,21 @@ void MainWindow::onEmuStart()
     actPowerManagement->setEnabled(true);
 
     actTitleManager->setEnabled(false);
+
+    // A ROM was opened while the settings overlay is up: keep the overlay shown but refresh it for
+    // the new game. resetToFirstScreen() also avoids indexing a stale (longer) row position into a
+    // now-shorter rowsFor() list. Abandon any cutscene captured at overlay-open and point the
+    // restore target at the game panel so closing lands on the freshly-loaded game.
+    if (emuInstance->settingsViewOpen && settingsView)
+    {
+        settingsView->resetToFirstScreen();
+        if (m_videoPausedBySelf)
+        {
+            stopVideoForReload();
+            m_videoPausedBySelf = false;
+        }
+        m_previousWidget = panel;
+    }
 }
 
 void MainWindow::onEmuStop()

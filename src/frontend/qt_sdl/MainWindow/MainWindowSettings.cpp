@@ -428,6 +428,17 @@ void MainWindowSettings::stopVideo()
     emuInstance->plugin->onReplacementCutsceneEnd();
 }
 
+void MainWindowSettings::stopVideoForReload()
+{
+    // Minimal stop for when a new ROM is loaded behind the open settings overlay: do NOT call
+    // showGame() (it would hide the overlay) or plugin->onReplacementCutsceneEnd() (emuInstance->
+    // plugin is already the newly-loaded game's plugin by this point).
+    if (player->playbackState() != QMediaPlayer::PlaybackState::StoppedState) {
+        player->stop();
+    }
+    playerView->loadSubtitles("");
+}
+
 void MainWindowSettings::asyncPauseVideo()
 {
     QMetaObject::invokeMethod(this, "pauseVideo", Qt::QueuedConnection);

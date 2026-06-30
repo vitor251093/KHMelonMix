@@ -32,6 +32,7 @@
 #include "MainWindowSettings.h"
 #include "EmuInstance.h"
 #include "plugins/Plugin.h"
+#include "InputConfig/BindingName.h"
 
 using namespace Plugins;
 
@@ -124,44 +125,6 @@ static const struct { const char* label; const char* key; } kTouchActions[] = {
 
 // ─── binding display helpers ──────────────────────────────────────────────────
 
-static QString joyBindingText(int id)
-{
-    if (id == -1) return "None";
-    bool hasbtn = ((id & 0xFFFF) != 0xFFFF);
-    QString str;
-    if (hasbtn)
-    {
-        if (id & 0x100)
-        {
-            int hatnum = ((id >> 4) & 0xF) + 1;
-            switch (id & 0xF)
-            {
-            case 0x1: str = QString("Hat %1 Up").arg(hatnum);    break;
-            case 0x2: str = QString("Hat %1 Right").arg(hatnum); break;
-            case 0x4: str = QString("Hat %1 Down").arg(hatnum);  break;
-            case 0x8: str = QString("Hat %1 Left").arg(hatnum);  break;
-            default:  str = QString("Hat %1").arg(hatnum);        break;
-            }
-        }
-        else
-        {
-            str = QString("Button %1").arg((id & 0xFFFF) + 1);
-        }
-    }
-    if (id & 0x10000)
-    {
-        int axisnum = ((id >> 24) & 0xF) + 1;
-        if (hasbtn) str += " / ";
-        switch ((id >> 20) & 0xF)
-        {
-        case 0: str += QString("Axis %1 +").arg(axisnum);  break;
-        case 1: str += QString("Axis %1 -").arg(axisnum);  break;
-        case 2: str += QString("Trigger %1").arg(axisnum); break;
-        }
-    }
-    return str.isEmpty() ? "None" : str;
-}
-
 static QString keyBindingText(int key)
 {
     if (key == -1 || key == 0) return "None";
@@ -206,12 +169,16 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             Config::Save();
             if (emu->plugin) emu->plugin->shouldInvalidateConfigs = true;
         };
+        rows.last().reset = [gcfg, emu]() {
+            gcfg->SetInt("Instance0.Firmware.Language", 1); // English
+            Config::Save();
+            if (emu->plugin) emu->plugin->shouldInvalidateConfigs = true;
+        };
 
         // KH-specific rows — only when Days or Re:coded is actively running
         if (!emu->plugin || !emu->emuIsActive()) break;
-        u32 gc = emu->plugin->getGameCode();
         if (!emu->plugin->supportsKHExtendedSettings()) break;
-        bool isDays = emu->plugin->isKHDays();
+        bool canDisableHisMemories = emu->plugin->supportsDisableHisMemories();
 
         std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
         auto pluginSave = [emu]() { Config::Save(); emu->plugin->shouldInvalidateConfigs = true; };
@@ -220,18 +187,21 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             loc.gameFastForwardDesc });
         rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "FastForwardLoadingScreens") ? 1 : 0; };
         rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "FastForwardLoadingScreens", v); pluginSave(); };
+        rows.last().reset = [gcfg, prefix, pluginSave]() { gcfg->SetBool(prefix + "FastForwardLoadingScreens", false); pluginSave(); };
 
         rows.append({ SettingRow::Type::Toggle, loc.gameSkipCutscenesLabel,
             loc.gameSkipCutscenesDesc });
         rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "InstantSkipCutsceneOnStart") ? 1 : 0; };
         rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "InstantSkipCutsceneOnStart", v); pluginSave(); };
+        rows.last().reset = [gcfg, prefix, pluginSave]() { gcfg->SetBool(prefix + "InstantSkipCutsceneOnStart", false); pluginSave(); };
 
-        if (isDays)
+        if (canDisableHisMemories)
         {
             rows.append({ SettingRow::Type::Toggle, loc.gameHisMemoriesLabel,
                 loc.gameHisMemoriesDesc });
             rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DaysDisableHisMemories") ? 1 : 0; };
             rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "DaysDisableHisMemories", v); pluginSave(); };
+            rows.last().reset = [gcfg, prefix, pluginSave]() { gcfg->SetBool(prefix + "DaysDisableHisMemories", false); pluginSave(); };
         }
         break;
     }
@@ -241,24 +211,27 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         auto* gcfg = &emu->getGlobalConfig();
         auto saveOnly = []() { Config::Save(); };
 
-        rows.append({ SettingRow::Type::Combobox, "Console Type",
-            "Emulated console. Changes take effect after restarting the game.",
+        rows.append({ SettingRow::Type::Combobox, loc.emuConsoleTypeLabel,
+            loc.emuConsoleTypeDesc,
             {"DS", "DSi"} });
         rows.last().read  = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType"); };
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetInt("Emu.ConsoleType", v); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetInt("Emu.ConsoleType", 0); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Toggle, "Direct Boot",
-            "Skip the DS boot sequence and launch the game directly." });
+        rows.append({ SettingRow::Type::Toggle, loc.emuDirectBootLabel,
+            loc.emuDirectBootDesc });
         rows.last().read  = [gcfg]() { return gcfg->GetBool("Emu.DirectBoot") ? 1 : 0; };
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("Emu.DirectBoot", v != 0); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("Emu.DirectBoot", true); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Toggle, "FPS Limit",
-            "Cap emulation speed to the target frame rate." });
+        rows.append({ SettingRow::Type::Toggle, loc.emuFpsLimitLabel,
+            loc.emuFpsLimitDesc });
         rows.last().read  = [gcfg]() { return gcfg->GetBool("LimitFPS") ? 1 : 0; };
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("LimitFPS", v != 0); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("LimitFPS", true); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Combobox, "Target FPS",
-            "Frame rate cap for normal play.",
+        rows.append({ SettingRow::Type::Combobox, loc.emuTargetFpsLabel,
+            loc.emuTargetFpsDesc,
             {"30", "60", "120"} });
         rows.last().read  = [gcfg]() {
             double v = gcfg->GetDouble("TargetFPS");
@@ -269,9 +242,10 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             if (v < kTargetFPSCount) gcfg->SetDouble("TargetFPS", kTargetFPSPresets[v]);
             saveOnly();
         };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetDouble("TargetFPS", 60.0); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Combobox, "Fast-forward FPS",
-            "Speed cap while fast-forward is held.",
+        rows.append({ SettingRow::Type::Combobox, loc.emuFastForwardFpsLabel,
+            loc.emuFastForwardFpsDesc,
             {"2\xC3\x97", "4\xC3\x97", "8\xC3\x97", "Unlimited"} });
         rows.last().read  = [gcfg]() {
             double v = gcfg->GetDouble("FastForwardFPS");
@@ -282,9 +256,10 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             if (v < kFFPSCount) gcfg->SetDouble("FastForwardFPS", kFFPSPresets[v]);
             saveOnly();
         };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetDouble("FastForwardFPS", 1000.0); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Combobox, "Slowmo FPS",
-            "Frame rate cap while slow-motion is active.",
+        rows.append({ SettingRow::Type::Combobox, loc.emuSlowmoFpsLabel,
+            loc.emuSlowmoFpsDesc,
             {"25%", "50%", "75%"} });
         rows.last().read  = [gcfg]() {
             double v = gcfg->GetDouble("SlowmoFPS");
@@ -295,24 +270,28 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             if (v < kSlowmoFPSCount) gcfg->SetDouble("SlowmoFPS", kSlowmoFPSPresets[v]);
             saveOnly();
         };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetDouble("SlowmoFPS", 30.0); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Toggle, "Mute Fast-forward",
-            "Silence audio while fast-forward is held." });
+        rows.append({ SettingRow::Type::Toggle, loc.emuMuteFastForwardLabel,
+            loc.emuMuteFastForwardDesc });
         rows.last().read  = [gcfg]() { return gcfg->GetBool("MuteFastForward") ? 1 : 0; };
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("MuteFastForward", v != 0); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("MuteFastForward", false); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Toggle, "Pause on Lost Focus",
-            "Pause emulation when the window loses focus." });
+        rows.append({ SettingRow::Type::Toggle, loc.emuPauseLostFocusLabel,
+            loc.emuPauseLostFocusDesc });
         rows.last().read  = [gcfg]() { return gcfg->GetBool("PauseLostFocus") ? 1 : 0; };
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("PauseLostFocus", v != 0); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("PauseLostFocus", false); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Toggle, "Hide Mouse",
-            "Hide the mouse cursor while the emulator window is active." });
+        rows.append({ SettingRow::Type::Toggle, loc.emuHideMouseLabel,
+            loc.emuHideMouseDesc });
         rows.last().read  = [gcfg]() { return gcfg->GetBool("Mouse.Hide") ? 1 : 0; };
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("Mouse.Hide", v != 0); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("Mouse.Hide", true); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Combobox, "Hide Mouse After",
-            "Automatically hide the cursor after this period of inactivity.",
+        rows.append({ SettingRow::Type::Combobox, loc.emuHideMouseAfterLabel,
+            loc.emuHideMouseAfterDesc,
             {"3 seconds", "5 seconds", "10 seconds", "30 seconds"} });
         rows.last().read  = [gcfg]() {
             int v = gcfg->GetInt("Mouse.HideSeconds");
@@ -323,6 +302,7 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             if (v < kMouseHideCount) gcfg->SetInt("Mouse.HideSeconds", kMouseHidePresets[v]);
             saveOnly();
         };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetInt("Mouse.HideSeconds", 3); saveOnly(); };
         break;
     }
     case kIdxDisplay:
@@ -332,28 +312,31 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         auto saveVideo = [emu]() { Config::Save(); emu->getEmuThread()->updateVideoSettings(); };
         auto saveOnly  = []()    { Config::Save(); };
 
-        rows.append({ SettingRow::Type::Combobox, "3D Renderer",
-            "Graphics renderer for 3D scenes. OpenGL modes require GPU support.",
+        rows.append({ SettingRow::Type::Combobox, loc.displayRendererLabel,
+            loc.displayRendererDesc,
             {"Software", "OpenGL", "OpenGL Compute"} });
         rows.last().read  = [gcfg]() { return gcfg->GetInt("3D.Renderer"); };
         rows.last().write = [gcfg, saveVideo](int v) { gcfg->SetInt("3D.Renderer", v); saveVideo(); };
+        rows.last().reset = [gcfg, saveVideo]() { gcfg->SetInt("3D.Renderer", 1); saveVideo(); };
 
-        rows.append({ SettingRow::Type::Combobox, "3D Resolution",
-            "Internal rendering scale for 3D graphics.",
+        rows.append({ SettingRow::Type::Combobox, loc.displayResolutionLabel,
+            loc.displayResolutionDesc,
             {"1x native (256x192)",   "2x native (512x384)",   "3x native (768x576)",   "4x native (1024x768)",
              "5x native (1280x960)",  "6x native (1536x1152)", "7x native (1792x1344)", "8x native (2048x1536)",
              "9x native (2304x1728)", "10x native (2560x1920)","11x native (2816x2112)","12x native (3072x2304)",
              "13x native (3328x2496)","14x native (3584x2688)","15x native (3840x2880)","16x native (4096x3072)"} });
         rows.last().read  = [gcfg]() { return qBound(0, gcfg->GetInt("3D.GL.ScaleFactor") - 1, 15); };
         rows.last().write = [gcfg, saveVideo](int v) { gcfg->SetInt("3D.GL.ScaleFactor", v + 1); saveVideo(); };
+        rows.last().reset = [gcfg, saveVideo]() { gcfg->SetInt("3D.GL.ScaleFactor", 3); saveVideo(); };
 
-        rows.append({ SettingRow::Type::Toggle, "VSync",
-            "Synchronize rendering to your display refresh rate." });
+        rows.append({ SettingRow::Type::Toggle, loc.displayVSyncLabel,
+            loc.displayVSyncDesc });
         rows.last().read  = [gcfg]() { return gcfg->GetBool("Screen.VSync") ? 1 : 0; };
         rows.last().write = [gcfg, saveVideo](int v) { gcfg->SetBool("Screen.VSync", v != 0); saveVideo(); };
+        rows.last().reset = [gcfg, saveVideo]() { gcfg->SetBool("Screen.VSync", false); saveVideo(); };
 
-        rows.append({ SettingRow::Type::Combobox, "Theme Color",
-            "Settings menu accent color inspired by each Kingdom Hearts title.",
+        rows.append({ SettingRow::Type::Combobox, loc.displayThemeColorLabel,
+            loc.displayThemeColorDesc,
             {"Auto", "358/2 Days", "Re:coded", "Kingdom Hearts",
              "Birth by Sleep", "KH III", "Dream Drop Distance", "Melody of Memory", "KH IV"},
             0, 0, SettingRow::Tag::ThemeColorPicker });
@@ -375,6 +358,7 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             }
             saveOnly();
         };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetQString("KHSettings.ThemeColor", QString()); saveOnly(); };
 
         if (emu->plugin && emu->emuIsActive())
         {
@@ -387,21 +371,25 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
                     loc.displayEnhancedDesc });
                 rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableEnhancedGraphics") ? 0 : 1; };
                 rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableEnhancedGraphics", !v); savePlugin(); };
+                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "DisableEnhancedGraphics", false); savePlugin(); };
 
                 rows.append({ SettingRow::Type::Toggle, loc.displaySingleScreenLabel,
                     loc.displaySingleScreenDesc });
                 rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableSingleScreenMode") ? 0 : 1; };
                 rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableSingleScreenMode", !v); savePlugin(); };
+                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "DisableSingleScreenMode", false); savePlugin(); };
 
                 rows.append({ SettingRow::Type::Toggle, loc.displaySubtitlesLabel,
                     loc.displaySubtitlesDesc });
                 rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "SubtitlesEnabled") ? 1 : 0; };
                 rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "SubtitlesEnabled", v); savePlugin(); };
+                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "SubtitlesEnabled", true); savePlugin(); };
 
                 rows.append({ SettingRow::Type::Slider, loc.displayHUDScaleLabel,
                     loc.displayHUDScaleDesc, {}, 1, 10 });
                 rows.last().read  = [gcfg, prefix]() { int v = gcfg->GetInt(prefix + "HUDScale"); return v == 0 ? 4 : v; };
                 rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetInt(prefix + "HUDScale", v); savePlugin(); };
+                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetInt(prefix + "HUDScale", 4); savePlugin(); };
             }
         }
         break;
@@ -413,8 +401,8 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         auto* lcfg = &emu->getLocalConfig();
         auto saveAudio = [emu]() { Config::Save(); emu->applyAudioSettings(); };
 
-        rows.append({ SettingRow::Type::Slider, "Volume",
-            "Game audio output level.", {}, 0, 10 });
+        rows.append({ SettingRow::Type::Slider, loc.soundVolumeLabel,
+            loc.soundVolumeDesc, {}, 0, 10 });
         rows.last().read  = [lcfg]()      { return lcfg->GetInt("Audio.Volume") / 25; };
         rows.last().write = [emu, lcfg, saveAudio](int v) {
             int vol = qBound(0, v * 25, 256);
@@ -422,34 +410,42 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             emu->setAudioVolume(vol);
             saveAudio();
         };
+        rows.last().reset = [emu, lcfg, saveAudio]() {
+            lcfg->SetInt("Audio.Volume", 256);
+            emu->setAudioVolume(256);
+            saveAudio();
+        };
 
-        rows.append({ SettingRow::Type::Combobox, "Interpolation",
-            "Audio resampling quality. Higher settings improve fidelity but use more CPU.",
+        rows.append({ SettingRow::Type::Combobox, loc.soundInterpolationLabel,
+            loc.soundInterpolationDesc,
             {"None", "Linear", "Cosine", "Cubic", "Gaussian"} });
         rows.last().read  = [gcfg]()      { return gcfg->GetInt("Audio.Interpolation"); };
         rows.last().write = [gcfg, saveAudio](int v) { gcfg->SetInt("Audio.Interpolation", v); saveAudio(); };
+        rows.last().reset = [gcfg, saveAudio]() { gcfg->SetInt("Audio.Interpolation", 0); saveAudio(); };
 
-        rows.append({ SettingRow::Type::Combobox, "Bit Depth",
-            "Audio sample bit depth. 10-bit mimics original DS hardware.",
+        rows.append({ SettingRow::Type::Combobox, loc.soundBitDepthLabel,
+            loc.soundBitDepthDesc,
             {"Auto", "10-bit", "16-bit"} });
         rows.last().read  = [gcfg]()      { return gcfg->GetInt("Audio.BitDepth"); };
         rows.last().write = [gcfg, saveAudio](int v) { gcfg->SetInt("Audio.BitDepth", v); saveAudio(); };
+        rows.last().reset = [gcfg, saveAudio]() { gcfg->SetInt("Audio.BitDepth", 0); saveAudio(); };
 
-        rows.append({ SettingRow::Type::Toggle, "DSi Volume Sync",
-            "Sync DS audio volume with the DSi firmware volume level." });
+        rows.append({ SettingRow::Type::Toggle, loc.soundDSiVolumeSyncLabel,
+            loc.soundDSiVolumeSyncDesc });
         rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 1; };
         rows.last().read  = [lcfg]()      { return lcfg->GetBool("Audio.DSiVolumeSync") ? 1 : 0; };
         rows.last().write = [lcfg, saveAudio](int v) { lcfg->SetBool("Audio.DSiVolumeSync", v != 0); saveAudio(); };
+        rows.last().reset = [lcfg, saveAudio]() { lcfg->SetBool("Audio.DSiVolumeSync", false); saveAudio(); };
 
-        rows.append({ SettingRow::Type::Combobox, "Mic Input",
-            "Microphone input source for games that use the DS microphone.",
+        rows.append({ SettingRow::Type::Combobox, loc.soundMicInputLabel,
+            loc.soundMicInputDesc,
             {"None", "External", "Noise", "WAV"} });
         rows.last().read  = [gcfg]()      { return gcfg->GetInt("Mic.InputType"); };
         rows.last().write = [gcfg, saveAudio](int v) { gcfg->SetInt("Mic.InputType", v); saveAudio(); };
+        rows.last().reset = [gcfg, saveAudio]() { gcfg->SetInt("Mic.InputType", 1); saveAudio(); };
 
         if (emu->plugin && emu->emuIsActive())
         {
-            u32 gc2 = emu->plugin->getGameCode();
             if (emu->plugin->supportsKHExtendedSettings())
             {
                 rows.append({ SettingRow::Type::Combobox, loc.soundAudioPackLabel,
@@ -471,6 +467,20 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
                         gcfg->SetQString(prefix + "AudioPack", QString());
                     else if (v > 0 && v < m_audioPackNames.size())
                         gcfg->SetQString(prefix + "AudioPack", m_audioPackNames[v]);
+                    emu->plugin->shouldInvalidateConfigs = true;
+                    saveAudio();
+                };
+                rows.last().dynamicOptions   = [this]() { return m_audioPackNames; };
+                rows.last().dynamicValueText = [this, gcfg, emu]() -> QString {
+                    if (!emu->plugin) return QString::fromUtf8(locale().none);
+                    std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
+                    QString saved = gcfg->GetQString(prefix + "AudioPack");
+                    return saved.isEmpty() ? QString::fromUtf8(locale().none) : saved;
+                };
+                rows.last().reset = [gcfg, emu, saveAudio]() {
+                    if (!emu->plugin) return;
+                    std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
+                    gcfg->SetQString(prefix + "AudioPack", QString());
                     emu->plugin->shouldInvalidateConfigs = true;
                     saveAudio();
                 };
@@ -501,14 +511,15 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         auto* gcfg = &emu->getGlobalConfig();
         auto saveOnly = []() { Config::Save(); };
 
-        rows.append({ SettingRow::Type::Combobox, "WiFi Mode",
-            "Connection mode for wireless features.",
+        rows.append({ SettingRow::Type::Combobox, loc.systemWifiModeLabel,
+            loc.systemWifiModeDesc,
             {"Indirect", "Direct"} });
         rows.last().read  = [gcfg]() { return gcfg->GetBool("LAN.DirectMode") ? 1 : 0; };
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("LAN.DirectMode", v != 0); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("LAN.DirectMode", false); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Combobox, "WiFi Adapter",
-            "Network adapter used for Direct Mode. Only active when Direct is selected." });
+        rows.append({ SettingRow::Type::Combobox, loc.systemWifiAdapterLabel,
+            loc.systemWifiAdapterDesc });
         rows.last().isDynamic = true;
         rows.last().enabled = [gcfg]() { return gcfg->GetBool("LAN.DirectMode"); };
         rows.last().read  = [this, gcfg]() {
@@ -522,16 +533,19 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
                 gcfg->SetQString("LAN.Device", m_wifiAdapters[v]);
             saveOnly();
         };
+        rows.last().dynamicOptions   = [this]() { return m_wifiAdapters; };
+        rows.last().dynamicValueText = [gcfg]() { return gcfg->GetQString("LAN.Device"); };
 
-        rows.append({ SettingRow::Type::Combobox, "DS Battery",
-            "Simulated DS battery level for games that check it.",
+        rows.append({ SettingRow::Type::Combobox, loc.systemDSBatteryLabel,
+            loc.systemDSBatteryDesc,
             {"Low", "Okay"} });
         rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 0; };
         rows.last().read  = [gcfg]() { return gcfg->GetBool("DS.Battery.LevelOkay") ? 1 : 0; };
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("DS.Battery.LevelOkay", v != 0); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("DS.Battery.LevelOkay", true); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Combobox, "DSi Battery Level",
-            "Simulated DSi battery charge level.",
+        rows.append({ SettingRow::Type::Combobox, loc.systemDSiBatteryLabel,
+            loc.systemDSiBatteryDesc,
             {"Almost Empty", "Low", "Half", "High", "Full"} });
         rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 1; };
         rows.last().read  = [gcfg]() {
@@ -543,12 +557,14 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             if (v < kDsiBattCount) gcfg->SetInt("DSi.Battery.Level", kDsiBattLevels[v]);
             saveOnly();
         };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetInt("DSi.Battery.Level", 15); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Toggle, "DSi Charging",
-            "Whether the simulated DSi battery is charging." });
+        rows.append({ SettingRow::Type::Toggle, loc.systemDSiChargingLabel,
+            loc.systemDSiChargingDesc });
         rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 1; };
         rows.last().read  = [gcfg]() { return gcfg->GetBool("DSi.Battery.Charging") ? 1 : 0; };
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("DSi.Battery.Charging", v != 0); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("DSi.Battery.Charging", true); saveOnly(); };
         break;
     }
     default:
@@ -588,6 +604,7 @@ void SettingsView::resetToFirstScreen()
 
     m_pendingClose    = false;
     m_waitingForBind  = false;
+    m_bindArmed       = false;
     m_resettingBindings = false;
     m_resettingSection  = false;
     m_detailScrollOffset = 0;
@@ -604,6 +621,7 @@ void SettingsView::showEvent(QShowEvent* event)
     m_lastJoyInput = 0;
     m_animTimer->start();
     m_joyTimer->start();
+    setFocus();
 }
 
 void SettingsView::hideEvent(QHideEvent* event)
@@ -613,6 +631,7 @@ void SettingsView::hideEvent(QHideEvent* event)
     m_joyTimer->stop();
     m_pendingClose    = false;
     m_waitingForBind  = false;
+    m_bindArmed       = false;
     m_resettingBindings = false;
     m_resettingSection  = false;
     m_optionScrollOffset = 0;
@@ -667,10 +686,7 @@ void SettingsView::scrollOptionToIdx(int idx)
     int dX_, dW_, sY_, bH_, sp_;
     computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
     const int h_ = height();
-    int barY__, barH__;
-    computeTitleBarGeometry(barY__, barH__);
-    const qreal topLineY_    = barY__ + barH__ / 2.0;
-    const qreal bottomLineY_ = h_ - topLineY_;
+    const qreal bottomLineY_ = contentBottomLineY();
     int labelH_ = qMax(12, (int)(bH_ * 0.68));
     int intraGap_ = qMax(2, (int)(bH_ * 0.10));
     int optStartY_ = sY_ + labelH_ + intraGap_;
@@ -695,6 +711,13 @@ void SettingsView::computeTitleBarGeometry(int& barY, int& barH) const
 {
     barY = (int)(height() * 0.11);
     barH = (int)(height() * 0.045);
+}
+
+qreal SettingsView::contentBottomLineY() const
+{
+    int barY, barH;
+    computeTitleBarGeometry(barY, barH);
+    return height() - (barY + barH / 2.0);
 }
 
 void SettingsView::computeSidebarGeometry(int& sX, int& sW, int& sY,
@@ -727,6 +750,15 @@ void SettingsView::computeDetailGeometry(int& dX, int& dW, int& sY,
     sp = spacing;
 }
 
+void SettingsView::sliderTrackGeometry(int detailX, int rowPillW, int btnH,
+                                       int& trackX, int& trackW) const
+{
+    int numPad    = (int)(btnH * 1.1);
+    trackX        = detailX + numPad + (int)(btnH * 1.5) + (int)(btnH * 0.05);
+    int trackEndX = detailX + rowPillW - (int)(btnH * 1.5);
+    trackW        = qMax(1, trackEndX - trackX);
+}
+
 // ─── config read / write ──────────────────────────────────────────────────────
 
 int SettingsView::readRowValue(int sidebar, int row) const
@@ -746,19 +778,9 @@ void SettingsView::writeRowValue(int sidebar, int row, int newValue)
 QString SettingsView::rowDynamicValueText(int sidebar, int row) const
 {
     QVector<SettingRow> rows = rowsFor(sidebar);
-    if (row < 0 || row >= rows.size() || !rows[row].isDynamic) return {};
-    EmuInstance* emu = m_mainWindow->getEmuInstance();
-    if (!emu) return {};
-    auto& gcfg = emu->getGlobalConfig();
-    if (sidebar == kIdxSound && emu->plugin)
-    {
-        std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-        QString saved = gcfg.GetQString(prefix + "AudioPack");
-        return saved.isEmpty() ? QString::fromUtf8(locale().none) : saved;
-    }
-    if (sidebar == kIdxSystem)
-        return gcfg.GetQString("LAN.Device");
-    return {};
+    if (row < 0 || row >= rows.size()) return {};
+    const SettingRow& r = rows[row];
+    return r.dynamicValueText ? r.dynamicValueText() : QString();
 }
 
 QStringList SettingsView::currentOptionList() const
@@ -767,9 +789,7 @@ QStringList SettingsView::currentOptionList() const
     if (detailIndex < 0 || detailIndex >= rows.size()) return {};
     const SettingRow& row = rows[detailIndex];
     if (!row.options.isEmpty()) return row.options;
-    if (!row.isDynamic) return {};
-    if (sidebarIndex == kIdxSound)  return m_audioPackNames;
-    if (sidebarIndex == kIdxSystem) return m_wifiAdapters;
+    if (row.isDynamic && row.dynamicOptions) return row.dynamicOptions();
     return {};
 }
 
@@ -936,87 +956,26 @@ void SettingsView::resetSectionToDefaults(int idx)
 {
     EmuInstance* emu = m_mainWindow->getEmuInstance();
     if (!emu) return;
-    auto& gcfg = emu->getGlobalConfig();
-    auto& lcfg = emu->getLocalConfig();
 
-    switch (idx)
+    // Gamepad is not a row list — it reapplies the plugin's recommended controller bindings.
+    if (idx == kIdxGamepad)
     {
-    case kIdxGame:
-    {
-        gcfg.SetInt("Instance0.Firmware.Language", 1); // English — always reset
-        if (!emu->plugin || !emu->emuIsActive()) break;
-        std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-        bool isDays = emu->plugin->isKHDays();
-        gcfg.SetBool(prefix + "FastForwardLoadingScreens",  false);
-        gcfg.SetBool(prefix + "InstantSkipCutsceneOnStart", false);
-        if (isDays)
-            gcfg.SetBool(prefix + "DaysDisableHisMemories", false);
-        emu->plugin->shouldInvalidateConfigs = true;
-        break;
-    }
-    case kIdxEmulation:
-        gcfg.SetInt("Emu.ConsoleType",              0);
-        gcfg.SetBool("Emu.DirectBoot",              true);
-        gcfg.SetBool("LimitFPS",                    true);
-        gcfg.SetDouble("TargetFPS",                 60.0);
-        gcfg.SetDouble("FastForwardFPS",            1000.0);
-        gcfg.SetDouble("SlowmoFPS",                 30.0);
-        gcfg.SetBool("MuteFastForward",             false);
-        gcfg.SetBool("PauseLostFocus",              false);
-        gcfg.SetBool("Mouse.Hide",                  true);
-        gcfg.SetInt("Mouse.HideSeconds",            3);
-        if (emu->plugin) emu->plugin->shouldInvalidateConfigs = true;
-        break;
-    case kIdxDisplay:
-        gcfg.SetInt("3D.Renderer",               1);
-        gcfg.SetInt("3D.GL.ScaleFactor",         3);
-        gcfg.SetBool("Screen.VSync",             false);
-        gcfg.SetQString("KHSettings.ThemeColor", QString());
-        if (emu->plugin)
-        {
-            std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-            gcfg.SetBool(prefix + "DisableEnhancedGraphics", false);
-            gcfg.SetBool(prefix + "DisableSingleScreenMode", false);
-            gcfg.SetBool(prefix + "SubtitlesEnabled",        true);
-            gcfg.SetInt(prefix + "HUDScale",                 4);
-            emu->plugin->shouldInvalidateConfigs = true;
-        }
-        emu->getEmuThread()->updateVideoSettings();
-        break;
-    case kIdxSound:
-        lcfg.SetInt("Audio.Volume",         256);
-        gcfg.SetInt("Audio.Interpolation",   0);
-        gcfg.SetInt("Audio.BitDepth",        0);
-        lcfg.SetBool("Audio.DSiVolumeSync",  false);
-        gcfg.SetInt("Mic.InputType",         1);
-        if (emu->plugin)
-        {
-            std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-            gcfg.SetQString(prefix + "AudioPack", QString());
-            emu->plugin->shouldInvalidateConfigs = true;
-        }
-        emu->setAudioVolume(256);
-        emu->applyAudioSettings();
-        break;
-    case kIdxSystem:
-        gcfg.SetBool("LAN.DirectMode",              false);
-        gcfg.SetBool("DS.Battery.LevelOkay",        true);
-        gcfg.SetInt("DSi.Battery.Level",            15);
-        gcfg.SetBool("DSi.Battery.Charging",        true);
-        break;
-    case kIdxGamepad:
-    {
-        if (!emu->plugin) break;
+        if (!emu->plugin) return;
+        auto& lcfg = emu->getLocalConfig();
         int uid = lcfg.GetInt("JoystickUniqueID");
-        if (uid <= 0) break;
+        if (uid <= 0) return;
         Config::Table joycfg = lcfg.GetTable("Joystick." + std::to_string(uid));
         auto setIntCfg = [&joycfg](std::string key, int value) { joycfg.SetInt(key, value); };
         emu->plugin->applyRecommendedJoystickMappings(setIntCfg);
         Config::Save();
         emu->inputLoadConfig();
-        break;
+        return;
     }
-    }
+
+    // Every resettable row carries its own default via reset(), so this stays in lockstep with
+    // rowsFor() — adding or removing a row can't leave a parallel reset switch out of sync.
+    for (const SettingRow& r : rowsFor(idx))
+        if (r.reset) r.reset();
 }
 
 // ─── hit testing ──────────────────────────────────────────────────────────────
@@ -1102,62 +1061,155 @@ int SettingsView::hitTestRemap(QPoint pos) const
 
 // ─── joystick polling ─────────────────────────────────────────────────────────
 
+void SettingsView::pollBindCapture(SDL_Joystick* joy)
+{
+    if (!m_remapIsJoystick) return; // keyboard binds are handled in keyPressEvent
+    EmuInstance* emu = m_mainWindow->getEmuInstance();
+    if (!emu) return;
+
+    const qint64 now = m_animClock.elapsed();
+    const int numButtons = SDL_JoystickNumButtons(joy);
+    const int numHats     = SDL_JoystickNumHats(joy);
+    const int numAxes     = qMin(SDL_JoystickNumAxes(joy), 16);
+
+    // Is anything currently held/deflected past rest?
+    bool anyDown = false;
+    for (int i = 0; i < numButtons && !anyDown; i++)
+        if (SDL_JoystickGetButton(joy, i)) anyDown = true;
+    for (int hat = 0; hat < numHats && !anyDown; hat++)
+        if (SDL_JoystickGetHat(joy, hat) != SDL_HAT_CENTERED) anyDown = true;
+    for (int i = 0; i < numAxes && !anyDown; i++)
+        if (abs(SDL_JoystickGetAxis(joy, i) - m_axesRest[i]) >= 16384) anyDown = true;
+
+    // Arming gate: the input that started the listen must be released before we capture a
+    // new one (otherwise the confirm press that opened the listen is grabbed instantly).
+    if (!m_bindArmed)
+    {
+        if (!anyDown)
+        {
+            m_bindArmed   = true;
+            m_bindArmTime = now;
+        }
+        else if (now - m_bindListenStart >= kBindPreInputTimeoutMs)
+        {
+            // pad never settled (stuck/drift) — cancel, keep the existing binding
+            m_waitingForBind = false;
+            playSound(3);
+            update();
+        }
+        return;
+    }
+
+    // Assignment timeout: armed and waiting, but no input arrived — cancel (keep old binding).
+    if (now - m_bindArmTime >= kBindAssignTimeoutMs)
+    {
+        m_waitingForBind = false;
+        playSound(3);
+        update();
+        return;
+    }
+
+    // Armed: capture the first new input.
+    for (int i = 0; i < numButtons; i++)
+    {
+        if (SDL_JoystickGetButton(joy, i))
+        {
+            writeRemapBinding(m_bindTarget, i);
+            m_waitingForBind = false;
+            m_lastJoyInput = now;
+            update();
+            return;
+        }
+    }
+    for (int hat = 0; hat < numHats; hat++)
+    {
+        Uint8 hv = SDL_JoystickGetHat(joy, hat);
+        if (hv != SDL_HAT_CENTERED)
+        {
+            if      (hv & SDL_HAT_UP)    hv = SDL_HAT_UP;
+            else if (hv & SDL_HAT_DOWN)  hv = SDL_HAT_DOWN;
+            else if (hv & SDL_HAT_LEFT)  hv = SDL_HAT_LEFT;
+            else if (hv & SDL_HAT_RIGHT) hv = SDL_HAT_RIGHT;
+            int encoded = 0x100 | hv | (hat << 4);
+            writeRemapBinding(m_bindTarget, encoded);
+            m_waitingForBind = false;
+            m_lastJoyInput = now;
+            update();
+            return;
+        }
+    }
+    for (int i = 0; i < numAxes; i++)
+    {
+        Sint16 val  = SDL_JoystickGetAxis(joy, i);
+        Sint16 rest = m_axesRest[i];
+        if (abs(val - rest) >= 16384)
+        {
+            int axisType;
+            if (rest < -16384) axisType = 2;
+            else               axisType = (val > rest) ? 0 : 1;
+            // 0xFFFF in the low 16 bits = "no button"; without it joystickButtonDown
+            // also treats the binding as button 0.
+            int encoded = 0xFFFF | 0x10000 | (axisType << 20) | (i << 24);
+            writeRemapBinding(m_bindTarget, encoded);
+            m_waitingForBind = false;
+            m_lastJoyInput = now;
+            update();
+            return;
+        }
+    }
+
+    // Triggers that don't surface on raw axes (e.g. NSO SNES ZL/ZR). Mirrors MapButton.h:
+    // try SDL's GameController trigger axes, then a raw-HID fallback for the NSO SNES.
+    SDL_GameController* gc = emu->getController();
+    if (gc)
+    {
+        for (SDL_GameControllerAxis axis : {SDL_CONTROLLER_AXIS_TRIGGERLEFT,
+                                            SDL_CONTROLLER_AXIS_TRIGGERRIGHT})
+        {
+            if (SDL_GameControllerGetAxis(gc, axis) > 16384)
+            {
+                writeRemapBinding(m_bindTarget, 0xFFFF | 0x10000 | (2 << 20) | ((int)axis << 24));
+                m_waitingForBind = false;
+                m_lastJoyInput = now;
+                update();
+                return;
+            }
+        }
+    }
+    emu->pollHidReport();
+    const auto* hr = emu->getHidReport();
+    if (hr[0] == 0x3F) // NSO SNES: ZL = report[1] bit 6, ZR = report[2] bit 7
+    {
+        int trigAxis = -1;
+        if      (hr[1] & 0x40) trigAxis = SDL_CONTROLLER_AXIS_TRIGGERLEFT;
+        else if (hr[2] & 0x80) trigAxis = SDL_CONTROLLER_AXIS_TRIGGERRIGHT;
+        if (trigAxis >= 0)
+        {
+            writeRemapBinding(m_bindTarget, 0xFFFF | 0x10000 | (2 << 20) | (trigAxis << 24));
+            m_waitingForBind = false;
+            m_lastJoyInput = now;
+            update();
+        }
+    }
+}
+
 void SettingsView::pollJoystick()
 {
     EmuInstance* emu = m_mainWindow->getEmuInstance();
     if (!emu) return;
+
+    SDL_JoystickUpdate();
+
+    // Self-heal: inputLoadConfig() closes the joystick on every remap/reset, and the EmuThread
+    // reopen path (inputProcess) is skipped while the overlay pauses emulation. Reopen here so
+    // controller input survives binds, resets, and unplug/replug while settings is open.
+    emu->ensureJoystickOpen();
     SDL_Joystick* joy = emu->getJoystick();
     if (!joy) return;
-    SDL_JoystickUpdate();
 
     if (m_waitingForBind)
     {
-        if (!m_remapIsJoystick) return; // ignore controller input while waiting for a keyboard key
-        int numButtons = SDL_JoystickNumButtons(joy);
-        for (int i = 0; i < numButtons; i++)
-        {
-            if (SDL_JoystickGetButton(joy, i))
-            {
-                writeRemapBinding(m_bindTarget, i);
-                m_waitingForBind = false;
-                update();
-                return;
-            }
-        }
-        int numHats = SDL_JoystickNumHats(joy);
-        for (int hat = 0; hat < numHats; hat++)
-        {
-            Uint8 hv = SDL_JoystickGetHat(joy, hat);
-            if (hv != SDL_HAT_CENTERED)
-            {
-                if      (hv & SDL_HAT_UP)    hv = SDL_HAT_UP;
-                else if (hv & SDL_HAT_DOWN)  hv = SDL_HAT_DOWN;
-                else if (hv & SDL_HAT_LEFT)  hv = SDL_HAT_LEFT;
-                else if (hv & SDL_HAT_RIGHT) hv = SDL_HAT_RIGHT;
-                int encoded = 0x100 | hv | (hat << 4);
-                writeRemapBinding(m_bindTarget, encoded);
-                m_waitingForBind = false;
-                update();
-                return;
-            }
-        }
-        int numAxes = qMin(SDL_JoystickNumAxes(joy), 16);
-        for (int i = 0; i < numAxes; i++)
-        {
-            Sint16 val  = SDL_JoystickGetAxis(joy, i);
-            Sint16 rest = m_axesRest[i];
-            if (abs(val - rest) >= 16384)
-            {
-                int axisType;
-                if (rest < -16384) axisType = 2;
-                else               axisType = (val > rest) ? 0 : 1;
-                int encoded = 0x10000 | (axisType << 20) | (i << 24);
-                writeRemapBinding(m_bindTarget, encoded);
-                m_waitingForBind = false;
-                update();
-                return;
-            }
-        }
+        pollBindCapture(joy);
         return;
     }
 
@@ -1181,7 +1233,9 @@ void SettingsView::pollJoystick()
     bool left    = emu->joystickButtonDown(emu->getJoyMapping(5)) != 0;
     bool right   = emu->joystickButtonDown(emu->getJoyMapping(4)) != 0;
     bool confirm = emu->joystickButtonDown(emu->getJoyMapping(0)) != 0;
-    bool yBtn    = emu->joystickButtonDown(emu->getJoyMapping(11)) != 0;
+    // Reset = DS X (index 10), Clear = DS Y (index 11), so each matches its "X"/"Y" action-bar hint.
+    bool resetBtn = emu->joystickButtonDown(emu->getJoyMapping(10)) != 0;
+    bool clearBtn = emu->joystickButtonDown(emu->getJoyMapping(11)) != 0;
 
     int dir = -1;
     if      (up)      dir = 0;
@@ -1190,7 +1244,8 @@ void SettingsView::pollJoystick()
     else if (right)   dir = 3;
     else if (confirm) dir = 4;
     else if (backNow) dir = 5;
-    else if (yBtn && (currentScreen == Screen::Remap || currentScreen == Screen::Detail)) dir = 6;
+    else if (resetBtn && (currentScreen == Screen::Remap || currentScreen == Screen::Detail)) dir = 6;
+    else if (clearBtn && currentScreen == Screen::Remap) dir = 7;
 
     if (dir < 0) return;
 
@@ -1218,10 +1273,7 @@ void SettingsView::scrollDetailToRow(int idx, const QVector<SettingRow>& rows)
     int dX, dW, sY, bH, sp;
     computeDetailGeometry(dX, dW, sY, bH, sp);
     const int h = height();
-    int barY_, barH_;
-    computeTitleBarGeometry(barY_, barH_);
-    const qreal topLineY    = barY_ + barH_ / 2.0;
-    const qreal bottomLineY = h - topLineY;
+    const qreal bottomLineY = contentBottomLineY();
     int labelH   = qMax(12, (int)(bH * 0.68));
     int intraGap = qMax(2,  (int)(bH * 0.10));
     int stride   = labelH + intraGap + bH + sp;
@@ -1247,11 +1299,7 @@ void SettingsView::scrollRemapToAction(int actionIdx)
     int dX, dW, sY, bH, sp;
     computeDetailGeometry(dX, dW, sY, bH, sp);
     int stride   = bH + sp;
-    const int h  = height();
-    int barY_, barH_;
-    computeTitleBarGeometry(barY_, barH_);
-    const qreal topLineY    = barY_ + barH_ / 2.0;
-    const qreal bottomLineY = h - topLineY;
+    const qreal bottomLineY = contentBottomLineY();
     int visibleH = (int)(bottomLineY) - sY - bH * 3 - sp;
     int itemY = itemIdx * stride;
     if (itemY < m_remapScrollOffset)
@@ -1369,6 +1417,10 @@ void SettingsView::handleNavDetail(int direction)
         { currentScreen = Screen::Sidebar; update(); }
         return;
     }
+
+    // Guard against a stale detailIndex: rowsFor() can shrink while the overlay is open
+    // (e.g. the game is stopped), leaving detailIndex past the new end.
+    if (detailIndex >= rowCount) detailIndex = rowCount - 1;
 
     const SettingRow& row = rows[detailIndex];
 
@@ -1528,10 +1580,7 @@ void SettingsView::handleNavRemap(int direction)
         {
             int dX_, dW_, sY_, bH_, sp_;
             computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
-            const int h_ = height();
-            int barY__, barH__;
-            computeTitleBarGeometry(barY__, barH__);
-            const qreal botY_ = h_ - (barY__ + barH__ / 2.0);
+            const qreal botY_ = contentBottomLineY();
             int visH_ = (int)(botY_) - sY_ - bH_ * 3 - sp_;
             m_remapScrollOffset = qMax(0, (int)m_remapItems.size() * (bH_ + sp_) - visH_);
             detailIndex = actionCount - 1;
@@ -1571,8 +1620,10 @@ void SettingsView::handleNavRemap(int direction)
                     m_axesRest[i] = SDL_JoystickGetAxis(joy, i);
             }
         }
-        m_bindTarget     = detailIndex;
-        m_waitingForBind = true;
+        m_bindTarget      = detailIndex;
+        m_waitingForBind  = true;
+        m_bindArmed       = false;
+        m_bindListenStart = m_animClock.elapsed();
         playSound(1);
         update();
         break;
@@ -1595,6 +1646,11 @@ void SettingsView::handleNavRemap(int direction)
         m_resettingBindings     = true;
         m_resettingConfirmIndex = 1;
         playSound(1);
+        update();
+        break;
+    case 7: // clear the selected binding (unbound = -1 for joystick, 0 for keyboard)
+        writeRemapBinding(detailIndex, m_remapIsJoystick ? -1 : 0);
+        playSound(3);
         update();
         break;
     default: break;
@@ -1657,25 +1713,29 @@ void SettingsView::handleNavigation(int direction)
 
 void SettingsView::keyPressEvent(QKeyEvent* event)
 {
-    if (m_waitingForBind && !m_remapIsJoystick)
+    if (m_waitingForBind)
     {
-        if (event->key() == Qt::Key_Backspace)
+        if (!m_remapIsJoystick)
         {
-            writeRemapBinding(m_bindTarget, 0);
+            if (event->key() == Qt::Key_Backspace)
+            {
+                writeRemapBinding(m_bindTarget, 0);
+            }
+            else if (event->key() != Qt::Key_Escape)
+            {
+                int key = event->key();
+                int mod = event->modifiers();
+                bool ismod = (key == Qt::Key_Control || key == Qt::Key_Alt ||
+                              key == Qt::Key_AltGr   || key == Qt::Key_Shift ||
+                              key == Qt::Key_Meta);
+                if (!ismod) key |= mod;
+                else if (isRightModKey(event)) key |= (1 << 31);
+                writeRemapBinding(m_bindTarget, key);
+            }
+            m_waitingForBind = false;
+            update();
         }
-        else if (event->key() != Qt::Key_Escape)
-        {
-            int key = event->key();
-            int mod = event->modifiers();
-            bool ismod = (key == Qt::Key_Control || key == Qt::Key_Alt ||
-                          key == Qt::Key_AltGr   || key == Qt::Key_Shift ||
-                          key == Qt::Key_Meta);
-            if (!ismod) key |= mod;
-            else if (isRightModKey(event)) key |= (1 << 31);
-            writeRemapBinding(m_bindTarget, key);
-        }
-        m_waitingForBind = false;
-        update();
+        // While waiting for any bind (joystick or keyboard), eat all key events.
         event->accept();
         return;
     }
@@ -1692,6 +1752,11 @@ void SettingsView::keyPressEvent(QKeyEvent* event)
     case Qt::Key_X:
         if (currentScreen == Screen::Remap || currentScreen == Screen::Detail)
             handleNavigation(6);
+        event->accept();
+        break;
+    case Qt::Key_Delete:
+        if (currentScreen == Screen::Remap)
+            handleNavigation(7);
         event->accept();
         break;
     default: event->accept(); break;
@@ -1786,10 +1851,7 @@ void SettingsView::wheelEvent(QWheelEvent* event)
     int dX_, dW_, sY_, bH_, sp_;
     computeDetailGeometry(dX_, dW_, sY_, bH_, sp_);
     const int h_ = height();
-    int barY__, barH__;
-    computeTitleBarGeometry(barY__, barH__);
-    const qreal topLineY_    = barY__ + barH__ / 2.0;
-    const qreal bottomLineY_ = h_ - topLineY_;
+    const qreal bottomLineY_ = contentBottomLineY();
     int delta = -event->angleDelta().y() / 4;
 
     if (currentScreen == Screen::Detail)
@@ -1900,16 +1962,11 @@ void SettingsView::mousePressEvent(QMouseEvent* event)
             const SettingRow& row = rows[hit];
             if (row.type == SettingRow::Type::Slider)
             {
-                // Compute track geometry matching paintDetailArea
                 int dX, dW, sY, bH, sp;
                 computeDetailGeometry(dX, dW, sY, bH, sp);
-                int labelH   = qMax(12, (int)(bH * 0.68));
-                int intraGap = qMax(2,  (int)(bH * 0.10));
                 int rowPillW_ = (int)(dW * 0.56) - (int)(bH * 1.7);
-                int numPad_  = (int)(bH * 1.1);
-                int trackX   = dX + numPad_ + (int)(bH * 1.5) + (int)(bH * 0.05);
-                int trackEndX = dX + rowPillW_ - (int)(bH * 1.5);
-                int trackW   = qMax(1, trackEndX - trackX);
+                int trackX, trackW;
+                sliderTrackGeometry(dX, rowPillW_, bH, trackX, trackW);
                 float frac   = qBound(0.0f, (float)(pos.x() - trackX) / trackW, 1.0f);
                 int steps    = row.sliderMax - row.sliderMin + 1;
                 int nv       = row.sliderMin + qMin((int)(frac * steps), steps - 1);
@@ -1951,13 +2008,13 @@ void SettingsView::mouseReleaseEvent(QMouseEvent* event)
 // ─── painting ─────────────────────────────────────────────────────────────────
 
 QColor SettingsView::paintPillFill(QPainter& p, const QPainterPath& path,
-                                    QRect r, bool selected, bool dimUnselected)
+                                    QRect r, PillState state)
 {
     QColor themeColor = currentThemeColor();
     const qreal radius = r.height() / 2.0;
     QColor textColor;
 
-    if (selected)
+    if (state == PillState::Selected)
     {
         const int   glowSteps  = 8;
         const qreal glowSpread = 6.0;
@@ -2002,7 +2059,7 @@ QColor SettingsView::paintPillFill(QPainter& p, const QPainterPath& path,
         QColor borderColor = themeColor;
         borderColor.setAlpha(80);
         p.strokePath(path, QPen(borderColor, 1.5));
-        textColor = dimUnselected ? QColor(88, 88, 92) : QColor(180, 180, 185);
+        textColor = (state == PillState::Dimmed) ? QColor(88, 88, 92) : QColor(180, 180, 185);
     }
 
     p.setBrush(Qt::NoBrush);
@@ -2010,14 +2067,13 @@ QColor SettingsView::paintPillFill(QPainter& p, const QPainterPath& path,
 }
 
 void SettingsView::paintPillButton(QPainter& p, QRect r, const QString& label,
-                                    bool selected,
-                                    QColor swatchColor, bool dimUnselected)
+                                    PillState state, QColor swatchColor)
 {
     const qreal radius = r.height() / 2.0;
     QPainterPath path;
     addKHPillPath(path, QRectF(r), radius);
 
-    QColor textColor = paintPillFill(p, path, r, selected, dimUnselected);
+    QColor textColor = paintPillFill(p, path, r, state);
 
     const int padding = (int)(r.height() * 0.5);
     p.setPen(textColor);
@@ -2191,11 +2247,7 @@ void SettingsView::paintTitleBar(QPainter& p)
 void SettingsView::paintBottomLine(QPainter& p)
 {
     const int w = width();
-    const int h = height();
-    int barY_, barH_;
-    computeTitleBarGeometry(barY_, barH_);
-    const qreal topLineY    = barY_ + barH_ / 2.0;
-    const qreal bottomLineY = h - topLineY;
+    const qreal bottomLineY = contentBottomLineY();
     QColor lineColor = currentThemeColor();
     lineColor.setAlpha(200);
     p.setPen(QPen(lineColor, 1));
@@ -2233,8 +2285,9 @@ void SettingsView::paintSidebar(QPainter& p)
         int pillLeft  = sidebarX + indent;
         int pillRight = sidebarX + sidebarW + (selected ? activeIndent : 0);
         QRect btnRect(pillLeft, y, pillRight - pillLeft, btnH);
-        paintPillButton(p, btnRect, QString::fromUtf8(locale().sidebarLabels[i]), selected,
-                        QColor(), dimUnselected);
+        PillState state = selected ? PillState::Selected
+                        : dimUnselected ? PillState::Dimmed : PillState::Normal;
+        paintPillButton(p, btnRect, QString::fromUtf8(locale().sidebarLabels[i]), state);
 
         if (selected && currentScreen == Screen::Sidebar)
         {
@@ -2262,10 +2315,8 @@ SettingsView::DetailLayout SettingsView::computeDetailLayout() const
     L.h = height();
     computeDetailGeometry(L.detailX, L.detailW, L.startY, L.btnH, L.spacing);
     L.themeColor = currentThemeColor();
-    int barY_, barH_;
-    computeTitleBarGeometry(barY_, barH_);
-    L.topLineY    = barY_ + barH_ / 2.0;
-    L.bottomLineY = L.h - L.topLineY;
+    L.bottomLineY = contentBottomLineY();
+    L.topLineY    = L.h - L.bottomLineY;
     L.rowFont = QFont("KHMenu");
     L.rowFont.setPixelSize(qMax(13, (int)(L.btnH * 0.53)));
     L.rowPillW  = (int)(L.detailW * 0.56) - (int)(L.btnH * 1.7);
@@ -2330,7 +2381,7 @@ void SettingsView::paintDetailSidebarPreview(QPainter& p, const DetailLayout& L)
                 {
                     QPainterPath sp_;
                     addRoundedPillPath(sp_, QRectF(pr));
-                    paintPillFill(p, sp_, pr, false, false);
+                    paintPillFill(p, sp_, pr, PillState::Normal);
 
                     int v = row.read ? row.read() : 0;
                     p.setFont(rf);
@@ -2358,7 +2409,7 @@ void SettingsView::paintDetailSidebarPreview(QPainter& p, const DetailLayout& L)
                 {
                     QPainterPath pp_;
                     addRoundedPillPath(pp_, QRectF(pr));
-                    QColor tc = paintPillFill(p, pp_, pr, false, false);
+                    QColor tc = paintPillFill(p, pp_, pr, PillState::Normal);
                     QString valStr;
                     if (row.type == SettingRow::Type::Navigate)
                     {
@@ -2420,98 +2471,97 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
     const int& scrollbarW = L.scrollbarW;
     const int& rowPillW   = L.rowPillW;
 
-    int remapPillW = rowPillW;
-        int stride     = btnH + spacing;
-        int visibleH   = (int)(bottomLineY) - startY - btnH * 3 - spacing;
+    int stride     = btnH + spacing;
+    int visibleH   = (int)(bottomLineY) - startY - btnH * 3 - spacing;
 
-        p.setFont(rowFont);
+    p.setFont(rowFont);
 
-        int actionIdx = 0;
-        int focusedItemY = -1;
-        for (int itemIdx = 0; itemIdx < m_remapItems.size(); itemIdx++)
+    int actionIdx = 0;
+    int focusedItemY = -1;
+    for (int itemIdx = 0; itemIdx < m_remapItems.size(); itemIdx++)
+    {
+        const RemapItem& item = m_remapItems[itemIdx];
+        int itemY = startY + itemIdx * stride - m_remapScrollOffset;
+
+        if (itemY + stride < startY || itemY > startY + visibleH)
         {
-            const RemapItem& item = m_remapItems[itemIdx];
-            int itemY = startY + itemIdx * stride - m_remapScrollOffset;
+            if (!item.isHeader) actionIdx++;
+            continue;
+        }
 
-            if (itemY + stride < startY || itemY > startY + visibleH)
-            {
-                if (!item.isHeader) actionIdx++;
-                continue;
-            }
-
-            if (item.isHeader)
-            {
-                QFont hdrFont("KHMenu");
-                hdrFont.setPixelSize(qMax(11, (int)(btnH * 0.41)));
-                p.setFont(hdrFont);
-                p.setPen(themeColor);
-                p.drawText(QRect(detailX, itemY, detailW, btnH),
-                           Qt::AlignVCenter | Qt::AlignLeft, item.label);
-                p.setFont(rowFont);
-            }
+        if (item.isHeader)
+        {
+            QFont hdrFont("KHMenu");
+            hdrFont.setPixelSize(qMax(11, (int)(btnH * 0.41)));
+            p.setFont(hdrFont);
+            p.setPen(themeColor);
+            p.drawText(QRect(detailX, itemY, detailW, btnH),
+                       Qt::AlignVCenter | Qt::AlignLeft, item.label);
+            p.setFont(rowFont);
+        }
+        else
+        {
+            bool focused = (actionIdx == detailIndex);
+            if (focused) focusedItemY = itemY;
+            QString bindStr;
+            if (m_waitingForBind && focused)
+                bindStr = "\xE2\x80\xA6";
             else
             {
-                bool focused = (actionIdx == detailIndex);
-                if (focused) focusedItemY = itemY;
-                QString bindStr;
-                if (m_waitingForBind && focused)
-                    bindStr = "\xE2\x80\xA6";
-                else
-                {
-                    int v = readRemapBinding(actionIdx);
-                    bindStr = m_remapIsJoystick ? joyBindingText(v) : keyBindingText(v);
-                }
-
-                QPainterPath rp;
-                addRoundedPillPath(rp, QRectF(detailX, itemY, remapPillW, btnH));
-                QRect remapPillRect(detailX, itemY, remapPillW, btnH);
-                paintPillFill(p, rp, remapPillRect, focused, false);
-
-                int pad = (int)(btnH * 0.45);
-                p.setPen(focused ? QColor(235, 235, 240) : QColor(180, 180, 185));
-                p.drawText(QRect(detailX + pad, itemY, (int)(remapPillW * 0.56), btnH),
-                           Qt::AlignVCenter | Qt::AlignLeft, item.label);
-                p.setPen(focused ? QColor(200, 200, 210) : QColor(120, 120, 125));
-                p.drawText(QRect(detailX + (int)(remapPillW * 0.56), itemY,
-                                 (int)(remapPillW * 0.40), btnH),
-                           Qt::AlignVCenter | Qt::AlignRight, bindStr);
-
-                actionIdx++;
+                int v = readRemapBinding(actionIdx);
+                bindStr = m_remapIsJoystick ? JoyMappingName(v) : keyBindingText(v);
             }
+
+            QPainterPath rp;
+            addRoundedPillPath(rp, QRectF(detailX, itemY, rowPillW, btnH));
+            QRect remapPillRect(detailX, itemY, rowPillW, btnH);
+            paintPillFill(p, rp, remapPillRect, focused ? PillState::Selected : PillState::Normal);
+
+            int pad = (int)(btnH * 0.45);
+            p.setPen(focused ? QColor(235, 235, 240) : QColor(180, 180, 185));
+            p.drawText(QRect(detailX + pad, itemY, (int)(rowPillW * 0.56), btnH),
+                       Qt::AlignVCenter | Qt::AlignLeft, item.label);
+            p.setPen(focused ? QColor(200, 200, 210) : QColor(120, 120, 125));
+            p.drawText(QRect(detailX + (int)(rowPillW * 0.56), itemY,
+                             (int)(rowPillW * 0.40), btnH),
+                       Qt::AlignVCenter | Qt::AlignRight, bindStr);
+
+            actionIdx++;
         }
+    }
 
-        // Orb on focused remap pill
-        if (focusedItemY >= 0)
-        {
-            qreal capR  = btnH / 2.0;
-            qreal capCx = detailX + remapPillW - capR;
-            qreal capCy = focusedItemY + btnH / 2.0;
-            paintOrbAt(p, capCx, capCy, capR);
-        }
+    // Orb on focused remap pill
+    if (focusedItemY >= 0)
+    {
+        qreal capR  = btnH / 2.0;
+        qreal capCx = detailX + rowPillW - capR;
+        qreal capCy = focusedItemY + btnH / 2.0;
+        paintOrbAt(p, capCx, capCy, capR);
+    }
 
-        // Scrollbar just right of remap pills
-        {
-            int sbX    = detailX + remapPillW + (int)(detailW * 0.012);
-            int totalH = m_remapItems.size() * (btnH + spacing);
-            paintScrollbar(p, sbX, startY, scrollbarW, visibleH,
-                           m_remapScrollOffset, totalH, visibleH);
-        }
+    // Scrollbar just right of remap pills
+    {
+        int sbX    = detailX + rowPillW + (int)(detailW * 0.012);
+        int totalH = m_remapItems.size() * (btnH + spacing);
+        paintScrollbar(p, sbX, startY, scrollbarW, visibleH,
+                       m_remapScrollOffset, totalH, visibleH);
+    }
 
-        // Instructional text above hint footer
-        QFont instrFont("KHMenu");
-        instrFont.setPixelSize(qMax(11, (int)(btnH * 0.45)));
-        p.setFont(instrFont);
-        p.setPen(QColor(180, 180, 185));
-        p.drawText(QRect(detailX, (int)(bottomLineY - btnH * 2 - spacing), detailW, btnH),
-                   Qt::AlignVCenter | Qt::AlignLeft, "Select an action to assign.");
+    // Instructional text above hint footer
+    QFont instrFont("KHMenu");
+    instrFont.setPixelSize(qMax(11, (int)(btnH * 0.45)));
+    p.setFont(instrFont);
+    p.setPen(QColor(180, 180, 185));
+    p.drawText(QRect(detailX, (int)(bottomLineY - btnH * 2 - spacing), detailW, btnH),
+               Qt::AlignVCenter | Qt::AlignLeft, QString::fromUtf8(locale().remapSelectPrompt));
 
-        QFont hintFont("KHMenu");
-        hintFont.setPixelSize(qMax(11, (int)(btnH * 0.40)));
-        p.setFont(hintFont);
-        p.setPen(QColor(120, 120, 125));
-        p.drawText(QRect(detailX, (int)(bottomLineY - btnH - spacing), detailW, btnH),
-                   Qt::AlignLeft | Qt::AlignVCenter,
-                   "X Reset All  |  B Back to Sidebar");
+    QFont hintFont("KHMenu");
+    hintFont.setPixelSize(qMax(11, (int)(btnH * 0.40)));
+    p.setFont(hintFont);
+    p.setPen(QColor(120, 120, 125));
+    p.drawText(QRect(detailX, (int)(bottomLineY - btnH - spacing), detailW, btnH),
+               Qt::AlignLeft | Qt::AlignVCenter,
+               QString::fromUtf8(locale().remapResetBackHint));
 }
 
 void SettingsView::paintDetailStream(QPainter& p, const DetailLayout& L)
@@ -2528,89 +2578,81 @@ void SettingsView::paintDetailStream(QPainter& p, const DetailLayout& L)
 
     const int margin     = (int)(detailW * 0.04);  // outer margin: title, lines
     const int pillMargin = (int)(detailW * 0.13);  // inner margin: body text, URL pill
+    const QString title  = QString::fromUtf8(locale().sidebarLabels[kIdxStream]);
 
-        QFont titleFont("KHGummi");
-        titleFont.setPixelSize(qMax(14, (int)(btnH * 0.60)));
-        p.setFont(titleFont);
-        p.setPen(themeColor);
-        p.drawText(QRect(detailX + margin, startY, detailW - margin * 2, btnH),
-                   Qt::AlignVCenter | Qt::AlignCenter,
-                   "Before You Stream\xE2\x80\xA6");
+    QFont titleFont("KHGummi");
+    titleFont.setPixelSize(qMax(14, (int)(btnH * 0.60)));
+    p.setFont(titleFont);
+    p.setPen(themeColor);
+    p.drawText(QRect(detailX + margin, startY, detailW - margin * 2, btnH),
+               Qt::AlignVCenter | Qt::AlignCenter, title);
 
-        // Top gradient line — tied to title text width
-        int line1Y = startY + btnH + spacing / 2;
-        {
-            int titleW = QFontMetrics(titleFont).horizontalAdvance("Before You Stream\xE2\x80\xA6");
-            int pad    = (int)(detailW * 0.10);
-            int tLeft  = detailX + (detailW - titleW) / 2 - pad;
-            int tRight = tLeft + titleW + 2 * pad;
-            QColor lc = themeColor; lc.setAlpha(180);
-            QLinearGradient g(tLeft, 0, tRight, 0);
-            g.setColorAt(0.0,  Qt::transparent);
-            g.setColorAt(0.06, lc);
-            g.setColorAt(0.94, lc);
-            g.setColorAt(1.0,  Qt::transparent);
-            p.setPen(QPen(QBrush(g), 1));
-            p.drawLine(tLeft, line1Y, tRight, line1Y);
-        }
+    // Top gradient line — tied to title text width
+    int line1Y = startY + btnH + spacing / 2;
+    {
+        int titleW = QFontMetrics(titleFont).horizontalAdvance(title);
+        int pad    = (int)(detailW * 0.10);
+        int tLeft  = detailX + (detailW - titleW) / 2 - pad;
+        int tRight = tLeft + titleW + 2 * pad;
+        QColor lc = themeColor; lc.setAlpha(180);
+        QLinearGradient g(tLeft, 0, tRight, 0);
+        g.setColorAt(0.0,  Qt::transparent);
+        g.setColorAt(0.06, lc);
+        g.setColorAt(0.94, lc);
+        g.setColorAt(1.0,  Qt::transparent);
+        p.setPen(QPen(QBrush(g), 1));
+        p.drawLine(tLeft, line1Y, tRight, line1Y);
+    }
 
-        const QString para1 =
-            "This game is a copyrighted work. The copyright is held by The Walt Disney "
-            "Company and a collaboration of authors representing The Walt Disney Company. "
-            "Additionally, the copyright of certain characters is held by Square Enix Co., Ltd.";
-        const QString para2 =
-            "You are free to stream this game in non-commercial contexts. However, using "
-            "streams of the game to primarily provide or listen to the music is prohibited "
-            "even in such non-commercial contexts.";
-        const QString para3 =
-            "For information on the terms of use relating to streaming the game, please see "
-            "the official KINGDOM HEARTS site.";
+    const QString para1 = QString::fromUtf8(locale().streamPara1);
+    const QString para2 = QString::fromUtf8(locale().streamPara2);
+    const QString para3 = QString::fromUtf8(locale().streamPara3);
 
-        p.setFont(rowFont);
-        p.setPen(QColor(235, 235, 240));
+    p.setFont(rowFont);
+    p.setPen(QColor(235, 235, 240));
 
-        int textY = line1Y + spacing;
-        int paraH = (int)(h * 0.13);
-        for (const QString& para : {para1, para2, para3})
-        {
-            p.drawText(QRect(detailX + pillMargin, textY, detailW - pillMargin * 2, paraH),
-                       Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, para);
-            textY += paraH + spacing;
-        }
+    int textY = line1Y + spacing;
+    int paraH = (int)(h * 0.13);
+    for (const QString& para : {para1, para2, para3})
+    {
+        p.drawText(QRect(detailX + pillMargin, textY, detailW - pillMargin * 2, paraH),
+                   Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, para);
+        textY += paraH + spacing;
+    }
 
-        // URL pill — narrower, inner margin
-        int pillY   = textY + spacing;
-        int pillLft = detailX + pillMargin;
-        int pillWd  = detailW - pillMargin * 2;
-        QPainterPath urlPath;
-        addRoundedPillPath(urlPath, QRectF(pillLft, pillY, pillWd, btnH));
-        QRect urlPillRect(pillLft, pillY, pillWd, btnH);
-        paintPillFill(p, urlPath, urlPillRect, false, false);
-        p.setFont(rowFont);
-        p.setPen(QColor(235, 235, 240));
-        p.drawText(urlPillRect, Qt::AlignCenter,
-                   "https://www.kingdomhearts.com/1525/us/");
+    // URL pill — narrower, inner margin
+    int pillY   = textY + spacing;
+    int pillLft = detailX + pillMargin;
+    int pillWd  = detailW - pillMargin * 2;
+    QPainterPath urlPath;
+    addRoundedPillPath(urlPath, QRectF(pillLft, pillY, pillWd, btnH));
+    QRect urlPillRect(pillLft, pillY, pillWd, btnH);
+    paintPillFill(p, urlPath, urlPillRect, PillState::Normal);
+    p.setFont(rowFont);
+    p.setPen(QColor(235, 235, 240));
+    p.drawText(urlPillRect, Qt::AlignCenter,
+               "https://www.kingdomhearts.com/1525/us/");
 
-        // Bottom gradient line — full outer margin width, one body-font line of space above
-        int line2Y = pillY + btnH + QFontMetrics(rowFont).height();
-        {
-            int lLeft  = detailX + margin;
-            int lRight = detailX + detailW - margin;
-            QColor lc = themeColor; lc.setAlpha(180);
-            QLinearGradient g(lLeft, 0, lRight, 0);
-            g.setColorAt(0.0,  Qt::transparent);
-            g.setColorAt(0.04, lc);
-            g.setColorAt(0.96, lc);
-            g.setColorAt(1.0,  Qt::transparent);
-            p.setPen(QPen(QBrush(g), 1));
-            p.drawLine(lLeft, line2Y, lRight, line2Y);
-        }
+    // Bottom gradient line — full outer margin width, one body-font line of space above
+    int line2Y = pillY + btnH + QFontMetrics(rowFont).height();
+    {
+        int lLeft  = detailX + margin;
+        int lRight = detailX + detailW - margin;
+        QColor lc = themeColor; lc.setAlpha(180);
+        QLinearGradient g(lLeft, 0, lRight, 0);
+        g.setColorAt(0.0,  Qt::transparent);
+        g.setColorAt(0.04, lc);
+        g.setColorAt(0.96, lc);
+        g.setColorAt(1.0,  Qt::transparent);
+        p.setPen(QPen(QBrush(g), 1));
+        p.drawLine(lLeft, line2Y, lRight, line2Y);
+    }
 
-        p.setFont(rowFont);
-        p.setPen(QColor(235, 235, 240));
-        p.drawText(QRect(detailX + pillMargin, line2Y + spacing / 2, detailW - pillMargin * 2, btnH),
-                   Qt::AlignCenter | Qt::AlignVCenter,
-                   "Open a browser to view the official website.");
+    p.setFont(rowFont);
+    p.setPen(QColor(235, 235, 240));
+    p.drawText(QRect(detailX + pillMargin, line2Y + spacing / 2, detailW - pillMargin * 2, btnH),
+               Qt::AlignCenter | Qt::AlignVCenter,
+               QString::fromUtf8(locale().streamOpenHint));
 }
 
 void SettingsView::paintDetailQuit(QPainter& p, const DetailLayout& L)
@@ -2624,35 +2666,35 @@ void SettingsView::paintDetailQuit(QPainter& p, const DetailLayout& L)
     const QColor& themeColor = L.themeColor;
 
     const int margin = (int)(detailW * 0.07);
-        QFont titleFont("KHGummi");
-        titleFont.setPixelSize(qMax(14, (int)(btnH * 0.60)));
-        p.setFont(titleFont);
-        p.setPen(themeColor);
-        p.drawText(QRect(detailX + margin, startY, detailW - margin * 2, btnH),
-                   Qt::AlignVCenter | Qt::AlignCenter, "Quit Game");
-        int lineY = startY + btnH + spacing / 2;
-        {
-            int titleW = QFontMetrics(titleFont).horizontalAdvance("Quit Game");
-            int pad    = (int)(detailW * 0.10);
-            int lLeft  = detailX + (detailW - titleW) / 2 - pad;
-            int lRight = lLeft + titleW + 2 * pad;
-            QColor lc = themeColor; lc.setAlpha(180);
-            QLinearGradient g(lLeft, 0, lRight, 0);
-            g.setColorAt(0.0,  Qt::transparent);
-            g.setColorAt(0.06, lc);
-            g.setColorAt(0.94, lc);
-            g.setColorAt(1.0,  Qt::transparent);
-            p.setPen(QPen(QBrush(g), 1));
-            p.drawLine(lLeft, lineY, lRight, lineY);
-        }
-        QFont bodyFont("KHMenu");
-        bodyFont.setPixelSize(qMax(11, (int)(btnH * 0.47)));
-        p.setFont(bodyFont);
-        p.setPen(QColor(180, 180, 185));
-        p.drawText(QRect(detailX + margin, lineY + spacing, detailW - margin * 2, (int)(h * 0.35)),
-                   Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap,
-                   "You are about to quit the current game. "
-                   "Any progress since your last save will be lost.");
+    const QString title = QString::fromUtf8(locale().sidebarLabels[kIdxQuit]);
+    QFont titleFont("KHGummi");
+    titleFont.setPixelSize(qMax(14, (int)(btnH * 0.60)));
+    p.setFont(titleFont);
+    p.setPen(themeColor);
+    p.drawText(QRect(detailX + margin, startY, detailW - margin * 2, btnH),
+               Qt::AlignVCenter | Qt::AlignCenter, title);
+    int lineY = startY + btnH + spacing / 2;
+    {
+        int titleW = QFontMetrics(titleFont).horizontalAdvance(title);
+        int pad    = (int)(detailW * 0.10);
+        int lLeft  = detailX + (detailW - titleW) / 2 - pad;
+        int lRight = lLeft + titleW + 2 * pad;
+        QColor lc = themeColor; lc.setAlpha(180);
+        QLinearGradient g(lLeft, 0, lRight, 0);
+        g.setColorAt(0.0,  Qt::transparent);
+        g.setColorAt(0.06, lc);
+        g.setColorAt(0.94, lc);
+        g.setColorAt(1.0,  Qt::transparent);
+        p.setPen(QPen(QBrush(g), 1));
+        p.drawLine(lLeft, lineY, lRight, lineY);
+    }
+    QFont bodyFont("KHMenu");
+    bodyFont.setPixelSize(qMax(11, (int)(btnH * 0.47)));
+    p.setFont(bodyFont);
+    p.setPen(QColor(180, 180, 185));
+    p.drawText(QRect(detailX + margin, lineY + spacing, detailW - margin * 2, (int)(h * 0.35)),
+               Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap,
+               QString::fromUtf8(locale().quitBody));
 }
 
 void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
@@ -2667,8 +2709,6 @@ void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
     const QFont& rowFont  = L.rowFont;
     const QColor& themeColor = L.themeColor;
     const int& rowPillW   = L.rowPillW;
-    const int& optPanelX  = L.optPanelX;
-    const int& optPanelW  = L.optPanelW;
     const int& scrollbarW = L.scrollbarW;
 
     // ── Row layout constants ───────────────────────────────────────────────────
@@ -2717,7 +2757,7 @@ void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
                    Qt::AlignVCenter | Qt::AlignLeft, row.label);
 
         // Value in pill
-        int val = readRowValue(sidebarIndex, i);
+        int val = row.read ? row.read() : 0;
         QString valStr;
         if (row.type == SettingRow::Type::Toggle)
             valStr = val ? locale().on : locale().off;
@@ -2741,7 +2781,8 @@ void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
         {
             QPainterPath sp2;
             addRoundedPillPath(sp2, QRectF(pillRect));
-            QColor textCol = paintPillFill(p, sp2, pillRect, focused, dimRow);
+            QColor textCol = paintPillFill(p, sp2, pillRect,
+                focused ? PillState::Selected : dimRow ? PillState::Dimmed : PillState::Normal);
             p.setFont(rowFont);
 
             int numPad   = (int)(btnH * 1.1);
@@ -2749,9 +2790,8 @@ void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
             p.drawText(QRect(detailX + numPad, pillY, (int)(btnH * 1.5), btnH),
                        Qt::AlignVCenter | Qt::AlignLeft, valStr);
 
-            int trackX    = detailX + numPad + (int)(btnH * 1.5) + (int)(btnH * 0.05);
-            int trackEndX = detailX + rowPillW - (int)(btnH * 1.5);
-            int trackW    = qMax(1, trackEndX - trackX);
+            int trackX, trackW;
+            sliderTrackGeometry(detailX, rowPillW, btnH, trackX, trackW);
             int trackMidY = pillY + btnH / 2;
             int trackH    = qMax(3, (int)(btnH * 0.12));
             float frac    = (float)(val - row.sliderMin) /
@@ -2781,7 +2821,8 @@ void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
                 addArrowPillPath(pp2, QRectF(pillRect));
             else
                 addRoundedPillPath(pp2, QRectF(pillRect));
-            QColor textCol = paintPillFill(p, pp2, pillRect, focused, dimRow);
+            QColor textCol = paintPillFill(p, pp2, pillRect,
+                focused ? PillState::Selected : dimRow ? PillState::Dimmed : PillState::Normal);
             p.setFont(rowFont);
             int padding = (int)(btnH * 0.5);
             p.setPen(textCol);
@@ -2831,76 +2872,8 @@ void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
                        m_detailScrollOffset, totalH, visH);
     }
 
-    // ── Option list panel ─────────────────────────────────────────────────────
     if (inOptionList)
-    {
-        QStringList opts = currentOptionList();
-        int savedVal     = readRowValue(sidebarIndex, detailIndex);
-        bool isThemeColor = (detailIndex >= 0 && detailIndex < rows.size() &&
-                             rows[detailIndex].label == "Theme Color");
-
-        int optStartY = startY + labelH + intraGap;
-        int optVisH   = (int)(bottomLineY) - optStartY - (int)(h * 0.04);
-        int totalOptH = opts.size() * (btnH + spacing);
-
-        int optScrollGap = scrollbarW + (int)(optPanelW * 0.04);
-        int optPillW     = optPanelW - optScrollGap;
-
-        int focusedOptY = -1;
-        p.setFont(rowFont);
-        for (int i = 0; i < opts.size(); i++)
-        {
-            int optY = optStartY + i * (btnH + spacing) - m_optionScrollOffset;
-            if (optY + btnH < optStartY || optY > optStartY + optVisH) continue;
-            QRect r(optPanelX, optY, optPillW, btnH);
-            bool foc   = (i == optionIndex);
-            bool saved = (i == savedVal);
-            if (foc) focusedOptY = optY;
-            QColor swatch;
-            if (isThemeColor && i < kThemePresetCount)
-                swatch = QColor(kThemePresets[i].rgb);
-            QPainterPath op;
-            addRoundedPillPath(op, QRectF(r));
-            QColor textCol = paintPillFill(p, op, r, foc, false);
-            p.setPen(textCol);
-            int pad = (int)(btnH * 0.5);
-            if (swatch.isValid())
-            {
-                int swatchSz = (int)(btnH * 0.45);
-                int swatchX = r.left() + pad;
-                int swatchY = r.top() + (btnH - swatchSz) / 2;
-                p.setBrush(swatch); p.setPen(Qt::NoPen);
-                p.drawEllipse(swatchX, swatchY, swatchSz, swatchSz);
-                p.setBrush(Qt::NoBrush); p.setPen(textCol);
-                QString txt = (saved ? "\xE2\x9C\x93 " : "  ") + opts[i];
-                p.drawText(QRect(swatchX + swatchSz + (int)(btnH * 0.2),
-                                 r.top(), r.width() - pad - swatchSz, btnH),
-                           Qt::AlignVCenter | Qt::AlignLeft, txt);
-            }
-            else
-            {
-                QString txt = (saved ? "\xE2\x9C\x93 " : "  ") + opts[i];
-                p.drawText(QRect(r.left() + pad, r.top(), r.width() - pad, btnH),
-                           Qt::AlignVCenter | Qt::AlignLeft, txt);
-            }
-        }
-
-        if (focusedOptY >= 0)
-        {
-            qreal capR  = btnH / 2.0;
-            qreal capCx = optPanelX + optPillW - capR;
-            qreal capCy = focusedOptY + btnH / 2.0;
-            paintOrbAt(p, capCx, capCy, capR);
-        }
-
-        // Option panel scrollbar (only for overflowing lists like Audio Pack)
-        if (totalOptH > optVisH)
-        {
-            int optScrollbarX = optPanelX + optPanelW - scrollbarW - (int)(optPanelW * 0.02);
-            paintScrollbar(p, optScrollbarX, optStartY, scrollbarW, optVisH,
-                           m_optionScrollOffset, totalOptH, optVisH);
-        }
-    }
+        paintOptionListPanel(p, L);
 
     if (currentScreen == Screen::Detail && detailIndex >= 0 && detailIndex < rows.size())
     {
@@ -2915,14 +2888,96 @@ void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
     }
 }
 
+// The combobox option panel, overlaid on the right of the Detail area while a Combobox row is open.
+void SettingsView::paintOptionListPanel(QPainter& p, const DetailLayout& L)
+{
+    const int    h          = L.h;
+    const int    startY     = L.startY;
+    const int    btnH       = L.btnH;
+    const int    spacing    = L.spacing;
+    const qreal  bottomLineY = L.bottomLineY;
+    const QFont& rowFont    = L.rowFont;
+    const int    optPanelX  = L.optPanelX;
+    const int    optPanelW  = L.optPanelW;
+    const int    scrollbarW = L.scrollbarW;
+
+    int labelH   = qMax(12, (int)(btnH * 0.68));
+    int intraGap = qMax(2,  (int)(btnH * 0.10));
+
+    QVector<SettingRow> rows = rowsFor(sidebarIndex);
+    QStringList opts = currentOptionList();
+    int savedVal     = readRowValue(sidebarIndex, detailIndex);
+    bool isThemeColor = (detailIndex >= 0 && detailIndex < rows.size() &&
+                         rows[detailIndex].tag == SettingRow::Tag::ThemeColorPicker);
+
+    int optStartY = startY + labelH + intraGap;
+    int optVisH   = (int)(bottomLineY) - optStartY - (int)(h * 0.04);
+    int totalOptH = opts.size() * (btnH + spacing);
+
+    int optScrollGap = scrollbarW + (int)(optPanelW * 0.04);
+    int optPillW     = optPanelW - optScrollGap;
+
+    int focusedOptY = -1;
+    p.setFont(rowFont);
+    for (int i = 0; i < opts.size(); i++)
+    {
+        int optY = optStartY + i * (btnH + spacing) - m_optionScrollOffset;
+        if (optY + btnH < optStartY || optY > optStartY + optVisH) continue;
+        QRect r(optPanelX, optY, optPillW, btnH);
+        bool foc   = (i == optionIndex);
+        bool saved = (i == savedVal);
+        if (foc) focusedOptY = optY;
+        QColor swatch;
+        if (isThemeColor && i < kThemePresetCount)
+            swatch = QColor(kThemePresets[i].rgb);
+        QPainterPath op;
+        addRoundedPillPath(op, QRectF(r));
+        QColor textCol = paintPillFill(p, op, r, foc ? PillState::Selected : PillState::Normal);
+        p.setPen(textCol);
+        int pad = (int)(btnH * 0.5);
+        if (swatch.isValid())
+        {
+            int swatchSz = (int)(btnH * 0.45);
+            int swatchX = r.left() + pad;
+            int swatchY = r.top() + (btnH - swatchSz) / 2;
+            p.setBrush(swatch); p.setPen(Qt::NoPen);
+            p.drawEllipse(swatchX, swatchY, swatchSz, swatchSz);
+            p.setBrush(Qt::NoBrush); p.setPen(textCol);
+            QString txt = (saved ? "\xE2\x9C\x93 " : "  ") + opts[i];
+            p.drawText(QRect(swatchX + swatchSz + (int)(btnH * 0.2),
+                             r.top(), r.width() - pad - swatchSz, btnH),
+                       Qt::AlignVCenter | Qt::AlignLeft, txt);
+        }
+        else
+        {
+            QString txt = (saved ? "\xE2\x9C\x93 " : "  ") + opts[i];
+            p.drawText(QRect(r.left() + pad, r.top(), r.width() - pad, btnH),
+                       Qt::AlignVCenter | Qt::AlignLeft, txt);
+        }
+    }
+
+    if (focusedOptY >= 0)
+    {
+        qreal capR  = btnH / 2.0;
+        qreal capCx = optPanelX + optPillW - capR;
+        qreal capCy = focusedOptY + btnH / 2.0;
+        paintOrbAt(p, capCx, capCy, capR);
+    }
+
+    // Option panel scrollbar (only for overflowing lists like Audio Pack)
+    if (totalOptH > optVisH)
+    {
+        int optScrollbarX = optPanelX + optPanelW - scrollbarW - (int)(optPanelW * 0.02);
+        paintScrollbar(p, optScrollbarX, optStartY, scrollbarW, optVisH,
+                       m_optionScrollOffset, totalOptH, optVisH);
+    }
+}
+
 void SettingsView::paintActionBar(QPainter& p)
 {
     const int w = width();
     const int h = height();
-    int barY_, barH_;
-    computeTitleBarGeometry(barY_, barH_);
-    const qreal topLineY    = barY_ + barH_ / 2.0;
-    const qreal bottomLineY = h - topLineY;
+    const qreal bottomLineY = contentBottomLineY();
     const int barY = (int)(bottomLineY + (int)(h * 0.010));
 
     QColor themeColor = currentThemeColor();
@@ -2957,6 +3012,7 @@ void SettingsView::paintActionBar(QPainter& p)
     else if (currentScreen == Screen::Remap)
     {
         pushHint("A", loc.hintRebind);
+        pushHint("Y", loc.hintClear);
         pushHint("X", loc.hintResetAll);
         pushHint("B", loc.hintBack);
     }
@@ -3068,10 +3124,10 @@ void SettingsView::paintResetConfirmation(QPainter& p)
     p.setFont(btnFont);
     paintPillButton(p, yesRect,
                     QString("A ") + QString::fromUtf8(loc.pillYes),
-                    m_resettingConfirmIndex == 0);
+                    m_resettingConfirmIndex == 0 ? PillState::Selected : PillState::Normal);
     paintPillButton(p, noRect,
                     QString("B ") + QString::fromUtf8(loc.pillNo),
-                    m_resettingConfirmIndex == 1);
+                    m_resettingConfirmIndex == 1 ? PillState::Selected : PillState::Normal);
 }
 
 void SettingsView::paintCaptureOverlay(QPainter& p)
@@ -3088,12 +3144,25 @@ void SettingsView::paintCaptureOverlay(QPainter& p)
     QString prompt = QString::fromUtf8(m_remapIsJoystick ? loc.captureController : loc.captureKey);
     p.drawText(QRect(0, 0, w, h), Qt::AlignCenter, prompt);
 
+    QString subText;
+    if (!m_remapIsJoystick)
+        subText = QString::fromUtf8(loc.captureCancelKeyboard);
+    else if (!m_bindArmed)
+        subText = QString::fromUtf8(loc.captureReleaseHint);
+    else
+    {
+        qint64 remainMs = kBindAssignTimeoutMs - (m_animClock.elapsed() - m_bindArmTime);
+        int secs = (int)((remainMs + 999) / 1000);
+        if (secs < 0) secs = 0;
+        subText = QString::fromUtf8(loc.captureCancelCountdown).arg(secs);
+    }
+
     QFont subFont("KHMenu");
     subFont.setPixelSize(qMax(10, (int)(h * 0.018)));
     p.setFont(subFont);
     p.setPen(QColor(0xA0, 0x98, 0x80));
     p.drawText(QRect(0, h / 2 + (int)(h * 0.04), w, (int)(h * 0.04)),
-               Qt::AlignCenter, QString::fromUtf8(loc.captureCancel));
+               Qt::AlignCenter, subText);
 }
 
 void SettingsView::paintEvent(QPaintEvent* /*event*/)

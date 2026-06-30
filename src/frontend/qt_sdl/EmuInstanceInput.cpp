@@ -428,6 +428,22 @@ void EmuInstance::closeJoystick()
     memset(hidReport, 0, sizeof(hidReport));
 }
 
+// Mirrors the reopen logic in inputProcess() so callers outside the emulation loop (e.g. the
+// settings overlay, which pauses emulation) can keep the joystick alive after inputLoadConfig()
+// closes it. Drops a detached handle and (re)opens one if a device is available.
+void EmuInstance::ensureJoystickOpen()
+{
+    SDL_LockMutex(joyMutex.get());
+    if (joystick && !SDL_JoystickGetAttached(joystick))
+    {
+        SDL_JoystickClose(joystick);
+        joystick = nullptr;
+    }
+    if (!joystick && (SDL_NumJoysticks() > 0))
+        openJoystick();
+    SDL_UnlockMutex(joyMutex.get());
+}
+
 
 // distinguish between left and right modifier keys (Ctrl, Alt, Shift)
 // Qt provides no real cross-platform way to do this, so here we go
@@ -608,14 +624,23 @@ Sint16 EmuInstance::joystickButtonDown(int val)
 
 void EmuInstance::pollHidReport()
 {
-    if (!hidDevice) return;
-    u8 buf[64];
-    int n;
-    while ((n = SDL_hid_read(hidDevice, buf, sizeof(buf))) != 0)
+    // hidDevice is opened/closed by openJoystick()/closeJoystick() (under joyMutex) and read here.
+    // This runs on both EmuThread (inputProcess, already holding joyMutex — the SDL mutex is
+    // recursive) and the UI thread (SettingsView::pollJoystick). Without this lock the device could
+    // be closed on one thread while SDL's HID run loop reads it on another, freeing memory mid-read
+    // and faulting on a thread where NDS::Current is null.
+    SDL_LockMutex(joyMutex.get());
+    if (hidDevice)
     {
-        if (n < 0) { SDL_hid_close(hidDevice); hidDevice = nullptr; memset(hidReport, 0, sizeof(hidReport)); break; }
-        if (n >= 3 && buf[0] == 0x3F) memcpy(hidReport, buf, n);
+        u8 buf[64];
+        int n;
+        while ((n = SDL_hid_read(hidDevice, buf, sizeof(buf))) != 0)
+        {
+            if (n < 0) { SDL_hid_close(hidDevice); hidDevice = nullptr; memset(hidReport, 0, sizeof(hidReport)); break; }
+            if (n >= 3 && buf[0] == 0x3F) memcpy(hidReport, buf, n);
+        }
     }
+    SDL_UnlockMutex(joyMutex.get());
 }
 
 void EmuInstance::inputProcess()

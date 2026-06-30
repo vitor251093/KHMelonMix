@@ -209,6 +209,15 @@ void EmuThread::run()
         if (emuInstance->instanceID == 0)
             MPInterface::Get().Process();
 
+        // The overlay can be opened directly (idle path) without going through the HK_OpenSettings
+        // block below; arm the pause here so a ROM opened while the overlay is up stays paused in
+        // the background until the overlay closes (the existing guards then hold/resume it).
+        if (emuInstance->settingsViewOpen && !settingsPausedEmu)
+        {
+            settingsPrevStatus = emuStatus;
+            settingsPausedEmu  = true;
+        }
+
         if (!emuInstance->settingsViewOpen)
         {
         emuInstance->inputProcess();
@@ -291,7 +300,7 @@ void EmuThread::run()
         if (emuInstance->hotkeyPressed(HK_SwapScreens)) emit swapScreensToggle();
         if (emuInstance->hotkeyPressed(HK_SwapScreenEmphasis)) emit screenEmphasisToggle();
 
-        if (emuInstance->hotkeyPressed(HK_OpenSettings))
+        if (emuInstance->hotkeyPressed(HK_OpenSettings) || openSettingsRequested.exchange(false))
         {
             emuInstance->settingsViewOpen = true;
             settingsPrevStatus = emuStatus;

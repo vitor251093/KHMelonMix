@@ -259,6 +259,8 @@ private slots:
     void onScreenEmphasisToggled();
 
     void onOpenSettingsOverlay();
+    void onToggleSettings();
+    void refreshSettingsShortcut();
     void onSettingsClosed();
     void onQuitGameConfirmed();
 
@@ -346,6 +348,7 @@ public:
     QAction* actNPStartClient;
     QAction* actNPTest;
 
+    QAction* actGameSettings;
     QAction* actPluginSettings;
     QAction* actEmuSettings;
 #ifdef __APPLE__

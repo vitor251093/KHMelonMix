@@ -399,7 +399,9 @@ public:
     ) {}
 
     virtual bool supportsKHExtendedSettings() const { return false; }
-    virtual bool isKHDays() const { return false; }
+    // Capability gate for the Days-only "Disable His Memories" setting row. Prefer capability
+    // predicates over game-identity checks so SettingsView never branches on which title is loaded.
+    virtual bool supportsDisableHisMemories() const { return false; }
 
     virtual void hudToggle() {}
 

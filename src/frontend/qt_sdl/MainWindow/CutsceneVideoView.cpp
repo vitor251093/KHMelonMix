@@ -31,18 +31,11 @@
 #include <QStringList>
 #include <algorithm>
 
-// Registers the KH fonts (once) so the families are usable by name below.
-static void ensureCutsceneMenuAssets()
-{
-}
-
 // Paints the active subtitle line(s) near the bottom of a w*h area: white fill with a black
 // outline (built as a QPainterPath so the stroke sits cleanly around the glyphs), in a
 // Comic-Sans-style font, centered and stacked upward for multi-line cues.
 static void paintSubtitle(QPainter& p, int w, int h, const QString& text)
 {
-    ensureCutsceneMenuAssets();
-
     p.setRenderHint(QPainter::Antialiasing, true);
     p.setRenderHint(QPainter::TextAntialiasing, true);
 
@@ -118,7 +111,6 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
 {
     const CutsceneMenuStrings strings = cutsceneMenuStrings(language);
 
-    ensureCutsceneMenuAssets();
     static const QPixmap handPixmap(":/ds/menu_hand.png");
     static const QPixmap lightPixmap(":/ds/menu_light.png");
 
@@ -279,7 +271,7 @@ CutsceneVideoView::CutsceneVideoView(QWidget* parent) :
     // Warm up the subtitle font path once at startup so the first subtitle that paints during a
     // cutscene doesn't trigger synchronous font registration + glyph rasterization on the GUI thread
     // (which caused a visible hitch right as subtitles first appeared). Painting into a throwaway
-    // off-screen pixmap forces ensureCutsceneMenuAssets() and Qt's font engine to do their one-time
+    // off-screen pixmap forces Qt's font engine to do its one-time
     // work now, when a few ms is imperceptible.
     {
         QPixmap warm(8, 8);

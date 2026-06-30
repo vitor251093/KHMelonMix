@@ -52,7 +52,18 @@ struct SettingRow
     std::function<bool()>    enabled;
     std::function<int()>     read;
     std::function<void(int)> write;
+    // Restores this row to its default and applies the same side effect as write(). Set only on
+    // rows that participate in "Reset section"; resetSectionToDefaults() iterates and calls it.
+    std::function<void()>    reset;
+    // Dynamic rows (isDynamic) supply their option list and the text shown in the pill through
+    // these, so the dispatchers don't have to special-case each category by index.
+    std::function<QStringList()> dynamicOptions;
+    std::function<QString()>     dynamicValueText;
 };
+
+// Visual state of a "pill" button/row. Replaces the old (bool selected, bool dimUnselected) pair
+// so call sites can't transpose the two flags.
+enum class PillState { Normal, Selected, Dimmed };
 
 struct RemapItem
 {
@@ -93,10 +104,18 @@ private:
     bool m_pendingClose          = false;
     bool m_waitingForBind        = false;
     int  m_bindTarget            = 0;
+    bool m_bindArmed             = false;
+    qint64 m_bindListenStart     = 0;
+    qint64 m_bindArmTime         = 0;
     bool m_resettingBindings     = false;
     bool m_resettingSection      = false;
     int  m_resettingConfirmIndex = 1;
     Sint16 m_axesRest[16]        = {};
+
+    // Controller bind listen timeouts (ms): cancel if the pad never reaches rest,
+    // or if no input arrives once armed. Keeps every button bindable (no reserved cancel button).
+    static constexpr qint64 kBindPreInputTimeoutMs = 5000;
+    static constexpr qint64 kBindAssignTimeoutMs   = 5000;
 
     // Detail + remap + option scroll state
     int  m_detailScrollOffset = 0;
@@ -115,9 +134,10 @@ private:
     int  m_dragSliderMin  = 0;
     int  m_dragSliderMax  = 1;
 
-    // Dynamic option lists (m_audioPackNames populated lazily in const context)
-    QStringList         m_wifiAdapters;
-    mutable QStringList m_audioPackNames;
+    // Dynamic option lists, (re)populated by populateWifiAdapters() / populateAudioPacks()
+    // when their option panel is opened.
+    QStringList m_wifiAdapters;
+    QStringList m_audioPackNames;
 
     QElapsedTimer m_animClock;
     QTimer* m_animTimer  = nullptr;
@@ -155,12 +175,12 @@ private:
     void paintDetailStream(QPainter& p, const DetailLayout& L);
     void paintDetailQuit(QPainter& p, const DetailLayout& L);
     void paintDetailRows(QPainter& p, const DetailLayout& L);
+    void paintOptionListPanel(QPainter& p, const DetailLayout& L);
     void paintActionBar(QPainter& p);
     QColor paintPillFill(QPainter& p, const QPainterPath& path,
-                         QRect r, bool selected, bool dimUnselected);
+                         QRect r, PillState state);
     void paintPillButton(QPainter& p, QRect r, const QString& label,
-                         bool selected, QColor swatchColor = QColor(),
-                         bool dimUnselected = false);
+                         PillState state, QColor swatchColor = QColor());
     void paintOrbAt(QPainter& p, qreal capCx, qreal capCy, qreal capR);
     void paintScrollbar(QPainter& p, int x, int y, int w, int h,
                         int offset, int totalH, int visibleH);
@@ -169,11 +189,18 @@ private:
     void confirmPopupRects(QRect& box, QRect& yesRect, QRect& noRect) const;
 
     void computeTitleBarGeometry(int& barY, int& barH) const;
+    // Y of the lower horizontal accent line that brackets the content area (the upper line sits at
+    // height() - this). Derived from the title-bar geometry; used throughout paint and scroll.
+    qreal contentBottomLineY() const;
     void computeSidebarGeometry(int& sidebarX, int& sidebarW,
                                 int& startY, int& btnH, int& spacing,
                                 int& divX) const;
     void computeDetailGeometry(int& detailX, int& detailW,
                                int& startY, int& btnH, int& spacing) const;
+    // Horizontal track geometry for a Slider row's pill. Shared by the paint path and the
+    // click hit-test so click-to-value mapping always matches what is drawn.
+    void sliderTrackGeometry(int detailX, int rowPillW, int btnH,
+                             int& trackX, int& trackW) const;
 
     int  hitTestSidebar(QPoint pos) const;
     int  hitTestDetail(QPoint pos) const;
@@ -204,6 +231,10 @@ private:
     void scrollRemapToAction(int actionIdx);
     void playSound(int kind);
     void pollJoystick();
+    // The controller-rebind capture state machine (arming gate, timeouts, button/hat/axis/trigger
+    // scan). Runs only while m_waitingForBind; split out of pollJoystick, which otherwise just
+    // polls for menu navigation.
+    void pollBindCapture(SDL_Joystick* joy);
 };
 
 #endif // SETTINGSVIEW_H

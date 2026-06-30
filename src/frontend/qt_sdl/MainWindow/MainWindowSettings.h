@@ -75,6 +75,9 @@ public slots:
 
     void startVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage);
     void stopVideo();
+    // Stop a cutscene without switching the visible widget or notifying the plugin — used when a
+    // new ROM is loaded while the settings overlay is open over a (paused) cutscene.
+    void stopVideoForReload();
     void pauseVideo();
     void unpauseVideo();
     bool isVideoPlaying() const;

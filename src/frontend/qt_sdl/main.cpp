@@ -375,9 +375,13 @@ int main(int argc, char** argv)
 
     NetInit();
 
-    QFontDatabase::addApplicationFont(":/ds/KHMenu.ttf");
-    QFontDatabase::addApplicationFont(":/ds/KHGummi.ttf");
-    QFontDatabase::addApplicationFont(":/ds/ComicHearts.otf");
+    auto loadFont = [](const char* path) {
+        if (QFontDatabase::addApplicationFont(path) == -1)
+            printf("Failed to load font: %s\n", path);
+    };
+    loadFont(":/ds/KHMenu.ttf");
+    loadFont(":/ds/KHGummi.ttf");
+    loadFont(":/ds/ComicHearts.otf");
 
     createEmuInstance();
 
