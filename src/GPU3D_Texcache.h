@@ -365,7 +365,7 @@ public:
                 imageData = (unsigned char*)DecodingBuffer;
 
                 if (GamePlugin->shouldExportTextures()) {
-                    std::string fullPathTmp = GamePlugin->tmpTextureFilePath(newIdentifierWithPal);
+                    std::string fullPathTmp = GamePlugin->tmpTextureFilePath(oldIdentifierWithPal);
                     const char* pathTmp = fullPathTmp.c_str();
 
                     printf("Saving texture %s\n", pathTmp);
