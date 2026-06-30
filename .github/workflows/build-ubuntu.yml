@@ -30,6 +30,7 @@ jobs:
 
     name: ${{ matrix.arch.name }}
     runs-on: ${{ matrix.arch.runner }}
+    timeout-minutes: 90
 
     steps:
     - uses: actions/checkout@v6
