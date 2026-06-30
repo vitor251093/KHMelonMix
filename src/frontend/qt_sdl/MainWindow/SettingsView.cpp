@@ -224,6 +224,14 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("Emu.DirectBoot", v != 0); saveOnly(); };
         rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("Emu.DirectBoot", true); saveOnly(); };
 
+#ifdef JIT_ENABLED
+        rows.append({ SettingRow::Type::Toggle, loc.emuJitLabel,
+            loc.emuJitDesc });
+        rows.last().read  = [gcfg]() { return gcfg->GetBool("JIT.Enable") ? 1 : 0; };
+        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("JIT.Enable", v != 0); saveOnly(); };
+        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("JIT.Enable", false); saveOnly(); };
+#endif
+
         rows.append({ SettingRow::Type::Toggle, loc.emuFpsLimitLabel,
             loc.emuFpsLimitDesc });
         rows.last().read  = [gcfg]() { return gcfg->GetBool("LimitFPS") ? 1 : 0; };

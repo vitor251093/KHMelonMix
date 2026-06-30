@@ -110,6 +110,7 @@ struct SettingsLocale
     const char* emuPauseLostFocusLabel;  const char* emuPauseLostFocusDesc;
     const char* emuHideMouseLabel;       const char* emuHideMouseDesc;
     const char* emuHideMouseAfterLabel;  const char* emuHideMouseAfterDesc;
+    const char* emuJitLabel;             const char* emuJitDesc;
     // Display
     const char* displayRendererLabel;    const char* displayRendererDesc;
     const char* displayResolutionLabel;  const char* displayResolutionDesc;

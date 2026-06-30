@@ -119,6 +119,7 @@ static const SettingsLocale kEnglish = {
     /* emuPauseLostFocus */  "Pause on Lost Focus",   "Pause emulation when the window loses focus.",
     /* emuHideMouse */       "Hide Mouse",            "Hide the mouse cursor while the emulator window is active.",
     /* emuHideMouseAfter */  "Hide Mouse After",      "Automatically hide the cursor after this period of inactivity.",
+    /* emuJit */             "JIT Recompiler",        "Improves performance but may reduce stability. Takes effect on the next ROM load.",
     // Display
     /* displayRenderer */    "3D Renderer",           "Graphics renderer for 3D scenes. OpenGL modes require GPU support.",
     /* displayResolution */  "3D Resolution",         "Internal rendering scale for 3D graphics.",
