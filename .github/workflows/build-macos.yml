@@ -87,13 +87,13 @@ jobs:
     continue-on-error: true
     steps:
       - name: Download x86_64
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: MelonMix-macOS-x86_64.zip
           path: x86_64
           skip-decompress: true
       - name: Download arm64
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: MelonMix-macOS-arm64.zip
           path: arm64
