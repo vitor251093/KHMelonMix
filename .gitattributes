@@ -8,6 +8,7 @@ src/sha1/**                                  linguist-vendored
 src/teakra/**                                linguist-vendored
 src/tiny-AES-c/**                            linguist-vendored
 src/xxhash/**                                linguist-vendored
+src/xxhash_legacy/**                         linguist-vendored
 
 # A handful of custom files embedded in the vendored dependencies
 
