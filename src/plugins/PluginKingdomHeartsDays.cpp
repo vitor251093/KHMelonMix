@@ -412,6 +412,11 @@ void PluginKingdomHeartsDays::overrideJoystickMappings(std::function<void(std::s
     KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(config, setIntConfig);
 }
 
+void PluginKingdomHeartsDays::applyRecommendedJoystickMappings(std::function<void(std::string, int)> setIntConfig)
+{
+    KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+}
+
 std::string PluginKingdomHeartsDays::saveFilePath()
 {
     KingdomHeartsHDCollection::createSignalFile();

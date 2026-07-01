@@ -414,6 +414,11 @@ void PluginKingdomHeartsReCoded::overrideJoystickMappings(std::function<void(std
     KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(config, setIntConfig);
 }
 
+void PluginKingdomHeartsReCoded::applyRecommendedJoystickMappings(std::function<void(std::string, int)> setIntConfig)
+{
+    KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+}
+
 std::string PluginKingdomHeartsReCoded::saveFilePath()
 {
     KingdomHeartsHDCollection::createSignalFile();

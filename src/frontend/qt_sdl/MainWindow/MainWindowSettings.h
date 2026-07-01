@@ -33,6 +33,7 @@
 #include "CutsceneVideoView.h"
 
 class EmuInstance;
+class SettingsView;
 
 namespace melonMix {
 class AudioPlayer;
@@ -48,6 +49,8 @@ class MainWindowSettings : public QMainWindow
 public:
     explicit MainWindowSettings(EmuInstance* inst, QWidget* parent);
     ~MainWindowSettings();
+
+    EmuInstance* getEmuInstance() { return emuInstance; }
 
 public slots:
     void asyncStartBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, quint32 delayAtStart, QString bgmMusicFilePath);
@@ -72,8 +75,13 @@ public slots:
 
     void startVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage);
     void stopVideo();
+    // Stop a cutscene without switching the visible widget or notifying the plugin — used when a
+    // new ROM is loaded while the settings overlay is open over a (paused) cutscene.
+    void stopVideoForReload();
     void pauseVideo();
     void unpauseVideo();
+    bool isVideoPlaying() const;
+    bool isVideoPaused() const;
 
     void asyncShowCutsceneSkipMenu(int selection);
     void asyncUpdateCutsceneSkipMenu(int selection);
@@ -95,13 +103,13 @@ protected:
     void onAudioOutputsChanged();
     void keyPressEvent(QKeyEvent* event) override;
 
-    QWidget* settingsWidget;
-    QStackedWidget* settingWidgetOptions;
-    bool showingSettings;
-
     void initWidgets();
 
     virtual void showGame() = 0;
+
+    SettingsView* settingsView = nullptr;
+    QWidget* m_previousWidget = nullptr;
+    bool m_videoPausedBySelf = false;
 
 private:
     QScopedPointer<Ui::MainWindowSettings> ui;
@@ -130,6 +138,7 @@ private:
     unsigned int m_sfxAudioDevice = 0; // SDL_AudioDeviceID (0 = not open)
 
     void createVideoPlayer();
+    void createSettingsView();
     void createMenuSounds();
     qreal getBgmMusicVolume(quint8 ramVolume);
 };

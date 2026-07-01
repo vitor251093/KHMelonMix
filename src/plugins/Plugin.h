@@ -133,6 +133,8 @@ struct TextureEntry
 };
 
 
+struct ThemeColor { u8 r, g, b; };
+
 class Plugin
 {
 protected:
@@ -192,6 +194,7 @@ public:
     virtual int renderer_brightnessMode() { return 0; };
     virtual float renderer_forcedAspectRatio() {return AspectRatio;};
     virtual bool renderer_showOriginalUI() { return true; };
+    virtual ThemeColor defaultThemeColor() { return {60, 60, 60}; };
 
     bool togglePause();
 
@@ -390,6 +393,15 @@ public:
     virtual void overrideJoystickMappings(
         std::function<void(std::string, int)> setIntConfig
     ) {}
+
+    virtual void applyRecommendedJoystickMappings(
+        std::function<void(std::string, int)> setIntConfig
+    ) {}
+
+    virtual bool supportsKHExtendedSettings() const { return false; }
+    // Capability gate for the Days-only "Disable His Memories" setting row. Prefer capability
+    // predicates over game-identity checks so SettingsView never branches on which title is loaded.
+    virtual bool supportsDisableHisMemories() const { return false; }
 
     virtual void hudToggle() {}
 

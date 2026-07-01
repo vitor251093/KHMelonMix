@@ -67,7 +67,8 @@ const char* EmuInstance::hotkeyNames[HK_MAX] =
     "HK_GuitarGripGreen",
     "HK_GuitarGripRed",
     "HK_GuitarGripYellow",
-    "HK_GuitarGripBlue"
+    "HK_GuitarGripBlue",
+    "HK_OpenSettings"
 };
 
 const char* EmuInstance::touchButtonNames[4] =
@@ -151,6 +152,9 @@ void EmuInstance::inputLoadConfig()
         hkKeyMapping[i] = keycfg.GetInt(hotkeyNames[i]);
         hkJoyMapping[i] = joycfg.GetInt(hotkeyNames[i]);
     }
+
+    if (hkKeyMapping[HK_OpenSettings] == 0)
+        hkKeyMapping[HK_OpenSettings] = Qt::Key_F10;
 
     if (plugin != nullptr && plugin->isReady())
     {
@@ -367,6 +371,37 @@ void EmuInstance::openJoystick()
             memset(hidReport, 0, sizeof(hidReport));
         }
     }
+
+    // Apply default bindings for any button still at 0 (never configured).
+    // 0 == GetInt default for missing config keys; -1 == user explicitly unbound.
+    // In-memory only: not saved to config, re-derived each time a controller opens.
+    if (joystick)
+    {
+        // D-pad via hat 0 (works for virtually all modern controllers)
+        if (joyMapping[4] == 0) joyMapping[4] = 0x102; // Right
+        if (joyMapping[5] == 0) joyMapping[5] = 0x108; // Left
+        if (joyMapping[6] == 0) joyMapping[6] = 0x101; // Up
+        if (joyMapping[7] == 0) joyMapping[7] = 0x104; // Down
+
+        if (controller)
+        {
+            auto gcRaw = [&](SDL_GameControllerButton btn) -> int {
+                SDL_GameControllerButtonBind b = SDL_GameControllerGetBindForButton(controller, btn);
+                return (b.bindType == SDL_CONTROLLER_BINDTYPE_BUTTON) ? b.value.button : -1;
+            };
+            if (joyMapping[0]  == 0) joyMapping[0]  = gcRaw(SDL_CONTROLLER_BUTTON_A); // DS A = confirm
+            if (joyMapping[1]  == 0) joyMapping[1]  = gcRaw(SDL_CONTROLLER_BUTTON_B); // DS B = back
+            if (joyMapping[10] == 0) joyMapping[10] = gcRaw(SDL_CONTROLLER_BUTTON_Y); // DS X → phys Y
+            if (joyMapping[11] == 0) joyMapping[11] = gcRaw(SDL_CONTROLLER_BUTTON_X); // DS Y → phys X (reset)
+        }
+        else
+        {
+            if (joyMapping[0]  == 0) joyMapping[0]  = 1;
+            if (joyMapping[1]  == 0) joyMapping[1]  = 0;
+            if (joyMapping[10] == 0) joyMapping[10] = 3;
+            if (joyMapping[11] == 0) joyMapping[11] = 2;
+        }
+    }
 }
 
 void EmuInstance::closeJoystick()
@@ -391,6 +426,22 @@ void EmuInstance::closeJoystick()
         hidDevice = nullptr;
     }
     memset(hidReport, 0, sizeof(hidReport));
+}
+
+// Mirrors the reopen logic in inputProcess() so callers outside the emulation loop (e.g. the
+// settings overlay, which pauses emulation) can keep the joystick alive after inputLoadConfig()
+// closes it. Drops a detached handle and (re)opens one if a device is available.
+void EmuInstance::ensureJoystickOpen()
+{
+    SDL_LockMutex(joyMutex.get());
+    if (joystick && !SDL_JoystickGetAttached(joystick))
+    {
+        SDL_JoystickClose(joystick);
+        joystick = nullptr;
+    }
+    if (!joystick && (SDL_NumJoysticks() > 0))
+        openJoystick();
+    SDL_UnlockMutex(joyMutex.get());
 }
 
 
@@ -573,14 +624,23 @@ Sint16 EmuInstance::joystickButtonDown(int val)
 
 void EmuInstance::pollHidReport()
 {
-    if (!hidDevice) return;
-    u8 buf[64];
-    int n;
-    while ((n = SDL_hid_read(hidDevice, buf, sizeof(buf))) != 0)
+    // hidDevice is opened/closed by openJoystick()/closeJoystick() (under joyMutex) and read here.
+    // This runs on both EmuThread (inputProcess, already holding joyMutex — the SDL mutex is
+    // recursive) and the UI thread (SettingsView::pollJoystick). Without this lock the device could
+    // be closed on one thread while SDL's HID run loop reads it on another, freeing memory mid-read
+    // and faulting on a thread where NDS::Current is null.
+    SDL_LockMutex(joyMutex.get());
+    if (hidDevice)
     {
-        if (n < 0) { SDL_hid_close(hidDevice); hidDevice = nullptr; memset(hidReport, 0, sizeof(hidReport)); break; }
-        if (n >= 3 && buf[0] == 0x3F) memcpy(hidReport, buf, n);
+        u8 buf[64];
+        int n;
+        while ((n = SDL_hid_read(hidDevice, buf, sizeof(buf))) != 0)
+        {
+            if (n < 0) { SDL_hid_close(hidDevice); hidDevice = nullptr; memset(hidReport, 0, sizeof(hidReport)); break; }
+            if (n >= 3 && buf[0] == 0x3F) memcpy(hidReport, buf, n);
+        }
     }
+    SDL_UnlockMutex(joyMutex.get());
 }
 
 void EmuInstance::inputProcess()
