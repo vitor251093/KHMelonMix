@@ -209,27 +209,6 @@ void ARMJIT_Memory::SigsegvHandler(int sig, siginfo_t* info, void* rawContext)
         return;
     }
 
-    // NDS::Current is thread-local; it is null on every thread except EmuThread.
-    // A fault here on a non-EmuThread is never a JIT write-protection fault. The known cause
-    // (an unsynchronised SDL_hid_close racing SDL_hid_read) is now serialised under joyMutex in
-    // EmuInstance::pollHidReport(), so this should no longer fire — it is kept as a defence-in-depth
-    // net. Advancing the PC by 4 skips the faulting ARM64 instruction so the thread returns cleanly
-    // instead of crashing or corrupting the heap via SIG_DFL. The warning is rate-limited so a
-    // genuine (unrelated) worker-thread fault still surfaces instead of vanishing silently.
-    if (!NDS::Current)
-    {
-        static int loggedCount = 0;
-        if (loggedCount < 8)
-        {
-            loggedCount++;
-            fprintf(stderr, "[ARMJIT] segfault on non-EmuThread skipped (#%d) at PC=%p, addr=%p\n",
-                    loggedCount, (void*)((ucontext_t*)rawContext)->CONTEXT_PC, info->si_addr);
-        }
-        ucontext_t* context = (ucontext_t*)rawContext;
-        context->CONTEXT_PC += 4;   // ARM64: every instruction is exactly 4 bytes
-        return;
-    }
-
     ucontext_t* context = (ucontext_t*)rawContext;
 
     FaultDescription desc {};
