@@ -140,14 +140,17 @@ static const SettingsLocale kEnglish = {
     /* systemDSiCharging */  "DSi Charging",          "Whether the simulated DSi battery is charging.",
 
     /* streamPara1 */
+        "In order to stream Melon Mix with OBS, capture your screen or it won't record "
+        "the cutscenes, and capture your whole audio or it won't record the replacement BGM.",
+    /* streamPara2 */
         "This game is a copyrighted work. The copyright is held by The Walt Disney "
         "Company and a collaboration of authors representing The Walt Disney Company. "
         "Additionally, the copyright of certain characters is held by Square Enix Co., Ltd.",
-    /* streamPara2 */
+    /* streamPara3 */
         "You are free to stream this game in non-commercial contexts. However, using "
         "streams of the game to primarily provide or listen to the music is prohibited "
         "even in such non-commercial contexts.",
-    /* streamPara3 */
+    /* streamPara4 */
         "For information on the terms of use relating to streaming the game, please see "
         "the official KINGDOM HEARTS site.",
     /* streamOpenHint */ "Open a browser to view the official website.",

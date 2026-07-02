@@ -2630,13 +2630,14 @@ void SettingsView::paintDetailStream(QPainter& p, const DetailLayout& L)
     const QString para1 = QString::fromUtf8(locale().streamPara1);
     const QString para2 = QString::fromUtf8(locale().streamPara2);
     const QString para3 = QString::fromUtf8(locale().streamPara3);
+    const QString para4 = QString::fromUtf8(locale().streamPara4);
 
     p.setFont(rowFont);
     p.setPen(QColor(235, 235, 240));
 
     int textY = line1Y + spacing;
-    int paraH = (int)(h * 0.13);
-    for (const QString& para : {para1, para2, para3})
+    int paraH = (int)(h * 0.11);
+    for (const QString& para : {para1, para2, para3, para4})
     {
         p.drawText(QRect(detailX + pillMargin, textY, detailW - pillMargin * 2, paraH),
                    Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, para);

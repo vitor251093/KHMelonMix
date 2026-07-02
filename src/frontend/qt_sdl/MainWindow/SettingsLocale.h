@@ -134,6 +134,7 @@ struct SettingsLocale
     const char* streamPara1;
     const char* streamPara2;
     const char* streamPara3;
+    const char* streamPara4;
     const char* streamOpenHint;
     const char* quitBody;
 };
