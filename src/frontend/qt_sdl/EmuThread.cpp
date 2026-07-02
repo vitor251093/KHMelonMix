@@ -108,6 +108,7 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
         connect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
         connect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
+        connect(this, SIGNAL(windowOpenSettings()), window, SLOT(onOpenSettingsOverlay()));
     }
 }
 
@@ -147,6 +148,7 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
         disconnect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
         disconnect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
+        disconnect(this, SIGNAL(windowOpenSettings()), window, SLOT(onOpenSettingsOverlay()));
     }
 }
 
@@ -199,11 +201,25 @@ void EmuThread::run()
     emuInstance->fastForwardToggled = false;
     emuInstance->slowmoToggled = false;
 
+    bool settingsPausedEmu = false;
+    EmuStatusKind settingsPrevStatus = emuStatus_Running;
+
     while (emuStatus != emuStatus_Exit)
     {
         if (emuInstance->instanceID == 0)
             MPInterface::Get().Process();
 
+        // The overlay can be opened directly (idle path) without going through the HK_OpenSettings
+        // block below; arm the pause here so a ROM opened while the overlay is up stays paused in
+        // the background until the overlay closes (the existing guards then hold/resume it).
+        if (emuInstance->settingsViewOpen && !settingsPausedEmu)
+        {
+            settingsPrevStatus = emuStatus;
+            settingsPausedEmu  = true;
+        }
+
+        if (!emuInstance->settingsViewOpen)
+        {
         emuInstance->inputProcess();
 
         auto nds = emuInstance->getNDS();
@@ -283,6 +299,23 @@ void EmuThread::run()
 
         if (emuInstance->hotkeyPressed(HK_SwapScreens)) emit swapScreensToggle();
         if (emuInstance->hotkeyPressed(HK_SwapScreenEmphasis)) emit screenEmphasisToggle();
+
+        if (emuInstance->hotkeyPressed(HK_OpenSettings) || openSettingsRequested.exchange(false))
+        {
+            emuInstance->settingsViewOpen = true;
+            settingsPrevStatus = emuStatus;
+            settingsPausedEmu = true;
+            emit windowOpenSettings();
+        }
+
+        } // !settingsViewOpen
+
+        // While the settings overlay is open, hold emuStatus at Paused regardless of
+        // anything handleMessages() may have set (e.g. PauseLostFocus). Pause/run
+        // requests that arrive during settings are intentionally discarded; the emu
+        // always resumes at settingsPrevStatus when the overlay closes.
+        if (settingsPausedEmu && emuInstance->settingsViewOpen)
+            emuStatus = emuStatus_Paused;
 
         if (emuStatus == emuStatus_Running || emuStatus == emuStatus_FrameStep)
         {
@@ -579,9 +612,28 @@ void EmuThread::run()
             if (emuInstance->plugin != nullptr) {
                 refreshPluginState();
             }
+
+            if (settingsPausedEmu)
+            {
+                if (emuInstance->settingsViewOpen)
+                    emuStatus = emuStatus_Paused;
+                else
+                {
+                    settingsPausedEmu = false;
+                    emuStatus = settingsPrevStatus;
+                }
+            }
         }
 
         handleMessages();
+
+        if (settingsPausedEmu)
+        {
+            if (!emuActive)
+                settingsPausedEmu = false;
+            else if (emuStatus == emuStatus_Running)
+                settingsPrevStatus = emuStatus_Running;
+        }
 
         //Lua Script Stuff (-for now happens at the end of each frame regardless of emuStatus)
         emit signalLuaUpdate();

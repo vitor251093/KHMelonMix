@@ -21,6 +21,8 @@ public:
     static u32 euGamecode;
     static u32 jpGamecode;
     static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
+    bool supportsKHExtendedSettings() const override { return true; }
+    bool supportsDisableHisMemories() const override { return true; }
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
@@ -46,6 +48,7 @@ public:
     int renderer_brightnessMode() override;
     float renderer_forcedAspectRatio() override;
     bool renderer_showOriginalUI() override;
+    ThemeColor defaultThemeColor() override { return {192, 56, 14}; }
 
     bool shouldPreserveDsTopScreenWhileOnDualScreenModeForGameScene();
 
@@ -92,6 +95,7 @@ public:
     ) override;
 
     void overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
+    void applyRecommendedJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
 private:
     bool PausedInGame = false;
     bool isCharacterControllable = false;
