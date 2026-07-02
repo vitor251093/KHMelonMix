@@ -118,6 +118,7 @@ struct SettingsLocale
     const char* displayThemeColorLabel;  const char* displayThemeColorDesc;
     // Sound
     const char* soundVolumeLabel;        const char* soundVolumeDesc;
+    const char* soundBgmVolumeLabel;     const char* soundBgmVolumeDesc;
     const char* soundInterpolationLabel; const char* soundInterpolationDesc;
     const char* soundBitDepthLabel;      const char* soundBitDepthDesc;
     const char* soundDSiVolumeSyncLabel; const char* soundDSiVolumeSyncDesc;

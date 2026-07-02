@@ -424,6 +424,21 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             saveAudio();
         };
 
+        rows.append({ SettingRow::Type::Slider, loc.soundBgmVolumeLabel,
+            loc.soundBgmVolumeDesc, {}, 0, 10 });
+        rows.last().read  = [lcfg]()      { return lcfg->GetInt("Audio.BGMVolume") / 10; };
+        rows.last().write = [emu, lcfg, saveAudio](int v) {
+            int vol = qBound(0, v * 10, 100);
+            lcfg->SetInt("Audio.BGMVolume", vol);
+            emu->setAudioVolume(vol);
+            saveAudio();
+        };
+        rows.last().reset = [emu, lcfg, saveAudio]() {
+            lcfg->SetInt("Audio.BGMVolume", 100);
+            emu->setAudioVolume(100);
+            saveAudio();
+        };
+
         rows.append({ SettingRow::Type::Combobox, loc.soundInterpolationLabel,
             loc.soundInterpolationDesc,
             {"None", "Linear", "Cosine", "Cubic", "Gaussian"} });

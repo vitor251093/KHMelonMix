@@ -127,6 +127,7 @@ static const SettingsLocale kEnglish = {
     /* displayThemeColor */  "Theme Color",           "Settings menu accent color inspired by each Kingdom Hearts title.",
     // Sound
     /* soundVolume */        "Volume",                "Game audio output level.",
+    /* soundBgmVolume */     "BGM Volume",            "Background music audio output level.",
     /* soundInterpolation */ "Interpolation",         "Audio resampling quality. Higher settings improve fidelity but use more CPU.",
     /* soundBitDepth */      "Bit Depth",             "Audio sample bit depth. 10-bit mimics original DS hardware.",
     /* soundDSiVolumeSync */ "DSi Volume Sync",       "Sync DS audio volume with the DSi firmware volume level.",
