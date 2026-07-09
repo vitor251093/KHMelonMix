@@ -158,17 +158,13 @@ void MainWindowSettings::updateBgmMusicVolume(quint8 ramVolume)
 qreal MainWindowSettings::getBgmMusicVolume(quint8 ramVolume)
 {
     int volume = localCfg.GetInt("Audio.BGMVolume");
-    if (volume == 0) {
-        volume = (localCfg.GetInt("Audio.Volume") * 100) / 256;
-        localCfg.SetInt("Audio.BGMVolume", volume);
-    }
 
     if (ramVolume == 0x40) {
         // Volume is decreased when paused or during cutscenes
         volume *= 0.7;
     }
 
-    return (volume / 256.0);
+    return (volume / 100.0);
 }
 
 void MainWindowSettings::asyncStopBgmMusic(quint16 bgmId, bool bStoreResumePos, quint32 fadeOutDuration)
