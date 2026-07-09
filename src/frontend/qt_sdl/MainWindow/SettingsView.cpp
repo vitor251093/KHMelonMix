@@ -515,7 +515,9 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
     {
         if (!emu || !emu->plugin || !emu->emuIsActive()) break;
         if (!emu->plugin->supportsKHExtendedSettings()) break;
+        auto* gcfg = &emu->getGlobalConfig();
         auto* lcfg = &emu->getLocalConfig();
+        std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
         auto savePlugin = [emu]() { Config::Save(); emu->plugin->shouldInvalidateConfigs = true; };
 
         rows.append({ SettingRow::Type::Combobox, loc.gamepadConfirmBtnLabel,
@@ -525,6 +527,11 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         rows.last().write = [lcfg, savePlugin](int v) { lcfg->SetInt("JoystickConfirmIndex", v); savePlugin(); };
         rows.last().reset = [lcfg, savePlugin]() { lcfg->SetInt("JoystickConfirmIndex", 0); savePlugin(); };
 
+        rows.append({ SettingRow::Type::Slider, loc.gamepadCamSensLabel,
+            loc.gamepadCamSensDesc, {}, 1, 10 });
+        rows.last().read  = [gcfg, prefix]() { int v = gcfg->GetInt(prefix + "CameraSensitivity"); return v == 0 ? 3 : v; };
+        rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetInt(prefix + "CameraSensitivity", v); savePlugin(); };
+
         rows.append({ SettingRow::Type::Navigate, loc.gamepadBindingsLabel,
             loc.gamepadBindingsDesc });
         break;
@@ -533,14 +540,7 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
     {
         if (!emu || !emu->plugin || !emu->emuIsActive()) break;
         if (!emu->plugin->supportsKHExtendedSettings()) break;
-        auto* gcfg = &emu->getGlobalConfig();
         std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
-        auto savePlugin = [emu]() { Config::Save(); emu->plugin->shouldInvalidateConfigs = true; };
-
-        rows.append({ SettingRow::Type::Slider, loc.keyboardCamSensLabel,
-            loc.keyboardCamSensDesc, {}, 1, 10 });
-        rows.last().read  = [gcfg, prefix]() { int v = gcfg->GetInt(prefix + "CameraSensitivity"); return v == 0 ? 3 : v; };
-        rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetInt(prefix + "CameraSensitivity", v); savePlugin(); };
 
         rows.append({ SettingRow::Type::Navigate, loc.keyboardBindingsLabel,
             loc.keyboardBindingsDesc });

@@ -107,9 +107,9 @@ static const SettingsLocale kEnglish = {
     /* gamepadConfirmBtnDesc */  "Assign which DS button should be the confirmation button.",
     /* gamepadBindingsLabel */ "Key Bindings",
     /* gamepadBindingsDesc */  "Assign gamepad keys to DS buttons and hotkeys.",
+    /* gamepadCamSensLabel */  "Camera Sensitivity",
+    /* gamepadCamSensDesc */   "Speed of the touch-screen camera controls.",
 
-    /* keyboardCamSensLabel */  "Camera Sensitivity",
-    /* keyboardCamSensDesc */   "Speed of the touch-screen camera controls.",
     /* keyboardBindingsLabel */ "Key Bindings",
     /* keyboardBindingsDesc */  "Assign keyboard keys to DS buttons and hotkeys.",
 

@@ -97,10 +97,10 @@ struct SettingsLocale
     const char* gamepadConfirmBtnDesc;
     const char* gamepadBindingsLabel;
     const char* gamepadBindingsDesc;
+    const char* gamepadCamSensLabel;
+    const char* gamepadCamSensDesc;
 
     // Keyboard section (KH-guarded rows)
-    const char* keyboardCamSensLabel;
-    const char* keyboardCamSensDesc;
     const char* keyboardBindingsLabel;
     const char* keyboardBindingsDesc;
 
