@@ -79,6 +79,7 @@ DefaultList<int> DefaultInts =
 {
     {"Instance*.Keyboard", -1},
     {"Instance*.Joystick", -1},
+    {"Instance*.JoystickConfirmIndex", 0},
     {"Instance*.Window*.Width", 256},
     {"Instance*.Window*.Height", 384},
     {"Instance*.Window*.ScreenAspectTop", 1},

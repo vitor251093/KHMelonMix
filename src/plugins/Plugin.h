@@ -451,6 +451,7 @@ protected:
     bool FullscreenOnStartup = false;
     bool PauseInsteadOfSkipOnStart = true;
     bool SubtitlesEnabled = false;
+    int JoystickConfirmIndex = 0;
     std::string SelectedAudioPack = "";
 
     bool _LastTouchScreenMovementWasByPlugin = false;

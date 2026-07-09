@@ -92,6 +92,12 @@ struct SettingsLocale
     const char* soundAudioPackLabel;
     const char* soundAudioPackDesc;
 
+    // Gamepad section (KH-guarded rows)
+    const char* gamepadConfirmBtnLabel;
+    const char* gamepadConfirmBtnDesc;
+    const char* gamepadBindingsLabel;
+    const char* gamepadBindingsDesc;
+
     // Keyboard section (KH-guarded rows)
     const char* keyboardCamSensLabel;
     const char* keyboardCamSensDesc;

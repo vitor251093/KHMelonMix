@@ -511,6 +511,24 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         }
         break;
     }
+    case kIdxGamepad:
+    {
+        if (!emu || !emu->plugin || !emu->emuIsActive()) break;
+        if (!emu->plugin->supportsKHExtendedSettings()) break;
+        auto* lcfg = &emu->getLocalConfig();
+        auto savePlugin = [emu]() { Config::Save(); emu->plugin->shouldInvalidateConfigs = true; };
+
+        rows.append({ SettingRow::Type::Combobox, loc.gamepadConfirmBtnLabel,
+            loc.gamepadConfirmBtnDesc,
+        {"A", "B"} });
+        rows.last().read  = [lcfg]()      { return lcfg->GetInt("JoystickConfirmIndex"); };
+        rows.last().write = [lcfg, savePlugin](int v) { lcfg->SetInt("JoystickConfirmIndex", v); savePlugin(); };
+        rows.last().reset = [lcfg, savePlugin]() { lcfg->SetInt("JoystickConfirmIndex", 0); savePlugin(); };
+
+        rows.append({ SettingRow::Type::Navigate, loc.gamepadBindingsLabel,
+            loc.gamepadBindingsDesc });
+        break;
+    }
     case kIdxKeyboard:
     {
         if (!emu || !emu->plugin || !emu->emuIsActive()) break;
@@ -1368,7 +1386,7 @@ void SettingsView::handleNavSidebar(int direction)
         else if (sidebarIndex == kIdxGamepad || sidebarIndex == kIdxKeyboard)
         {
             QVector<SettingRow> kbRows = rowsFor(sidebarIndex);
-            if (sidebarIndex == kIdxKeyboard && !kbRows.isEmpty())
+            if (!kbRows.isEmpty())
             {
                 currentScreen        = Screen::Detail;
                 detailIndex          = 0;
@@ -1466,6 +1484,16 @@ void SettingsView::handleNavDetail(int direction)
         update();
     };
 
+    auto openGamepadRemap = [&]() {
+        m_remapIsJoystick   = true;
+        m_remapScrollOffset = 0;
+        detailIndex         = 0;
+        buildRemapList();
+        currentScreen = Screen::Remap;
+        playSound(1);
+        update();
+    };
+
     auto openKeyboardRemap = [&]() {
         m_remapIsJoystick   = false;
         m_remapScrollOffset = 0;
@@ -1511,6 +1539,8 @@ void SettingsView::handleNavDetail(int direction)
         }
         else if (row.type == SettingRow::Type::Combobox)
             openCurrentRow();
+        else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxGamepad)
+            openGamepadRemap();
         else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxKeyboard)
             openKeyboardRemap();
         break;
@@ -1527,6 +1557,8 @@ void SettingsView::handleNavDetail(int direction)
         }
         else if (row.type == SettingRow::Type::Combobox)
             openCurrentRow();
+        else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxGamepad)
+            openGamepadRemap();
         else if (row.type == SettingRow::Type::Navigate && sidebarIndex == kIdxKeyboard)
             openKeyboardRemap();
         break;

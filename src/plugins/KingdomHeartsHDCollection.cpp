@@ -295,8 +295,8 @@ std::string KingdomHeartsHDCollection::language()
 void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::string, int)> setIntConfig, bool bAsConfirmButton)
 {
     std::map<std::string, std::vector<PluginJoystickInput>> map = {
-        {"A",                     {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_B : PLUGIN_GAME_CONTROLLER_BUTTON_A}},
-        {"B",                     {bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_A : PLUGIN_GAME_CONTROLLER_BUTTON_B}},
+        {"A",                     {PLUGIN_GAME_CONTROLLER_BUTTON_A}},
+        {"B",                     {PLUGIN_GAME_CONTROLLER_BUTTON_B}},
         {"Y",                     {PLUGIN_GAME_CONTROLLER_BUTTON_X}},
         {"X",                     {PLUGIN_GAME_CONTROLLER_BUTTON_Y}},
         {"L",                     {PLUGIN_GAME_CONTROLLER_BUTTON_LEFTSHOULDER}},
@@ -326,6 +326,7 @@ void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::st
         {"R",                     {}}
     };
     PluginJoystick::applyMappings(setIntConfig, map);
+    setIntConfig("Instance0.JoystickConfirmIndex", bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_B : PLUGIN_GAME_CONTROLLER_BUTTON_A);
 }
 
 void KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(KHMareConfig* config, std::function<void(std::string, int)> setIntConfig)

@@ -103,6 +103,11 @@ static const SettingsLocale kEnglish = {
     /* soundAudioPackLabel */ "Audio Pack",
     /* soundAudioPackDesc */  "Replacement music pack for in-game audio.",
 
+    /* gamepadConfirmBtnLabel */ "Confirm",
+    /* gamepadConfirmBtnDesc */  "Assign which DS button should be the confirmation button.",
+    /* gamepadBindingsLabel */ "Key Bindings",
+    /* gamepadBindingsDesc */  "Assign gamepad keys to DS buttons and hotkeys.",
+
     /* keyboardCamSensLabel */  "Camera Sensitivity",
     /* keyboardCamSensDesc */   "Speed of the touch-screen camera controls.",
     /* keyboardBindingsLabel */ "Key Bindings",

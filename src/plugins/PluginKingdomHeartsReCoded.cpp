@@ -1919,6 +1919,24 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
         return;
     }
 
+    if (JoystickConfirmIndex != 0)
+    {
+        bool aPressed = ((~(*InputMask)) & (1<<0)) != 0;
+        bool bPressed = ((~(*InputMask)) & (1<<1)) != 0;
+        if (aPressed) {
+            *InputMask &= ~(1<<1); // B
+        }
+        else {
+            *InputMask |= (1<<1); // B
+        }
+        if (bPressed) {
+            *InputMask &= ~(1<<0); // A
+        }
+        else {
+            *InputMask |= (1<<0); // A
+        }
+    }
+
     // While the cutscene Skip/Continue menu is open, the d-pad navigates it.
     if (_superApplyAddonKeysToCutsceneMenu(AddonMask, AddonPress, HK_CommandMenuUp, HK_CommandMenuDown)) {
         return;
