@@ -203,6 +203,13 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
             rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "DaysDisableHisMemories", v); pluginSave(); };
             rows.last().reset = [gcfg, prefix, pluginSave]() { gcfg->SetBool(prefix + "DaysDisableHisMemories", false); pluginSave(); };
         }
+
+        rows.append({ SettingRow::Type::TextField, loc.gameMultiplayerNameLabel,
+        loc.gameMultiplayerNameDesc });
+        rows.last().readString  = [gcfg]() { return QString::fromStdString(gcfg->GetString("Instance0.Firmware.Username")); };
+        rows.last().writeString = [gcfg, pluginSave](QString v) { gcfg->SetString("Instance0.Firmware.Username", v.toStdString()); pluginSave(); };
+        rows.last().reset = [gcfg, pluginSave]() { gcfg->SetString("Instance0.Firmware.Username", "MelonMix"); pluginSave(); };
+
         break;
     }
     case kIdxEmulation:
@@ -814,6 +821,20 @@ void SettingsView::writeRowValue(int sidebar, int row, int newValue)
     auto rows = rowsFor(sidebar);
     if (row < 0 || row >= rows.size() || !rows[row].write) return;
     rows[row].write(newValue);
+}
+
+QString SettingsView::readRowStringValue(int sidebar, int row) const
+{
+    auto rows = rowsFor(sidebar);
+    if (row < 0 || row >= rows.size() || !rows[row].readString) return {};
+    return rows[row].readString();
+}
+
+void SettingsView::writeRowStringValue(int sidebar, int row, QString newValue)
+{
+    auto rows = rowsFor(sidebar);
+    if (row < 0 || row >= rows.size() || !rows[row].writeString) return;
+    rows[row].writeString(newValue);
 }
 
 QString SettingsView::rowDynamicValueText(int sidebar, int row) const
@@ -2479,6 +2500,10 @@ void SettingsView::paintDetailSidebarPreview(QPainter& p, const DetailLayout& L)
                             valStr = (!row.options.isEmpty() && v >= 0 && v < row.options.size())
                                      ? row.options[v] : rowDynamicValueText(sidebarIndex, i);
                     }
+                    else if (row.readString)
+                    {
+                        valStr = row.readString();
+                    }
                     QColor dimTc(tc.red() * 45/100, tc.green() * 45/100, tc.blue() * 45/100);
                     p.setFont(rf);
                     p.setPen(dimTc);
@@ -2814,7 +2839,7 @@ void SettingsView::paintDetailRows(QPainter& p, const DetailLayout& L)
 
         // Value in pill
         int val = row.read ? row.read() : 0;
-        QString valStr;
+        QString valStr = row.readString ? row.readString() : QString();
         if (row.type == SettingRow::Type::Toggle)
             valStr = val ? locale().on : locale().off;
         else if (row.type == SettingRow::Type::Combobox)

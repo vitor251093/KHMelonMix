@@ -39,7 +39,7 @@ class MainWindowSettings;
 
 struct SettingRow
 {
-    enum class Type { Toggle, Combobox, Slider, Readonly, Navigate };
+    enum class Type { Toggle, Combobox, Slider, Readonly, Navigate, TextField };
     enum class Tag  { None, ThemeColorPicker };
     Type        type;
     QString     label;
@@ -52,6 +52,8 @@ struct SettingRow
     std::function<bool()>    enabled;
     std::function<int()>     read;
     std::function<void(int)> write;
+    std::function<QString()>     readString;
+    std::function<void(QString)> writeString;
     // Restores this row to its default and applies the same side effect as write(). Set only on
     // rows that participate in "Reset section"; resetSectionToDefaults() iterates and calls it.
     std::function<void()>    reset;
@@ -210,6 +212,8 @@ private:
     QVector<SettingRow> rowsFor(int sidebarIndex) const;
     int  readRowValue(int sidebar, int row) const;
     void writeRowValue(int sidebar, int row, int newValue);
+    QString readRowStringValue(int sidebar, int row) const;
+    void writeRowStringValue(int sidebar, int row, QString newValue);
     QString rowDynamicValueText(int sidebar, int row) const;
 
     QStringList currentOptionList() const;
