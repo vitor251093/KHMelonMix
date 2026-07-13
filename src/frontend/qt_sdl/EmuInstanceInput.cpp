@@ -153,8 +153,8 @@ void EmuInstance::inputLoadConfig()
         hkJoyMapping[i] = joycfg.GetInt(hotkeyNames[i]);
     }
 
-    if (hkKeyMapping[HK_OpenSettings] == 0)
-        hkKeyMapping[HK_OpenSettings] = Qt::Key_F10;
+    if (hkKeyMapping[HK_OpenSettings] == 0 || hkKeyMapping[HK_OpenSettings] == -1)
+        hkKeyMapping[HK_OpenSettings] = Qt::Key_Escape;
 
     if (plugin != nullptr && plugin->isReady())
     {
