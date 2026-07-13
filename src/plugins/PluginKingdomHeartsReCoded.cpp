@@ -230,7 +230,8 @@ enum
     HK_CommandMenuDown,
     HK_HUDToggle,
     HK_FullscreenMapToggle,
-    HK_ReplacementTexturesToggle
+    HK_ReplacementTexturesToggle,
+    HK_OpenSettings
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -267,7 +268,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         "HK_CommandMenuDown",
         "HK_HUDToggle",
         "HK_FullscreenMapToggle",
-        "HK_ReplacementTexturesToggle"
+        "HK_ReplacementTexturesToggle",
+        "HK_OpenSettings"
     };
     customKeyMappingLabels = {
         "Switch Target - Left",
@@ -279,7 +281,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         "Command Menu - Down",
         "HUD Toggle",
         "Fullscreen Map Toggle",
-        "Toggle Replacement Textures"
+        "Toggle Replacement Textures",
+        "Open Settings"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{

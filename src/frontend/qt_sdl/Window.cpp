@@ -2453,7 +2453,16 @@ void MainWindow::onShowGameSettings()
 void MainWindow::refreshSettingsShortcut()
 {
     if (actGameSettings)
-        actGameSettings->setShortcut(QKeySequence(emuInstance->getHotkeyKey(HK_OpenSettings)));
+    {
+        if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady())
+        {
+            int openSettingsIndex = emuInstance->plugin->customKeyIndexByName("HK_OpenSettings");
+            if (openSettingsIndex != -1)
+            {
+                actGameSettings->setShortcut(QKeySequence(emuInstance->getPluginKey(openSettingsIndex)));
+            }
+        }
+    }
 }
 
 void MainWindow::onOpenSettingsOverlay()

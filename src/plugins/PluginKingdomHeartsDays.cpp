@@ -207,7 +207,8 @@ enum
     HK_CommandMenuDown,
     HK_HUDToggle,
     HK_FullscreenMapToggle,
-    HK_ReplacementTexturesToggle
+    HK_ReplacementTexturesToggle,
+    HK_OpenSettings
 };
 
 
@@ -233,7 +234,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "HK_CommandMenuDown",
         "HK_HUDToggle",
         "HK_FullscreenMapToggle",
-        "HK_ReplacementTexturesToggle"
+        "HK_ReplacementTexturesToggle",
+        "HK_OpenSettings"
     };
     customKeyMappingLabels = {
         "Attack / Interact",
@@ -248,7 +250,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "Command Menu - Down",
         "HUD Toggle",
         "Fullscreen Map Toggle",
-        "Toggle Replacement Textures"
+        "Toggle Replacement Textures",
+        "Open Settings"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 46> {{

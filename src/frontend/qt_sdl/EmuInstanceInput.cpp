@@ -67,8 +67,7 @@ const char* EmuInstance::hotkeyNames[HK_MAX] =
     "HK_GuitarGripGreen",
     "HK_GuitarGripRed",
     "HK_GuitarGripYellow",
-    "HK_GuitarGripBlue",
-    "HK_OpenSettings"
+    "HK_GuitarGripBlue"
 };
 
 const char* EmuInstance::touchButtonNames[4] =
@@ -153,9 +152,6 @@ void EmuInstance::inputLoadConfig()
         hkJoyMapping[i] = joycfg.GetInt(hotkeyNames[i]);
     }
 
-    if (hkKeyMapping[HK_OpenSettings] == 0 || hkKeyMapping[HK_OpenSettings] == -1)
-        hkKeyMapping[HK_OpenSettings] = Qt::Key_Escape;
-
     if (plugin != nullptr && plugin->isReady())
     {
         for (int i = 0; i < plugin->customKeyMappingNames.size(); i++)
@@ -163,6 +159,11 @@ void EmuInstance::inputLoadConfig()
             const char* name = plugin->customKeyMappingNames[i];
             pluginKeyMapping[i] = keycfg.GetInt(name);
             pluginJoyMapping[i] = joycfg.GetInt(name);
+
+            if (std::strcmp(name, "HK_OpenSettings") == 0) {
+                if (pluginKeyMapping[i] == 0 || pluginKeyMapping[i] == -1)
+                    pluginKeyMapping[i] = Qt::Key_Escape;
+            }
         }
     }
 

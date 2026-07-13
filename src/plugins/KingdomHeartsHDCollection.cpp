@@ -323,7 +323,8 @@ void KingdomHeartsHDCollection::applyJoystickMappings(std::function<void(std::st
         {"HK_Jump",               {}},
         {"HK_GuardCombo",         {}},
         {"Select",                {}},
-        {"R",                     {}}
+        {"R",                     {}},
+        {"HK_OpenSettings",       {PLUGIN_GAME_CONTROLLER_BUTTON_X}}
     };
     PluginJoystick::applyMappings(setIntConfig, map);
     setIntConfig("Instance0.JoystickConfirmIndex", bAsConfirmButton ? PLUGIN_GAME_CONTROLLER_BUTTON_B : PLUGIN_GAME_CONTROLLER_BUTTON_A);

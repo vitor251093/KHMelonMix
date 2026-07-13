@@ -58,7 +58,6 @@ enum
     HK_GuitarGripRed,
     HK_GuitarGripYellow,
     HK_GuitarGripBlue,
-    HK_OpenSettings,
     HK_MAX
 };
 
@@ -167,6 +166,7 @@ public:
     void ensureJoystickOpen();  // close a detached handle and (re)open one if available; thread-safe
     int getJoyMapping(int index) const { return joyMapping[index]; }
     int getHotkeyKey(int hk) const { return hkKeyMapping[hk]; }
+    int getPluginKey(int hk) const { return pluginKeyMapping[hk]; }
     SDL_GameController* getController() { return controller; }
     std::shared_ptr<SDL_mutex> getJoyMutex() { return joyMutex; }
     const melonDS::u8* getHidReport() const { return hidReport; }
@@ -273,6 +273,8 @@ private:
     bool hotkeyDown(int id)     { return hotkeyMask    & (1<<id); }
     bool hotkeyPressed(int id)  { return hotkeyPress   & (1<<id); }
     bool hotkeyReleased(int id) { return hotkeyRelease & (1<<id); }
+
+    bool pluginPressed(int id)  { return pluginPress   & (1<<id); }
 
     void loadRTCData();
     void saveRTCData();

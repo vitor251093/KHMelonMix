@@ -200,6 +200,17 @@ public:
 
     std::vector<const char*> customKeyMappingNames = {};
     std::vector<const char*> customKeyMappingLabels = {};
+    int customKeyIndexByName(const char* expectedName) {
+        for (int i = 0; i < customKeyMappingNames.size(); i++)
+        {
+            const char* name = customKeyMappingNames[i];
+            if (std::strcmp(name, expectedName) == 0)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     bool _superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* HotkeyPress);
     // Lets the Skip/Continue menu be navigated with the d-pad, which games map to

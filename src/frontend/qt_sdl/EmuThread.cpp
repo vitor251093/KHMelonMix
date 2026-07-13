@@ -300,12 +300,19 @@ void EmuThread::run()
         if (emuInstance->hotkeyPressed(HK_SwapScreens)) emit swapScreensToggle();
         if (emuInstance->hotkeyPressed(HK_SwapScreenEmphasis)) emit screenEmphasisToggle();
 
-        if (emuInstance->hotkeyPressed(HK_OpenSettings) || openSettingsRequested.exchange(false))
+        if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady())
         {
-            emuInstance->settingsViewOpen = true;
-            settingsPrevStatus = emuStatus;
-            settingsPausedEmu = true;
-            emit windowOpenSettings();
+            int openSettingsIndex = emuInstance->plugin->customKeyIndexByName("HK_OpenSettings");
+            if (openSettingsIndex != -1)
+            {
+                if (emuInstance->pluginPressed(openSettingsIndex) || openSettingsRequested.exchange(false))
+                {
+                    emuInstance->settingsViewOpen = true;
+                    settingsPrevStatus = emuStatus;
+                    settingsPausedEmu = true;
+                    emit windowOpenSettings();
+                }
+            }
         }
 
         } // !settingsViewOpen
