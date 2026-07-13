@@ -1254,7 +1254,38 @@ void SettingsView::pollJoystick()
         return;
     }
 
-    bool backNow = emu->joystickButtonDown(emu->getJoyMapping(1)) != 0;
+    int confirmBtn = -1;
+    int backBtn = -1;
+    int resetBtn = -1;
+    int clearBtn = -1;
+    int upBtn = -1;
+    int downBtn = -1;
+    int leftBtn = -1;
+    int rightBtn = -1;
+    int upSecBtn = -1;
+    int downSecBtn = -1;
+    int leftSecBtn = -1;
+    int rightSecBtn = -1;
+    auto& lcfg = emu->getLocalConfig();
+    int uid = lcfg.GetInt("JoystickUniqueID");
+    if (uid > 0)
+    {
+        Config::Table joycfg = lcfg.GetTable("Joystick." + std::to_string(uid));
+        confirmBtn = joycfg.GetInt("A");
+        backBtn = joycfg.GetInt("B");
+        resetBtn = joycfg.GetInt("X");
+        clearBtn = joycfg.GetInt("Y");
+        upBtn = joycfg.GetInt("Up");
+        downBtn = joycfg.GetInt("Down");
+        leftBtn = joycfg.GetInt("Left");
+        rightBtn = joycfg.GetInt("Right");
+        upSecBtn = joycfg.GetInt("HK_CommandMenuUp");
+        downSecBtn = joycfg.GetInt("HK_CommandMenuDown");
+        leftSecBtn = joycfg.GetInt("HK_CommandMenuLeft");
+        rightSecBtn = joycfg.GetInt("HK_CommandMenuRight");
+    }
+
+    bool backNow = emu->joystickButtonDown(backBtn) != 0;
 
     if (m_pendingClose)
     {
@@ -1269,14 +1300,13 @@ void SettingsView::pollJoystick()
     qint64 now = m_animClock.elapsed();
     if (now - m_lastJoyInput < 150) return;
 
-    bool up      = emu->joystickButtonDown(emu->getJoyMapping(6)) != 0;
-    bool down    = emu->joystickButtonDown(emu->getJoyMapping(7)) != 0;
-    bool left    = emu->joystickButtonDown(emu->getJoyMapping(5)) != 0;
-    bool right   = emu->joystickButtonDown(emu->getJoyMapping(4)) != 0;
-    bool confirm = emu->joystickButtonDown(emu->getJoyMapping(0)) != 0;
-    // Reset = DS X (index 10), Clear = DS Y (index 11), so each matches its "X"/"Y" action-bar hint.
-    bool resetBtn = emu->joystickButtonDown(emu->getJoyMapping(10)) != 0;
-    bool clearBtn = emu->joystickButtonDown(emu->getJoyMapping(11)) != 0;
+    bool up       = emu->joystickButtonDown(upBtn) != 0 || emu->joystickButtonDown(upSecBtn) != 0;
+    bool down     = emu->joystickButtonDown(downBtn) != 0 || emu->joystickButtonDown(downSecBtn) != 0;
+    bool left     = emu->joystickButtonDown(leftBtn) != 0 || emu->joystickButtonDown(leftSecBtn) != 0;
+    bool right    = emu->joystickButtonDown(rightBtn) != 0 || emu->joystickButtonDown(rightSecBtn) != 0;
+    bool confirm  = emu->joystickButtonDown(confirmBtn) != 0;
+    bool resetNow = emu->joystickButtonDown(resetBtn) != 0;
+    bool clearNow = emu->joystickButtonDown(clearBtn) != 0;
 
     int dir = -1;
     if      (up)      dir = 0;
@@ -1285,8 +1315,8 @@ void SettingsView::pollJoystick()
     else if (right)   dir = 3;
     else if (confirm) dir = 4;
     else if (backNow) dir = 5;
-    else if (resetBtn && (currentScreen == Screen::Remap || currentScreen == Screen::Detail)) dir = 6;
-    else if (clearBtn && currentScreen == Screen::Remap) dir = 7;
+    else if (resetNow && (currentScreen == Screen::Remap || currentScreen == Screen::Detail)) dir = 6;
+    else if (clearNow && currentScreen == Screen::Remap) dir = 7;
 
     if (dir < 0) return;
 
