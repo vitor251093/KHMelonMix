@@ -3062,10 +3062,14 @@ void SettingsView::paintActionBar(QPainter& p)
         int clearBtn = joycfg.GetInt("Y");
 
         if (confirmBtn >= 0 && backBtn >= 0 && resetBtn >= 0 && clearBtn >= 0) {
-            confirmButtonLabel = JoyMappingName(confirmBtn).toStdString();
-            cancelButtonLabel = JoyMappingName(backBtn).toStdString();
-            resetButtonLabel = JoyMappingName(resetBtn).toStdString();
-            clearButtonLabel = JoyMappingName(clearBtn).toStdString();
+            SDL_GameController* controller = SDL_GameControllerOpen(emu->getJoystickIdByUniqueId(uid));
+
+            confirmButtonLabel = JoyMappingName(controller, confirmBtn).toStdString();
+            cancelButtonLabel = JoyMappingName(controller, backBtn).toStdString();
+            resetButtonLabel = JoyMappingName(controller, resetBtn).toStdString();
+            clearButtonLabel = JoyMappingName(controller, clearBtn).toStdString();
+
+            SDL_GameControllerClose(controller);
         }
     }
 
