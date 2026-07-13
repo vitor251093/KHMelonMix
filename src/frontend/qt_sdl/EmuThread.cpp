@@ -303,9 +303,9 @@ void EmuThread::run()
         if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady())
         {
             int openSettingsIndex = emuInstance->plugin->customKeyIndexByName("HK_OpenSettings");
-            if (openSettingsIndex != -1)
+            if (openSettingsIndex != -1 && (emuInstance->pluginPressed(openSettingsIndex) || openSettingsRequested.exchange(false)))
             {
-                if (emuInstance->pluginPressed(openSettingsIndex) || openSettingsRequested.exchange(false))
+                if (emuInstance->plugin->shouldOpenKHExtendedSettings())
                 {
                     emuInstance->settingsViewOpen = true;
                     settingsPrevStatus = emuStatus;

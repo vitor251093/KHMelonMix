@@ -469,6 +469,10 @@ StartupWindowConfig PluginKingdomHeartsReCoded::startupWindowConfig()
     return result;
 }
 
+bool PluginKingdomHeartsReCoded::shouldOpenKHExtendedSettings() {
+    return GameScene == gameScene_TitleScreen || GameScene == gameScene_InGameMenu;
+}
+
 void PluginKingdomHeartsReCoded::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 

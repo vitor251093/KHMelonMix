@@ -470,6 +470,10 @@ StartupWindowConfig PluginKingdomHeartsDays::startupWindowConfig()
     return result;
 }
 
+bool PluginKingdomHeartsDays::shouldOpenKHExtendedSettings() {
+    return GameScene == gameScene_TitleScreen || GameScene == gameScene_ConfigMenu || GameScene == gameScene_InGameMenu;
+}
+
 void PluginKingdomHeartsDays::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 

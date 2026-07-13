@@ -23,6 +23,7 @@ public:
     static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
     bool supportsKHExtendedSettings() const override { return true; }
     bool supportsDisableHisMemories() const override { return true; }
+    bool shouldOpenKHExtendedSettings() override;
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
