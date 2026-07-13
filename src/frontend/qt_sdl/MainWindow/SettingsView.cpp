@@ -3045,44 +3045,60 @@ void SettingsView::paintActionBar(QPainter& p)
         if (hintCount < 8) { hintGlyphs[hintCount] = g; hintLabels[hintCount] = l; hintCount++; }
     };
 
+    //EmuInstance* emu = m_mainWindow->getEmuInstance();
+    //int confirmBtn = emu->getJoyMapping(0);
+    //int backBtn = emu->getJoyMapping(1);
+    //int resetBtn = emu->getJoyMapping(10);
+    //int clearBtn = emu->getJoyMapping(11);
+
+    //const char* confirmButtonLabel = JoyMappingName(confirmBtn).toStdString().c_str();
+    //const char* cancelButtonLabel = JoyMappingName(backBtn).toStdString().c_str();
+    //const char* resetButtonLabel = JoyMappingName(resetBtn).toStdString().c_str();
+    //const char* clearButtonLabel = JoyMappingName(clearBtn).toStdString().c_str();
+
+    const char* confirmButtonLabel = "A";
+    const char* cancelButtonLabel = "B";
+    const char* resetButtonLabel = "X";
+    const char* clearButtonLabel = "Y";
+
     const SettingsLocale& loc = locale();
     if (m_waitingForBind)
     {
-        pushHint("B", loc.hintCancel);
+        pushHint(cancelButtonLabel, loc.hintCancel);
     }
     else if (m_resettingBindings || m_resettingSection)
     {
-        pushHint("A", loc.hintYes);
-        pushHint("B", loc.hintNo);
+        pushHint(confirmButtonLabel, loc.hintYes);
+        pushHint(cancelButtonLabel, loc.hintNo);
     }
     else if (currentScreen == Screen::Sidebar)
     {
-        pushHint("A", loc.hintEnter);
-        pushHint("B", loc.hintClose);
+        pushHint(confirmButtonLabel, loc.hintEnter);
+        pushHint(cancelButtonLabel, loc.hintClose);
     }
     else if (currentScreen == Screen::OptionList)
     {
-        pushHint("A", loc.hintConfirm);
-        pushHint("B", loc.hintCancel);
+        pushHint(confirmButtonLabel, loc.hintConfirm);
+        pushHint(cancelButtonLabel, loc.hintCancel);
     }
     else if (currentScreen == Screen::Remap)
     {
-        pushHint("A", loc.hintRebind);
-        pushHint("Y", loc.hintClear);
-        pushHint("X", loc.hintResetAll);
-        pushHint("B", loc.hintBack);
+        pushHint(confirmButtonLabel, loc.hintRebind);
+        pushHint(clearButtonLabel, loc.hintClear);
+        pushHint(resetButtonLabel, loc.hintResetAll);
+        pushHint(cancelButtonLabel, loc.hintBack);
     }
     else if (currentScreen == Screen::Detail)
     {
         if (sidebarIndex == kIdxStream)
         {
-            pushHint("A", loc.hintOpenWebsite);
-            pushHint("B", loc.hintBack);
+            pushHint(confirmButtonLabel, loc.hintOpenWebsite);
+            pushHint(cancelButtonLabel, loc.hintBack);
         }
         else if (sidebarIndex == kIdxQuit)
         {
-            pushHint("A", loc.hintQuitGame);
-            pushHint("B", loc.hintBack);
+            pushHint(confirmButtonLabel, loc.hintQuitGame);
+            pushHint(cancelButtonLabel, loc.hintBack);
         }
         else
         {
@@ -3091,23 +3107,23 @@ void SettingsView::paintActionBar(QPainter& p)
             {
                 const SettingRow& row = rows[detailIndex];
                 if (row.type == SettingRow::Type::Toggle)
-                    pushHint("A", loc.hintToggle);
+                    pushHint(confirmButtonLabel, loc.hintToggle);
                 else if (row.type == SettingRow::Type::Combobox)
-                    pushHint("A", loc.hintSelect);
+                    pushHint(confirmButtonLabel, loc.hintSelect);
                 else if (row.type == SettingRow::Type::Slider)
                     pushHint("\xE2\x97\x80 \xE2\x96\xB6", loc.hintAdjust);
             }
             if (sidebarIndex != kIdxStream && sidebarIndex != kIdxQuit &&
                 sidebarIndex != kIdxGamepad && sidebarIndex != kIdxKeyboard)
-                pushHint("X", loc.hintReset);
-            pushHint("B", loc.hintBack);
+                pushHint(resetButtonLabel, loc.hintReset);
+            pushHint(cancelButtonLabel, loc.hintBack);
         }
     }
 
     if (hintCount == 0) return;
 
     const int iconH   = qMax(14, (int)(h * 0.032));
-    const int iconW   = iconH;
+    const float iconWMultiplier = (((float)iconH)/14.0)/1.8;
     const int gap     = (int)(w * 0.04);
     const int labelSz = qMax(10, (int)(h * 0.018));
 
@@ -3116,11 +3132,16 @@ void SettingsView::paintActionBar(QPainter& p)
     QFont labelFont("KHMenu");
     labelFont.setPixelSize(labelSz);
 
-    p.setFont(labelFont);
     int totalW = 0;
+    p.setFont(iconFont);
     for (int i = 0; i < hintCount; i++)
     {
-        totalW += iconW + (int)(iconH * 0.3);
+        totalW += (int)((p.fontMetrics().horizontalAdvance(hintGlyphs[i]) + 10) * iconWMultiplier);
+    }
+    p.setFont(labelFont);
+    for (int i = 0; i < hintCount; i++)
+    {
+        totalW += (int)(iconH * 0.3);
         totalW += p.fontMetrics().horizontalAdvance(hintLabels[i]);
         totalW += gap;
     }
@@ -3129,16 +3150,18 @@ void SettingsView::paintActionBar(QPainter& p)
     int x = (w - totalW) / 2;
     for (int i = 0; i < hintCount; i++)
     {
-        QRect iconRect(x, barY, iconW, iconH);
         QColor boxFill(30, 30, 30, 220);
         QColor boxBorder = themeColor.darker(150);
         boxBorder.setAlpha(128);
         p.setBrush(boxFill);
         p.setPen(QPen(boxBorder, 1.5));
-        p.drawRoundedRect(iconRect, 3, 3);
         p.setFont(iconFont);
+        int iconW = (int)((p.fontMetrics().horizontalAdvance(hintGlyphs[i]) + 10) * iconWMultiplier);
+        QRect iconRect(x, barY, iconW, iconH);
+        p.drawRoundedRect(iconRect, 3, 3);
         p.setPen(Qt::white);
         p.drawText(iconRect, Qt::AlignCenter, hintGlyphs[i]);
+
         x += iconW + (int)(iconH * 0.3);
 
         p.setFont(labelFont);
