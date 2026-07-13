@@ -2509,7 +2509,6 @@ void SettingsView::paintDetailSidebarPreview(QPainter& p, const DetailLayout& L)
                        Qt::AlignCenter | Qt::AlignVCenter | Qt::TextWordWrap,
                        locale().sectionOverview[sidebarIndex]);
         }
-        return;
     }
 
 void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
@@ -2530,6 +2529,15 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
     int visibleH   = (int)(bottomLineY) - startY - btnH * 3 - spacing;
 
     p.setFont(rowFont);
+
+    SDL_GameController* controller;
+    if (m_remapIsJoystick)
+    {
+        EmuInstance* emu = m_mainWindow->getEmuInstance();
+        auto& lcfg = emu->getLocalConfig();
+        int uid = lcfg.GetInt("JoystickUniqueID");
+        controller = SDL_GameControllerOpen(emu->getJoystickIdByUniqueId(uid));
+    }
 
     int actionIdx = 0;
     int focusedItemY = -1;
@@ -2564,7 +2572,7 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
             else
             {
                 int v = readRemapBinding(actionIdx);
-                bindStr = m_remapIsJoystick ? JoyMappingName(v) : keyBindingText(v);
+                bindStr = m_remapIsJoystick ? JoyMappingName(controller, v) : keyBindingText(v);
             }
 
             QPainterPath rp;
@@ -2617,6 +2625,11 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
     p.drawText(QRect(detailX, (int)(bottomLineY - btnH - spacing), detailW, btnH),
                Qt::AlignLeft | Qt::AlignVCenter,
                QString::fromUtf8(locale().remapResetBackHint));
+
+    if (m_remapIsJoystick)
+    {
+        SDL_GameControllerClose(controller);
+    }
 }
 
 void SettingsView::paintDetailStream(QPainter& p, const DetailLayout& L)

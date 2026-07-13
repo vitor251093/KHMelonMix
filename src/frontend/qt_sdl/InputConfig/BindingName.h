@@ -184,10 +184,11 @@ inline QString GCButtonName(SDL_GameController* gc, SDL_GameControllerButton btn
         {"leftstick", "Left Stick"}, {"rightstick", "Right Stick"},
         {"dpup", "D-Pad Up"}, {"dpdown", "D-Pad Down"},
         {"dpleft", "D-Pad Left"}, {"dpright", "D-Pad Right"},
-        {"back", "Back"}, {"start", "Start"}, {"guide", "Guide"}
+        {"back", "Back"}, {"start", "Start"}, {"guide", "Guide"},
+        {"touchpad", "Touchpad"}
     };
     QString raw = SDL_GameControllerGetStringForButton(btn);
-    return pretty.value(raw, raw);
+    return pretty.value(raw, raw.toUpper());
 }
 
 inline QString JoyMappingName(SDL_GameController* gc, int id)
