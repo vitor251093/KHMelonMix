@@ -629,7 +629,7 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
             QMenu * menu = menubar->addMenu("Config");
 
             actGameSettings = menu->addAction("Game Settings...");
-            connect(actGameSettings, &QAction::triggered, this, &MainWindow::onToggleSettings);
+            connect(actGameSettings, &QAction::triggered, this, &MainWindow::onShowGameSettings);
             menu->addSeparator();
 
             actPluginSettings = menu->addAction("Plugin settings");
@@ -1041,7 +1041,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     MainWindowSettings::keyPressEvent(event);
     emuInstance->onKeyPress(event);
     // Opening the settings overlay by keyboard is handled by the "Game Settings" menu action's
-    // shortcut (onToggleSettings) so the key is claimed by Qt's shortcut system — a raw
+    // shortcut (onShowGameSettings) so the key is claimed by Qt's shortcut system — a raw
     // keyPressEvent check would miss bare function keys on macOS.
 }
 
@@ -2438,11 +2438,11 @@ void MainWindow::onScreenEmphasisToggled()
 // Single entry point for the Game Settings menu action and its keyboard shortcut. Toggles the
 // overlay (the same key/menu closes it); opening while a game runs goes through EmuThread so the
 // same pause bookkeeping as the HK_OpenSettings hotkey runs.
-void MainWindow::onToggleSettings()
+void MainWindow::onShowGameSettings()
 {
     QStackedWidget* cw = (QStackedWidget*)centralWidget();
     if (!settingsView) return;
-    if (cw->currentWidget() == settingsView) { onSettingsClosed(); return; } // toggle off
+    if (cw->currentWidget() == settingsView) { return; }
     if (emuThread->emuIsActive())
         emuThread->requestOpenSettings();
     else

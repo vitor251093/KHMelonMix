@@ -259,7 +259,7 @@ private slots:
     void onScreenEmphasisToggled();
 
     void onOpenSettingsOverlay();
-    void onToggleSettings();
+    void onShowGameSettings();
     void refreshSettingsShortcut();
     void onSettingsClosed();
     void onQuitGameConfirmed();
