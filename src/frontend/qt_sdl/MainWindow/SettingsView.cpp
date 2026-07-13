@@ -3045,60 +3045,68 @@ void SettingsView::paintActionBar(QPainter& p)
         if (hintCount < 8) { hintGlyphs[hintCount] = g; hintLabels[hintCount] = l; hintCount++; }
     };
 
-    //EmuInstance* emu = m_mainWindow->getEmuInstance();
-    //int confirmBtn = emu->getJoyMapping(0);
-    //int backBtn = emu->getJoyMapping(1);
-    //int resetBtn = emu->getJoyMapping(10);
-    //int clearBtn = emu->getJoyMapping(11);
+    std::string confirmButtonLabel = "A";
+    std::string cancelButtonLabel = "B";
+    std::string resetButtonLabel = "X";
+    std::string clearButtonLabel = "Y";
 
-    //const char* confirmButtonLabel = JoyMappingName(confirmBtn).toStdString().c_str();
-    //const char* cancelButtonLabel = JoyMappingName(backBtn).toStdString().c_str();
-    //const char* resetButtonLabel = JoyMappingName(resetBtn).toStdString().c_str();
-    //const char* clearButtonLabel = JoyMappingName(clearBtn).toStdString().c_str();
+    EmuInstance* emu = m_mainWindow->getEmuInstance();
+    auto& lcfg = emu->getLocalConfig();
+    int uid = lcfg.GetInt("JoystickUniqueID");
+    if (uid > 0)
+    {
+        Config::Table joycfg = lcfg.GetTable("Joystick." + std::to_string(uid));
+        int confirmBtn = joycfg.GetInt("A");
+        int backBtn = joycfg.GetInt("B");
+        int resetBtn = joycfg.GetInt("X");
+        int clearBtn = joycfg.GetInt("Y");
 
-    const char* confirmButtonLabel = "A";
-    const char* cancelButtonLabel = "B";
-    const char* resetButtonLabel = "X";
-    const char* clearButtonLabel = "Y";
+        if (confirmBtn >= 0 && backBtn >= 0 && resetBtn >= 0 && clearBtn >= 0) {
+            confirmButtonLabel = JoyMappingName(confirmBtn).toStdString();
+            cancelButtonLabel = JoyMappingName(backBtn).toStdString();
+            resetButtonLabel = JoyMappingName(resetBtn).toStdString();
+            clearButtonLabel = JoyMappingName(clearBtn).toStdString();
+        }
+    }
 
     const SettingsLocale& loc = locale();
     if (m_waitingForBind)
     {
-        pushHint(cancelButtonLabel, loc.hintCancel);
+        pushHint(cancelButtonLabel.c_str(), loc.hintCancel);
     }
     else if (m_resettingBindings || m_resettingSection)
     {
-        pushHint(confirmButtonLabel, loc.hintYes);
-        pushHint(cancelButtonLabel, loc.hintNo);
+        pushHint(confirmButtonLabel.c_str(), loc.hintYes);
+        pushHint(cancelButtonLabel.c_str(), loc.hintNo);
     }
     else if (currentScreen == Screen::Sidebar)
     {
-        pushHint(confirmButtonLabel, loc.hintEnter);
-        pushHint(cancelButtonLabel, loc.hintClose);
+        pushHint(confirmButtonLabel.c_str(), loc.hintEnter);
+        pushHint(cancelButtonLabel.c_str(), loc.hintClose);
     }
     else if (currentScreen == Screen::OptionList)
     {
-        pushHint(confirmButtonLabel, loc.hintConfirm);
-        pushHint(cancelButtonLabel, loc.hintCancel);
+        pushHint(confirmButtonLabel.c_str(), loc.hintConfirm);
+        pushHint(cancelButtonLabel.c_str(), loc.hintCancel);
     }
     else if (currentScreen == Screen::Remap)
     {
-        pushHint(confirmButtonLabel, loc.hintRebind);
-        pushHint(clearButtonLabel, loc.hintClear);
-        pushHint(resetButtonLabel, loc.hintResetAll);
-        pushHint(cancelButtonLabel, loc.hintBack);
+        pushHint(confirmButtonLabel.c_str(), loc.hintRebind);
+        pushHint(clearButtonLabel.c_str(), loc.hintClear);
+        pushHint(resetButtonLabel.c_str(), loc.hintResetAll);
+        pushHint(cancelButtonLabel.c_str(), loc.hintBack);
     }
     else if (currentScreen == Screen::Detail)
     {
         if (sidebarIndex == kIdxStream)
         {
-            pushHint(confirmButtonLabel, loc.hintOpenWebsite);
-            pushHint(cancelButtonLabel, loc.hintBack);
+            pushHint(confirmButtonLabel.c_str(), loc.hintOpenWebsite);
+            pushHint(cancelButtonLabel.c_str(), loc.hintBack);
         }
         else if (sidebarIndex == kIdxQuit)
         {
-            pushHint(confirmButtonLabel, loc.hintQuitGame);
-            pushHint(cancelButtonLabel, loc.hintBack);
+            pushHint(confirmButtonLabel.c_str(), loc.hintQuitGame);
+            pushHint(cancelButtonLabel.c_str(), loc.hintBack);
         }
         else
         {
@@ -3107,16 +3115,16 @@ void SettingsView::paintActionBar(QPainter& p)
             {
                 const SettingRow& row = rows[detailIndex];
                 if (row.type == SettingRow::Type::Toggle)
-                    pushHint(confirmButtonLabel, loc.hintToggle);
+                    pushHint(confirmButtonLabel.c_str(), loc.hintToggle);
                 else if (row.type == SettingRow::Type::Combobox)
-                    pushHint(confirmButtonLabel, loc.hintSelect);
+                    pushHint(confirmButtonLabel.c_str(), loc.hintSelect);
                 else if (row.type == SettingRow::Type::Slider)
                     pushHint("\xE2\x97\x80 \xE2\x96\xB6", loc.hintAdjust);
             }
             if (sidebarIndex != kIdxStream && sidebarIndex != kIdxQuit &&
                 sidebarIndex != kIdxGamepad && sidebarIndex != kIdxKeyboard)
-                pushHint(resetButtonLabel, loc.hintReset);
-            pushHint(cancelButtonLabel, loc.hintBack);
+                pushHint(resetButtonLabel.c_str(), loc.hintReset);
+            pushHint(cancelButtonLabel.c_str(), loc.hintBack);
         }
     }
 
