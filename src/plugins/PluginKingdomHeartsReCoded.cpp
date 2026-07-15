@@ -470,8 +470,7 @@ StartupWindowConfig PluginKingdomHeartsReCoded::startupWindowConfig()
 }
 
 bool PluginKingdomHeartsReCoded::shouldOpenKHExtendedSettings() {
-    return true;
-    //return GameScene == gameScene_TitleScreen || GameScene == gameScene_InGameMenu;
+    return GameScene == gameScene_Intro || GameScene == gameScene_TitleScreen || GameScene == gameScene_InGameMenu;
 }
 
 void PluginKingdomHeartsReCoded::loadLocalization() {
