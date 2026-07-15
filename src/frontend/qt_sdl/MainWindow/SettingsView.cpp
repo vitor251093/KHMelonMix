@@ -1714,7 +1714,7 @@ void SettingsView::handleNavRemap(int direction)
         break;
     }
     case 5:
-        if (sidebarIndex == kIdxKeyboard && !rowsFor(kIdxKeyboard).isEmpty())
+        if ((sidebarIndex == kIdxKeyboard || sidebarIndex == kIdxGamepad) && !rowsFor(sidebarIndex).isEmpty())
         {
             currentScreen        = Screen::Detail;
             detailIndex          = 0;
