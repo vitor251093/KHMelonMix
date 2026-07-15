@@ -2443,6 +2443,10 @@ void MainWindow::onShowGameSettings()
     QStackedWidget* cw = (QStackedWidget*)centralWidget();
     if (!settingsView) return;
     if (cw->currentWidget() == settingsView) { return; }
+
+    // If this is removed, you will only be able to close the game settings using Esc as a shortcut once
+    actGameSettings->setShortcut(QKeySequence());
+
     if (emuThread->emuIsActive())
         emuThread->requestOpenSettings();
     else
