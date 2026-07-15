@@ -471,7 +471,7 @@ StartupWindowConfig PluginKingdomHeartsDays::startupWindowConfig()
 }
 
 bool PluginKingdomHeartsDays::shouldOpenKHExtendedSettings() {
-    return GameScene == gameScene_Intro || GameScene == gameScene_TitleScreen || GameScene == gameScene_ConfigMenu || GameScene == gameScene_InGameMenu;
+    return GameScene == gameScene_Intro || GameScene == gameScene_TitleScreen || GameScene == gameScene_ConfigMenu;
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
