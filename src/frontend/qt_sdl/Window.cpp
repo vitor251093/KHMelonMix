@@ -2511,10 +2511,7 @@ void MainWindow::onSettingsClosed()
 
 void MainWindow::onQuitGameConfirmed()
 {
-    emuThread->emuStop(true);
-    stopAllBgm();
-    m_videoPausedBySelf = false;
-    onSettingsClosed();
+    onQuit();
 }
 
 void MainWindow::onEmuStart()
