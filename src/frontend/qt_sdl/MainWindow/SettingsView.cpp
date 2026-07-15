@@ -1808,13 +1808,7 @@ void SettingsView::keyPressEvent(QKeyEvent* event)
             }
             else if (event->key() != Qt::Key_Escape)
             {
-                int key = event->key();
-                int mod = event->modifiers();
-                bool ismod = (key == Qt::Key_Control || key == Qt::Key_Alt ||
-                              key == Qt::Key_AltGr   || key == Qt::Key_Shift ||
-                              key == Qt::Key_Meta);
-                if (!ismod) key |= mod;
-                else if (isRightModKey(event)) key |= (1 << 31);
+                int key = getEventKeyVal(event);
                 writeRemapBinding(m_bindTarget, key);
             }
             m_waitingForBind = false;
@@ -1823,6 +1817,21 @@ void SettingsView::keyPressEvent(QKeyEvent* event)
         // While waiting for any bind (joystick or keyboard), eat all key events.
         event->accept();
         return;
+    }
+
+    EmuInstance* emu = m_mainWindow ? m_mainWindow->getEmuInstance() : nullptr;
+    if (emu != nullptr && emu->plugin != nullptr)
+    {
+        auto& lcfg = emu->getLocalConfig();
+        Config::Table keycfg = lcfg.GetTable("Keyboard");
+        int fullscreenKey = keycfg.GetInt("HK_FullscreenToggle");
+
+        int key = getEventKeyVal(event);
+        if (key == fullscreenKey)
+        {
+            MainWindow* win = emu->getMainWindow();
+            win->toggleFullscreen();
+        }
     }
 
     switch (event->key())
