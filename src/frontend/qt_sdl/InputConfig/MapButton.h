@@ -25,6 +25,7 @@
 
 #include "Platform.h"
 #include "EmuInstance.h"
+#include "BindingName.h"
 
 class InputConfigDialog;
 
@@ -373,54 +374,7 @@ private slots:
 private:
     QString mappingText()
     {
-        int id = *mapping;
-
-        if (id == -1) return "None";
-
-        bool hasbtn = ((id & 0xFFFF) != 0xFFFF);
-        QString str;
-
-        if (hasbtn)
-        {
-            if (id & 0x100)
-            {
-                int hatnum = ((id >> 4) & 0xF) + 1;
-
-                switch (id & 0xF)
-                {
-                case 0x1: str = "Hat %1 up"; break;
-                case 0x2: str = "Hat %1 right"; break;
-                case 0x4: str = "Hat %1 down"; break;
-                case 0x8: str = "Hat %1 left"; break;
-                }
-
-                str = str.arg(hatnum);
-            }
-            else
-            {
-                str = QString("Button %1").arg((id & 0xFFFF) + 1);
-            }
-        }
-        else
-        {
-            str = "";
-        }
-
-        if (id & 0x10000)
-        {
-            int axisnum = ((id >> 24) & 0xF) + 1;
-
-            if (hasbtn) str += " / ";
-
-            switch ((id >> 20) & 0xF)
-            {
-            case 0: str += QString("Axis %1 +").arg(axisnum); break;
-            case 1: str += QString("Axis %1 -").arg(axisnum); break;
-            case 2: str += QString("Trigger %1").arg(axisnum); break;
-            }
-        }
-
-        return str;
+        return JoyMappingName(*mapping);
     }
 
     InputConfigDialog* parentDialog;

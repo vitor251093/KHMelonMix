@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="125 125 210 210" width="256" height="256">
+  <defs>
+    <polygon id="tooth" points="-10,-35 10,-35 16,-15 -16,-15"/>
+
+    <mask id="hub_hole_small">
+      <rect x="-80" y="-80" width="160" height="160" fill="white"/>
+      <circle cx="0" cy="0" r="14" fill="black"/>
+    </mask>
+
+    <mask id="hub_hole_large">
+      <rect x="-120" y="-120" width="240" height="240" fill="white"/>
+      <circle cx="0" cy="0" r="16" fill="black"/>
+    </mask>
+
+    <g id="gear7-small" mask="url(#hub_hole_small)">
+      <circle cx="0" cy="0" r="30"/>
+      <use href="#tooth"/>
+      <use href="#tooth" transform="rotate(51.4286)"/>
+      <use href="#tooth" transform="rotate(102.8571)"/>
+      <use href="#tooth" transform="rotate(154.2857)"/>
+      <use href="#tooth" transform="rotate(205.7143)"/>
+      <use href="#tooth" transform="rotate(257.1429)"/>
+      <use href="#tooth" transform="rotate(308.5714)"/>
+    </g>
+
+    <g id="gear7-large" mask="url(#hub_hole_large)">
+      <circle cx="0" cy="0" r="30"/>
+      <use href="#tooth"/>
+      <use href="#tooth" transform="rotate(51.4286)"/>
+      <use href="#tooth" transform="rotate(102.8571)"/>
+      <use href="#tooth" transform="rotate(154.2857)"/>
+      <use href="#tooth" transform="rotate(205.7143)"/>
+      <use href="#tooth" transform="rotate(257.1429)"/>
+      <use href="#tooth" transform="rotate(308.5714)"/>
+    </g>
+  </defs>
+
+  <g fill="#000000">
+    <g transform="translate(191, 196.5) rotate(32)">
+      <use href="#gear7-small"/>
+    </g>
+
+    <g transform="translate(250, 250) scale(1.4) rotate(27.9)">
+      <use href="#gear7-large"/>
+    </g>
+  </g>
+</svg>

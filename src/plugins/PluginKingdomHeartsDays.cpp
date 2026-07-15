@@ -281,7 +281,8 @@ enum
     HK_CommandMenuDown,
     HK_HUDToggle,
     HK_FullscreenMapToggle,
-    HK_ReplacementTexturesToggle
+    HK_ReplacementTexturesToggle,
+    HK_OpenSettings
 };
 
 
@@ -307,7 +308,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "HK_CommandMenuDown",
         "HK_HUDToggle",
         "HK_FullscreenMapToggle",
-        "HK_ReplacementTexturesToggle"
+        "HK_ReplacementTexturesToggle",
+        "HK_OpenSettings"
     };
     customKeyMappingLabels = {
         "Attack / Interact",
@@ -322,7 +324,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         "Command Menu - Down",
         "HUD Toggle",
         "Fullscreen Map Toggle",
-        "Toggle Replacement Textures"
+        "Toggle Replacement Textures",
+        "Open Settings"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 46> {{
@@ -486,6 +489,11 @@ void PluginKingdomHeartsDays::overrideJoystickMappings(std::function<void(std::s
     KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(config, setIntConfig);
 }
 
+void PluginKingdomHeartsDays::applyRecommendedJoystickMappings(std::function<void(std::string, int)> setIntConfig)
+{
+    KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+}
+
 std::string PluginKingdomHeartsDays::saveFilePath()
 {
     KingdomHeartsHDCollection::createSignalFile();
@@ -531,6 +539,10 @@ StartupWindowConfig PluginKingdomHeartsDays::startupWindowConfig()
     result.height = config->resolutionHeight;
     delete config;
     return result;
+}
+
+bool PluginKingdomHeartsDays::shouldOpenKHExtendedSettings() {
+    return GameScene == gameScene_Intro || GameScene == gameScene_TitleScreen || GameScene == gameScene_ConfigMenu;
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
@@ -1944,6 +1956,24 @@ void PluginKingdomHeartsDays::applyAddonKeysToInputMaskOrTouchControls(u32* Inpu
 {
     if (GameScene == -1) {
         return;
+    }
+
+    if (JoystickConfirmIndex != 0)
+    {
+        bool aPressed = ((~(*InputMask)) & (1<<0)) != 0;
+        bool bPressed = ((~(*InputMask)) & (1<<1)) != 0;
+        if (aPressed) {
+            *InputMask &= ~(1<<1); // B
+        }
+        else {
+            *InputMask |= (1<<1); // B
+        }
+        if (bPressed) {
+            *InputMask &= ~(1<<0); // A
+        }
+        else {
+            *InputMask |= (1<<0); // A
+        }
     }
 
     // While the cutscene Skip/Continue menu is open, the d-pad navigates it.

@@ -131,6 +131,10 @@ public:
     bool emuIsRunning();
     bool emuIsActive();
 
+    // Request opening the settings overlay from the UI thread (e.g. the Game Settings menu
+    // action). Picked up in run() so the same pause bookkeeping as the HK_OpenSettings hotkey runs.
+    void requestOpenSettings() { openSettingsRequested = true; }
+
     void initContext(int win);
     void deinitContext(int win);
     void borrowGL();
@@ -181,8 +185,12 @@ signals:
     void windowHideCutsceneSkipMenu();
     void windowPlayCutsceneMenuSound(int kind);
 
+    void windowOpenSettings();
+
 private:
     MainWindow* mainWindow;
+
+    std::atomic<bool> openSettingsRequested {false};
 
     void handleMessages();
 

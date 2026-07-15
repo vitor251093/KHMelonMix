@@ -21,6 +21,9 @@ public:
     static u32 euGamecode;
     static u32 jpGamecode;
     static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
+    bool supportsKHExtendedSettings() const override { return true; }
+    bool supportsDisableHisMemories() const override { return true; }
+    bool shouldOpenKHExtendedSettings() override;
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
@@ -43,6 +46,7 @@ public:
     void renderer_afterBuildingShapes() override;
     int renderer_gameSceneState() override;
     int renderer_brightnessMode() override;
+    ThemeColor defaultThemeColor() override { return {192, 56, 14}; }
 
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
@@ -87,6 +91,7 @@ public:
     ) override;
 
     void overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
+    void applyRecommendedJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
 private:
     bool PausedInGame = false;
     bool isCharacterControllable = false;

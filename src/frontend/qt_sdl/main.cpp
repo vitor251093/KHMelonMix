@@ -35,6 +35,7 @@
 #include <QMimeData>
 #include <QVector>
 #include <QCommandLineParser>
+#include <QFontDatabase>
 #include <QStandardPaths>
 #ifndef _WIN32
 #include <QGuiApplication>
@@ -373,6 +374,14 @@ int main(int argc, char** argv)
     setMPInterface(MPInterface_Local);
 
     NetInit();
+
+    auto loadFont = [](const char* path) {
+        if (QFontDatabase::addApplicationFont(path) == -1)
+            printf("Failed to load font: %s\n", path);
+    };
+    loadFont(":/ds/KHMenu.ttf");
+    loadFont(":/ds/KHGummi.ttf");
+    loadFont(":/ds/ComicHearts.otf");
 
     createEmuInstance();
 

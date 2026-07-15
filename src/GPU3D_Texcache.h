@@ -348,7 +348,7 @@ public:
             for (int i = 0; i < 2; i++)
             {
                 if (entry.TextureRAMSize[i])
-                    oss1 << static_cast<char32_t>(KHLEG_XXH3_64bits(&gpu.VRAMFlat_Texture[entry.TextureRAMStart[i]], entry.TextureRAMSize[i]));
+                    oss1 << static_cast<char32_t>(KHLEG_XXH3_64bits(&GPU.VRAMFlat_Texture[entry.TextureRAMStart[i]], entry.TextureRAMSize[i]));
             }
             std::string oldIdentifierWithoutPal = oss1.str();
             oss1 << "-";
@@ -397,7 +397,7 @@ public:
                 imageData = (unsigned char*)DecodingBuffer;
 
                 if (GamePlugin->shouldExportTextures()) {
-                    std::string fullPathTmp = GamePlugin->tmpTextureFilePath(newIdentifierWithPal);
+                    std::string fullPathTmp = GamePlugin->tmpTextureFilePath(oldIdentifierWithPal);
                     const char* pathTmp = fullPathTmp.c_str();
 
                     printf("Saving texture %s\n", pathTmp);

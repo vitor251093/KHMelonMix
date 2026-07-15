@@ -230,7 +230,8 @@ enum
     HK_CommandMenuDown,
     HK_HUDToggle,
     HK_FullscreenMapToggle,
-    HK_ReplacementTexturesToggle
+    HK_ReplacementTexturesToggle,
+    HK_OpenSettings
 };
 
 PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
@@ -267,7 +268,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         "HK_CommandMenuDown",
         "HK_HUDToggle",
         "HK_FullscreenMapToggle",
-        "HK_ReplacementTexturesToggle"
+        "HK_ReplacementTexturesToggle",
+        "HK_OpenSettings"
     };
     customKeyMappingLabels = {
         "Switch Target - Left",
@@ -279,7 +281,8 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         "Command Menu - Down",
         "HUD Toggle",
         "Fullscreen Map Toggle",
-        "Toggle Replacement Textures"
+        "Toggle Replacement Textures",
+        "Open Settings"
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
@@ -414,6 +417,11 @@ void PluginKingdomHeartsReCoded::overrideJoystickMappings(std::function<void(std
     KingdomHeartsHDCollection::applyKeyboardAndJoystickMappings(config, setIntConfig);
 }
 
+void PluginKingdomHeartsReCoded::applyRecommendedJoystickMappings(std::function<void(std::string, int)> setIntConfig)
+{
+    KingdomHeartsHDCollection::applyJoystickMappings(setIntConfig, false);
+}
+
 std::string PluginKingdomHeartsReCoded::saveFilePath()
 {
     KingdomHeartsHDCollection::createSignalFile();
@@ -459,6 +467,16 @@ StartupWindowConfig PluginKingdomHeartsReCoded::startupWindowConfig()
     result.height = config->resolutionHeight;
     delete config;
     return result;
+}
+
+bool PluginKingdomHeartsReCoded::shouldOpenKHExtendedSettings() {
+    if (GameScene == gameScene_InGameMenu) {
+        u32 mainMenuView = getCurrentMainMenuView();
+        if (mainMenuView == 6) { // config
+            return true;
+        }
+    }
+    return GameScene == gameScene_Intro || GameScene == gameScene_TitleScreen;
 }
 
 void PluginKingdomHeartsReCoded::loadLocalization() {
@@ -1923,6 +1941,24 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
 {
     if (GameScene == -1) {
         return;
+    }
+
+    if (JoystickConfirmIndex != 0)
+    {
+        bool aPressed = ((~(*InputMask)) & (1<<0)) != 0;
+        bool bPressed = ((~(*InputMask)) & (1<<1)) != 0;
+        if (aPressed) {
+            *InputMask &= ~(1<<1); // B
+        }
+        else {
+            *InputMask |= (1<<1); // B
+        }
+        if (bPressed) {
+            *InputMask &= ~(1<<0); // A
+        }
+        else {
+            *InputMask |= (1<<0); // A
+        }
     }
 
     // While the cutscene Skip/Continue menu is open, the d-pad navigates it.

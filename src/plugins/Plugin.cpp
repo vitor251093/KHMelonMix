@@ -1387,6 +1387,7 @@ void Plugin::_superLoadConfigs(
     UIScale = (UIScale == 0) ? 4 : UIScale;
     SelectedAudioPack = getStringConfig(root + ".AudioPack");
     SubtitlesEnabled = getBoolConfig(root + ".SubtitlesEnabled");
+    JoystickConfirmIndex = getIntConfig("Instance0.JoystickConfirmIndex");
 }
 void Plugin::loadConfigs(
     std::function<bool(std::string)> getBoolConfig,

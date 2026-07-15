@@ -19,6 +19,8 @@ public:
     static u32 euGamecode;
     static u32 jpGamecode;
     static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
+    bool supportsKHExtendedSettings() const override { return true; }
+    bool shouldOpenKHExtendedSettings() override;
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
@@ -40,6 +42,7 @@ public:
     std::vector<ShapeData3D> renderer_topScreen_3DShapes() override;
     int renderer_gameSceneState() override;
     int renderer_brightnessMode() override;
+    ThemeColor defaultThemeColor() override { return {184, 146, 14}; }
 
     void onLoadState() override;
 
@@ -81,6 +84,7 @@ public:
     ) override;
 
     void overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
+    void applyRecommendedJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
 private:
     bool IsTopScreen2DTextureBlack;
     u32 priorMap;

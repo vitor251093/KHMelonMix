@@ -56,11 +56,12 @@ jobs:
             install_deps: >
               pkg_add -v cmake kf6-extra-cmake-modules pkgconf ninja
               qt6-qtbase qt6-qtmultimedia qt6-qtsvg sdl2 libarchive zstd
-              enet faad flac lua-5.4.7
+              enet faad flac lua%5.4
 
 
     name: ${{ matrix.os_name }} / ${{ matrix.arch }}
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     defaults:
       run:
         shell: ${{ matrix.os }} {0}
@@ -107,7 +108,7 @@ jobs:
         touch ./dist/roms/DELETE_ME
         mkdir -p ./dist/assets
         touch ./dist/assets/DELETE_ME
-        cp build/melonDS ./dist/MelonMix
+        cp /tmp/build/melonDS ./dist/MelonMix
         cp ./res/scripts/MelonMix_KHDays.sh       ./dist/MelonMix_KHDays.sh
         cp ./res/scripts/MelonMix_KHReCoded.sh    ./dist/MelonMix_KHReCoded.sh
         cp ./res/scripts/MelonMix_GameSelector.sh ./dist/MelonMix_GameSelector.sh

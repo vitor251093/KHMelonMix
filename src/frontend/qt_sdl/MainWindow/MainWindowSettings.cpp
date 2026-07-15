@@ -32,6 +32,7 @@
 #include "Platform.h"
 
 #include "MainWindowSettings.h"
+#include "SettingsView.h"
 #include "ui_MainWindowSettings.h"
 
 #include "EmuInstance.h"
@@ -51,10 +52,6 @@ MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
 {
     ui->setupUi(this);
 
-    settingsWidget = findChild<QWidget*>("settingsWidget");
-    settingWidgetOptions = findChild<QStackedWidget*>("settingWidgetOptions");
-    showingSettings = false;
-
     connect(mediaDevices.get(), &QMediaDevices::audioOutputsChanged, this, &MainWindowSettings::onAudioOutputsChanged);
 }
 
@@ -70,6 +67,14 @@ MainWindowSettings::~MainWindowSettings()
 void MainWindowSettings::initWidgets()
 {
     createVideoPlayer();
+    createSettingsView();
+}
+
+void MainWindowSettings::createSettingsView()
+{
+    QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
+    settingsView = new SettingsView(this);
+    centralWidget->addWidget(settingsView);
 }
 
 void MainWindowSettings::asyncStartBgmMusic(quint16 bgmId, quint8 volume, bool bResumePos, quint32 delayAtStart, QString bgmMusicFilePath)
@@ -153,17 +158,13 @@ void MainWindowSettings::updateBgmMusicVolume(quint8 ramVolume)
 qreal MainWindowSettings::getBgmMusicVolume(quint8 ramVolume)
 {
     int volume = localCfg.GetInt("Audio.BGMVolume");
-    if (volume == 0) {
-        volume = (localCfg.GetInt("Audio.Volume") * 100) / 256;
-        localCfg.SetInt("Audio.BGMVolume", volume);
-    }
 
     if (ramVolume == 0x40) {
         // Volume is decreased when paused or during cutscenes
         volume *= 0.7;
     }
 
-    return (volume / 256.0);
+    return (volume / 100.0);
 }
 
 void MainWindowSettings::asyncStopBgmMusic(quint16 bgmId, bool bStoreResumePos, quint32 fadeOutDuration)
@@ -423,6 +424,17 @@ void MainWindowSettings::stopVideo()
     emuInstance->plugin->onReplacementCutsceneEnd();
 }
 
+void MainWindowSettings::stopVideoForReload()
+{
+    // Minimal stop for when a new ROM is loaded behind the open settings overlay: do NOT call
+    // showGame() (it would hide the overlay) or plugin->onReplacementCutsceneEnd() (emuInstance->
+    // plugin is already the newly-loaded game's plugin by this point).
+    if (player->playbackState() != QMediaPlayer::PlaybackState::StoppedState) {
+        player->stop();
+    }
+    playerView->loadSubtitles("");
+}
+
 void MainWindowSettings::asyncPauseVideo()
 {
     QMetaObject::invokeMethod(this, "pauseVideo", Qt::QueuedConnection);
@@ -441,6 +453,16 @@ void MainWindowSettings::asyncUnpauseVideo()
 void MainWindowSettings::unpauseVideo()
 {
     player->play();
+}
+
+bool MainWindowSettings::isVideoPlaying() const
+{
+    return player && player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
+}
+
+bool MainWindowSettings::isVideoPaused() const
+{
+    return player && player->playbackState() == QMediaPlayer::PlaybackState::PausedState;
 }
 
 void MainWindowSettings::asyncShowCutsceneSkipMenu(int selection)
@@ -508,29 +530,4 @@ void MainWindowSettings::playCutsceneMenuSound(int kind)
 
 void MainWindowSettings::keyPressEvent(QKeyEvent* event)
 {
-    /*if (event->key() == Qt::Key_Escape) {
-        QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
-
-        if (showingSettings) {
-            if (player->playbackState() == QMediaPlayer::PlaybackState::PausedState) {
-                player->play();
-                centralWidget->setCurrentWidget(playerWidget);
-            }
-            else {
-                showGame();
-            }
-        }
-        else {
-            bool isCutscenePlaying = player->playbackState() == QMediaPlayer::PlaybackState::PlayingState;
-            if (isCutscenePlaying) {
-                // player->stop();
-                // asyncStopVideo();
-                showingSettings = !showingSettings;
-            }
-            else {
-                centralWidget->setCurrentWidget(settingsWidget);
-            }
-        }
-        showingSettings = !showingSettings;
-    }*/
 }

@@ -164,6 +164,10 @@ public:
     int getJoystickUniqueIdById(int id);
     int getJoystickIdByUniqueId(int uniqueId);
     SDL_Joystick* getJoystick() { return joystick; }
+    void ensureJoystickOpen();  // close a detached handle and (re)open one if available; thread-safe
+    int getJoyMapping(int index) const { return joyMapping[index]; }
+    int getHotkeyKey(int hk) const { return hkKeyMapping[hk]; }
+    int getPluginKey(int hk) const { return pluginKeyMapping[hk]; }
     SDL_GameController* getController() { return controller; }
     std::shared_ptr<SDL_mutex> getJoyMutex() { return joyMutex; }
     const melonDS::u8* getHidReport() const { return hidReport; }
@@ -173,6 +177,7 @@ public:
     std::vector<int> keyStrokes;
 
     Plugins::Plugin* plugin = nullptr;
+    std::atomic<bool> settingsViewOpen {false};
 
     void touchScreen(int x, int y);
     void releaseScreen();
@@ -270,6 +275,8 @@ private:
     bool hotkeyPressed(int id)  { return hotkeyPress   & (1<<id); }
     bool hotkeyReleased(int id) { return hotkeyRelease & (1<<id); }
 
+    bool pluginPressed(int id)  { return pluginPress   & (1<<id); }
+
     void loadRTCData();
     void saveRTCData();
     void setDateTime();
@@ -324,6 +331,8 @@ public:
 
     melonDS::u32 getInputMask(){return inputMask;}
     Sint16 joystickButtonDown(int val);
+    void setAudioVolume(int vol) { audioVolume = vol; }
+    void applyAudioSettings() { audioUpdateSettings(); }
 private:
 
     std::unique_ptr<melonDS::Savestate> backupState;

@@ -79,6 +79,7 @@ DefaultList<int> DefaultInts =
 {
     {"Instance*.Keyboard", -1},
     {"Instance*.Joystick", -1},
+    {"Instance*.JoystickConfirmIndex", 0},
     {"Instance*.Window*.Width", 256},
     {"Instance*.Window*.Height", 384},
     {"Instance*.Window*.ScreenAspectTop", 1},
@@ -95,6 +96,7 @@ DefaultList<int> DefaultInts =
     {"MP.AudioMode", 1},
     {"MP.RecvTimeout", 25},
     {"Instance*.Audio.Volume", 256},
+    {"Instance*.Audio.BGMVolume", 100},
     {"Mic.InputType", 1},
     {"Mouse.HideSeconds", 2},
     {"Instance*.DSi.Battery.Level", 0xF},
@@ -113,6 +115,7 @@ RangeList IntRanges =
     {"3D.GL.ScaleFactor", {1, 16}},
     {"Audio.Interpolation", {0, 4}},
     {"Instance*.Audio.Volume", {0, 256}},
+    {"Instance*.Audio.BGMVolume", {0, 100}},
     {"Mic.InputType", {0, micInputType_MAX-1}},
     {"Instance*.Window*.ScreenRotation", {0, screenRot_MAX-1}},
     {"Instance*.Window*.ScreenGap", {0, 500}},

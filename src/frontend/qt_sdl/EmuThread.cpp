@@ -107,6 +107,7 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
         connect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
         connect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
+        connect(this, SIGNAL(windowOpenSettings()), window, SLOT(onOpenSettingsOverlay()));
     }
 }
 
@@ -146,6 +147,7 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
         disconnect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
         disconnect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
+        disconnect(this, SIGNAL(windowOpenSettings()), window, SLOT(onOpenSettingsOverlay()));
     }
 }
 
@@ -203,6 +205,8 @@ void EmuThread::run()
         if (emuInstance->instanceID == 0)
             MPInterface::Get().Process();
 
+        if (!emuInstance->settingsViewOpen)
+        {
         emuInstance->inputProcess();
 
         auto nds = emuInstance->getNDS();
@@ -282,6 +286,21 @@ void EmuThread::run()
 
         if (emuInstance->hotkeyPressed(HK_SwapScreens)) emit swapScreensToggle();
         if (emuInstance->hotkeyPressed(HK_SwapScreenEmphasis)) emit screenEmphasisToggle();
+
+        if (emuInstance->plugin != nullptr && emuInstance->plugin->isReady())
+        {
+            int openSettingsIndex = emuInstance->plugin->customKeyIndexByName("HK_OpenSettings");
+            if (openSettingsIndex != -1 && (emuInstance->pluginPressed(openSettingsIndex) || openSettingsRequested.exchange(false)))
+            {
+                if (emuInstance->plugin->shouldOpenKHExtendedSettings())
+                {
+                    emuInstance->settingsViewOpen = true;
+                    emit windowOpenSettings();
+                }
+            }
+        }
+
+        }
 
         if (emuStatus == emuStatus_Running || emuStatus == emuStatus_FrameStep)
         {
