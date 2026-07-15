@@ -1814,6 +1814,14 @@ void SettingsView::keyPressEvent(QKeyEvent* event)
             m_waitingForBind = false;
             update();
         }
+        else
+        {
+            if (event->key() == Qt::Key_Escape)
+            {
+                m_waitingForBind = false;
+                update();
+            }
+        }
         // While waiting for any bind (joystick or keyboard), eat all key events.
         event->accept();
         return;
