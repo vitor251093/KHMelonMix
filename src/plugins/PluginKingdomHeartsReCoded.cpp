@@ -65,6 +65,10 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define PAUSE_SCREEN_ADDRESS_JP 0x020567f0
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
 
+#define OVERCLOCK_TREE_VISIBLE_ADDRESS_US 0x02056a00 // may also 0x02056a60
+#define OVERCLOCK_TREE_VISIBLE_ADDRESS_EU 0x02056a00
+#define OVERCLOCK_TREE_VISIBLE_ADDRESS_JP 0x02056820
+
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US 0x02056e90
 #define IS_CUTSCENE_EU 0x02056e90
@@ -168,6 +172,8 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
 #define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
+
+#define getAnyByCart(usAddress,euAddress,jpAddress) (isUsaCart() ? (usAddress) : (isEuropeCart() ? (euAddress) : (jpAddress)))
 
 enum
 {
@@ -2266,27 +2272,6 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
     }
 }
 
-bool PluginKingdomHeartsReCoded::isBufferBlack(unsigned int* buffer)
-{
-    if (!buffer) {
-        return true;
-    }
-
-    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
-    bool newIsNullScreen = true;
-    bool newIsBlackScreen = true;
-    for (int i = 0; i < 192*256; i++) {
-        unsigned int color = buffer[i] & 0xFFFFFF;
-        newIsNullScreen = newIsNullScreen && color == 0;
-        newIsBlackScreen = newIsBlackScreen &&
-                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
-        if (!newIsBlackScreen) {
-            break;
-        }
-    }
-    return !newIsNullScreen && newIsBlackScreen;
-}
-
 void* PluginKingdomHeartsReCoded::topScreen2DTexture()
 {
     void* topBuffer; void* bottomBuffer;
@@ -2305,14 +2290,14 @@ bool PluginKingdomHeartsReCoded::isTopScreen2DTextureBlack()
 {
     void* topBuffer; void* bottomBuffer;
     bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return isBufferBlack((unsigned int*)topBuffer);
+    return false;
 }
 
 bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
 {
     void* topBuffer; void* bottomBuffer;
     bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return isBufferBlack((unsigned int*)bottomBuffer);
+    return false;
 }
 
 bool PluginKingdomHeartsReCoded::isResultScreenVisible()
@@ -2341,23 +2326,17 @@ bool PluginKingdomHeartsReCoded::isBugLevelVisibleOnTopScreen()
 
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
 {
-    void* buffer = topScreen2DTexture();
-    return (has2DOnTopOf3DAt(buffer, 64,  0) || has2DOnTopOf3DAt(buffer, 64,  10)) &&
-           (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10)) &&
-           (has2DOnTopOf3DAt(buffer, 170, 0) || has2DOnTopOf3DAt(buffer, 170, 10));
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isDialogVisible()
 {
-    void* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 128, 155);
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isMinimapVisible()
 {
-    void* buffer = bottomScreen2DTexture();
-    u32 pixel = getPixel(buffer, 1, 190, 0);
-    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) > 39;
+    return nds->ARM7Read32(getAnyByCart(OVERCLOCK_TREE_VISIBLE_ADDRESS_US, OVERCLOCK_TREE_VISIBLE_ADDRESS_EU, OVERCLOCK_TREE_VISIBLE_ADDRESS_JP)) == 0;
 }
 
 bool PluginKingdomHeartsReCoded::isBugSector()
@@ -2437,6 +2416,10 @@ bool PluginKingdomHeartsReCoded::isHealthVisible()
 
 ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY)
 {
+    // TODO: KH Needs to be properly implemented
+    return ivec2{x:fallbackX, y:fallbackY};
+
+    /*
     int distanceToCenter = 54;
     int minY = 31;
     int maxY = 150;
@@ -2544,6 +2527,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, i
     };
 
     return result;
+    */
 }
 
 ivec2 PluginKingdomHeartsReCoded::minimapCenter()

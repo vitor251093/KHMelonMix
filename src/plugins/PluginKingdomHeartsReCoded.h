@@ -166,7 +166,6 @@ private:
     void onStreamBgmReplacementStarted() override;
     void muteStreamedMusic() override;
 
-    bool isBufferBlack(unsigned int* buffer);
     void* topScreen2DTexture();
     void* bottomScreen2DTexture();
     bool isTopScreen2DTextureBlack();
