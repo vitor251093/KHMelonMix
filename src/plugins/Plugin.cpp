@@ -576,6 +576,7 @@ std::string Plugin::textureIndexFilePath() {
     std::filesystem::path fullPath = texturesFolder / filename;
 
     if (!std::filesystem::exists(fullPath)) {
+        errorLog("No texture index found at: %s", fullPath.string().c_str());
         return "";
     }
 
@@ -595,7 +596,10 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path texturesFolder = _assetsFolderPath / "textures";
     Platform::FileHandle* f = Platform::OpenLocalFile(indexFilePath.c_str(), Platform::FileMode::ReadText);
-    if (f) {
+    if (!f) {
+        errorLog("Failed to open texture index at: %s", indexFilePath.c_str());
+    }
+    else {
         char linebuf[1024];
         char entryname[32];
         char entryval[1024];
