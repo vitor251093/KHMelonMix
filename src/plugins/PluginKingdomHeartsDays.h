@@ -96,8 +96,6 @@ private:
     bool PausedInGame = false;
     bool isCharacterControllable = false;
 
-    bool IsBottomScreen2DTextureBlack;
-    bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
 

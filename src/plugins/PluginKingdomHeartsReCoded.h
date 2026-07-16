@@ -86,7 +86,6 @@ public:
     void overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
     void applyRecommendedJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
 private:
-    bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
     bool ShowMap;
@@ -166,11 +165,6 @@ private:
     void onStreamBgmReplacementStarted() override;
     void muteStreamedMusic() override;
 
-    void* topScreen2DTexture();
-    void* bottomScreen2DTexture();
-    bool isTopScreen2DTextureBlack();
-    bool isBottomScreen2DTextureBlack();
-
     bool isResultScreenVisible();
     bool isDeweyDialogVisible();
     bool isBugLevelVisibleOnTopScreen();
@@ -187,7 +181,6 @@ private:
     bool isHealthVisible();
     ivec2 minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY);
     ivec2 minimapCenter();
-    bool has2DOnTopOf3DAt(void* buffer, int x, int y);
 
     void hudToggle() override;
     void toggleFullscreenMap();

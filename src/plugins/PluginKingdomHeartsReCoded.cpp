@@ -2272,34 +2272,6 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
     }
 }
 
-void* PluginKingdomHeartsReCoded::topScreen2DTexture()
-{
-    void* topBuffer; void* bottomBuffer;
-    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return topBuffer;
-}
-
-void* PluginKingdomHeartsReCoded::bottomScreen2DTexture()
-{
-    void* topBuffer; void* bottomBuffer;
-    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return bottomBuffer;
-}
-
-bool PluginKingdomHeartsReCoded::isTopScreen2DTextureBlack()
-{
-    void* topBuffer; void* bottomBuffer;
-    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return false;
-}
-
-bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
-{
-    void* topBuffer; void* bottomBuffer;
-    bool hasBuffers = nds->GPU.GetFramebuffers(&topBuffer, &bottomBuffer);
-    return false;
-}
-
 bool PluginKingdomHeartsReCoded::isResultScreenVisible()
 {
     u32 address = getU32ByCart(RESULT_SCREEN_ID_US, RESULT_SCREEN_ID_EU, RESULT_SCREEN_ID_JP);
@@ -2309,19 +2281,12 @@ bool PluginKingdomHeartsReCoded::isResultScreenVisible()
 
 bool PluginKingdomHeartsReCoded::isDeweyDialogVisible()
 {
-    void* buffer = topScreen2DTexture();
-    return (has2DOnTopOf3DAt(buffer, 50, 40) && has2DOnTopOf3DAt(buffer, 140, 40)) ||
-           (has2DOnTopOf3DAt(buffer, 50, 70) && has2DOnTopOf3DAt(buffer, 140, 70)) ||
-           (has2DOnTopOf3DAt(buffer, 140, 40) && has2DOnTopOf3DAt(buffer, 190, 40)) ||
-           (has2DOnTopOf3DAt(buffer, 140, 60) && has2DOnTopOf3DAt(buffer, 190, 60));
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isBugLevelVisibleOnTopScreen()
 {
-    void* buffer = topScreen2DTexture();
-    return (has2DOnTopOf3DAt(buffer, 64,  0) || has2DOnTopOf3DAt(buffer, 64,  10)) &&
-           (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10)) &&
-          !(has2DOnTopOf3DAt(buffer, 170, 0) || has2DOnTopOf3DAt(buffer, 170, 10));
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
@@ -2346,27 +2311,22 @@ bool PluginKingdomHeartsReCoded::isBugSector()
 
 bool PluginKingdomHeartsReCoded::isChallengeMeterVisible()
 {
-    void* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 12, 12);
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
 {
-    void* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 35, 185);
+    return true; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isComboLimitVisible()
 {
-    void* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 12, 146) && !has2DOnTopOf3DAt(buffer, 35, 185);
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isSpeedComboFinisherVisible()
 {
-    void* buffer = topScreen2DTexture();
-    return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 65, 60) && has2DOnTopOf3DAt(buffer, 65, 75) &&
-                                    has2DOnTopOf3DAt(buffer, 65, 90) && has2DOnTopOf3DAt(buffer, 65, 120);
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isStarRaveFinisherVisible()
@@ -2408,11 +2368,8 @@ bool PluginKingdomHeartsReCoded::isSpinnerSawFinisherVisible()
 
 bool PluginKingdomHeartsReCoded::isHealthVisible()
 {
-    void* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 233, 175);
+    return true; // TODO: KH Requires proper implementation
 }
-
-#define IS_COLOR(pixel,r,g,b) ((((pixel >> 8) & 0xFF) == b) && (((pixel >> 4) & 0xFF) == g) && (((pixel >> 0) & 0xFF) == r))
 
 ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY)
 {
@@ -2536,45 +2493,6 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
     MinimapCenterX = result.x;
     MinimapCenterY = result.y;
     return result;
-}
-
-bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(void* buffer, int x, int y)
-{
-    /*
-     * If it matches that condition, there is no 2D on top of 3D
-        (alphaColor.a == 0x0) ||
-        (alphaColor.a == 0x1 && _3dpix.a > 0 && alphaColor.g == 0) ||
-        (alphaColor.a == 0x2 && _3dpix.a > 0 && alphaColor.g < 4) ||
-        (alphaColor.a == 0x3 && _3dpix.a > 0 && alphaColor.g < 4) ||
-        (alphaColor.a == 0x4 && (_3dpix.a & 0x1F) == 0x1F)
-    */
-
-    u32 pixel = getPixel(buffer, x, y, 2);
-    u32 pixelG = (pixel >> 8) & 0xFF;
-    u32 pixelAlpha = (pixel >> (8 * 3)) & 0xFF;
-    if (pixelAlpha > 0x4)
-    {
-        return true;
-    }
-    if (pixelAlpha == 0x4)
-    {
-        return false;
-    }
-    if (pixelAlpha == 0x1 && pixelG == 0)
-    {
-        return false;
-    }
-    if ((pixelAlpha == 0x2 || pixelAlpha == 0x3) && pixelG < 4)
-    {
-        return false;
-    }
-
-    u32 colorPixel = getPixel(buffer, x, y, 0);
-    u32 colorPixelAlpha = (colorPixel >> (8 * 3)) & 0xFF;
-    if (colorPixelAlpha == 0x20) {
-        return false;
-    }
-    return true;
 }
 
 bool PluginKingdomHeartsReCoded::shouldRenderFrame()
@@ -3015,6 +2933,8 @@ u32 PluginKingdomHeartsReCoded::getCurrentMission()
 // 19 -> stat/command/gear matrix submenu
 u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
 {
+    return 0; // TODO: KH Requires proper implementation
+    /*
     if (GameScene == -1)
     {
         return 0;
@@ -3080,6 +3000,7 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
     }
 
     return 0; // none
+    */
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMap()
