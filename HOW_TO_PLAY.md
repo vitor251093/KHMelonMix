@@ -1,4 +1,5 @@
 # Playing KH Melon Mix
+_Note: instructions updated as of version 0.9.1_
 
 ## Windows (without the 1.5+2.5 collection)
 
@@ -12,11 +13,9 @@
     1. Dump an original copy of "Re:Coded" and copy the NDS file to your computer (instructions at "How to dump DS cart into an NDS file" down below);
     2. Rename that NDS file to "recoded.nds", place it inside the "roms" folder;
 6. Place [this assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing) next to the Melon Mix executable file (optional; only if you want to upgrade the audio / cutscenes / textures / sprites);
-7. The next steps are only necessary if you are launching Melon Mix for the first time;
-    1. In the future, launch the Melon Mix using "MelonMix_KHDays.bat" or "MelonMix_KHReCoded.bat", but, right now, launch "MelonMix.exe";
-    2. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
-    4. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
+7. Launch the Melon Mix using "MelonMix_GameSelector.bat", or "MelonMix_KHDays.bat", or "MelonMix_KHReCoded.bat";
+8. As the game launches, open the game settings, by pressing Esc on your keyboard, or, with your gamepad, pressing Square (Playstation) / X (Xbox) / X (Steam Deck) / Y (Switch Pro);
+9. Configure the game according to your personal preferences.
 
 ## Linux / Steam Deck (without the 1.5+2.5 collection)
 
@@ -30,12 +29,10 @@
     1. Dump an original copy of "Re:Coded" and copy the NDS file to your computer (instructions at "How to dump DS cart into an NDS file" down below);
     2. Rename that NDS file to "recoded.nds", place it inside the "roms" folder;
 6. Place [this assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing) next to the Melon Mix executable file (optional; only if you want to upgrade the audio / cutscenes / textures / sprites);
-7. Right-click the binary/AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Repeat those steps for MelonMix_KHDays.sh and MelonMix_KHReCoded.sh as well;
-8. The next steps are only necessary if you are launching Melon Mix for the first time;
-    1. In the future, launch the Melon Mix using "MelonMix_KHDays.sh" or "MelonMix_KHReCoded.sh", but, right now, launch the binary/AppImage;
-    2. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
-    4. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
+7. Right-click the binary/AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox. Repeat those steps for MelonMix_GameSelector.sh, MelonMix_KHDays.sh and MelonMix_KHReCoded.sh as well;
+8. Launch the Melon Mix using "MelonMix_GameSelector.sh", "MelonMix_KHDays.sh" or "MelonMix_KHReCoded.sh";
+9. As the game launches, open the game settings, by pressing Esc on your keyboard, or, with your gamepad, pressing Square (Playstation) / X (Xbox) / X (Steam Deck) / Y (Switch Pro);
+10. Configure the game according to your personal preferences.
 
 ## macOS (without the 1.5+2.5 collection)
 
@@ -51,10 +48,9 @@
 6. Place [this assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing) inside the app's Contents folder (right click the Melon Mix app and press "Show Package Contents" to find it) (optional; only if you want to upgrade the audio / cutscenes / textures / sprites);
 7. Move the Melon Mix app to the Applications folder, or run the following command in the terminal: `xattr -drs com.apple.quarantine <path>`, replacing `<path>` with the full path of the Melon Mix app;
 8. Now you just need to launch the Melon Mix app, and open the desired NDS file with it;
-9. The next steps are only necessary if you are launching Melon Mix for the first time;
-    1. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    2. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
-    3. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
+9. As the game launches, open the game settings, by pressing Esc on your keyboard, or, with your gamepad, pressing Square (Playstation) / X (Xbox) / X (Steam Deck) / Y (Switch Pro);
+10. Configure the game according to your personal preferences.
+
 
 ## Windows (from the 1.5+2.5 collection) (Steam only)
 
@@ -72,11 +68,10 @@
     1. Dump an original copy of "Re:Coded" and copy the NDS file to your computer (instructions at "How to dump DS cart into an NDS file" down below);
     2. Rename that NDS file to "recoded.nds", place it inside the `roms` folder;
 10. Place [this assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing) next to the Melon Mix executable file (optional; only if you want to upgrade the audio / cutscenes / textures / sprites);
-11. The next steps are only necessary if you want to customize your experience, or if you plan to play with a keyboard;
-    1. Open the Melon Mix directly through `MelonMix.exe`;
-    2. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
-    4. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
+11. Open either Days or Re:Coded from the 1.5+2.5 collection;
+12. As the game launches, open the game settings, by pressing Esc on your keyboard, or, with your gamepad, pressing Square (Playstation) / X (Xbox) / X (Steam Deck) / Y (Switch Pro);
+13. Configure the game according to your personal preferences.
+
 
 ## Linux / Steam Deck (from the 1.5+2.5 collection) (Steam only)
 
@@ -94,12 +89,9 @@
     1. Dump an original copy of "Re:Coded" and copy the NDS file to your computer (instructions at "How to dump DS cart into an NDS file" down below);
     2. Rename that NDS file to "recoded.nds", place it inside the `roms` folder;
 10. Place [this assets folder](https://drive.google.com/drive/folders/1vQL7QZ0cQhjJ2TRFt_7u76yG9MGj6bkr?usp=sharing) next to the Melon Mix executable file (optional; only if you want to upgrade the audio / cutscenes / textures / sprites);
-11. Right-click the AppImage, go to "Properties", then go to the "Permissions" tab and check the "Allow executing file as program" checkbox;
-12. The next steps are only necessary if you want to customize your experience, or if you plan to play with a keyboard;
-    1. Open the Melon Mix directly through `MelonMix.AppImage`;
-    2. Open the Days/ReCoded NDS file with the Melon Mix (you **MUST** open the NDS file **BEFORE** following the next steps, otherwise they won't work), and then:
-    3. Press **Config -> Plugin settings** to configure the Melon Mix according to your personal preferences;
-    4. If you plan to play with a keyboard, or you don't want your game controllers to be mapped automatically, press **Config** -> **Input and hotkeys**, disable "Automatically map joysticks for this game", and then configure the controls (recommended mappings at the "Recommended controller binds" guide below).
+11. Open either Days or Re:Coded from the 1.5+2.5 collection;
+12. As the game launches, open the game settings, by pressing Esc on your keyboard, or, with your gamepad, pressing Square (Playstation) / X (Xbox) / X (Steam Deck) / Y (Switch Pro);
+13. Configure the game according to your personal preferences.
 
 # Recommended Controller Binds
 * (DS Keypad tab) Map the DS D-Pad to your controller's left analog stick
@@ -113,9 +105,10 @@
 * (Add-ons tab) Map "Switch Target - Right" to the R2/RL button in your controller
 * (Add-ons tab) Map "Fullscreen Map Toggle" to the Select/Share/View button in your controller
 * (Add-ons tab) Map "HUD Toggle" to the L3/L button in your controller
+* (Add-ons tab) Map "Open settings" to Square (Playstation) / X (Xbox) / X (Steam Deck) / Y (Switch Pro)
 * (General hotkeys) Map "Toggle fullscreen" to an available button of your preference
 
-Note: don't add the same game controller key to two DS inputs, or neither of them will work properly.
+Note: don't add the same gamepad key to two DS inputs, or neither of them will work properly. The only exception to this rule is "Open settings", because it is only triggered during the intro, the title screen, and the ingame config menu.
 
 # How to dump DS cart into an NDS file
 There are multiple ways to do so. Those are some of them:
