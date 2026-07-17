@@ -687,6 +687,15 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
         }
 
         Platform::CloseFile(f);
+
+        if (_texturesIndex.empty()) {
+            errorLog("Texture index %s was read, but none of its lines could be parsed", indexFilePath.c_str());
+        }
+    }
+    else {
+        // textureIndexFilePath() only hands back a path it has just found on disk, so a
+        // failure here means index.ini is present but unreadable, not that there is none.
+        errorLog("Texture index %s exists but could not be opened", indexFilePath.c_str());
     }
 
     texturesIndex = _texturesIndex;
