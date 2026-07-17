@@ -569,6 +569,16 @@ std::string trim(const std::string& str) {
     // Return the substring that excludes leading and trailing whitespace
     return str.substr(start, end - start + 1);
 }
+const char* Plugin::skipUtf8Bom(const char* line) {
+    if ((unsigned char)line[0] == 0xEF &&
+        (unsigned char)line[1] == 0xBB &&
+        (unsigned char)line[2] == 0xBF)
+    {
+        return line + 3;
+    }
+
+    return line;
+}
 std::string Plugin::textureIndexFilePath() {
     std::string filename = "index.ini";
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
@@ -608,19 +618,11 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
             if (!Platform::FileReadLine(linebuf, 1024, f))
                 break;
 
-            char* line = linebuf;
+            const char* line = linebuf;
             if (firstLine)
             {
                 firstLine = false;
-
-                // Windows editors (Notepad among them) prefix UTF-8 files with a BOM, which
-                // is not part of the first entry's name.
-                if ((unsigned char)line[0] == 0xEF &&
-                    (unsigned char)line[1] == 0xBB &&
-                    (unsigned char)line[2] == 0xBF)
-                {
-                    line += 3;
-                }
+                line = skipUtf8Bom(line);
             }
 
             // '-' must stay last in the scanset. Anywhere else the CRT reads it as a range
@@ -1030,6 +1032,7 @@ void Plugin::loadBgmRedirections() {
             return std::string(start, end - start + 1);
         };
 
+        bool firstLine = true;
         while (!Platform::IsEndOfFile(file))
         {
             if (!Platform::FileReadLine(linebuf, 1024, file))
@@ -1044,13 +1047,20 @@ void Plugin::loadBgmRedirections() {
                 }
             }
 
-            if (strlen(linebuf) == 0
-                || linebuf[0] == '#'
-                || linebuf[0] == ';') {
+            const char* line = linebuf;
+            if (firstLine)
+            {
+                firstLine = false;
+                line = skipUtf8Bom(line);
+            }
+
+            if (strlen(line) == 0
+                || line[0] == '#'
+                || line[0] == ';') {
                 continue;
             }
 
-            if (sscanf(linebuf, "%[^=]=%[^\n]", entryname, entryval) == 2) {
+            if (sscanf(line, "%[^=]=%[^\n]", entryname, entryval) == 2) {
                 _BgmRedirectors[trim_str(entryname)] = trim_str(entryval);
             }
         }
