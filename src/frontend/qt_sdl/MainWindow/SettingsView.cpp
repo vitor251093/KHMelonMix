@@ -94,6 +94,11 @@ static constexpr int kNavigateBack   = 5;
 static constexpr int kNavigateReset  = 6;
 static constexpr int kNavigateClear  = 7;
 
+static constexpr int kMenuSoundEnter    = 1;
+static constexpr int kMenuSoundMove     = 2;
+static constexpr int kMenuSoundContinue = 3;
+static constexpr int kMenuSoundSelect   = 4;
+
 struct ThemePreset { const char* label; QRgb rgb; };
 static const ThemePreset kThemePresets[] = {
     { "Auto",                0xFF3C3C3C },
@@ -1144,7 +1149,7 @@ void SettingsView::pollBindCapture(SDL_Joystick* joy)
         {
             // pad never settled (stuck/drift) — cancel, keep the existing binding
             m_waitingForBind = false;
-            playSound(3);
+            playSound(kMenuSoundContinue);
             update();
         }
         return;
@@ -1154,7 +1159,7 @@ void SettingsView::pollBindCapture(SDL_Joystick* joy)
     if (now - m_bindArmTime >= kBindAssignTimeoutMs)
     {
         m_waitingForBind = false;
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         return;
     }
@@ -1333,7 +1338,7 @@ void SettingsView::pollJoystick()
     {
         m_lastJoyInput = now;
         m_pendingClose = true;
-        playSound(3);
+        playSound(kMenuSoundContinue);
         return;
     }
 
@@ -1404,14 +1409,14 @@ void SettingsView::handleNavSidebar(int direction)
         sidebarIndex = (sidebarIndex - 1 + kSidebarCount) % kSidebarCount;
         detailIndex = 0;
         m_detailScrollOffset = 0;
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
     case kNavigateDown:
         sidebarIndex = (sidebarIndex + 1) % kSidebarCount;
         detailIndex = 0;
         m_detailScrollOffset = 0;
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
     case kNavigateRight:
@@ -1419,7 +1424,7 @@ void SettingsView::handleNavSidebar(int direction)
         if (sidebarIndex == kIdxQuit)
         {
             currentScreen = Screen::Detail;
-            playSound(1);
+            playSound(kMenuSoundEnter);
             update();
         }
         else if (sidebarIndex == kIdxGamepad || sidebarIndex == kIdxKeyboard)
@@ -1430,7 +1435,7 @@ void SettingsView::handleNavSidebar(int direction)
                 currentScreen        = Screen::Detail;
                 detailIndex          = 0;
                 m_detailScrollOffset = 0;
-                playSound(1);
+                playSound(kMenuSoundEnter);
                 update();
             }
             else
@@ -1440,14 +1445,14 @@ void SettingsView::handleNavSidebar(int direction)
                 detailIndex         = 0;
                 buildRemapList();
                 currentScreen = Screen::Remap;
-                playSound(1);
+                playSound(kMenuSoundEnter);
                 update();
             }
         }
         else if (sidebarIndex == kIdxStream)
         {
             currentScreen = Screen::Detail;
-            playSound(1);
+            playSound(kMenuSoundEnter);
             update();
         }
         else
@@ -1457,12 +1462,12 @@ void SettingsView::handleNavSidebar(int direction)
             currentScreen  = Screen::Detail;
             detailIndex    = 0;
             m_detailScrollOffset = 0;
-            playSound(1);
+            playSound(kMenuSoundEnter);
             update();
         }
         break;
     case kNavigateBack:
-        playSound(3);
+        playSound(kMenuSoundContinue);
         emit settingsClosed();
         break;
     default: break;
@@ -1474,7 +1479,7 @@ void SettingsView::handleNavDetail(int direction)
     if (sidebarIndex == kIdxStream)
     {
         if (direction == kNavigateBack || direction == kNavigateLeft)
-        { currentScreen = Screen::Sidebar; playSound(3); update(); }
+        { currentScreen = Screen::Sidebar; playSound(kMenuSoundContinue); update(); }
         else if (direction == kNavigateSelect)
             QDesktopServices::openUrl(QUrl("https://www.kingdomhearts.com/1525/us/"));
         return;
@@ -1483,9 +1488,9 @@ void SettingsView::handleNavDetail(int direction)
     if (sidebarIndex == kIdxQuit)
     {
         if (direction == kNavigateBack || direction == kNavigateLeft)
-        { currentScreen = Screen::Sidebar; playSound(3); update(); }
+        { currentScreen = Screen::Sidebar; playSound(kMenuSoundContinue); update(); }
         else if (direction == kNavigateRight || direction == kNavigateSelect)
-        { playSound(4); emit quitGameConfirmed(); }
+        { playSound(kMenuSoundSelect); emit quitGameConfirmed(); }
         return;
     }
 
@@ -1519,7 +1524,7 @@ void SettingsView::handleNavDetail(int direction)
         optionIndex = readRowValue(sidebarIndex, detailIndex);
         scrollOptionToIdx(optionIndex);
         currentScreen = Screen::OptionList;
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
     };
 
@@ -1529,7 +1534,7 @@ void SettingsView::handleNavDetail(int direction)
         detailIndex         = 0;
         buildRemapList();
         currentScreen = Screen::Remap;
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
     };
 
@@ -1539,7 +1544,7 @@ void SettingsView::handleNavDetail(int direction)
         detailIndex         = 0;
         buildRemapList();
         currentScreen = Screen::Remap;
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
     };
 
@@ -1548,13 +1553,13 @@ void SettingsView::handleNavDetail(int direction)
     case kNavigateUp:
         detailIndex = (detailIndex - 1 + rowCount) % rowCount;
         scrollDetailToRow(detailIndex, rows);
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
     case kNavigateDown:
         detailIndex = (detailIndex + 1) % rowCount;
         scrollDetailToRow(detailIndex, rows);
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
     case kNavigateLeft:
@@ -1565,7 +1570,7 @@ void SettingsView::handleNavDetail(int direction)
             if (nv != cur) { writeRowValue(sidebarIndex, detailIndex, nv); update(); }
         }
         else
-        { currentScreen = Screen::Sidebar; playSound(3); update(); }
+        { currentScreen = Screen::Sidebar; playSound(kMenuSoundContinue); update(); }
         break;
     case kNavigateRight:
     {
@@ -1591,7 +1596,7 @@ void SettingsView::handleNavDetail(int direction)
         {
             int cur = readRowValue(sidebarIndex, detailIndex);
             writeRowValue(sidebarIndex, detailIndex, cur ? 0 : 1);
-            playSound(4);
+            playSound(kMenuSoundSelect);
             update();
         }
         else if (row.type == SettingRow::Type::Combobox)
@@ -1604,7 +1609,7 @@ void SettingsView::handleNavDetail(int direction)
     }
     case kNavigateBack:
         currentScreen = Screen::Sidebar;
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         break;
     case kNavigateReset:
@@ -1613,7 +1618,7 @@ void SettingsView::handleNavDetail(int direction)
         {
             m_resettingSection      = true;
             m_resettingConfirmIndex = 1;
-            playSound(1);
+            playSound(kMenuSoundEnter);
             update();
         }
         break;
@@ -1632,26 +1637,26 @@ void SettingsView::handleNavOptionList(int direction)
     case kNavigateUp:
         optionIndex = (optionIndex - 1 + optCount) % optCount;
         scrollOptionToIdx(optionIndex);
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
     case kNavigateDown:
         optionIndex = (optionIndex + 1) % optCount;
         scrollOptionToIdx(optionIndex);
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
     case kNavigateSelect:
         writeRowValue(sidebarIndex, detailIndex, optionIndex);
         currentScreen = Screen::Detail;
-        playSound(4);
+        playSound(kMenuSoundSelect);
         update();
         break;
     case kNavigateBack:
     case kNavigateLeft:
         optionIndex = readRowValue(sidebarIndex, detailIndex);
         currentScreen = Screen::Detail;
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         break;
     default: break;
@@ -1684,7 +1689,7 @@ void SettingsView::handleNavRemap(int direction)
             detailIndex -= 1;
             scrollRemapToAction(detailIndex);
         }
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
     case kNavigateDown:
@@ -1698,7 +1703,7 @@ void SettingsView::handleNavRemap(int direction)
             detailIndex += 1;
             scrollRemapToAction(detailIndex);
         }
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
     case kNavigateSelect:
@@ -1718,7 +1723,7 @@ void SettingsView::handleNavRemap(int direction)
         m_waitingForBind  = true;
         m_bindArmed       = false;
         m_bindListenStart = m_animClock.elapsed();
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
         break;
     }
@@ -1733,18 +1738,18 @@ void SettingsView::handleNavRemap(int direction)
         {
             currentScreen = Screen::Sidebar;
         }
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         break;
     case kNavigateReset:
         m_resettingBindings     = true;
         m_resettingConfirmIndex = 1;
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
         break;
     case kNavigateClear: // clear the selected binding (unbound = -1 for joystick, 0 for keyboard)
         writeRemapBinding(detailIndex, m_remapIsJoystick ? -1 : 0);
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         break;
     default: break;
@@ -1766,13 +1771,13 @@ void SettingsView::handleNavigation(int direction)
             {
                 resetSectionToDefaults(sidebarIndex);
                 Config::Save();
-                playSound(4);
+                playSound(kMenuSoundSelect);
             }
-            else playSound(3);
+            else playSound(kMenuSoundContinue);
             m_resettingSection = false;
             update();
             break;
-        case kNavigateBack: m_resettingSection = false; playSound(3); update(); break;
+        case kNavigateBack: m_resettingSection = false; playSound(kMenuSoundContinue); update(); break;
         default: break;
         }
         return;
@@ -1785,12 +1790,12 @@ void SettingsView::handleNavigation(int direction)
         case kNavigateLeft: m_resettingConfirmIndex = 0; update(); break;
         case kNavigateRight: m_resettingConfirmIndex = 1; update(); break;
         case kNavigateSelect:
-            if (m_resettingConfirmIndex == 0) { resetAllRemapBindings(); playSound(4); }
-            else                               playSound(3);
+            if (m_resettingConfirmIndex == 0) { resetAllRemapBindings(); playSound(kMenuSoundSelect); }
+            else                               playSound(kMenuSoundContinue);
             m_resettingBindings = false;
             update();
             break;
-        case kNavigateBack: m_resettingBindings = false; playSound(3); update(); break;
+        case kNavigateBack: m_resettingBindings = false; playSound(kMenuSoundContinue); update(); break;
         default: break;
         }
         return;
@@ -2032,7 +2037,7 @@ void SettingsView::mousePressEvent(QMouseEvent* event)
             detailIndex  = 0;
             m_detailScrollOffset = 0;
             currentScreen = Screen::Sidebar;
-            playSound(3);
+            playSound(kMenuSoundContinue);
             update();
             return;
         }
