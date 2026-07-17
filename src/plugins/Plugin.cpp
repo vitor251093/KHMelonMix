@@ -685,6 +685,8 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
                 }
             }
         }
+
+        Platform::CloseFile(f);
     }
 
     texturesIndex = _texturesIndex;
