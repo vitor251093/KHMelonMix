@@ -604,7 +604,10 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
             if (!Platform::FileReadLine(linebuf, 1024, f))
                 break;
 
-            int ret = sscanf(linebuf, "%31[A-Za-z_0-9\\-.]=%[^\t\r\n]", entryname, entryval);
+            // '-' must stay last in the scanset. Anywhere else the CRT reads it as a range
+            // delimiter: glibc ignores the reversed "\-." range, but the UCRT swaps it into
+            // '.'..'\\', which matches '=' and makes every line fail to parse.
+            int ret = sscanf(linebuf, "%31[A-Za-z0-9_.\\-]=%[^\t\r\n]", entryname, entryval);
             entryname[31] = '\0';
             if (ret < 2) continue;
 
