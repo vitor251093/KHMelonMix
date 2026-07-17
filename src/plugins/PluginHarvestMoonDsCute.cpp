@@ -146,7 +146,8 @@ std::string PluginHarvestMoonDsCute::localizationFilePath(std::string language) 
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
     if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
+        // u8string(): this is handed to Platform::OpenLocalFile, which decodes it as UTF-8.
+        return fullPath.u8string();
     }
 
     return "";

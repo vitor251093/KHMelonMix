@@ -579,7 +579,10 @@ std::string Plugin::textureIndexFilePath() {
         return "";
     }
 
-    return fullPath.string();
+    // u8string(), not string(): this is handed to Platform::OpenLocalFile, which decodes it
+    // as UTF-8. On Windows string() would yield the ANSI code page instead, and any accent
+    // in the path would come out mangled.
+    return fullPath.u8string();
 }
 std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
     if (!texturesIndex.empty()) {
@@ -999,7 +1002,7 @@ void Plugin::loadBgmRedirections() {
             iniFilePath = fullPath0;
         }
     }
-    Platform::FileHandle* file = Platform::OpenLocalFile(iniFilePath.string().c_str(), Platform::FileMode::ReadText);
+    Platform::FileHandle* file = Platform::OpenLocalFile(iniFilePath.u8string().c_str(), Platform::FileMode::ReadText);
     if (file) {
         _BgmRedirectors.clear();
 

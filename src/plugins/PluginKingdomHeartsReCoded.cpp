@@ -2964,7 +2964,8 @@ std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string languag
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / filename;
     if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
+        // u8string(): this is handed to Platform::OpenLocalFile, which decodes it as UTF-8.
+        return fullPath.u8string();
     }
 
     return "";
