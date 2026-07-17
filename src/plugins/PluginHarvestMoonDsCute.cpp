@@ -46,12 +46,20 @@ void PluginHarvestMoonDsCute::loadLocalization() {
         char linebuf[1024];
         char entryname[32];
         char entryval[1024];
+        bool firstLine = true;
         while (!Platform::IsEndOfFile(f))
         {
             if (!Platform::FileReadLine(linebuf, 1024, f))
                 break;
 
-            int ret = sscanf(linebuf, "%31[A-Za-z_0-9]=%[^\t\r\n]", entryname, entryval);
+            const char* line = linebuf;
+            if (firstLine)
+            {
+                firstLine = false;
+                line = skipUtf8Bom(line);
+            }
+
+            int ret = sscanf(line, "%31[A-Za-z_0-9]=%[^\t\r\n]", entryname, entryval);
             entryname[31] = '\0';
             if (ret < 2) continue;
 
@@ -146,7 +154,8 @@ std::string PluginHarvestMoonDsCute::localizationFilePath(std::string language) 
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
     if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
+        // u8string(): this is handed to Platform::OpenLocalFile, which decodes it as UTF-8.
+        return fullPath.u8string();
     }
 
     return "";

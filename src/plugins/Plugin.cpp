@@ -569,6 +569,16 @@ std::string trim(const std::string& str) {
     // Return the substring that excludes leading and trailing whitespace
     return str.substr(start, end - start + 1);
 }
+const char* Plugin::skipUtf8Bom(const char* line) {
+    if ((unsigned char)line[0] == 0xEF &&
+        (unsigned char)line[1] == 0xBB &&
+        (unsigned char)line[2] == 0xBF)
+    {
+        return line + 3;
+    }
+
+    return line;
+}
 std::string Plugin::textureIndexFilePath() {
     std::string filename = "index.ini";
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
@@ -579,7 +589,10 @@ std::string Plugin::textureIndexFilePath() {
         return "";
     }
 
-    return fullPath.string();
+    // u8string(), not string(): this is handed to Platform::OpenLocalFile, which decodes it
+    // as UTF-8. On Windows string() would yield the ANSI code page instead, and any accent
+    // in the path would come out mangled.
+    return fullPath.u8string();
 }
 std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
     if (!texturesIndex.empty()) {
@@ -599,12 +612,23 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
         char linebuf[1024];
         char entryname[32];
         char entryval[1024];
+        bool firstLine = true;
         while (!Platform::IsEndOfFile(f))
         {
             if (!Platform::FileReadLine(linebuf, 1024, f))
                 break;
 
-            int ret = sscanf(linebuf, "%31[A-Za-z_0-9\\-.]=%[^\t\r\n]", entryname, entryval);
+            const char* line = linebuf;
+            if (firstLine)
+            {
+                firstLine = false;
+                line = skipUtf8Bom(line);
+            }
+
+            // '-' must stay last in the scanset. Anywhere else the CRT reads it as a range
+            // delimiter: glibc ignores the reversed "\-." range, but the UCRT swaps it into
+            // '.'..'\\', which matches '=' and makes every line fail to parse.
+            int ret = sscanf(line, "%31[A-Za-z0-9_.\\-]=%[^\t\r\n]", entryname, entryval);
             entryname[31] = '\0';
             if (ret < 2) continue;
 
@@ -661,6 +685,17 @@ std::map<std::string, TextureEntry>& Plugin::getTexturesIndex() {
                 }
             }
         }
+
+        Platform::CloseFile(f);
+
+        if (_texturesIndex.empty()) {
+            errorLog("Texture index %s was read, but none of its lines could be parsed", indexFilePath.c_str());
+        }
+    }
+    else {
+        // textureIndexFilePath() only hands back a path it has just found on disk, so a
+        // failure here means index.ini is present but unreadable, not that there is none.
+        errorLog("Texture index %s exists but could not be opened", indexFilePath.c_str());
     }
 
     texturesIndex = _texturesIndex;
@@ -980,7 +1015,7 @@ void Plugin::loadBgmRedirections() {
             iniFilePath = fullPath0;
         }
     }
-    Platform::FileHandle* file = Platform::OpenLocalFile(iniFilePath.string().c_str(), Platform::FileMode::ReadText);
+    Platform::FileHandle* file = Platform::OpenLocalFile(iniFilePath.u8string().c_str(), Platform::FileMode::ReadText);
     if (file) {
         _BgmRedirectors.clear();
 
@@ -1008,6 +1043,7 @@ void Plugin::loadBgmRedirections() {
             return std::string(start, end - start + 1);
         };
 
+        bool firstLine = true;
         while (!Platform::IsEndOfFile(file))
         {
             if (!Platform::FileReadLine(linebuf, 1024, file))
@@ -1022,13 +1058,20 @@ void Plugin::loadBgmRedirections() {
                 }
             }
 
-            if (strlen(linebuf) == 0
-                || linebuf[0] == '#'
-                || linebuf[0] == ';') {
+            const char* line = linebuf;
+            if (firstLine)
+            {
+                firstLine = false;
+                line = skipUtf8Bom(line);
+            }
+
+            if (strlen(line) == 0
+                || line[0] == '#'
+                || line[0] == ';') {
                 continue;
             }
 
-            if (sscanf(linebuf, "%[^=]=%[^\n]", entryname, entryval) == 2) {
+            if (sscanf(line, "%[^=]=%[^\n]", entryname, entryval) == 2) {
                 _BgmRedirectors[trim_str(entryname)] = trim_str(entryval);
             }
         }
