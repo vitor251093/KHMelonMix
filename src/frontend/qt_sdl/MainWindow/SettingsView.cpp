@@ -85,6 +85,15 @@ static constexpr int kIdxSystem     = 6;
 static constexpr int kIdxStream     = 7;
 static constexpr int kIdxQuit       = 8;
 
+static constexpr int kNavigateUp     = 0;
+static constexpr int kNavigateDown   = 1;
+static constexpr int kNavigateLeft   = 2;
+static constexpr int kNavigateRight  = 3;
+static constexpr int kNavigateSelect = 4;
+static constexpr int kNavigateBack   = 5;
+static constexpr int kNavigateReset  = 6;
+static constexpr int kNavigateClear  = 7;
+
 struct ThemePreset { const char* label; QRgb rgb; };
 static const ThemePreset kThemePresets[] = {
     { "Auto",                0xFF3C3C3C },
@@ -1391,22 +1400,22 @@ void SettingsView::handleNavSidebar(int direction)
 {
     switch (direction)
     {
-    case 0:
+    case kNavigateUp:
         sidebarIndex = (sidebarIndex - 1 + kSidebarCount) % kSidebarCount;
         detailIndex = 0;
         m_detailScrollOffset = 0;
         playSound(2);
         update();
         break;
-    case 1:
+    case kNavigateDown:
         sidebarIndex = (sidebarIndex + 1) % kSidebarCount;
         detailIndex = 0;
         m_detailScrollOffset = 0;
         playSound(2);
         update();
         break;
-    case 3:
-    case 4:
+    case kNavigateRight:
+    case kNavigateSelect:
         if (sidebarIndex == kIdxQuit)
         {
             currentScreen = Screen::Detail;
@@ -1452,7 +1461,7 @@ void SettingsView::handleNavSidebar(int direction)
             update();
         }
         break;
-    case 5:
+    case kNavigateBack:
         playSound(3);
         emit settingsClosed();
         break;
@@ -1464,18 +1473,18 @@ void SettingsView::handleNavDetail(int direction)
 {
     if (sidebarIndex == kIdxStream)
     {
-        if (direction == 5 || direction == 2)
+        if (direction == kNavigateBack || direction == kNavigateLeft)
         { currentScreen = Screen::Sidebar; playSound(3); update(); }
-        else if (direction == 4)
+        else if (direction == kNavigateSelect)
             QDesktopServices::openUrl(QUrl("https://www.kingdomhearts.com/1525/us/"));
         return;
     }
 
     if (sidebarIndex == kIdxQuit)
     {
-        if (direction == 5 || direction == 2)
+        if (direction == kNavigateBack || direction == kNavigateLeft)
         { currentScreen = Screen::Sidebar; playSound(3); update(); }
-        else if (direction == 3 || direction == 4)
+        else if (direction == kNavigateRight || direction == kNavigateSelect)
         { playSound(4); emit quitGameConfirmed(); }
         return;
     }
@@ -1484,7 +1493,7 @@ void SettingsView::handleNavDetail(int direction)
     int rowCount = rows.size();
     if (rowCount == 0)
     {
-        if (direction == 5 || direction == 2)
+        if (direction == kNavigateBack || direction == kNavigateLeft)
         { currentScreen = Screen::Sidebar; update(); }
         return;
     }
@@ -1536,19 +1545,19 @@ void SettingsView::handleNavDetail(int direction)
 
     switch (direction)
     {
-    case 0:
+    case kNavigateUp:
         detailIndex = (detailIndex - 1 + rowCount) % rowCount;
         scrollDetailToRow(detailIndex, rows);
         playSound(2);
         update();
         break;
-    case 1:
+    case kNavigateDown:
         detailIndex = (detailIndex + 1) % rowCount;
         scrollDetailToRow(detailIndex, rows);
         playSound(2);
         update();
         break;
-    case 2:
+    case kNavigateLeft:
         if (row.type == SettingRow::Type::Slider)
         {
             int cur = readRowValue(sidebarIndex, detailIndex);
@@ -1558,7 +1567,7 @@ void SettingsView::handleNavDetail(int direction)
         else
         { currentScreen = Screen::Sidebar; playSound(3); update(); }
         break;
-    case 3:
+    case kNavigateRight:
     {
         if (isRowBlocked()) break;
         if (row.type == SettingRow::Type::Slider)
@@ -1575,7 +1584,7 @@ void SettingsView::handleNavDetail(int direction)
             openKeyboardRemap();
         break;
     }
-    case 4:
+    case kNavigateSelect:
     {
         if (isRowBlocked()) break;
         if (row.type == SettingRow::Type::Toggle)
@@ -1593,12 +1602,12 @@ void SettingsView::handleNavDetail(int direction)
             openKeyboardRemap();
         break;
     }
-    case 5:
+    case kNavigateBack:
         currentScreen = Screen::Sidebar;
         playSound(3);
         update();
         break;
-    case 6:
+    case kNavigateReset:
         if (sidebarIndex != kIdxStream && sidebarIndex != kIdxQuit &&
             sidebarIndex != kIdxGamepad && sidebarIndex != kIdxKeyboard)
         {
@@ -1620,26 +1629,26 @@ void SettingsView::handleNavOptionList(int direction)
 
     switch (direction)
     {
-    case 0:
+    case kNavigateUp:
         optionIndex = (optionIndex - 1 + optCount) % optCount;
         scrollOptionToIdx(optionIndex);
         playSound(2);
         update();
         break;
-    case 1:
+    case kNavigateDown:
         optionIndex = (optionIndex + 1) % optCount;
         scrollOptionToIdx(optionIndex);
         playSound(2);
         update();
         break;
-    case 4:
+    case kNavigateSelect:
         writeRowValue(sidebarIndex, detailIndex, optionIndex);
         currentScreen = Screen::Detail;
         playSound(4);
         update();
         break;
-    case 5:
-    case 2:
+    case kNavigateBack:
+    case kNavigateLeft:
         optionIndex = readRowValue(sidebarIndex, detailIndex);
         currentScreen = Screen::Detail;
         playSound(3);
@@ -1654,13 +1663,13 @@ void SettingsView::handleNavRemap(int direction)
     int actionCount = m_remapActionToItemIdx.size();
     if (actionCount == 0)
     {
-        if (direction == 5) { currentScreen = Screen::Sidebar; update(); }
+        if (direction == kNavigateBack) { currentScreen = Screen::Sidebar; update(); }
         return;
     }
 
     switch (direction)
     {
-    case 0:
+    case kNavigateUp:
         if (detailIndex == 0)
         {
             int dX_, dW_, sY_, bH_, sp_;
@@ -1678,7 +1687,7 @@ void SettingsView::handleNavRemap(int direction)
         playSound(2);
         update();
         break;
-    case 1:
+    case kNavigateDown:
         if (detailIndex == actionCount - 1)
         {
             m_remapScrollOffset = 0;
@@ -1692,7 +1701,7 @@ void SettingsView::handleNavRemap(int direction)
         playSound(2);
         update();
         break;
-    case 4:
+    case kNavigateSelect:
     {
         if (m_remapIsJoystick)
         {
@@ -1713,7 +1722,7 @@ void SettingsView::handleNavRemap(int direction)
         update();
         break;
     }
-    case 5:
+    case kNavigateBack:
         if ((sidebarIndex == kIdxKeyboard || sidebarIndex == kIdxGamepad) && !rowsFor(sidebarIndex).isEmpty())
         {
             currentScreen        = Screen::Detail;
@@ -1727,13 +1736,13 @@ void SettingsView::handleNavRemap(int direction)
         playSound(3);
         update();
         break;
-    case 6:
+    case kNavigateReset:
         m_resettingBindings     = true;
         m_resettingConfirmIndex = 1;
         playSound(1);
         update();
         break;
-    case 7: // clear the selected binding (unbound = -1 for joystick, 0 for keyboard)
+    case kNavigateClear: // clear the selected binding (unbound = -1 for joystick, 0 for keyboard)
         writeRemapBinding(detailIndex, m_remapIsJoystick ? -1 : 0);
         playSound(3);
         update();
@@ -1750,9 +1759,9 @@ void SettingsView::handleNavigation(int direction)
     {
         switch (direction)
         {
-        case 2: m_resettingConfirmIndex = 0; update(); break;
-        case 3: m_resettingConfirmIndex = 1; update(); break;
-        case 4:
+        case kNavigateLeft: m_resettingConfirmIndex = 0; update(); break;
+        case kNavigateRight: m_resettingConfirmIndex = 1; update(); break;
+        case kNavigateSelect:
             if (m_resettingConfirmIndex == 0)
             {
                 resetSectionToDefaults(sidebarIndex);
@@ -1763,7 +1772,7 @@ void SettingsView::handleNavigation(int direction)
             m_resettingSection = false;
             update();
             break;
-        case 5: m_resettingSection = false; playSound(3); update(); break;
+        case kNavigateBack: m_resettingSection = false; playSound(3); update(); break;
         default: break;
         }
         return;
@@ -1773,15 +1782,15 @@ void SettingsView::handleNavigation(int direction)
     {
         switch (direction)
         {
-        case 2: m_resettingConfirmIndex = 0; update(); break;
-        case 3: m_resettingConfirmIndex = 1; update(); break;
-        case 4:
+        case kNavigateLeft: m_resettingConfirmIndex = 0; update(); break;
+        case kNavigateRight: m_resettingConfirmIndex = 1; update(); break;
+        case kNavigateSelect:
             if (m_resettingConfirmIndex == 0) { resetAllRemapBindings(); playSound(4); }
             else                               playSound(3);
             m_resettingBindings = false;
             update();
             break;
-        case 5: m_resettingBindings = false; playSound(3); update(); break;
+        case kNavigateBack: m_resettingBindings = false; playSound(3); update(); break;
         default: break;
         }
         return;
@@ -1844,21 +1853,21 @@ void SettingsView::keyPressEvent(QKeyEvent* event)
 
     switch (event->key())
     {
-    case Qt::Key_Up:     handleNavigation(0); event->accept(); break;
-    case Qt::Key_Down:   handleNavigation(1); event->accept(); break;
-    case Qt::Key_Left:   handleNavigation(2); event->accept(); break;
-    case Qt::Key_Right:  handleNavigation(3); event->accept(); break;
+    case Qt::Key_Up:     handleNavigation(kNavigateUp); event->accept(); break;
+    case Qt::Key_Down:   handleNavigation(kNavigateDown); event->accept(); break;
+    case Qt::Key_Left:   handleNavigation(kNavigateLeft); event->accept(); break;
+    case Qt::Key_Right:  handleNavigation(kNavigateRight); event->accept(); break;
     case Qt::Key_Return:
-    case Qt::Key_Space:  handleNavigation(4); event->accept(); break;
-    case Qt::Key_Escape: handleNavigation(5); event->accept(); break;
+    case Qt::Key_Space:  handleNavigation(kNavigateSelect); event->accept(); break;
+    case Qt::Key_Escape: handleNavigation(kNavigateBack); event->accept(); break;
     case Qt::Key_X:
         if (currentScreen == Screen::Remap || currentScreen == Screen::Detail)
-            handleNavigation(6);
+            handleNavigation(kNavigateReset);
         event->accept();
         break;
     case Qt::Key_Delete:
         if (currentScreen == Screen::Remap)
-            handleNavigation(7);
+            handleNavigation(kNavigateClear);
         event->accept();
         break;
     default: event->accept(); break;
