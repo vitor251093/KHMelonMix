@@ -2594,10 +2594,7 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
     SDL_GameController* controller;
     if (m_remapIsJoystick)
     {
-        EmuInstance* emu = m_mainWindow->getEmuInstance();
-        auto& lcfg = emu->getLocalConfig();
-        int uid = lcfg.GetInt("JoystickUniqueID");
-        controller = SDL_GameControllerOpen(emu->getJoystickIdByUniqueId(uid));
+        controller = m_mainWindow->getEmuInstance()->getController();
     }
 
     int actionIdx = 0;
@@ -2686,11 +2683,6 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
     p.drawText(QRect(detailX, (int)(bottomLineY - btnH - spacing), detailW, btnH),
                Qt::AlignLeft | Qt::AlignVCenter,
                QString::fromUtf8(locale().remapResetBackHint));
-
-    if (m_remapIsJoystick)
-    {
-        SDL_GameControllerClose(controller);
-    }
 }
 
 void SettingsView::paintDetailStream(QPainter& p, const DetailLayout& L)
@@ -3136,14 +3128,11 @@ void SettingsView::paintActionBar(QPainter& p)
         int clearBtn = joycfg.GetInt("Y");
 
         if (confirmBtn >= 0 && backBtn >= 0 && resetBtn >= 0 && clearBtn >= 0) {
-            SDL_GameController* controller = SDL_GameControllerOpen(emu->getJoystickIdByUniqueId(uid));
-
+            SDL_GameController* controller = emu->getController();
             confirmButtonLabel = JoyMappingName(controller, confirmBtn).toStdString();
             cancelButtonLabel = JoyMappingName(controller, backBtn).toStdString();
             resetButtonLabel = JoyMappingName(controller, resetBtn).toStdString();
             clearButtonLabel = JoyMappingName(controller, clearBtn).toStdString();
-
-            SDL_GameControllerClose(controller);
         }
     }
 
