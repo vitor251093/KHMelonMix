@@ -1258,7 +1258,7 @@ void SettingsView::pollJoystick()
     // Self-heal: inputLoadConfig() closes the joystick on every remap/reset, and the EmuThread
     // reopen path (inputProcess) is skipped while the overlay pauses emulation. Reopen here so
     // controller input survives binds, resets, and unplug/replug while settings is open.
-    emu->ensureJoystickOpen();
+    //emu->ensureJoystickOpen();
     SDL_Joystick* joy = emu->getJoystick();
     if (!joy) return;
 
