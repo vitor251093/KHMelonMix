@@ -96,7 +96,9 @@ jobs:
         -DMELONDS_EMBED_BUILD_INFO=ON
 
     - name: Build
-      run: cmake --build /tmp/build
+      run: |
+        cmake --build /tmp/build
+        cp -RP /tmp/build $GITHUB_WORKSPACE/
 
     - name: Preparing artifacts
       run: |

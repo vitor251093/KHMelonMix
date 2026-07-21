@@ -45,13 +45,8 @@ public:
     std::vector<ShapeData3D> renderer_topScreen_3DShapes() override;
     void renderer_afterBuildingShapes() override;
     int renderer_gameSceneState() override;
-    int renderer_screenLayout() override;
     int renderer_brightnessMode() override;
-    float renderer_forcedAspectRatio() override;
-    bool renderer_showOriginalUI() override;
     ThemeColor defaultThemeColor() override { return {192, 56, 14}; }
-
-    bool shouldPreserveDsTopScreenWhileOnDualScreenModeForGameScene();
 
     void applyHotkeyToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
     void applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) override;
@@ -101,8 +96,6 @@ private:
     bool PausedInGame = false;
     bool isCharacterControllable = false;
 
-    bool IsBottomScreen2DTextureBlack;
-    bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
 
@@ -130,6 +123,8 @@ private:
 
     // should render frame utils
     bool _hasVisible3DOnBottomScreen = false;
+    bool _isBottomScreenBlackThroughHardware = false;
+    bool _isBottomScreenBlackThroughSoftware = false;
     bool _ignore3DOnBottomScreen = false;
     bool _priorIgnore3DOnBottomScreen = false;
     bool _priorPriorIgnore3DOnBottomScreen = false;
@@ -191,12 +186,8 @@ private:
     u32 getCurrentMap();
     bool isSaveLoaded();
 
-    bool isBufferBlack(unsigned int* buffer);
-    u32* topScreen2DTexture();
-    u32* bottomScreen2DTexture();
-    bool isBottomScreen2DTextureBlack();
-
     bool ShouldShowBottomScreen = false;
+    bool isCutsceneLikeDialogVisible();
     bool isDialogVisible();
     bool isMinimapVisible();
     bool isMissionInformationVisibleOnTopScreen();
@@ -207,11 +198,11 @@ private:
     bool isDialogPortraitLabelVisible();
     bool isLoadScreenDeletePromptVisible();
     int dialogBoxHeight();
-    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 
     void renderer_composition_loadScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
     void renderer_composition_component_targetView(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
     void renderer_composition_component_bottomMissionInformation(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
+    void renderer_composition_component_bothScreensHorizontal(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale, int blankX, int blankY);
     void renderer_topScreen_2DShapes_saveScreenMenu(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
     void renderer_topScreen_2DShapes_component_characterDialog(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
 

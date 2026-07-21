@@ -65,6 +65,10 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define PAUSE_SCREEN_ADDRESS_JP 0x020567f0
 #define PAUSE_SCREEN_VALUE_TRUE_PAUSE 0x01
 
+#define OVERCLOCK_TREE_VISIBLE_ADDRESS_US 0x02056a00 // may also 0x02056a60
+#define OVERCLOCK_TREE_VISIBLE_ADDRESS_EU 0x02056a00
+#define OVERCLOCK_TREE_VISIBLE_ADDRESS_JP 0x02056820
+
 // 0x03 => cutscene; 0x01 => not cutscene
 #define IS_CUTSCENE_US 0x02056e90
 #define IS_CUTSCENE_EU 0x02056e90
@@ -164,10 +168,12 @@ u32 PluginKingdomHeartsReCoded::jpGamecode = 1245268802;
 #define SWITCH_TARGET_TIME_BETWEEN_SWITCH 20
 #define LOCK_ON_PRESS_FRAME_LIMIT         100
 
-// If you want to undertand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
+// If you want to understand that, check GPU2D_Soft.cpp, at the bottom of the SoftRenderer::DrawScanline function
 #define PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(b) (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0xF)
 #define PARSE_BRIGHTNESS_FOR_BLACK_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : 0)
 #define PARSE_BRIGHTNESS_FOR_UNKNOWN_BACKGROUND(b) (b & (1 << 14) ? ((b - 1) & 0xF) : (b & (1 << 15) ? (0xF - ((b - 1) & 0xF)) : 0))
+
+#define getAnyByCart(usAddress,euAddress,jpAddress) (isUsaCart() ? (usAddress) : (isEuropeCart() ? (euAddress) : (jpAddress)))
 
 enum
 {
@@ -607,7 +613,7 @@ std::string PluginKingdomHeartsReCoded::gameFolderName() {
 }
 
 std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
-    return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
+    return getAnyByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 }
 
 void PluginKingdomHeartsReCoded::renderer_composition_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale) {
@@ -825,16 +831,55 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_composition()
 
             break;
 
-        case gameScene_Cutscene:
-            if ((GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) > 0) {
+        case gameScene_Cutscene: {
+            if ((GameSceneState & (1 << gameSceneState_topScreenCutscene)) == 0) {
                 shapes.push_back(ShapeBuilder2D::square()
                         .fromBottomScreen()
                         .placeAtCorner(corner_Center)
                         .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
+
+                break;
             }
+            if ((GameSceneState & (1 << gameSceneState_bottomScreenCutscene)) == 0) {
+                shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .build(aspectRatio));
+
+                break;
+            }
+
+            float doubleScreenScale = aspectRatio * 0.5;
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Left)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Right)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .withSize(8, 8)
+                    .placeAtCorner(corner_TopLeft)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .repeatAsBackground()
+                    .build(aspectRatio));
+
             break;
+        }
 
         case gameScene_InGameSaveMenu:
             {
@@ -1094,6 +1139,86 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_composition()
 
             break;
 
+        case gameScene_InGameMenu: {
+            u32 mainMenuView = getCurrentMainMenuView();
+            switch (mainMenuView) {
+                case 6:  // config
+                case 13: // quest list
+                case 17: // challenge view
+                    shapes.push_back(ShapeBuilder2D::square()
+                        .placeAtCorner(corner_Center)
+                        .hudScale(hudScale)
+                        .preserveDsScale()
+                        .force()
+                        .build(aspectRatio));
+                    break;
+
+                default:
+                    float doubleScreenScale = aspectRatio * 0.5;
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .placeAtCorner(corner_Left)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .fromBottomScreen()
+                            .placeAtCorner(corner_Right)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .build(aspectRatio));
+
+                    // background
+                    shapes.push_back(ShapeBuilder2D::square()
+                            .withSize(1, 1)
+                            .placeAtCorner(corner_TopLeft)
+                            .sourceScale(doubleScreenScale, doubleScreenScale)
+                            .hudScale(hudScale)
+                            .preserveDsScale()
+                            .repeatAsBackground()
+                            .build(aspectRatio));
+            }
+            break;
+        }
+
+        case gameScene_Intro:
+        case gameScene_TitleScreen:
+        case gameScene_WorldSelection:
+        case gameScene_Shop:
+        case gameScene_TheEnd:
+        case gameScene_Other2D:
+        case gameScene_Other: {
+            float doubleScreenScale = aspectRatio * 0.5;
+            shapes.push_back(ShapeBuilder2D::square()
+                    .placeAtCorner(corner_Left)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            shapes.push_back(ShapeBuilder2D::square()
+                    .fromBottomScreen()
+                    .placeAtCorner(corner_Right)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .build(aspectRatio));
+
+            // background
+            shapes.push_back(ShapeBuilder2D::square()
+                    .withSize(1, 1)
+                    .placeAtCorner(corner_TopLeft)
+                    .sourceScale(doubleScreenScale, doubleScreenScale)
+                    .hudScale(hudScale)
+                    .preserveDsScale()
+                    .repeatAsBackground()
+                    .build(aspectRatio));
+
+            break;
+        }
+
         case gameScene_LoadingScreen:
             shapes.push_back(ShapeBuilder2D::square()
                     .fromBottomScreen()
@@ -1130,16 +1255,6 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes
                         .hudScale(hudScale)
                         .preserveDsScale()
                         .build(aspectRatio));
-            break;
-
-        case gameScene_InGameMenu:
-            // config and quest list; the others are in horizontal style
-            shapes.push_back(ShapeBuilder2D::square()
-                    .placeAtCorner(corner_Center)
-                    .hudScale(hudScale)
-                    .preserveDsScale()
-                    .force()
-                    .build(aspectRatio));
             break;
 
         case gameScene_ResultScreen:
@@ -1798,56 +1913,6 @@ int PluginKingdomHeartsReCoded::renderer_gameSceneState() {
     return state;
 }
 
-int PluginKingdomHeartsReCoded::renderer_screenLayout()
-{
-    if (!SingleScreenMode) {
-        return screenLayout_Top;
-    }
-
-    switch (GameScene) {
-        case gameScene_InGameWithMap:
-        case gameScene_PauseMenu:
-        case gameScene_CutsceneWithStaticImages:
-        case gameScene_InGameSaveMenu:
-        case gameScene_InGameDialog:
-        case gameScene_InGameOlympusBattle:
-        case gameScene_ResultScreen:
-            return screenLayout_Top;
-
-        case gameScene_IntroLoadMenu:
-        case gameScene_Tutorial:
-        case gameScene_LoadingScreen:
-            return screenLayout_Bottom;
-
-        case gameScene_Intro:
-        case gameScene_TitleScreen:
-        case gameScene_WorldSelection:
-        case gameScene_Shop:
-        case gameScene_TheEnd:
-        case gameScene_Other2D:
-        case gameScene_Other:
-            return screenLayout_BothHorizontal;
-
-        case gameScene_Cutscene:
-            return detectTopScreenMobiCutscene() == nullptr ? screenLayout_Bottom : (detectBottomScreenMobiCutscene() == nullptr ? screenLayout_Top : screenLayout_BothHorizontal);
-    }
-
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        switch (mainMenuView) {
-            case 6:  // config
-            case 13: // quest list
-            case 17: // challenge view
-                return screenLayout_Top;
-
-            default:
-                return screenLayout_BothHorizontal;
-        }
-    }
-
-    return screenLayout_Top;
-};
-
 int PluginKingdomHeartsReCoded::renderer_brightnessMode()
 {
     if (!SingleScreenMode) {
@@ -1855,57 +1920,9 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode()
     }
 
     if (_ShouldHideScreenForTransitions) {
-        return brightnessMode_BlackScreen;
-    }
-    if (GameScene == gameScene_InGameWithMap            ||
-        GameScene == gameScene_PauseMenu                ||
-        GameScene == gameScene_CutsceneWithStaticImages ||
-        GameScene == gameScene_InGameSaveMenu           ||
-        GameScene == gameScene_InGameDialog             ||
-        GameScene == gameScene_InGameOlympusBattle      ||
-        GameScene == gameScene_ResultScreen             ||
-        GameScene == gameScene_Other2D) {
-        return brightnessMode_TopScreen;
-    }
-    if (GameScene == gameScene_Tutorial ||
-        GameScene == gameScene_WorldSelection) {
-        return brightnessMode_BottomScreen;
-    }
-    if (GameScene == gameScene_Intro          ||
-        GameScene == gameScene_WorldSelection ||
-        GameScene == gameScene_Shop           ||
-        GameScene == gameScene_TheEnd         ||
-        GameScene == gameScene_Other2D        ||
-        GameScene == gameScene_Other) {
-        return brightnessMode_Horizontal;
-    }
-    if (GameScene == gameScene_Cutscene) {
-        return brightnessMode_DisableBrightnessControl;
-    }
-    if (GameScene == gameScene_InGameMenu) {
-        u32 mainMenuView = getCurrentMainMenuView();
-        switch (mainMenuView) {
-            case 0:  // nothing
-            case 2:  // main menu root (save menu)
-            case 6:  // config
-            case 13: // quest list
-            case 17: // challenge view
-                return brightnessMode_TopScreen;
-
-            default:
-                return brightnessMode_Horizontal;
-        }
+        return brightnessMode_None;
     }
     return brightnessMode_Default;
-}
-
-float PluginKingdomHeartsReCoded::renderer_forcedAspectRatio()
-{
-    return (GameScene == gameScene_CutsceneWithStaticImages) ? (4.0/3) : AspectRatio;
-};
-
-bool PluginKingdomHeartsReCoded::renderer_showOriginalUI() {
-    return false;
 }
 
 void PluginKingdomHeartsReCoded::onLoadState() {
@@ -1980,10 +1997,10 @@ void PluginKingdomHeartsReCoded::applyAddonKeysToInputMaskOrTouchControls(u32* I
         // Enabling L + D-Pad
         if ((*AddonMask) & ((1 << HK_CommandMenuLeft) | (1 << HK_CommandMenuRight) | (1 << HK_CommandMenuUp) | (1 << HK_CommandMenuDown)))
         {
-            u32 dpadMenuAddress = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
+            u32 dpadMenuAddress = getAnyByCart(INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_US,
                                                INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_EU,
                                                INGAME_MENU_COMMAND_LIST_SETTING_ADDRESS_JP);
-            u32 controlTypeOffset = getU32ByCart(INGAME_MENU_COMMAND_LIST_SETTING_VALUE_US,
+            u32 controlTypeOffset = getAnyByCart(INGAME_MENU_COMMAND_LIST_SETTING_VALUE_US,
                                                  INGAME_MENU_COMMAND_LIST_SETTING_VALUE_EU,
                                                  INGAME_MENU_COMMAND_LIST_SETTING_VALUE_JP);
 
@@ -2175,7 +2192,20 @@ bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords_horizontalDualScreen(i
     return true;
 }
 bool PluginKingdomHeartsReCoded::overrideMouseTouchCoords(int width, int height, int& x, int& y, bool& touching) {
-    if (renderer_screenLayout() == screenLayout_BothHorizontal) {
+    if (GameScene == gameScene_InGameMenu) {
+        u32 mainMenuView = getCurrentMainMenuView();
+        switch (mainMenuView) {
+            case 6:  // config
+            case 13: // quest list
+            case 17: // challenge view
+                break;
+
+            default:
+                return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
+        }
+    }
+
+    if (GameScene == gameScene_TitleScreen || GameScene == gameScene_WorldSelection || GameScene == gameScene_Shop) {
         return overrideMouseTouchCoords_horizontalDualScreen(width, height, false, x, y, touching);
     }
     return false;
@@ -2250,96 +2280,36 @@ const char* PluginKingdomHeartsReCoded::getGameSceneName()
     }
 }
 
-bool PluginKingdomHeartsReCoded::isBufferBlack(unsigned int* buffer)
-{
-    if (!buffer) {
-        return true;
-    }
-
-    // when the result is 'null' (filled with zeros), it's a false positive, so we need to exclude that scenario
-    bool newIsNullScreen = true;
-    bool newIsBlackScreen = true;
-    for (int i = 0; i < 192*256; i++) {
-        unsigned int color = buffer[i] & 0xFFFFFF;
-        newIsNullScreen = newIsNullScreen && color == 0;
-        newIsBlackScreen = newIsBlackScreen &&
-                (color == 0 || color == 0x000080 || color == 0x010000 || (buffer[i] & 0xFFFFE0) == 0x018000);
-        if (!newIsBlackScreen) {
-            break;
-        }
-    }
-    return !newIsNullScreen && newIsBlackScreen;
-}
-
-u32* PluginKingdomHeartsReCoded::topScreen2DTexture()
-{
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    return nds->GPU.Framebuffer[FrontBuffer][0].get();
-}
-
-u32* PluginKingdomHeartsReCoded::bottomScreen2DTexture()
-{
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    return nds->GPU.Framebuffer[FrontBuffer][1].get();
-}
-
-bool PluginKingdomHeartsReCoded::isTopScreen2DTextureBlack()
-{
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* topBuffer = nds->GPU.Framebuffer[FrontBuffer][0].get();
-    return isBufferBlack(topBuffer);
-}
-
-bool PluginKingdomHeartsReCoded::isBottomScreen2DTextureBlack()
-{
-    int FrontBuffer = nds->GPU.FrontBuffer;
-    u32* bottomBuffer = nds->GPU.Framebuffer[FrontBuffer][1].get();
-    return isBufferBlack(bottomBuffer);
-}
-
 bool PluginKingdomHeartsReCoded::isResultScreenVisible()
 {
-    u32 address = getU32ByCart(RESULT_SCREEN_ID_US, RESULT_SCREEN_ID_EU, RESULT_SCREEN_ID_JP);
+    u32 address = getAnyByCart(RESULT_SCREEN_ID_US, RESULT_SCREEN_ID_EU, RESULT_SCREEN_ID_JP);
     u32 value = nds->ARM7Read32(address);
     return value != 0;
 }
 
 bool PluginKingdomHeartsReCoded::isDeweyDialogVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    return (has2DOnTopOf3DAt(buffer, 50, 40) && has2DOnTopOf3DAt(buffer, 140, 40)) ||
-           (has2DOnTopOf3DAt(buffer, 50, 70) && has2DOnTopOf3DAt(buffer, 140, 70)) ||
-           (has2DOnTopOf3DAt(buffer, 140, 40) && has2DOnTopOf3DAt(buffer, 190, 40)) ||
-           (has2DOnTopOf3DAt(buffer, 140, 60) && has2DOnTopOf3DAt(buffer, 190, 60));
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isBugLevelVisibleOnTopScreen()
 {
-    u32* buffer = topScreen2DTexture();
-    return (has2DOnTopOf3DAt(buffer, 64,  0) || has2DOnTopOf3DAt(buffer, 64,  10)) &&
-           (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10)) &&
-          !(has2DOnTopOf3DAt(buffer, 170, 0) || has2DOnTopOf3DAt(buffer, 170, 10));
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isMissionInformationVisibleOnTopScreen()
 {
-    u32* buffer = topScreen2DTexture();
-    return (has2DOnTopOf3DAt(buffer, 64,  0) || has2DOnTopOf3DAt(buffer, 64,  10)) &&
-           (has2DOnTopOf3DAt(buffer, 128, 0) || has2DOnTopOf3DAt(buffer, 128, 10)) &&
-           (has2DOnTopOf3DAt(buffer, 170, 0) || has2DOnTopOf3DAt(buffer, 170, 10));
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isDialogVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 128, 155);
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isMinimapVisible()
 {
-    u32* buffer = bottomScreen2DTexture();
-    u32 pixel = getPixel(buffer, 1, 190, 0);
-    return ((pixel >> 0) & 0x3F) < 5 && ((pixel >> 8) & 0x3F) < 15 && ((pixel >> 16) & 0x3F) > 39;
+    return nds->ARM7Read32(getAnyByCart(OVERCLOCK_TREE_VISIBLE_ADDRESS_US, OVERCLOCK_TREE_VISIBLE_ADDRESS_EU, OVERCLOCK_TREE_VISIBLE_ADDRESS_JP)) == 0;
 }
 
 bool PluginKingdomHeartsReCoded::isBugSector()
@@ -2349,27 +2319,22 @@ bool PluginKingdomHeartsReCoded::isBugSector()
 
 bool PluginKingdomHeartsReCoded::isChallengeMeterVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 12, 12);
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 35, 185);
+    return true; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isComboLimitVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 12, 146) && !has2DOnTopOf3DAt(buffer, 35, 185);
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isSpeedComboFinisherVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    return isComboLimitVisible() && has2DOnTopOf3DAt(buffer, 65, 60) && has2DOnTopOf3DAt(buffer, 65, 75) &&
-                                    has2DOnTopOf3DAt(buffer, 65, 90) && has2DOnTopOf3DAt(buffer, 65, 120);
+    return false; // TODO: KH Requires proper implementation
 }
 
 bool PluginKingdomHeartsReCoded::isStarRaveFinisherVisible()
@@ -2411,14 +2376,15 @@ bool PluginKingdomHeartsReCoded::isSpinnerSawFinisherVisible()
 
 bool PluginKingdomHeartsReCoded::isHealthVisible()
 {
-    u32* buffer = topScreen2DTexture();
-    return has2DOnTopOf3DAt(buffer, 233, 175);
+    return true; // TODO: KH Requires proper implementation
 }
-
-#define IS_COLOR(pixel,r,g,b) ((((pixel >> 8) & 0xFF) == b) && (((pixel >> 4) & 0xFF) == g) && (((pixel >> 0) & 0xFF) == r))
 
 ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY)
 {
+    // TODO: KH Needs to be properly implemented
+    return ivec2{x:fallbackX, y:fallbackY};
+
+    /*
     int distanceToCenter = 54;
     int minY = 31;
     int maxY = 150;
@@ -2448,7 +2414,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, i
     };
 
     std::vector<ivec4> possibilities;
-    u32* buffer = bottomScreen2DTexture();
+    void* buffer = bottomScreen2DTexture();
     for (int y = minY; y < maxY; y++) {
         for (int x = minX; x < maxX; x++) {
             if ((getPixel(buffer, x, y, 0) == 0x1000343e) || (getPixel(buffer, x, y, 0) == 0x1000383e)) {
@@ -2526,6 +2492,7 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter(bool zoomedIn, bool zoomedOut, i
     };
 
     return result;
+    */
 }
 
 ivec2 PluginKingdomHeartsReCoded::minimapCenter()
@@ -2534,45 +2501,6 @@ ivec2 PluginKingdomHeartsReCoded::minimapCenter()
     MinimapCenterX = result.x;
     MinimapCenterY = result.y;
     return result;
-}
-
-bool PluginKingdomHeartsReCoded::has2DOnTopOf3DAt(u32* buffer, int x, int y)
-{
-    /*
-     * If it matches that condition, there is no 2D on top of 3D
-        (alphaColor.a == 0x0) ||
-        (alphaColor.a == 0x1 && _3dpix.a > 0 && alphaColor.g == 0) ||
-        (alphaColor.a == 0x2 && _3dpix.a > 0 && alphaColor.g < 4) ||
-        (alphaColor.a == 0x3 && _3dpix.a > 0 && alphaColor.g < 4) ||
-        (alphaColor.a == 0x4 && (_3dpix.a & 0x1F) == 0x1F)
-    */
-
-    u32 pixel = getPixel(buffer, x, y, 2);
-    u32 pixelG = (pixel >> 8) & 0xFF;
-    u32 pixelAlpha = (pixel >> (8 * 3)) & 0xFF;
-    if (pixelAlpha > 0x4)
-    {
-        return true;
-    }
-    if (pixelAlpha == 0x4)
-    {
-        return false;
-    }
-    if (pixelAlpha == 0x1 && pixelG == 0)
-    {
-        return false;
-    }
-    if ((pixelAlpha == 0x2 || pixelAlpha == 0x3) && pixelG < 4)
-    {
-        return false;
-    }
-
-    u32 colorPixel = getPixel(buffer, x, y, 0);
-    u32 colorPixelAlpha = (colorPixel >> (8 * 3)) & 0xFF;
-    if (colorPixelAlpha == 0x20) {
-        return false;
-    }
-    return true;
 }
 
 bool PluginKingdomHeartsReCoded::shouldRenderFrame()
@@ -2610,25 +2538,21 @@ int PluginKingdomHeartsReCoded::detectGameScene()
     bool has3DOnBothScreens = (muchOlderHad3DOnTopScreen || olderHad3DOnTopScreen || had3DOnTopScreen || has3DOnTopScreen) &&
                               (muchOlderHad3DOnBottomScreen || olderHad3DOnBottomScreen || had3DOnBottomScreen || has3DOnBottomScreen);
 
-    int ingameState = nds->ARM7Read16(getU32ByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
-    bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getU32ByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) ==
-        getU8ByCart(IS_MAIN_MENU_VALUE_US, IS_MAIN_MENU_VALUE_EU, IS_MAIN_MENU_VALUE_JP);
-    bool isPauseScreen = nds->ARM7Read8(getU32ByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
-    bool isCutscene = nds->ARM7Read8(getU32ByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
-    bool isIntroLoadMenu = nds->ARM7Read32(getU32ByCart(IS_LOAD_SCREEN_US, IS_LOAD_SCREEN_EU, IS_LOAD_SCREEN_JP)) ==
-        getU32ByCart(IS_LOAD_SCREEN_VALUE_US, IS_LOAD_SCREEN_VALUE_EU, IS_LOAD_SCREEN_VALUE_JP);
-    bool isInGameDialog = nds->ARM7Read32(getU32ByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
-        getU32ByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
-    bool isDeathScreen = nds->ARM7Read32(getU32ByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP)) == 0;
+    int ingameState = nds->ARM7Read16(getAnyByCart(GAME_STATE_ADDRESS_US, GAME_STATE_ADDRESS_EU, GAME_STATE_ADDRESS_JP));
+    bool isMainMenuOrIntroOrLoadMenu = nds->ARM7Read8(getAnyByCart(IS_MAIN_MENU_US, IS_MAIN_MENU_EU, IS_MAIN_MENU_JP)) ==
+        getAnyByCart(IS_MAIN_MENU_VALUE_US, IS_MAIN_MENU_VALUE_EU, IS_MAIN_MENU_VALUE_JP);
+    bool isPauseScreen = nds->ARM7Read8(getAnyByCart(PAUSE_SCREEN_ADDRESS_US, PAUSE_SCREEN_ADDRESS_EU, PAUSE_SCREEN_ADDRESS_JP)) == PAUSE_SCREEN_VALUE_TRUE_PAUSE;
+    bool isCutscene = nds->ARM7Read8(getAnyByCart(IS_CUTSCENE_US, IS_CUTSCENE_EU, IS_CUTSCENE_JP)) == 0x03;
+    bool isIntroLoadMenu = nds->ARM7Read32(getAnyByCart(IS_LOAD_SCREEN_US, IS_LOAD_SCREEN_EU, IS_LOAD_SCREEN_JP)) ==
+        getAnyByCart(IS_LOAD_SCREEN_VALUE_US, IS_LOAD_SCREEN_VALUE_EU, IS_LOAD_SCREEN_VALUE_JP);
+    bool isInGameDialog = nds->ARM7Read32(getAnyByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) ==
+        getAnyByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
+    bool isDeathScreen = nds->ARM7Read32(getAnyByCart(DEATH_SCREEN_ADDRESS_US, DEATH_SCREEN_ADDRESS_EU, DEATH_SCREEN_ADDRESS_JP)) == 0;
     u32 mainMenuView = getCurrentMainMenuView();
 
-    u8 gameState2 = nds->ARM7Read8(getU32ByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
+    u8 gameState2 = nds->ARM7Read8(getAnyByCart(IS_PLAYABLE_AREA_US, IS_PLAYABLE_AREA_EU, IS_PLAYABLE_AREA_JP));
     bool isUnplayableArea = gameState2 == 0x01 || gameState2 == 0x02;
     bool isWorldSelection = gameState2 == 0x03;
-
-    // Scale of brightness, from 0 (black) to 15 (every element is visible)
-    u8 topScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_A.MasterBrightness);
-    u8 botScreenBrightness = PARSE_BRIGHTNESS_FOR_WHITE_BACKGROUND(nds->GPU.GPU2D_B.MasterBrightness);
 
     if (isCutscene)
     {
@@ -2758,7 +2682,7 @@ int PluginKingdomHeartsReCoded::detectGameScene()
         return gameScene_InGameDialog;
     }
 
-    u32 typeOfBattleAddr = getU32ByCart(TYPE_OF_BATTLE_ADDRESS_US, TYPE_OF_BATTLE_ADDRESS_EU, TYPE_OF_BATTLE_ADDRESS_JP);
+    u32 typeOfBattleAddr = getAnyByCart(TYPE_OF_BATTLE_ADDRESS_US, TYPE_OF_BATTLE_ADDRESS_EU, TYPE_OF_BATTLE_ADDRESS_JP);
     u32 typeOfBattle = nds->ARM7Read32(typeOfBattleAddr);
     if (typeOfBattle == 0) {
         return gameScene_InGameOlympusBattle;
@@ -2770,12 +2694,12 @@ int PluginKingdomHeartsReCoded::detectGameScene()
 
 u32 PluginKingdomHeartsReCoded::getAspectRatioAddress()
 {
-    return getU32ByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
+    return getAnyByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP);
 }
 
 u32 PluginKingdomHeartsReCoded::getMobiCutsceneAddress(CutsceneEntry* entry)
 {
-    return getU32ByCart(entry->usAddress, entry->euAddress, entry->jpAddress);
+    return getAnyByCart(entry->usAddress, entry->euAddress, entry->jpAddress);
 }
 
 CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutsceneAddressValue)
@@ -2812,69 +2736,9 @@ int PluginKingdomHeartsReCoded::cutsceneMenuLanguage()
     return language;
 }
 
-u8 PluginKingdomHeartsReCoded::getU8ByCart(u8 usAddress, u8 euAddress, u8 jpAddress)
-{
-    u8 cutsceneAddress = 0;
-    if (isUsaCart()) {
-        cutsceneAddress = usAddress;
-    }
-    if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
-    }
-    if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
-    }
-    return cutsceneAddress;
-}
-
-u32 PluginKingdomHeartsReCoded::getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress)
-{
-    u32 cutsceneAddress = 0;
-    if (isUsaCart()) {
-        cutsceneAddress = usAddress;
-    }
-    if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
-    }
-    if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
-    }
-    return cutsceneAddress;
-}
-
-std::string PluginKingdomHeartsReCoded::getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress)
-{
-    std::string cutsceneAddress = "";
-    if (isUsaCart()) {
-        cutsceneAddress = usAddress;
-    }
-    else if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
-    }
-    else if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
-    }
-    return cutsceneAddress;
-}
-
-bool PluginKingdomHeartsReCoded::getBoolByCart(bool usAddress, bool euAddress, bool jpAddress)
-{
-    bool cutsceneAddress = false;
-    if (isUsaCart()) {
-        cutsceneAddress = usAddress;
-    }
-    else if (isEuropeCart()) {
-        cutsceneAddress = euAddress;
-    }
-    else if (isJapanCart()) {
-        cutsceneAddress = jpAddress;
-    }
-    return cutsceneAddress;
-}
-
 u32 PluginKingdomHeartsReCoded::detectTopScreenMobiCutsceneAddress()
 {
-    return getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
+    return getAnyByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
 }
 
 bool PluginKingdomHeartsReCoded::isCutsceneGameScene()
@@ -2981,10 +2845,10 @@ std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string languag
 
 u8 PluginKingdomHeartsReCoded::getFloorLevel()
 {
-    u32 placeIdentAddr = getU32ByCart(BUG_SECTOR_IDENTIFIER_ADDRESS_US, BUG_SECTOR_IDENTIFIER_ADDRESS_EU, BUG_SECTOR_IDENTIFIER_ADDRESS_JP);
-    u8 placeIdentValue = getU8ByCart(BUG_SECTOR_IDENTIFIER_VALUE_US, BUG_SECTOR_IDENTIFIER_VALUE_EU, BUG_SECTOR_IDENTIFIER_VALUE_JP);
+    u32 placeIdentAddr = getAnyByCart(BUG_SECTOR_IDENTIFIER_ADDRESS_US, BUG_SECTOR_IDENTIFIER_ADDRESS_EU, BUG_SECTOR_IDENTIFIER_ADDRESS_JP);
+    u8 placeIdentValue = getAnyByCart(BUG_SECTOR_IDENTIFIER_VALUE_US, BUG_SECTOR_IDENTIFIER_VALUE_EU, BUG_SECTOR_IDENTIFIER_VALUE_JP);
     if (nds->ARM7Read8(placeIdentAddr) == placeIdentValue) {
-        u32 floorLevelAddr = getU32ByCart(FLOOR_LEVEL_ADDRESS_US, FLOOR_LEVEL_ADDRESS_EU, FLOOR_LEVEL_ADDRESS_JP);
+        u32 floorLevelAddr = getAnyByCart(FLOOR_LEVEL_ADDRESS_US, FLOOR_LEVEL_ADDRESS_EU, FLOOR_LEVEL_ADDRESS_JP);
         return nds->ARM7Read8(floorLevelAddr);
     }
     return 0;
@@ -2993,7 +2857,7 @@ u8 PluginKingdomHeartsReCoded::getFloorLevel()
 u32 PluginKingdomHeartsReCoded::getCurrentMission()
 {
     return 0;
-    // return nds->ARM7Read8(getU32ByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
+    // return nds->ARM7Read8(getAnyByCart(CURRENT_MISSION_US, CURRENT_MISSION_EU, CURRENT_MISSION_JP, CURRENT_MISSION_JP_REV1));
 }
 
 // 0 -> none
@@ -3018,13 +2882,15 @@ u32 PluginKingdomHeartsReCoded::getCurrentMission()
 // 19 -> stat/command/gear matrix submenu
 u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
 {
+    return 0; // TODO: KH Requires proper implementation
+    /*
     if (GameScene == -1)
     {
         return 0;
     }
 
-    u32* topScreen = topScreen2DTexture();
-    u32* bottomScreen = bottomScreen2DTexture();
+    void* topScreen = topScreen2DTexture();
+    void* bottomScreen = bottomScreen2DTexture();
     u32 pixel_2_8 = getPixel(topScreen, 2, 8, 0);
     if (pixel_2_8 == 0x04020e1e) { // debug reports
         return 10; // 7, 8, 9, 10, 11, 12
@@ -3083,6 +2949,7 @@ u32 PluginKingdomHeartsReCoded::getCurrentMainMenuView()
     }
 
     return 0; // none
+    */
 }
 
 u32 PluginKingdomHeartsReCoded::getCurrentMap()
@@ -3094,8 +2961,8 @@ u32 PluginKingdomHeartsReCoded::getCurrentMap()
     //     return 0;
     // }
 
-    // u8 world = nds->ARM7Read8(getU32ByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
-    // u8 map = nds->ARM7Read8(getU32ByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
+    // u8 world = nds->ARM7Read8(getAnyByCart(CURRENT_WORLD_US, CURRENT_WORLD_EU, CURRENT_WORLD_JP, CURRENT_WORLD_JP_REV1));
+    // u8 map = nds->ARM7Read8(getAnyByCart(CURRENT_MAP_FROM_WORLD_US, CURRENT_MAP_FROM_WORLD_EU, CURRENT_MAP_FROM_WORLD_JP, CURRENT_MAP_FROM_WORLD_JP_REV1));
     // u32 fullMap = world;
     // fullMap = (fullMap << 4*2) | map;
 
@@ -3118,11 +2985,11 @@ bool PluginKingdomHeartsReCoded::isSaveLoaded()
 
 
 u16 PluginKingdomHeartsReCoded::getMidiBgmId() {
-    return nds->ARM7Read16(getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP));
+    return nds->ARM7Read16(getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP));
 }
 
 u8 PluginKingdomHeartsReCoded::getMidiBgmState() {
-    u32 SONG_STATE_ADDRESS = getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x04;
+    u32 SONG_STATE_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x04;
     // See enum EMidiState for details of the state
     return nds->ARM7Read8(SONG_STATE_ADDRESS);
 }
@@ -3130,7 +2997,7 @@ u8 PluginKingdomHeartsReCoded::getMidiBgmState() {
 u16 PluginKingdomHeartsReCoded::getMidiBgmToResumeId() {
     // This byte is set by the audio engine when a "Field" track is getting stopped and we are playing a "Battle" track.
     // This tells us that the "Field" track will resume playing when the "Battle" track ends.
-    u32 SONG_SECOND_SLOT_ADDRESS = getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x0C;
+    u32 SONG_SECOND_SLOT_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x0C;
     return nds->ARM7Read8(SONG_SECOND_SLOT_ADDRESS);
 }
 
@@ -3145,7 +3012,7 @@ s16 PluginKingdomHeartsReCoded::getSongIdInSongTable(u16 bgmId) {
 }
 
 u32 PluginKingdomHeartsReCoded::getMidiSequenceAddress(u16 bgmId) {
-    const u32 songTableAddr = getU32ByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
+    const u32 songTableAddr = getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
 
     s16 idInTable = getSongIdInSongTable(bgmId);
     if (idInTable >= 0) {
@@ -3157,7 +3024,7 @@ u32 PluginKingdomHeartsReCoded::getMidiSequenceAddress(u16 bgmId) {
 }
 
 u16 PluginKingdomHeartsReCoded::getMidiSequenceSize(u16 bgmId) {
-    const u32 songTableAddr = getU32ByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
+    const u32 songTableAddr = getAnyByCart(SSEQ_TABLE_ADDRESS_US, SSEQ_TABLE_ADDRESS_EU, SSEQ_TABLE_ADDRESS_JP);
 
     s16 idInTable = getSongIdInSongTable(bgmId);
     if (idInTable >= 0) {
@@ -3169,7 +3036,7 @@ u16 PluginKingdomHeartsReCoded::getMidiSequenceSize(u16 bgmId) {
 }
 
 u32 PluginKingdomHeartsReCoded::getStreamBgmAddress() {
-    return getU32ByCart(STRM_ADDRESS_US, STRM_ADDRESS_EU, STRM_ADDRESS_JP);
+    return getAnyByCart(STRM_ADDRESS_US, STRM_ADDRESS_EU, STRM_ADDRESS_JP);
 }
 
 u16 PluginKingdomHeartsReCoded::getStreamBgmCustomIdFromDsId(u8 dsId, u32 numSamples) {
@@ -3183,14 +3050,14 @@ u16 PluginKingdomHeartsReCoded::getStreamBgmCustomIdFromDsId(u8 dsId, u32 numSam
 }
 
 u8 PluginKingdomHeartsReCoded::getMidiBgmVolume() {
-    u32 SONG_MASTER_VOLUME_ADDRESS = getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x05;
+    u32 SONG_MASTER_VOLUME_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x05;
     // Usually 0x7F during gameplay and 0x40 when game is paused
     return nds->ARM7Read8(SONG_MASTER_VOLUME_ADDRESS);
 }
 
 u32 PluginKingdomHeartsReCoded::getBgmFadeOutDuration() {
     // Caution: this RAM value should be queried on the first frame when the "Stopping" state was set, otherwise fadeout is already in progress!
-    u32 SONG_FADE_OUT_PROGRESS_ADDRESS = getU32ByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x06;
+    u32 SONG_FADE_OUT_PROGRESS_ADDRESS = getAnyByCart(SONG_ID_ADDRESS_US, SONG_ID_ADDRESS_EU, SONG_ID_ADDRESS_JP) + 0x06;
     u8 progress = nds->ARM7Read8(SONG_FADE_OUT_PROGRESS_ADDRESS);
     // converts value in game frames to milliseconds + some smoothing
     float valueMs = (progress / 30.0f);

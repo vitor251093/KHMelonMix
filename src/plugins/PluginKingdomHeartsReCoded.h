@@ -41,10 +41,7 @@ public:
     std::vector<ShapeData2D> renderer_topScreen_2DShapes() override;
     std::vector<ShapeData3D> renderer_topScreen_3DShapes() override;
     int renderer_gameSceneState() override;
-    int renderer_screenLayout() override;
     int renderer_brightnessMode() override;
-    float renderer_forcedAspectRatio() override;
-    bool renderer_showOriginalUI() override;
     ThemeColor defaultThemeColor() override { return {184, 146, 14}; }
 
     void onLoadState() override;
@@ -89,7 +86,6 @@ public:
     void overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
     void applyRecommendedJoystickMappings(std::function<void(std::string, int)> setIntConfig) override;
 private:
-    bool IsTopScreen2DTextureBlack;
     u32 priorMap;
     u32 Map;
     bool ShowMap;
@@ -103,7 +99,6 @@ private:
     int fullscreenMapSelectPressStep = 0;
     bool fullscreenMapShouldPreserveZoom = false;
 
-    std::map<GLuint, GLuint[10]> CompGpuLoc{};
     std::map<u32, GLuint[3]> CompGpu3DLoc{};
     std::map<u32, int[3]> CompGpu3DLastValues{};
 
@@ -121,11 +116,6 @@ private:
     std::string TextLanguage = "";
 
     int detectGameScene() override;
-
-    u8 getU8ByCart(u8 usAddress, u8 euAddress, u8 jpAddress);
-    u32 getU32ByCart(u32 usAddress, u32 euAddress, u32 jpAddress);
-    std::string getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress);
-    bool getBoolByCart(bool usAddress, bool euAddress, bool jpAddress);
 
     u32 getMobiCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) override;
@@ -170,12 +160,6 @@ private:
     void onStreamBgmReplacementStarted() override;
     void muteStreamedMusic() override;
 
-    bool isBufferBlack(unsigned int* buffer);
-    u32* topScreen2DTexture();
-    u32* bottomScreen2DTexture();
-    bool isTopScreen2DTextureBlack();
-    bool isBottomScreen2DTextureBlack();
-
     bool isResultScreenVisible();
     bool isDeweyDialogVisible();
     bool isBugLevelVisibleOnTopScreen();
@@ -192,7 +176,6 @@ private:
     bool isHealthVisible();
     ivec2 minimapCenter(bool zoomedIn, bool zoomedOut, int fallbackX, int fallbackY);
     ivec2 minimapCenter();
-    bool has2DOnTopOf3DAt(u32* buffer, int x, int y);
 
     void hudToggle() override;
     void toggleFullscreenMap();

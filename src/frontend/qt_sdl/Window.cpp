@@ -1,5 +1,5 @@
 /*
-    Copyright 2016-2025 melonDS team
+    Copyright 2016-2026 melonDS team
 
     This file is part of melonDS.
 
@@ -671,14 +671,6 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
             actPathSettings = menu->addAction("Path settings");
             connect(actPathSettings, &QAction::triggered, this, &MainWindow::onOpenPathSettings);
 
-            {
-                QMenu * submenu = menu->addMenu("Savestate settings");
-
-                actSavestateSRAMReloc = submenu->addAction("Separate savefiles");
-                actSavestateSRAMReloc->setCheckable(true);
-                connect(actSavestateSRAMReloc, &QAction::triggered, this, &MainWindow::onChangeSavestateSRAMReloc);
-            }
-
             menu->addSeparator();
 
             actLimitFramerate = menu->addAction("Limit framerate");
@@ -763,8 +755,6 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
 
         actROMInfo->setEnabled(false);
         actRAMInfo->setEnabled(false);
-
-        actSavestateSRAMReloc->setChecked(globalCfg.GetBool("Savestate.RelocSRAM"));
 
         actScreenRotation[windowCfg.GetInt("ScreenRotation")]->setChecked(true);
 
@@ -900,8 +890,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::createScreenPanel()
 {
-    if (panel) delete panel;
+    auto oldpanel = panel;
     panel = nullptr;
+    if (oldpanel) delete oldpanel;
 
     hasOGL = globalCfg.GetBool("Screen.UseGL") ||
             (globalCfg.GetInt("3D.Renderer") != renderer3D_Software);
@@ -1015,13 +1006,10 @@ void MainWindow::releaseGL()
     return glpanel->releaseGL();
 }
 
-void MainWindow::drawScreenGL()
+void MainWindow::drawScreen()
 {
-    if (!hasOGL) return;
-
-    ScreenPanelGL* glpanel = static_cast<ScreenPanelGL*>(panel);
-    if (!glpanel) return;
-    return glpanel->drawScreenGL();
+    if (!panel) return;
+    return panel->drawScreen();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -1189,7 +1177,7 @@ bool MainWindow::preloadROMs(QStringList file, QStringList gbafile, bool boot)
 {
     QString errorstr;
 
-    if (file.isEmpty() && gbafile.isEmpty())
+    if (file.isEmpty() && gbafile.isEmpty() && !boot)
         return false;
 
     if (!verifySetup())
@@ -1228,7 +1216,7 @@ bool MainWindow::preloadROMs(QStringList file, QStringList gbafile, bool boot)
                 return false;
             }
         }
-        
+
         recentFileList.removeAll(file.join("|"));
         recentFileList.prepend(file.join("|"));
         updateRecentFilesMenu();
@@ -2160,11 +2148,6 @@ void MainWindow::onInterfaceSettingsFinished(int res)
     emuThread->emuUnpause();
 }
 
-void MainWindow::onChangeSavestateSRAMReloc(bool checked)
-{
-    globalCfg.SetBool("Savestate.RelocSRAM", checked);
-}
-
 void MainWindow::onChangeScreenSize()
 {
     int factor = ((QAction*)sender())->data().toInt();
@@ -2431,6 +2414,7 @@ void MainWindow::onScreenEmphasisToggled()
         currentSizing = screenSizing_EmphTop;
     }
     windowCfg.SetInt("ScreenSizing", currentSizing);
+    actScreenSizing[currentSizing]->setChecked(true);
 
     emit screenLayoutChange();
 }

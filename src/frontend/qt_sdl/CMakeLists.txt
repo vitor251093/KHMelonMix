@@ -24,9 +24,7 @@ set(SOURCES_QT_SDL
     MainWindow/MainWindowSettings.cpp
     MainWindow/CutsceneVideoView.cpp
     MainWindow/SettingsView.cpp
-    MainWindow/SettingsView.h
     MainWindow/SettingsLocale.cpp
-    MainWindow/SettingsLocale.h
     MainWindow/MapButton.h
     MainWindow/resources/ds.qrc
     MainWindow/AudioSource.cpp
