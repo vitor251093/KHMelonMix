@@ -18,7 +18,7 @@ struct Language
     char name[60];
 };
 
-inline constexpr std::array<Language, 140> languages{{
+inline constexpr std::array<Language, 134> languages{{
     {1, "en",   "English",              "English"},
     {0, "jp",   "Japanese",             "日本語"}, // yes, we wrote 'jp' by mistake
     {2, "fr",   "French",               "Français"},
@@ -46,19 +46,15 @@ inline constexpr std::array<Language, 140> languages{{
     {1, "cs",   "Czech",                "Čeština"},
     {1, "cy",   "Welsh",                "Cymraeg"},
     {1, "da",   "Danish",               "Dansk"},
-    {1, "de",   "German",               "Deutsch"},
     {1, "dsb",  "Lower Sorbian",        "Dolnoserbšćina"},
     {1, "dv",   "Divehi",               "ދިވެހިބަސް"},
     {1, "el",   "Greek",                "Ελληνικά"},
-    {1, "en",   "English",              "English"},
-    {1, "es",   "Spanish",              "Español"},
     {1, "et",   "Estonian",             "Eesti"},
     {1, "eu",   "Basque",               "Euskara"},
     {1, "fa",   "Persian",              "فارسى"},
     {1, "fi",   "Finnish",              "Suomi"},
     {1, "fil",  "Filipino",             "Filipino"},
     {1, "fo",   "Faroese",              "Føroyskt"},
-    {1, "fr",   "French",               "Français"},
     {1, "fy",   "Frisian",              "Frysk"},
     {1, "ga",   "Irish",                "Gaeilge"},
     {1, "gd",   "Scottish Gaelic",      "Gàidhlig"},
@@ -77,7 +73,6 @@ inline constexpr std::array<Language, 140> languages{{
     {1, "ig",   "Igbo",                 "Igbo"},
     {1, "ii",   "Yi",                   "ꆈꌠꁱꂷ"},
     {1, "is",   "Icelandic",            "Íslenska"},
-    {1, "it",   "Italian",              "Italiano"},
     {1, "iu",   "Inuktitut",            "Inuktitut/ᐃᓄᒃᑎᑐᑦ (ᑲᓇᑕ)"},
     {1, "ka",   "Georgian",             "ქართული"},
     {1, "kk",   "Kazakh",               "Қазақша"},
