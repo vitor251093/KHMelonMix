@@ -2767,18 +2767,20 @@ int PluginKingdomHeartsDays::cutsceneMenuLanguage() {
     return GameLanguageIndex;
 }
 
-std::string PluginKingdomHeartsDays::subtitleLanguageFolder() {
-    return GameLanguage.code;
-}
-
 std::string PluginKingdomHeartsDays::replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) {
     if (!SubtitlesEnabled) {
         return "";
     }
     std::filesystem::path subtitlesFolderPath = gameAssetsFolderPath() / "subtitles" /
-        std::filesystem::u8path(subtitleLanguageFolder()) / "cinematics";
+        std::filesystem::u8path(GameLanguage.code) / "cinematics";
+    std::filesystem::path fallbackSubtitlesFolderPath = gameAssetsFolderPath() / "subtitles" /
+        std::filesystem::u8path(Plugins::languages[0].code) / "cinematics";
     for (const char* name : { cutscene->MmName, cutscene->DsName }) {
         std::filesystem::path fullPath = subtitlesFolderPath / (std::string(name) + ".srt");
+        if (std::filesystem::exists(fullPath)) {
+            return fullPath.u8string();
+        }
+        fullPath = fallbackSubtitlesFolderPath / (std::string(name) + ".srt");
         if (std::filesystem::exists(fullPath)) {
             return fullPath.u8string();
         }
