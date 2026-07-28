@@ -477,10 +477,7 @@ bool PluginKingdomHeartsDays::shouldOpenKHExtendedSettings() {
 void PluginKingdomHeartsDays::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
-    std::string language = TextLanguage;
-    if (language == "") {
-        language = "en-US";
-    }
+    std::string language = GameLanguage.code;
 
     std::string LocalizationFilePath = localizationFilePath(language);
     Platform::FileHandle* f = Platform::OpenLocalFile(LocalizationFilePath.c_str(), Platform::FileMode::ReadText);
@@ -2766,36 +2763,12 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
     return "";
 }
 
-// The active language for cutscenes follows the cart region: USA is always English and JP always
-// Japanese, while the EU cart picks its language from the DS system (firmware) settings - the
-// same value the EU game itself reads to choose its in-game language. Returned in DS firmware
-// Language order (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es); shared by the subtitle folder and the
-// pause-menu localization.
 int PluginKingdomHeartsDays::cutsceneMenuLanguage() {
-    if (isUsaCart()) {
-        return 1; // English
-    }
-    if (isJapanCart()) {
-        return 0; // Japanese
-    }
-    // EU cart: map the firmware language (see Firmware::Language) to a 0-5 index.
-    int language = nds->SPI.GetFirmware().GetEffectiveUserData().Settings & 0x7;
-    if (language < 0 || language > 5) {
-        return 1; // English for anything unexpected
-    }
-    return language;
+    return GameLanguageIndex;
 }
 
 std::string PluginKingdomHeartsDays::subtitleLanguageFolder() {
-    switch (cutsceneMenuLanguage()) {
-        // BCP 47/IETF
-        case 0:  return "jp"; // Japanese
-        case 2:  return "fr"; // French
-        case 3:  return "de"; // German
-        case 4:  return "it"; // Italian
-        case 5:  return "es"; // Spanish
-        default: return "en"; // English (1)
-    }
+    return GameLanguage.code;
 }
 
 std::string PluginKingdomHeartsDays::replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) {

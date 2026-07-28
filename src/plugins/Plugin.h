@@ -27,6 +27,7 @@
 
 #include "../OpenGLSupport.h"
 
+#include "./PluginLanguage.h"
 #include "./PluginShapes.h"
 
 namespace Plugins

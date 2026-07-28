@@ -171,19 +171,29 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         auto* gcfg = &emu->getGlobalConfig();
 
         // Language is always available regardless of which ROM is loaded
+        QStringList languageList;
+        languageList.reserve(static_cast<qsizetype>(Plugins::languages.size()));
+        for (const auto& lang : Plugins::languages)
+            languageList.append(QString::fromUtf8(lang.name));
         rows.append({ SettingRow::Type::Combobox, loc.gameLanguageLabel,
-            loc.gameLanguageDesc,
-            {"English", "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e", "Fran\xc3\xa7" "ais", "Deutsch", "Italiano", "Espa\xc3\xb1ol"} });
+            loc.gameLanguageDesc, languageList });
         rows.last().read  = [gcfg]() {
-            int v = gcfg->GetInt("Instance0.Firmware.Language");
-            return (v == 1) ? 0 : (v == 0) ? 1 : v; // stored: Eng=1,Jap=0; displayed: Eng=0,Jap=1
+            int index = gcfg->GetInt("Instance0.Firmware.TrueLanguage");
+            if (index > 0) {
+                return index - 1;
+            }
+            int dsCode = gcfg->GetInt("Instance0.Firmware.Language");
+            return (dsCode == 1) ? 0 : (dsCode == 0) ? 1 : dsCode; // stored: Eng=1,Jap=0; displayed: Eng=0,Jap=1
         };
         rows.last().write = [gcfg, emu](int v) {
-            gcfg->SetInt("Instance0.Firmware.Language", (v == 0) ? 1 : (v == 1) ? 0 : v);
+            Plugins::Language language = Plugins::languages[v];
+            gcfg->SetInt("Instance0.Firmware.TrueLanguage", v + 1);
+            gcfg->SetInt("Instance0.Firmware.Language", language.dsCode);
             Config::Save();
             if (emu->plugin) emu->plugin->shouldInvalidateConfigs = true;
         };
         rows.last().reset = [gcfg, emu]() {
+            gcfg->SetInt("Instance0.Firmware.TrueLanguage", 1);
             gcfg->SetInt("Instance0.Firmware.Language", 1); // English
             Config::Save();
             if (emu->plugin) emu->plugin->shouldInvalidateConfigs = true;

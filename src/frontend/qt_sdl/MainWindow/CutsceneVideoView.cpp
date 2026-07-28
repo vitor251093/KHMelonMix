@@ -92,7 +92,7 @@ struct CutsceneMenuStrings { const char* title; const char* cont; const char* sk
 static CutsceneMenuStrings cutsceneMenuStrings(int language)
 {
     static const CutsceneMenuStrings table[6] = {
-        { "ポーズ",  "つづける",     "スキップ" },        // 0 Japanese
+        { "ポーズ",  "つづける",     "スキップ" },          // 0 Japanese
         { "PAUSE",  "Continue",    "Skip" },            // 1 English
         { "PAUSE",  "Continuer",   "Passer" },          // 2 French
         { "PAUSE",  "Fortfahren",  "Überspringen" },    // 3 German

@@ -482,10 +482,7 @@ bool PluginKingdomHeartsReCoded::shouldOpenKHExtendedSettings() {
 void PluginKingdomHeartsReCoded::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
-    std::string language = TextLanguage;
-    if (language == "") {
-        language = "en-US";
-    }
+    std::string language = GameLanguage.code;
 
     std::string LocalizationFilePath = localizationFilePath(language);
     Platform::FileHandle* f = Platform::OpenLocalFile(LocalizationFilePath.c_str(), Platform::FileMode::ReadText);
@@ -2794,22 +2791,9 @@ CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutscene
     return cutscene1;
 }
 
-// Language for the HD cutscene pause menu, following the cart region (USA->English,
-// JP->Japanese, EU->firmware language). Returned in DS firmware Language order
-// (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es).
 int PluginKingdomHeartsReCoded::cutsceneMenuLanguage()
 {
-    if (isUsaCart()) {
-        return 1; // English
-    }
-    if (isJapanCart()) {
-        return 0; // Japanese
-    }
-    int language = nds->SPI.GetFirmware().GetEffectiveUserData().Settings & 0x7;
-    if (language < 0 || language > 5) {
-        return 1; // English for anything unexpected
-    }
-    return language;
+    return GameLanguageIndex;
 }
 
 u8 PluginKingdomHeartsReCoded::getU8ByCart(u8 usAddress, u8 euAddress, u8 jpAddress)
