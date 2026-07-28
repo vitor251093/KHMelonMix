@@ -164,6 +164,7 @@ static const SettingsLocale kEnglish = {
         "Any progress since your last save will be lost.",
 };
 
+// TODO: KH Add support to all languages from PluginLanguage.h
 const SettingsLocale kLocales[6] = {
     kEnglish,  // 0  English
     kEnglish,  // 1  Japanese  (stub — fill in fields to localize)
