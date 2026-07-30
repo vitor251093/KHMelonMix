@@ -2337,9 +2337,9 @@ bool PluginKingdomHeartsReCoded::isStarRaveFinisherVisible()
         melonDS::Polygon* polygon = nds->GPU.GPU3D.RenderPolygonRAM[i];
 
         bool match = false;
-        for (int i = 0; i < polygon->NumVertices; i++)
+        for (int j = 0; j < polygon->NumVertices; j++)
         {
-            s32 z = polygon->Vertices[i]->Position[2];
+            s32 z = polygon->Vertices[j]->Position[2];
             float _z = ((float)z)/(1 << 22);
             if (_z > -1.0 && _z <= -0.99)
             {
