@@ -2469,10 +2469,13 @@ bool PluginKingdomHeartsDays::isCutsceneFromChallengeMissionVisible()
 bool PluginKingdomHeartsDays::isDialogPortraitLabelVisible()
 {
     // TODO: KH Experimental; requires more testing;
-    //  Sometimes in cutscenes characters dont have portraits when its supposed to be ambiguous as to who it is.
-    //  Some examples are Axel talking to Roxas in the cutscene where he came back from Castle Oblivion,
-    //  Xigbar turning out to be your opponent in the games, and Pete scheming in Neverland to resurrect Ruler of the Sky.
-    //  The first two scenarios described here were tested, but we may still have false negatives for this function.
+    //  Sometimes in cutscenes characters dont have portraits.
+    //  Some examples are:
+    //  - Axel saying "Wanna head over there now?" in the first dialog sequence with him (returns a false positive, with the wrong size)
+    //  - Axel talking to Roxas in the cutscene where he came back from Castle Oblivion (returns a false positive, but size is still correct)
+    //  - Xigbar turning out to be your opponent in the games (returns a negative)
+    //  - Pete scheming in Neverland to resurrect Ruler of the Sky
+    //  We may still have problematic false negatives for this function.
     return isCutsceneLikeDialogVisible() && nds->ARM7Read32(getAnyByCart(
         IS_DIALOG_WITH_PORTRAIT_US, IS_DIALOG_WITH_PORTRAIT_EU, IS_DIALOG_WITH_PORTRAIT_JP, IS_DIALOG_WITH_PORTRAIT_JP_REV1)) != 0;
 }
