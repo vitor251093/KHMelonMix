@@ -488,10 +488,7 @@ bool PluginKingdomHeartsReCoded::shouldOpenKHExtendedSettings() {
 void PluginKingdomHeartsReCoded::loadLocalization() {
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
-    std::string language = TextLanguage;
-    if (language == "") {
-        language = "en-US";
-    }
+    std::string language = GameLanguage.code;
 
     std::string LocalizationFilePath = localizationFilePath(language);
     Platform::FileHandle* f = Platform::OpenLocalFile(LocalizationFilePath.c_str(), Platform::FileMode::ReadText);
@@ -499,12 +496,20 @@ void PluginKingdomHeartsReCoded::loadLocalization() {
         char linebuf[1024];
         char entryname[32];
         char entryval[1024];
+        bool firstLine = true;
         while (!Platform::IsEndOfFile(f))
         {
             if (!Platform::FileReadLine(linebuf, 1024, f))
                 break;
 
-            int ret = sscanf(linebuf, "%31[A-Za-z_0-9]=%[^\t\r\n]", entryname, entryval);
+            const char* line = linebuf;
+            if (firstLine)
+            {
+                firstLine = false;
+                line = skipUtf8Bom(line);
+            }
+
+            int ret = sscanf(line, "%31[A-Za-z_0-9]=%[^\t\r\n]", entryname, entryval);
             entryname[31] = '\0';
             if (ret < 2) continue;
 
@@ -2710,22 +2715,9 @@ CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutscene
     return cutscene1;
 }
 
-// Language for the HD cutscene pause menu, following the cart region (USA->English,
-// JP->Japanese, EU->firmware language). Returned in DS firmware Language order
-// (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es).
 int PluginKingdomHeartsReCoded::cutsceneMenuLanguage()
 {
-    if (isUsaCart()) {
-        return 1; // English
-    }
-    if (isJapanCart()) {
-        return 0; // Japanese
-    }
-    int language = nds->SPI.GetFirmware().GetEffectiveUserData().Settings & 0x7;
-    if (language < 0 || language > 5) {
-        return 1; // English for anything unexpected
-    }
-    return language;
+    return GameLanguageIndex;
 }
 
 u32 PluginKingdomHeartsReCoded::detectTopScreenMobiCutsceneAddress()
@@ -2828,7 +2820,8 @@ std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string languag
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / filename;
     if (std::filesystem::exists(fullPath)) {
-        return fullPath.string();
+        // u8string(): this is handed to Platform::OpenLocalFile, which decodes it as UTF-8.
+        return fullPath.u8string();
     }
 
     return "";

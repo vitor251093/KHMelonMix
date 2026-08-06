@@ -36,6 +36,13 @@
 
 using namespace Plugins;
 
+struct ScopedJoyLock
+{
+    SDL_mutex* mutex;
+    explicit ScopedJoyLock(SDL_mutex* mutex) : mutex(mutex) { SDL_LockMutex(mutex); }
+    ~ScopedJoyLock() { SDL_UnlockMutex(mutex); }
+};
+
 // ─── pill path ────────────────────────────────────────────────────────────────
 
 static void addKHPillPath(QPainterPath& path, QRectF r, qreal radius)
@@ -84,6 +91,20 @@ static constexpr int kIdxKeyboard   = 5;
 static constexpr int kIdxSystem     = 6;
 static constexpr int kIdxStream     = 7;
 static constexpr int kIdxQuit       = 8;
+
+static constexpr int kNavigateUp     = 0;
+static constexpr int kNavigateDown   = 1;
+static constexpr int kNavigateLeft   = 2;
+static constexpr int kNavigateRight  = 3;
+static constexpr int kNavigateSelect = 4;
+static constexpr int kNavigateBack   = 5;
+static constexpr int kNavigateReset  = 6;
+static constexpr int kNavigateClear  = 7;
+
+static constexpr int kMenuSoundEnter    = 1;
+static constexpr int kMenuSoundMove     = 2;
+static constexpr int kMenuSoundContinue = 3;
+static constexpr int kMenuSoundSelect   = 4;
 
 struct ThemePreset { const char* label; QRgb rgb; };
 static const ThemePreset kThemePresets[] = {
@@ -157,19 +178,29 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         auto* gcfg = &emu->getGlobalConfig();
 
         // Language is always available regardless of which ROM is loaded
+        QStringList languageList;
+        languageList.reserve(static_cast<qsizetype>(Plugins::languages.size()));
+        for (const auto& lang : Plugins::languages)
+            languageList.append(QString::fromUtf8(lang.name));
         rows.append({ SettingRow::Type::Combobox, loc.gameLanguageLabel,
-            loc.gameLanguageDesc,
-            {"English", "\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e", "Fran\xc3\xa7" "ais", "Deutsch", "Italiano", "Espa\xc3\xb1ol"} });
+            loc.gameLanguageDesc, languageList });
         rows.last().read  = [gcfg]() {
-            int v = gcfg->GetInt("Instance0.Firmware.Language");
-            return (v == 1) ? 0 : (v == 0) ? 1 : v; // stored: Eng=1,Jap=0; displayed: Eng=0,Jap=1
+            int index = gcfg->GetInt("Instance0.Firmware.TrueLanguage");
+            if (index > 0) {
+                return index - 1;
+            }
+            int dsCode = gcfg->GetInt("Instance0.Firmware.Language");
+            return (dsCode == 1) ? 0 : (dsCode == 0) ? 1 : dsCode; // stored: Eng=1,Jap=0; displayed: Eng=0,Jap=1
         };
         rows.last().write = [gcfg, emu](int v) {
-            gcfg->SetInt("Instance0.Firmware.Language", (v == 0) ? 1 : (v == 1) ? 0 : v);
+            Plugins::Language language = Plugins::languages[v];
+            gcfg->SetInt("Instance0.Firmware.TrueLanguage", v + 1);
+            gcfg->SetInt("Instance0.Firmware.Language", language.dsCode);
             Config::Save();
             if (emu->plugin) emu->plugin->shouldInvalidateConfigs = true;
         };
         rows.last().reset = [gcfg, emu]() {
+            gcfg->SetInt("Instance0.Firmware.TrueLanguage", 1);
             gcfg->SetInt("Instance0.Firmware.Language", 1); // English
             Config::Save();
             if (emu->plugin) emu->plugin->shouldInvalidateConfigs = true;
@@ -1108,6 +1139,8 @@ void SettingsView::pollBindCapture(SDL_Joystick* joy)
     EmuInstance* emu = m_mainWindow->getEmuInstance();
     if (!emu) return;
 
+    ScopedJoyLock lock(emu->getJoyMutex().get());
+
     const qint64 now = m_animClock.elapsed();
     const int numButtons = SDL_JoystickNumButtons(joy);
     const int numHats     = SDL_JoystickNumHats(joy);
@@ -1135,7 +1168,7 @@ void SettingsView::pollBindCapture(SDL_Joystick* joy)
         {
             // pad never settled (stuck/drift) — cancel, keep the existing binding
             m_waitingForBind = false;
-            playSound(3);
+            playSound(kMenuSoundContinue);
             update();
         }
         return;
@@ -1145,7 +1178,7 @@ void SettingsView::pollBindCapture(SDL_Joystick* joy)
     if (now - m_bindArmTime >= kBindAssignTimeoutMs)
     {
         m_waitingForBind = false;
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         return;
     }
@@ -1239,6 +1272,8 @@ void SettingsView::pollJoystick()
     EmuInstance* emu = m_mainWindow->getEmuInstance();
     if (!emu) return;
 
+    ScopedJoyLock lock(emu->getJoyMutex().get());
+
     SDL_JoystickUpdate();
 
     // Self-heal: inputLoadConfig() closes the joystick on every remap/reset, and the EmuThread
@@ -1324,7 +1359,7 @@ void SettingsView::pollJoystick()
     {
         m_lastJoyInput = now;
         m_pendingClose = true;
-        playSound(3);
+        playSound(kMenuSoundContinue);
         return;
     }
 
@@ -1391,26 +1426,26 @@ void SettingsView::handleNavSidebar(int direction)
 {
     switch (direction)
     {
-    case 0:
+    case kNavigateUp:
         sidebarIndex = (sidebarIndex - 1 + kSidebarCount) % kSidebarCount;
         detailIndex = 0;
         m_detailScrollOffset = 0;
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
-    case 1:
+    case kNavigateDown:
         sidebarIndex = (sidebarIndex + 1) % kSidebarCount;
         detailIndex = 0;
         m_detailScrollOffset = 0;
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
-    case 3:
-    case 4:
+    case kNavigateRight:
+    case kNavigateSelect:
         if (sidebarIndex == kIdxQuit)
         {
             currentScreen = Screen::Detail;
-            playSound(1);
+            playSound(kMenuSoundEnter);
             update();
         }
         else if (sidebarIndex == kIdxGamepad || sidebarIndex == kIdxKeyboard)
@@ -1421,7 +1456,7 @@ void SettingsView::handleNavSidebar(int direction)
                 currentScreen        = Screen::Detail;
                 detailIndex          = 0;
                 m_detailScrollOffset = 0;
-                playSound(1);
+                playSound(kMenuSoundEnter);
                 update();
             }
             else
@@ -1431,14 +1466,14 @@ void SettingsView::handleNavSidebar(int direction)
                 detailIndex         = 0;
                 buildRemapList();
                 currentScreen = Screen::Remap;
-                playSound(1);
+                playSound(kMenuSoundEnter);
                 update();
             }
         }
         else if (sidebarIndex == kIdxStream)
         {
             currentScreen = Screen::Detail;
-            playSound(1);
+            playSound(kMenuSoundEnter);
             update();
         }
         else
@@ -1448,12 +1483,12 @@ void SettingsView::handleNavSidebar(int direction)
             currentScreen  = Screen::Detail;
             detailIndex    = 0;
             m_detailScrollOffset = 0;
-            playSound(1);
+            playSound(kMenuSoundEnter);
             update();
         }
         break;
-    case 5:
-        playSound(3);
+    case kNavigateBack:
+        playSound(kMenuSoundContinue);
         emit settingsClosed();
         break;
     default: break;
@@ -1464,19 +1499,19 @@ void SettingsView::handleNavDetail(int direction)
 {
     if (sidebarIndex == kIdxStream)
     {
-        if (direction == 5 || direction == 2)
-        { currentScreen = Screen::Sidebar; playSound(3); update(); }
-        else if (direction == 4)
+        if (direction == kNavigateBack || direction == kNavigateLeft)
+        { currentScreen = Screen::Sidebar; playSound(kMenuSoundContinue); update(); }
+        else if (direction == kNavigateSelect)
             QDesktopServices::openUrl(QUrl("https://www.kingdomhearts.com/1525/us/"));
         return;
     }
 
     if (sidebarIndex == kIdxQuit)
     {
-        if (direction == 5 || direction == 2)
-        { currentScreen = Screen::Sidebar; playSound(3); update(); }
-        else if (direction == 3 || direction == 4)
-        { playSound(4); emit quitGameConfirmed(); }
+        if (direction == kNavigateBack || direction == kNavigateLeft)
+        { currentScreen = Screen::Sidebar; playSound(kMenuSoundContinue); update(); }
+        else if (direction == kNavigateRight || direction == kNavigateSelect)
+        { playSound(kMenuSoundSelect); emit quitGameConfirmed(); }
         return;
     }
 
@@ -1484,7 +1519,7 @@ void SettingsView::handleNavDetail(int direction)
     int rowCount = rows.size();
     if (rowCount == 0)
     {
-        if (direction == 5 || direction == 2)
+        if (direction == kNavigateBack || direction == kNavigateLeft)
         { currentScreen = Screen::Sidebar; update(); }
         return;
     }
@@ -1510,7 +1545,7 @@ void SettingsView::handleNavDetail(int direction)
         optionIndex = readRowValue(sidebarIndex, detailIndex);
         scrollOptionToIdx(optionIndex);
         currentScreen = Screen::OptionList;
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
     };
 
@@ -1520,7 +1555,7 @@ void SettingsView::handleNavDetail(int direction)
         detailIndex         = 0;
         buildRemapList();
         currentScreen = Screen::Remap;
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
     };
 
@@ -1530,25 +1565,25 @@ void SettingsView::handleNavDetail(int direction)
         detailIndex         = 0;
         buildRemapList();
         currentScreen = Screen::Remap;
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
     };
 
     switch (direction)
     {
-    case 0:
+    case kNavigateUp:
         detailIndex = (detailIndex - 1 + rowCount) % rowCount;
         scrollDetailToRow(detailIndex, rows);
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
-    case 1:
+    case kNavigateDown:
         detailIndex = (detailIndex + 1) % rowCount;
         scrollDetailToRow(detailIndex, rows);
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
-    case 2:
+    case kNavigateLeft:
         if (row.type == SettingRow::Type::Slider)
         {
             int cur = readRowValue(sidebarIndex, detailIndex);
@@ -1556,9 +1591,9 @@ void SettingsView::handleNavDetail(int direction)
             if (nv != cur) { writeRowValue(sidebarIndex, detailIndex, nv); update(); }
         }
         else
-        { currentScreen = Screen::Sidebar; playSound(3); update(); }
+        { currentScreen = Screen::Sidebar; playSound(kMenuSoundContinue); update(); }
         break;
-    case 3:
+    case kNavigateRight:
     {
         if (isRowBlocked()) break;
         if (row.type == SettingRow::Type::Slider)
@@ -1575,14 +1610,14 @@ void SettingsView::handleNavDetail(int direction)
             openKeyboardRemap();
         break;
     }
-    case 4:
+    case kNavigateSelect:
     {
         if (isRowBlocked()) break;
         if (row.type == SettingRow::Type::Toggle)
         {
             int cur = readRowValue(sidebarIndex, detailIndex);
             writeRowValue(sidebarIndex, detailIndex, cur ? 0 : 1);
-            playSound(4);
+            playSound(kMenuSoundSelect);
             update();
         }
         else if (row.type == SettingRow::Type::Combobox)
@@ -1593,18 +1628,18 @@ void SettingsView::handleNavDetail(int direction)
             openKeyboardRemap();
         break;
     }
-    case 5:
+    case kNavigateBack:
         currentScreen = Screen::Sidebar;
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         break;
-    case 6:
+    case kNavigateReset:
         if (sidebarIndex != kIdxStream && sidebarIndex != kIdxQuit &&
             sidebarIndex != kIdxGamepad && sidebarIndex != kIdxKeyboard)
         {
             m_resettingSection      = true;
             m_resettingConfirmIndex = 1;
-            playSound(1);
+            playSound(kMenuSoundEnter);
             update();
         }
         break;
@@ -1620,29 +1655,29 @@ void SettingsView::handleNavOptionList(int direction)
 
     switch (direction)
     {
-    case 0:
+    case kNavigateUp:
         optionIndex = (optionIndex - 1 + optCount) % optCount;
         scrollOptionToIdx(optionIndex);
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
-    case 1:
+    case kNavigateDown:
         optionIndex = (optionIndex + 1) % optCount;
         scrollOptionToIdx(optionIndex);
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
-    case 4:
+    case kNavigateSelect:
         writeRowValue(sidebarIndex, detailIndex, optionIndex);
         currentScreen = Screen::Detail;
-        playSound(4);
+        playSound(kMenuSoundSelect);
         update();
         break;
-    case 5:
-    case 2:
+    case kNavigateBack:
+    case kNavigateLeft:
         optionIndex = readRowValue(sidebarIndex, detailIndex);
         currentScreen = Screen::Detail;
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         break;
     default: break;
@@ -1654,13 +1689,13 @@ void SettingsView::handleNavRemap(int direction)
     int actionCount = m_remapActionToItemIdx.size();
     if (actionCount == 0)
     {
-        if (direction == 5) { currentScreen = Screen::Sidebar; update(); }
+        if (direction == kNavigateBack) { currentScreen = Screen::Sidebar; update(); }
         return;
     }
 
     switch (direction)
     {
-    case 0:
+    case kNavigateUp:
         if (detailIndex == 0)
         {
             int dX_, dW_, sY_, bH_, sp_;
@@ -1675,10 +1710,10 @@ void SettingsView::handleNavRemap(int direction)
             detailIndex -= 1;
             scrollRemapToAction(detailIndex);
         }
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
-    case 1:
+    case kNavigateDown:
         if (detailIndex == actionCount - 1)
         {
             m_remapScrollOffset = 0;
@@ -1689,10 +1724,10 @@ void SettingsView::handleNavRemap(int direction)
             detailIndex += 1;
             scrollRemapToAction(detailIndex);
         }
-        playSound(2);
+        playSound(kMenuSoundMove);
         update();
         break;
-    case 4:
+    case kNavigateSelect:
     {
         if (m_remapIsJoystick)
         {
@@ -1709,11 +1744,11 @@ void SettingsView::handleNavRemap(int direction)
         m_waitingForBind  = true;
         m_bindArmed       = false;
         m_bindListenStart = m_animClock.elapsed();
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
         break;
     }
-    case 5:
+    case kNavigateBack:
         if ((sidebarIndex == kIdxKeyboard || sidebarIndex == kIdxGamepad) && !rowsFor(sidebarIndex).isEmpty())
         {
             currentScreen        = Screen::Detail;
@@ -1724,18 +1759,18 @@ void SettingsView::handleNavRemap(int direction)
         {
             currentScreen = Screen::Sidebar;
         }
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         break;
-    case 6:
+    case kNavigateReset:
         m_resettingBindings     = true;
         m_resettingConfirmIndex = 1;
-        playSound(1);
+        playSound(kMenuSoundEnter);
         update();
         break;
-    case 7: // clear the selected binding (unbound = -1 for joystick, 0 for keyboard)
+    case kNavigateClear: // clear the selected binding (unbound = -1 for joystick, 0 for keyboard)
         writeRemapBinding(detailIndex, m_remapIsJoystick ? -1 : 0);
-        playSound(3);
+        playSound(kMenuSoundContinue);
         update();
         break;
     default: break;
@@ -1750,20 +1785,20 @@ void SettingsView::handleNavigation(int direction)
     {
         switch (direction)
         {
-        case 2: m_resettingConfirmIndex = 0; update(); break;
-        case 3: m_resettingConfirmIndex = 1; update(); break;
-        case 4:
+        case kNavigateLeft: m_resettingConfirmIndex = 0; update(); break;
+        case kNavigateRight: m_resettingConfirmIndex = 1; update(); break;
+        case kNavigateSelect:
             if (m_resettingConfirmIndex == 0)
             {
                 resetSectionToDefaults(sidebarIndex);
                 Config::Save();
-                playSound(4);
+                playSound(kMenuSoundSelect);
             }
-            else playSound(3);
+            else playSound(kMenuSoundContinue);
             m_resettingSection = false;
             update();
             break;
-        case 5: m_resettingSection = false; playSound(3); update(); break;
+        case kNavigateBack: m_resettingSection = false; playSound(kMenuSoundContinue); update(); break;
         default: break;
         }
         return;
@@ -1773,15 +1808,15 @@ void SettingsView::handleNavigation(int direction)
     {
         switch (direction)
         {
-        case 2: m_resettingConfirmIndex = 0; update(); break;
-        case 3: m_resettingConfirmIndex = 1; update(); break;
-        case 4:
-            if (m_resettingConfirmIndex == 0) { resetAllRemapBindings(); playSound(4); }
-            else                               playSound(3);
+        case kNavigateLeft: m_resettingConfirmIndex = 0; update(); break;
+        case kNavigateRight: m_resettingConfirmIndex = 1; update(); break;
+        case kNavigateSelect:
+            if (m_resettingConfirmIndex == 0) { resetAllRemapBindings(); playSound(kMenuSoundSelect); }
+            else                               playSound(kMenuSoundContinue);
             m_resettingBindings = false;
             update();
             break;
-        case 5: m_resettingBindings = false; playSound(3); update(); break;
+        case kNavigateBack: m_resettingBindings = false; playSound(kMenuSoundContinue); update(); break;
         default: break;
         }
         return;
@@ -1844,21 +1879,21 @@ void SettingsView::keyPressEvent(QKeyEvent* event)
 
     switch (event->key())
     {
-    case Qt::Key_Up:     handleNavigation(0); event->accept(); break;
-    case Qt::Key_Down:   handleNavigation(1); event->accept(); break;
-    case Qt::Key_Left:   handleNavigation(2); event->accept(); break;
-    case Qt::Key_Right:  handleNavigation(3); event->accept(); break;
+    case Qt::Key_Up:     handleNavigation(kNavigateUp); event->accept(); break;
+    case Qt::Key_Down:   handleNavigation(kNavigateDown); event->accept(); break;
+    case Qt::Key_Left:   handleNavigation(kNavigateLeft); event->accept(); break;
+    case Qt::Key_Right:  handleNavigation(kNavigateRight); event->accept(); break;
     case Qt::Key_Return:
-    case Qt::Key_Space:  handleNavigation(4); event->accept(); break;
-    case Qt::Key_Escape: handleNavigation(5); event->accept(); break;
+    case Qt::Key_Space:  handleNavigation(kNavigateSelect); event->accept(); break;
+    case Qt::Key_Escape: handleNavigation(kNavigateBack); event->accept(); break;
     case Qt::Key_X:
         if (currentScreen == Screen::Remap || currentScreen == Screen::Detail)
-            handleNavigation(6);
+            handleNavigation(kNavigateReset);
         event->accept();
         break;
     case Qt::Key_Delete:
         if (currentScreen == Screen::Remap)
-            handleNavigation(7);
+            handleNavigation(kNavigateClear);
         event->accept();
         break;
     default: event->accept(); break;
@@ -2023,7 +2058,7 @@ void SettingsView::mousePressEvent(QMouseEvent* event)
             detailIndex  = 0;
             m_detailScrollOffset = 0;
             currentScreen = Screen::Sidebar;
-            playSound(3);
+            playSound(kMenuSoundContinue);
             update();
             return;
         }
@@ -2577,17 +2612,13 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
 
     p.setFont(rowFont);
 
-    SDL_GameController* controller;
-    if (m_remapIsJoystick)
-    {
-        EmuInstance* emu = m_mainWindow->getEmuInstance();
-        auto& lcfg = emu->getLocalConfig();
-        int uid = lcfg.GetInt("JoystickUniqueID");
-        controller = SDL_GameControllerOpen(emu->getJoystickIdByUniqueId(uid));
-    }
-
+    EmuInstance* emu = m_mainWindow->getEmuInstance();
     int actionIdx = 0;
     int focusedItemY = -1;
+
+    ScopedJoyLock lock(emu->getJoyMutex().get());
+    SDL_GameController* controller = m_remapIsJoystick ? emu->getController() : nullptr;
+
     for (int itemIdx = 0; itemIdx < m_remapItems.size(); itemIdx++)
     {
         const RemapItem& item = m_remapItems[itemIdx];
@@ -2619,7 +2650,7 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
             else
             {
                 int v = readRemapBinding(actionIdx);
-                bindStr = m_remapIsJoystick ? JoyMappingName(controller, v) : keyBindingText(v);
+                bindStr = controller ? JoyMappingName(controller, v) : keyBindingText(v);
             }
 
             QPainterPath rp;
@@ -2672,11 +2703,6 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
     p.drawText(QRect(detailX, (int)(bottomLineY - btnH - spacing), detailW, btnH),
                Qt::AlignLeft | Qt::AlignVCenter,
                QString::fromUtf8(locale().remapResetBackHint));
-
-    if (m_remapIsJoystick)
-    {
-        SDL_GameControllerClose(controller);
-    }
 }
 
 void SettingsView::paintDetailStream(QPainter& p, const DetailLayout& L)
@@ -3121,15 +3147,17 @@ void SettingsView::paintActionBar(QPainter& p)
         int resetBtn = joycfg.GetInt("X");
         int clearBtn = joycfg.GetInt("Y");
 
-        if (confirmBtn >= 0 && backBtn >= 0 && resetBtn >= 0 && clearBtn >= 0) {
-            SDL_GameController* controller = SDL_GameControllerOpen(emu->getJoystickIdByUniqueId(uid));
-
-            confirmButtonLabel = JoyMappingName(controller, confirmBtn).toStdString();
-            cancelButtonLabel = JoyMappingName(controller, backBtn).toStdString();
-            resetButtonLabel = JoyMappingName(controller, resetBtn).toStdString();
-            clearButtonLabel = JoyMappingName(controller, clearBtn).toStdString();
-
-            SDL_GameControllerClose(controller);
+        if (confirmBtn >= 0 && backBtn >= 0 && resetBtn >= 0 && clearBtn >= 0)
+        {
+            ScopedJoyLock lock(emu->getJoyMutex().get());
+            SDL_GameController* controller = emu->getController();
+            if (controller)
+            {
+                confirmButtonLabel = JoyMappingName(controller, confirmBtn).toStdString();
+                cancelButtonLabel = JoyMappingName(controller, backBtn).toStdString();
+                resetButtonLabel = JoyMappingName(controller, resetBtn).toStdString();
+                clearButtonLabel = JoyMappingName(controller, clearBtn).toStdString();
+            }
         }
     }
 

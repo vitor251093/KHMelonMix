@@ -61,7 +61,6 @@ public:
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) override;
     std::string replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) override;
     int cutsceneMenuLanguage() override;
-    std::string subtitleLanguageFolder();
     std::string localizationFilePath(std::string language) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) override;
@@ -82,7 +81,12 @@ public:
 
         std::string root = tomlUniqueIdentifier();
 
-        TextLanguage = getStringConfig(root + ".Language");
+        int index = getIntConfig("Instance0.Firmware.TrueLanguage");
+        int dsCode = getIntConfig("Instance0.Firmware.Language");
+        dsCode = (dsCode == 1) ? 0 : (dsCode == 0) ? 1 : dsCode;
+        index = (index > 0) ? (index - 1) : dsCode;
+        GameLanguageIndex = index;
+        GameLanguage = Plugins::languages[index];
     }
     void overrideConfigs(
         std::function<void(std::string, bool)> setBoolConfig,
@@ -138,7 +142,8 @@ private:
     std::array<CutsceneEntry, 46> Cutscenes;
     u32 cutscenesAddressOffset = 0;
 
-    std::string TextLanguage = "";
+    int GameLanguageIndex = 0;
+    Plugins::Language GameLanguage = Plugins::languages[0];
 
     int detectGameScene() override;
 

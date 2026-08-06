@@ -75,7 +75,12 @@ public:
 
         std::string root = tomlUniqueIdentifier();
 
-        TextLanguage = getStringConfig(root + ".Language");
+        int index = getIntConfig("Instance0.Firmware.TrueLanguage");
+        int dsCode = getIntConfig("Instance0.Firmware.Language");
+        dsCode = (dsCode == 1) ? 0 : (dsCode == 0) ? 1 : dsCode;
+        index = (index > 0) ? (index - 1) : dsCode;
+        GameLanguageIndex = index;
+        GameLanguage = Plugins::languages[index];
     }
     void overrideConfigs(
         std::function<void(std::string, bool)> setBoolConfig,
@@ -113,7 +118,8 @@ private:
     u32 LastLockOnPress, LastSwitchTargetPress, LastScreenTogglePress;
 
     std::array<CutsceneEntry, 15> Cutscenes;
-    std::string TextLanguage = "";
+    int GameLanguageIndex = 0;
+    Plugins::Language GameLanguage = Plugins::languages[0];
 
     int detectGameScene() override;
 

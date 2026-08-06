@@ -144,6 +144,8 @@ void PluginJoystick::applyMappings(std::function<void(std::string, int)> setIntC
                 setIntConfig(prefix + keyName, GetBinding(controller, preferences));
             }
 
+            setIntConfig("Instance0.JoystickUniqueID", (int)controllerID);
+
             SDL_GameControllerClose(controller);
         }
     }

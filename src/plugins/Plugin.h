@@ -27,6 +27,7 @@
 
 #include "../OpenGLSupport.h"
 
+#include "./PluginLanguage.h"
 #include "./PluginShapes.h"
 
 namespace Plugins
@@ -425,6 +426,11 @@ public:
     virtual void debugLogs(int gameScene) {}
 
     static void errorLog(const char* format, ...);
+
+    // Returns line advanced past a UTF-8 BOM, if it has one. Only meaningful on the first
+    // line of a file. Windows editors (Notepad among them) write that BOM; it is not part
+    // of the first entry's name, and leaving it in makes the entry fail to parse.
+    static const char* skipUtf8Bom(const char* line);
 
     u32 LastMainRAM[0xFFFFFF];
     bool MainRAMState[0xFFFFFF];

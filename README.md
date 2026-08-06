@@ -40,6 +40,7 @@ Join our [Discord](https://discord.gg/AhRscvkqB9) to keep in touch with the late
 - Camera controls (analog stick)
 - Lock On and Switch target as separate controls
 - Pause functionality to HD cutscenes
+- Improved game settings
 - Optional DS cutscene to HD cutscene replacement (Days only, for now)
 - Optional remastered BGM replacement
 - Optional integration with the 1.5+2.5 collection
