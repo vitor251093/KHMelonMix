@@ -36,6 +36,13 @@
 
 using namespace Plugins;
 
+struct ScopedJoyLock
+{
+    SDL_mutex* mutex;
+    explicit ScopedJoyLock(SDL_mutex* mutex) : mutex(mutex) { SDL_LockMutex(mutex); }
+    ~ScopedJoyLock() { SDL_UnlockMutex(mutex); }
+};
+
 // ─── pill path ────────────────────────────────────────────────────────────────
 
 static void addKHPillPath(QPainterPath& path, QRectF r, qreal radius)
@@ -1132,6 +1139,8 @@ void SettingsView::pollBindCapture(SDL_Joystick* joy)
     EmuInstance* emu = m_mainWindow->getEmuInstance();
     if (!emu) return;
 
+    ScopedJoyLock lock(emu->getJoyMutex().get());
+
     const qint64 now = m_animClock.elapsed();
     const int numButtons = SDL_JoystickNumButtons(joy);
     const int numHats     = SDL_JoystickNumHats(joy);
@@ -1263,12 +1272,14 @@ void SettingsView::pollJoystick()
     EmuInstance* emu = m_mainWindow->getEmuInstance();
     if (!emu) return;
 
+    ScopedJoyLock lock(emu->getJoyMutex().get());
+
     SDL_JoystickUpdate();
 
     // Self-heal: inputLoadConfig() closes the joystick on every remap/reset, and the EmuThread
     // reopen path (inputProcess) is skipped while the overlay pauses emulation. Reopen here so
     // controller input survives binds, resets, and unplug/replug while settings is open.
-    //emu->ensureJoystickOpen();
+    emu->ensureJoystickOpen();
     SDL_Joystick* joy = emu->getJoystick();
     if (!joy) return;
 
@@ -2601,14 +2612,13 @@ void SettingsView::paintDetailRemap(QPainter& p, const DetailLayout& L)
 
     p.setFont(rowFont);
 
-    SDL_GameController* controller;
-    if (m_remapIsJoystick)
-    {
-        controller = m_mainWindow->getEmuInstance()->getController();
-    }
-
+    EmuInstance* emu = m_mainWindow->getEmuInstance();
     int actionIdx = 0;
     int focusedItemY = -1;
+
+    ScopedJoyLock lock(emu->getJoyMutex().get());
+    SDL_GameController* controller = m_remapIsJoystick ? emu->getController() : nullptr;
+
     for (int itemIdx = 0; itemIdx < m_remapItems.size(); itemIdx++)
     {
         const RemapItem& item = m_remapItems[itemIdx];
@@ -3139,6 +3149,7 @@ void SettingsView::paintActionBar(QPainter& p)
 
         if (confirmBtn >= 0 && backBtn >= 0 && resetBtn >= 0 && clearBtn >= 0)
         {
+            ScopedJoyLock lock(emu->getJoyMutex().get());
             SDL_GameController* controller = emu->getController();
             if (controller)
             {
