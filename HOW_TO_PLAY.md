@@ -1,5 +1,5 @@
 # Playing KH Melon Mix
-_Note: instructions updated as of version 0.9.1_
+_Note: instructions updated as of version 0.9.2_
 
 ## Windows (without the 1.5+2.5 collection)
 
