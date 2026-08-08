@@ -2321,7 +2321,10 @@ bool PluginKingdomHeartsReCoded::isChallengeMeterVisible()
 
 bool PluginKingdomHeartsReCoded::isCommandMenuVisible()
 {
-    return true; // TODO: KH Requires proper implementation
+    // TODO: KH Requires proper implementation
+    //   The approach below returns a false negative frames before and after a dialog is displayed
+    return nds->ARM7Read32(getAnyByCart(DIALOG_SCREEN_ADDRESS_US, DIALOG_SCREEN_ADDRESS_EU, DIALOG_SCREEN_ADDRESS_JP)) !=
+        getAnyByCart(DIALOG_SCREEN_VALUE_US, DIALOG_SCREEN_VALUE_EU, DIALOG_SCREEN_VALUE_JP);
 }
 
 bool PluginKingdomHeartsReCoded::isComboLimitVisible()
