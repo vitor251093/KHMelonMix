@@ -21,6 +21,7 @@ public:
     static bool isCart(u32 gameCode) {return gameCode == usGamecode || gameCode == euGamecode || gameCode == jpGamecode;};
     bool supportsKHExtendedSettings() const override { return true; }
     bool shouldOpenKHExtendedSettings() override;
+    void applyGameSettingsKeepAliveToInputMask(u32* InputMask) override;
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
@@ -104,6 +105,7 @@ private:
     bool HideAllHUD;
     u32 lastMainMenuView;
 
+    u32 settingsOverlayKeepAliveTimer = 0;
     int fullscreenMapTransitionStep = 0;
     int fullscreenMapSelectPressStep = 0;
     bool fullscreenMapShouldPreserveZoom = false;

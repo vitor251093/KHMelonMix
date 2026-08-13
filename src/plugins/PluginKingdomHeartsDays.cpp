@@ -2106,6 +2106,23 @@ void PluginKingdomHeartsDays::applyTouchKeyMaskToTouchControls(u16* touchX, u16*
     }
 }
 
+void PluginKingdomHeartsDays::applyGameSettingsKeepAliveToInputMask(u32* InputMask)
+{
+    if (GameScene != gameScene_TitleScreen)
+    {
+        settingsOverlayKeepAliveTimer = 0;
+        return;
+    }
+
+    // Tap Y once a second so the title screen never sits idle long enough to drop into
+    // the intro cutscene while the game settings has real inputs suspended.
+    settingsOverlayKeepAliveTimer++;
+    if ((settingsOverlayKeepAliveTimer % 60) < 6)
+        *InputMask &= ~(1 << 11); // Y
+    else
+        *InputMask |= (1 << 11); // Y
+}
+
 bool PluginKingdomHeartsDays::shouldRumble() {
     return false;
 }

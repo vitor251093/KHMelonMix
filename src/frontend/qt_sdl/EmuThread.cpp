@@ -386,6 +386,9 @@ void EmuThread::run()
                 emuInstance->renderLock.unlock();
             }
 
+            if (emuInstance->plugin != nullptr && emuInstance->settingsViewOpen)
+                emuInstance->plugin->applyGameSettingsKeepAliveToInputMask(&emuInstance->inputMask);
+
             emuInstance->nds->SetKeyMask(emuInstance->inputMask);
 
             if (emuInstance->isTouching)

@@ -2188,6 +2188,25 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u
     _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, true);
 }
 
+void PluginKingdomHeartsReCoded::applyGameSettingsKeepAliveToInputMask(u32* InputMask)
+{
+    if (GameScene != gameScene_TitleScreen)
+    {
+        settingsOverlayKeepAliveTimer = 0;
+        return;
+    }
+
+    // Tap Up/Down once a minute so the title screen never sits idle long enough to drop into
+    // the intro cutscene while the game settings has real inputs suspended.
+    settingsOverlayKeepAliveTimer++;
+    *InputMask |= (1 << 6); // up
+    *InputMask |= (1 << 7); // down
+    if ((settingsOverlayKeepAliveTimer % 3600) >= 3590)
+        *InputMask &= ~(1<<6); // up
+    else if ((settingsOverlayKeepAliveTimer % 3600) >= 3580)
+        *InputMask &= ~(1<<7); // down
+}
+
 void PluginKingdomHeartsReCoded::hudToggle()
 {
     HUDState = HUDState + 1;

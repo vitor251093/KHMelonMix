@@ -24,6 +24,7 @@ public:
     bool supportsKHExtendedSettings() const override { return true; }
     bool supportsDisableHisMemories() const override { return true; }
     bool shouldOpenKHExtendedSettings() override;
+    void applyGameSettingsKeepAliveToInputMask(u32* InputMask) override;
     bool isUsaCart()    { return GameCode == usGamecode; };
     bool isEuropeCart() { return GameCode == euGamecode; };
     bool isJapanCart()  { return GameCode == jpGamecode; };
@@ -117,6 +118,7 @@ private:
     bool ShowMissionInfo;
     bool HideAllHUD;
 
+    u32 settingsOverlayKeepAliveTimer = 0;
     int fullscreenMapTransitionStep = 0;
 
     std::map<u32, GLuint[5]> CompGpu3DLoc{};

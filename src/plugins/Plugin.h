@@ -413,6 +413,7 @@ public:
     virtual bool supportsKHExtendedSettings() const { return false; }
     virtual bool supportsDisableHisMemories() const { return false; }
     virtual bool shouldOpenKHExtendedSettings() { return false; }
+    virtual void applyGameSettingsKeepAliveToInputMask(u32* InputMask) { }
 
     virtual void hudToggle() {}
 
