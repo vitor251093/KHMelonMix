@@ -223,8 +223,8 @@ void EmuThread::run()
             }
             if (emuInstance->plugin->startReplacementCutscene == nullptr)
             {
-                emuInstance->plugin->startReplacementCutscene = [this](Plugins::CutsceneEntry* cutscene) {
-                    startReplacementCutscene(cutscene);
+                emuInstance->plugin->startReplacementCutscene = [this](const std::string& videoPath, const std::string& subtitlesPath) {
+                    startReplacementCutscene(videoPath, subtitlesPath);
                 };
                 emuInstance->plugin->showReplacementCutscenePauseMenu = [this](int selection) {
                     emit windowPauseVideo();
@@ -874,16 +874,13 @@ void EmuThread::refreshPluginGameScene()
     }
 }
 
-void EmuThread::startReplacementCutscene(Plugins::CutsceneEntry* cutscene)
+void EmuThread::startReplacementCutscene(const std::string& videoPath, const std::string& subtitlesPath)
 {
-    std::string path = emuInstance->plugin->replacementCutsceneFilePath(cutscene);
-
     // disabling fast-foward, otherwise it will affect the cutscenes
     emuInstance->setVSyncGL(true);
 
     emuStatus = emuStatus_Paused;
-    QString filePath = QString::fromUtf8(path.c_str());
-    std::string subtitlesPath = emuInstance->plugin->replacementCutsceneSubtitlesFilePath(cutscene);
+    QString filePath = QString::fromUtf8(videoPath.c_str());
     QString subtitlesFilePath = QString::fromUtf8(subtitlesPath.c_str());
     emit windowStartVideo(filePath, subtitlesFilePath, emuInstance->plugin->cutsceneMenuLanguage());
 

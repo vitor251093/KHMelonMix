@@ -277,13 +277,13 @@ public:
 
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
-    void pauseReplacementCutscene();
-    void skipIngameCutsceneThroughPauseMenu();
+    void pauseReplacementCutsceneThroughPauseMenu();
     void resumeReplacementCutsceneThroughPauseMenu();
-    void stopReplacementCutsceneAndResumeGame();
-    void skipIngameCutsceneAfterStoppingReplacementCutscene();
+    void skipIngameCutsceneThroughPauseMenu();
+    void stopReplacementCutsceneAndResumeGameAfterSkippingIngameCutscene();
+    void skipIngameCutsceneAfterReplacementCutsceneFinishesNaturally();
 
-    std::function<void(CutsceneEntry*)> startReplacementCutscene = nullptr;
+    std::function<void(std::string, std::string)> startReplacementCutscene = nullptr;
     std::function<void(int)> showReplacementCutscenePauseMenu = nullptr;
     std::function<void(int)> updateReplacementCutscenePauseMenuSelection = nullptr;
     std::function<void()> unpauseReplacementCutscene = nullptr;

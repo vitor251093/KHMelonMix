@@ -347,7 +347,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
 
         if (!_ShowingCutsceneSkipMenu) {
             if (!_ReplacementCutsceneIsPaused && (justPressed & BTN_START)) {
-                pauseReplacementCutscene();
+                pauseReplacementCutsceneThroughPauseMenu();
                 _CutsceneMenuSoundRequest = 1; // enter
             }
         }
@@ -387,7 +387,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         if (!_IsIngameCutsceneRunning) { // can only skip after DS cutscene was skipped
             _SkipDsCutscene = false;
             if (_IsReplacementCutsceneRunning) {
-                stopReplacementCutsceneAndResumeGame();
+                stopReplacementCutsceneAndResumeGameAfterSkippingIngameCutscene();
             }
             *InputMask |= (1<<3);
         }
@@ -792,7 +792,9 @@ void Plugin::refreshCutscene()
             _IsReplacementCutsceneRunning = true;
             _IsIngameOrReplacementCutsceneRunning = true;
             _IsUnskippableCutscene = isUnskippableMobiCutscene(_CutscenesQueue[0]);
-            startReplacementCutscene(_CutscenesQueue[0]);
+            std::string videoPath = replacementCutsceneFilePath(_CutscenesQueue[0]);
+            std::string subtitlesPath = replacementCutsceneSubtitlesFilePath(_CutscenesQueue[0]);
+            startReplacementCutscene(videoPath, subtitlesPath);
         }
         else
         {
@@ -854,13 +856,15 @@ void Plugin::refreshCutscene()
                 _IsIngameOrReplacementCutsceneRunning = true;
                 _CutscenesQueue.push_back(cutscene);
                 _IsUnskippableCutscene = isUnskippableMobiCutscene(_CutscenesQueue[0]);
-                startReplacementCutscene(_CutscenesQueue[0]);
+                std::string videoPath = replacementCutsceneFilePath(_CutscenesQueue[0]);
+                std::string subtitlesPath = replacementCutsceneSubtitlesFilePath(_CutscenesQueue[0]);
+                startReplacementCutscene(videoPath, subtitlesPath);
             }
         }
     }
 }
 
-void Plugin::pauseReplacementCutscene()
+void Plugin::pauseReplacementCutsceneThroughPauseMenu()
 {
     _ShowingCutsceneSkipMenu = true;
     _ReplacementCutsceneIsPaused = true;
@@ -889,7 +893,7 @@ void Plugin::resumeReplacementCutsceneThroughPauseMenu()
     unpauseReplacementCutscene();
 }
 
-void Plugin::stopReplacementCutsceneAndResumeGame() {
+void Plugin::stopReplacementCutsceneAndResumeGameAfterSkippingIngameCutscene() {
     printf("Stop replacement cutscene and resume game\n");
 
     _ShowingCutsceneSkipMenu = false;
@@ -903,7 +907,7 @@ void Plugin::stopReplacementCutsceneAndResumeGame() {
     }
 }
 
-void Plugin::skipIngameCutsceneAfterStoppingReplacementCutscene()
+void Plugin::skipIngameCutsceneAfterReplacementCutsceneFinishesNaturally()
 {
     printf("Resume game after stopping replacement cutscene\n");
 

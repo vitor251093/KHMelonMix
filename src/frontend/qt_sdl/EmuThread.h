@@ -230,7 +230,7 @@ private:
     bool pluginShouldFastForward();
     void refreshPluginGameScene();
     void refreshPluginState();
-    void startReplacementCutscene(Plugins::CutsceneEntry* cutscene);
+    void startReplacementCutscene(const std::string& videoPath, const std::string& subtitlesPath);
     void resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded();
 
     int lastVideoRenderer = -1;
