@@ -29,21 +29,31 @@ enum
 
 enum
 {
-    screenLayout_Top,
-    screenLayout_Bottom,
-    screenLayout_BothVertical,
-    screenLayout_BothHorizontal
+    brightnessModeComponents_None = 0x0,
+    brightnessModeComponents_TopScreenWhite = 0x1,
+    brightnessModeComponents_TopScreenBlack = 0x2,
+    brightnessModeComponents_TopScreenWhiteToOpacity = 0x4,
+    brightnessModeComponents_TopScreenBlackToOpacity = 0x8,
+    brightnessModeComponents_BottomScreenWhite = 0x10,
+    brightnessModeComponents_BottomScreenBlack = 0x20,
+    brightnessModeComponents_BottomScreenWhiteToOpacity = 0x40,
+    brightnessModeComponents_BottomScreenBlackToOpacity = 0x80,
 };
+
+inline constexpr int compoundBrightnessMode(int top, int bottom)
+{
+    return (top << 8 | bottom);
+}
 
 enum
 {
-    brightnessMode_Default,
-    brightnessMode_TopScreen,
-    brightnessMode_BottomScreen,
-    brightnessMode_Horizontal,
-    brightnessMode_BlackScreen,
-    brightnessMode_DisableBrightnessControl,
-    brightnessMode_Auto
+    brightnessMode_None = 0,
+    brightnessMode_TopScreen = compoundBrightnessMode((brightnessModeComponents_TopScreenWhite    | brightnessModeComponents_TopScreenBlack   ),
+                                                    (brightnessModeComponents_TopScreenWhite    | brightnessModeComponents_TopScreenBlack   )),
+    brightnessMode_BottomScreen = compoundBrightnessMode((brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack),
+                                                       (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack)),
+    brightnessMode_Default = compoundBrightnessMode((brightnessModeComponents_TopScreenWhite    | brightnessModeComponents_TopScreenBlack   ),
+                                                  (brightnessModeComponents_BottomScreenWhite | brightnessModeComponents_BottomScreenBlack)),
 };
 
 enum
@@ -97,7 +107,7 @@ struct alignas(16) ShapeData2D { // 160 bytes
 
     float opacity;
 
-    ivec4 squareInitialCoords;  // 16 bytes (X, Y, Width, Height)
+    vec4 squareInitialCoords;   // 16 bytes (X, Y, Width, Height)
     vec4 squareFinalCoords;     // 16 bytes (X, Y, Width, Height)
 
     vec4 fadeBorderSize;        // 16 bytes (left fade, top fade, right fade, down fade)
@@ -118,10 +128,10 @@ struct alignas(16) ShapeData2D { // 160 bytes
 
         opacity = opacity * sourcePercentage + finalShape.opacity * finalPercentage;
 
-        squareInitialCoords.x = (int)(squareInitialCoords.x * sourcePercentage + finalShape.squareInitialCoords.x * finalPercentage);
-        squareInitialCoords.y = (int)(squareInitialCoords.y * sourcePercentage + finalShape.squareInitialCoords.y * finalPercentage);
-        squareInitialCoords.z = (int)(squareInitialCoords.z * sourcePercentage + finalShape.squareInitialCoords.z * finalPercentage);
-        squareInitialCoords.w = (int)(squareInitialCoords.w * sourcePercentage + finalShape.squareInitialCoords.w * finalPercentage);
+        squareInitialCoords.x = squareInitialCoords.x * sourcePercentage + finalShape.squareInitialCoords.x * finalPercentage;
+        squareInitialCoords.y = squareInitialCoords.y * sourcePercentage + finalShape.squareInitialCoords.y * finalPercentage;
+        squareInitialCoords.z = squareInitialCoords.z * sourcePercentage + finalShape.squareInitialCoords.z * finalPercentage;
+        squareInitialCoords.w = squareInitialCoords.w * sourcePercentage + finalShape.squareInitialCoords.w * finalPercentage;
 
         squareFinalCoords.x = squareFinalCoords.x * sourcePercentage + finalShape.squareFinalCoords.x * finalPercentage;
         squareFinalCoords.y = squareFinalCoords.y * sourcePercentage + finalShape.squareFinalCoords.y * finalPercentage;
@@ -147,7 +157,7 @@ struct alignas(16) ShapeData3D {
     int corner;     // 4 bytes
     float hudScale; // 4 bytes
 
-    ivec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
+    vec4 squareInitialCoords; // 16 bytes (X, Y, Width, Height)
 
     vec4 margin; // 16 bytes (left, top, right, bottom)
 
@@ -364,10 +374,10 @@ public:
         shapeBuilder._shape = shape_Square;
         shapeBuilder.shapeData.sourceScale.x = 1.0;
         shapeBuilder.shapeData.sourceScale.y = 1.0;
-        shapeBuilder.shapeData.squareInitialCoords.x = 0;
-        shapeBuilder.shapeData.squareInitialCoords.y = 0;
-        shapeBuilder.shapeData.squareInitialCoords.z = 256;
-        shapeBuilder.shapeData.squareInitialCoords.w = 192;
+        shapeBuilder.shapeData.squareInitialCoords.x = 0.0;
+        shapeBuilder.shapeData.squareInitialCoords.y = 0.0;
+        shapeBuilder.shapeData.squareInitialCoords.z = 256.0;
+        shapeBuilder.shapeData.squareInitialCoords.w = 192.0;
         shapeBuilder.shapeData.opacity = 1.0;
         shapeBuilder._hudScale = 1.0;
         shapeBuilder._colorIndex = 0;
@@ -410,15 +420,15 @@ public:
     }
     ShapeBuilder2D& fromPosition(int x, int y) {
         if (_shape == shape_Square) {
-            shapeData.squareInitialCoords.x = x;
-            shapeData.squareInitialCoords.y = y;
+            shapeData.squareInitialCoords.x = (float)x;
+            shapeData.squareInitialCoords.y = (float)y;
         }
         return *this;
     }
     ShapeBuilder2D& withSize(int width, int height) {
         if (_shape == shape_Square) {
-            shapeData.squareInitialCoords.z = width;
-            shapeData.squareInitialCoords.w = height;
+            shapeData.squareInitialCoords.z = (float)width;
+            shapeData.squareInitialCoords.w = (float)height;
         }
         return *this;
     }
@@ -469,6 +479,10 @@ public:
         shapeData.effects |= 0x400;
         return *this;
     }
+    ShapeBuilder2D& applyToBg0LayerToo() {
+        shapeData.effects |= 0x800;
+        return *this;
+    }
     ShapeBuilder2D& mirror(int mirror) {
         shapeData.effects |= mirror;
         return *this;
@@ -499,24 +513,24 @@ public:
     }
     ShapeBuilder2D& colorToAlpha(int red, int green, int blue) {
         shapeData.effects |= 0x20;
-        shapeData.colorToAlpha.x = red >> 2;
-        shapeData.colorToAlpha.y = green >> 2;
-        shapeData.colorToAlpha.z = blue >> 2;
+        shapeData.colorToAlpha.x = red;
+        shapeData.colorToAlpha.y = green;
+        shapeData.colorToAlpha.z = blue;
         shapeData.colorToAlpha.w = 1;
         return *this;
     }
     ShapeBuilder2D& singleColorToAlpha(int red, int green, int blue, float alpha) {
         shapeData.effects |= 0x20;
         shapeData.singleColorToAlpha[_colorIndex] = ivec4();
-        shapeData.singleColorToAlpha[_colorIndex].x = red >> 2;
-        shapeData.singleColorToAlpha[_colorIndex].y = green >> 2;
-        shapeData.singleColorToAlpha[_colorIndex].z = blue >> 2;
-        shapeData.singleColorToAlpha[_colorIndex].w = (int)(alpha * 64);
+        shapeData.singleColorToAlpha[_colorIndex].x = red;
+        shapeData.singleColorToAlpha[_colorIndex].y = green;
+        shapeData.singleColorToAlpha[_colorIndex].z = blue;
+        shapeData.singleColorToAlpha[_colorIndex].w = (int)(alpha * 255);
         _colorIndex++;
         return *this;
     }
     ShapeBuilder2D& singleColorToAlpha(int red, int green, int blue) {
-        return singleColorToAlpha(red, green, blue, 1.0/64);
+        return singleColorToAlpha(red, green, blue, 1.0/255);
     }
 
     void precompute3DCoordinatesOf2DSquareShape(float aspectRatio)
@@ -603,7 +617,7 @@ public:
 
     ShapeData2D build(float aspectRatio) {
         if (_fromBottomScreen) {
-            shapeData.squareInitialCoords.y += 192;
+            shapeData.squareInitialCoords.y += 192.0;
         }
 
         if (_shape == shape_Square) {
@@ -631,10 +645,10 @@ public:
         shapeBuilder._shape = shape_Square;
         shapeBuilder.shapeData.sourceScale.x = 1.0;
         shapeBuilder.shapeData.sourceScale.y = 1.0;
-        shapeBuilder.shapeData.squareInitialCoords.x = 0;
-        shapeBuilder.shapeData.squareInitialCoords.y = 0;
-        shapeBuilder.shapeData.squareInitialCoords.z = 256;
-        shapeBuilder.shapeData.squareInitialCoords.w = 192;
+        shapeBuilder.shapeData.squareInitialCoords.x = 0.0;
+        shapeBuilder.shapeData.squareInitialCoords.y = 0.0;
+        shapeBuilder.shapeData.squareInitialCoords.z = 256.0;
+        shapeBuilder.shapeData.squareInitialCoords.w = 192.0;
         shapeBuilder.shapeData.hudScale = SCREEN_SCALE;
         shapeBuilder.shapeData.corner = corner_PreservePosition;
         shapeBuilder.shapeData.zRange.x = -1.0;
@@ -718,25 +732,25 @@ public:
     }
     ShapeBuilder3D& fromPosition(int x, int y) {
         if (_shape == shape_Square) {
-            shapeData.squareInitialCoords.x = x;
-            shapeData.squareInitialCoords.y = y;
+            shapeData.squareInitialCoords.x = (float)x;
+            shapeData.squareInitialCoords.y = (float)y;
         }
         return *this;
     }
     ShapeBuilder3D& withSize(int width, int height) {
         if (_shape == shape_Square) {
-            shapeData.squareInitialCoords.z = width;
-            shapeData.squareInitialCoords.w = height;
+            shapeData.squareInitialCoords.z = (float)width;
+            shapeData.squareInitialCoords.w = (float)height;
         }
         return *this;
     }
     ShapeBuilder3D& includeOutOfBoundsPolygons() {
         if (_shape == shape_Square) {
-            int margin = 20;
+            float margin = 20;
             shapeData.squareInitialCoords.x = -margin;
             shapeData.squareInitialCoords.y = -margin;
-            shapeData.squareInitialCoords.z = 256 + margin*2;
-            shapeData.squareInitialCoords.w = 192 + margin*2;
+            shapeData.squareInitialCoords.z = 256.0 + margin*2;
+            shapeData.squareInitialCoords.w = 192.0 + margin*2;
         }
         return *this;
     }

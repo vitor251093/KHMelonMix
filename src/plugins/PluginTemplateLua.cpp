@@ -427,16 +427,8 @@ int run_ShapeBuilderTests(){
     return allGood;
 }
 
-int PluginTemplateLua::renderer_screenLayout() {
-    return screenLayout_Top;
-};
-
 int PluginTemplateLua::renderer_brightnessMode() {
-    return brightnessMode_TopScreen;
-}
-
-bool PluginTemplateLua::renderer_showOriginalUI() {
-    return false;
+    return brightnessMode_Default;
 }
 
 void PluginTemplateLua::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {

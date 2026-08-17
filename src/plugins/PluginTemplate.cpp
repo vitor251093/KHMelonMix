@@ -73,16 +73,8 @@ std::vector<ShapeData3D> PluginTemplate::renderer_topScreen_3DShapes() {
     return shapes;
 }
 
-int PluginTemplate::renderer_screenLayout() {
-    return screenLayout_Top;
-};
-
 int PluginTemplate::renderer_brightnessMode() {
-    return brightnessMode_TopScreen;
-}
-
-bool PluginTemplate::renderer_showOriginalUI() {
-    return false;
+    return brightnessMode_Default;
 }
 
 void PluginTemplate::applyAddonKeysToInputMaskOrTouchControls(u32* InputMask, u16* touchX, u16* touchY, bool* isTouching, u32* HotkeyMask, u32* HotkeyPress) {
