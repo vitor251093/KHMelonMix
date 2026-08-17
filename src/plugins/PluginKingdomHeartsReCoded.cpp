@@ -1851,9 +1851,6 @@ int PluginKingdomHeartsReCoded::renderer_brightnessMode()
         return brightnessMode_Default;
     }
 
-    if (_ShouldHideScreenForTransitions) {
-        return brightnessMode_BlackScreen;
-    }
     if (GameScene == gameScene_InGameWithMap            ||
         GameScene == gameScene_PauseMenu                ||
         GameScene == gameScene_CutsceneWithStaticImages ||
@@ -2894,7 +2891,7 @@ bool PluginKingdomHeartsReCoded::didMobiCutsceneEnded()
 
     if (isSaveLoaded()) {
         // the old cutscene ended, and a new cutscene started
-        return _NextCutscene != nullptr;
+        return _CutscenesQueue.size() > 1;
     }
 
     return false;
@@ -2908,7 +2905,7 @@ bool PluginKingdomHeartsReCoded::canReturnToGameAfterReplacementCutscene()
         // 1. the cutscene is over
         // 2. the old cutscene ended, and a new cutscene started, so it needs to be skipped as well
         // 3. the cutscene is unskippable, so even if it didn't end, we need to return
-        return !isCutsceneScene || _NextCutscene != nullptr || _IsUnskippableCutscene;
+        return !isCutsceneScene || _CutscenesQueue.size() > 1 || _IsUnskippableCutscene;
     }
 
     return true;

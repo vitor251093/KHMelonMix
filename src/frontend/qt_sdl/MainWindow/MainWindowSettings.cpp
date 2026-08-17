@@ -278,9 +278,6 @@ void MainWindowSettings::createVideoPlayer()
     connect(player.get(), &QMediaPlayer::mediaStatusChanged, [=](QMediaPlayer::MediaStatus status) {
         printf("======= MediaStatus: %d\n", status);
 
-        if (status == QMediaPlayer::BufferingMedia || status == QMediaPlayer::BufferedMedia) {
-            emuInstance->plugin->onReplacementCutsceneStarted();
-        }
         if (status == QMediaPlayer::EndOfMedia) {
             asyncStopVideo();
         }
@@ -421,7 +418,7 @@ void MainWindowSettings::stopVideo()
 
     showGame();
 
-    emuInstance->plugin->onReplacementCutsceneEnd();
+    emuInstance->plugin->skipIngameCutsceneAfterStoppingReplacementCutscene();
 }
 
 void MainWindowSettings::stopVideoForReload()

@@ -298,18 +298,16 @@ bool Plugin::gpuOpenGL_applyChangesToPolygon(int resolutionScale, s32 scaledPosi
 
 bool Plugin::togglePause()
 {
-    if (_RunningReplacementCutscene) {
+    if (_IsReplacementCutsceneRunning) {
         if (_ShowingCutsceneSkipMenu) {
             // the Skip/Continue menu owns pause state; ignore the pause hotkey
             return true;
         }
-        if (_PausedReplacementCutscene) {
-            _ShouldUnpauseReplacementCutscene = true;
-            _ShouldResumeCutsceneEmulation = true;
+        if (_ReplacementCutsceneIsPaused) {
+            unpauseReplacementCutscene();
         }
         else {
-            _ShouldPauseReplacementCutscene = true;
-            _ShouldPauseCutsceneEmulation = true;
+            showReplacementCutscenePauseMenu(0);
         }
         return true;
     }
@@ -337,7 +335,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
     // New behavior: pressing Start during an HD cutscene opens a Skip/Continue menu
     // (pausing the video) instead of skipping immediately. Gated by a setting so the
     // classic instant-skip behavior can be restored.
-    if (PauseInsteadOfSkipOnStart && _RunningReplacementCutscene && _CanSkipHdCutscene) {
+    if (_IsReplacementCutsceneRunning) {
         const u32 BTN_A     = (1 << 0);
         const u32 BTN_START = (1 << 3);
         const u32 BTN_UP    = (1 << 6);
@@ -348,45 +346,29 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         _LastCutsceneMenuButtons = pressed;
 
         if (!_ShowingCutsceneSkipMenu) {
-            if (!_PausedReplacementCutscene && (justPressed & BTN_START)) {
-                // open the menu and pause both the video and the emulator (so the
-                // background DS cutscene can't drift out of sync while the menu is up)
-                _ShowingCutsceneSkipMenu = true;
-                _CutsceneSkipMenuSelection = 0; // default to Continue
-                _ShouldShowCutsceneSkipMenu = true;
-                _ShouldPauseReplacementCutscene = true;
-                _ShouldPauseCutsceneEmulation = true;
+            if (!_ReplacementCutsceneIsPaused && (justPressed & BTN_START)) {
+                pauseReplacementCutscene();
                 _CutsceneMenuSoundRequest = 1; // enter
             }
         }
         else {
             if (justPressed & (BTN_UP | BTN_DOWN)) {
                 _CutsceneSkipMenuSelection = _CutsceneSkipMenuSelection == 0 ? 1 : 0;
-                _ShouldUpdateCutsceneSkipMenu = true;
+                updateReplacementCutscenePauseMenuSelection(_CutsceneSkipMenuSelection);
                 _CutsceneMenuSoundRequest = 2; // move
             }
             else if (justPressed & BTN_START) {
                 // Start always means Continue (matches the in-game menu)
-                _ShowingCutsceneSkipMenu = false;
-                _ShouldHideCutsceneSkipMenu = true;
-                _ShouldUnpauseReplacementCutscene = true;
-                _ShouldResumeCutsceneEmulation = true;
                 _CutsceneMenuSoundRequest = 3; // continue
+                resumeReplacementCutsceneThroughPauseMenu();
             }
             else if (justPressed & BTN_A) {
-                _ShowingCutsceneSkipMenu = false;
-                _ShouldHideCutsceneSkipMenu = true;
                 _CutsceneMenuSoundRequest = 4; // select
                 if (_CutsceneSkipMenuSelection == 1) {
-                    // Skip: keep the video paused/silent and hand off to the skip flow.
-                    _PausedReplacementCutscene = false; // let the skip branch below run
-                    _ShouldResumeCutsceneEmulation = true;
-                    _SkipDsCutscene = true;
+                    skipIngameCutsceneThroughPauseMenu();
                 }
                 else {
-                    // Continue: resume both video and emulation
-                    _ShouldUnpauseReplacementCutscene = true;
-                    _ShouldResumeCutsceneEmulation = true;
+                    resumeReplacementCutsceneThroughPauseMenu();
                 }
             }
             // B (and everything else) does nothing while the menu is open
@@ -401,21 +383,17 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         *InputMask |= BTN_A | BTN_START | BTN_UP | BTN_DOWN;
     }
 
-    // In menu mode a raw Start press must never skip directly; only the menu's
-    // "Skip" option (which sets _SkipDsCutscene) is allowed to trigger a skip.
-    bool startSkipPress = !PauseInsteadOfSkipOnStart && (((~(*InputMask)) & (1 << 3)) != 0);
-
-    if (_RunningReplacementCutscene && !_PausedReplacementCutscene && (_SkipDsCutscene || startSkipPress) && _CanSkipHdCutscene) { // Start (skip HD cutscene)
-        _SkipDsCutscene = true;
-        if (!_ShouldTerminateIngameCutscene) { // can only skip after DS cutscene was skipped
+    if (_SkipDsCutscene) { // Start (skip HD cutscene)
+        if (!_IsIngameCutsceneRunning) { // can only skip after DS cutscene was skipped
             _SkipDsCutscene = false;
-            _CanSkipHdCutscene = false;
-            _ShouldStopReplacementCutscene = true;
+            if (_IsReplacementCutsceneRunning) {
+                stopReplacementCutsceneAndResumeGame();
+            }
             *InputMask |= (1<<3);
         }
         else {
             if (_StartPressCount == 0) {
-                bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
+                bool requiresDoubleStart = (_CutscenesQueue[0]->dsScreensState & 4) == 4;
                 if (requiresDoubleStart) {
                     _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT*2 + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT;
                 }
@@ -426,11 +404,11 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         }
     }
 
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene) {
+    if (_IsReplacementCutsceneRunning) {
         if (_StartPressCount > 0) {
             _StartPressCount--;
 
-            bool requiresDoubleStart = (_CurrentCutscene->dsScreensState & 4) == 4;
+            bool requiresDoubleStart = (_CutscenesQueue[0]->dsScreensState & 4) == 4;
             if (requiresDoubleStart) {
                 if (_StartPressCount < CUTSCENE_SKIP_START_FRAMES_COUNT || _StartPressCount > CUTSCENE_SKIP_START_FRAMES_COUNT + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT) {
                     *InputMask &= ~(1<<3); // Start (skip DS cutscene)
@@ -454,7 +432,7 @@ bool Plugin::_superApplyAddonKeysToCutsceneMenu(u32* AddonMask, u32* AddonPress,
     u32 navPress = (*AddonPress) & (((u32)1 << upBit) | ((u32)1 << downBit));
     if (navPress != 0) {
         _CutsceneSkipMenuSelection = _CutsceneSkipMenuSelection == 0 ? 1 : 0;
-        _ShouldUpdateCutsceneSkipMenu = true;
+        updateReplacementCutscenePauseMenuSelection(_CutsceneSkipMenuSelection == 0 ? 1 : 0);
         _CutsceneMenuSoundRequest = 2; // move
     }
 
@@ -734,61 +712,9 @@ std::string Plugin::tmpTextureFilePath(std::string texture) {
     return fullPathTmp.string();
 }
 
-bool Plugin::ShouldTerminateIngameCutscene() {return _ShouldTerminateIngameCutscene;}
-bool Plugin::StoppedIngameCutscene() {
-    if (_StoppedIngameCutscene) {
-        _StoppedIngameCutscene = false;
-        return true;
-    }
-    return false;
-}
-bool Plugin::ShouldStartReplacementCutscene() {
-    if (_ShouldStartReplacementCutscene) {
-        _ShouldStartReplacementCutscene = false;
-        return true;
-    }
-    return false;
-}
-bool Plugin::StartedReplacementCutscene() {
-    if (_StartedReplacementCutscene) {
-        _StartedReplacementCutscene = false;
-        return true;
-    }
-    return false;
-}
-bool Plugin::RunningReplacementCutscene() {return _RunningReplacementCutscene;}
-bool Plugin::ShouldPauseReplacementCutscene() {
-    if (_ShouldPauseReplacementCutscene) {
-        _ShouldPauseReplacementCutscene = false;
-        _PausedReplacementCutscene = true;
-        return true;
-    }
-    return false;
-}
-bool Plugin::ShouldUnpauseReplacementCutscene() {
-    if (_ShouldUnpauseReplacementCutscene) {
-        _ShouldUnpauseReplacementCutscene = false;
-        _PausedReplacementCutscene = false;
-        return true;
-    }
-    return false;
-}
-bool Plugin::ShouldStopReplacementCutscene() {
-    if (_ShouldStopReplacementCutscene) {
-        _ShouldStopReplacementCutscene = false;
-        return true;
-    }
-    return false;
-}
-bool Plugin::ShouldReturnToGameAfterCutscene() {return _ShouldReturnToGameAfterCutscene;}
-bool Plugin::ShouldUnmuteAfterCutscene() {
-    if (_ShouldUnmuteAfterCutscene) {
-        _ShouldUnmuteAfterCutscene = false;
-        return true;
-    }
-    return false;
-}
-CutsceneEntry* Plugin::CurrentCutscene() {return _CurrentCutscene;};
+bool Plugin::IsReplacementCutsceneRunning() {return _IsReplacementCutsceneRunning;}
+
+CutsceneEntry* Plugin::CurrentCutscene() {return _CutscenesQueue[0];};
 
 CutsceneEntry* Plugin::detectTopScreenMobiCutscene()
 {
@@ -845,118 +771,158 @@ void Plugin::refreshCutscene()
     return;
 #endif
 
-    bool isCutsceneScene = isCutsceneGameScene();
+    if (startReplacementCutscene == nullptr)
+    {
+        return;
+    }
+
     CutsceneEntry* cutscene = detectCutscene();
 
-    if (_ReplayLimitCount > 0) {
-        _ReplayLimitCount--;
+    if (!_IsReplacementCutsceneRunning && !_IsIngameCutsceneRunning && _IsIngameOrReplacementCutsceneRunning && canReturnToGameAfterReplacementCutscene()) {
+        _StartPressCount = 0;
+
+        _IsIngameOrReplacementCutsceneRunning = false;
+        _LastCutscene = _CutscenesQueue[0];
+        _CutscenesQueue.erase(_CutscenesQueue.begin());
+        if (!_CutscenesQueue.empty())
+        {
+            printf("Playing next cutscene on queue: %s\n", _CutscenesQueue[0]->Name);
+            _PlayFrameLimitCount = 10;
+            _IsIngameCutsceneRunning = true;
+            _IsReplacementCutsceneRunning = true;
+            _IsIngameOrReplacementCutsceneRunning = true;
+            _IsUnskippableCutscene = isUnskippableMobiCutscene(_CutscenesQueue[0]);
+            startReplacementCutscene(_CutscenesQueue[0]);
+        }
+        else
+        {
+            printf("Resuming game\n");
+            resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded();
+        }
+
+        _ReplayFrameLimitCount = 60;
+
+        if (_CutscenesQueue.empty()) {
+            u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
+            if (cutsceneAddress != 0) {
+                nds->ARM7Write32(cutsceneAddress, 0x0);
+            }
+
+            u32 cutsceneAddress2 = detectBottomScreenMobiCutsceneAddress();
+            if (cutsceneAddress2 != 0) {
+                nds->ARM7Write32(cutsceneAddress2, 0x0);
+            }
+        }
+    }
+
+    if (_ReplayFrameLimitCount > 0) {
+        _ReplayFrameLimitCount--;
         if (cutscene != nullptr && cutscene->usAddress == _LastCutscene->usAddress) {
             cutscene = nullptr;
         }
     }
 
-    
+    if (_PlayFrameLimitCount > 0) {
+        _PlayFrameLimitCount--;
+    }
+
+    if (_PlayFrameLimitCount == 0 && _IsIngameCutsceneRunning && didMobiCutsceneEnded()) {
+        printf("Ingame cutscene terminated\n");
+
+        _IsIngameCutsceneRunning = false;
+        pauseEmulatorAfterIngameCutsceneEndedBeforeReplacementCutscene();
+    }
+
     if (cutscene != nullptr) {
-        onIngameCutsceneIdentified(cutscene);
-    }
+        std::string path = replacementCutsceneFilePath(cutscene);
 
-    // Natural progression for all cutscenes
-    if (_ShouldTerminateIngameCutscene && !_RunningReplacementCutscene && isCutsceneScene) {
-        _ShouldStartReplacementCutscene = true;
-    }
-
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene && didMobiCutsceneEnded()) {
-        onTerminateIngameCutscene();
-    }
-
-    if (_ShouldReturnToGameAfterCutscene && canReturnToGameAfterReplacementCutscene()) {
-        onReturnToGameAfterCutscene();
-    }
-}
-
-void Plugin::onIngameCutsceneIdentified(CutsceneEntry* cutscene) {
-    if (_CurrentCutscene != nullptr && _CurrentCutscene->usAddress == cutscene->usAddress) {
-        return;
-    }
-
-    std::string path = replacementCutsceneFilePath(cutscene);
-    if (path == "") {
-        return;
-    }
-
-    if (_CurrentCutscene != nullptr) {
-        _NextCutscene = cutscene;
-        return;
-    }
-
-    printf("Preparing to load cutscene: %s\n", cutscene->Name);
-
-    _CanSkipHdCutscene = true;
-    _CurrentCutscene = cutscene;
-    _NextCutscene = nullptr;
-    _ShouldTerminateIngameCutscene = true;
-    _IsUnskippableCutscene = isUnskippableMobiCutscene(cutscene);
-}
-void Plugin::onTerminateIngameCutscene() {
-    if (_CurrentCutscene == nullptr) {
-        return;
-    }
-    printf("Ingame cutscene terminated\n");
-    _ShouldTerminateIngameCutscene = false;
-    _StoppedIngameCutscene = true;
-
-    if (_IsUnskippableCutscene) {
-        _StoppedIngameCutscene = false;
+        int targetAddress = cutscene->usAddress;
+        bool isInQueue = std::find_if(_CutscenesQueue.begin(), _CutscenesQueue.end(),
+            [targetAddress](const CutsceneEntry* entry) {
+                return entry != nullptr && entry->usAddress == targetAddress;
+            }) != _CutscenesQueue.end();
+        if (!isInQueue && !path.empty()) {
+            if (!_CutscenesQueue.empty()) {
+                printf("Adding cutscene to queue: %s\n", cutscene->Name);
+                _CutscenesQueue.push_back(cutscene);
+            }
+            else {
+                printf("Preparing to load cutscene: %s\n", cutscene->Name);
+                _PlayFrameLimitCount = 10;
+                _IsIngameCutsceneRunning = true;
+                _IsReplacementCutsceneRunning = true;
+                _IsIngameOrReplacementCutsceneRunning = true;
+                _CutscenesQueue.push_back(cutscene);
+                _IsUnskippableCutscene = isUnskippableMobiCutscene(_CutscenesQueue[0]);
+                startReplacementCutscene(_CutscenesQueue[0]);
+            }
+        }
     }
 }
-void Plugin::onReplacementCutsceneStarted() {
-    printf("Cutscene started\n");
-    _ShouldStartReplacementCutscene = false;
-    _StartedReplacementCutscene = true;
-    _RunningReplacementCutscene = true;
+
+void Plugin::pauseReplacementCutscene()
+{
+    _ShowingCutsceneSkipMenu = true;
+    _ReplacementCutsceneIsPaused = true;
+    _CutsceneSkipMenuSelection = 0;
+
+    showReplacementCutscenePauseMenu(0);
 }
 
-void Plugin::onReplacementCutsceneEnd() {
-    printf("Replacement cutscene ended\n");
-    _StartedReplacementCutscene = false;
-    _RunningReplacementCutscene = false;
-    _ShouldStopReplacementCutscene = false;
-    _ShouldReturnToGameAfterCutscene = true;
-    _ShouldHideScreenForTransitions = false;
+void Plugin::skipIngameCutsceneThroughPauseMenu()
+{
+    printf("Skip ingame cutscene through pause menu\n");
 
-    // Tear down the skip/continue menu if the cutscene ended while it was open
-    if (_ShowingCutsceneSkipMenu) {
-        _ShouldHideCutsceneSkipMenu = true;
-    }
+    _ShowingCutsceneSkipMenu = false;
+    _ReplacementCutsceneIsPaused = false;
+    _CutsceneSkipMenuSelection = 0;
+
+    _SkipDsCutscene = true;
+}
+
+void Plugin::resumeReplacementCutsceneThroughPauseMenu()
+{
+    _ShowingCutsceneSkipMenu = false;
+    _ReplacementCutsceneIsPaused = false;
+    _CutsceneSkipMenuSelection = 0;
+
+    unpauseReplacementCutscene();
+}
+
+void Plugin::stopReplacementCutsceneAndResumeGame() {
+    printf("Stop replacement cutscene and resume game\n");
+
     _ShowingCutsceneSkipMenu = false;
     _CutsceneSkipMenuSelection = 0;
     _LastCutsceneMenuButtons = 0;
-    _ShouldPauseCutsceneEmulation = false; // returning to game already resumes the emulator
+
+    if (_CutscenesQueue.size() <= 1)
+    {
+        _IsReplacementCutsceneRunning = false;
+        stopReplacementCutsceneAndResumeEmulator();
+    }
 }
-void Plugin::onReturnToGameAfterCutscene() {
-    printf("Returning to the game\n");
-    _StartPressCount = 0;
-    _IsUnskippableCutscene = false;
-    _ShouldStartReplacementCutscene = false;
-    _StartedReplacementCutscene = false;
-    _RunningReplacementCutscene = false;
-    _ShouldReturnToGameAfterCutscene = false;
-    _ShouldUnmuteAfterCutscene = true;
 
-    _LastCutscene = _CurrentCutscene;
-    _CurrentCutscene = nullptr;
-    _ReplayLimitCount = 30;
+void Plugin::skipIngameCutsceneAfterStoppingReplacementCutscene()
+{
+    printf("Resume game after stopping replacement cutscene\n");
 
-    if (_NextCutscene == nullptr) {
-        u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
-        if (cutsceneAddress != 0) {
-            nds->ARM7Write32(cutsceneAddress, 0x0);
+    if (_CutscenesQueue.size() <= 1)
+    {
+        if (_IsIngameCutsceneRunning)
+        {
+            _SkipDsCutscene = true;
         }
-
-        u32 cutsceneAddress2 = detectBottomScreenMobiCutsceneAddress();
-        if (cutsceneAddress2 != 0) {
-            nds->ARM7Write32(cutsceneAddress2, 0x0);
+        else
+        {
+            _IsReplacementCutsceneRunning = false;
+            resumeHiddenEmulatorAfterReplacementCutsceneStopped();
         }
+    }
+    else
+    {
+        _IsReplacementCutsceneRunning = false;
+        resumeHiddenEmulatorAfterReplacementCutsceneStopped();
     }
 }
 
@@ -1306,7 +1272,7 @@ bool Plugin::isMouseCursorGrabbed() {
 
 bool Plugin::_superShouldRenderFrame()
 {
-    if (_ShouldTerminateIngameCutscene && _RunningReplacementCutscene)
+    if (_IsIngameOrReplacementCutsceneRunning)
     {
         return false;
     }
@@ -1385,7 +1351,6 @@ void Plugin::_superLoadConfigs(
     DaysDisableHisMemories = getBoolConfig(root + ".DaysDisableHisMemories");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
-    PauseInsteadOfSkipOnStart = !getBoolConfig(root + ".InstantSkipCutsceneOnStart");
     UIScale = getIntConfig(root + ".HUDScale");
     UIScale = (UIScale == 0) ? 4 : UIScale;
     SelectedAudioPack = getStringConfig(root + ".AudioPack");

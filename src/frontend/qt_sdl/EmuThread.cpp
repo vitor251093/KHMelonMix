@@ -221,6 +221,36 @@ void EmuThread::run()
                 emuInstance->plugin->setNds(emuInstance->getNDS());
                 emuInstance->plugin->onLoadROM();
             }
+            if (emuInstance->plugin->startReplacementCutscene == nullptr)
+            {
+                emuInstance->plugin->startReplacementCutscene = [this](Plugins::CutsceneEntry* cutscene) {
+                    startReplacementCutscene(cutscene);
+                };
+                emuInstance->plugin->showReplacementCutscenePauseMenu = [this](int selection) {
+                    emit windowPauseVideo();
+                    emit windowShowCutsceneSkipMenu(selection);
+                };
+                emuInstance->plugin->updateReplacementCutscenePauseMenuSelection = [this](int selection) {
+                    emit windowUpdateCutsceneSkipMenu(selection);
+                };
+                emuInstance->plugin->unpauseReplacementCutscene = [this]() {
+                    emit windowUnpauseVideo();
+                    emit windowHideCutsceneSkipMenu();
+                };
+                emuInstance->plugin->stopReplacementCutsceneAndResumeEmulator = [this]() {
+                    emit windowStopVideo();
+                    emuStatus = emuStatus_Running;
+                };
+                emuInstance->plugin->resumeHiddenEmulatorAfterReplacementCutsceneStopped = [this]() {
+                    emuStatus = emuStatus_Running;
+                };
+                emuInstance->plugin->pauseEmulatorAfterIngameCutsceneEndedBeforeReplacementCutscene = [this]() {
+                    emuStatus = emuStatus_Paused;
+                };
+                emuInstance->plugin->resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded = [this]() {
+                    resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded();
+                };
+            }
             bool shouldStartPlugin = emuInstance->plugin->shouldStartPlugin;
             if (shouldStartPlugin)
             {
@@ -832,7 +862,7 @@ void EmuThread::handleMessages()
 
 bool EmuThread::pluginShouldFastForward()
 {
-    return emuInstance->plugin->ShouldTerminateIngameCutscene() && emuInstance->plugin->RunningReplacementCutscene();
+    return emuInstance->plugin->IsIngameCutsceneRunning() && emuInstance->plugin->IsReplacementCutsceneRunning();
 }
 
 void EmuThread::refreshPluginGameScene()
@@ -842,6 +872,53 @@ void EmuThread::refreshPluginGameScene()
     {
         emuInstance->osdAddMessage(0, emuInstance->plugin->getGameSceneName());
     }
+}
+
+void EmuThread::startReplacementCutscene(Plugins::CutsceneEntry* cutscene)
+{
+    std::string path = emuInstance->plugin->replacementCutsceneFilePath(cutscene);
+
+    // disabling fast-foward, otherwise it will affect the cutscenes
+    emuInstance->setVSyncGL(true);
+
+    emuStatus = emuStatus_Paused;
+    QString filePath = QString::fromUtf8(path.c_str());
+    std::string subtitlesPath = emuInstance->plugin->replacementCutsceneSubtitlesFilePath(cutscene);
+    QString subtitlesFilePath = QString::fromUtf8(subtitlesPath.c_str());
+    emit windowStartVideo(filePath, subtitlesFilePath, emuInstance->plugin->cutsceneMenuLanguage());
+
+    emuStatus = emuStatus_Running;
+
+    // enable mute fast mode
+    emuInstance->audioVolume = 0;
+
+    emuInstance->targetFPS = 1000.0;
+
+    int newVideoRenderer = renderer3D_Software;
+
+    emuInstance->renderLock.lock();
+    if (videoRenderer != newVideoRenderer) {
+        videoRenderer = newVideoRenderer;
+        updateRenderer();
+    }
+    emuInstance->renderLock.unlock();
+}
+
+void EmuThread::resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded()
+{
+    emuStatus = emuStatus_Running;
+
+    // disable mute fast mode
+    Config::Table& globalCfg = emuInstance->getGlobalConfig();
+
+    auto& instcfg = emuInstance->getLocalConfig();
+    emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
+
+    emuInstance->targetFPS = globalCfg.GetDouble("TargetFPS");
+
+    videoRenderer = globalCfg.GetInt("3D.Renderer");
+
+    videoSettingsDirty = true;
 }
 
 void EmuThread::refreshPluginState()
@@ -903,113 +980,8 @@ void EmuThread::refreshPluginState()
     }
 
 
-    if (emuInstance->plugin->ShouldStopReplacementCutscene()) {
-        emit windowStopVideo();
-    }
-
-    if (emuInstance->plugin->ShouldPauseReplacementCutscene()) {
-        emit windowPauseVideo();
-    }
-
-    if (emuInstance->plugin->ShouldUnpauseReplacementCutscene()) {
-        emit windowUnpauseVideo();
-    }
-
-    if (emuInstance->plugin->ShouldPauseCutsceneEmulation()) {
-        // Freeze the whole emulator (not just the video) while the cutscene is
-        // paused, so the background DS emulation stays in sync with the video.
-        emuStatus = emuStatus_Paused;
-    }
-
-    if (emuInstance->plugin->ShouldResumeCutsceneEmulation()) {
-        emuStatus = emuStatus_Running;
-        enableInvisibleFastMode = true;
-    }
-
-    if (emuInstance->plugin->ShouldShowCutsceneSkipMenu()) {
-        emit windowShowCutsceneSkipMenu(emuInstance->plugin->CutsceneSkipMenuSelection());
-    }
-
-    if (emuInstance->plugin->ShouldUpdateCutsceneSkipMenu()) {
-        emit windowUpdateCutsceneSkipMenu(emuInstance->plugin->CutsceneSkipMenuSelection());
-    }
-
-    if (emuInstance->plugin->ShouldHideCutsceneSkipMenu()) {
-        emit windowHideCutsceneSkipMenu();
-    }
-
     if (int menuSound = emuInstance->plugin->CutsceneMenuSoundToPlay()) {
         emit windowPlayCutsceneMenuSound(menuSound);
-    }
-
-    if (emuInstance->plugin->ShouldReturnToGameAfterCutscene()) {
-        emuStatus = emuStatus_Running;
-        disableInvisibleFastMode = true;
-    }
-
-    if (emuInstance->plugin->ShouldUnmuteAfterCutscene()) {
-        emuStatus = emuStatus_Running;
-        disableInvisibleFastMode = true;
-    }
-
-
-    if (emuInstance->plugin->ShouldTerminateIngameCutscene()) {
-        enableInvisibleFastMode = true;
-    }
-
-    if (emuInstance->plugin->ShouldStartReplacementCutscene()) {
-        auto cutscene = emuInstance->plugin->CurrentCutscene();
-        if (cutscene != nullptr) {
-            std::string path = emuInstance->plugin->replacementCutsceneFilePath(cutscene);
-            if (path != "") {
-                // disabling fast-foward, otherwise it will affect the cutscenes
-                emuInstance->setVSyncGL(true);
-
-                emuStatus = emuStatus_Paused;
-                QString filePath = QString::fromUtf8(path.c_str());
-                std::string subtitlesPath = emuInstance->plugin->replacementCutsceneSubtitlesFilePath(cutscene);
-                QString subtitlesFilePath = QString::fromUtf8(subtitlesPath.c_str());
-                emit windowStartVideo(filePath, subtitlesFilePath, emuInstance->plugin->cutsceneMenuLanguage());
-            }
-        }
-    }
-
-    if (emuInstance->plugin->StartedReplacementCutscene()) {
-        emuStatus = emuStatus_Running;
-        enableInvisibleFastMode = true;
-    }
-
-    if (emuInstance->plugin->StoppedIngameCutscene()) {
-        emuStatus = emuStatus_Paused;
-    }
-
-    if (enableInvisibleFastMode)
-    {
-        emuInstance->audioVolume = 0;
-
-        emuInstance->targetFPS = 1000.0;
-
-        int newVideoRenderer = renderer3D_Software;
-
-        emuInstance->renderLock.lock();
-        if (videoRenderer != newVideoRenderer) {
-            videoRenderer = newVideoRenderer;
-            updateRenderer();
-        }
-        emuInstance->renderLock.unlock();
-    }
-    if (disableInvisibleFastMode)
-    {
-        Config::Table& globalCfg = emuInstance->getGlobalConfig();
-
-        auto& instcfg = emuInstance->getLocalConfig();
-        emuInstance->audioVolume = instcfg.GetInt("Audio.Volume");
-
-        emuInstance->targetFPS = globalCfg.GetDouble("TargetFPS");
-
-        videoRenderer = globalCfg.GetInt("3D.Renderer");
-
-        videoSettingsDirty = true;
     }
 }
 

@@ -253,31 +253,15 @@ public:
     // (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es). Defaults to English.
     virtual int cutsceneMenuLanguage() { return 1; }
 
-    bool ShouldTerminateIngameCutscene();
-    bool StoppedIngameCutscene();
-    bool ShouldStartReplacementCutscene();
-    bool StartedReplacementCutscene();
-    bool RunningReplacementCutscene();
-    bool ShouldPauseReplacementCutscene();
-    bool ShouldUnpauseReplacementCutscene();
-    bool ShouldStopReplacementCutscene();
-    bool ShouldReturnToGameAfterCutscene();
-    bool ShouldUnmuteAfterCutscene();
+    bool IsIngameCutsceneRunning() {return _IsIngameCutsceneRunning;}
+    bool IsReplacementCutsceneRunning();
     CutsceneEntry* CurrentCutscene();
 
-    inline bool ShouldShowCutsceneSkipMenu() { return checkAndResetBool(_ShouldShowCutsceneSkipMenu); }
-    inline bool ShouldHideCutsceneSkipMenu() { return checkAndResetBool(_ShouldHideCutsceneSkipMenu); }
-    inline bool ShouldUpdateCutsceneSkipMenu() { return checkAndResetBool(_ShouldUpdateCutsceneSkipMenu); }
     inline int CutsceneSkipMenuSelection() { return _CutsceneSkipMenuSelection; }
 
     // One-shot sound request for the cutscene pause menu.
     // 1 = enter, 2 = move (up/down), 3 = continue, 4 = select; 0 = none.
     inline int CutsceneMenuSoundToPlay() { int v = _CutsceneMenuSoundRequest; _CutsceneMenuSoundRequest = 0; return v; }
-
-    // Pause/resume the whole emulator (not just the video) while an HD cutscene is
-    // paused, so the background DS emulation and the video can't drift out of sync.
-    inline bool ShouldPauseCutsceneEmulation() { return checkAndResetBool(_ShouldPauseCutsceneEmulation); }
-    inline bool ShouldResumeCutsceneEmulation() { return checkAndResetBool(_ShouldResumeCutsceneEmulation); }
 
     virtual CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
     virtual u32 detectTopScreenMobiCutsceneAddress() {return 0;};
@@ -293,11 +277,20 @@ public:
 
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
-    void onIngameCutsceneIdentified(CutsceneEntry* cutscene);
-    void onTerminateIngameCutscene();
-    void onReplacementCutsceneStarted();
-    void onReplacementCutsceneEnd();
-    void onReturnToGameAfterCutscene();
+    void pauseReplacementCutscene();
+    void skipIngameCutsceneThroughPauseMenu();
+    void resumeReplacementCutsceneThroughPauseMenu();
+    void stopReplacementCutsceneAndResumeGame();
+    void skipIngameCutsceneAfterStoppingReplacementCutscene();
+
+    std::function<void(CutsceneEntry*)> startReplacementCutscene = nullptr;
+    std::function<void(int)> showReplacementCutscenePauseMenu = nullptr;
+    std::function<void(int)> updateReplacementCutscenePauseMenuSelection = nullptr;
+    std::function<void()> unpauseReplacementCutscene = nullptr;
+    std::function<void()> stopReplacementCutsceneAndResumeEmulator = nullptr;
+    std::function<void()> resumeHiddenEmulatorAfterReplacementCutsceneStopped = nullptr;
+    std::function<void()> pauseEmulatorAfterIngameCutsceneEndedBeforeReplacementCutscene = nullptr;
+    std::function<void()> resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded = nullptr;
 
     inline bool shouldStartBackgroundMusic() { return checkAndResetBool(_ShouldStartReplacementBgmMusic); }
     inline bool shouldStopBackgroundMusic() { return checkAndResetBool(_ShouldStopReplacementBgmMusic); }
@@ -466,7 +459,6 @@ protected:
     bool DaysDisableHisMemories = false;
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
-    bool PauseInsteadOfSkipOnStart = true;
     bool SubtitlesEnabled = false;
     int JoystickConfirmIndex = 0;
     std::string SelectedAudioPack = "";
@@ -476,35 +468,21 @@ protected:
     std::map<std::string, TextureEntry> texturesIndex;
 
     int _StartPressCount = 0;
-    int _ReplayLimitCount = 0;
-    bool _CanSkipHdCutscene = false;
+    int _PlayFrameLimitCount = 0;
+    int _ReplayFrameLimitCount = 0;
     bool _SkipDsCutscene = false;
     bool _IsUnskippableCutscene = false;
-    bool _ShouldTerminateIngameCutscene = false;
-    bool _StoppedIngameCutscene = false;
-    bool _ShouldStartReplacementCutscene = false;
-    bool _StartedReplacementCutscene = false;
-    bool _RunningReplacementCutscene = false;
-    bool _PausedReplacementCutscene = false;
-    bool _ShouldPauseReplacementCutscene = false;
-    bool _ShouldUnpauseReplacementCutscene = false;
-    bool _ShouldStopReplacementCutscene = false;
-    bool _ShouldReturnToGameAfterCutscene = false;
-    bool _ShouldUnmuteAfterCutscene = false;
-    bool _ShouldHideScreenForTransitions = false;
+    bool _IsIngameCutsceneRunning = false;
+    bool _IsReplacementCutsceneRunning = false;
+    bool _IsIngameOrReplacementCutsceneRunning = false;
+    bool _ReplacementCutsceneIsPaused = false;
 
     bool _ShowingCutsceneSkipMenu = false;
     int _CutsceneSkipMenuSelection = 0; // 0 = Continue, 1 = Skip
-    bool _ShouldShowCutsceneSkipMenu = false;
-    bool _ShouldHideCutsceneSkipMenu = false;
-    bool _ShouldUpdateCutsceneSkipMenu = false;
-    bool _ShouldPauseCutsceneEmulation = false;
-    bool _ShouldResumeCutsceneEmulation = false;
     u32 _LastCutsceneMenuButtons = 0; // held-button snapshot for rising-edge detection
     int _CutsceneMenuSoundRequest = 0; // 1=enter, 2=move, 3=continue, 4=select; 0=none
 
-    CutsceneEntry* _CurrentCutscene = nullptr;
-    CutsceneEntry* _NextCutscene = nullptr;
+    std::vector<CutsceneEntry*> _CutscenesQueue = {};
     CutsceneEntry* _LastCutscene = nullptr;
 
 
