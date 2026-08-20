@@ -2776,11 +2776,8 @@ bool PluginKingdomHeartsDays::didMobiCutsceneEnded()
 bool PluginKingdomHeartsDays::didInEngineCutsceneEnded()
 {
     if (!isInEngineCutsceneGameScene()) {
-        printf("1\n");
         return true;
     }
-
-    return false; // TODO: KH Remove this line
 
     u32 dialogAddress = detectTopScreenInEngineCutsceneAddress();
     if (dialogAddress != 0) {
