@@ -147,6 +147,7 @@ private:
     bool SwitchTargetPressOnHold = false;
 
     std::array<CutsceneEntry, 46> Cutscenes;
+    std::array<CutsceneEntry, 33> Dialogues;
     u32 cutscenesAddressOffset = 0;
 
     int GameLanguageIndex = 0;
@@ -154,12 +155,17 @@ private:
 
     int detectGameScene() override;
 
-    u32 getMobiCutsceneAddress(CutsceneEntry* entry);
+    u32 getCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) override;
+    CutsceneEntry* getInEngineCutsceneByAddress(u32 cutsceneAddressValue) override;
     u32 detectTopScreenMobiCutsceneAddress() override;
+    u32 detectTopScreenInEngineCutsceneAddress() override;
     u32 detectBottomScreenMobiCutsceneAddress() override;
+    bool isMobiCutsceneGameScene() override;
+    bool isInEngineCutsceneGameScene() override;
     bool isCutsceneGameScene() override;
     bool didMobiCutsceneEnded() override;
+    bool didInEngineCutsceneEnded() override;
     bool canReturnToGameAfterReplacementCutscene() override;
 
     // Music replacement system

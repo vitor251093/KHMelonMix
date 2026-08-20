@@ -418,7 +418,7 @@ void MainWindowSettings::stopVideo()
 
     showGame();
 
-    emuInstance->plugin->skipIngameCutsceneAfterReplacementCutsceneFinishesNaturally();
+    emuInstance->plugin->skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNaturally();
 }
 
 void MainWindowSettings::stopVideoForReload()

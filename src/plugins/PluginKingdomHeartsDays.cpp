@@ -20,6 +20,11 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define IS_MAIN_MENU_JP      0x0204288d
 #define IS_MAIN_MENU_JP_REV1 0x0204284d
 
+#define DIALOG_ADDRESS_US      0x02042444 // may also be 0x020423fc, 0x02047348, 0x0204bc14
+#define DIALOG_ADDRESS_EU      0x02042464 // TODO: KH Unconfirmed (calculated)
+#define DIALOG_ADDRESS_JP      0x020428a4 // TODO: KH Unconfirmed (calculated)
+#define DIALOG_ADDRESS_JP_REV1 0x02042864 // TODO: KH Unconfirmed (calculated)
+
 // 0x00 => cannot control (ingame cutscenes, or not ingame at all); 0x01 => can control
 #define IS_CHARACTER_CONTROLLABLE_US      0x02042460
 #define IS_CHARACTER_CONTROLLABLE_EU      0x02042480 // TODO: KH Unconfirmed (calculated)
@@ -255,52 +260,88 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 46> {{
-        {"802",    "802_mm", "802_opening",                       0x088b2e00, 0x08b3d400, 0x0876e800, 0},
-        {"803",    "803",    "803_meet_xion",                     0x0987ec00, 0x09b09200, 0x097c8800, 0},
-        {"804",    "804",    "804_roxas_recusant_sigil",          0x09ae9400, 0x09d73a00, 0x09a4e000, 0},
-        {"805",    "805",    "805_the_dark_margin",               0x09b80600, 0x09e0ac00, 0x09aeb200, 0},
-        {"806",    "806",    "806_sora_entering_pod",             0x09e83800, 0x0a10de00, 0x09e0ba00, 0},
-        {"808",    "808",    "808_sunset_memory",                 0x09f24c00, 0x0a1af200, 0x09eb2e00, 0},
-        {"809",    "809",    "809_xions_defeat",                  0x09f79400, 0x0a203a00, 0x09f0ac00, 0},
-        {"810",    "810",    "810_the_main_in_black_reflects",    0x09ff8000, 0x0a282600, 0x09f8d400, 0},
-        {"813",    "813",    "813_xions_defeat",                  0x0a13f600, 0x0a3c9c00, 0x0a0e1600, 0},
-        {"814",    "814",    "814_sora_walk",                     0x0a677c00, 0x0a902200, 0x0a64f000, 0},
-        {"815",    "815",    "815_sora_release_kairi",            0x0a6e4200, 0x0a96e800, 0x0a6bf000, 0},
-        {"816",    "816",    "816_kairi_memories",                0x0a7a9200, 0x0aa33800, 0x0a78ca00, 0},
-        {"817",    "817_mm", "817_namine_and_diz",                0x0a857600, 0x0aae1c00, 0x0a845800, 0},
-        {"818",    "818",    "818_why_the_sun_sets_red",          0x0ab4be00, 0x0add6400, 0x0ab57800, 0},
-        {"819",    "819",    "819_sora_wakes_up",                 0x0afeac00, 0x0afeac00, 0x0afeac00, 0}, // double cutscene complement
-        {"821",    "821",    "821_snarl_of_memories",             0x0b043e00, 0x0b2ce400, 0x0b084a00, 0},
-        {"822",    "822",    "822_riku_takes_care_of_xion",       0x0b514600, 0x0b79ec00, 0x0b57ea00, 0},
-        {"823",    "823",    "823_roxas_passes_by",               0x0b5b5e00, 0x0b840400, 0x0b626e00, 0},
-        {"824",    "824",    "824_xions_dream",                   0x0b65a200, 0x0b8e4800, 0x0b6d1800, 0},
-        {"825",    "825",    "825_xions_capture",                 0x0b8a7a00, 0x0bb32000, 0x0b937600, 0},
-        {"826",    "826",    "826_hollow_bastion_memories",       0x0bd74600, 0x0bffec00, 0x0be21a00, 0},
-        {"827",    "827",    "827_agrabah_keyhole_memory",        0x0be7e000, 0x0c108600, 0x0bf35400, 0},
-        {"828",    "828",    "828_xion_and_riku",                 0x0bedf200, 0x0c169800, 0x0bf9ae00, 0},
-        {"829",    "829",    "829_rikus_resolve",                 0x0c76a800, 0x0c9f4e00, 0x0c873400, 0},
-        {"830",    "830_mm", "830_mickey_and_riku_ansem",         0x0c863a00, 0x0caee000, 0x0c981000, 0},
-        {"831",    "831",    "831_xion_and_namine",               0x0ca47c00, 0x0ccd2200, 0x0cb79400, 0},
-        {"832",    "832",    "832_xion_and_axel_face_off",        0x0cb01c00, 0x0cd8c200, 0x0cc3b000, 0},
-        {"833",    "833_mm", "833_xion_attacks",                  0x0cee2000, 0x0d16c600, 0x0d043200, 0},
-        {"834",    "834",    "834_winner",                        0x0d45bc00, 0x0d6e6200, 0x0d5f7800, 0},
-        {"835",    "835",    "835_skyscrapper_battle",            0x0d5e0400, 0x0d86aa00, 0x0d782e00, 0},
-        {"836",    "836_mm", "836_roxas_and_riku",                0x0d6f9400, 0x0d983a00, 0x0d8a7e00, 0},
-        {"837",    "837",    "837_riku_turns_into_ansem",         0x0da1ea00, 0x0dca9000, 0x0dbed000, 0},
-        {"838",    "838",    "838_clocktower",                    0x0e063600, 0x0e063600, 0x0e063600, 0}, // double cutscene complement
-        {"839_de", "839",    "839_riku_please_stop_him_de",       0x0e0db400, 0x0e0db400, 0x0e0db400, 0}, // double cutscene complement
-        {"839_en", "839",    "839_riku_please_stop_him_en",       0x0e0e1200, 0x0e0e1200, 0x0e0e1200, 0}, // double cutscene complement
-        {"839_es", "839",    "839_riku_please_stop_him_es",       0x0e0e6c00, 0x0e0e6c00, 0x0e0e6c00, 0}, // double cutscene complement
-        {"839_fr", "839",    "839_riku_please_stop_him_fr",       0x0e0ecc00, 0x0e0ecc00, 0x0e0ecc00, 0}, // double cutscene complement
-        {"839_it", "839",    "839_riku_please_stop_him_it",       0x0e0f1600, 0x0e0f1600, 0x0e0f1600, 0}, // double cutscene complement
-        {"840",    "840",    "840_after_the_battle",              0x0e0f5e00, 0x0e380400, 0x0e2e4200, 0},
-        {"841",    "841",    "841_xion_fading_from_clocktower",   0x0e444c00, 0x0e444c00, 0x0e444c00, 0}, // double cutscene complement
-        {"842",    "842",    "842_a_new_day",                     0x0e4bd400, 0x0e747a00, 0x0e6dfa00, 0},
-        {"843",    "843_mm", "843_the_usual_spot",                0x0e641200, 0x0e8cb800, 0x0e873800, 0},
-        {"845",    "845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e984c00, 0x0e938e00, 0},
-        {"846",    "846",    "846_axel_and_saix",                 0x0e75bc00, 0x0e9e6200, 0x0e99ee00, 0},
-        {"847",    "847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0ec4c600, 0x0ec12c00, 0},
-        {"848",    "848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600, 0},
+        {"802",    "802_mm", "802_opening",                       0x088b2e00, 0x08b3d400, 0x0876e800, 1},
+        {"803",    "803",    "803_meet_xion",                     0x0987ec00, 0x09b09200, 0x097c8800, 1},
+        {"804",    "804",    "804_roxas_recusant_sigil",          0x09ae9400, 0x09d73a00, 0x09a4e000, 1},
+        {"805",    "805",    "805_the_dark_margin",               0x09b80600, 0x09e0ac00, 0x09aeb200, 1},
+        {"806",    "806",    "806_sora_entering_pod",             0x09e83800, 0x0a10de00, 0x09e0ba00, 1},
+        {"808",    "808",    "808_sunset_memory",                 0x09f24c00, 0x0a1af200, 0x09eb2e00, 1},
+        {"809",    "809",    "809_xions_defeat",                  0x09f79400, 0x0a203a00, 0x09f0ac00, 1},
+        {"810",    "810",    "810_the_main_in_black_reflects",    0x09ff8000, 0x0a282600, 0x09f8d400, 1},
+        {"813",    "813",    "813_xions_defeat",                  0x0a13f600, 0x0a3c9c00, 0x0a0e1600, 1},
+        {"814",    "814",    "814_sora_walk",                     0x0a677c00, 0x0a902200, 0x0a64f000, 1},
+        {"815",    "815",    "815_sora_release_kairi",            0x0a6e4200, 0x0a96e800, 0x0a6bf000, 1},
+        {"816",    "816",    "816_kairi_memories",                0x0a7a9200, 0x0aa33800, 0x0a78ca00, 1},
+        {"817",    "817_mm", "817_namine_and_diz",                0x0a857600, 0x0aae1c00, 0x0a845800, 1},
+        {"818",    "818",    "818_why_the_sun_sets_red",          0x0ab4be00, 0x0add6400, 0x0ab57800, 1},
+        {"819",    "819",    "819_sora_wakes_up",                 0x0afeac00, 0x0afeac00, 0x0afeac00, 1}, // double cutscene complement
+        {"821",    "821",    "821_snarl_of_memories",             0x0b043e00, 0x0b2ce400, 0x0b084a00, 1},
+        {"822",    "822",    "822_riku_takes_care_of_xion",       0x0b514600, 0x0b79ec00, 0x0b57ea00, 1},
+        {"823",    "823",    "823_roxas_passes_by",               0x0b5b5e00, 0x0b840400, 0x0b626e00, 1},
+        {"824",    "824",    "824_xions_dream",                   0x0b65a200, 0x0b8e4800, 0x0b6d1800, 1},
+        {"825",    "825",    "825_xions_capture",                 0x0b8a7a00, 0x0bb32000, 0x0b937600, 1},
+        {"826",    "826",    "826_hollow_bastion_memories",       0x0bd74600, 0x0bffec00, 0x0be21a00, 1},
+        {"827",    "827",    "827_agrabah_keyhole_memory",        0x0be7e000, 0x0c108600, 0x0bf35400, 1},
+        {"828",    "828",    "828_xion_and_riku",                 0x0bedf200, 0x0c169800, 0x0bf9ae00, 1},
+        {"829",    "829",    "829_rikus_resolve",                 0x0c76a800, 0x0c9f4e00, 0x0c873400, 1},
+        {"830",    "830_mm", "830_mickey_and_riku_ansem",         0x0c863a00, 0x0caee000, 0x0c981000, 1},
+        {"831",    "831",    "831_xion_and_namine",               0x0ca47c00, 0x0ccd2200, 0x0cb79400, 1},
+        {"832",    "832",    "832_xion_and_axel_face_off",        0x0cb01c00, 0x0cd8c200, 0x0cc3b000, 1},
+        {"833",    "833_mm", "833_xion_attacks",                  0x0cee2000, 0x0d16c600, 0x0d043200, 1},
+        {"834",    "834",    "834_winner",                        0x0d45bc00, 0x0d6e6200, 0x0d5f7800, 1},
+        {"835",    "835",    "835_skyscrapper_battle",            0x0d5e0400, 0x0d86aa00, 0x0d782e00, 1},
+        {"836",    "836_mm", "836_roxas_and_riku",                0x0d6f9400, 0x0d983a00, 0x0d8a7e00, 1},
+        {"837",    "837",    "837_riku_turns_into_ansem",         0x0da1ea00, 0x0dca9000, 0x0dbed000, 1},
+        {"838",    "838",    "838_clocktower",                    0x0e063600, 0x0e063600, 0x0e063600, 1}, // double cutscene complement
+        {"839_de", "839",    "839_riku_please_stop_him_de",       0x0e0db400, 0x0e0db400, 0x0e0db400, 1}, // double cutscene complement
+        {"839_en", "839",    "839_riku_please_stop_him_en",       0x0e0e1200, 0x0e0e1200, 0x0e0e1200, 1}, // double cutscene complement
+        {"839_es", "839",    "839_riku_please_stop_him_es",       0x0e0e6c00, 0x0e0e6c00, 0x0e0e6c00, 1}, // double cutscene complement
+        {"839_fr", "839",    "839_riku_please_stop_him_fr",       0x0e0ecc00, 0x0e0ecc00, 0x0e0ecc00, 1}, // double cutscene complement
+        {"839_it", "839",    "839_riku_please_stop_him_it",       0x0e0f1600, 0x0e0f1600, 0x0e0f1600, 1}, // double cutscene complement
+        {"840",    "840",    "840_after_the_battle",              0x0e0f5e00, 0x0e380400, 0x0e2e4200, 1},
+        {"841",    "841",    "841_xion_fading_from_clocktower",   0x0e444c00, 0x0e444c00, 0x0e444c00, 1}, // double cutscene complement
+        {"842",    "842",    "842_a_new_day",                     0x0e4bd400, 0x0e747a00, 0x0e6dfa00, 1},
+        {"843",    "843_mm", "843_the_usual_spot",                0x0e641200, 0x0e8cb800, 0x0e873800, 1},
+        {"845",    "845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e984c00, 0x0e938e00, 1},
+        {"846",    "846",    "846_axel_and_saix",                 0x0e75bc00, 0x0e9e6200, 0x0e99ee00, 1},
+        {"847",    "847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0ec4c600, 0x0ec12c00, 1},
+        {"848",    "848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600, 1},
+    }};
+
+    Dialogues = std::array<Plugins::CutsceneEntry, 33> {{
+        {"000" , "000" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"002" , "002" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"003" , "003" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"004" , "004" , "004_icing_on_the_cake_part_2", 0x000034e0 , 0x00000000, 0x00000000 , 8},
+        {"006" , "006" , "006_icing_on_the_cake_part_3", 0x00000900 , 0x00000000, 0x00000000 , 8},
+        {"008" , "008" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"010" , "010" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"018" , "018" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"019" , "019" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"020" , "020" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"021" , "021" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"025" , "025" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"034" , "034" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"039" , "039" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"043a", "043a", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"043b", "043b", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"048b", "048b", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"050" , "050" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"054" , "054" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"059" , "059" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"063" , "063" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"065" , "065" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"066b", "066b", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"068" , "068" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"070" , "070" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"071" , "071" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"076" , "076" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"082a", "082a", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"082b", "082b", "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"084" , "084" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"087" , "087" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"092" , "092" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"096" , "096" , "", 0x07000000 , 0x00000000, 0x00000000 , 8}
     }};
 
     BgmEntries = std::array<BgmEntry, 38> {{
@@ -609,7 +650,7 @@ void PluginKingdomHeartsDays::onLoadROM() {
             break;
         }
     }
-    cutscenesAddressOffset = firstCutsceneAddr - getMobiCutsceneAddress(&Cutscenes[0]);
+    cutscenesAddressOffset = firstCutsceneAddr - getCutsceneAddress(&Cutscenes[0]);
 }
 
 void PluginKingdomHeartsDays::onLoadState() {
@@ -1585,10 +1626,10 @@ int PluginKingdomHeartsDays::renderer_gameSceneState() {
             break;
 
         case gameScene_Cutscene:
-            if (detectTopScreenMobiCutscene() == nullptr) {
+            if (detectTopScreenCutscene() == nullptr) {
                 state |= (1 << gameSceneState_bottomScreenCutscene);
             }
-            else if (detectBottomScreenMobiCutscene() == nullptr) {
+            else if (detectBottomScreenCutscene() == nullptr) {
                 state |= (1 << gameSceneState_topScreenCutscene);
             }
             break;
@@ -1734,7 +1775,7 @@ int PluginKingdomHeartsDays::renderer_screenLayout()
             if (nds->ARM7Read8(getAnyByCart(IS_CREDITS_US, IS_CREDITS_EU, IS_CREDITS_JP, IS_CREDITS_JP_REV1)) == 0x10) {
                 return screenLayout_BothHorizontal;
             }
-            return (detectTopScreenMobiCutscene() == nullptr) ? screenLayout_BothHorizontal : ((detectBottomScreenMobiCutscene() == nullptr) ? screenLayout_Top : screenLayout_BothHorizontal);
+            return (detectTopScreenCutscene() == nullptr) ? screenLayout_BothHorizontal : ((detectBottomScreenCutscene() == nullptr) ? screenLayout_Top : screenLayout_BothHorizontal);
     }
 
     return screenLayout_Top;
@@ -2645,7 +2686,7 @@ u32 PluginKingdomHeartsDays::getAspectRatioAddress()
     return getAnyByCart(ASPECT_RATIO_ADDRESS_US, ASPECT_RATIO_ADDRESS_EU, ASPECT_RATIO_ADDRESS_JP, ASPECT_RATIO_ADDRESS_JP_REV1);
 }
 
-u32 PluginKingdomHeartsDays::getMobiCutsceneAddress(CutsceneEntry* entry)
+u32 PluginKingdomHeartsDays::getCutsceneAddress(CutsceneEntry* entry)
 {
     return getAnyByCart(entry->usAddress, entry->euAddress, entry->jpAddress, entry->jpAddress - 0x200);
 }
@@ -2658,8 +2699,29 @@ CutsceneEntry* PluginKingdomHeartsDays::getMobiCutsceneByAddress(u32 cutsceneAdd
 
     CutsceneEntry* cutscene1 = nullptr;
     for (CutsceneEntry* entry = &Cutscenes[0]; entry->usAddress; entry++) {
-        if (getMobiCutsceneAddress(entry) == cutsceneAddressValue - cutscenesAddressOffset) {
+        if (getCutsceneAddress(entry) == cutsceneAddressValue - cutscenesAddressOffset) {
             cutscene1 = entry;
+        }
+    }
+
+    return cutscene1;
+}
+
+CutsceneEntry* PluginKingdomHeartsDays::getInEngineCutsceneByAddress(u32 cutsceneAddressValue)
+{
+    if (cutsceneAddressValue == 0) {
+        return nullptr;
+    }
+
+    CutsceneEntry* cutscene1 = nullptr;
+    bool isCharacterControllable = nds->ARM7Read8(
+            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
+    if (!isCharacterControllable)
+    {
+        for (CutsceneEntry* entry = &Dialogues[0]; entry->usAddress; entry++) {
+            if (getCutsceneAddress(entry) == cutsceneAddressValue) {
+                cutscene1 = entry;
+            }
         }
     }
 
@@ -2671,19 +2733,35 @@ u32 PluginKingdomHeartsDays::detectTopScreenMobiCutsceneAddress()
     return getAnyByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
 }
 
+u32 PluginKingdomHeartsDays::detectTopScreenInEngineCutsceneAddress()
+{
+    return getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
+}
+
 u32 PluginKingdomHeartsDays::detectBottomScreenMobiCutsceneAddress()
 {
     return getAnyByCart(CUTSCENE_ADDRESS_2_US, CUTSCENE_ADDRESS_2_EU, CUTSCENE_ADDRESS_2_JP, CUTSCENE_ADDRESS_2_JP_REV1);
 }
 
-bool PluginKingdomHeartsDays::isCutsceneGameScene()
+bool PluginKingdomHeartsDays::isMobiCutsceneGameScene()
 {
     return GameScene == gameScene_Cutscene;
 }
 
+bool PluginKingdomHeartsDays::isInEngineCutsceneGameScene()
+{
+    return (GameScene == gameScene_InGameWithMap && nds->ARM7Read8(
+                getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) != 0x01);
+}
+
+bool PluginKingdomHeartsDays::isCutsceneGameScene()
+{
+    return isMobiCutsceneGameScene() || isInEngineCutsceneGameScene();
+}
+
 bool PluginKingdomHeartsDays::didMobiCutsceneEnded()
 {
-    if (!isCutsceneGameScene()) {
+    if (!isMobiCutsceneGameScene()) {
         return true;
     }
 
@@ -2694,6 +2772,27 @@ bool PluginKingdomHeartsDays::didMobiCutsceneEnded()
 
     return false;
 }
+
+bool PluginKingdomHeartsDays::didInEngineCutsceneEnded()
+{
+    if (!isInEngineCutsceneGameScene()) {
+        printf("1\n");
+        return true;
+    }
+
+    return false; // TODO: KH Remove this line
+
+    u32 dialogAddress = detectTopScreenInEngineCutsceneAddress();
+    if (dialogAddress != 0) {
+        u32 cutsceneAddressValue = nds->ARM7Read32(dialogAddress);
+        CutsceneEntry* currentCutscene = getInEngineCutsceneByAddress(cutsceneAddressValue);
+        if (currentCutscene != nullptr && currentCutscene->usAddress != _CutscenesQueue[0]->usAddress) {
+            return true;
+        }
+    }
+
+    return false;
+};
 
 bool PluginKingdomHeartsDays::canReturnToGameAfterReplacementCutscene()
 {
@@ -2750,6 +2849,18 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
 
     filename = "hd" + std::string(cutscene->DsName) + ".mp4";
     fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = "hd" + std::string(cutscene->MmName) + ".mp4";
+    fullPath = _assetsFolderPath / "cutscenes" / "dialogs" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = "hd" + std::string(cutscene->DsName) + ".mp4";
+    fullPath = _assetsFolderPath / "cutscenes" / "dialogs" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }
@@ -2923,7 +3034,7 @@ int PluginKingdomHeartsDays::delayBeforeStartReplacementBackgroundMusic(u16 bgmI
     // Delay patch only required with HD cutscene replacement
     if (_IsReplacementCutsceneRunning) {
         if (bgmId == 22 || bgmId == 39) {
-            if (CutsceneEntry* topCutscene = detectTopScreenMobiCutscene()) {
+            if (CutsceneEntry* topCutscene = detectTopScreenCutscene()) {
                 std::string cutsceneId(topCutscene->DsName);
                 if (bgmId == 22 && cutsceneId == "848") {
                     // Delay for "Musique pour la tristesse de Xion" during the "Xion's End" cutscene

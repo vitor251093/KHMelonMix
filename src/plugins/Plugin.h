@@ -15,6 +15,9 @@
 
 #define getPixel(buffer, x, y, layer) buffer[(256*3 + 1)*(y) + (x) + 256*(layer)]
 
+#define DIALOG_SKIP_START_FRAMES_COUNT 40
+#define DIALOG_SKIP_INTERVAL_FRAMES_COUNT 40
+
 #define CUTSCENE_SKIP_START_FRAMES_COUNT 40
 #define CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT 40
 
@@ -42,6 +45,10 @@ struct CutsceneEntry
     int usAddress;
     int euAddress;
     int jpAddress;
+
+    // 1 -> Is Mobi cutscene
+    // 4 -> Requires double Start to skip
+    // 8 -> Requires smashing A to skip
     int dsScreensState;
 };
 
@@ -253,7 +260,7 @@ public:
     // (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es). Defaults to English.
     virtual int cutsceneMenuLanguage() { return 1; }
 
-    bool IsIngameCutsceneRunning() {return _IsIngameCutsceneRunning;}
+    bool IsIngamePrerenderedCutsceneRunning() {return _IsMobiCutsceneRunning || _IsInEngineCutsceneRunning;}
     bool IsReplacementCutsceneRunning();
     CutsceneEntry* CurrentCutscene();
 
@@ -264,13 +271,18 @@ public:
     inline int CutsceneMenuSoundToPlay() { int v = _CutsceneMenuSoundRequest; _CutsceneMenuSoundRequest = 0; return v; }
 
     virtual CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
+    virtual CutsceneEntry* getInEngineCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
     virtual u32 detectTopScreenMobiCutsceneAddress() {return 0;};
+    virtual u32 detectTopScreenInEngineCutsceneAddress() {return 0;};
     virtual u32 detectBottomScreenMobiCutsceneAddress() {return 0;};
-    CutsceneEntry* detectTopScreenMobiCutscene();
-    CutsceneEntry* detectBottomScreenMobiCutscene();
+    CutsceneEntry* detectTopScreenCutscene();
+    CutsceneEntry* detectBottomScreenCutscene();
     CutsceneEntry* detectCutscene();
+    virtual bool isMobiCutsceneGameScene() {return false;};
+    virtual bool isInEngineCutsceneGameScene() {return false;};
     virtual bool isCutsceneGameScene() {return false;};
     virtual bool didMobiCutsceneEnded() {return !isCutsceneGameScene();};
+    virtual bool didInEngineCutsceneEnded() {return !isCutsceneGameScene();};
     virtual bool canReturnToGameAfterReplacementCutscene() {return true;};
 
     void refreshCutscene();
@@ -279,9 +291,9 @@ public:
 
     void pauseReplacementCutsceneThroughPauseMenu();
     void resumeReplacementCutsceneThroughPauseMenu();
-    void skipIngameCutsceneThroughPauseMenu();
-    void stopReplacementCutsceneAndResumeGameAfterSkippingIngameCutscene();
-    void skipIngameCutsceneAfterReplacementCutsceneFinishesNaturally();
+    void skipIngamePrerenderedCutsceneThroughPauseMenu();
+    void stopReplacementCutsceneAndResumeGameAfterSkippingIngamePrerenderedCutscene();
+    void skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNaturally();
 
     std::function<void(std::string, std::string)> startReplacementCutscene = nullptr;
     std::function<void(int)> showReplacementCutscenePauseMenu = nullptr;
@@ -289,8 +301,8 @@ public:
     std::function<void()> unpauseReplacementCutscene = nullptr;
     std::function<void()> stopReplacementCutsceneAndResumeEmulator = nullptr;
     std::function<void()> resumeHiddenEmulatorAfterReplacementCutsceneStopped = nullptr;
-    std::function<void()> pauseEmulatorAfterIngameCutsceneEndedBeforeReplacementCutscene = nullptr;
-    std::function<void()> resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded = nullptr;
+    std::function<void()> pauseEmulatorAfterIngamePrerenderedCutsceneEndedBeforeReplacementCutscene = nullptr;
+    std::function<void()> resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCutsceneEnded = nullptr;
 
     inline bool shouldStartBackgroundMusic() { return checkAndResetBool(_ShouldStartReplacementBgmMusic); }
     inline bool shouldStopBackgroundMusic() { return checkAndResetBool(_ShouldStopReplacementBgmMusic); }
@@ -467,12 +479,14 @@ protected:
 
     std::map<std::string, TextureEntry> texturesIndex;
 
+    int _APressCount = 0;
     int _StartPressCount = 0;
     int _PlayFrameLimitCount = 0;
     int _ReplayFrameLimitCount = 0;
     bool _SkipDsCutscene = false;
     bool _IsUnskippableCutscene = false;
-    bool _IsIngameCutsceneRunning = false;
+    bool _IsMobiCutsceneRunning = false;
+    bool _IsInEngineCutsceneRunning = false;
     bool _IsReplacementCutsceneRunning = false;
     bool _IsIngameOrReplacementCutsceneRunning = false;
     bool _ReplacementCutsceneIsPaused = false;

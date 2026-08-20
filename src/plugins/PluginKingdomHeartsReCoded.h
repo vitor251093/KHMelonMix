@@ -135,9 +135,11 @@ private:
     std::string getStringByCart(std::string usAddress, std::string euAddress, std::string jpAddress);
     bool getBoolByCart(bool usAddress, bool euAddress, bool jpAddress);
 
-    u32 getMobiCutsceneAddress(CutsceneEntry* entry);
+    u32 getCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) override;
+    CutsceneEntry* getInEngineCutsceneByAddress(u32 cutsceneAddressValue) override;
     u32 detectTopScreenMobiCutsceneAddress() override;
+    u32 detectTopScreenInEngineCutsceneAddress() override;
     bool isCutsceneGameScene() override;
     bool didMobiCutsceneEnded() override;
     bool canReturnToGameAfterReplacementCutscene() override;

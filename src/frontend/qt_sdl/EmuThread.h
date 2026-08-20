@@ -231,7 +231,7 @@ private:
     void refreshPluginGameScene();
     void refreshPluginState();
     void startReplacementCutscene(const std::string& videoPath, const std::string& subtitlesPath);
-    void resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded();
+    void resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCutsceneEnded();
 
     int lastVideoRenderer = -1;
 

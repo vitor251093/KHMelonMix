@@ -244,11 +244,11 @@ void EmuThread::run()
                 emuInstance->plugin->resumeHiddenEmulatorAfterReplacementCutsceneStopped = [this]() {
                     emuStatus = emuStatus_Running;
                 };
-                emuInstance->plugin->pauseEmulatorAfterIngameCutsceneEndedBeforeReplacementCutscene = [this]() {
+                emuInstance->plugin->pauseEmulatorAfterIngamePrerenderedCutsceneEndedBeforeReplacementCutscene = [this]() {
                     emuStatus = emuStatus_Paused;
                 };
-                emuInstance->plugin->resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded = [this]() {
-                    resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded();
+                emuInstance->plugin->resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCutsceneEnded = [this]() {
+                    resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCutsceneEnded();
                 };
             }
             bool shouldStartPlugin = emuInstance->plugin->shouldStartPlugin;
@@ -862,7 +862,7 @@ void EmuThread::handleMessages()
 
 bool EmuThread::pluginShouldFastForward()
 {
-    return emuInstance->plugin->IsIngameCutsceneRunning() && emuInstance->plugin->IsReplacementCutsceneRunning();
+    return emuInstance->plugin->IsIngamePrerenderedCutsceneRunning() && emuInstance->plugin->IsReplacementCutsceneRunning();
 }
 
 void EmuThread::refreshPluginGameScene()
@@ -901,7 +901,7 @@ void EmuThread::startReplacementCutscene(const std::string& videoPath, const std
     emuInstance->renderLock.unlock();
 }
 
-void EmuThread::resumeEmulatorAfterBothIngameCutsceneAndReplacementCutsceneEnded()
+void EmuThread::resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCutsceneEnded()
 {
     emuStatus = emuStatus_Running;
 
