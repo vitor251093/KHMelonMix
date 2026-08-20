@@ -403,7 +403,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
             }
 
             if (_IsInEngineCutsceneRunning) {
-                // Press Start, press down, press A (only for Days)
+                // TODO: KH Press Start, press down, press A (only for Days)
             }
         }
     }

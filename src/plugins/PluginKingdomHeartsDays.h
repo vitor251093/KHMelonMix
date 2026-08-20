@@ -149,6 +149,7 @@ private:
     std::array<CutsceneEntry, 46> Cutscenes;
     std::array<CutsceneEntry, 33> Dialogues;
     u32 cutscenesAddressOffset = 0;
+    u32 _lastUnknownInEngineCutsceneAddress = 0;
 
     int GameLanguageIndex = 0;
     Plugins::Language GameLanguage = Plugins::languages[0];

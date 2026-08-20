@@ -303,6 +303,7 @@ public:
     std::function<void()> resumeHiddenEmulatorAfterReplacementCutsceneStopped = nullptr;
     std::function<void()> pauseEmulatorAfterIngamePrerenderedCutsceneEndedBeforeReplacementCutscene = nullptr;
     std::function<void()> resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCutsceneEnded = nullptr;
+    std::function<void(std::string)> postMessageToOsd = nullptr;
 
     inline bool shouldStartBackgroundMusic() { return checkAndResetBool(_ShouldStartReplacementBgmMusic); }
     inline bool shouldStopBackgroundMusic() { return checkAndResetBool(_ShouldStopReplacementBgmMusic); }

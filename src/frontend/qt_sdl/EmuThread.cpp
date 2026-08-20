@@ -250,6 +250,9 @@ void EmuThread::run()
                 emuInstance->plugin->resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCutsceneEnded = [this]() {
                     resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCutsceneEnded();
                 };
+                emuInstance->plugin->postMessageToOsd = [this](const std::string& message) {
+                    emuInstance->osdAddMessage(0, "%s", message.c_str());
+                };
             }
             bool shouldStartPlugin = emuInstance->plugin->shouldStartPlugin;
             if (shouldStartPlugin)

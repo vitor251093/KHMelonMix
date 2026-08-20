@@ -309,11 +309,11 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
     }};
 
     Dialogues = std::array<Plugins::CutsceneEntry, 33> {{
-        {"000" , "000" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
-        {"002" , "002" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
-        {"003" , "003" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
-        {"004" , "004" , "004_icing_on_the_cake_part_2", 0x000034e0 , 0x00000000, 0x00000000 , 8},
-        {"006" , "006" , "006_icing_on_the_cake_part_3", 0x00000900 , 0x00000000, 0x00000000 , 8},
+        {"000" , "000" , "000_day_7_when_we_first_met",         0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"002" , "002" , "002_day_7_the_castle_that_never_was", 0x00015800 , 0x00000000, 0x00000000 , 8},
+        {"003" , "003" , "003_day_7_all_i_had",                 0x07000000 , 0x00000000, 0x00000000 , 8},
+        {"004" , "004" , "004_day_8_icing_on_the_cake_part_2",  0x000034e0 , 0x00000000, 0x00000000 , 8},
+        {"006" , "006" , "006_day_8_icing_on_the_cake_part_3",  0x00000900 , 0x00000000, 0x00000000 , 8},
         {"008" , "008" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
         {"010" , "010" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
         {"018" , "018" , "", 0x07000000 , 0x00000000, 0x00000000 , 8},
@@ -2723,6 +2723,17 @@ CutsceneEntry* PluginKingdomHeartsDays::getInEngineCutsceneByAddress(u32 cutscen
                 cutscene1 = entry;
             }
         }
+
+        // TODO: KH This is just temporary until we match all the cutscenes
+        if (cutscene1 == nullptr &&
+            cutsceneAddressValue != 0x20000 &&
+            cutsceneAddressValue != _lastUnknownInEngineCutsceneAddress &&
+            postMessageToOsd != nullptr) {
+            char message[64];
+            snprintf(message, sizeof(message), "Unknown in-engine cutscene address: 0x%08X", cutsceneAddressValue);
+            postMessageToOsd(message);
+        }
+        _lastUnknownInEngineCutsceneAddress = cutsceneAddressValue;
     }
 
     return cutscene1;
