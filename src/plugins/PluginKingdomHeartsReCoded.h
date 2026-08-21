@@ -125,8 +125,10 @@ private:
     u32 LastLockOnPress, LastSwitchTargetPress, LastScreenTogglePress;
 
     std::array<CutsceneEntry, 15> Cutscenes;
+    std::array<CutsceneEntry, 33> Dialogues;
     int GameLanguageIndex = 0;
     Plugins::Language GameLanguage = Plugins::languages[0];
+    u32 _lastUnknownInEngineCutsceneAddress = 0;
 
     int detectGameScene() override;
 
@@ -140,8 +142,11 @@ private:
     CutsceneEntry* getInEngineCutsceneByAddress(u32 cutsceneAddressValue) override;
     u32 detectTopScreenMobiCutsceneAddress() override;
     u32 detectTopScreenInEngineCutsceneAddress() override;
+    bool isMobiCutsceneGameScene() override;
+    bool isInEngineCutsceneGameScene() override;
     bool isCutsceneGameScene() override;
     bool didMobiCutsceneEnded() override;
+    bool didInEngineCutsceneEnded() override;
     bool canReturnToGameAfterReplacementCutscene() override;
 
     u8 getFloorLevel();

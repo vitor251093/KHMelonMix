@@ -303,6 +303,10 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
         {"w8_OP",  "573_PLUS_mm", "573_",                       0x0c426000, 0x0c48e400, 0x0c33c400, 2},
     }};
 
+    Dialogues = std::array<Plugins::CutsceneEntry, 33> {{
+        {"000" , "000" , "000_day_7_when_we_first_met",         0x07000000 , 0x00000000, 0x00000000 , 8}
+    }};
+
     BgmEntries = std::array<BgmEntry, 41> {{
         { 0,  0,    "WorldSelect", "" },
         { 1,  1,    "Avatar", "" },
@@ -2809,7 +2813,32 @@ CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutscene
 
 CutsceneEntry* PluginKingdomHeartsReCoded::getInEngineCutsceneByAddress(u32 cutsceneAddressValue)
 {
-    return nullptr;
+    // TODO: KH In engine cutscene
+    if (cutsceneAddressValue == 0) {
+        return nullptr;
+    }
+
+    CutsceneEntry* cutscene1 = nullptr;
+    if (isInEngineCutsceneGameScene())
+    {
+        for (CutsceneEntry* entry = &Dialogues[0]; entry->usAddress; entry++) {
+            if (getCutsceneAddress(entry) == cutsceneAddressValue) {
+                cutscene1 = entry;
+            }
+        }
+
+        // TODO: KH This is just temporary until we match all the cutscenes
+        if (cutscene1 == nullptr &&
+                cutsceneAddressValue != _lastUnknownInEngineCutsceneAddress &&
+                postMessageToOsd != nullptr) {
+            char message[64];
+            snprintf(message, sizeof(message), "Unknown in-engine cutscene address: 0x%08X", cutsceneAddressValue);
+            postMessageToOsd(message);
+        }
+        _lastUnknownInEngineCutsceneAddress = cutsceneAddressValue;
+    }
+
+    return cutscene1;
 }
 
 int PluginKingdomHeartsReCoded::cutsceneMenuLanguage()
@@ -2884,12 +2913,23 @@ u32 PluginKingdomHeartsReCoded::detectTopScreenMobiCutsceneAddress()
 
 u32 PluginKingdomHeartsReCoded::detectTopScreenInEngineCutsceneAddress()
 {
+    // TODO: KH In engine cutscene
     return 0;
+}
+
+bool PluginKingdomHeartsReCoded::isMobiCutsceneGameScene()
+{
+    return GameScene == gameScene_Cutscene;
+}
+
+bool PluginKingdomHeartsReCoded::isInEngineCutsceneGameScene()
+{
+    return GameScene == gameScene_CutsceneWithStaticImages;
 }
 
 bool PluginKingdomHeartsReCoded::isCutsceneGameScene()
 {
-    return GameScene == gameScene_Cutscene;
+    return isMobiCutsceneGameScene() || isInEngineCutsceneGameScene();
 }
 
 bool PluginKingdomHeartsReCoded::didMobiCutsceneEnded()
@@ -2902,6 +2942,24 @@ bool PluginKingdomHeartsReCoded::didMobiCutsceneEnded()
     if (isSaveLoaded()) {
         // the old cutscene ended, and a new cutscene started
         return _CutscenesQueue.size() > 1;
+    }
+
+    return false;
+}
+
+bool PluginKingdomHeartsReCoded::didInEngineCutsceneEnded()
+{
+    if (!isInEngineCutsceneGameScene()) {
+        return true;
+    }
+
+    u32 dialogAddress = detectTopScreenInEngineCutsceneAddress();
+    if (dialogAddress != 0) {
+        u32 cutsceneAddressValue = nds->ARM7Read32(dialogAddress);
+        CutsceneEntry* currentCutscene = getInEngineCutsceneByAddress(cutsceneAddressValue);
+        if (currentCutscene != nullptr && currentCutscene->usAddress != _CutscenesQueue[0]->usAddress) {
+            return true;
+        }
     }
 
     return false;
@@ -2945,6 +3003,18 @@ std::string PluginKingdomHeartsReCoded::replacementCutsceneFilePath(CutsceneEntr
 
     filename = "hd" + std::string(cutscene->DsName) + ".mp4";
     fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = "hd" + std::string(cutscene->MmName) + ".mp4";
+    fullPath = _assetsFolderPath / "cutscenes" / "dialogs" / filename;
+    if (std::filesystem::exists(fullPath)) {
+        return fullPath.string();
+    }
+
+    filename = "hd" + std::string(cutscene->DsName) + ".mp4";
+    fullPath = _assetsFolderPath / "cutscenes" / "dialogs" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
     }

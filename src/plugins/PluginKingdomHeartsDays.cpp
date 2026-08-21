@@ -2726,9 +2726,9 @@ CutsceneEntry* PluginKingdomHeartsDays::getInEngineCutsceneByAddress(u32 cutscen
 
         // TODO: KH This is just temporary until we match all the cutscenes
         if (cutscene1 == nullptr &&
-            cutsceneAddressValue != 0x20000 &&
-            cutsceneAddressValue != _lastUnknownInEngineCutsceneAddress &&
-            postMessageToOsd != nullptr) {
+                cutsceneAddressValue != 0x20000 &&
+                cutsceneAddressValue != _lastUnknownInEngineCutsceneAddress &&
+                postMessageToOsd != nullptr) {
             char message[64];
             snprintf(message, sizeof(message), "Unknown in-engine cutscene address: 0x%08X", cutsceneAddressValue);
             postMessageToOsd(message);
