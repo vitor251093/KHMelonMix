@@ -58,7 +58,7 @@ _Note: instructions updated as of version 0.9.2_
 2. Extract the downloaded ZIP file to a new folder (let's refer to it in the next steps as the "extracted folder");
 3. Open Steam, right-click your installation of the 1.5+2.5 collection, and press `Manage` -> `Browse local files`, which will open a folder (let's refer to it in the next steps as the "collection folder");
 4. Inside the collection folder, rename `KINGDOM HEARTS HD 1.5+2.5 Launcher.exe` to `KINGDOM HEARTS HD 1.5+2.5 Launcher backup.exe`;
-5. Copy `KINGDOM HEARTS HD 1.5+2.5 Launcher.exe` folder from the extracted folder to the collection folder;
+5. Copy `KINGDOM HEARTS HD 1.5+2.5 Launcher.exe` from the extracted folder to the collection folder;
 6. Inside the collection folder, open the `Image` folder, and create a `melon` folder inside of it;
 7. Copy `MelonMix.exe` and the `roms` folder from the extracted folder to the `melon` folder;
 8. In order to play "358/2 Days":
@@ -79,7 +79,7 @@ _Note: instructions updated as of version 0.9.2_
 2. Extract the downloaded ZIP file to a new folder (let's refer to it in the next steps as the "extracted folder");
 3. Open Steam, right-click your installation of the 1.5+2.5 collection, and press `Manage` -> `Browse local files`, which will open a folder (let's refer to it in the next steps as the "collection folder");
 4. Inside the collection folder, rename `KINGDOM HEARTS HD 1.5+2.5 Launcher.exe` to `KINGDOM HEARTS HD 1.5+2.5 Launcher backup.exe`;
-5. Copy `KINGDOM HEARTS HD 1.5+2.5 Launcher.exe` folder from the extracted folder to the collection folder;
+5. Copy `KINGDOM HEARTS HD 1.5+2.5 Launcher.exe` from the extracted folder to the collection folder;
 6. Inside the collection folder, open the `Image` folder, and create a `melon` folder inside of it;
 7. Copy `MelonMix.exe`, `MelonMix.AppImage` and the `roms` folder from the extracted folder to the `melon` folder;
 8. In order to play "358/2 Days":
