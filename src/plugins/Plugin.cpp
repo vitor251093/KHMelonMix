@@ -969,11 +969,8 @@ void Plugin::stopReplacementCutsceneAndResumeGameAfterSkippingIngamePrerenderedC
     _CutsceneSkipMenuSelection = 0;
     _LastCutsceneMenuButtons = 0;
 
-    if (_CutscenesQueue.size() <= 1)
-    {
-        _IsReplacementCutsceneRunning = false;
-        stopReplacementCutsceneAndResumeEmulator();
-    }
+    _IsReplacementCutsceneRunning = false;
+    stopReplacementCutsceneAndResumeEmulator();
 }
 
 void Plugin::skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNaturally()
