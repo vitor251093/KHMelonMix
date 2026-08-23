@@ -904,6 +904,7 @@ void EmuThread::startReplacementCutscene(const std::string& videoPath, const std
     if (videoRenderer != newVideoRenderer) {
         videoRenderer = newVideoRenderer;
         updateRenderer();
+        screenBlankFrames = 3;
     }
     emuInstance->renderLock.unlock();
 }
@@ -920,9 +921,12 @@ void EmuThread::resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCu
 
     emuInstance->targetFPS = globalCfg.GetDouble("TargetFPS");
 
-    videoRenderer = globalCfg.GetInt("3D.Renderer");
+    int newVideoRenderer = globalCfg.GetInt("3D.Renderer");
 
-    videoSettingsDirty = true;
+    if (videoRenderer != newVideoRenderer) {
+        videoRenderer = newVideoRenderer;
+        videoSettingsDirty = true;
+    }
 }
 
 void EmuThread::refreshPluginState()
