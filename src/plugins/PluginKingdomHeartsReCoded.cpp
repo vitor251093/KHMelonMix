@@ -2811,7 +2811,7 @@ CutsceneEntry* PluginKingdomHeartsReCoded::getMobiCutsceneByAddress(u32 cutscene
     return cutscene1;
 }
 
-CutsceneEntry* PluginKingdomHeartsReCoded::getInEngineCutsceneByAddress(u32 cutsceneAddressValue)
+CutsceneEntry* PluginKingdomHeartsReCoded::getInEngineCutsceneById(u32 cutsceneAddressValue)
 {
     // TODO: KH In engine cutscene
     if (cutsceneAddressValue == 0) {
@@ -2911,7 +2911,7 @@ u32 PluginKingdomHeartsReCoded::detectTopScreenMobiCutsceneAddress()
     return getU32ByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP);
 }
 
-u32 PluginKingdomHeartsReCoded::detectTopScreenInEngineCutsceneAddress()
+u32 PluginKingdomHeartsReCoded::detectTopScreenInEngineCutsceneId()
 {
     // TODO: KH In engine cutscene
     return 0;
@@ -2953,10 +2953,9 @@ bool PluginKingdomHeartsReCoded::didInEngineCutsceneEnded()
         return true;
     }
 
-    u32 dialogAddress = detectTopScreenInEngineCutsceneAddress();
-    if (dialogAddress != 0) {
-        u32 cutsceneAddressValue = nds->ARM7Read32(dialogAddress);
-        CutsceneEntry* currentCutscene = getInEngineCutsceneByAddress(cutsceneAddressValue);
+    u32 cutsceneAddressValue = detectTopScreenInEngineCutsceneId();
+    if (cutsceneAddressValue != 0) {
+        CutsceneEntry* currentCutscene = getInEngineCutsceneById(cutsceneAddressValue);
         if (currentCutscene != nullptr && currentCutscene->usAddress != _CutscenesQueue[0]->usAddress) {
             return true;
         }

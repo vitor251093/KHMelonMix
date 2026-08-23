@@ -760,13 +760,8 @@ CutsceneEntry* Plugin::detectTopScreenCutscene()
         return cutscene1;
     }
 
-    cutsceneAddressValue = 0;
-    u32 dialogAddress = detectTopScreenInEngineCutsceneAddress();
-    if (dialogAddress != 0) {
-        cutsceneAddressValue = nds->ARM7Read32(dialogAddress);
-    }
-
-    return getInEngineCutsceneByAddress(cutsceneAddressValue);
+    cutsceneAddressValue = detectTopScreenInEngineCutsceneId();
+    return getInEngineCutsceneById(cutsceneAddressValue);
 }
 
 CutsceneEntry* Plugin::detectBottomScreenCutscene()

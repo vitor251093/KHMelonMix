@@ -2776,34 +2776,29 @@ CutsceneEntry* PluginKingdomHeartsDays::getMobiCutsceneByAddress(u32 cutsceneAdd
     return cutscene1;
 }
 
-CutsceneEntry* PluginKingdomHeartsDays::getInEngineCutsceneByAddress(u32 cutsceneAddressValue)
+CutsceneEntry* PluginKingdomHeartsDays::getInEngineCutsceneById(u32 cutsceneAddressValue)
 {
     if (cutsceneAddressValue == 0) {
         return nullptr;
     }
 
     CutsceneEntry* cutscene1 = nullptr;
-    bool isCharacterControllable = nds->ARM7Read8(
-            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
-    if (!isCharacterControllable)
-    {
-        for (CutsceneEntry* entry = &Dialogues[0]; entry->usAddress; entry++) {
-            if (getCutsceneAddress(entry) == cutsceneAddressValue) {
-                cutscene1 = entry;
-            }
+    for (CutsceneEntry* entry = &Dialogues[0]; entry->usAddress; entry++) {
+        if (getCutsceneAddress(entry) == cutsceneAddressValue) {
+            cutscene1 = entry;
         }
-
-        // TODO: KH This is just temporary until we match all the cutscenes
-        if (cutscene1 == nullptr &&
-                cutsceneAddressValue != 0x20000 &&
-                cutsceneAddressValue != _lastUnknownInEngineCutsceneAddress &&
-                postMessageToOsd != nullptr) {
-            char message[64];
-            snprintf(message, sizeof(message), "Unknown in-engine cutscene address: 0x%08X", cutsceneAddressValue);
-            postMessageToOsd(message);
-        }
-        _lastUnknownInEngineCutsceneAddress = cutsceneAddressValue;
     }
+
+    // TODO: KH This is just temporary until we match all the cutscenes
+    if (cutscene1 == nullptr &&
+            cutsceneAddressValue != 0x20000 &&
+            cutsceneAddressValue != _lastUnknownInEngineCutsceneAddress &&
+            postMessageToOsd != nullptr) {
+        char message[64];
+        snprintf(message, sizeof(message), "Unknown in-engine cutscene address: 0x%08X", cutsceneAddressValue);
+        postMessageToOsd(message);
+    }
+    _lastUnknownInEngineCutsceneAddress = cutsceneAddressValue;
 
     return cutscene1;
 }
@@ -2813,9 +2808,25 @@ u32 PluginKingdomHeartsDays::detectTopScreenMobiCutsceneAddress()
     return getAnyByCart(CUTSCENE_ADDRESS_US, CUTSCENE_ADDRESS_EU, CUTSCENE_ADDRESS_JP, CUTSCENE_ADDRESS_JP_REV1);
 }
 
-u32 PluginKingdomHeartsDays::detectTopScreenInEngineCutsceneAddress()
+u32 PluginKingdomHeartsDays::detectTopScreenInEngineCutsceneId()
 {
-    return getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
+    bool isCharacterControllable = nds->ARM7Read8(
+            getAnyByCart(IS_CHARACTER_CONTROLLABLE_US, IS_CHARACTER_CONTROLLABLE_EU, IS_CHARACTER_CONTROLLABLE_JP, IS_CHARACTER_CONTROLLABLE_JP_REV1)) == 0x01;
+    if (isCharacterControllable)
+    {
+        return false;
+    }
+
+    u32 dialogAddress = getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
+    if (dialogAddress != 0) {
+        u32 dialogValue = nds->ARM7Read32(dialogAddress);
+        if (dialogValue != 0) {
+            u32 currentMission = getCurrentMission();
+            return (currentMission << 8) | dialogValue;
+        }
+    }
+
+    return 0;
 }
 
 u32 PluginKingdomHeartsDays::detectBottomScreenMobiCutsceneAddress()
@@ -2859,10 +2870,9 @@ bool PluginKingdomHeartsDays::didInEngineCutsceneEnded()
         return true;
     }
 
-    u32 dialogAddress = detectTopScreenInEngineCutsceneAddress();
-    if (dialogAddress != 0) {
-        u32 cutsceneAddressValue = nds->ARM7Read32(dialogAddress);
-        CutsceneEntry* currentCutscene = getInEngineCutsceneByAddress(cutsceneAddressValue);
+    u32 cutsceneAddressValue = detectTopScreenInEngineCutsceneId();
+    if (cutsceneAddressValue != 0) {
+        CutsceneEntry* currentCutscene = getInEngineCutsceneById(cutsceneAddressValue);
         if (currentCutscene != nullptr && currentCutscene->usAddress != _CutscenesQueue[0]->usAddress) {
             return true;
         }

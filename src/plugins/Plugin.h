@@ -271,9 +271,9 @@ public:
     inline int CutsceneMenuSoundToPlay() { int v = _CutsceneMenuSoundRequest; _CutsceneMenuSoundRequest = 0; return v; }
 
     virtual CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
-    virtual CutsceneEntry* getInEngineCutsceneByAddress(u32 cutsceneAddressValue) {return nullptr;}
+    virtual CutsceneEntry* getInEngineCutsceneById(u32 cutsceneAddressValue) {return nullptr;}
     virtual u32 detectTopScreenMobiCutsceneAddress() {return 0;};
-    virtual u32 detectTopScreenInEngineCutsceneAddress() {return 0;};
+    virtual u32 detectTopScreenInEngineCutsceneId() {return 0;};
     virtual u32 detectBottomScreenMobiCutsceneAddress() {return 0;};
     CutsceneEntry* detectTopScreenCutscene();
     CutsceneEntry* detectBottomScreenCutscene();

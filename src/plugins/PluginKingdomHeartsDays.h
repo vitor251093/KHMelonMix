@@ -158,9 +158,9 @@ private:
 
     u32 getCutsceneAddress(CutsceneEntry* entry);
     CutsceneEntry* getMobiCutsceneByAddress(u32 cutsceneAddressValue) override;
-    CutsceneEntry* getInEngineCutsceneByAddress(u32 cutsceneAddressValue) override;
+    CutsceneEntry* getInEngineCutsceneById(u32 cutsceneAddressValue) override;
     u32 detectTopScreenMobiCutsceneAddress() override;
-    u32 detectTopScreenInEngineCutsceneAddress() override;
+    u32 detectTopScreenInEngineCutsceneId() override;
     u32 detectBottomScreenMobiCutsceneAddress() override;
     bool isMobiCutsceneGameScene() override;
     bool isInEngineCutsceneGameScene() override;
