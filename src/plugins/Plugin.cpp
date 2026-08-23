@@ -999,18 +999,14 @@ void Plugin::skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNatura
     }
 }
 
-void Plugin::resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay()
+void Plugin::resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay(std::string error)
 {
-    if (_DidReplacementCutsceneFailedToPlay)
-    {
-        return;
-    }
-
     printf("Resume game after replacement cutscene failed to play\n");
 
     if (postMessageToOsd != nullptr)
     {
         postMessageToOsd("Failed to play " + replacementCutsceneFilePath(_CutscenesQueue[0]));
+        postMessageToOsd("Cause of failure: " + error);
     }
 
     _CutscenesBlacklist.push_back(_CutscenesQueue[0]);

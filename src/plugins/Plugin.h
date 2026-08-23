@@ -294,7 +294,7 @@ public:
     void skipIngamePrerenderedCutsceneThroughPauseMenu();
     void stopReplacementCutsceneAndResumeGameAfterSkippingIngamePrerenderedCutscene();
     void skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNaturally();
-    void resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay();
+    void resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay(std::string error);
 
     std::function<void(std::string, std::string)> startReplacementCutscene = nullptr;
     std::function<void(int)> showReplacementCutscenePauseMenu = nullptr;

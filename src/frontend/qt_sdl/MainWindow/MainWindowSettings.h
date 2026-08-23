@@ -69,13 +69,12 @@ public slots:
     void updateBgmMusicVolume(quint8 ramVolume);
 
     void asyncStartVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage);
-    void asyncCancelVideo();
     void asyncStopVideo();
     void asyncPauseVideo();
     void asyncUnpauseVideo();
 
     void startVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage);
-    void cancelVideo();
+    void cancelVideo(std::string error);
     void stopVideo();
     void pauseVideo();
     void unpauseVideo();

@@ -283,19 +283,18 @@ void MainWindowSettings::createVideoPlayer()
         }
         if (status == QMediaPlayer::InvalidMedia) {
             emuInstance->plugin->errorLog("======= Error: %d", status);
-            cancelVideo();
         }
     });
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
         emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
-        cancelVideo();
+        cancelVideo(player->errorString().toStdString());
     });
 #else
     connect(player.get(), &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
         emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
-        cancelVideo();
+        cancelVideo(player->errorString().toStdString());
     });
 #endif
 
@@ -401,12 +400,7 @@ void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFile
     player->play();
 }
 
-void MainWindowSettings::asyncCancelVideo()
-{
-    QMetaObject::invokeMethod(this, "cancelVideo", Qt::QueuedConnection);
-}
-
-void MainWindowSettings::cancelVideo()
+void MainWindowSettings::cancelVideo(std::string error)
 {
     // Stop regardless of whether the video is playing or paused, so a cutscene
     // skipped from the (paused) menu doesn't leave its audio playing.
@@ -421,7 +415,7 @@ void MainWindowSettings::cancelVideo()
 
     showGame();
 
-    emuInstance->plugin->resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay();
+    emuInstance->plugin->resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay(error);
 }
 
 void MainWindowSettings::asyncStopVideo()
