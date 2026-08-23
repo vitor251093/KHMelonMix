@@ -83,7 +83,7 @@ PluginSettingsDialog::PluginSettingsDialog(QWidget* parent) : QDialog(parent), u
         oldDaysDisableHisMemories = cfg.GetBool(root + ".DaysDisableHisMemories");
         oldInstantSkipCutscene = cfg.GetBool(root + ".InstantSkipCutsceneOnStart");
         oldEnableHDCutscenes = !cfg.GetBool(root + ".DisableHDCutscenes");
-        oldShowSubtitles = cfg.GetBool(root + ".SubtitlesEnabled");
+        oldShowSubtitles = !cfg.GetBool(root + ".DisableSubtitles");
         oldAudioPack = cfg.GetString(root + ".AudioPack");
         oldHUDSize = cfg.GetInt(root + ".HUDScale");
         oldHUDSize = (oldHUDSize == 0) ? 4 : oldHUDSize;
@@ -152,7 +152,7 @@ void PluginSettingsDialog::on_PluginSettingsDialog_rejected()
     cfg.SetBool(root + ".DaysDisableHisMemories", oldDaysDisableHisMemories);
     cfg.SetBool(root + ".InstantSkipCutsceneOnStart", oldInstantSkipCutscene);
     cfg.SetBool(root + ".DisableHDCutscenes", !oldEnableHDCutscenes);
-    cfg.SetBool(root + ".SubtitlesEnabled", oldShowSubtitles);
+    cfg.SetBool(root + ".DisableSubtitles", !oldShowSubtitles);
     cfg.SetString(root + ".AudioPack", oldAudioPack);
     cfg.SetInt(root + ".HUDScale", oldHUDSize);
     cfg.SetInt(root + ".CameraSensitivity", oldCameraSensitivity);
@@ -234,7 +234,7 @@ void PluginSettingsDialog::on_cbShowSubtitles_stateChanged(int state)
     std::string root = plugin->tomlUniqueIdentifier();
 
     auto& cfg = emuInstance->getGlobalConfig();
-    cfg.SetBool(root + ".SubtitlesEnabled", state != 0);
+    cfg.SetBool(root + ".DisableSubtitles", state == 0);
 
     emit updatePluginSettings();
 }

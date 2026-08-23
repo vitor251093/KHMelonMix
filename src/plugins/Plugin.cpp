@@ -1444,7 +1444,7 @@ void Plugin::_superLoadConfigs(
     UIScale = (UIScale == 0) ? 4 : UIScale;
     SelectedAudioPack = getStringConfig(root + ".AudioPack");
     HDCutscenesEnabled = !getBoolConfig(root + ".DisableHDCutscenes");
-    SubtitlesEnabled = getBoolConfig(root + ".SubtitlesEnabled");
+    SubtitlesEnabled = !getBoolConfig(root + ".DisableSubtitles");
     JoystickConfirmIndex = getIntConfig("Instance0.JoystickConfirmIndex");
 }
 void Plugin::loadConfigs(

@@ -426,9 +426,9 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
 
                 rows.append({ SettingRow::Type::Toggle, loc.displaySubtitlesLabel,
                     loc.displaySubtitlesDesc });
-                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "SubtitlesEnabled") ? 1 : 0; };
-                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "SubtitlesEnabled", v); savePlugin(); };
-                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "SubtitlesEnabled", true); savePlugin(); };
+                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableSubtitles") ? 0 : 1; };
+                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableSubtitles", !v); savePlugin(); };
+                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "DisableSubtitles", false); savePlugin(); };
 
                 rows.append({ SettingRow::Type::Slider, loc.displayHUDScaleLabel,
                     loc.displayHUDScaleDesc, {}, 1, 10 });

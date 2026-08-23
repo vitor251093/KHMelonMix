@@ -474,7 +474,7 @@ protected:
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
     bool HDCutscenesEnabled = true;
-    bool SubtitlesEnabled = false;
+    bool SubtitlesEnabled = true;
     int JoystickConfirmIndex = 0;
     std::string SelectedAudioPack = "";
 
