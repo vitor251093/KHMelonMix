@@ -844,7 +844,7 @@ void ScreenPanelNative::paintEvent(QPaintEvent* event)
 
     auto emuThread = emuInstance->getEmuThread();
 
-    if (emuThread->emuIsActive())
+    if (emuThread->emuIsActive() && emuThread->screenBlankFrames <= 0)
     {
         emuInstance->renderLock.lock();
         auto nds = emuInstance->getNDS();
@@ -855,6 +855,7 @@ void ScreenPanelNative::paintEvent(QPaintEvent* event)
         if (!nds->GPU.Framebuffer[frontbuf][0] || !nds->GPU.Framebuffer[frontbuf][1])
         {
             emuThread->frontBufferLock.unlock();
+            emuInstance->renderLock.unlock();
             return;
         }
 
@@ -1179,7 +1180,7 @@ void ScreenPanelGL::drawScreenGL()
 
     glViewport(0, 0, w, h);
 
-    if (emuThread->emuIsActive())
+    if (emuThread->emuIsActive() && emuThread->screenBlankFrames <= 0)
     {
         auto nds = emuInstance->getNDS();
 

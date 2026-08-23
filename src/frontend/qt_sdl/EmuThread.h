@@ -145,6 +145,8 @@ public:
     int frontBuffer = 0;
     QMutex frontBufferLock;
 
+    std::atomic<int> screenBlankFrames {0};
+
     QWaitCondition glBorrowCond;
     QMutex glBorrowMutex;
 

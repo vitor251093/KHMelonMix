@@ -416,6 +416,7 @@ void EmuThread::run()
                 updateRenderer();
 
                 videoSettingsDirty = false;
+                screenBlankFrames = 3;
                 emuInstance->renderLock.unlock();
             }
 
@@ -635,6 +636,9 @@ void EmuThread::run()
                 refreshPluginState();
             }
         }
+
+        if (screenBlankFrames > 0)
+            screenBlankFrames--;
 
         handleMessages();
 
