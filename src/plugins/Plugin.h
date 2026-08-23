@@ -294,6 +294,7 @@ public:
     void skipIngamePrerenderedCutsceneThroughPauseMenu();
     void stopReplacementCutsceneAndResumeGameAfterSkippingIngamePrerenderedCutscene();
     void skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNaturally();
+    void resumeIngamePrerenderedCutsceneAfterReplacementCutsceneWasCancelled();
 
     std::function<void(std::string, std::string)> startReplacementCutscene = nullptr;
     std::function<void(int)> showReplacementCutscenePauseMenu = nullptr;
@@ -490,6 +491,7 @@ protected:
     bool _IsInEngineCutsceneRunning = false;
     bool _IsReplacementCutsceneRunning = false;
     bool _IsIngameOrReplacementCutsceneRunning = false;
+    bool _WasReplacementCutsceneCancelled = false;
     bool _ReplacementCutsceneIsPaused = false;
 
     bool _ShowingCutsceneSkipMenu = false;
@@ -498,6 +500,7 @@ protected:
     int _CutsceneMenuSoundRequest = 0; // 1=enter, 2=move, 3=continue, 4=select; 0=none
 
     std::vector<CutsceneEntry*> _CutscenesQueue = {};
+    std::vector<CutsceneEntry*> _CutscenesBlacklist = {};
     CutsceneEntry* _LastCutscene = nullptr;
 
 

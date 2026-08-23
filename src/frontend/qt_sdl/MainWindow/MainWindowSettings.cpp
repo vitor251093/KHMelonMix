@@ -282,17 +282,20 @@ void MainWindowSettings::createVideoPlayer()
             asyncStopVideo();
         }
         if (status == QMediaPlayer::InvalidMedia) {
-            emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
+            emuInstance->plugin->errorLog("======= Error: %d", status);
+            cancelVideo();
         }
     });
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=](QMediaPlayer::Error error) {
         emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
+        cancelVideo();
     });
 #else
     connect(player.get(), &QMediaPlayer::errorOccurred, [=](QMediaPlayer::Error error, const QString &errorString) {
         emuInstance->plugin->errorLog("======= Error: %s", player->errorString().toStdString().c_str());
+        cancelVideo();
     });
 #endif
 
@@ -398,6 +401,29 @@ void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFile
     player->play();
 }
 
+void MainWindowSettings::asyncCancelVideo()
+{
+    QMetaObject::invokeMethod(this, "cancelVideo", Qt::QueuedConnection);
+}
+
+void MainWindowSettings::cancelVideo()
+{
+    // Stop regardless of whether the video is playing or paused, so a cutscene
+    // skipped from the (paused) menu doesn't leave its audio playing.
+    if (player->playbackState() != QMediaPlayer::PlaybackState::StoppedState) {
+        player->stop();
+    }
+
+    hideCutsceneSkipMenu();
+
+    // Drop any subtitle cues so a finished cutscene doesn't leave stale text behind.
+    playerView->loadSubtitles("");
+
+    showGame();
+
+    emuInstance->plugin->resumeIngamePrerenderedCutsceneAfterReplacementCutsceneWasCancelled();
+}
+
 void MainWindowSettings::asyncStopVideo()
 {
     QMetaObject::invokeMethod(this, "stopVideo", Qt::QueuedConnection);
@@ -419,17 +445,6 @@ void MainWindowSettings::stopVideo()
     showGame();
 
     emuInstance->plugin->skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNaturally();
-}
-
-void MainWindowSettings::stopVideoForReload()
-{
-    // Minimal stop for when a new ROM is loaded behind the open settings overlay: do NOT call
-    // showGame() (it would hide the overlay) or plugin->onReplacementCutsceneEnd() (emuInstance->
-    // plugin is already the newly-loaded game's plugin by this point).
-    if (player->playbackState() != QMediaPlayer::PlaybackState::StoppedState) {
-        player->stop();
-    }
-    playerView->loadSubtitles("");
 }
 
 void MainWindowSettings::asyncPauseVideo()

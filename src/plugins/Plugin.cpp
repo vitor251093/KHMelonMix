@@ -812,14 +812,22 @@ void Plugin::refreshCutscene()
 
     CutsceneEntry* cutscene = detectCutscene();
 
-    if (!_IsReplacementCutsceneRunning && !_IsMobiCutsceneRunning && !_IsInEngineCutsceneRunning && _IsIngameOrReplacementCutsceneRunning && canReturnToGameAfterReplacementCutscene()) {
+    if (_WasReplacementCutsceneCancelled || (!_IsReplacementCutsceneRunning && !_IsMobiCutsceneRunning &&
+            !_IsInEngineCutsceneRunning && _IsIngameOrReplacementCutsceneRunning && canReturnToGameAfterReplacementCutscene())) {
         _APressCount = 0;
         _StartPressCount = 0;
+
+        if (_WasReplacementCutsceneCancelled)
+        {
+            _IsReplacementCutsceneRunning = false;
+            _IsMobiCutsceneRunning = false;
+            _IsInEngineCutsceneRunning = false;
+        }
 
         _IsIngameOrReplacementCutsceneRunning = false;
         _LastCutscene = _CutscenesQueue[0];
         _CutscenesQueue.erase(_CutscenesQueue.begin());
-        if (!_CutscenesQueue.empty())
+        if (!_WasReplacementCutsceneCancelled && !_CutscenesQueue.empty())
         {
             printf("Playing next cutscene on queue: %s\n", _CutscenesQueue[0]->Name);
             bool isMobiCutsceneRunning = (_CutscenesQueue[0]->dsScreensState & 1) == 1;
@@ -841,7 +849,7 @@ void Plugin::refreshCutscene()
 
         _ReplayFrameLimitCount = 60;
 
-        if (_CutscenesQueue.empty()) {
+        if (!_WasReplacementCutsceneCancelled && _CutscenesQueue.empty()) {
             u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
             if (cutsceneAddress != 0) {
                 nds->ARM7Write32(cutsceneAddress, 0x0);
@@ -850,6 +858,17 @@ void Plugin::refreshCutscene()
             u32 cutsceneAddress2 = detectBottomScreenMobiCutsceneAddress();
             if (cutsceneAddress2 != 0) {
                 nds->ARM7Write32(cutsceneAddress2, 0x0);
+            }
+        }
+
+        _WasReplacementCutsceneCancelled = false;
+    }
+
+    if (cutscene != nullptr) {
+        for (auto blacklistedCutscene : _CutscenesBlacklist) {
+            if (cutscene->usAddress == blacklistedCutscene->usAddress) {
+                cutscene = nullptr;
+                break;
             }
         }
     }
@@ -978,6 +997,16 @@ void Plugin::skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNatura
         _IsReplacementCutsceneRunning = false;
         resumeHiddenEmulatorAfterReplacementCutsceneStopped();
     }
+}
+
+void Plugin::resumeIngamePrerenderedCutsceneAfterReplacementCutsceneWasCancelled()
+{
+    printf("Resume game after replacement cutscene was cancelled due to error\n");
+
+    _CutscenesBlacklist.push_back(_CutscenesQueue[0]);
+
+    _WasReplacementCutsceneCancelled = true;
+    resumeHiddenEmulatorAfterReplacementCutsceneStopped();
 }
 
 std::vector<std::string> Plugin::audioPackNames() {

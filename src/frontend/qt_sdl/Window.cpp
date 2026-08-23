@@ -2475,11 +2475,6 @@ void MainWindow::onOpenSettingsOverlay()
     if (cw->currentWidget() == settingsView) return;
     emuInstance->settingsViewOpen = true;
     m_previousWidget = cw->currentWidget();
-    if (isVideoPlaying())
-    {
-        pauseVideo();
-        m_videoPausedBySelf = true;
-    }
     cw->setCurrentWidget(settingsView);
     settingsView->resetToFirstScreen();
     // Grab keyboard focus so the overlay is navigable immediately (no extra click). The prior
@@ -2492,12 +2487,6 @@ void MainWindow::onSettingsClosed()
 {
     QStackedWidget* cw = (QStackedWidget*)centralWidget();
     emuInstance->settingsViewOpen = false;
-    if (m_videoPausedBySelf)
-    {
-        m_videoPausedBySelf = false;
-        if (isVideoPaused())
-            unpauseVideo();
-    }
     if (m_previousWidget)
     {
         cw->setCurrentWidget(m_previousWidget);
@@ -2545,11 +2534,6 @@ void MainWindow::onEmuStart()
     if (emuInstance->settingsViewOpen && settingsView)
     {
         settingsView->resetToFirstScreen();
-        if (m_videoPausedBySelf)
-        {
-            stopVideoForReload();
-            m_videoPausedBySelf = false;
-        }
         m_previousWidget = panel;
     }
 }

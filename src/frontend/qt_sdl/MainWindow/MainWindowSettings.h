@@ -69,15 +69,14 @@ public slots:
     void updateBgmMusicVolume(quint8 ramVolume);
 
     void asyncStartVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage);
+    void asyncCancelVideo();
     void asyncStopVideo();
     void asyncPauseVideo();
     void asyncUnpauseVideo();
 
     void startVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage);
+    void cancelVideo();
     void stopVideo();
-    // Stop a cutscene without switching the visible widget or notifying the plugin — used when a
-    // new ROM is loaded while the settings overlay is open over a (paused) cutscene.
-    void stopVideoForReload();
     void pauseVideo();
     void unpauseVideo();
     bool isVideoPlaying() const;
@@ -109,7 +108,6 @@ protected:
 
     SettingsView* settingsView = nullptr;
     QWidget* m_previousWidget = nullptr;
-    bool m_videoPausedBySelf = false;
 
 private:
     QScopedPointer<Ui::MainWindowSettings> ui;
