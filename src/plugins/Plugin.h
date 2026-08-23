@@ -473,6 +473,7 @@ protected:
     bool DaysDisableHisMemories = false;
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
+    bool HDCutscenesEnabled = true;
     bool SubtitlesEnabled = false;
     int JoystickConfirmIndex = 0;
     std::string SelectedAudioPack = "";

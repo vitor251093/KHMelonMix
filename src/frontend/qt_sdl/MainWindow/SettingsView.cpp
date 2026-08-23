@@ -418,6 +418,12 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
                 rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableSingleScreenMode", !v); savePlugin(); };
                 rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "DisableSingleScreenMode", false); savePlugin(); };
 
+                rows.append({ SettingRow::Type::Toggle, loc.displayHDCutscenesLabel,
+                    loc.displayHDCutscenesDesc });
+                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableHDCutscenes") ? 0 : 1; };
+                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableHDCutscenes", !v); savePlugin(); };
+                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "DisableHDCutscenes", false); savePlugin(); };
+
                 rows.append({ SettingRow::Type::Toggle, loc.displaySubtitlesLabel,
                     loc.displaySubtitlesDesc });
                 rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "SubtitlesEnabled") ? 1 : 0; };

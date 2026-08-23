@@ -1443,6 +1443,7 @@ void Plugin::_superLoadConfigs(
     UIScale = getIntConfig(root + ".HUDScale");
     UIScale = (UIScale == 0) ? 4 : UIScale;
     SelectedAudioPack = getStringConfig(root + ".AudioPack");
+    HDCutscenesEnabled = !getBoolConfig(root + ".DisableHDCutscenes");
     SubtitlesEnabled = getBoolConfig(root + ".SubtitlesEnabled");
     JoystickConfirmIndex = getIntConfig("Instance0.JoystickConfirmIndex");
 }

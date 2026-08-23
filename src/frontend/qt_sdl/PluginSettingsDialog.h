@@ -64,6 +64,7 @@ private slots:
     void on_cbFFLoadingScreens_stateChanged(int state);
     void on_cbDaysDisableHisMemories_stateChanged(int state);
     void on_cbInstantSkipCutscene_stateChanged(int state);
+    void on_cbEnableHDCutscenes_stateChanged(int state);
     void on_cbShowSubtitles_stateChanged(int state);
     void on_cbxAudioPack_currentTextChanged(const QString &text);
 
@@ -81,6 +82,7 @@ private:
     int oldFFLoadingScreens;
     int oldDaysDisableHisMemories;
     int oldInstantSkipCutscene;
+    int oldEnableHDCutscenes;
     int oldShowSubtitles;
     std::string oldAudioPack;
     int oldHUDSize;

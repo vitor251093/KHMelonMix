@@ -95,6 +95,8 @@ static const SettingsLocale kEnglish = {
     /* displayEnhancedDesc */      "Enable high-resolution backgrounds and models.",
     /* displaySingleScreenLabel */ "Single Screen Mode",
     /* displaySingleScreenDesc */  "Display only the top screen, scaled to fill the window.",
+    /* displayHDCutscenesLabel */  "Enable HD Cutscenes",
+    /* displayHDCutscenesDesc */   "Play pre-rendered HD cutscenes instead of the original ingame cutscenes, when available.",
     /* displaySubtitlesLabel */    "Show Subtitles",
     /* displaySubtitlesDesc */     "Display subtitles during HD cutscene playback.",
     /* displayHUDScaleLabel */     "HUD Scale",

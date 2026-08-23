@@ -83,6 +83,8 @@ struct SettingsLocale
     const char* displayEnhancedDesc;
     const char* displaySingleScreenLabel;
     const char* displaySingleScreenDesc;
+    const char* displayHDCutscenesLabel;
+    const char* displayHDCutscenesDesc;
     const char* displaySubtitlesLabel;
     const char* displaySubtitlesDesc;
     const char* displayHUDScaleLabel;

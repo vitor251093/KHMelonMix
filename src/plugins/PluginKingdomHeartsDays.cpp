@@ -2848,6 +2848,9 @@ std::filesystem::path PluginKingdomHeartsDays::patchReplacementCutsceneIfNeeded(
 }
 
 std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* cutscene) {
+    if (!HDCutscenesEnabled) {
+        return "";
+    }
     std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
