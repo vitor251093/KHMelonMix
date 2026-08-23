@@ -1001,7 +1001,17 @@ void Plugin::skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNatura
 
 void Plugin::resumeIngamePrerenderedCutsceneAfterReplacementCutsceneWasCancelled()
 {
+    if (_WasReplacementCutsceneCancelled)
+    {
+        return;
+    }
+
     printf("Resume game after replacement cutscene was cancelled due to error\n");
+
+    if (postMessageToOsd != nullptr)
+    {
+        postMessageToOsd("Failed to play " + replacementCutsceneFilePath(_CutscenesQueue[0]));
+    }
 
     _CutscenesBlacklist.push_back(_CutscenesQueue[0]);
 
