@@ -421,7 +421,7 @@ void MainWindowSettings::cancelVideo()
 
     showGame();
 
-    emuInstance->plugin->resumeIngamePrerenderedCutsceneAfterReplacementCutsceneWasCancelled();
+    emuInstance->plugin->resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay();
 }
 
 void MainWindowSettings::asyncStopVideo()

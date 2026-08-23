@@ -294,7 +294,7 @@ public:
     void skipIngamePrerenderedCutsceneThroughPauseMenu();
     void stopReplacementCutsceneAndResumeGameAfterSkippingIngamePrerenderedCutscene();
     void skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNaturally();
-    void resumeIngamePrerenderedCutsceneAfterReplacementCutsceneWasCancelled();
+    void resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay();
 
     std::function<void(std::string, std::string)> startReplacementCutscene = nullptr;
     std::function<void(int)> showReplacementCutscenePauseMenu = nullptr;
@@ -491,7 +491,7 @@ protected:
     bool _IsInEngineCutsceneRunning = false;
     bool _IsReplacementCutsceneRunning = false;
     bool _IsIngameOrReplacementCutsceneRunning = false;
-    bool _WasReplacementCutsceneCancelled = false;
+    bool _DidReplacementCutsceneFailedToPlay = false;
     bool _ReplacementCutsceneIsPaused = false;
 
     bool _ShowingCutsceneSkipMenu = false;

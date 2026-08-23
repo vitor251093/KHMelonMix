@@ -812,12 +812,12 @@ void Plugin::refreshCutscene()
 
     CutsceneEntry* cutscene = detectCutscene();
 
-    if (_WasReplacementCutsceneCancelled || (!_IsReplacementCutsceneRunning && !_IsMobiCutsceneRunning &&
+    if (_DidReplacementCutsceneFailedToPlay || (!_IsReplacementCutsceneRunning && !_IsMobiCutsceneRunning &&
             !_IsInEngineCutsceneRunning && _IsIngameOrReplacementCutsceneRunning && canReturnToGameAfterReplacementCutscene())) {
         _APressCount = 0;
         _StartPressCount = 0;
 
-        if (_WasReplacementCutsceneCancelled)
+        if (_DidReplacementCutsceneFailedToPlay)
         {
             _IsReplacementCutsceneRunning = false;
             _IsMobiCutsceneRunning = false;
@@ -827,7 +827,7 @@ void Plugin::refreshCutscene()
         _IsIngameOrReplacementCutsceneRunning = false;
         _LastCutscene = _CutscenesQueue[0];
         _CutscenesQueue.erase(_CutscenesQueue.begin());
-        if (!_WasReplacementCutsceneCancelled && !_CutscenesQueue.empty())
+        if (!_DidReplacementCutsceneFailedToPlay && !_CutscenesQueue.empty())
         {
             printf("Playing next cutscene on queue: %s\n", _CutscenesQueue[0]->Name);
             bool isMobiCutsceneRunning = (_CutscenesQueue[0]->dsScreensState & 1) == 1;
@@ -849,7 +849,7 @@ void Plugin::refreshCutscene()
 
         _ReplayFrameLimitCount = 60;
 
-        if (!_WasReplacementCutsceneCancelled && _CutscenesQueue.empty()) {
+        if (!_DidReplacementCutsceneFailedToPlay && _CutscenesQueue.empty()) {
             u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
             if (cutsceneAddress != 0) {
                 nds->ARM7Write32(cutsceneAddress, 0x0);
@@ -861,7 +861,7 @@ void Plugin::refreshCutscene()
             }
         }
 
-        _WasReplacementCutsceneCancelled = false;
+        _DidReplacementCutsceneFailedToPlay = false;
     }
 
     if (cutscene != nullptr) {
@@ -999,14 +999,14 @@ void Plugin::skipIngamePrerenderedCutsceneAfterReplacementCutsceneFinishesNatura
     }
 }
 
-void Plugin::resumeIngamePrerenderedCutsceneAfterReplacementCutsceneWasCancelled()
+void Plugin::resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay()
 {
-    if (_WasReplacementCutsceneCancelled)
+    if (_DidReplacementCutsceneFailedToPlay)
     {
         return;
     }
 
-    printf("Resume game after replacement cutscene was cancelled due to error\n");
+    printf("Resume game after replacement cutscene failed to play\n");
 
     if (postMessageToOsd != nullptr)
     {
@@ -1015,7 +1015,7 @@ void Plugin::resumeIngamePrerenderedCutsceneAfterReplacementCutsceneWasCancelled
 
     _CutscenesBlacklist.push_back(_CutscenesQueue[0]);
 
-    _WasReplacementCutsceneCancelled = true;
+    _DidReplacementCutsceneFailedToPlay = true;
     resumeHiddenEmulatorAfterReplacementCutsceneStopped();
 }
 
