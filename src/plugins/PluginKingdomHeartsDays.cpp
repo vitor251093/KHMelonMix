@@ -2955,8 +2955,7 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
         return fullPath.string();
     }
 
-    /*
-    std::filesystem::path collectionPath = kingdomHeartsCollectionFolderPath();
+    std::filesystem::path collectionPath = KingdomHeartsHDCollection::path();
     if (!collectionPath.empty()) {
         std::filesystem::path newEpicFolderPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "Days" / "en";
         if (std::filesystem::exists(newEpicFolderPath)) {
@@ -2973,7 +2972,6 @@ std::string PluginKingdomHeartsDays::replacementCutsceneFilePath(CutsceneEntry* 
             }
         }
     }
-    */
 
     return "";
 }

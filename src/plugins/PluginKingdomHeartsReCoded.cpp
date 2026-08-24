@@ -3021,8 +3021,7 @@ std::string PluginKingdomHeartsReCoded::replacementCutsceneFilePath(CutsceneEntr
         return fullPath.string();
     }
 
-    /*
-    std::filesystem::path collectionPath = kingdomHeartsCollectionFolderPath();
+    std::filesystem::path collectionPath = KingdomHeartsHDCollection::path();
     if (!collectionPath.empty()) {
         std::filesystem::path newEpicFolderPath = collectionPath / "EPIC" / "Mare" / "MOVIE" / "ReCoded" / "en";
         if (std::filesystem::exists(newEpicFolderPath)) {
@@ -3039,7 +3038,6 @@ std::string PluginKingdomHeartsReCoded::replacementCutsceneFilePath(CutsceneEntr
             }
         }
     }
-    */
 
     return "";
 }

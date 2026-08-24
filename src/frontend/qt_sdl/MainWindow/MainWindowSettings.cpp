@@ -26,6 +26,8 @@
 #include <QFile>
 #include <QGraphicsVideoItem>
 
+#include <cstring>
+
 #include <SDL2/SDL.h>
 
 #include "types.h"
@@ -40,6 +42,115 @@
 #include "AudioPlayer.h"
 
 using namespace melonDS;
+
+namespace {
+
+// Some HD cutscene MP4s ship with their first 256 bytes XORed against a fixed, repeating
+// 16-byte key (a KH HD Remix asset-scrambling quirk), so they start with neither a "ftyp"
+// nor a "moov" box and QMediaPlayer refuses to load them as InvalidMedia. XOR is its own
+// inverse, so re-applying the same key recovers the real header.
+constexpr unsigned char kMp4HeaderKey[16] = {
+    0x3f, 0x1e, 0xc1, 0x93, 0x26, 0x42, 0x58, 0xb8,
+    0xaa, 0x9d, 0x53, 0x75, 0xbf, 0x62, 0x9a, 0x97
+};
+constexpr qint64 kMp4HeaderFixLen = 256;
+
+bool isKnownIsoBoxType(const char* type)
+{
+    static const char* const known[] = {
+        "ftyp", "moov", "free", "skip", "wide", "mdat", "pnot", "uuid", "meta", "moof", "mfra", "styp"
+    };
+    for (const char* k : known) {
+        if (memcmp(type, k, 4) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Peeks at the box type right after the first box's size field (bytes 4..8) and checks
+// whether un-XORing it with kMp4HeaderKey turns it into a recognized ISO base media box
+// type. Files that are already fine (or aren't MP4 at all) are left untouched.
+bool mp4NeedsHeaderFix(const QString& path)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly)) {
+        return false;
+    }
+    char buf[8];
+    if (f.read(buf, sizeof(buf)) != (qint64)sizeof(buf)) {
+        return false;
+    }
+    if (isKnownIsoBoxType(buf + 4)) {
+        return false;
+    }
+    char fixed[4];
+    for (int i = 0; i < 4; i++) {
+        fixed[i] = buf[4 + i] ^ (char)kMp4HeaderKey[(4 + i) % 16];
+    }
+    return isKnownIsoBoxType(fixed);
+}
+
+// Wraps a local file and un-XORs the scrambled header range on the fly while reading, so
+// QMediaPlayer sees a valid MP4 without the file ever being rewritten on disk. Everything
+// past kMp4HeaderFixLen is passed through unchanged, and reads are served straight off
+// disk (no whole-file buffering), so this is cheap even for the largest cutscenes.
+class ScrambledMp4Device : public QIODevice
+{
+public:
+    explicit ScrambledMp4Device(const QString& path, QObject* parent = nullptr)
+        : QIODevice(parent), m_file(path) {}
+
+    bool open(QIODevice::OpenMode mode) override
+    {
+        if (!m_file.open(QIODevice::ReadOnly)) {
+            return false;
+        }
+        return QIODevice::open(mode | QIODevice::ReadOnly);
+    }
+
+    void close() override
+    {
+        m_file.close();
+        QIODevice::close();
+    }
+
+    bool isSequential() const override { return false; }
+    qint64 size() const override { return m_file.size(); }
+    qint64 pos() const override { return m_file.pos(); }
+    bool atEnd() const override { return m_file.atEnd(); }
+    qint64 bytesAvailable() const override { return m_file.bytesAvailable(); }
+
+    bool seek(qint64 pos) override
+    {
+        if (!m_file.seek(pos)) {
+            return false;
+        }
+        return QIODevice::seek(pos);
+    }
+
+protected:
+    qint64 readData(char* data, qint64 maxSize) override
+    {
+        const qint64 startPos = m_file.pos();
+        const qint64 n = m_file.read(data, maxSize);
+        if (n <= 0) {
+            return n;
+        }
+        const qint64 fixEnd = qMin(startPos + n, kMp4HeaderFixLen);
+        for (qint64 p = startPos; p < fixEnd; p++) {
+            data[p - startPos] ^= kMp4HeaderKey[p % 16];
+        }
+        return n;
+    }
+
+    qint64 writeData(const char*, qint64) override { return -1; }
+
+private:
+    QFile m_file;
+};
+
+} // namespace
 
 MainWindowSettings::MainWindowSettings(EmuInstance* inst, QWidget* parent) :
     QMainWindow(parent),
@@ -380,10 +491,27 @@ void MainWindowSettings::asyncStartVideo(QString videoFilePath, QString subtitle
 
 void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage)
 {
+    playerSourceDevice.reset();
+    if (mp4NeedsHeaderFix(videoFilePath)) {
+        playerSourceDevice.reset(new ScrambledMp4Device(videoFilePath, this));
+        if (!playerSourceDevice->open(QIODevice::ReadOnly)) {
+            playerSourceDevice.reset();
+        }
+    }
+
+    const QUrl videoUrl = QUrl::fromLocalFile(videoFilePath);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    player->setMedia(QUrl::fromLocalFile(videoFilePath));
+    if (playerSourceDevice) {
+        player->setMedia(videoUrl, playerSourceDevice.get());
+    } else {
+        player->setMedia(videoUrl);
+    }
 #else
-    player->setSource(QUrl::fromLocalFile(videoFilePath));
+    if (playerSourceDevice) {
+        player->setSourceDevice(playerSourceDevice.get(), videoUrl);
+    } else {
+        player->setSource(videoUrl);
+    }
 #endif
 
     // Load subtitles for this cutscene (an empty path clears any previous cues).
@@ -407,6 +535,7 @@ void MainWindowSettings::cancelVideo(std::string error)
     if (player->playbackState() != QMediaPlayer::PlaybackState::StoppedState) {
         player->stop();
     }
+    playerSourceDevice.reset();
 
     hideCutsceneSkipMenu();
 
@@ -430,6 +559,7 @@ void MainWindowSettings::stopVideo()
     if (player->playbackState() != QMediaPlayer::PlaybackState::StoppedState) {
         player->stop();
     }
+    playerSourceDevice.reset();
 
     hideCutsceneSkipMenu();
 

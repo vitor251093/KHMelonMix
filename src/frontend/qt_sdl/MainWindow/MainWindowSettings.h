@@ -26,6 +26,7 @@
 #include <QMediaDevices>
 #include <QAudioDevice>
 #include <QByteArray>
+#include <QIODevice>
 #include <QPushButton>
 #include <initializer_list>
 
@@ -119,6 +120,7 @@ private:
     CutsceneVideoView* playerView = nullptr;
     QScopedPointer<QAudioOutput> playerAudioOutput;
     QScopedPointer<QMediaPlayer> player;
+    QScopedPointer<QIODevice> playerSourceDevice;
 
     QList<melonMix::AudioPlayer*> bgmPlayers;
     QScopedPointer<QTimer> delayedBgmStart;
