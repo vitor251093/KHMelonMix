@@ -2821,7 +2821,7 @@ u32 PluginKingdomHeartsDays::detectTopScreenInEngineCutsceneId()
     if (dialogAddress != 0) {
         u32 dialogValue = nds->ARM7Read32(dialogAddress);
         if (dialogValue != 0) {
-            u32 currentMission = getCurrentMission();
+            u32 currentMission = getCurrentMission(); // TODO: KH This seems to be always returning 0, apparently
             return (currentMission << 8) | dialogValue;
         }
     }
