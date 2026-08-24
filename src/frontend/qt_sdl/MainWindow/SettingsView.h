@@ -22,7 +22,6 @@
 #include <functional>
 #include <string>
 #include <QWidget>
-#include "SettingsLocale.h"
 #include <QVector>
 #include <QStringList>
 #include <QElapsedTimer>
@@ -34,6 +33,8 @@
 #include <QWheelEvent>
 #include <QShowEvent>
 #include <QHideEvent>
+#include "Config.h"
+#include "SettingsLocale.h"
 
 class MainWindowSettings;
 
@@ -206,6 +207,9 @@ private:
     int  hitTestDetail(QPoint pos) const;
     int  hitTestOptionList(QPoint pos) const;
     int  hitTestRemap(QPoint pos) const;
+
+    static SettingRow buildToggle(QString label, QString description, Config::Table* gcfg,
+        const std::string& property, bool opposite, bool defaultValue, const std::function<void()>& onSave);
 
     QVector<SettingRow> rowsFor(int sidebarIndex) const;
     int  readRowValue(int sidebar, int row) const;

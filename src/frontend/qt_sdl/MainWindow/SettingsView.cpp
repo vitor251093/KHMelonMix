@@ -164,6 +164,16 @@ static QString keyBindingText(int key)
 
 // ─── row definitions ──────────────────────────────────────────────────────────
 
+SettingRow SettingsView::buildToggle(QString label, QString description, Config::Table* gcfg,
+        const std::string& property, bool opposite, bool defaultValue, const std::function<void()>& onSave)
+{
+    SettingRow settingRow = { SettingRow::Type::Toggle, label,description };
+    settingRow.read  = [gcfg, property, opposite]() { return gcfg->GetBool(property) ? (opposite ? 0 : 1) : (opposite ? 1 : 0); };
+    settingRow.write = [gcfg, property, opposite, onSave](int v) { gcfg->SetBool(property, (opposite ? !v : v)); onSave(); };
+    settingRow.reset = [gcfg, property, defaultValue, onSave]() { gcfg->SetBool(property, defaultValue); onSave(); };
+    return settingRow;
+}
+
 QVector<SettingRow> SettingsView::rowsFor(int idx) const
 {
     QVector<SettingRow> rows;
@@ -214,25 +224,15 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
         auto pluginSave = [emu]() { Config::Save(); emu->plugin->shouldInvalidateConfigs = true; };
 
-        rows.append({ SettingRow::Type::Toggle, loc.gameFastForwardLabel,
-            loc.gameFastForwardDesc });
-        rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "FastForwardLoadingScreens") ? 1 : 0; };
-        rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "FastForwardLoadingScreens", v); pluginSave(); };
-        rows.last().reset = [gcfg, prefix, pluginSave]() { gcfg->SetBool(prefix + "FastForwardLoadingScreens", false); pluginSave(); };
-
-        rows.append({ SettingRow::Type::Toggle, loc.gameSkipCutscenesLabel,
-            loc.gameSkipCutscenesDesc });
-        rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "InstantSkipCutsceneOnStart") ? 1 : 0; };
-        rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "InstantSkipCutsceneOnStart", v); pluginSave(); };
-        rows.last().reset = [gcfg, prefix, pluginSave]() { gcfg->SetBool(prefix + "InstantSkipCutsceneOnStart", false); pluginSave(); };
+        rows.append(buildToggle(loc.gameFastForwardLabel,
+            loc.gameFastForwardDesc, gcfg, prefix + "FastForwardLoadingScreens", false, true, pluginSave));
+        rows.append(buildToggle(loc.gameSkipCutscenesLabel,
+            loc.gameSkipCutscenesDesc, gcfg, prefix + "InstantSkipCutsceneOnStart", false, false, pluginSave));
 
         if (canDisableHisMemories)
         {
-            rows.append({ SettingRow::Type::Toggle, loc.gameHisMemoriesLabel,
-                loc.gameHisMemoriesDesc });
-            rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DaysDisableHisMemories") ? 1 : 0; };
-            rows.last().write = [gcfg, prefix, pluginSave](int v) { gcfg->SetBool(prefix + "DaysDisableHisMemories", v); pluginSave(); };
-            rows.last().reset = [gcfg, prefix, pluginSave]() { gcfg->SetBool(prefix + "DaysDisableHisMemories", false); pluginSave(); };
+            rows.append(buildToggle(loc.gameHisMemoriesLabel,
+                loc.gameHisMemoriesDesc, gcfg, prefix + "DaysDisableHisMemories", false, false, pluginSave));
         }
         break;
     }
@@ -249,25 +249,16 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetInt("Emu.ConsoleType", v); saveOnly(); };
         rows.last().reset = [gcfg, saveOnly]() { gcfg->SetInt("Emu.ConsoleType", 0); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Toggle, loc.emuDirectBootLabel,
-            loc.emuDirectBootDesc });
-        rows.last().read  = [gcfg]() { return gcfg->GetBool("Emu.DirectBoot") ? 1 : 0; };
-        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("Emu.DirectBoot", v != 0); saveOnly(); };
-        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("Emu.DirectBoot", true); saveOnly(); };
+        rows.append(buildToggle(loc.emuDirectBootLabel,
+                loc.emuDirectBootDesc, gcfg, "Emu.DirectBoot", false, true, saveOnly));
 
 #ifdef JIT_ENABLED
-        rows.append({ SettingRow::Type::Toggle, loc.emuJitLabel,
-            loc.emuJitDesc });
-        rows.last().read  = [gcfg]() { return gcfg->GetBool("JIT.Enable") ? 1 : 0; };
-        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("JIT.Enable", v != 0); saveOnly(); };
-        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("JIT.Enable", false); saveOnly(); };
+        rows.append(buildToggle(loc.emuJitLabel,
+                loc.emuJitDesc, gcfg, "JIT.Enable", false, false, saveOnly));
 #endif
 
-        rows.append({ SettingRow::Type::Toggle, loc.emuFpsLimitLabel,
-            loc.emuFpsLimitDesc });
-        rows.last().read  = [gcfg]() { return gcfg->GetBool("LimitFPS") ? 1 : 0; };
-        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("LimitFPS", v != 0); saveOnly(); };
-        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("LimitFPS", true); saveOnly(); };
+        rows.append(buildToggle(loc.emuFpsLimitLabel,
+                loc.emuFpsLimitDesc, gcfg, "LimitFPS", true, true, saveOnly));
 
         rows.append({ SettingRow::Type::Combobox, loc.emuTargetFpsLabel,
             loc.emuTargetFpsDesc,
@@ -311,23 +302,14 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         };
         rows.last().reset = [gcfg, saveOnly]() { gcfg->SetDouble("SlowmoFPS", 30.0); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Toggle, loc.emuMuteFastForwardLabel,
-            loc.emuMuteFastForwardDesc });
-        rows.last().read  = [gcfg]() { return gcfg->GetBool("MuteFastForward") ? 1 : 0; };
-        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("MuteFastForward", v != 0); saveOnly(); };
-        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("MuteFastForward", false); saveOnly(); };
+        rows.append(buildToggle(loc.emuMuteFastForwardLabel,
+                loc.emuMuteFastForwardDesc, gcfg, "MuteFastForward", false, false, saveOnly));
 
-        rows.append({ SettingRow::Type::Toggle, loc.emuPauseLostFocusLabel,
-            loc.emuPauseLostFocusDesc });
-        rows.last().read  = [gcfg]() { return gcfg->GetBool("PauseLostFocus") ? 1 : 0; };
-        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("PauseLostFocus", v != 0); saveOnly(); };
-        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("PauseLostFocus", false); saveOnly(); };
+        rows.append(buildToggle(loc.emuPauseLostFocusLabel,
+                loc.emuPauseLostFocusDesc, gcfg, "PauseLostFocus", false, false, saveOnly));
 
-        rows.append({ SettingRow::Type::Toggle, loc.emuHideMouseLabel,
-            loc.emuHideMouseDesc });
-        rows.last().read  = [gcfg]() { return gcfg->GetBool("Mouse.Hide") ? 1 : 0; };
-        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("Mouse.Hide", v != 0); saveOnly(); };
-        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("Mouse.Hide", true); saveOnly(); };
+        rows.append(buildToggle(loc.emuHideMouseLabel,
+                loc.emuHideMouseDesc, gcfg, "PauseLostFocus", false, true, saveOnly));
 
         rows.append({ SettingRow::Type::Combobox, loc.emuHideMouseAfterLabel,
             loc.emuHideMouseAfterDesc,
@@ -368,11 +350,8 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         rows.last().write = [gcfg, saveVideo](int v) { gcfg->SetInt("3D.GL.ScaleFactor", v + 1); saveVideo(); };
         rows.last().reset = [gcfg, saveVideo]() { gcfg->SetInt("3D.GL.ScaleFactor", 3); saveVideo(); };
 
-        rows.append({ SettingRow::Type::Toggle, loc.displayVSyncLabel,
-            loc.displayVSyncDesc });
-        rows.last().read  = [gcfg]() { return gcfg->GetBool("Screen.VSync") ? 1 : 0; };
-        rows.last().write = [gcfg, saveVideo](int v) { gcfg->SetBool("Screen.VSync", v != 0); saveVideo(); };
-        rows.last().reset = [gcfg, saveVideo]() { gcfg->SetBool("Screen.VSync", false); saveVideo(); };
+        rows.append(buildToggle(loc.displayVSyncLabel,
+                loc.displayVSyncDesc, gcfg, "Screen.VSync", false, false, saveVideo));
 
         rows.append({ SettingRow::Type::Combobox, loc.displayThemeColorLabel,
             loc.displayThemeColorDesc,
@@ -406,29 +385,14 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
                 std::string prefix = emu->plugin->tomlUniqueIdentifier() + ".";
                 auto savePlugin = [emu]() { Config::Save(); emu->plugin->shouldInvalidateConfigs = true; };
 
-                rows.append({ SettingRow::Type::Toggle, loc.displayEnhancedLabel,
-                    loc.displayEnhancedDesc });
-                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableEnhancedGraphics") ? 0 : 1; };
-                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableEnhancedGraphics", !v); savePlugin(); };
-                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "DisableEnhancedGraphics", false); savePlugin(); };
-
-                rows.append({ SettingRow::Type::Toggle, loc.displaySingleScreenLabel,
-                    loc.displaySingleScreenDesc });
-                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableSingleScreenMode") ? 0 : 1; };
-                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableSingleScreenMode", !v); savePlugin(); };
-                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "DisableSingleScreenMode", false); savePlugin(); };
-
-                rows.append({ SettingRow::Type::Toggle, loc.displayHDCutscenesLabel,
-                    loc.displayHDCutscenesDesc });
-                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableHDCutscenes") ? 0 : 1; };
-                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableHDCutscenes", !v); savePlugin(); };
-                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "DisableHDCutscenes", false); savePlugin(); };
-
-                rows.append({ SettingRow::Type::Toggle, loc.displaySubtitlesLabel,
-                    loc.displaySubtitlesDesc });
-                rows.last().read  = [gcfg, prefix]() { return gcfg->GetBool(prefix + "DisableSubtitles") ? 0 : 1; };
-                rows.last().write = [gcfg, prefix, savePlugin](int v) { gcfg->SetBool(prefix + "DisableSubtitles", !v); savePlugin(); };
-                rows.last().reset = [gcfg, prefix, savePlugin]() { gcfg->SetBool(prefix + "DisableSubtitles", false); savePlugin(); };
+                rows.append(buildToggle(loc.displayEnhancedLabel,
+                    loc.displayEnhancedDesc, gcfg, prefix + "DisableEnhancedGraphics", true, false, savePlugin));
+                rows.append(buildToggle(loc.displaySingleScreenLabel,
+                    loc.displaySingleScreenDesc, gcfg, prefix + "DisableSingleScreenMode", true, false, savePlugin));
+                rows.append(buildToggle(loc.displayHDCutscenesLabel,
+                    loc.displayHDCutscenesDesc, gcfg, prefix + "DisableHDCutscenes", true, false, savePlugin));
+                rows.append(buildToggle(loc.displaySubtitlesLabel,
+                    loc.displaySubtitlesDesc, gcfg, prefix + "DisableSubtitles", true, false, savePlugin));
 
                 rows.append({ SettingRow::Type::Slider, loc.displayHUDScaleLabel,
                     loc.displayHUDScaleDesc, {}, 1, 10 });
@@ -490,12 +454,9 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         rows.last().write = [gcfg, saveAudio](int v) { gcfg->SetInt("Audio.BitDepth", v); saveAudio(); };
         rows.last().reset = [gcfg, saveAudio]() { gcfg->SetInt("Audio.BitDepth", 0); saveAudio(); };
 
-        rows.append({ SettingRow::Type::Toggle, loc.soundDSiVolumeSyncLabel,
-            loc.soundDSiVolumeSyncDesc });
+        rows.append(buildToggle(loc.soundDSiVolumeSyncLabel,
+                    loc.soundDSiVolumeSyncDesc, gcfg, "Audio.DSiVolumeSync", false, false, saveAudio));
         rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 1; };
-        rows.last().read  = [lcfg]()      { return lcfg->GetBool("Audio.DSiVolumeSync") ? 1 : 0; };
-        rows.last().write = [lcfg, saveAudio](int v) { lcfg->SetBool("Audio.DSiVolumeSync", v != 0); saveAudio(); };
-        rows.last().reset = [lcfg, saveAudio]() { lcfg->SetBool("Audio.DSiVolumeSync", false); saveAudio(); };
 
         rows.append({ SettingRow::Type::Combobox, loc.soundMicInputLabel,
             loc.soundMicInputDesc,
@@ -637,12 +598,9 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         };
         rows.last().reset = [gcfg, saveOnly]() { gcfg->SetInt("DSi.Battery.Level", 15); saveOnly(); };
 
-        rows.append({ SettingRow::Type::Toggle, loc.systemDSiChargingLabel,
-            loc.systemDSiChargingDesc });
+        rows.append(buildToggle(loc.systemDSiChargingLabel,
+                    loc.systemDSiChargingDesc, gcfg, "DSi.Battery.Charging", false, true, saveOnly));
         rows.last().enabled = [gcfg]() { return gcfg->GetInt("Emu.ConsoleType") == 1; };
-        rows.last().read  = [gcfg]() { return gcfg->GetBool("DSi.Battery.Charging") ? 1 : 0; };
-        rows.last().write = [gcfg, saveOnly](int v) { gcfg->SetBool("DSi.Battery.Charging", v != 0); saveOnly(); };
-        rows.last().reset = [gcfg, saveOnly]() { gcfg->SetBool("DSi.Battery.Charging", true); saveOnly(); };
         break;
     }
     default:
