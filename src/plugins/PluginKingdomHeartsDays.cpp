@@ -268,44 +268,44 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         {"808",    "hd808",    "808_sunset_memory",                 0x09f24c00, 0x0a1af200, 0x09eb2e00, 1},
         {"809",    "hd809",    "809_xions_defeat",                  0x09f79400, 0x0a203a00, 0x09f0ac00, 1},
         {"810",    "hd810",    "810_the_main_in_black_reflects",    0x09ff8000, 0x0a282600, 0x09f8d400, 1},
-        {"813",    "hd813",    "813_xions_defeat",                  0x0a13f600, 0x0a3c9c00, 0x0a0e1600, 1},
+        {"813",    "hd813_mm", "813_xions_defeat",                  0x0a13f600, 0x0a3c9c00, 0x0a0e1600, 1},
         {"814",    "hd814",    "814_sora_walk",                     0x0a677c00, 0x0a902200, 0x0a64f000, 1},
         {"815",    "hd815",    "815_sora_release_kairi",            0x0a6e4200, 0x0a96e800, 0x0a6bf000, 1},
         {"816",    "hd816",    "816_kairi_memories",                0x0a7a9200, 0x0aa33800, 0x0a78ca00, 1},
         {"817",    "hd817_mm", "817_namine_and_diz",                0x0a857600, 0x0aae1c00, 0x0a845800, 1},
-        {"818",    "hd818",    "818_why_the_sun_sets_red",          0x0ab4be00, 0x0add6400, 0x0ab57800, 1},
+        {"818",    "hd818_mm", "818_why_the_sun_sets_red",          0x0ab4be00, 0x0add6400, 0x0ab57800, 1},
         {"819",    "hd819",    "819_sora_wakes_up",                 0x0afeac00, 0x0afeac00, 0x0afeac00, 1}, // double cutscene complement
-        {"821",    "hd821",    "821_snarl_of_memories",             0x0b043e00, 0x0b2ce400, 0x0b084a00, 1},
+        {"821",    "hd821_mm", "821_snarl_of_memories",             0x0b043e00, 0x0b2ce400, 0x0b084a00, 1},
         {"822",    "hd822",    "822_riku_takes_care_of_xion",       0x0b514600, 0x0b79ec00, 0x0b57ea00, 1},
         {"823",    "hd823",    "823_roxas_passes_by",               0x0b5b5e00, 0x0b840400, 0x0b626e00, 1},
-        {"824",    "hd824",    "824_xions_dream",                   0x0b65a200, 0x0b8e4800, 0x0b6d1800, 1},
-        {"825",    "hd825",    "825_xions_capture",                 0x0b8a7a00, 0x0bb32000, 0x0b937600, 1},
+        {"824",    "hd824_mm", "824_xions_dream",                   0x0b65a200, 0x0b8e4800, 0x0b6d1800, 1},
+        {"825",    "hd825_mm", "825_xions_capture",                 0x0b8a7a00, 0x0bb32000, 0x0b937600, 1},
         {"826",    "hd826",    "826_hollow_bastion_memories",       0x0bd74600, 0x0bffec00, 0x0be21a00, 1},
         {"827",    "hd827",    "827_agrabah_keyhole_memory",        0x0be7e000, 0x0c108600, 0x0bf35400, 1},
-        {"828",    "hd828",    "828_xion_and_riku",                 0x0bedf200, 0x0c169800, 0x0bf9ae00, 1},
-        {"829",    "hd829",    "829_rikus_resolve",                 0x0c76a800, 0x0c9f4e00, 0x0c873400, 1},
+        {"828",    "hd828_mm", "828_xion_and_riku",                 0x0bedf200, 0x0c169800, 0x0bf9ae00, 1},
+        {"829",    "hd829_mm", "829_rikus_resolve",                 0x0c76a800, 0x0c9f4e00, 0x0c873400, 1},
         {"830",    "hd830_mm", "830_mickey_and_riku_ansem",         0x0c863a00, 0x0caee000, 0x0c981000, 1},
         {"831",    "hd831",    "831_xion_and_namine",               0x0ca47c00, 0x0ccd2200, 0x0cb79400, 1},
-        {"832",    "hd832",    "832_xion_and_axel_face_off",        0x0cb01c00, 0x0cd8c200, 0x0cc3b000, 1},
+        {"832",    "hd832_mm", "832_xion_and_axel_face_off",        0x0cb01c00, 0x0cd8c200, 0x0cc3b000, 1},
         {"833",    "hd833_mm", "833_xion_attacks",                  0x0cee2000, 0x0d16c600, 0x0d043200, 1},
         {"834",    "hd834",    "834_winner",                        0x0d45bc00, 0x0d6e6200, 0x0d5f7800, 1},
         {"835",    "hd835",    "835_skyscrapper_battle",            0x0d5e0400, 0x0d86aa00, 0x0d782e00, 1},
         {"836",    "hd836_mm", "836_roxas_and_riku",                0x0d6f9400, 0x0d983a00, 0x0d8a7e00, 1},
-        {"837",    "hd837",    "837_riku_turns_into_ansem",         0x0da1ea00, 0x0dca9000, 0x0dbed000, 1},
+        {"837",    "hd837_mm", "837_riku_turns_into_ansem",         0x0da1ea00, 0x0dca9000, 0x0dbed000, 1},
         {"838",    "hd838",    "838_clocktower",                    0x0e063600, 0x0e063600, 0x0e063600, 1}, // double cutscene complement
         {"839_de", "hd839",    "839_riku_please_stop_him_de",       0x0e0db400, 0x0e0db400, 0x0e0db400, 1}, // double cutscene complement
         {"839_en", "hd839",    "839_riku_please_stop_him_en",       0x0e0e1200, 0x0e0e1200, 0x0e0e1200, 1}, // double cutscene complement
         {"839_es", "hd839",    "839_riku_please_stop_him_es",       0x0e0e6c00, 0x0e0e6c00, 0x0e0e6c00, 1}, // double cutscene complement
         {"839_fr", "hd839",    "839_riku_please_stop_him_fr",       0x0e0ecc00, 0x0e0ecc00, 0x0e0ecc00, 1}, // double cutscene complement
         {"839_it", "hd839",    "839_riku_please_stop_him_it",       0x0e0f1600, 0x0e0f1600, 0x0e0f1600, 1}, // double cutscene complement
-        {"840",    "hd840",    "840_after_the_battle",              0x0e0f5e00, 0x0e380400, 0x0e2e4200, 1},
+        {"840",    "hd840_mm", "840_after_the_battle",              0x0e0f5e00, 0x0e380400, 0x0e2e4200, 1},
         {"841",    "hd841",    "841_xion_fading_from_clocktower",   0x0e444c00, 0x0e444c00, 0x0e444c00, 1}, // double cutscene complement
         {"842",    "hd842",    "842_a_new_day",                     0x0e4bd400, 0x0e747a00, 0x0e6dfa00, 1},
         {"843",    "hd843_mm", "843_the_usual_spot",                0x0e641200, 0x0e8cb800, 0x0e873800, 1},
         {"845",    "hd845",    "845_the_dark_margin_sora_whisper",  0x0e6fa600, 0x0e984c00, 0x0e938e00, 1},
-        {"846",    "hd846",    "846_axel_and_saix",                 0x0e75bc00, 0x0e9e6200, 0x0e99ee00, 1},
-        {"847",    "hd847",    "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0ec4c600, 0x0ec12c00, 1},
-        {"848",    "hd848",    "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600, 1},
+        {"846",    "hd846_mm", "846_axel_and_saix",                 0x0e75bc00, 0x0e9e6200, 0x0e99ee00, 1},
+        {"847",    "hd847_mm", "847_roxas_leaves_the_organization", 0x0e9c2000, 0x0ec4c600, 0x0ec12c00, 1},
+        {"848",    "hd848_mm", "848_xions_end",                     0x0eb91800, 0x0ee1be00, 0x0edf4600, 1},
     }};
 
     Dialogues = std::array<Plugins::CutsceneEntry, 102> {{
