@@ -147,7 +147,7 @@ private:
     bool SwitchTargetPressOnHold = false;
 
     std::array<CutsceneEntry, 46> Cutscenes;
-    std::array<CutsceneEntry, 102> Dialogues;
+    std::array<CutsceneEntry, 103> Dialogues;
     u32 cutscenesAddressOffset = 0;
     u32 _lastUnknownInEngineCutsceneAddress = 0;
 
