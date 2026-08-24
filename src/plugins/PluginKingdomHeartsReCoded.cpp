@@ -286,21 +286,21 @@ PluginKingdomHeartsReCoded::PluginKingdomHeartsReCoded(u32 gameCode)
     };
 
     Cutscenes = std::array<Plugins::CutsceneEntry, 15> {{
-        {"OP",     "501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200, 2+1},
-        {"Secret", "593",         "593_",                       0x05e9b400, 0x05f03800, 0x05db0200, 2},
-        {"w1_ED",  "510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x067ecc00, 0x06699e00, 2},
-        {"w1_OP",  "502",         "502_",                       0x06e43800, 0x06eabc00, 0x06d58e00, 4+2},
-        {"w2_ED",  "516_PLUS_mm", "516_",                       0x07c4ee00, 0x07cb7200, 0x07b64400, 2},
-        {"w2_OP",  "512_PLUS_mm", "512_",                       0x08548600, 0x085b0a00, 0x0845f800, 2},
-        {"w3_ED",  "524",         "524_",                       0x08706200, 0x0876e600, 0x0861D400, 2},
-        {"w4_ED",  "531",         "531_",                       0x09503000, 0x0956b400, 0x0941a200, 2},
-        {"w5_ED",  "539_PLUS_mm", "539_",                       0x09990800, 0x099f8c00, 0x098a7a00, 2},
-        {"w6_ED",  "549",         "549_",                       0x0a3c9400, 0x0a431800, 0x0a2e0600, 2},
-        {"w7_ED",  "572",         "572_",                       0x0ac3aa00, 0x0aca2e00, 0x0ab51c00, 2},
-        {"w8_ED1", "590_PLUS_mm", "590_",                       0x0b150400, 0x0b1b8800, 0x0b067600, 2},
-        {"w8_ED2", "592",         "592_",                       0x0bcd3400, 0x0bd3b800, 0x0bbea600, 2},
-        {"w8_ED3", "576_PLUS_mm", "576_",                       0x0c216800, 0x0c27ec00, 0x0c12cc00, 2},
-        {"w8_OP",  "573_PLUS_mm", "573_",                       0x0c426000, 0x0c48e400, 0x0c33c400, 2},
+        {"OP",     "hd501",         "501_",                       0x04bb3a00, 0x04c1be00, 0x04b04200, 2+1},
+        {"Secret", "hd593",         "593_",                       0x05e9b400, 0x05f03800, 0x05db0200, 2},
+        {"w1_ED",  "hd510_PLUS_mm", "510_unaccountable_accounts", 0x06784800, 0x067ecc00, 0x06699e00, 2},
+        {"w1_OP",  "hd502",         "502_",                       0x06e43800, 0x06eabc00, 0x06d58e00, 4+2},
+        {"w2_ED",  "hd516_PLUS_mm", "516_",                       0x07c4ee00, 0x07cb7200, 0x07b64400, 2},
+        {"w2_OP",  "hd512_PLUS_mm", "512_",                       0x08548600, 0x085b0a00, 0x0845f800, 2},
+        {"w3_ED",  "hd524",         "524_",                       0x08706200, 0x0876e600, 0x0861D400, 2},
+        {"w4_ED",  "hd531",         "531_",                       0x09503000, 0x0956b400, 0x0941a200, 2},
+        {"w5_ED",  "hd539_PLUS_mm", "539_",                       0x09990800, 0x099f8c00, 0x098a7a00, 2},
+        {"w6_ED",  "hd549",         "549_",                       0x0a3c9400, 0x0a431800, 0x0a2e0600, 2},
+        {"w7_ED",  "hd572",         "572_",                       0x0ac3aa00, 0x0aca2e00, 0x0ab51c00, 2},
+        {"w8_ED1", "hd590_PLUS_mm", "590_",                       0x0b150400, 0x0b1b8800, 0x0b067600, 2},
+        {"w8_ED2", "hd592",         "592_",                       0x0bcd3400, 0x0bd3b800, 0x0bbea600, 2},
+        {"w8_ED3", "hd576_PLUS_mm", "576_",                       0x0c216800, 0x0c27ec00, 0x0c12cc00, 2},
+        {"w8_OP",  "hd573_PLUS_mm", "573_",                       0x0c426000, 0x0c48e400, 0x0c33c400, 2},
     }};
 
     Dialogues = std::array<Plugins::CutsceneEntry, 33> {{
@@ -2979,7 +2979,7 @@ bool PluginKingdomHeartsReCoded::canReturnToGameAfterReplacementCutscene()
 }
 
 std::filesystem::path PluginKingdomHeartsReCoded::patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
-    std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
+    std::string filename = std::string(cutscene->MmName) + ".mp4";
     std::filesystem::path fullPath = folderPath / filename;
     if (!std::filesystem::exists(fullPath))
     {
@@ -2996,7 +2996,7 @@ std::string PluginKingdomHeartsReCoded::replacementCutsceneFilePath(CutsceneEntr
     if (!HDCutscenesEnabled) {
         return "";
     }
-    std::string filename = "hd" + std::string(cutscene->MmName) + ".mp4";
+    std::string filename = std::string(cutscene->MmName) + ".mp4";
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "cutscenes" / "cinematics" / filename;
     if (std::filesystem::exists(fullPath)) {
@@ -3009,7 +3009,7 @@ std::string PluginKingdomHeartsReCoded::replacementCutsceneFilePath(CutsceneEntr
         return fullPath.string();
     }
 
-    filename = "hd" + std::string(cutscene->MmName) + ".mp4";
+    filename = std::string(cutscene->MmName) + ".mp4";
     fullPath = _assetsFolderPath / "cutscenes" / "dialogs" / filename;
     if (std::filesystem::exists(fullPath)) {
         return fullPath.string();
