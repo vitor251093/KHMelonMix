@@ -149,6 +149,15 @@ u32 PluginKingdomHeartsDays::jpGamecode = 1246186329;
 #define STRM_ADDRESS_JP      0x0204BB14
 #define STRM_ADDRESS_JP_REV1 0x0204BAD4
 
+// PRINT_AS_32_BIT_HEX(0x02193600); // 0x021e2560 / 0x02270b80 /*/ 0x02272960 / 0x02280260
+// PRINT_AS_32_BIT_HEX(0x02193630); // 0x021dc7c0 / 0x022706e0 /*/ 0x0226aa00 / 0x0226bb20
+// PRINT_AS_32_BIT_HEX(0x02193660); // 0x021d7940 / 0x022672e0 /*/ 0x02263160 / 0x02266ae0
+// PRINT_AS_32_BIT_HEX(0x02193664); // 0x8ed1d22a / 0x8e475c24 /*/ 0x8e46e809 / 0x8e46f41c
+#define IN_ENGINE_CUTSCENE_ADDRESS_US      0x02193664
+#define IN_ENGINE_CUTSCENE_ADDRESS_EU      0x02193664 // TODO: KH Wrong
+#define IN_ENGINE_CUTSCENE_ADDRESS_JP      0x02193664 // TODO: KH Wrong
+#define IN_ENGINE_CUTSCENE_ADDRESS_JP_REV1 0x02193664 // TODO: KH Wrong
+
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_US      0x02194CC3
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_EU      0x02195AA3
 #define INGAME_MENU_CONTROL_SETTING_ADDRESS_JP      0x02193E23
@@ -310,10 +319,10 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
 
     Dialogues = std::array<Plugins::CutsceneEntry, 103> {{
         {"000" , "hd000" ,  "000_day_7_when_we_first_met",          0x07000000, 0x00000000, 0x00000000, 8},
-        {"002" , "hd002" ,  "002_day_7_the_castle_that_never_was",  0x00015800, 0x00000000, 0x00000000, 8},
+        {"002" , "hd002" ,  "002_day_7_the_castle_that_never_was",  0x6f2f696d, 0x00000000, 0x00000000, 8},
         {"003" , "hd003" ,  "003_day_7_all_i_had",                  0x07000000, 0x00000000, 0x00000000, 8},
-        {"004" , "hd004" ,  "004_day_8_icing_on_the_cake_part_1",   0x000034e0, 0x00000000, 0x00000000, 8},
-        {"006" , "hd006" ,  "006_day_8_icing_on_the_cake_part_2",   0x00000900, 0x00000000, 0x00000000, 8},
+        {"004" , "hd004" ,  "004_day_8_icing_on_the_cake_part_1",   0x8ed1d22a, 0x00000000, 0x00000000, 8},
+        {"006" , "hd006" ,  "006_day_8_icing_on_the_cake_part_2",   0x8e475c2a, 0x00000000, 0x00000000, 8},
         {"007a", "hd007a",  "007a_day_",                            0x07000000, 0x00000000, 0x00000000, 8},
         {"007b", "hd007b",  "007b_day_",                            0x07000000, 0x00000000, 0x00000000, 8},
         {"007c", "hd007c",  "007c_day_",                            0x07000000, 0x00000000, 0x00000000, 8},
@@ -327,8 +336,8 @@ PluginKingdomHeartsDays::PluginKingdomHeartsDays(u32 gameCode)
         {"017" , "hd017" ,  "017_day_24",                           0x07000000, 0x00000000, 0x00000000, 8},
         {"018" , "hd018" ,  "018_day_24",                           0x07000000, 0x00000000, 0x00000000, 8},
         {"019" , "hd019" ,  "019_day_24",                           0x07000000, 0x00000000, 0x00000000, 8},
-        {"020" , "hd020" ,  "020_day_25",                           0x07000000, 0x00000000, 0x00000000, 8},
-        {"021" , "hd021" ,  "021_day_25",                           0x07000000, 0x00000000, 0x00000000, 8},
+        {"020" , "hd020" ,  "020_day_25",                           0x8e479c04, 0x00000000, 0x00000000, 8},
+        {"021" , "hd021" ,  "021_day_25",                           0x930be219, 0x00000000, 0x00000000, 8},
         {"022" , "hd022" ,  "022_day_25",                           0x07000000, 0x00000000, 0x00000000, 8},
         {"024" , "hd024" ,  "024_day_26",                           0x07000000, 0x00000000, 0x00000000, 8},
         {"025" , "hd025" ,  "025_day_26",                           0x07000000, 0x00000000, 0x00000000, 8},
@@ -2819,12 +2828,11 @@ u32 PluginKingdomHeartsDays::detectTopScreenInEngineCutsceneId()
         return false;
     }
 
-    u32 dialogAddress = getAnyByCart(DIALOG_ADDRESS_US, DIALOG_ADDRESS_EU, DIALOG_ADDRESS_JP, DIALOG_ADDRESS_JP_REV1);
+    u32 dialogAddress = getAnyByCart(IN_ENGINE_CUTSCENE_ADDRESS_US, IN_ENGINE_CUTSCENE_ADDRESS_EU, IN_ENGINE_CUTSCENE_ADDRESS_JP, IN_ENGINE_CUTSCENE_ADDRESS_JP_REV1);
     if (dialogAddress != 0) {
         u32 dialogValue = nds->ARM7Read32(dialogAddress);
         if (dialogValue != 0) {
-            u32 currentMission = getCurrentMission(); // TODO: KH This seems to be always returning 0, apparently
-            return (currentMission << 8) | dialogValue;
+            return dialogValue;
         }
     }
 

@@ -42,9 +42,9 @@ struct CutsceneEntry
     char DsName[12];
     char MmName[15];
     char Name[40];
-    int usAddress;
-    int euAddress;
-    int jpAddress;
+    u32 usAddress;
+    u32 euAddress;
+    u32 jpAddress;
 
     // 1 -> Is Mobi cutscene
     // 4 -> Requires double Start to skip
