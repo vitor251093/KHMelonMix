@@ -125,7 +125,7 @@ private:
     u32 LastLockOnPress, LastSwitchTargetPress, LastScreenTogglePress;
 
     std::array<CutsceneEntry, 15> Cutscenes;
-    std::array<CutsceneEntry, 33> Dialogues;
+    std::array<CutsceneEntry, 74> Dialogues;
     int GameLanguageIndex = 0;
     Plugins::Language GameLanguage = Plugins::languages[0];
     u32 _lastUnknownInEngineCutsceneAddress = 0;
