@@ -2906,6 +2906,7 @@ CutsceneEntry* PluginKingdomHeartsReCoded::getInEngineCutsceneById(u32 cutsceneA
                 postMessageToOsd != nullptr) {
             char message[64];
             snprintf(message, sizeof(message), "Unknown in-engine cutscene address: 0x%08X", cutsceneAddressValue);
+            printf("%s\n", message);
             postMessageToOsd(message);
         }
         _lastUnknownInEngineCutsceneAddress = cutsceneAddressValue;
