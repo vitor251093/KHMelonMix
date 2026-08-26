@@ -312,7 +312,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     int firstButtonY = (int)(h * 0.50);
 
     QFont buttonFont("DFSouGei-W5G-KH25");
-    buttonFont.setPixelSize((int)(h * 0.040 * buttonsSizeModifier));
+    buttonFont.setPixelSize((int)(h * 0.056 * buttonsSizeModifier));
     // Some localized labels are wider than the English ones (e.g. German "Überspringen").
     // Shrink the font until the widest label fits the button's flat area - the rounded caps
     // eat ~buttonHeight of width - so labels stay inside the button rather than being clipped.
@@ -348,7 +348,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
         const QString& labelText = buttonLabels[i];
         const QRect labelInkBox = buttonFontMetrics.tightBoundingRect(labelText); // relative to baseline (top is negative)
         const qreal labelTextWidth = buttonFontMetrics.horizontalAdvance(labelText);
-        const qreal labelBaselineY = (buttonRect.center().y() - labelInkBox.top() - labelInkBox.height() / 2.0) - (h * 0.003 * buttonsSizeModifier);
+        const qreal labelBaselineY = (buttonRect.center().y() - labelInkBox.top() - labelInkBox.height() / 2.0) - (h * 0.005 * buttonsSizeModifier);
         const qreal labelX = buttonRect.center().x() - labelTextWidth / 2.0;
 
         // Drop shadow cast down-and-right, offset from the label itself.
