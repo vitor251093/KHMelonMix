@@ -175,7 +175,7 @@ static CutsceneMenuStrings cutsceneMenuStrings(int language)
         { "توقف",           "ادامه",             "رد کردن"           }, // 87 Dari
         { "درېدنه",         "دوام ورکړئ",        "تېرول"             }, // 88 Pashto
         { "PAUSA",          "Continuar",         "Saltar"            }, // 89 Portuguese
-        { "PAUSA",          "Continuar",         "Saltar"            }, // 90 Brazilian Portuguese
+        { "PAUSA",          "Continuar",         "Pular"             }, // 90 Brazilian Portuguese
         { "PAUSE",          "Katux",             "K'ay"              }, // 91 K'iche
         { "PAUSA",          "Katiy",             "Saqiy"             }, // 92 Quechua
         { "PAUSA",          "Continua",          "Sari peste"        }, // 93 Romansh
