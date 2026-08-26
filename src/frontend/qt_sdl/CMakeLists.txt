@@ -23,6 +23,8 @@ set(SOURCES_QT_SDL
     InputConfig/resources/ds.qrc
     MainWindow/MainWindowSettings.cpp
     MainWindow/CutsceneVideoView.cpp
+    MainWindow/InnerShadowPainter.cpp
+    MainWindow/InnerShadowPainter.h
     MainWindow/SettingsView.cpp
     MainWindow/SettingsView.h
     MainWindow/SettingsLocale.cpp

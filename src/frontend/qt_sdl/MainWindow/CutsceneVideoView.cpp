@@ -17,6 +17,7 @@
 */
 
 #include "CutsceneVideoView.h"
+#include "InnerShadowPainter.h"
 
 #include <QPainter>
 #include <QTimer>
@@ -25,6 +26,7 @@
 #include <QPolygonF>
 #include <QTransform>
 #include <QPixmap>
+#include <QImage>
 #include <QGraphicsScene>
 #include <QGraphicsVideoItem>
 #include <QResizeEvent>
@@ -277,11 +279,24 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     titlePath = titleSqueeze.map(titlePath);
 
     // Black outline
-    const qreal titleOutlineWidth = titlePixelSize * 0.12;
+    const qreal titleOutlineWidth = titlePixelSize * 0.15;
     p.strokePath(titlePath, QPen(QColor(0, 0, 0), titleOutlineWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
     // Text color
     p.fillPath(titlePath, QColor(255, 255, 255));
+
+    static QImage cachedTitleShadow;
+    static QPointF cachedTitleShadowPos;
+    static QString cachedTitleShadowText;
+    static QRectF cachedTitleShadowBounds;
+    const QRectF titleBounds = titlePath.boundingRect();
+    if (cachedTitleShadowText != titleText || cachedTitleShadowBounds != titleBounds) {
+        const int blurRadius = (int)(titlePixelSize * 0.03);
+        cachedTitleShadow = InnerShadowPainter::renderInnerBorderShadow(titlePath, blurRadius, 235, &cachedTitleShadowPos);
+        cachedTitleShadowText = titleText;
+        cachedTitleShadowBounds = titleBounds;
+    }
+    p.drawImage(cachedTitleShadowPos, cachedTitleShadow);
 
     // Buttons
     const QString buttonLabels[2] = { QString::fromUtf8(strings.cont), QString::fromUtf8(strings.skip) };
