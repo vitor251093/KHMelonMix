@@ -247,7 +247,13 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
 
     const int centerX = w / 2;
 
-    float pauseSizeModifier = 15.0/13.0;
+    double menuSizeModifier = 0.5;
+    double pauseSizeModifier = (15.0/13.0) * menuSizeModifier;
+    double buttonsSizeModifier = 1.25 * menuSizeModifier;
+
+    double bottomMargin = 0.03 * menuSizeModifier;
+    double titleCenterY = h * (0.5 - bottomMargin - 0.13 * menuSizeModifier);
+    double firstButtonY = h * (0.5 - bottomMargin);
 
     // "PAUSE" title banner. The asset provides the decorative rule lines above/below the
     // title; the title text itself is drawn on top, in the stylised KH title font, and is
@@ -255,7 +261,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     if (!pauseLabelPixmap.isNull()) {
         const qreal titleImageHeight = h * 0.15 * pauseSizeModifier;
         const qreal titleImageWidth = titleImageHeight * pauseLabelPixmap.width() / pauseLabelPixmap.height();
-        const QRectF titleImageRect(centerX - titleImageWidth / 2.0, h * 0.37 - titleImageHeight / 2.0,
+        const QRectF titleImageRect(centerX - titleImageWidth / 2.0, titleCenterY - titleImageHeight / 2.0,
                                      titleImageWidth, titleImageHeight);
         p.drawPixmap(titleImageRect, pauseLabelPixmap, pauseLabelPixmap.rect());
     }
@@ -268,10 +274,9 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     const QString titleText = QString::fromUtf8(strings.title);
     QFontMetrics titleFontMetrics(titleFont);
     qreal titleTextWidth = titleFontMetrics.horizontalAdvance(titleText);
-    int titleCenterY = (int)(h * 0.37);
 
     // Build the glyphs as a path to make changes to it
-    qreal titleBaselineY = titleCenterY + (titleFontMetrics.ascent() - titleFontMetrics.descent()) / 2.0;
+    qreal titleBaselineY = ((int)titleCenterY) + (titleFontMetrics.ascent() - titleFontMetrics.descent()) / 2.0;
     QPainterPath titlePath;
     titlePath.addText(centerX - titleTextWidth / 2.0, titleBaselineY, titleFont, titleText);
 
@@ -301,15 +306,13 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     p.drawImage(cachedTitleShadowPos, cachedTitleShadow);
 
     // Buttons
-    float buttonsSizeModifier = 1.25;
     const QString buttonLabels[2] = { QString::fromUtf8(strings.cont), QString::fromUtf8(strings.skip) };
     int buttonHeight = (int)(h * 0.075 * buttonsSizeModifier);
     const QPixmap& referenceButtonPixmap = !selectedButtonPixmap.isNull() ? selectedButtonPixmap : unselectedButtonPixmap;
     const qreal buttonAspectRatio = (!referenceButtonPixmap.isNull() && referenceButtonPixmap.height() > 0)
         ? (qreal)referenceButtonPixmap.width() / referenceButtonPixmap.height() : 5.3;
     int buttonWidth = (int)(buttonHeight * buttonAspectRatio);
-    int buttonSpacing = (int)(buttonHeight * 0.175 * buttonsSizeModifier);
-    int firstButtonY = (int)(h * 0.50);
+    int buttonSpacing = (int)(buttonHeight * 0.175);
 
     QFont buttonFont("DFSouGei-W5G-KH25");
     buttonFont.setPixelSize((int)(h * 0.056 * buttonsSizeModifier));
@@ -332,7 +335,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
 
     for (int i = 0; i < 2; i++)
     {
-        QRect buttonRect(centerX - buttonWidth / 2, firstButtonY + i * (buttonHeight + buttonSpacing),
+        QRect buttonRect(centerX - buttonWidth / 2, ((int)firstButtonY) + i * (buttonHeight + buttonSpacing),
                           buttonWidth, buttonHeight);
         bool isSelected = (selection == i);
 
@@ -348,7 +351,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
         const QString& labelText = buttonLabels[i];
         const QRect labelInkBox = buttonFontMetrics.tightBoundingRect(labelText); // relative to baseline (top is negative)
         const qreal labelTextWidth = buttonFontMetrics.horizontalAdvance(labelText);
-        const qreal labelBaselineY = (buttonRect.center().y() - labelInkBox.top() - labelInkBox.height() / 2.0) - (h * 0.005 * buttonsSizeModifier);
+        const qreal labelBaselineY = (buttonRect.center().y() - labelInkBox.top() - labelInkBox.height() / 2.0) - (h * 0.0025 * buttonsSizeModifier);
         const qreal labelX = buttonRect.center().x() - labelTextWidth / 2.0;
 
         // Drop shadow cast down-and-right, offset from the label itself.
