@@ -382,6 +382,7 @@ int main(int argc, char** argv)
     loadFont(":/ds/KHMenu.ttf");
     loadFont(":/ds/KHGummi.ttf");
     loadFont(":/ds/ComicHearts.otf");
+    loadFont(":/ds/KH-SOGEI.TTF");
 
     createEmuInstance();
 

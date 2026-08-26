@@ -229,8 +229,11 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
 {
     const CutsceneMenuStrings strings = cutsceneMenuStrings(language);
 
-    static const QPixmap handPixmap(":/ds/menu_hand.png");
-    static const QPixmap lightPixmap(":/ds/menu_light.png");
+    static const QPixmap handCursorPixmap(":/ds/menu_hand.png");
+    static const QPixmap glowPixmap(":/ds/menu_light.png");
+    static const QPixmap selectedButtonPixmap(":/ds/button_selected.png");
+    static const QPixmap unselectedButtonPixmap(":/ds/button_unselected.png");
+    static const QPixmap pauseLabelPixmap(":/ds/pause_label.png");
 
     p.setRenderHint(QPainter::Antialiasing, true);
     p.setRenderHint(QPainter::TextAntialiasing, true);
@@ -239,122 +242,125 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     // Darken the paused frame behind the menu
     p.fillRect(QRect(0, 0, w, h), QColor(0, 0, 0, 120));
 
-    const int cx = w / 2;
+    const int centerX = w / 2;
 
-    // "PAUSE" title in the stylised KH title font, italicised
+    // "PAUSE" title banner. The asset provides the decorative rule lines above/below the
+    // title; the title text itself is drawn on top, in the stylised KH title font, and is
+    // localized per language (like the button labels below).
+    if (!pauseLabelPixmap.isNull()) {
+        const qreal titleImageWidth = qBound(160.0, w * 0.34, w * 0.9);
+        const qreal titleImageHeight = titleImageWidth * pauseLabelPixmap.height() / pauseLabelPixmap.width();
+        const QRectF titleImageRect(centerX - titleImageWidth / 2.0, h * 0.36 - titleImageHeight / 2.0,
+                                     titleImageWidth, titleImageHeight);
+        p.drawPixmap(titleImageRect, pauseLabelPixmap, pauseLabelPixmap.rect());
+    }
+
     QFont titleFont("KHGummi");
-    qreal titlePx = qMax(20.0, h * 0.060);
-    titleFont.setPixelSize((int)titlePx);
-    titleFont.setItalic(true);
+    qreal titlePixelSize = h * 0.064;
+    titleFont.setPixelSize((int)titlePixelSize);
     p.setFont(titleFont);
 
-    const QString title = QString::fromUtf8(strings.title);
-    QFontMetrics tfm(titleFont);
-    int titleW = tfm.horizontalAdvance(title);
-    int titleH = tfm.height();
-    int titleY = (int)(h * 0.36);
+    const QString titleText = QString::fromUtf8(strings.title);
+    QFontMetrics titleFontMetrics(titleFont);
+    qreal titleTextWidth = titleFontMetrics.horizontalAdvance(titleText);
+    int titleCenterY = (int)(h * 0.36);
 
-    p.setPen(QPen(QColor(255, 255, 255), 1));
-    p.drawText(QRect(cx - titleW, titleY - titleH, titleW * 2, titleH * 2),
-               Qt::AlignHCenter | Qt::AlignVCenter, title);
+    // Build the glyphs as a path (rather than drawText) so a black outline can be stroked
+    // around them, then fill white on top - same technique as the subtitle text.
+    qreal titleBaselineY = titleCenterY + (titleFontMetrics.ascent() - titleFontMetrics.descent()) / 2.0;
+    QPainterPath titlePath;
+    titlePath.addText(centerX - titleTextWidth / 2.0, titleBaselineY, titleFont, titleText);
+    const qreal titleOutlineWidth = titlePixelSize * 0.12;
+    p.strokePath(titlePath, QPen(QColor(0, 0, 0), titleOutlineWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    p.fillPath(titlePath, QColor(255, 255, 255));
 
-    // Decorative rule line above and below the title, with equal vertical gaps around
-    // the actual rendered glyphs (use the tight ink box so italic metrics don't skew it).
-    int baseline = titleY - titleH / 2 + tfm.ascent();
-    QRect inkBox = tfm.tightBoundingRect(title); // relative to the baseline (top is negative)
-    int inkTop = baseline + inkBox.top();
-    int inkBottom = baseline + inkBox.top() + inkBox.height();
-    int linePad = (int)(titleH * 0.50);
-    int lineHalf = (int)qMax((qreal)titleW * 0.70, w * 0.17);
-    p.setPen(QPen(QColor(230, 230, 230), 2));
-    int lineYTop = inkTop - linePad;
-    int lineYBot = inkBottom + linePad;
-    p.drawLine(cx - lineHalf, lineYTop, cx + lineHalf, lineYTop);
-    p.drawLine(cx - lineHalf, lineYBot, cx + lineHalf, lineYBot);
+    // Continue / Skip buttons in the rounded KH menu-entry font. The button is drawn at the
+    // background asset's native aspect ratio (only uniformly scaled, never stretched), so its
+    // width follows from buttonHeight rather than being picked independently.
+    const QString buttonLabels[2] = { QString::fromUtf8(strings.cont), QString::fromUtf8(strings.skip) };
+    int buttonHeight = (int)(h * 0.075);
+    const QPixmap& referenceButtonPixmap = !selectedButtonPixmap.isNull() ? selectedButtonPixmap : unselectedButtonPixmap;
+    const qreal buttonAspectRatio = (!referenceButtonPixmap.isNull() && referenceButtonPixmap.height() > 0)
+        ? (qreal)referenceButtonPixmap.width() / referenceButtonPixmap.height() : 5.3;
+    int buttonWidth = (int)(buttonHeight * buttonAspectRatio);
+    int buttonSpacing = (int)(buttonHeight * 0.35);
+    int firstButtonY = (int)(h * 0.50);
 
-    // Continue / Skip buttons in the rounded KH menu-entry font
-    const QString labels[2] = { QString::fromUtf8(strings.cont), QString::fromUtf8(strings.skip) };
-    int btnW = (int)(w * 0.26);
-    int btnH = (int)qMax(28.0, h * 0.075);
-    int spacing = (int)(btnH * 0.35);
-    int firstY = (int)(h * 0.50);
-
-    QFont btnFont("KHMenu");
-    btnFont.setPixelSize((int)qMax(15.0, h * 0.040));
+    QFont buttonFont("DFSouGei-W5G-KH25");
+    buttonFont.setPixelSize((int)(h * 0.040));
     // Some localized labels are wider than the English ones (e.g. German "Überspringen").
     // Shrink the font until the widest label fits the button's flat area - the rounded caps
-    // eat ~btnH of width - so labels stay inside the button rather than being clipped.
+    // eat ~buttonHeight of width - so labels stay inside the button rather than being clipped.
     {
-        const qreal avail = btnW - btnH;
-        QFontMetrics bfm(btnFont);
-        int widest = 0;
-        for (const QString& l : labels) widest = qMax(widest, bfm.horizontalAdvance(l));
-        if (widest > avail && avail > 0) {
-            btnFont.setPixelSize(qMax(10, (int)(btnFont.pixelSize() * avail / widest)));
+        const qreal availableTextWidth = buttonWidth - buttonHeight;
+        QFontMetrics shrinkFontMetrics(buttonFont);
+        int widestLabelWidth = 0;
+        for (const QString& label : buttonLabels) {
+            widestLabelWidth = qMax(widestLabelWidth, shrinkFontMetrics.horizontalAdvance(label));
+        }
+        if (widestLabelWidth > availableTextWidth && availableTextWidth > 0) {
+            buttonFont.setPixelSize((int)(buttonFont.pixelSize() * availableTextWidth / widestLabelWidth));
         }
     }
-    p.setFont(btnFont);
+    p.setFont(buttonFont);
+    const QFontMetrics buttonFontMetrics(buttonFont);
 
     for (int i = 0; i < 2; i++)
     {
-        QRect btnRect(cx - btnW / 2, firstY + i * (btnH + spacing), btnW, btnH);
+        QRect buttonRect(centerX - buttonWidth / 2, firstButtonY + i * (buttonHeight + buttonSpacing),
+                          buttonWidth, buttonHeight);
         bool isSelected = (selection == i);
 
-        QPainterPath path;
-        path.addRoundedRect(btnRect, btnH / 2.0, btnH / 2.0);
-
-        QLinearGradient grad(btnRect.topLeft(), btnRect.bottomLeft());
-        if (isSelected) {
-            grad.setColorAt(0.0, QColor(220, 40, 40));
-            grad.setColorAt(1.0, QColor(150, 20, 20));
-            p.fillPath(path, grad);
-            // stroke only (drawPath would also fill with the current brush)
-            p.strokePath(path, QPen(QColor(255, 230, 230), 2));
-        } else {
-            grad.setColorAt(0.0, QColor(70, 70, 70));
-            grad.setColorAt(1.0, QColor(35, 35, 35));
-            p.fillPath(path, grad);
-            p.strokePath(path, QPen(QColor(180, 180, 180), 2));
+        const QPixmap& buttonBackgroundPixmap = isSelected ? selectedButtonPixmap : unselectedButtonPixmap;
+        if (!buttonBackgroundPixmap.isNull()) {
+            p.drawPixmap(buttonRect, buttonBackgroundPixmap, buttonBackgroundPixmap.rect());
         }
 
+        // Center on the label's own ink box rather than QFontMetrics::height/ascent - the
+        // button font's vertical metrics don't line up with its glyphs' visual center, so
+        // Qt::AlignCenter alone would sit noticeably off from the pill's middle.
         p.setPen(Qt::white);
         p.setBrush(Qt::NoBrush);
-        p.drawText(btnRect, Qt::AlignCenter, labels[i]);
+        const QString& labelText = buttonLabels[i];
+        const QRect labelInkBox = buttonFontMetrics.tightBoundingRect(labelText); // relative to baseline (top is negative)
+        const qreal labelTextWidth = buttonFontMetrics.horizontalAdvance(labelText);
+        const qreal labelBaselineY = buttonRect.center().y() - labelInkBox.top() - labelInkBox.height() / 2.0;
+        p.drawText(QPointF(buttonRect.center().x() - labelTextWidth / 2.0, labelBaselineY), labelText);
 
         if (isSelected) {
             // Glow accent. The KH2 glow doesn't circle the cap; it wanders a small
             // Lissajous figure (~4:5 frequency ratio) inside a square region in the
             // upper-right of the rounded cap. The constants below were measured from
             // the reference footage (relative to the cap centre / radius).
-            if (!lightPixmap.isNull()) {
-                const qreal capR = btnH / 2.0;
-                const qreal capCx = btnRect.right() - capR;
-                const qreal capCy = btnRect.center().y();
-                const qreal boxCx = capCx + 0.19 * capR;
-                const qreal boxCy = capCy - 0.56 * capR;
-                const qreal ampX  = 0.55 * capR;
-                const qreal ampY  = 0.50 * capR;
+            if (!glowPixmap.isNull()) {
+                const qreal capRadius = buttonHeight / 2.0;
+                const qreal capCenterX = buttonRect.right() - capRadius;
+                const qreal capCenterY = buttonRect.center().y();
+                const qreal glowBoxCenterX = capCenterX + 0.19 * capRadius;
+                const qreal glowBoxCenterY = capCenterY - 0.56 * capRadius;
+                const qreal glowAmplitudeX = 0.55 * capRadius;
+                const qreal glowAmplitudeY = 0.50 * capRadius;
                 // Scale both frequencies together so the 4:5 figure keeps its shape,
                 // just traced more slowly than the reference.
-                const qreal speed = 0.5;
-                const qreal gx = boxCx + ampX * std::cos(2.0 * M_PI * (1.012 * speed) * t - 2.39);
-                const qreal gy = boxCy + ampY * std::cos(2.0 * M_PI * (1.265 * speed) * t - 1.57);
+                const qreal glowSpeed = 0.5;
+                const qreal glowX = glowBoxCenterX + glowAmplitudeX * std::cos(2.0 * M_PI * (1.012 * glowSpeed) * t - 2.39);
+                const qreal glowY = glowBoxCenterY + glowAmplitudeY * std::cos(2.0 * M_PI * (1.265 * glowSpeed) * t - 1.57);
 
-                int ls = (int)(btnH * 0.5);
-                p.drawPixmap(QRectF(gx - ls / 2.0, gy - ls / 2.0, ls, ls), lightPixmap,
-                             lightPixmap.rect());
+                int glowSize = (int)(buttonHeight * 0.5);
+                p.drawPixmap(QRectF(glowX - glowSize / 2.0, glowY - glowSize / 2.0, glowSize, glowSize), glowPixmap,
+                             glowPixmap.rect());
             }
             // Pointing-hand cursor to the left of the selected button, beckoning with a
             // small horizontal bob toward the entry.
-            if (!handPixmap.isNull()) {
-                qreal aspect = handPixmap.height() > 0
-                    ? (qreal)handPixmap.width() / handPixmap.height() : 1.0;
-                int hh = (int)(btnH * 1.15);
-                int hwid = (int)(hh * aspect);
-                qreal bob = btnH * 0.15 * std::sin(t * (2.0 * M_PI / 1.2));
-                int hx = btnRect.left() - hwid + (int)(btnH * 0.20 + bob);
-                int hy = btnRect.center().y() - hh / 2;
-                p.drawPixmap(QRect(hx, hy, hwid, hh), handPixmap);
+            if (!handCursorPixmap.isNull()) {
+                qreal handAspectRatio = handCursorPixmap.height() > 0
+                    ? (qreal)handCursorPixmap.width() / handCursorPixmap.height() : 1.0;
+                int handHeight = (int)(buttonHeight * 1.15);
+                int handWidth = (int)(handHeight * handAspectRatio);
+                qreal handBobOffset = buttonHeight * 0.15 * std::sin(t * (2.0 * M_PI / 1.2));
+                int handX = buttonRect.left() - handWidth + (int)(buttonHeight * 0.20 + handBobOffset);
+                int handY = buttonRect.center().y() - handHeight / 2;
+                p.drawPixmap(QRect(handX, handY, handWidth, handHeight), handCursorPixmap);
             }
         }
     }
