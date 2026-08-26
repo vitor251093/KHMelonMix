@@ -247,11 +247,13 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
 
     const int centerX = w / 2;
 
+    float pauseSizeModifier = 15.0/13.0;
+
     // "PAUSE" title banner. The asset provides the decorative rule lines above/below the
     // title; the title text itself is drawn on top, in the stylised KH title font, and is
     // localized per language (like the button labels below).
     if (!pauseLabelPixmap.isNull()) {
-        const qreal titleImageWidth = qBound(160.0, w * 0.34, w * 0.9);
+        const qreal titleImageWidth = w * 0.34 * pauseSizeModifier;
         const qreal titleImageHeight = titleImageWidth * pauseLabelPixmap.height() / pauseLabelPixmap.width();
         const QRectF titleImageRect(centerX - titleImageWidth / 2.0, h * 0.36 - titleImageHeight / 2.0,
                                      titleImageWidth, titleImageHeight);
@@ -259,7 +261,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     }
 
     QFont titleFont("KHGummi");
-    qreal titlePixelSize = h * 0.064;
+    qreal titlePixelSize = h * 0.064 * pauseSizeModifier;
     titleFont.setPixelSize((int)titlePixelSize);
     p.setFont(titleFont);
 
@@ -279,7 +281,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     titlePath = titleSqueeze.map(titlePath);
 
     // Black outline
-    const qreal titleOutlineWidth = titlePixelSize * 0.15;
+    const qreal titleOutlineWidth = titlePixelSize * 0.15 * pauseSizeModifier;
     p.strokePath(titlePath, QPen(QColor(0, 0, 0), titleOutlineWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
     // Text color
@@ -291,7 +293,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     static QRectF cachedTitleShadowBounds;
     const QRectF titleBounds = titlePath.boundingRect();
     if (cachedTitleShadowText != titleText || cachedTitleShadowBounds != titleBounds) {
-        const int blurRadius = (int)(titlePixelSize * 0.03);
+        const int blurRadius = (int)(titlePixelSize * 0.03 * pauseSizeModifier);
         cachedTitleShadow = InnerShadowPainter::renderInnerBorderShadow(titlePath, blurRadius, 235, &cachedTitleShadowPos);
         cachedTitleShadowText = titleText;
         cachedTitleShadowBounds = titleBounds;
