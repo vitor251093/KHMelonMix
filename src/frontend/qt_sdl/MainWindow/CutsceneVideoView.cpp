@@ -23,6 +23,7 @@
 #include <cmath>
 #include <QPainterPath>
 #include <QPolygonF>
+#include <QTransform>
 #include <QPixmap>
 #include <QGraphicsScene>
 #include <QGraphicsVideoItem>
@@ -265,18 +266,24 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     qreal titleTextWidth = titleFontMetrics.horizontalAdvance(titleText);
     int titleCenterY = (int)(h * 0.36);
 
-    // Build the glyphs as a path (rather than drawText) so a black outline can be stroked
-    // around them, then fill white on top - same technique as the subtitle text.
+    // Build the glyphs as a path to make changes to it
     qreal titleBaselineY = titleCenterY + (titleFontMetrics.ascent() - titleFontMetrics.descent()) / 2.0;
     QPainterPath titlePath;
     titlePath.addText(centerX - titleTextWidth / 2.0, titleBaselineY, titleFont, titleText);
+
+    // Squeeze the text horizontally by 20%
+    QTransform titleSqueeze;
+    titleSqueeze.translate(centerX, 0.0).scale(0.8, 1.0).translate(-centerX, 0.0);
+    titlePath = titleSqueeze.map(titlePath);
+
+    // Black outline
     const qreal titleOutlineWidth = titlePixelSize * 0.12;
     p.strokePath(titlePath, QPen(QColor(0, 0, 0), titleOutlineWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+
+    // Text color
     p.fillPath(titlePath, QColor(255, 255, 255));
 
-    // Continue / Skip buttons in the rounded KH menu-entry font. The button is drawn at the
-    // background asset's native aspect ratio (only uniformly scaled, never stretched), so its
-    // width follows from buttonHeight rather than being picked independently.
+    // Buttons
     const QString buttonLabels[2] = { QString::fromUtf8(strings.cont), QString::fromUtf8(strings.skip) };
     int buttonHeight = (int)(h * 0.075);
     const QPixmap& referenceButtonPixmap = !selectedButtonPixmap.isNull() ? selectedButtonPixmap : unselectedButtonPixmap;
@@ -324,7 +331,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
         const QString& labelText = buttonLabels[i];
         const QRect labelInkBox = buttonFontMetrics.tightBoundingRect(labelText); // relative to baseline (top is negative)
         const qreal labelTextWidth = buttonFontMetrics.horizontalAdvance(labelText);
-        const qreal labelBaselineY = buttonRect.center().y() - labelInkBox.top() - labelInkBox.height() / 2.0;
+        const qreal labelBaselineY = (buttonRect.center().y() - labelInkBox.top() - labelInkBox.height() / 2.0) - (h * 0.003);
         p.drawText(QPointF(buttonRect.center().x() - labelTextWidth / 2.0, labelBaselineY), labelText);
 
         if (isSelected) {
