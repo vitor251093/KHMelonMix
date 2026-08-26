@@ -253,9 +253,9 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     // title; the title text itself is drawn on top, in the stylised KH title font, and is
     // localized per language (like the button labels below).
     if (!pauseLabelPixmap.isNull()) {
-        const qreal titleImageWidth = w * 0.34 * pauseSizeModifier;
-        const qreal titleImageHeight = titleImageWidth * pauseLabelPixmap.height() / pauseLabelPixmap.width();
-        const QRectF titleImageRect(centerX - titleImageWidth / 2.0, h * 0.36 - titleImageHeight / 2.0,
+        const qreal titleImageHeight = h * 0.15 * pauseSizeModifier;
+        const qreal titleImageWidth = titleImageHeight * pauseLabelPixmap.width() / pauseLabelPixmap.height();
+        const QRectF titleImageRect(centerX - titleImageWidth / 2.0, h * 0.37 - titleImageHeight / 2.0,
                                      titleImageWidth, titleImageHeight);
         p.drawPixmap(titleImageRect, pauseLabelPixmap, pauseLabelPixmap.rect());
     }
@@ -268,7 +268,7 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     const QString titleText = QString::fromUtf8(strings.title);
     QFontMetrics titleFontMetrics(titleFont);
     qreal titleTextWidth = titleFontMetrics.horizontalAdvance(titleText);
-    int titleCenterY = (int)(h * 0.36);
+    int titleCenterY = (int)(h * 0.37);
 
     // Build the glyphs as a path to make changes to it
     qreal titleBaselineY = titleCenterY + (titleFontMetrics.ascent() - titleFontMetrics.descent()) / 2.0;
