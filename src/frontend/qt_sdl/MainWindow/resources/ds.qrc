@@ -7,6 +7,8 @@
     <file>ComicHearts.otf</file>
     <file>menu_hand.png</file>
     <file>menu_light.png</file>
+    <file>command_bg.png</file>
+    <file>pause_label.png</file>
     <file>sfx_menu_enter.wav</file>
     <file>sfx_menu_continue.wav</file>
     <file>sfx_menu_move.wav</file>
