@@ -299,17 +299,18 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
     p.drawImage(cachedTitleShadowPos, cachedTitleShadow);
 
     // Buttons
+    float buttonsSizeModifier = 1.25;
     const QString buttonLabels[2] = { QString::fromUtf8(strings.cont), QString::fromUtf8(strings.skip) };
-    int buttonHeight = (int)(h * 0.075);
+    int buttonHeight = (int)(h * 0.075 * buttonsSizeModifier);
     const QPixmap& referenceButtonPixmap = !selectedButtonPixmap.isNull() ? selectedButtonPixmap : unselectedButtonPixmap;
     const qreal buttonAspectRatio = (!referenceButtonPixmap.isNull() && referenceButtonPixmap.height() > 0)
         ? (qreal)referenceButtonPixmap.width() / referenceButtonPixmap.height() : 5.3;
     int buttonWidth = (int)(buttonHeight * buttonAspectRatio);
-    int buttonSpacing = (int)(buttonHeight * 0.35);
+    int buttonSpacing = (int)(buttonHeight * 0.175 * buttonsSizeModifier);
     int firstButtonY = (int)(h * 0.50);
 
     QFont buttonFont("DFSouGei-W5G-KH25");
-    buttonFont.setPixelSize((int)(h * 0.040));
+    buttonFont.setPixelSize((int)(h * 0.040 * buttonsSizeModifier));
     // Some localized labels are wider than the English ones (e.g. German "Überspringen").
     // Shrink the font until the widest label fits the button's flat area - the rounded caps
     // eat ~buttonHeight of width - so labels stay inside the button rather than being clipped.
@@ -341,13 +342,20 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
         // Center on the label's own ink box rather than QFontMetrics::height/ascent - the
         // button font's vertical metrics don't line up with its glyphs' visual center, so
         // Qt::AlignCenter alone would sit noticeably off from the pill's middle.
-        p.setPen(Qt::white);
         p.setBrush(Qt::NoBrush);
         const QString& labelText = buttonLabels[i];
         const QRect labelInkBox = buttonFontMetrics.tightBoundingRect(labelText); // relative to baseline (top is negative)
         const qreal labelTextWidth = buttonFontMetrics.horizontalAdvance(labelText);
-        const qreal labelBaselineY = (buttonRect.center().y() - labelInkBox.top() - labelInkBox.height() / 2.0) - (h * 0.003);
-        p.drawText(QPointF(buttonRect.center().x() - labelTextWidth / 2.0, labelBaselineY), labelText);
+        const qreal labelBaselineY = (buttonRect.center().y() - labelInkBox.top() - labelInkBox.height() / 2.0) - (h * 0.003 * buttonsSizeModifier);
+        const qreal labelX = buttonRect.center().x() - labelTextWidth / 2.0;
+
+        // Drop shadow cast down-and-right, offset from the label itself.
+        const qreal labelShadowOffset = buttonFontMetrics.height() * 0.07 * buttonsSizeModifier;
+        p.setPen(QColor(0, 0, 0));
+        p.drawText(QPointF(labelX + labelShadowOffset, labelBaselineY + labelShadowOffset), labelText);
+
+        p.setPen(Qt::white);
+        p.drawText(QPointF(labelX, labelBaselineY), labelText);
 
         if (isSelected) {
             // Glow accent. The KH2 glow doesn't circle the cap; it wanders a small
