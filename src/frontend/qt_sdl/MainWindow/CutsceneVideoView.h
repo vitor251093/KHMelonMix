@@ -46,6 +46,7 @@ public:
     // Language for the pause-menu labels, in DS firmware Language order (0=ja, 1=en, 2=fr,
     // 3=de, 4=it, 5=es). Out-of-range values fall back to English.
     void setMenuLanguage(int language);
+    void setMenuSizeModifier(double modifier);
 
     // Parses a SubRip (.srt) subtitle file (empty path clears subtitles). See loadSubtitles.
     void loadSubtitles(const QString& filePath);
@@ -64,6 +65,7 @@ private:
     bool m_menuVisible = false;
     int m_menuSelection = 0; // 0 = Continue, 1 = Skip
     int m_menuLanguage = 1;  // firmware Language order (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es)
+    double m_menuSizeModifier = 0.5;
 
     // Subtitle cues for the current cutscene, sorted by start time, and the active one (-1 = none).
     QVector<SubtitleCue> m_cues;

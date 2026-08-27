@@ -228,7 +228,7 @@ static CutsceneMenuStrings cutsceneMenuStrings(int language)
 // 't' is the animation clock in seconds, used to drive the hand bob and the glow
 // orbit so the selected entry matches the live KH2 pause menu. 'language' selects the
 // localized labels (firmware Language order; see cutsceneMenuStrings).
-static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, double t, int language)
+static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, double t, int language, double menuSizeModifier)
 {
     const CutsceneMenuStrings strings = cutsceneMenuStrings(language);
 
@@ -247,7 +247,6 @@ static void paintCutsceneSkipMenu(QPainter& p, int w, int h, int selection, doub
 
     const int centerX = w / 2;
 
-    double menuSizeModifier = 0.5;
     double pauseSizeModifier = (15.0/13.0) * menuSizeModifier;
     double buttonsSizeModifier = 1.25 * menuSizeModifier;
 
@@ -473,6 +472,14 @@ void CutsceneVideoView::setMenuLanguage(int language)
     }
 }
 
+void CutsceneVideoView::setMenuSizeModifier(double modifier)
+{
+    m_menuSizeModifier = modifier;
+    if (m_menuVisible && viewport()) {
+        viewport()->update();
+    }
+}
+
 void CutsceneVideoView::resizeEvent(QResizeEvent* event)
 {
     QGraphicsView::resizeEvent(event);
@@ -520,7 +527,7 @@ void CutsceneVideoView::drawForeground(QPainter* painter, const QRectF& rect)
     const double t = m_animClock.isValid() ? m_animClock.elapsed() / 1000.0 : 0.0;
     painter->save();
     painter->resetTransform();
-    paintCutsceneSkipMenu(*painter, viewport()->width(), viewport()->height(), m_menuSelection, t, m_menuLanguage);
+    paintCutsceneSkipMenu(*painter, viewport()->width(), viewport()->height(), m_menuSelection, t, m_menuLanguage, m_menuSizeModifier);
     painter->restore();
 }
 

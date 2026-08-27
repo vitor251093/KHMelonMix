@@ -611,6 +611,7 @@ void MainWindowSettings::showCutsceneSkipMenu(int selection)
     if (!playerView) {
         return;
     }
+    playerView->setMenuSizeModifier(emuInstance->plugin->getHudScale()/8.0);
     playerView->setMenuSelection(selection);
     playerView->setMenuVisible(true);
 }

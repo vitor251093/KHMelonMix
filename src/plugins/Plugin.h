@@ -422,6 +422,9 @@ public:
     virtual bool shouldOpenKHExtendedSettings() { return false; }
     virtual void applyGameSettingsKeepAliveToInputMask(u32* InputMask) { }
 
+    float getHudScale() const {
+        return (((float)UIScale) - 4) / 2 + 4;
+    }
     virtual void hudToggle() {}
 
     void replacementTexturesToggle() {
