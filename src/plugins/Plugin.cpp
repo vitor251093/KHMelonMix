@@ -156,10 +156,11 @@ void Plugin::gpuOpenGL_FS_updateVariables(GLuint CompShader) {
     bool showOriginalHud = renderer_showOriginalUI();
     int screenLayout = renderer_screenLayout();
     int brightnessMode = renderer_brightnessMode();
+    float hudScale = (((float)UIScale) - 4) / 2 + 4;
 
     glUniform1f(CompGpuLoc[CompShader][0], aspectRatio);
     glUniform1f(CompGpuLoc[CompShader][1], forcedAspectRatio);
-    glUniform1i(CompGpuLoc[CompShader][2], UIScale);
+    glUniform1f(CompGpuLoc[CompShader][2], hudScale);
     glUniform1i(CompGpuLoc[CompShader][3], showOriginalHud ? 1 : 0);
     glUniform1i(CompGpuLoc[CompShader][4], screenLayout);
     glUniform1i(CompGpuLoc[CompShader][5], brightnessMode);
