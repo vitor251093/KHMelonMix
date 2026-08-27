@@ -289,6 +289,8 @@ public:
 
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
+    virtual bool isPauseMenuGameScene() {return false;}
+
     void pauseReplacementCutsceneThroughPauseMenu();
     void resumeReplacementCutsceneThroughPauseMenu();
     void skipIngamePrerenderedCutsceneThroughPauseMenu();
@@ -297,14 +299,18 @@ public:
     void resumeIngamePrerenderedCutsceneAfterReplacementCutsceneFailedToPlay(std::string error);
 
     std::function<void(std::string, std::string)> startReplacementCutscene = nullptr;
-    std::function<void(int)> showReplacementCutscenePauseMenu = nullptr;
-    std::function<void(int)> updateReplacementCutscenePauseMenuSelection = nullptr;
-    std::function<void()> unpauseReplacementCutscene = nullptr;
+    std::function<void(int)> showCutscenePauseMenuOverlay = nullptr;
+    std::function<void(int)> updateCutscenePauseMenuOverlaySelection = nullptr;
+    std::function<void()> hideCutscenePauseMenuOverlay = nullptr;
     std::function<void()> stopReplacementCutsceneAndResumeEmulator = nullptr;
     std::function<void()> resumeHiddenEmulatorAfterReplacementCutsceneStopped = nullptr;
     std::function<void()> pauseEmulatorAfterIngamePrerenderedCutsceneEndedBeforeReplacementCutscene = nullptr;
     std::function<void()> resumeEmulatorAfterBothIngamePrerenderedCutsceneAndReplacementCutsceneEnded = nullptr;
     std::function<void(std::string)> postMessageToOsd = nullptr;
+
+    std::function<void()> showGamePauseMenuOverlay = nullptr;
+    std::function<void()> hideGamePauseMenuOverlay = nullptr;
+    std::function<void(int)> updateGamePauseMenuOverlaySelection = nullptr;
 
     inline bool shouldStartBackgroundMusic() { return checkAndResetBool(_ShouldStartReplacementBgmMusic); }
     inline bool shouldStopBackgroundMusic() { return checkAndResetBool(_ShouldStopReplacementBgmMusic); }
@@ -388,6 +394,7 @@ public:
     virtual int detectGameScene() {return -1;}
     bool setGameScene(int newGameScene);
     bool refreshGameScene();
+    void refreshGamePauseMenuOverlay();
 
     virtual u32 getAspectRatioAddress() {return 0;}
     virtual void setAspectRatio(float aspectRatio);
@@ -502,6 +509,10 @@ protected:
     int _CutsceneSkipMenuSelection = 0; // 0 = Continue, 1 = Skip
     u32 _LastCutsceneMenuButtons = 0; // held-button snapshot for rising-edge detection
     int _CutsceneMenuSoundRequest = 0; // 1=enter, 2=move, 3=continue, 4=select; 0=none
+
+    bool _ShowingGamePauseMenuOverlay = false;
+    int _GamePauseMenuSelection = 0; // 0 = Continue, 1 = Skip
+    u32 _LastGamePauseMenuButtons = 0; // held-button snapshot for rising-edge detection
 
     std::vector<CutsceneEntry*> _CutscenesQueue = {};
     std::vector<CutsceneEntry*> _CutscenesBlacklist = {};

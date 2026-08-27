@@ -82,16 +82,16 @@ public slots:
     bool isVideoPlaying() const;
     bool isVideoPaused() const;
 
-    void asyncShowCutsceneSkipMenu(int selection);
-    void asyncUpdateCutsceneSkipMenu(int selection);
-    void asyncHideCutsceneSkipMenu();
+    void asyncShowCutscenePauseMenu(int selection);
+    void asyncUpdateCutscenePauseMenu(int selection);
+    void asyncHideCutscenePauseMenu();
 
-    void showCutsceneSkipMenu(int selection);
-    void updateCutsceneSkipMenu(int selection);
-    void hideCutsceneSkipMenu();
+    void showCutscenePauseMenu(int selection);
+    void updateCutscenePauseMenu(int selection);
+    void hideCutscenePauseMenu();
 
     // kind: 1 = enter, 2 = move (up/down), 3 = continue, 4 = select
-    void asyncPlayCutsceneMenuSound(int kind);
+    void asyncPlayMenuSound(int kind);
     void playCutsceneMenuSound(int kind);
 
 private slots:

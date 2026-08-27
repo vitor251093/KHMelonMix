@@ -185,10 +185,14 @@ signals:
     void windowPauseVideo();
     void windowUnpauseVideo();
 
-    void windowShowCutsceneSkipMenu(int selection);
-    void windowUpdateCutsceneSkipMenu(int selection);
-    void windowHideCutsceneSkipMenu();
-    void windowPlayCutsceneMenuSound(int kind);
+    void windowShowCutscenePauseMenu(int selection);
+    void windowUpdateCutscenePauseMenu(int selection);
+    void windowHideCutscenePauseMenu();
+    void windowPlayMenuSound(int kind);
+
+    void windowShowGamePauseMenu();
+    void windowHideGamePauseMenu();
+    void windowUpdateGamePauseMenu(int selection);
 
     void windowOpenSettings();
 

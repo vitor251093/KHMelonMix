@@ -305,10 +305,10 @@ bool Plugin::togglePause()
             return true;
         }
         if (_ReplacementCutsceneIsPaused) {
-            unpauseReplacementCutscene();
+            hideCutscenePauseMenuOverlay();
         }
         else {
-            showReplacementCutscenePauseMenu(0);
+            showCutscenePauseMenuOverlay(0);
         }
         return true;
     }
@@ -355,7 +355,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         else {
             if (justPressed & (BTN_UP | BTN_DOWN)) {
                 _CutsceneSkipMenuSelection = _CutsceneSkipMenuSelection == 0 ? 1 : 0;
-                updateReplacementCutscenePauseMenuSelection(_CutsceneSkipMenuSelection);
+                updateCutscenePauseMenuOverlaySelection(_CutsceneSkipMenuSelection);
                 _CutsceneMenuSoundRequest = 2; // move
             }
             else if (justPressed & BTN_START) {
@@ -382,6 +382,20 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         // few frames after continuing leaks through and pauses/disrupts the DS
         // cutscene. The skip sequence below re-asserts Start when it must feed it.
         *InputMask |= BTN_A | BTN_START | BTN_UP | BTN_DOWN;
+    }
+
+    if (isPauseMenuGameScene()) {
+        const u32 BTN_UP   = (1 << 6);
+        const u32 BTN_DOWN = (1 << 7);
+
+        u32 pressed = (~(*InputMask)) & 0xFFF;
+        u32 justPressed = pressed & ~_LastGamePauseMenuButtons;
+        _LastGamePauseMenuButtons = pressed;
+
+        if (justPressed & (BTN_UP | BTN_DOWN)) {
+            _GamePauseMenuSelection = _GamePauseMenuSelection == 0 ? 1 : 0;
+            if (updateGamePauseMenuOverlaySelection) updateGamePauseMenuOverlaySelection(_GamePauseMenuSelection);
+        }
     }
 
     if (_SkipDsCutscene) { // Start (skip HD cutscene)
@@ -455,7 +469,7 @@ bool Plugin::_superApplyAddonKeysToCutsceneMenu(u32* AddonMask, u32* AddonPress,
     u32 navPress = (*AddonPress) & (((u32)1 << upBit) | ((u32)1 << downBit));
     if (navPress != 0) {
         _CutsceneSkipMenuSelection = _CutsceneSkipMenuSelection == 0 ? 1 : 0;
-        updateReplacementCutscenePauseMenuSelection(_CutsceneSkipMenuSelection == 0 ? 1 : 0);
+        updateCutscenePauseMenuOverlaySelection(_CutsceneSkipMenuSelection == 0 ? 1 : 0);
         _CutsceneMenuSoundRequest = 2; // move
     }
 
@@ -935,7 +949,7 @@ void Plugin::pauseReplacementCutsceneThroughPauseMenu()
     _ReplacementCutsceneIsPaused = true;
     _CutsceneSkipMenuSelection = 0;
 
-    showReplacementCutscenePauseMenu(0);
+    showCutscenePauseMenuOverlay(0);
 }
 
 void Plugin::skipIngamePrerenderedCutsceneThroughPauseMenu()
@@ -955,7 +969,7 @@ void Plugin::resumeReplacementCutsceneThroughPauseMenu()
     _ReplacementCutsceneIsPaused = false;
     _CutsceneSkipMenuSelection = 0;
 
-    unpauseReplacementCutscene();
+    hideCutscenePauseMenuOverlay();
 }
 
 void Plugin::stopReplacementCutsceneAndResumeGameAfterSkippingIngamePrerenderedCutscene() {
@@ -1377,13 +1391,36 @@ bool Plugin::setGameScene(int newGameScene)
     return updated;
 }
 
+void Plugin::refreshGamePauseMenuOverlay()
+{
+    bool shouldShow = isPauseMenuGameScene();
+    if (shouldShow == _ShowingGamePauseMenuOverlay)
+    {
+        return;
+    }
+    _ShowingGamePauseMenuOverlay = shouldShow;
+
+    if (shouldShow)
+    {
+        if (showGamePauseMenuOverlay) showGamePauseMenuOverlay();
+    }
+    else
+    {
+        _GamePauseMenuSelection = 0;
+        _LastGamePauseMenuButtons = 0;
+        if (hideGamePauseMenuOverlay) hideGamePauseMenuOverlay();
+    }
+}
+
 bool Plugin::refreshGameScene()
 {
     int newGameScene = detectGameScene();
-    
+
     debugLogs(newGameScene);
 
     bool updated = setGameScene(newGameScene);
+
+    refreshGamePauseMenuOverlay();
 
     refreshCutscene();
 

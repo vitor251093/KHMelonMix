@@ -168,6 +168,7 @@ private:
     bool didMobiCutsceneEnded() override;
     bool didInEngineCutsceneEnded() override;
     bool canReturnToGameAfterReplacementCutscene() override;
+    bool isPauseMenuGameScene() override;
 
     // Music replacement system
     std::array<BgmEntry, 38> BgmEntries;

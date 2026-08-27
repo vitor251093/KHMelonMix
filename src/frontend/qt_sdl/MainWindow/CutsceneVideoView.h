@@ -20,7 +20,6 @@
 #define CUTSCENEVIDEOVIEW_H
 
 #include <QGraphicsView>
-#include <QElapsedTimer>
 #include <QVector>
 #include <QString>
 #include <QPixmap>
@@ -28,14 +27,12 @@
 
 class QGraphicsScene;
 class QGraphicsVideoItem;
-class QTimer;
+class PauseMenuOverlay;
 
-// Renders the HD cutscene video and, when paused, the Skip/Continue menu on top
-// of it. The menu is composited into this same widget (rather than a separate
-// window) so it moves, stacks and focuses with the main window on every platform
-// (including Wayland, where apps can't position their own top-level windows).
-// Mimics the in-game cutscene pause menu (darkened background, "PAUSE" title,
-// Continue/Skip options with the selected one highlighted).
+// Renders the HD cutscene video and, when paused, the Skip/Continue menu on top of
+// it. The menu is a PauseMenuOverlay child widget stacked on top of this view (see
+// PauseMenuOverlay.h) so it moves, stacks and focuses with the main window on every
+// platform (including Wayland, where apps can't position their own top-level windows).
 class CutsceneVideoView : public QGraphicsView
 {
 public:
@@ -62,10 +59,7 @@ private:
 
     QGraphicsScene* m_scene = nullptr;
     QGraphicsVideoItem* m_videoItem = nullptr;
-    bool m_menuVisible = false;
-    int m_menuSelection = 0; // 0 = Continue, 1 = Skip
-    int m_menuLanguage = 1;  // firmware Language order (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es)
-    double m_menuSizeModifier = 0.5;
+    PauseMenuOverlay* m_pauseMenu = nullptr;
 
     // Subtitle cues for the current cutscene, sorted by start time, and the active one (-1 = none).
     QVector<SubtitleCue> m_cues;
@@ -77,10 +71,6 @@ private:
     QPixmap m_subtitlePixmap;
     QString m_subtitleCacheText;
     QSize m_subtitleCacheSize;
-
-    // Drives the hand-bob and glow-orbit animations while the menu is visible.
-    QTimer* m_animTimer = nullptr;
-    QElapsedTimer m_animClock;
 };
 
 #endif // CUTSCENEVIDEOVIEW_H

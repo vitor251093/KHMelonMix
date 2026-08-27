@@ -104,10 +104,15 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         connect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
 
-        connect(this, SIGNAL(windowShowCutsceneSkipMenu(int)), window, SLOT(asyncShowCutsceneSkipMenu(int)));
-        connect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
-        connect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
-        connect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
+        connect(this, SIGNAL(windowShowCutscenePauseMenu(int)), window, SLOT(asyncShowCutscenePauseMenu(int)));
+        connect(this, SIGNAL(windowUpdateCutscenePauseMenu(int)), window, SLOT(asyncUpdateCutscenePauseMenu(int)));
+        connect(this, SIGNAL(windowHideCutscenePauseMenu()), window, SLOT(asyncHideCutscenePauseMenu()));
+        connect(this, SIGNAL(windowPlayMenuSound(int)), window, SLOT(asyncPlayMenuSound(int)));
+
+        connect(this, SIGNAL(windowShowGamePauseMenu()), window, SLOT(onShowGamePauseMenu()));
+        connect(this, SIGNAL(windowUpdateGamePauseMenu(int)), window, SLOT(onUpdateGamePauseMenu(int)));
+        connect(this, SIGNAL(windowHideGamePauseMenu()), window, SLOT(onHideGamePauseMenu()));
+
         connect(this, SIGNAL(windowOpenSettings()), window, SLOT(onOpenSettingsOverlay()));
     }
 }
@@ -144,10 +149,16 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         disconnect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
 
-        disconnect(this, SIGNAL(windowShowCutsceneSkipMenu(int)), window, SLOT(asyncShowCutsceneSkipMenu(int)));
-        disconnect(this, SIGNAL(windowUpdateCutsceneSkipMenu(int)), window, SLOT(asyncUpdateCutsceneSkipMenu(int)));
-        disconnect(this, SIGNAL(windowHideCutsceneSkipMenu()), window, SLOT(asyncHideCutsceneSkipMenu()));
-        disconnect(this, SIGNAL(windowPlayCutsceneMenuSound(int)), window, SLOT(asyncPlayCutsceneMenuSound(int)));
+        disconnect(this, SIGNAL(windowShowCutscenePauseMenu(int)), window, SLOT(asyncShowCutscenePauseMenu(int)));
+        disconnect(this, SIGNAL(windowUpdateCutscenePauseMenu(int)), window, SLOT(asyncUpdateCutscenePauseMenu(int)));
+        disconnect(this, SIGNAL(windowHideCutscenePauseMenu()), window, SLOT(asyncHideCutscenePauseMenu()));
+
+        disconnect(this, SIGNAL(windowPlayMenuSound(int)), window, SLOT(asyncPlayMenuSound(int)));
+
+        disconnect(this, SIGNAL(windowShowGamePauseMenu()), window, SLOT(onShowGamePauseMenu()));
+        disconnect(this, SIGNAL(windowUpdateGamePauseMenu(int)), window, SLOT(onUpdateGamePauseMenu(int)));
+        disconnect(this, SIGNAL(windowHideGamePauseMenu()), window, SLOT(onHideGamePauseMenu()));
+
         disconnect(this, SIGNAL(windowOpenSettings()), window, SLOT(onOpenSettingsOverlay()));
     }
 }
@@ -226,16 +237,16 @@ void EmuThread::run()
                 emuInstance->plugin->startReplacementCutscene = [this](const std::string& videoPath, const std::string& subtitlesPath) {
                     startReplacementCutscene(videoPath, subtitlesPath);
                 };
-                emuInstance->plugin->showReplacementCutscenePauseMenu = [this](int selection) {
+                emuInstance->plugin->showCutscenePauseMenuOverlay = [this](int selection) {
                     emit windowPauseVideo();
-                    emit windowShowCutsceneSkipMenu(selection);
+                    emit windowShowCutscenePauseMenu(selection);
                 };
-                emuInstance->plugin->updateReplacementCutscenePauseMenuSelection = [this](int selection) {
-                    emit windowUpdateCutsceneSkipMenu(selection);
+                emuInstance->plugin->updateCutscenePauseMenuOverlaySelection = [this](int selection) {
+                    emit windowUpdateCutscenePauseMenu(selection);
                 };
-                emuInstance->plugin->unpauseReplacementCutscene = [this]() {
+                emuInstance->plugin->hideCutscenePauseMenuOverlay = [this]() {
                     emit windowUnpauseVideo();
-                    emit windowHideCutsceneSkipMenu();
+                    emit windowHideCutscenePauseMenu();
                 };
                 emuInstance->plugin->stopReplacementCutsceneAndResumeEmulator = [this]() {
                     emit windowStopVideo();
@@ -252,6 +263,15 @@ void EmuThread::run()
                 };
                 emuInstance->plugin->postMessageToOsd = [this](const std::string& message) {
                     emuInstance->osdAddMessage(0, "%s", message.c_str());
+                };
+                emuInstance->plugin->showGamePauseMenuOverlay = [this]() {
+                    emit windowShowGamePauseMenu();
+                };
+                emuInstance->plugin->hideGamePauseMenuOverlay = [this]() {
+                    emit windowHideGamePauseMenu();
+                };
+                emuInstance->plugin->updateGamePauseMenuOverlaySelection = [this](int selection) {
+                    emit windowUpdateGamePauseMenu(selection);
                 };
             }
             bool shouldStartPlugin = emuInstance->plugin->shouldStartPlugin;
@@ -989,7 +1009,7 @@ void EmuThread::refreshPluginState()
 
 
     if (int menuSound = emuInstance->plugin->CutsceneMenuSoundToPlay()) {
-        emit windowPlayCutsceneMenuSound(menuSound);
+        emit windowPlayMenuSound(menuSound);
     }
 }
 

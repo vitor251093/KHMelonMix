@@ -264,6 +264,10 @@ private slots:
     void onSettingsClosed();
     void onQuitGameConfirmed();
 
+    void onShowGamePauseMenu();
+    void onHideGamePauseMenu();
+    void onUpdateGamePauseMenu(int selection);
+
 private:
     virtual void closeEvent(QCloseEvent* event) override;
 

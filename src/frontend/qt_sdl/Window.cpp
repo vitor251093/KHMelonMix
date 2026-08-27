@@ -2574,6 +2574,30 @@ void MainWindow::onEmuReset()
     actUndoStateLoad->setEnabled(false);
 }
 
+void MainWindow::onShowGamePauseMenu()
+{
+    if (!panel || !emuInstance) return;
+
+    panel->setPauseMenuLanguage(emuInstance->plugin->cutsceneMenuLanguage());
+    panel->setPauseMenuSizeModifier(emuInstance->plugin->getHudScale()/8.0);
+    panel->setPauseMenuSelection(0);
+    panel->setPauseMenuVisible(true);
+}
+
+void MainWindow::onHideGamePauseMenu()
+{
+    if (!panel) return;
+
+    panel->setPauseMenuVisible(false);
+}
+
+void MainWindow::onUpdateGamePauseMenu(int selection)
+{
+    if (!panel) return;
+
+    panel->setPauseMenuSelection(selection);
+}
+
 void MainWindow::onUpdatePluginSettings()
 {
     if (!emuInstance) return;

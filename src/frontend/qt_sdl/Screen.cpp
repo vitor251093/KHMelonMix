@@ -43,6 +43,7 @@
 #include "OSD_shaders.h"
 #include "font.h"
 #include "version.h"
+#include "MainWindow/PauseMenuOverlay.h"
 
 using namespace melonDS;
 
@@ -109,6 +110,9 @@ ScreenPanel::ScreenPanel(QWidget* parent) : QWidget(parent)
     splashText[2].color = 0;
     splashText[2].rendered = false;
     splashText[2].rainbowstart = -1;
+
+    pauseMenu = new PauseMenuOverlay(this);
+    pauseMenu->setGeometry(rect());
 }
 
 ScreenPanel::~ScreenPanel()
@@ -250,6 +254,32 @@ void ScreenPanel::resizeEvent(QResizeEvent* event)
     QWidget::resizeEvent(event);
 
     refreshAspectRatioAndScale();
+
+    pauseMenu->setGeometry(rect());
+}
+
+void ScreenPanel::setPauseMenuVisible(bool visible)
+{
+    pauseMenu->setMenuVisible(visible);
+    pauseMenu->setVisible(visible);
+    if (visible) {
+        pauseMenu->raise();
+    }
+}
+
+void ScreenPanel::setPauseMenuSelection(int selection)
+{
+    pauseMenu->setSelection(selection);
+}
+
+void ScreenPanel::setPauseMenuLanguage(int language)
+{
+    pauseMenu->setLanguage(language);
+}
+
+void ScreenPanel::setPauseMenuSizeModifier(double modifier)
+{
+    pauseMenu->setSizeModifier(modifier);
 }
 
 void ScreenPanel::refreshAspectRatioAndScale()
@@ -928,6 +958,11 @@ ScreenPanelGL::ScreenPanelGL(QWidget* parent) : ScreenPanel(parent)
 ScreenPanelGL::~ScreenPanelGL()
 {}
 
+void ScreenPanelGL::setPauseMenuVisible(bool visible)
+{
+    pauseMenu->setMenuVisible(visible);
+}
+
 bool ScreenPanelGL::createContext()
 {
     std::optional<WindowInfo> windowinfo = getWindowInfo();
@@ -1075,6 +1110,15 @@ void ScreenPanelGL::initOpenGL()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, logo.width(), logo.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, logo.bits());
     logoTexture = tex;
 
+    // Pause menu texture: content and size are uploaded fresh each frame it's visible (see
+    // drawPauseMenuGL), so it starts out empty.
+    glGenTextures(1, &pauseMenuTexture);
+    glBindTexture(GL_TEXTURE_2D, pauseMenuTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
     transferLayout();
     glInited = true;
 }
@@ -1104,6 +1148,9 @@ void ScreenPanelGL::deinitOpenGL()
     glDeleteBuffers(1, &osdVertexBuffer);
 
     glDeleteTextures(1, &logoTexture);
+
+    glDeleteTextures(1, &pauseMenuTexture);
+    pauseMenuTexWidth = pauseMenuTexHeight = 0;
 
     glDeleteProgram(osdShader);
 
@@ -1317,7 +1364,59 @@ void ScreenPanelGL::drawScreenGL()
         osdMutex.unlock();
     }
 
+    drawPauseMenuGL(w, h, factor);
+
     glContext->SwapBuffers();
+}
+
+void ScreenPanelGL::drawPauseMenuGL(int surfaceWidth, int surfaceHeight, float scaleFactor)
+{
+    if (!pauseMenu->isMenuVisible()) {
+        return;
+    }
+
+    // Re-rendered and re-uploaded every frame - the menu is animated (hand bob, glow orbit),
+    // so there's no still frame to cache the way the OSD text items above are.
+    const QImage frame = pauseMenu->renderToImage(QSize(surfaceWidth, surfaceHeight));
+
+    glBindTexture(GL_TEXTURE_2D, pauseMenuTexture);
+    if (pauseMenuTexWidth != frame.width() || pauseMenuTexHeight != frame.height())
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame.width(), frame.height(), 0, GL_RGBA,
+                     GL_UNSIGNED_BYTE, frame.constBits());
+        pauseMenuTexWidth = frame.width();
+        pauseMenuTexHeight = frame.height();
+    }
+    else
+    {
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, frame.width(), frame.height(), GL_RGBA,
+                        GL_UNSIGNED_BYTE, frame.constBits());
+    }
+
+    glUseProgram(osdShader);
+
+    // The texture is native-resolution (surface pixels); uOSDSize/uOSDPos are in logical
+    // (pre-scale) pixels like the other osdShader draws above, so uTexScale undoes that for
+    // the texel lookup - same role it plays for the 2x splash logo.
+    glUniform2f(osdScreenSizeULoc, surfaceWidth, surfaceHeight);
+    glUniform1f(osdScaleFactorULoc, scaleFactor);
+    glUniform1f(osdTexScaleULoc, scaleFactor);
+
+    glBindBuffer(GL_ARRAY_BUFFER, osdVertexBuffer);
+    glBindVertexArray(osdVertexArray);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, pauseMenuTexture);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUniform2i(osdPosULoc, 0, 0);
+    glUniform2i(osdSizeULoc, (int)(surfaceWidth / scaleFactor), (int)(surfaceHeight / scaleFactor));
+    glDrawArrays(GL_TRIANGLES, 0, 2*3);
+
+    glDisable(GL_BLEND);
+    glUseProgram(0);
 }
 
 qreal ScreenPanelGL::devicePixelRatioFromScreen() const

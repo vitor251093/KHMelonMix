@@ -537,7 +537,7 @@ void MainWindowSettings::cancelVideo(std::string error)
     }
     playerSourceDevice.reset();
 
-    hideCutsceneSkipMenu();
+    hideCutscenePauseMenu();
 
     // Drop any subtitle cues so a finished cutscene doesn't leave stale text behind.
     playerView->loadSubtitles("");
@@ -561,7 +561,7 @@ void MainWindowSettings::stopVideo()
     }
     playerSourceDevice.reset();
 
-    hideCutsceneSkipMenu();
+    hideCutscenePauseMenu();
 
     // Drop any subtitle cues so a finished cutscene doesn't leave stale text behind.
     playerView->loadSubtitles("");
@@ -601,12 +601,12 @@ bool MainWindowSettings::isVideoPaused() const
     return player && player->playbackState() == QMediaPlayer::PlaybackState::PausedState;
 }
 
-void MainWindowSettings::asyncShowCutsceneSkipMenu(int selection)
+void MainWindowSettings::asyncShowCutscenePauseMenu(int selection)
 {
-    QMetaObject::invokeMethod(this, "showCutsceneSkipMenu", Qt::QueuedConnection, Q_ARG(int, selection));
+    QMetaObject::invokeMethod(this, "showCutscenePauseMenu", Qt::QueuedConnection, Q_ARG(int, selection));
 }
 
-void MainWindowSettings::showCutsceneSkipMenu(int selection)
+void MainWindowSettings::showCutscenePauseMenu(int selection)
 {
     if (!playerView) {
         return;
@@ -616,12 +616,12 @@ void MainWindowSettings::showCutsceneSkipMenu(int selection)
     playerView->setMenuVisible(true);
 }
 
-void MainWindowSettings::asyncUpdateCutsceneSkipMenu(int selection)
+void MainWindowSettings::asyncUpdateCutscenePauseMenu(int selection)
 {
-    QMetaObject::invokeMethod(this, "updateCutsceneSkipMenu", Qt::QueuedConnection, Q_ARG(int, selection));
+    QMetaObject::invokeMethod(this, "updateCutscenePauseMenu", Qt::QueuedConnection, Q_ARG(int, selection));
 }
 
-void MainWindowSettings::updateCutsceneSkipMenu(int selection)
+void MainWindowSettings::updateCutscenePauseMenu(int selection)
 {
     if (!playerView) {
         return;
@@ -629,19 +629,19 @@ void MainWindowSettings::updateCutsceneSkipMenu(int selection)
     playerView->setMenuSelection(selection);
 }
 
-void MainWindowSettings::asyncHideCutsceneSkipMenu()
+void MainWindowSettings::asyncHideCutscenePauseMenu()
 {
-    QMetaObject::invokeMethod(this, "hideCutsceneSkipMenu", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "hideCutscenePauseMenu", Qt::QueuedConnection);
 }
 
-void MainWindowSettings::hideCutsceneSkipMenu()
+void MainWindowSettings::hideCutscenePauseMenu()
 {
     if (playerView) {
         playerView->setMenuVisible(false);
     }
 }
 
-void MainWindowSettings::asyncPlayCutsceneMenuSound(int kind)
+void MainWindowSettings::asyncPlayMenuSound(int kind)
 {
     QMetaObject::invokeMethod(this, "playCutsceneMenuSound", Qt::QueuedConnection, Q_ARG(int, kind));
 }
