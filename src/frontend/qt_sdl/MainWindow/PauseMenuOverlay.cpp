@@ -84,7 +84,7 @@ static void paintPauseMenu(QPainter& p, int w, int h, int selection, double t, c
     titlePath = titleSqueeze.map(titlePath);
 
     // Black outline
-    const qreal titleOutlineWidth = titlePixelSize * 0.15 * pauseSizeModifier;
+    const qreal titleOutlineWidth = titlePixelSize * 0.30 * pauseSizeModifier;
     p.strokePath(titlePath, QPen(QColor(0, 0, 0), titleOutlineWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 
     // Text color
@@ -96,7 +96,7 @@ static void paintPauseMenu(QPainter& p, int w, int h, int selection, double t, c
     static QRectF cachedTitleShadowBounds;
     const QRectF titleBounds = titlePath.boundingRect();
     if (cachedTitleShadowText != titleText || cachedTitleShadowBounds != titleBounds) {
-        const int blurRadius = (int)(titlePixelSize * 0.03 * pauseSizeModifier);
+        const int blurRadius = (int)(titlePixelSize * 0.06 * pauseSizeModifier);
         cachedTitleShadow = InnerShadowPainter::renderInnerBorderShadow(titlePath, blurRadius, 235, &cachedTitleShadowPos);
         cachedTitleShadowText = titleText;
         cachedTitleShadowBounds = titleBounds;
