@@ -292,6 +292,11 @@ void ScreenPanel::setPauseMenuSizeModifier(double modifier)
     pauseMenu->setSizeModifier(modifier);
 }
 
+void ScreenPanel::setPauseMenuDarkenBackground(bool darken)
+{
+    pauseMenu->setDarkenBackground(darken);
+}
+
 void ScreenPanel::refreshAspectRatioAndScale()
 {
     auto& cfg = mainWindow->getWindowConfig();

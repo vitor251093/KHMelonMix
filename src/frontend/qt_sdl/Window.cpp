@@ -2600,6 +2600,7 @@ void MainWindow::onShowGamePauseMenu()
 
     refreshGamePauseMenuContent();
     panel->setPauseMenuSizeModifier(emuInstance->plugin->getHudScale()/8.0);
+    panel->setPauseMenuDarkenBackground(emuInstance->plugin->gamePauseMenuDarkensBackground());
     panel->setPauseMenuVisible(true);
 }
 

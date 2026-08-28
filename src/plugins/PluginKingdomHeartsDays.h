@@ -69,6 +69,7 @@ public:
     int cutsceneMenuLanguage() override;
     std::vector<std::string> gamePauseMenuButtonLabels() override;
     std::string gamePauseMenuSubtitle() override;
+    bool gamePauseMenuDarkensBackground() override { return false; }
     void onGamePauseMenuConfirmPressed() override;
     void onGamePauseMenuCancelPressed() override;
     void onGamePauseMenuOverlayHidden() override;

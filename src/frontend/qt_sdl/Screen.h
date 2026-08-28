@@ -79,6 +79,7 @@ public:
     void setPauseMenuSubtitle(const QString& subtitle);
     void setPauseMenuButtonLabels(const QStringList& labels);
     void setPauseMenuSizeModifier(double modifier);
+    void setPauseMenuDarkenBackground(bool darken);
 
 private slots:
     void onScreenLayoutChanged();

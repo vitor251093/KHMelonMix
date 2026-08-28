@@ -263,6 +263,7 @@ public:
     virtual std::vector<std::string> cutsceneMenuButtonLabels();
     virtual std::string gamePauseMenuSubtitle() { return ""; }
     virtual std::vector<std::string> gamePauseMenuButtonLabels() { return cutsceneMenuButtonLabels(); }
+    virtual bool gamePauseMenuDarkensBackground() { return true; }
 
     bool IsIngamePrerenderedCutsceneRunning() {return _IsMobiCutsceneRunning || _IsInEngineCutsceneRunning;}
     bool IsReplacementCutsceneRunning();

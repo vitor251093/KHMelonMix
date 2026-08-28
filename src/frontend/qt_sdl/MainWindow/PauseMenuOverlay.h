@@ -40,10 +40,10 @@ public:
     bool isMenuVisible() const { return m_visible; }
     void setSelection(int selection);
     void setTitle(const QString& title);
-    // Shown between the title and the button row; empty (the default) means none.
     void setSubtitle(const QString& subtitle);
     void setButtonLabels(const QStringList& labels);
     void setSizeModifier(double modifier);
+    void setDarkenBackground(bool darken);
 
     QImage renderToImage(const QSize& pixelSize) const;
 
@@ -59,6 +59,7 @@ private:
     QString m_subtitle;
     QStringList m_buttonLabels = { QStringLiteral("Continue"), QStringLiteral("Skip") };
     double m_sizeModifier = 0.5;
+    bool m_darkenBackground = true;
 
     // Drives the hand-bob and glow-orbit animations while the menu is visible.
     QTimer* m_animTimer = nullptr;

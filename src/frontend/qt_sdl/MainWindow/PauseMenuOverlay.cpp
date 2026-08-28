@@ -27,7 +27,8 @@
 #include <QPixmap>
 
 static void paintPauseMenu(QPainter& p, int w, int h, int selection, double t, const QString& title,
-                            const QString& subtitle, const QStringList& buttonLabels, double menuSizeModifier)
+                            const QString& subtitle, const QStringList& buttonLabels, double menuSizeModifier,
+                            bool darkenBackground)
 {
     static const QPixmap handCursorPixmap(":/ds/menu_hand.png");
     static const QPixmap glowPixmap(":/ds/menu_light.png");
@@ -39,8 +40,9 @@ static void paintPauseMenu(QPainter& p, int w, int h, int selection, double t, c
     p.setRenderHint(QPainter::TextAntialiasing, true);
     p.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-    // Darken the paused frame behind the menu
-    p.fillRect(QRect(0, 0, w, h), QColor(0, 0, 0, 120));
+    if (darkenBackground) {
+        p.fillRect(QRect(0, 0, w, h), QColor(0, 0, 0, 120));
+    }
 
     const int centerX = w / 2;
 
@@ -285,6 +287,14 @@ void PauseMenuOverlay::setSizeModifier(double modifier)
     }
 }
 
+void PauseMenuOverlay::setDarkenBackground(bool darken)
+{
+    m_darkenBackground = darken;
+    if (m_visible) {
+        update();
+    }
+}
+
 void PauseMenuOverlay::paintEvent(QPaintEvent* event)
 {
     Q_UNUSED(event);
@@ -305,5 +315,5 @@ QImage PauseMenuOverlay::renderToImage(const QSize& pixelSize) const
 void PauseMenuOverlay::paint(QPainter& painter, int w, int h) const
 {
     const double t = m_animClock.isValid() ? m_animClock.elapsed() / 1000.0 : 0.0;
-    paintPauseMenu(painter, w, h, m_selection, t, m_title, m_subtitle, m_buttonLabels, m_sizeModifier);
+    paintPauseMenu(painter, w, h, m_selection, t, m_title, m_subtitle, m_buttonLabels, m_sizeModifier, m_darkenBackground);
 }

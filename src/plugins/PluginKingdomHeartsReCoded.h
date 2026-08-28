@@ -149,6 +149,7 @@ private:
     bool didInEngineCutsceneEnded() override;
     bool canReturnToGameAfterReplacementCutscene() override;
     bool isPauseMenuGameScene() override;
+    bool gamePauseMenuDarkensBackground() override { return false; }
 
     u8 getFloorLevel();
     u32 getCurrentMission();
