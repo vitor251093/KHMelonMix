@@ -99,7 +99,7 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
         connect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
 
-        connect(this, SIGNAL(windowStartVideo(QString,QString,int)), window, SLOT(asyncStartVideo(QString,QString,int)));
+        connect(this, SIGNAL(windowStartVideo(QString,QString)), window, SLOT(asyncStartVideo(QString,QString)));
         connect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
         connect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         connect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
@@ -112,6 +112,7 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowShowGamePauseMenu()), window, SLOT(onShowGamePauseMenu()));
         connect(this, SIGNAL(windowUpdateGamePauseMenu(int)), window, SLOT(onUpdateGamePauseMenu(int)));
         connect(this, SIGNAL(windowHideGamePauseMenu()), window, SLOT(onHideGamePauseMenu()));
+        connect(this, SIGNAL(windowRefreshGamePauseMenuContent()), window, SLOT(onRefreshGamePauseMenuContent()));
 
         connect(this, SIGNAL(windowOpenSettings()), window, SLOT(onOpenSettingsOverlay()));
     }
@@ -144,7 +145,7 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(windowUpdateBgmMusicVolume(quint8)), window, SLOT(asyncUpdateBgmMusicVolume(quint8)));
         disconnect(this, SIGNAL(windowStopAllBgm()), window, SLOT(asyncStopAllBgm()));
 
-        disconnect(this, SIGNAL(windowStartVideo(QString,QString,int)), window, SLOT(asyncStartVideo(QString,QString,int)));
+        disconnect(this, SIGNAL(windowStartVideo(QString,QString)), window, SLOT(asyncStartVideo(QString,QString)));
         disconnect(this, SIGNAL(windowStopVideo()), window, SLOT(asyncStopVideo()));
         disconnect(this, SIGNAL(windowPauseVideo()), window, SLOT(asyncPauseVideo()));
         disconnect(this, SIGNAL(windowUnpauseVideo()), window, SLOT(asyncUnpauseVideo()));
@@ -158,6 +159,7 @@ void EmuThread::detachWindow(MainWindow* window)
         disconnect(this, SIGNAL(windowShowGamePauseMenu()), window, SLOT(onShowGamePauseMenu()));
         disconnect(this, SIGNAL(windowUpdateGamePauseMenu(int)), window, SLOT(onUpdateGamePauseMenu(int)));
         disconnect(this, SIGNAL(windowHideGamePauseMenu()), window, SLOT(onHideGamePauseMenu()));
+        disconnect(this, SIGNAL(windowRefreshGamePauseMenuContent()), window, SLOT(onRefreshGamePauseMenuContent()));
 
         disconnect(this, SIGNAL(windowOpenSettings()), window, SLOT(onOpenSettingsOverlay()));
     }
@@ -272,6 +274,9 @@ void EmuThread::run()
                 };
                 emuInstance->plugin->updateGamePauseMenuOverlaySelection = [this](int selection) {
                     emit windowUpdateGamePauseMenu(selection);
+                };
+                emuInstance->plugin->refreshGamePauseMenuOverlayContent = [this]() {
+                    emit windowRefreshGamePauseMenuContent();
                 };
             }
             bool shouldStartPlugin = emuInstance->plugin->shouldStartPlugin;
@@ -909,7 +914,7 @@ void EmuThread::startReplacementCutscene(const std::string& videoPath, const std
     emuStatus = emuStatus_Paused;
     QString filePath = QString::fromUtf8(videoPath.c_str());
     QString subtitlesFilePath = QString::fromUtf8(subtitlesPath.c_str());
-    emit windowStartVideo(filePath, subtitlesFilePath, emuInstance->plugin->cutsceneMenuLanguage());
+    emit windowStartVideo(filePath, subtitlesFilePath);
 
     emuStatus = emuStatus_Running;
 

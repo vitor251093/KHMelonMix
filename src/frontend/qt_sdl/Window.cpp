@@ -155,6 +155,16 @@ static bool FileExtensionInList(const QString& filename, const QStringList& exte
     });
 }
 
+static QStringList toQStringList(const std::vector<std::string>& v)
+{
+    QStringList result;
+    result.reserve((int)v.size());
+    for (const std::string& s : v) {
+        result.append(QString::fromStdString(s));
+    }
+    return result;
+}
+
 static bool MimeTypeInList(const QMimeType& mimetype, const QStringList& superTypeNames)
 {
     return std::any_of(superTypeNames.cbegin(), superTypeNames.cend(), [&](const auto& superTypeName) {
@@ -2574,13 +2584,22 @@ void MainWindow::onEmuReset()
     actUndoStateLoad->setEnabled(false);
 }
 
+void MainWindow::refreshGamePauseMenuContent()
+{
+    if (!panel || !emuInstance) return;
+
+    panel->setPauseMenuTitle(QString::fromStdString(emuInstance->plugin->pauseMenuTitle()));
+    panel->setPauseMenuSubtitle(QString::fromStdString(emuInstance->plugin->gamePauseMenuSubtitle()));
+    panel->setPauseMenuButtonLabels(toQStringList(emuInstance->plugin->gamePauseMenuButtonLabels()));
+    panel->setPauseMenuSelection(emuInstance->plugin->GamePauseMenuSelection());
+}
+
 void MainWindow::onShowGamePauseMenu()
 {
     if (!panel || !emuInstance) return;
 
-    panel->setPauseMenuLanguage(emuInstance->plugin->cutsceneMenuLanguage());
+    refreshGamePauseMenuContent();
     panel->setPauseMenuSizeModifier(emuInstance->plugin->getHudScale()/8.0);
-    panel->setPauseMenuSelection(0);
     panel->setPauseMenuVisible(true);
 }
 
@@ -2596,6 +2615,11 @@ void MainWindow::onUpdateGamePauseMenu(int selection)
     if (!panel) return;
 
     panel->setPauseMenuSelection(selection);
+}
+
+void MainWindow::onRefreshGamePauseMenuContent()
+{
+    refreshGamePauseMenuContent();
 }
 
 void MainWindow::onUpdatePluginSettings()

@@ -272,9 +272,19 @@ void ScreenPanel::setPauseMenuSelection(int selection)
     pauseMenu->setSelection(selection);
 }
 
-void ScreenPanel::setPauseMenuLanguage(int language)
+void ScreenPanel::setPauseMenuTitle(const QString& title)
 {
-    pauseMenu->setLanguage(language);
+    pauseMenu->setTitle(title);
+}
+
+void ScreenPanel::setPauseMenuSubtitle(const QString& subtitle)
+{
+    pauseMenu->setSubtitle(subtitle);
+}
+
+void ScreenPanel::setPauseMenuButtonLabels(const QStringList& labels)
+{
+    pauseMenu->setButtonLabels(labels);
 }
 
 void ScreenPanel::setPauseMenuSizeModifier(double modifier)

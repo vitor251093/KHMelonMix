@@ -22,6 +22,7 @@
 #include <QGraphicsView>
 #include <QVector>
 #include <QString>
+#include <QStringList>
 #include <QPixmap>
 #include <QSize>
 
@@ -40,9 +41,8 @@ public:
     QGraphicsVideoItem* videoItem() const { return m_videoItem; }
     void setMenuVisible(bool visible);
     void setMenuSelection(int selection);
-    // Language for the pause-menu labels, in DS firmware Language order (0=ja, 1=en, 2=fr,
-    // 3=de, 4=it, 5=es). Out-of-range values fall back to English.
-    void setMenuLanguage(int language);
+    void setMenuTitle(const QString& title);
+    void setMenuButtonLabels(const QStringList& labels);
     void setMenuSizeModifier(double modifier);
 
     // Parses a SubRip (.srt) subtitle file (empty path clears subtitles). See loadSubtitles.

@@ -180,7 +180,7 @@ signals:
     void windowUpdateBgmMusicVolume(quint8 volume);
     void windowStopAllBgm();
 
-    void windowStartVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage);
+    void windowStartVideo(QString videoFilePath, QString subtitlesFilePath);
     void windowStopVideo();
     void windowPauseVideo();
     void windowUnpauseVideo();
@@ -193,6 +193,7 @@ signals:
     void windowShowGamePauseMenu();
     void windowHideGamePauseMenu();
     void windowUpdateGamePauseMenu(int selection);
+    void windowRefreshGamePauseMenuContent();
 
     void windowOpenSettings();
 

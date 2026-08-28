@@ -67,6 +67,10 @@ public:
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) override;
     std::string replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) override;
     int cutsceneMenuLanguage() override;
+    std::vector<std::string> gamePauseMenuButtonLabels() override;
+    std::string gamePauseMenuSubtitle() override;
+    void onGamePauseMenuConfirmPressed() override;
+    void onGamePauseMenuOverlayHidden() override;
     std::string localizationFilePath(std::string language) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) override;
@@ -105,6 +109,9 @@ public:
 private:
     bool PausedInGame = false;
     bool isCharacterControllable = false;
+
+    bool _ConfirmingWithdraw = false;
+    bool isWithdrawPauseScreenType();
 
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;

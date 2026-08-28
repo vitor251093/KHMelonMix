@@ -385,6 +385,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
     }
 
     if (isPauseMenuGameScene()) {
+        const u32 BTN_A    = (1 << 0);
         const u32 BTN_UP   = (1 << 6);
         const u32 BTN_DOWN = (1 << 7);
 
@@ -395,6 +396,9 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         if (justPressed & (BTN_UP | BTN_DOWN)) {
             _GamePauseMenuSelection = _GamePauseMenuSelection == 0 ? 1 : 0;
             if (updateGamePauseMenuOverlaySelection) updateGamePauseMenuOverlaySelection(_GamePauseMenuSelection);
+        }
+        if (justPressed & BTN_A) {
+            onGamePauseMenuConfirmPressed();
         }
     }
 
@@ -797,6 +801,17 @@ CutsceneEntry* Plugin::detectBottomScreenCutscene()
 
     return getMobiCutsceneByAddress(cutsceneAddressValue2);
 }
+std::string Plugin::pauseMenuTitle()
+{
+    return Plugins::menuStrings(cutsceneMenuLanguage()).title;
+}
+
+std::vector<std::string> Plugin::cutsceneMenuButtonLabels()
+{
+    const Plugins::MenuStrings& strings = Plugins::menuStrings(cutsceneMenuLanguage());
+    return { strings.cont, strings.skip };
+}
+
 CutsceneEntry* Plugin::detectCutscene()
 {
     CutsceneEntry* cutscene1 = detectTopScreenCutscene();
@@ -1408,6 +1423,7 @@ void Plugin::refreshGamePauseMenuOverlay()
     {
         _GamePauseMenuSelection = 0;
         _LastGamePauseMenuButtons = 0;
+        onGamePauseMenuOverlayHidden();
         if (hideGamePauseMenuOverlay) hideGamePauseMenuOverlay();
     }
 }

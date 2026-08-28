@@ -31,6 +31,7 @@
 #include "../OpenGLSupport.h"
 
 #include "./PluginLanguage.h"
+#include "./PluginMenuStrings.h"
 #include "./PluginShapes.h"
 
 namespace Plugins
@@ -256,15 +257,19 @@ public:
 
     virtual std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) {return "";}
     virtual std::string replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) {return "";}
-    // Language for the HD cutscene pause menu, in DS firmware Language order
-    // (0=ja, 1=en, 2=fr, 3=de, 4=it, 5=es). Defaults to English.
     virtual int cutsceneMenuLanguage() { return 1; }
+
+    virtual std::string pauseMenuTitle();
+    virtual std::vector<std::string> cutsceneMenuButtonLabels();
+    virtual std::string gamePauseMenuSubtitle() { return ""; }
+    virtual std::vector<std::string> gamePauseMenuButtonLabels() { return cutsceneMenuButtonLabels(); }
 
     bool IsIngamePrerenderedCutsceneRunning() {return _IsMobiCutsceneRunning || _IsInEngineCutsceneRunning;}
     bool IsReplacementCutsceneRunning();
     CutsceneEntry* CurrentCutscene();
 
     inline int CutsceneSkipMenuSelection() { return _CutsceneSkipMenuSelection; }
+    inline int GamePauseMenuSelection() { return _GamePauseMenuSelection; }
 
     // One-shot sound request for the cutscene pause menu.
     // 1 = enter, 2 = move (up/down), 3 = continue, 4 = select; 0 = none.
@@ -290,6 +295,8 @@ public:
     virtual bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) {return false;}
 
     virtual bool isPauseMenuGameScene() {return false;}
+    virtual void onGamePauseMenuConfirmPressed() {}
+    virtual void onGamePauseMenuOverlayHidden() {}
 
     void pauseReplacementCutsceneThroughPauseMenu();
     void resumeReplacementCutsceneThroughPauseMenu();
@@ -311,6 +318,7 @@ public:
     std::function<void()> showGamePauseMenuOverlay = nullptr;
     std::function<void()> hideGamePauseMenuOverlay = nullptr;
     std::function<void(int)> updateGamePauseMenuOverlaySelection = nullptr;
+    std::function<void()> refreshGamePauseMenuOverlayContent = nullptr;
 
     inline bool shouldStartBackgroundMusic() { return checkAndResetBool(_ShouldStartReplacementBgmMusic); }
     inline bool shouldStopBackgroundMusic() { return checkAndResetBool(_ShouldStopReplacementBgmMusic); }

@@ -123,9 +123,14 @@ void CutsceneVideoView::setMenuSelection(int selection)
     m_pauseMenu->setSelection(selection);
 }
 
-void CutsceneVideoView::setMenuLanguage(int language)
+void CutsceneVideoView::setMenuTitle(const QString& title)
 {
-    m_pauseMenu->setLanguage(language);
+    m_pauseMenu->setTitle(title);
+}
+
+void CutsceneVideoView::setMenuButtonLabels(const QStringList& labels)
+{
+    m_pauseMenu->setButtonLabels(labels);
 }
 
 void CutsceneVideoView::setMenuSizeModifier(double modifier)

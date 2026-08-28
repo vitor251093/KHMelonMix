@@ -29,6 +29,8 @@
 #include <QScreen>
 #include <QCloseEvent>
 #include <QTimer>
+#include <QString>
+#include <QStringList>
 
 #include "glad/glad.h"
 #include "ScreenLayout.h"
@@ -73,7 +75,9 @@ public:
 
     virtual void setPauseMenuVisible(bool visible);
     void setPauseMenuSelection(int selection);
-    void setPauseMenuLanguage(int language);
+    void setPauseMenuTitle(const QString& title);
+    void setPauseMenuSubtitle(const QString& subtitle);
+    void setPauseMenuButtonLabels(const QStringList& labels);
     void setPauseMenuSizeModifier(double modifier);
 
 private slots:

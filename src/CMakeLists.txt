@@ -75,6 +75,7 @@ add_library(core STATIC
 
     plugins/AudioUtils.cpp
     plugins/Plugin.cpp
+    plugins/PluginMenuStrings.cpp
     plugins/PluginManager.cpp
     plugins/PluginKingdomHeartsDays.cpp
     plugins/PluginKingdomHeartsReCoded.cpp

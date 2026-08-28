@@ -68,6 +68,16 @@ bool isKnownIsoBoxType(const char* type)
     return false;
 }
 
+static QStringList toQStringList(const std::vector<std::string>& v)
+{
+    QStringList result;
+    result.reserve((int)v.size());
+    for (const std::string& s : v) {
+        result.append(QString::fromStdString(s));
+    }
+    return result;
+}
+
 // Peeks at the box type right after the first box's size field (bytes 4..8) and checks
 // whether un-XORing it with kMp4HeaderKey turns it into a recognized ISO base media box
 // type. Files that are already fine (or aren't MP4 at all) are left untouched.
@@ -483,13 +493,13 @@ void MainWindowSettings::createMenuSounds()
     }
 }
 
-void MainWindowSettings::asyncStartVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage)
+void MainWindowSettings::asyncStartVideo(QString videoFilePath, QString subtitlesFilePath)
 {
     QMetaObject::invokeMethod(this, "startVideo", Qt::QueuedConnection,
-        Q_ARG(QString, videoFilePath), Q_ARG(QString, subtitlesFilePath), Q_ARG(int, menuLanguage));
+        Q_ARG(QString, videoFilePath), Q_ARG(QString, subtitlesFilePath));
 }
 
-void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFilePath, int menuLanguage)
+void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFilePath)
 {
     playerSourceDevice.reset();
     if (mp4NeedsHeaderFix(videoFilePath)) {
@@ -514,10 +524,9 @@ void MainWindowSettings::startVideo(QString videoFilePath, QString subtitlesFile
     }
 #endif
 
-    // Load subtitles for this cutscene (an empty path clears any previous cues).
     playerView->loadSubtitles(subtitlesFilePath);
-    // Localize the pause menu to match the cutscene's language.
-    playerView->setMenuLanguage(menuLanguage);
+    playerView->setMenuTitle(QString::fromStdString(emuInstance->plugin->pauseMenuTitle()));
+    playerView->setMenuButtonLabels(toQStringList(emuInstance->plugin->cutsceneMenuButtonLabels()));
 
     QStackedWidget* centralWidget = (QStackedWidget*)this->centralWidget();
     centralWidget->setCurrentWidget(playerView);
