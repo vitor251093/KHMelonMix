@@ -47,8 +47,6 @@ static void paintPauseMenu(QPainter& p, int w, int h, int selection, double t, c
     double pauseSizeModifier = (15.0/13.0) * menuSizeModifier;
     double buttonsSizeModifier = 1.25 * menuSizeModifier;
 
-    // With a subtitle (e.g. a confirmation prompt), the title moves up and the buttons move
-    // down to open a gap for it, which sits where the buttons would otherwise start.
     const bool hasSubtitle = !subtitle.isEmpty();
 
     double bottomMargin = (hasSubtitle ? -0.01 : 0.03) * menuSizeModifier;
@@ -56,8 +54,6 @@ static void paintPauseMenu(QPainter& p, int w, int h, int selection, double t, c
     double subtitleCenterY = h * (0.5 - bottomMargin);
     double firstButtonY = h * (0.5 - bottomMargin + (hasSubtitle ? 0.055 * menuSizeModifier : 0.0));
 
-    // "PAUSE" title banner. The asset provides the decorative rule lines above/below the
-    // title; the title text itself is drawn on top, in the stylised KH title font.
     if (!pauseLabelPixmap.isNull()) {
         const qreal titleImageHeight = h * 0.15 * pauseSizeModifier;
         const qreal titleImageWidth = titleImageHeight * pauseLabelPixmap.width() / pauseLabelPixmap.height();
