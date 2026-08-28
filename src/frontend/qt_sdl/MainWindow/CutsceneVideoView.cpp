@@ -156,10 +156,6 @@ void CutsceneVideoView::drawForeground(QPainter* painter, const QRectF& rect)
 {
     QGraphicsView::drawForeground(painter, rect);
 
-    // Subtitles render in device/pixel coordinates, beneath the pause menu (which is a separate
-    // widget stacked on top - see m_pauseMenu). drawForeground runs once per video frame; we
-    // render the cue into a cached pixmap and only rebuild it when the text or viewport size
-    // changes, so steady-state cost is a single blit.
     if (m_activeCue >= 0 && m_activeCue < m_cues.size()) {
         const QString& text = m_cues[m_activeCue].text;
         const QSize vp = viewport()->size();

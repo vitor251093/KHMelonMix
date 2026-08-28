@@ -107,6 +107,7 @@ void EmuThread::attachWindow(MainWindow* window)
         connect(this, SIGNAL(windowShowCutscenePauseMenu(int)), window, SLOT(asyncShowCutscenePauseMenu(int)));
         connect(this, SIGNAL(windowUpdateCutscenePauseMenu(int)), window, SLOT(asyncUpdateCutscenePauseMenu(int)));
         connect(this, SIGNAL(windowHideCutscenePauseMenu()), window, SLOT(asyncHideCutscenePauseMenu()));
+
         connect(this, SIGNAL(windowPlayMenuSound(int)), window, SLOT(asyncPlayMenuSound(int)));
 
         connect(this, SIGNAL(windowShowGamePauseMenu()), window, SLOT(onShowGamePauseMenu()));

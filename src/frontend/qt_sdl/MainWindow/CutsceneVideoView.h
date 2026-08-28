@@ -30,10 +30,6 @@ class QGraphicsScene;
 class QGraphicsVideoItem;
 class PauseMenuOverlay;
 
-// Renders the HD cutscene video and, when paused, the Skip/Continue menu on top of
-// it. The menu is a PauseMenuOverlay child widget stacked on top of this view (see
-// PauseMenuOverlay.h) so it moves, stacks and focuses with the main window on every
-// platform (including Wayland, where apps can't position their own top-level windows).
 class CutsceneVideoView : public QGraphicsView
 {
 public:
