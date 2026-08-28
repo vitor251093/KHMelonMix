@@ -148,6 +148,7 @@ private:
     bool didMobiCutsceneEnded() override;
     bool didInEngineCutsceneEnded() override;
     bool canReturnToGameAfterReplacementCutscene() override;
+    bool isPauseMenuGameScene() override;
 
     u8 getFloorLevel();
     u32 getCurrentMission();

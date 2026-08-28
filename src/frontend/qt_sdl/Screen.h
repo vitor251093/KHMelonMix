@@ -29,6 +29,8 @@
 #include <QScreen>
 #include <QCloseEvent>
 #include <QTimer>
+#include <QString>
+#include <QStringList>
 
 #include "glad/glad.h"
 #include "ScreenLayout.h"
@@ -37,6 +39,7 @@
 
 class MainWindow;
 class EmuInstance;
+class PauseMenuOverlay;
 
 
 const struct { int id; float ratio; const char* label; } aspectRatios[] =
@@ -69,6 +72,13 @@ public:
 
     void osdSetEnabled(bool enabled);
     void osdAddMessage(unsigned int color, const char* msg);
+
+    virtual void setPauseMenuVisible(bool visible);
+    void setPauseMenuSelection(int selection);
+    void setPauseMenuTitle(const QString& title);
+    void setPauseMenuSubtitle(const QString& subtitle);
+    void setPauseMenuButtonLabels(const QStringList& labels);
+    void setPauseMenuSizeModifier(double modifier);
 
 private slots:
     void onScreenLayoutChanged();
@@ -123,6 +133,8 @@ protected:
     QPixmap splashLogo;
     OSDItem splashText[3];
     QPoint splashPos[4];
+
+    PauseMenuOverlay* pauseMenu;
 
     void loadConfig();
 
@@ -197,6 +209,9 @@ public:
     GL::Context* getContext() { return glContext.get(); }
 
     void transferLayout();
+
+    void setPauseMenuVisible(bool visible) override;
+
 protected:
 
     qreal devicePixelRatioFromScreen() const;
@@ -230,6 +245,10 @@ private:
     std::map<unsigned int, GLuint> osdTextures;
 
     GLuint logoTexture;
+
+    GLuint pauseMenuTexture;
+    int pauseMenuTexWidth = 0, pauseMenuTexHeight = 0;
+    void drawPauseMenuGL(int surfaceWidth, int surfaceHeight, float scaleFactor);
 
     void osdRenderItem(OSDItem* item) override;
     void osdDeleteItem(OSDItem* item) override;

@@ -264,6 +264,11 @@ private slots:
     void onSettingsClosed();
     void onQuitGameConfirmed();
 
+    void onShowGamePauseMenu();
+    void onHideGamePauseMenu();
+    void onUpdateGamePauseMenu(int selection);
+    void onRefreshGamePauseMenuContent();
+
 private:
     virtual void closeEvent(QCloseEvent* event) override;
 
@@ -279,6 +284,8 @@ private:
     void updateCartInserted(bool gba);
 
     void createScreenPanel();
+
+    void refreshGamePauseMenuContent();
 
     bool lanWarning(bool host);
 

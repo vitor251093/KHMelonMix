@@ -1519,11 +1519,11 @@ std::vector<ShapeData2D> PluginKingdomHeartsReCoded::renderer_topScreen_2DShapes
             break;
 
         case gameScene_PauseMenu:
-            // pause menu
-            shapes.push_back(ShapeBuilder2D::square()
+            // pause menu (hidden because we got the new one on overlay)
+            /*shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
                     .hudScale(hudScale)
-                    .build(aspectRatio));
+                    .build(aspectRatio));*/
 
             // background
             shapes.push_back(ShapeBuilder2D::square()
@@ -3049,6 +3049,11 @@ bool PluginKingdomHeartsReCoded::canReturnToGameAfterReplacementCutscene()
     }
 
     return true;
+}
+
+bool PluginKingdomHeartsReCoded::isPauseMenuGameScene()
+{
+    return GameScene == gameScene_PauseMenu;
 }
 
 std::filesystem::path PluginKingdomHeartsReCoded::patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {

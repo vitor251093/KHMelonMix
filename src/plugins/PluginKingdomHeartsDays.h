@@ -67,6 +67,11 @@ public:
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) override;
     std::string replacementCutsceneSubtitlesFilePath(CutsceneEntry* cutscene) override;
     int cutsceneMenuLanguage() override;
+    std::vector<std::string> gamePauseMenuButtonLabels() override;
+    std::string gamePauseMenuSubtitle() override;
+    void onGamePauseMenuConfirmPressed() override;
+    void onGamePauseMenuCancelPressed() override;
+    void onGamePauseMenuOverlayHidden() override;
     std::string localizationFilePath(std::string language) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) override;
@@ -105,6 +110,10 @@ public:
 private:
     bool PausedInGame = false;
     bool isCharacterControllable = false;
+
+    bool _ConfirmingWithdraw = false;
+    bool isWithdrawPauseScreenType();
+    void cancelWithdrawConfirmation();
 
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;
@@ -168,6 +177,7 @@ private:
     bool didMobiCutsceneEnded() override;
     bool didInEngineCutsceneEnded() override;
     bool canReturnToGameAfterReplacementCutscene() override;
+    bool isPauseMenuGameScene() override;
 
     // Music replacement system
     std::array<BgmEntry, 38> BgmEntries;

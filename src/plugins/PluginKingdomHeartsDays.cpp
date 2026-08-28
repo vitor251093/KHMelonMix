@@ -1564,11 +1564,11 @@ std::vector<ShapeData2D> PluginKingdomHeartsDays::renderer_topScreen_2DShapes() 
             break;
 
         case gameScene_PauseMenu:
-            // pause menu
-            shapes.push_back(ShapeBuilder2D::square()
+            // pause menu (hidden because we got the new one on overlay)
+            /*shapes.push_back(ShapeBuilder2D::square()
                     .placeAtCorner(corner_Center)
                     .hudScale(hudScale)
-                    .build(aspectRatio));
+                    .build(aspectRatio));*/
 
             // background
             shapes.push_back(ShapeBuilder2D::square()
@@ -2913,6 +2913,79 @@ bool PluginKingdomHeartsDays::canReturnToGameAfterReplacementCutscene()
     }
     
     return true;
+}
+
+bool PluginKingdomHeartsDays::isPauseMenuGameScene()
+{
+    return GameScene == gameScene_PauseMenu;
+}
+
+bool PluginKingdomHeartsDays::isWithdrawPauseScreenType()
+{
+    u8 pauseScreenType = nds->ARM7Read8(getAnyByCart(PAUSE_SCREEN_TYPE_ADDRESS_US, PAUSE_SCREEN_TYPE_ADDRESS_EU,
+                                                      PAUSE_SCREEN_TYPE_ADDRESS_JP, PAUSE_SCREEN_TYPE_ADDRESS_JP_REV1));
+    return pauseScreenType == getAnyByCart(PAUSE_SCREEN_WITH_WITHDRAW_VALUE_US, PAUSE_SCREEN_WITH_WITHDRAW_VALUE_EU,
+                                            PAUSE_SCREEN_WITH_WITHDRAW_VALUE_JP, PAUSE_SCREEN_WITH_WITHDRAW_VALUE_JP_REV1);
+}
+
+std::vector<std::string> PluginKingdomHeartsDays::gamePauseMenuButtonLabels()
+{
+    const Plugins::MenuStrings& strings = Plugins::menuStrings(cutsceneMenuLanguage());
+
+    if (_ConfirmingWithdraw) {
+        return { strings.yes, strings.no };
+    }
+
+    return { strings.cont, isWithdrawPauseScreenType() ? strings.withdraw : strings.skip };
+}
+
+std::string PluginKingdomHeartsDays::gamePauseMenuSubtitle()
+{
+    if (!_ConfirmingWithdraw) {
+        return "";
+    }
+
+    return Plugins::menuStrings(cutsceneMenuLanguage()).areYouSure;
+}
+
+void PluginKingdomHeartsDays::cancelWithdrawConfirmation()
+{
+    _ConfirmingWithdraw = false;
+    _GamePauseMenuSelection = 1; // leave "Withdraw" highlighted, matching what was just cancelled
+    if (refreshGamePauseMenuOverlayContent) refreshGamePauseMenuOverlayContent();
+}
+
+void PluginKingdomHeartsDays::onGamePauseMenuConfirmPressed()
+{
+    if (_ConfirmingWithdraw) {
+        if (GamePauseMenuSelection() == 1) { // "No": back to the normal Continue/Withdraw view
+            cancelWithdrawConfirmation();
+        }
+        return;
+    }
+
+    // Only confirming the "Withdraw" button (not "Continue") opens the confirmation screen.
+    if (GamePauseMenuSelection() != 1 || !isWithdrawPauseScreenType()) {
+        return;
+    }
+
+    _ConfirmingWithdraw = true;
+    _GamePauseMenuSelection = 1; // "No" pre-selected
+    if (refreshGamePauseMenuOverlayContent) refreshGamePauseMenuOverlayContent();
+}
+
+void PluginKingdomHeartsDays::onGamePauseMenuCancelPressed()
+{
+    // B backs out of the confirmation screen the same way selecting "No" does; it has no
+    // other effect on the normal Continue/Withdraw view.
+    if (_ConfirmingWithdraw) {
+        cancelWithdrawConfirmation();
+    }
+}
+
+void PluginKingdomHeartsDays::onGamePauseMenuOverlayHidden()
+{
+    _ConfirmingWithdraw = false;
 }
 
 std::filesystem::path PluginKingdomHeartsDays::patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath) {
