@@ -296,6 +296,7 @@ public:
 
     virtual bool isPauseMenuGameScene() {return false;}
     virtual void onGamePauseMenuConfirmPressed() {}
+    virtual void onGamePauseMenuCancelPressed() {}
     virtual void onGamePauseMenuOverlayHidden() {}
 
     void pauseReplacementCutsceneThroughPauseMenu();

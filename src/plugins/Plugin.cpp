@@ -386,6 +386,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
 
     if (isPauseMenuGameScene()) {
         const u32 BTN_A    = (1 << 0);
+        const u32 BTN_B    = (1 << 1);
         const u32 BTN_UP   = (1 << 6);
         const u32 BTN_DOWN = (1 << 7);
 
@@ -399,6 +400,9 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         }
         if (justPressed & BTN_A) {
             onGamePauseMenuConfirmPressed();
+        }
+        if (justPressed & BTN_B) {
+            onGamePauseMenuCancelPressed();
         }
     }
 

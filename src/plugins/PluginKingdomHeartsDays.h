@@ -70,6 +70,7 @@ public:
     std::vector<std::string> gamePauseMenuButtonLabels() override;
     std::string gamePauseMenuSubtitle() override;
     void onGamePauseMenuConfirmPressed() override;
+    void onGamePauseMenuCancelPressed() override;
     void onGamePauseMenuOverlayHidden() override;
     std::string localizationFilePath(std::string language) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
@@ -112,6 +113,7 @@ private:
 
     bool _ConfirmingWithdraw = false;
     bool isWithdrawPauseScreenType();
+    void cancelWithdrawConfirmation();
 
     bool IsBottomScreen2DTextureBlack;
     bool IsTopScreen2DTextureBlack;

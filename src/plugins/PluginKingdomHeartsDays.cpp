@@ -2948,13 +2948,18 @@ std::string PluginKingdomHeartsDays::gamePauseMenuSubtitle()
     return Plugins::menuStrings(cutsceneMenuLanguage()).areYouSure;
 }
 
+void PluginKingdomHeartsDays::cancelWithdrawConfirmation()
+{
+    _ConfirmingWithdraw = false;
+    _GamePauseMenuSelection = 1; // leave "Withdraw" highlighted, matching what was just cancelled
+    if (refreshGamePauseMenuOverlayContent) refreshGamePauseMenuOverlayContent();
+}
+
 void PluginKingdomHeartsDays::onGamePauseMenuConfirmPressed()
 {
     if (_ConfirmingWithdraw) {
         if (GamePauseMenuSelection() == 1) { // "No": back to the normal Continue/Withdraw view
-            _ConfirmingWithdraw = false;
-            _GamePauseMenuSelection = 1; // leave "Withdraw" highlighted, matching what was just cancelled
-            if (refreshGamePauseMenuOverlayContent) refreshGamePauseMenuOverlayContent();
+            cancelWithdrawConfirmation();
         }
         return;
     }
@@ -2967,6 +2972,15 @@ void PluginKingdomHeartsDays::onGamePauseMenuConfirmPressed()
     _ConfirmingWithdraw = true;
     _GamePauseMenuSelection = 1; // "No" pre-selected
     if (refreshGamePauseMenuOverlayContent) refreshGamePauseMenuOverlayContent();
+}
+
+void PluginKingdomHeartsDays::onGamePauseMenuCancelPressed()
+{
+    // B backs out of the confirmation screen the same way selecting "No" does; it has no
+    // other effect on the normal Continue/Withdraw view.
+    if (_ConfirmingWithdraw) {
+        cancelWithdrawConfirmation();
+    }
 }
 
 void PluginKingdomHeartsDays::onGamePauseMenuOverlayHidden()
