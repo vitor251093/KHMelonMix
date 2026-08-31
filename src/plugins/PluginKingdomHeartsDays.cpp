@@ -2230,7 +2230,110 @@ void PluginKingdomHeartsDays::applyTouchKeyMaskToTouchControls(u16* touchX, u16*
             nds->ARM7Write8(cameraSpeedMenuAddress, nds->ARM7Read8(cameraSpeedMenuAddress) - 0x80);
         }
 
-        _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, false);
+        s16 rStrength = (s16)CameraSensitivity;
+        s16 right = (s16)(((~TouchKeyMask) & 0xF) << rStrength);
+        s16 left  = (s16)((((~TouchKeyMask) >> 4)  & 0xF) << rStrength);
+        s16 down  = (s16)((((~TouchKeyMask) >> 8)  & 0xF) << rStrength);
+        s16 up    = (s16)((((~TouchKeyMask) >> 12) & 0xF) << rStrength);
+        s16 axisX = left - right;
+        s16 axisY = up - down;
+
+        if (axisX > 127) axisX = 127;
+        if (axisX < -127) axisX = -127;
+        if (axisX < 0) axisX = axisX + 65536;
+
+        if (axisY > 127) axisY = 127;
+        if (axisY < -127) axisY = -127;
+        if (axisY < 0) axisY = axisY + 65536;
+
+
+        u32 ADDR_MAILBOX = 0x027FFDF0;
+        u32 ADDR_BOOT_STAGE_COUNTER = 0x027FFC3C;
+        u32 ADDR_HOOK_CAVE = 0x02000A78;
+
+        nds->ARM7Write16(ADDR_MAILBOX + 6, axisX);
+        nds->ARM7Write16(ADDR_MAILBOX + 8, axisY);
+
+        if (nds->ARM7Read32(ADDR_BOOT_STAGE_COUNTER) > 0x300) {
+            static const u32 hookCode[] = {
+                0xE92D403E, 0xE59F409C,
+                0xE1D440B0, 0xE3540000,
+                0x1A000000, 0xE8BD803E,
+                0xE1A05804, 0xE1A04C04,
+                0xE1A04C44, 0xE1A05C45,
+                0xE2655000, 0xE1A00004,
+                0xE1A01005, 0xE59F5070,
+                0xE12FFF35, 0xE2800902,
+                0xE8BD803E, 0xE92D0007,
+                0xE59F0058, 0xE1D020F6,
+                0xE1B02282, 0xC28EE078,
+                0xB28EE024, 0xB2622000,
+                0x158620A8, 0x13A07010,
+                0xE8BD0007, 0xE2175004,
+                0xE12FFF1E, 0xE92D0007,
+                0xE59F0028, 0xE1D020F8,
+                0xE1B02202, 0xC28EE024,
+                0xB28EE088, 0xB2622000,
+                0x158620AC, 0x13A07010,
+                0x13A00000, 0xE8BD0007,
+                0xE2172001, 0xE12FFF1E,
+                0x027FFDF0, 0x0200524C,
+            };
+
+            u32 addr = ADDR_HOOK_CAVE;
+            for (u32 word : hookCode) {
+                nds->ARM7Write32(addr, word);
+                addr += 4;
+            }
+        }
+
+        if (nds->ARM7Read32(ADDR_BOOT_STAGE_COUNTER) > 0x400) {
+            if (isUsaCart())
+            {
+                if (nds->ARM7Read32(0x020A084C) == 0xE12FFF1E)
+                    nds->ARM7Write32(0x020A084C, 0xEAFD8089);
+
+                if (nds->ARM7Read32(0x0204DE40) == 0xE2172001) {
+                    nds->ARM7Write32(0x0204DD60, 0xEBFECB55);
+                    nds->ARM7Write32(0x0204DE40, 0xEBFECB29);
+                }
+            }
+
+            if (isEuropeCart())
+            {
+                if (nds->ARM7Read32(0x020A086C) == 0xE12FFF1E)
+                    nds->ARM7Write32(0x020A086C, 0xEAFD8081);
+
+                if (nds->ARM7Read32(0x0204DE60) == 0xE2172001) {
+                    nds->ARM7Write32(0x0204DD80, 0xEBFECB4D);
+                    nds->ARM7Write32(0x0204DE60, 0xEBFECB21);
+                }
+            }
+
+            if (isJapanCart())
+            {
+                if (isJapanCartRev1())
+                {
+                    if (nds->ARM7Read32(0x020A03F4) == 0xE12FFF1E)
+                        nds->ARM7Write32(0x020A03F4, 0xEAFD819F);
+
+                    if (nds->ARM7Read32(0x0204E240) == 0xE2172001) {
+                        nds->ARM7Write32(0x0204E160, 0xEBFECA55);
+                        nds->ARM7Write32(0x0204E240, 0xEBFECA29);
+                    }
+                }
+                else
+                {
+                    if (nds->ARM7Read32(0x020A0434) == 0xE12FFF1E)
+                        nds->ARM7Write32(0x020A0434, 0xEAFD818F);
+
+                    if (nds->ARM7Read32(0x0204E280) == 0xE2172001) {
+                        nds->ARM7Write32(0x0204E1A0, 0xEBFECA45);
+                        nds->ARM7Write32(0x0204E280, 0xEBFECA19);
+                    }
+                }
+            }
+        }
     }
 }
 
