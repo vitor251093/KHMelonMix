@@ -2283,7 +2283,7 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u
     nds->ARM7Write16(ADDR_MAILBOX + 6, axisX);
     nds->ARM7Write16(ADDR_MAILBOX + 8, axisY);
 
-    if (nds->ARM7Read32(ADDR_BOOT_STAGE_COUNTER) > 0x300) {
+    if (nds->ARM7Read32(ADDR_BOOT_STAGE_COUNTER) > 0x400) {
         static const u32 hookCode[] = {
             0xE92D403F, 0xE59F40B4,
             0xE1D440B0, 0xE3540000,
@@ -2309,7 +2309,7 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u
             0xB28EE084, 0xB2622000,
             0x158420C8, 0x13A07000,
             0xE8BD0007, 0xE12FFF1E,
-            0x02FFFDF0, 0x020062D0
+            0x02FFFDF0, 0x020062BC
         };
 
         u32 addr = ADDR_HOOK_CAVE;
