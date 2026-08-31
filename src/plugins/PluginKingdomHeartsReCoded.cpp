@@ -2259,7 +2259,112 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u
         return;
     }
 
-    _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, true);
+    s16 rStrength = (s16)CameraSensitivity;
+    s16 right = (s16)(((~TouchKeyMask) & 0xF) << rStrength);
+    s16 left  = (s16)((((~TouchKeyMask) >> 4)  & 0xF) << rStrength);
+    s16 down  = (s16)((((~TouchKeyMask) >> 8)  & 0xF) << rStrength);
+    s16 up    = (s16)((((~TouchKeyMask) >> 12) & 0xF) << rStrength);
+    s16 axisX = left - right;
+    s16 axisY = up - down;
+
+    if (axisX > 127) axisX = 127;
+    if (axisX < -127) axisX = -127;
+    if (axisX < 0) axisX = axisX + 65536;
+
+    if (axisY > 127) axisY = 127;
+    if (axisY < -127) axisY = -127;
+    if (axisY < 0) axisY = axisY + 65536;
+
+
+    u32 ADDR_MAILBOX = 0x02FFFDF0;
+    u32 ADDR_BOOT_STAGE_COUNTER = 0x02FFFC3C;
+    u32 ADDR_HOOK_CAVE = 0x02000A78;
+
+    nds->ARM7Write16(ADDR_MAILBOX + 6, axisX);
+    nds->ARM7Write16(ADDR_MAILBOX + 8, axisY);
+
+    if (nds->ARM7Read32(ADDR_BOOT_STAGE_COUNTER) > 0x300) {
+        static const u32 hookCode[] = {
+            0xE92D403F, 0xE59F40B4,
+            0xE1D440B0, 0xE3540000,
+            0x1A000003, 0xE8BD403F,
+            0xE3540001, 0xE1C500B2,
+            0xE12FFF1E, 0xE1A05804,
+            0xE1A04C04, 0xE1A04C44,
+            0xE1A05C45, 0xE2655000,
+            0xE1A00004, 0xE1A01005,
+            0xE59F507C, 0xE12FFF35,
+            0xE2800902, 0xE1A06000,
+            0xE8BD403F, 0xE1C560B0,
+            0xE28EE004, 0xE12FFF1E,
+            0xE92D4006, 0xE59F0054,
+            0xE1D010F6, 0xE5940098,
+            0xE0800281, 0xE1A00800,
+            0xE1A00820, 0xE5840098,
+            0xE2160004, 0xE8BD8006,
+            0xE0100006, 0xE58D0010,
+            0xE92D0007, 0xE59F0024,
+            0xE1D020F8, 0xE1A02202,
+            0xE09220C2, 0xC28EE020,
+            0xB28EE084, 0xB2622000,
+            0x158420C8, 0x13A07000,
+            0xE8BD0007, 0xE12FFF1E,
+            0x02FFFDF0, 0x020062D0
+        };
+
+        u32 addr = ADDR_HOOK_CAVE;
+        for (u32 word : hookCode) {
+            nds->ARM7Write32(addr, word);
+            addr += 4;
+        }
+    }
+
+    if (nds->ARM7Read32(ADDR_BOOT_STAGE_COUNTER) > 0x400) {
+        if (isUsaCart())
+        {
+            if (nds->ARM7Read16(0x020A6F8E) == 0x2C01) {
+                nds->ARM7Write16(0x020A6F8E, 0xF759);
+                nds->ARM7Write16(0x020A6F90, 0xED74);
+            }
+
+            if (nds->ARM7Read16(0x020C4368) == 0x4030) {
+                nds->ARM7Write16(0x020C4236, 0xF73C);
+                nds->ARM7Write16(0x020C4238, 0xEC50);
+                nds->ARM7Write16(0x020C4368, 0xF73C);
+                nds->ARM7Write16(0x020C436A, 0xEBCA);
+            }
+        }
+
+        if (isEuropeCart())
+        {
+            if (nds->ARM7Read16(0x020A6FAE) == 0x2C01) {
+                nds->ARM7Write16(0x020A6FAE, 0xF759);
+                nds->ARM7Write16(0x020A6FB0, 0xED74);
+            }
+
+            if (nds->ARM7Read16(0x020C4388) == 0x4030) {
+                nds->ARM7Write16(0x020C4256, 0xF73C);
+                nds->ARM7Write16(0x020C4258, 0xEC40);
+                nds->ARM7Write16(0x020C4388, 0xF73C);
+                nds->ARM7Write16(0x020C438A, 0xEBBA);
+            }
+        }
+
+        if (isJapanCart())
+        {
+            if (nds->ARM7Read16(0x020A6A4E) == 0x2C01) {
+                nds->ARM7Write16(0x020A6A4E, 0xF759);
+                nds->ARM7Write16(0x020A6A50, 0xE814);
+            }
+
+            if (nds->ARM7Read16(0x020C3DA8) == 0x4030) {
+                nds->ARM7Write16(0x020C3C76, 0xF73C);
+                nds->ARM7Write16(0x020C3C78, 0xEF30);
+                nds->ARM7Write16(0x020C3DA8, 0xF73C);
+                nds->ARM7Write16(0x020C3DAA, 0xEEAA);
+            }
+        }
+    }
 }
 
 void PluginKingdomHeartsReCoded::applyGameSettingsKeepAliveToInputMask(u32* InputMask)
