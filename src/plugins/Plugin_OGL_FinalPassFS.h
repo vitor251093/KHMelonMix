@@ -426,7 +426,16 @@ ivec4 getTopScreenColor(vec2 pos, bool shouldSwapScreens)
                 }
             }
 
-            currentColor = ivec4(mix(currentColor, color, color.a / 255.0));
+            //converting the following ivec4 variables to vec4 so that they can be used in mix()
+            //--BPC
+
+            currentColor = ivec4(
+                mix(
+                    vec4(currentColor), 
+                    vec4(color), 
+                    vec4(color).a / 255.0
+                )
+            );
         }
     }
 

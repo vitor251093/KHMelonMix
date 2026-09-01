@@ -19,7 +19,7 @@ endif()
 project(melonDS
     VERSION 0.9.2
     DESCRIPTION "DS emulator, sorta"
-    HOMEPAGE_URL "https://github.com/vitor251093/KHMelonMix"
+    HOMEPAGE_URL "https://github.com/BettyPunkCrocker/KHMelonMix_SpriteReplacement"
     LANGUAGES C CXX)
 
 include(CheckSymbolExists)
