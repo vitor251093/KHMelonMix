@@ -3032,8 +3032,8 @@ bool PluginKingdomHeartsDays::isWithdrawPauseScreenType()
 {
     u8 pauseScreenType = nds->ARM7Read8(getAnyByCart(PAUSE_SCREEN_TYPE_ADDRESS_US, PAUSE_SCREEN_TYPE_ADDRESS_EU,
                                                       PAUSE_SCREEN_TYPE_ADDRESS_JP, PAUSE_SCREEN_TYPE_ADDRESS_JP_REV1));
-    return pauseScreenType == getAnyByCart(PAUSE_SCREEN_WITH_WITHDRAW_VALUE_US, PAUSE_SCREEN_WITH_WITHDRAW_VALUE_EU,
-                                            PAUSE_SCREEN_WITH_WITHDRAW_VALUE_JP, PAUSE_SCREEN_WITH_WITHDRAW_VALUE_JP_REV1);
+    return (pauseScreenType & getAnyByCart(PAUSE_SCREEN_WITH_WITHDRAW_VALUE_US, PAUSE_SCREEN_WITH_WITHDRAW_VALUE_EU,
+                                           PAUSE_SCREEN_WITH_WITHDRAW_VALUE_JP, PAUSE_SCREEN_WITH_WITHDRAW_VALUE_JP_REV1)) != 0;
 }
 
 std::vector<std::string> PluginKingdomHeartsDays::gamePauseMenuButtonLabels()
