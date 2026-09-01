@@ -2276,6 +2276,9 @@ void PluginKingdomHeartsReCoded::applyTouchKeyMaskToTouchControls(u16* touchX, u
     if (axisY < 0) axisY = axisY + 65536;
 
 
+    // Reference:
+    // https://github.com/shocoman/Analog-Controls-for-NDS-Games-on-3DS/tree/master/patches_for_other_games/kingdom_hearts_recoded/action_replay_codes
+
     u32 ADDR_MAILBOX = 0x02FFFDF0;
     u32 ADDR_BOOT_STAGE_COUNTER = 0x02FFFC3C;
     u32 ADDR_HOOK_CAVE = 0x02000A78;
