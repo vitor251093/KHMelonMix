@@ -156,6 +156,9 @@ private:
     u32 LastLockOnPress = LOCK_ON_PRESS_FRAME_LIMIT;
     bool SwitchTargetPressOnHold = false;
 
+    int LastMouseCoordX = 0;
+    int LastMouseCoordY = 0;
+
     std::array<CutsceneEntry, 46> Cutscenes;
     std::array<CutsceneEntry, 103> Dialogues;
     u32 cutscenesAddressOffset = 0;
