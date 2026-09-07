@@ -1,6 +1,7 @@
 #include "nds.h"
 
 #include <string>
+#include <cstring>
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
