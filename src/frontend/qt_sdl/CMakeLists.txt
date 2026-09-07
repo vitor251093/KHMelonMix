@@ -21,6 +21,14 @@ set(SOURCES_QT_SDL
     InputConfig/InputConfigDialog.cpp
     InputConfig/MapButton.h
     InputConfig/resources/ds.qrc
+    localization/ExportResult.h
+    localization/FileEntry.h
+    localization/FileSystemDialog.cpp
+    localization/FileSystemDialog.h
+    localization/LocUtils.cpp
+    localization/LocUtils.h
+    localization/Worker.cpp
+    localization/Worker.h
     MainWindow/MainWindowSettings.cpp
     MainWindow/CutsceneVideoView.cpp
     MainWindow/PauseMenuOverlay.cpp
@@ -206,7 +214,9 @@ endif()
 
 target_include_directories(melonDS PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/..")
+    "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../plugins")
+
 target_include_directories(melonDS PRIVATE ${LUA_INCLUDE_DIR})
 
 if (USE_QT6)

@@ -84,6 +84,25 @@ add_library(core STATIC
     plugins/PluginTemplateLua.cpp
     plugins/KingdomHeartsHDCollection.cpp
 
+    plugins/localization/cakp.cpp
+    plugins/localization/cakp.h
+    plugins/localization/lang.cpp
+    plugins/localization/lang.h
+    plugins/localization/lzss.cpp
+    plugins/localization/lzss.h
+    plugins/localization/nds.cpp
+    plugins/localization/nds.h
+    plugins/localization/p2.cpp
+    plugins/localization/p2.h
+    plugins/localization/rompatcher.cpp
+    plugins/localization/rompatcher.h
+    plugins/localization/strings.cpp
+    plugins/localization/strings.h
+    plugins/localization/stringtable.cpp
+    plugins/localization/stringtable.h
+    plugins/localization/utils.cpp
+    plugins/localization/utils.h
+
     sha1/sha1.c
     tiny-AES-c/aes.c
     xxhash/xxhash.c

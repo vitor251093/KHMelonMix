@@ -1,5 +1,7 @@
 #include "PluginKingdomHeartsDays.h"
 #include "KingdomHeartsHDCollection.h"
+#include "localization/strings.h"
+#include "localization/rompatcher.h"
 #include <cmath>
 
 namespace Plugins
@@ -606,115 +608,19 @@ bool PluginKingdomHeartsDays::shouldOpenKHExtendedSettings() {
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
-    u8* rom = (u8*)nds->GetNDSCart()->GetROM();
-
-    std::string language = GameLanguage.code;
+    std::string language = "en-US"; //GameLanguage.code;
 
     std::string LocalizationFilePath = localizationFilePath(language);
-    Platform::FileHandle* f = Platform::OpenLocalFile(LocalizationFilePath.c_str(), Platform::FileMode::ReadText);
-    if (f) {
-        char linebuf[1024];
-        char entryname[32];
-        char entryval[1024];
-        bool firstLine = true;
-        while (!Platform::IsEndOfFile(f))
-        {
-            if (!Platform::FileReadLine(linebuf, 1024, f))
-                break;
+    if (LocalizationFilePath.empty())
+        return;
 
-            const char* line = linebuf;
-            if (firstLine)
-            {
-                firstLine = false;
-                line = skipUtf8Bom(line);
-            }
+    NDSCart::CartCommon* cart = nds->GetNDSCart();
+    u8* rom = (u8*)cart->GetROM();
+    u32 romLength = cart->GetROMLength();
 
-            int ret = sscanf(line, "%31[A-Za-z_0-9]=%[^\t\r\n]", entryname, entryval);
-            entryname[31] = '\0';
-            if (ret < 2) continue;
-
-            std::string entrynameStr = std::string(entryname);
-            if (entrynameStr.compare(0, 2, "0x") == 0) {
-                int addrGap = 0;
-                unsigned int addr = std::stoul(entrynameStr.substr(2), nullptr, 16);
-
-                bool ended = false;
-                for (int i = 0; i < 1023; i++) {
-                    if (*((u8*)&rom[addr + i]) == 0x00) {
-                        break;
-                    }
-
-                    if (entryval[i + addrGap] == '\\' && entryval[i + addrGap + 1] == 'n') {
-                        *((u8*)&rom[addr + i]) = 0x0A;
-                        addrGap++;
-                        continue;
-                    }
-
-                    if (entryval[i + addrGap] == 0 || entryval[i + addrGap] == '\0') {
-                        ended = true;
-                    }
-
-                    if (ended) {
-                        *((u8*)&rom[addr + i]) = 0x20;
-                    }
-                    else {
-                        *((u8*)&rom[addr + i]) = entryval[i + addrGap];
-                    }
-                }
-            }
-        }
-
-        CloseFile(f);
-    }
-    else if (false) { // Method that exports the strings from the game ROM
-        int firstAddr = 0;
-        int lastAddr = 0;
-        bool validCharFound = false;
-        bool forbCharFound = false;
-        for (int addr = 0x0689D330; addr < 0x06C49D0C; addr++) {
-            bool usual = rom[addr] >= 0x41 && rom[addr] <= 0x7E;
-            bool accents = rom[addr] == 0xC2 || rom[addr] == 0xC3 || (rom[addr] >= 0x80 && rom[addr] <= 0xBF);
-            bool quotes = rom[addr] == 0xE2 || rom[addr] == 0x80 || rom[addr] == 0x9C || rom[addr] == 0x9D;
-            bool unusual = (rom[addr] >= 0x20 && rom[addr] <= 0x40) || accents || quotes || rom[addr] == 0x0A;
-            bool forb = rom[addr] == 0x93 || rom[addr] == 0x5F || rom[addr] == 0x2F;
-            if (usual || unusual) {
-                if (firstAddr == 0) {
-                    firstAddr = addr;
-                    lastAddr = addr;
-                }
-                else {
-                    lastAddr = addr;
-                }
-            }
-            if (usual) {
-                validCharFound = true;
-            }
-            if (forb) {
-                forbCharFound = true;
-            }
-            if (!usual && !unusual) {
-                if (firstAddr != 0) {
-                    if (!forbCharFound && validCharFound && lastAddr - firstAddr > 2) {
-                        printf("0x%08X=", firstAddr);
-                        for (int pAddr = firstAddr; pAddr <= lastAddr; pAddr++) {
-                            if ((char)rom[pAddr] == 0x0A) {
-                                printf("\\n");
-                            }
-                            else {
-                                printf("%c", (char)rom[pAddr]);
-                            }
-                        }
-                        printf("\n");
-                    }
-
-                    firstAddr = 0;
-                    lastAddr = 0;
-                    validCharFound = false;
-                    forbCharFound = false;
-                }
-            }
-        }
-    }
+    auto modLines = ndsloc::strings::readCsvFile(LocalizationFilePath);
+    uint32_t updatedLinesCount = ndsloc::patcher::createPatch(rom, romLength, modLines);
+    bool bStep = true;
 }
 
 void PluginKingdomHeartsDays::onLoadROM() {
@@ -3352,7 +3258,7 @@ void PluginKingdomHeartsDays::refreshMouseStatus() {
 }
 
 std::string PluginKingdomHeartsDays::localizationFilePath(std::string language) {
-    std::string filename = language + ".ini";
+    std::string filename = language + ".csv";
     std::string assetsRegionSubfolderName = assetsRegionSubfolder();
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
