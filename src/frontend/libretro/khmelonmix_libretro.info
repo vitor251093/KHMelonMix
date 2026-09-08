@@ -1,0 +1,46 @@
+# Software Information
+display_name = "Nintendo - DS (KH Melon Mix)"
+authors = "Arisotura|vitor251093|GabriMagic"
+supported_extensions = "nds|ids"
+corename = "KH Melon Mix"
+license = "GPLv3"
+permissions = ""
+display_version = "Git"
+categories = "Emulator"
+
+# Hardware Information
+manufacturer = "Nintendo"
+systemname = "Nintendo DS"
+systemid = "nds"
+
+# Libretro Features
+database = "Nintendo - Nintendo DS|Nintendo - Nintendo DS (Download Play)"
+supports_no_game = "false"
+savestate = "true"
+savestate_features = "serialized"
+cheats = "false"
+input_descriptors = "true"
+memory_descriptors = "false"
+libretro_saves = "true"
+core_options = "true"
+core_options_version = "2.0"
+load_subsystem = "false"
+hw_render = "false"
+needs_fullpath = "false"
+disk_control = "false"
+is_experimental = "true"
+
+# BIOS/Firmware
+firmware_count = 3
+firmware0_desc = "firmware.bin (NDS Firmware)"
+firmware0_path = "firmware.bin"
+firmware0_opt = "true"
+firmware1_desc = "bios7.bin (ARM7 BIOS)"
+firmware1_path = "bios7.bin"
+firmware1_opt = "true"
+firmware2_desc = "bios9.bin (ARM9 BIOS)"
+firmware2_path = "bios9.bin"
+firmware2_opt = "true"
+notes = "(!) bios7.bin (md5): df692a80a5b1bc90728bc3dfc76cd948|(!) bios9.bin (md5): a392174eb3e572fed6447e956bde4b25|[1] All three files are optional; without them the core boots with the bundled FreeBIOS and generated firmware|[2] Enable the 'Use external BIOS/firmware' core option to load them from the system directory"
+
+description = "KH Melon Mix is a fork of melonDS that adapts the Kingdom Hearts Nintendo DS games for a single screen and a regular controller. This core runs the software renderer, so the plugin's single-screen selection and its widescreen rendering are available, but the shader-composited HUD is not."
