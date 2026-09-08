@@ -37,7 +37,7 @@ signals:
     void requestExtractP2Files(const QString& outFolder, const QStringList& files);
     void requestExtractZFiles(const QString& outFolder, const QStringList& files);
     void requestExtractRawFiles(const QString& outFolder, const QStringList& files);
-    void requestExportStrings(const QString& outFolder, const QStringList& files, uint8_t format, uint8_t language);
+    void requestExportStrings(const QString& outFolder, const QStringList& files, uint8_t format, int8_t language);
 
 private slots:
     void on_buttonExportStringsToCsv_clicked();

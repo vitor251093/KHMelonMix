@@ -23,7 +23,7 @@ public slots:
     void printFilesystem();
     void extractP2Files(const QString& outFolder, const QStringList& files);
     void extractZFiles(const QString& outFolder, const QStringList& files);
-    void exportStrings(const QString& outFolder, const QStringList& files, uint8_t format, uint8_t language);
+    void exportStrings(const QString& outFolder, const QStringList& files, uint8_t format, int8_t language);
     void extractRawFiles(const QString& outFolder, const QStringList& files);
 
 signals:

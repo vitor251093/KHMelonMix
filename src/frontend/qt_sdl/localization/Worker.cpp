@@ -199,7 +199,7 @@ void Worker::extractRawFiles(const QString& outFolder, const QStringList& files)
     }
 }
 
-void Worker::exportStrings(const QString& outFolder, const QStringList& files, uint8_t fmt, uint8_t language)
+void Worker::exportStrings(const QString& outFolder, const QStringList& files, uint8_t fmt, int8_t language)
 {
     assert(m_romData);
 
