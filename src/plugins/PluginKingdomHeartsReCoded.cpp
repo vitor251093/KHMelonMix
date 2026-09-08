@@ -680,6 +680,10 @@ std::string PluginKingdomHeartsReCoded::gameFolderName() {
     return "recoded";
 }
 
+std::string PluginKingdomHeartsReCoded::assetsRegionSubfolder() {
+    return getStringByCart("us", "eu", "jp");
+}
+
 std::string PluginKingdomHeartsReCoded::tomlUniqueIdentifier() {
     return getStringByCart("KHReCoded_US", "KHReCoded_EU", "KHReCoded_JP");
 }
@@ -3234,11 +3238,11 @@ bool PluginKingdomHeartsReCoded::isUnskippableMobiCutscene(CutsceneEntry* cutsce
 }
 
 std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string language, bool emptyIfFileNotFound) {
-    std::string filename = language + ".ini";
+    std::string filename = language + ".csv";
+    std::string assetsRegionSubfolderName = assetsRegionSubfolder();
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
-    std::filesystem::path fullPath = _assetsFolderPath / "localization" / filename;
+    std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
     if (!emptyIfFileNotFound || std::filesystem::exists(fullPath)) {
-        // u8string(): this is handed to Platform::OpenLocalFile, which decodes it as UTF-8.
         return fullPath.u8string();
     }
 

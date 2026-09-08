@@ -579,6 +579,17 @@ void Plugin::applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* is
     _superApplyTouchKeyMaskToTouchControls(touchX, touchY, isTouching, TouchKeyMask, CameraSensitivity, true);
 }
 
+std::string Plugin::localizationFilePath(std::string language, bool emptyIfFileNotFound) {
+    std::string filename = language + ".csv";
+    std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
+    std::filesystem::path fullPath = _assetsFolderPath / "localization" / filename;
+    if (!emptyIfFileNotFound || std::filesystem::exists(fullPath)) {
+        return fullPath.u8string();
+    }
+
+    return "";
+}
+
 std::string trim(const std::string& str) {
     // Find the first non-whitespace character from the beginning
     size_t start = str.find_first_not_of(" \t\n\r\f\v");

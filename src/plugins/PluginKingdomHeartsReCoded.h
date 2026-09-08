@@ -34,6 +34,7 @@ public:
     void onLoadROM() override;
 
     std::string gameFolderName() override;
+    std::string assetsRegionSubfolder();
     std::string tomlUniqueIdentifier() override;
 
     void renderer_composition_component_missionInformationFromBottomScreen(std::vector<ShapeData2D>* shapes, float aspectRatio, float hudScale);
