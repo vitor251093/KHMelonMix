@@ -243,6 +243,9 @@ private slots:
     void onChangeLimitFramerate(bool checked);
     void onChangeAudioSync(bool checked);
 
+    void onOpenFilesystemMenu();
+    void onFilesystemMenuFinished(int res);
+
     void onTitleUpdate(QString title);
 
     void onEmuStart();
@@ -347,6 +350,7 @@ public:
     QAction* actSetupCheats;
     QAction* actROMInfo;
     QAction* actRAMInfo;
+    QAction* actFilesystemMenu;
     QAction* actTitleManager;
     QAction* actMPNewInstance;
     QAction* actLANStartHost;

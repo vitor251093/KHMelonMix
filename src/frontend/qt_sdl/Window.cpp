@@ -71,6 +71,7 @@
 #include "RAMInfoDialog.h"
 #include "TitleManagerDialog.h"
 #include "PowerManagement/PowerManagementDialog.h"
+#include "localization/FileSystemDialog.h"
 
 #include "Platform.h"
 #include "Config.h"
@@ -464,6 +465,9 @@ MainWindow::MainWindow(int id, EmuInstance* inst, QWidget* parent) :
 
                 actRAMInfo = menu->addAction("RAM search");
                 connect(actRAMInfo, &QAction::triggered, this, &MainWindow::onRAMInfo);
+
+                actFilesystemMenu = menu->addAction("Filesystem / Localization");
+                connect(actFilesystemMenu, &QAction::triggered, this, &MainWindow::onOpenFilesystemMenu);
 
                 actTitleManager = menu->addAction("Manage DSi titles");
                 connect(actTitleManager, &QAction::triggered, this, &MainWindow::onOpenTitleManager);
@@ -2711,3 +2715,17 @@ void MainWindow::onUpdateVideoSettings(bool glchange)
         emuThread->emuUnpause();
     }
 }
+
+
+void MainWindow::onOpenFilesystemMenu()
+{
+    emuThread->emuPause();
+    FileSystemDialog* dlg = FileSystemDialog::openDlg(this);
+    connect(dlg, &FileSystemDialog::finished, this, &MainWindow::onFilesystemMenuFinished);
+}
+
+void MainWindow::onFilesystemMenuFinished(int res)
+{
+    emuThread->emuUnpause();
+}
+
