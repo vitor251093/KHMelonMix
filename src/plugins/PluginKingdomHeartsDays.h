@@ -73,7 +73,7 @@ public:
     void onGamePauseMenuConfirmPressed() override;
     void onGamePauseMenuCancelPressed() override;
     void onGamePauseMenuOverlayHidden() override;
-    std::string localizationFilePath(std::string language) override;
+    std::string localizationFilePath(std::string language, bool emptyIfFileNotFound) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) override;
 

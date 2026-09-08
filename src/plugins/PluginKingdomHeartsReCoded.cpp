@@ -561,7 +561,7 @@ void PluginKingdomHeartsReCoded::loadLocalization() {
 
     std::string language = GameLanguage.code;
 
-    std::string LocalizationFilePath = localizationFilePath(language);
+    std::string LocalizationFilePath = localizationFilePath(language, true);
     Platform::FileHandle* f = Platform::OpenLocalFile(LocalizationFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
         char linebuf[1024];
@@ -3233,11 +3233,11 @@ bool PluginKingdomHeartsReCoded::isUnskippableMobiCutscene(CutsceneEntry* cutsce
     // return isSaveLoaded() && strcmp(cutscene->DsName, "843") == 0;
 }
 
-std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string language) {
+std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string language, bool emptyIfFileNotFound) {
     std::string filename = language + ".ini";
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / filename;
-    if (std::filesystem::exists(fullPath)) {
+    if (!emptyIfFileNotFound || std::filesystem::exists(fullPath)) {
         // u8string(): this is handed to Platform::OpenLocalFile, which decodes it as UTF-8.
         return fullPath.u8string();
     }

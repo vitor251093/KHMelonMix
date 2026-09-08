@@ -14,6 +14,8 @@
 class QTreeWidgetItem;
 class Worker;
 
+namespace Plugins { class Plugin; }
+
 class LocUtils : public QWidget
 {
     Q_OBJECT
@@ -26,6 +28,8 @@ public:
     void loadRomData(uint8_t* data, uint32_t size);
 
     bool isBusy() const { return m_bIsBusy; }
+
+    void setPlugin(Plugins::Plugin* plugin) { m_plugin = plugin; }
 signals:
     void busyChanged(bool busy);
     void requestLoadRom(const QString& romPath);
@@ -103,4 +107,6 @@ private:
 
     QString m_lastExtractFolder;
     QHash<QString, QTreeWidgetItem*> m_fileItems;
+
+    Plugins::Plugin* m_plugin = nullptr;
 };

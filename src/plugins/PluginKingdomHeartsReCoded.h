@@ -59,7 +59,7 @@ public:
     void applyTouchKeyMaskToTouchControls(u16* touchX, u16* touchY, bool* isTouching, u32 TouchKeyMask) override;
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) override;
-    std::string localizationFilePath(std::string language) override;
+    std::string localizationFilePath(std::string language, bool emptyIfFileNotFound) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) override;
 

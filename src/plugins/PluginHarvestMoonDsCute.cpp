@@ -40,7 +40,7 @@ void PluginHarvestMoonDsCute::loadLocalization() {
 
     std::string language = "en-US";
 
-    std::string LocalizationFilePath = localizationFilePath(language);
+    std::string LocalizationFilePath = localizationFilePath(language, true);
     Platform::FileHandle* f = Platform::OpenLocalFile(LocalizationFilePath.c_str(), Platform::FileMode::ReadText);
     if (f) {
         char linebuf[1024];
@@ -148,12 +148,12 @@ void PluginHarvestMoonDsCute::loadLocalization() {
     }
 };
 
-std::string PluginHarvestMoonDsCute::localizationFilePath(std::string language) {
+std::string PluginHarvestMoonDsCute::localizationFilePath(std::string language, bool emptyIfFileNotFound) {
     std::string filename = language + ".ini";
     std::string assetsRegionSubfolderName = assetsRegionSubfolder();
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
-    if (std::filesystem::exists(fullPath)) {
+    if (!emptyIfFileNotFound || std::filesystem::exists(fullPath)) {
         // u8string(): this is handed to Platform::OpenLocalFile, which decodes it as UTF-8.
         return fullPath.u8string();
     }

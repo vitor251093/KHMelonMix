@@ -248,7 +248,7 @@ public:
         return { FullscreenOnStartup ? 1 : -1, 0, 0 };
     }
 
-    virtual std::string localizationFilePath(std::string language) {return "";}
+    virtual std::string localizationFilePath(std::string language, bool emptyIfFileNotFound) {return "";}
 
     virtual std::string textureIndexFilePath();
     virtual std::map<std::string, TextureEntry>& getTexturesIndex();

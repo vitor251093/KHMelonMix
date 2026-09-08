@@ -19,6 +19,7 @@
 
 #include "localization/lang.h"
 #include "localization/strings.h"
+#include "plugins/Plugin.h"
 
 namespace
 {
@@ -156,7 +157,23 @@ void LocUtils::loadRomData(uint8_t* data, uint32_t size)
 
 void LocUtils::on_buttonExportStringsToCsv_clicked()
 {
-    const QString path = QFileDialog::getExistingDirectory(this, tr("Select target folder"));
+    const int8_t lang = selectedLanguage();
+    QString startDir;
+
+    if (m_plugin != nullptr)
+    {
+        const auto probeLang = (lang == -1) ? ndsloc::Language::LANG_EN : static_cast<ndsloc::Language>(lang);
+        const std::string localizationFilePath = m_plugin->localizationFilePath(ndsloc::getLanguageFileName(probeLang), false);
+
+        if (!localizationFilePath.empty())
+        {
+            const QString folder = QFileInfo(QString::fromStdString(localizationFilePath)).path();
+            bool result = QDir().mkpath(folder);
+            startDir = folder;
+        }
+    }
+
+    const QString path = QFileDialog::getExistingDirectory(this, tr("Select target folder"), startDir);
 
     if (path.isEmpty())
         return;
@@ -166,7 +183,7 @@ void LocUtils::on_buttonExportStringsToCsv_clicked()
         return;
 
     beginTask();
-    emit requestExportStrings(path, files, ndsloc::ExportFormat::Csv, selectedLanguage());
+    emit requestExportStrings(path, files, ndsloc::ExportFormat::Csv, lang);
 }
 
 int8_t LocUtils::selectedLanguage() const

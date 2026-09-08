@@ -22,7 +22,7 @@ public:
     bool isJapanCart()      { return GameCode == jpGamecode; }
 
     void loadLocalization();
-    std::string localizationFilePath(std::string language) override;
+    std::string localizationFilePath(std::string language, bool emptyIfFileNotFound) override;
     void onLoadROM() override;
     void onLoadState() override;
 

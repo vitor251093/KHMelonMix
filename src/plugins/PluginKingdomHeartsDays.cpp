@@ -610,7 +610,7 @@ bool PluginKingdomHeartsDays::shouldOpenKHExtendedSettings() {
 void PluginKingdomHeartsDays::loadLocalization() {
     std::string language = GameLanguage.code;
 
-    std::string LocalizationFilePath = localizationFilePath(language);
+    std::string LocalizationFilePath = localizationFilePath(language, true);
     if (LocalizationFilePath.empty())
         return;
 
@@ -3257,13 +3257,12 @@ void PluginKingdomHeartsDays::refreshMouseStatus() {
     }
 }
 
-std::string PluginKingdomHeartsDays::localizationFilePath(std::string language) {
+std::string PluginKingdomHeartsDays::localizationFilePath(std::string language, bool emptyIfFileNotFound) {
     std::string filename = language + ".csv";
     std::string assetsRegionSubfolderName = assetsRegionSubfolder();
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();
     std::filesystem::path fullPath = _assetsFolderPath / "localization" / assetsRegionSubfolderName / filename;
-    if (std::filesystem::exists(fullPath)) {
-        // u8string(): this is handed to Platform::OpenLocalFile, which decodes it as UTF-8.
+    if (!emptyIfFileNotFound || std::filesystem::exists(fullPath)) {
         return fullPath.u8string();
     }
 
