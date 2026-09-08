@@ -426,7 +426,10 @@ ivec4 getTopScreenColor(vec2 pos, bool shouldSwapScreens)
                 }
             }
 
-            currentColor = ivec4(mix(currentColor, color, color.a / 255.0));
+            curColFloat = vec4(currentColor);
+            colFloat = vec4(color);
+
+            currentColor = ivec4(mix(curColFloat, colFloat, colFloat.a / 255.0));
         }
     }
 
