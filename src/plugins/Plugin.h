@@ -180,6 +180,8 @@ public:
     virtual void onLoadROM();
     virtual void onLoadState();
 
+    virtual void loadLocalization();
+
     std::filesystem::path _AssetsFolderPath;
     virtual std::string gameFolderName() {return std::to_string(GameCode);}
     std::filesystem::path gameAssetsFolderPath();
@@ -264,6 +266,9 @@ public:
     virtual std::string gamePauseMenuSubtitle() { return ""; }
     virtual std::vector<std::string> gamePauseMenuButtonLabels() { return cutsceneMenuButtonLabels(); }
     virtual bool gamePauseMenuDarkensBackground() { return true; }
+
+    int GameLanguageIndex = 0;
+    Plugins::Language GameLanguage = Plugins::languages[0];
 
     bool IsIngamePrerenderedCutsceneRunning() {return _IsMobiCutsceneRunning || _IsInEngineCutsceneRunning;}
     bool IsReplacementCutsceneRunning();

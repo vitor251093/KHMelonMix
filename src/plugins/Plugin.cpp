@@ -3,6 +3,9 @@
 #include "Plugin_GPU_OpenGL_shaders.h"
 #include "AudioUtils.h"
 
+#include "localization/strings.h"
+#include "localization/rompatcher.h"
+
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -56,6 +59,8 @@ void Plugin::onLoadROM() {
 
     stopBackgroundMusic(0);
     _SoundtrackState = EMidiState::Stopped;
+
+    loadLocalization();
 }
 
 void Plugin::onLoadState() {
@@ -63,6 +68,24 @@ void Plugin::onLoadState() {
 
     stopBackgroundMusic(0);
     _SoundtrackState = EMidiState::Stopped;
+
+    loadLocalization();
+}
+
+void Plugin::loadLocalization() {
+    std::string language = GameLanguage.code;
+
+    std::string LocalizationFilePath = localizationFilePath(language, true);
+    if (LocalizationFilePath.empty())
+        return;
+
+    NDSCart::CartCommon* cart = nds->GetNDSCart();
+    u8* rom = (u8*)cart->GetROM();
+    u32 romLength = cart->GetROMLength();
+
+    auto modLines = ndsloc::strings::readCsvFile(LocalizationFilePath);
+    uint32_t updatedLinesCount = ndsloc::patcher::createPatch(rom, romLength, modLines);
+    bool bStep = true;
 }
 
 std::filesystem::path Plugin::gameAssetsFolderPath()
@@ -1507,6 +1530,13 @@ void Plugin::_superLoadConfigs(
     HDCutscenesEnabled = !getBoolConfig(root + ".DisableHDCutscenes");
     SubtitlesEnabled = !getBoolConfig(root + ".DisableSubtitles");
     JoystickConfirmIndex = getIntConfig("Instance0.JoystickConfirmIndex");
+
+    int index = getIntConfig("Instance0.Firmware.TrueLanguage");
+    int dsCode = getIntConfig("Instance0.Firmware.Language");
+    dsCode = (dsCode == 1) ? 0 : (dsCode == 0) ? 1 : dsCode;
+    index = (index > 0) ? (index - 1) : dsCode;
+    GameLanguageIndex = index;
+    GameLanguage = Plugins::languages[index];
 }
 void Plugin::loadConfigs(
     std::function<bool(std::string)> getBoolConfig,

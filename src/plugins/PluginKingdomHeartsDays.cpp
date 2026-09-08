@@ -607,26 +607,8 @@ bool PluginKingdomHeartsDays::shouldOpenKHExtendedSettings() {
     return GameScene == gameScene_Intro || GameScene == gameScene_TitleScreen || GameScene == gameScene_ConfigMenu;
 }
 
-void PluginKingdomHeartsDays::loadLocalization() {
-    std::string language = GameLanguage.code;
-
-    std::string LocalizationFilePath = localizationFilePath(language, true);
-    if (LocalizationFilePath.empty())
-        return;
-
-    NDSCart::CartCommon* cart = nds->GetNDSCart();
-    u8* rom = (u8*)cart->GetROM();
-    u32 romLength = cart->GetROMLength();
-
-    auto modLines = ndsloc::strings::readCsvFile(LocalizationFilePath);
-    uint32_t updatedLinesCount = ndsloc::patcher::createPatch(rom, romLength, modLines);
-    bool bStep = true;
-}
-
 void PluginKingdomHeartsDays::onLoadROM() {
     Plugin::onLoadROM();
-
-    loadLocalization();
 
     u8* rom = (u8*)nds->GetNDSCart()->GetROM();
 
@@ -651,8 +633,6 @@ void PluginKingdomHeartsDays::onLoadROM() {
 
 void PluginKingdomHeartsDays::onLoadState() {
     Plugin::onLoadState();
-
-    loadLocalization();
 
     GameScene = gameScene_InGameWithMap;
 }

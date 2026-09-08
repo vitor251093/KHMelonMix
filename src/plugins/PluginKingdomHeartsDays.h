@@ -30,7 +30,6 @@ public:
     bool isJapanCart()  { return GameCode == jpGamecode; };
     bool isJapanCartRev1() { return GameCode == jpGamecode && nds != nullptr && nds->GetNDSCart() != nullptr && nds->GetNDSCart()->GetROM()[0x1E] == 1; };
 
-    void loadLocalization();
     std::string saveFilePath();
     StartupWindowConfig startupWindowConfig() override;
     void onLoadROM() override;
@@ -90,15 +89,6 @@ public:
     ) override
     {
         _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
-
-        std::string root = tomlUniqueIdentifier();
-
-        int index = getIntConfig("Instance0.Firmware.TrueLanguage");
-        int dsCode = getIntConfig("Instance0.Firmware.Language");
-        dsCode = (dsCode == 1) ? 0 : (dsCode == 0) ? 1 : dsCode;
-        index = (index > 0) ? (index - 1) : dsCode;
-        GameLanguageIndex = index;
-        GameLanguage = Plugins::languages[index];
     }
     void overrideConfigs(
         std::function<void(std::string, bool)> setBoolConfig,
@@ -160,9 +150,6 @@ private:
     std::array<CutsceneEntry, 103> Dialogues;
     u32 cutscenesAddressOffset = 0;
     u32 _lastUnknownInEngineCutsceneAddress = 0;
-
-    int GameLanguageIndex = 0;
-    Plugins::Language GameLanguage = Plugins::languages[0];
 
     int detectGameScene() override;
 

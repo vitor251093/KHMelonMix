@@ -28,7 +28,6 @@ public:
 
     int cutsceneMenuLanguage() override;
 
-    void loadLocalization();
     std::string saveFilePath();
     StartupWindowConfig startupWindowConfig() override;
     void onLoadROM() override;
@@ -77,15 +76,6 @@ public:
     ) override
     {
         _superLoadConfigs(getBoolConfig, getIntConfig, getStringConfig);
-
-        std::string root = tomlUniqueIdentifier();
-
-        int index = getIntConfig("Instance0.Firmware.TrueLanguage");
-        int dsCode = getIntConfig("Instance0.Firmware.Language");
-        dsCode = (dsCode == 1) ? 0 : (dsCode == 0) ? 1 : dsCode;
-        index = (index > 0) ? (index - 1) : dsCode;
-        GameLanguageIndex = index;
-        GameLanguage = Plugins::languages[index];
     }
     void overrideConfigs(
         std::function<void(std::string, bool)> setBoolConfig,
@@ -127,8 +117,6 @@ private:
 
     std::array<CutsceneEntry, 15> Cutscenes;
     std::array<CutsceneEntry, 74> Dialogues;
-    int GameLanguageIndex = 0;
-    Plugins::Language GameLanguage = Plugins::languages[0];
     u32 _lastUnknownInEngineCutsceneAddress = 0;
 
     int detectGameScene() override;

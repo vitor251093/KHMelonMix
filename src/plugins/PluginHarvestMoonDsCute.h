@@ -21,7 +21,6 @@ public:
     bool isEuropeCart()     { return GameCode == euGamecode; };
     bool isJapanCart()      { return GameCode == jpGamecode; }
 
-    void loadLocalization();
     std::string localizationFilePath(std::string language, bool emptyIfFileNotFound) override;
     void onLoadROM() override;
     void onLoadState() override;
