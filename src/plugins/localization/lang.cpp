@@ -10,12 +10,12 @@ std::string getLanguageFileName(Language language)
 {
     static const std::string strings[] =
     {
-        "jp-JP",
-        "en-US",
-        "fr-FR",
-        "de-DE",
-        "it-IT",
-        "es-ES"
+        "jp",
+        "en",
+        "fr",
+        "de",
+        "it",
+        "es"
     };
 
     return strings[language];

@@ -608,7 +608,7 @@ bool PluginKingdomHeartsDays::shouldOpenKHExtendedSettings() {
 }
 
 void PluginKingdomHeartsDays::loadLocalization() {
-    std::string language = "en-US"; //GameLanguage.code;
+    std::string language = GameLanguage.code;
 
     std::string LocalizationFilePath = localizationFilePath(language);
     if (LocalizationFilePath.empty())
