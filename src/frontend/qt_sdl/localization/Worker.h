@@ -9,6 +9,10 @@ namespace NDS {
 class NDSFileSystem;
 }
 
+namespace Plugins {
+class LocalizationHandler;
+}
+
 class Worker : public QObject
 {
     Q_OBJECT
@@ -16,6 +20,8 @@ class Worker : public QObject
 public:
     explicit Worker(QObject* parent = nullptr);
     ~Worker() override;
+
+    void setLocHandler(Plugins::LocalizationHandler* handler) { m_handler = handler; }
 
 public slots:
     void loadRom(const QString& romPath);
@@ -44,4 +50,6 @@ private:
     std::vector<uint8_t> m_romBuffer;
     uint8_t* m_romData = nullptr;
     uint32_t m_romDataSize = 0;
+
+    Plugins::LocalizationHandler* m_handler = nullptr;
 };

@@ -34,6 +34,8 @@
 #include "./PluginMenuStrings.h"
 #include "./PluginShapes.h"
 
+#include "localization/handler.h"
+
 namespace Plugins
 {
 using namespace melonDS;
@@ -144,7 +146,7 @@ struct TextureEntry
 
 struct ThemeColor { u8 r, g, b; };
 
-class Plugin
+class Plugin : public LocalizationHandler
 {
 protected:
     melonDS::NDS* nds = nullptr;
@@ -251,6 +253,7 @@ public:
     }
 
     virtual std::string localizationFilePath(std::string language, bool emptyIfFileNotFound);
+    std::string getLocalizationFilePath(std::string language) override { return localizationFilePath(language, false); }
 
     virtual std::string textureIndexFilePath();
     virtual std::map<std::string, TextureEntry>& getTexturesIndex();

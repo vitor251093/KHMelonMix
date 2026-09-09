@@ -14,7 +14,7 @@
 class QTreeWidgetItem;
 class Worker;
 
-namespace Plugins { class Plugin; }
+namespace Plugins { class LocalizationHandler; }
 
 class LocUtils : public QWidget
 {
@@ -29,7 +29,7 @@ public:
 
     bool isBusy() const { return m_bIsBusy; }
 
-    void setPlugin(Plugins::Plugin* plugin) { m_plugin = plugin; }
+    void setLocHandler(Plugins::LocalizationHandler* handler) { m_handler = handler; }
 signals:
     void busyChanged(bool busy);
     void requestLoadRom(const QString& romPath);
@@ -108,5 +108,5 @@ private:
     QString m_lastExtractFolder;
     QHash<QString, QTreeWidgetItem*> m_fileItems;
 
-    Plugins::Plugin* m_plugin = nullptr;
+    Plugins::LocalizationHandler* m_handler = nullptr;
 };

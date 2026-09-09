@@ -9,6 +9,7 @@
 #include "localization/strings.h"
 #include "localization/stringtable.h"
 #include "localization/lzss.h"
+#include "localization/handler.h"
 
 #include <QFileInfo>
 #include <QDir>
@@ -270,6 +271,9 @@ void Worker::exportStrings(const QString& outFolder, const QStringList& files, u
                     if (shouldIgnoreFile(entry->filename, lang))
                         continue;
 
+                    if (m_handler && m_handler->shouldExcludeLocalizationSubfile(entry->filename))
+                        continue;
+
                     std::vector<String> out_strings;
                     p2.setLanguage(lang);
                     p2.extractStrings(out_strings);
@@ -293,6 +297,9 @@ void Worker::exportStrings(const QString& outFolder, const QStringList& files, u
                 {
                     auto lang = static_cast<Language>(os.first);
                     if (shouldIgnoreFile(entry->filename, lang))
+                        continue;
+
+                    if (m_handler && m_handler->shouldExcludeLocalizationSubfile(entry->filename))
                         continue;
 
                     uint32_t count = StringTableFile::exportStrings(os.second, lzss.getConvertedData(), format, filenameInCsv, fileInfo.suffix().toStdString(), entry->start);

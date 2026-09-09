@@ -60,6 +60,7 @@ public:
 
     std::string replacementCutsceneFilePath(CutsceneEntry* cutscene) override;
     std::string localizationFilePath(std::string language, bool emptyIfFileNotFound) override;
+    bool shouldExcludeLocalizationSubfile(std::string filename) override;
     std::filesystem::path patchReplacementCutsceneIfNeeded(CutsceneEntry* cutscene, std::filesystem::path folderPath);
     bool isUnskippableMobiCutscene(CutsceneEntry* cutscene) override;
 
