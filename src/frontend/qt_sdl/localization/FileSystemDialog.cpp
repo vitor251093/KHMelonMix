@@ -22,7 +22,7 @@ FileSystemDialog::FileSystemDialog(QWidget* parent)
     QVBoxLayout* layout = new QVBoxLayout(this);
 
     auto* locUtils = new LocUtils(this);
-    locUtils->setPlugin(emuInstance->plugin);
+    locUtils->setLocHandler(emuInstance->plugin);
 
     auto* cart = emuInstance->getNDS()->GetNDSCart();
     locUtils->loadRomData((uint8_t*)cart->GetROM(), cart->GetROMLength());

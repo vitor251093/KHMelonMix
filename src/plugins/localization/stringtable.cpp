@@ -4,6 +4,7 @@
 #include "types.h"
 #include "strings.h"
 
+#include <algorithm>
 #include <assert.h>
 
 namespace ndsloc {
@@ -223,6 +224,117 @@ bool looksLikeStringDBPaged(const uint8_t* inputPtr, uint32_t inputSize)
     return true;
 }
 
+uint32_t stringEnd(const uint8_t* inputPtr, uint32_t inputSize, uint32_t at)
+{
+    if ((at & 1) != 0 || at + 2 > inputSize)
+        return 0;
+
+    for (uint32_t p = at; p + 2 <= inputSize; p += 2)
+    {
+        if (utils::readUInt16(inputPtr, p) == 0)
+            return p + 2;
+    }
+
+    return 0;
+}
+
+bool looksLikeStringDBOffsets(const uint8_t* inputPtr, uint32_t inputSize)
+{
+    if (inputSize < 8 || (inputSize & 1) != 0)
+        return false;
+
+    const uint32_t dataAt = utils::readUInt32(inputPtr, 0);
+
+    if (dataAt < 4 || (dataAt & 3) != 0 || dataAt >= inputSize)
+        return false;
+
+    const uint32_t count = dataAt / 4;
+
+    std::vector<uint32_t> offsets;
+    offsets.reserve(count);
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        const uint32_t offset = utils::readUInt32(inputPtr, i * 4);
+
+        if (offset < dataAt || offset >= inputSize || (offset & 1) != 0)
+            return false;
+
+        if (stringEnd(inputPtr, inputSize, offset) == 0)
+            return false;
+
+        offsets.push_back(offset);
+    }
+
+    std::sort(offsets.begin(), offsets.end());
+    offsets.erase(std::unique(offsets.begin(), offsets.end()), offsets.end());
+
+    uint32_t expected = dataAt;
+    for (uint32_t offset : offsets)
+    {
+        if (offset != expected)
+            return false;
+
+        expected = stringEnd(inputPtr, inputSize, offset);
+    }
+
+    return expected == inputSize;
+}
+
+uint32_t resolveGroupCount(const uint8_t* inputPtr, uint32_t inputSize)
+{
+    if (inputSize < 8 || (inputSize & 1) != 0)
+        return 0;
+
+    uint32_t prefix = 0;
+    while ((prefix + 1) * 4 <= inputSize)
+    {
+        const uint32_t value = utils::readUInt32(inputPtr, prefix * 4);
+        const uint32_t maxStrings = (inputSize - (prefix + 1) * 4) / 4;
+
+        if (value == 0 || value > maxStrings)
+            break;
+
+        if (prefix > 0 && value <= utils::readUInt32(inputPtr, (prefix - 1) * 4))
+            break;
+
+        ++prefix;
+    }
+
+    for (uint32_t count = prefix; count >= 1; --count)
+    {
+        const uint32_t dataAt = count * 4;
+        const uint32_t total = utils::readUInt32(inputPtr, (count - 1) * 4);
+
+        uint32_t at = dataAt;
+        uint32_t strings = 0;
+
+        while (at < inputSize)
+        {
+            const uint32_t end = stringEnd(inputPtr, inputSize, at);
+            if (end == 0)
+                break;
+
+            at = end;
+            ++strings;
+
+            if (strings > total)
+                break;
+        }
+
+        if (at == inputSize && strings == total)
+            return count;
+    }
+
+    return 0;
+}
+
+bool looksLikeStringDBGrouped(const uint8_t* inputPtr, uint32_t inputSize)
+{
+    return resolveGroupCount(inputPtr, inputSize) != 0;
+}
+
+
 stringtable::Format StringTableFile::detect(const uint8_t* inputPtr, uint32_t inputSize)
 {
     using namespace stringtable;
@@ -241,6 +353,12 @@ stringtable::Format StringTableFile::detect(const uint8_t* inputPtr, uint32_t in
 
     if (looksLikeStringDBShort(inputPtr, inputSize))
         return Format::StringDB_Short;
+
+    if (looksLikeStringDBOffsets(inputPtr, inputSize))
+        return Format::StringDB_Offsets;
+
+    if (looksLikeStringDBGrouped(inputPtr, inputSize))
+        return Format::StringDB_Grouped;
 
     return Format::Unknown;
 }
@@ -348,6 +466,47 @@ bool StringTableFile::extractStringDBPaged(std::vector<U16String>& out) const
     return true;
 }
 
+
+bool StringTableFile::extractStringDBOffsets(std::vector<U16String>& out) const
+{
+    const uint32_t dataAt = utils::readUInt32(m_buffer, 0);
+    const uint32_t count = dataAt / 4;
+
+    out.reserve(count);
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        const uint32_t offset = utils::readUInt32(m_buffer, i * 4);
+        addString(offset, stringEnd(m_buffer, m_bufferSize, offset) - offset, out);
+    }
+
+    return true;
+}
+
+bool StringTableFile::extractStringDBGrouped(std::vector<U16String>& out) const
+{
+    const uint32_t count = resolveGroupCount(m_buffer, m_bufferSize);
+    if (count == 0)
+        return false;
+
+    const uint32_t total = utils::readUInt32(m_buffer, (count - 1) * 4);
+
+    out.reserve(total);
+
+    uint32_t at = count * 4;
+    while (at < m_bufferSize)
+    {
+        const uint32_t end = stringEnd(m_buffer, m_bufferSize, at);
+        if (end == 0)
+            break;
+
+        addString(at, end - at, out);
+        at = end;
+    }
+
+    return true;
+}
+
 bool StringTableFile::readRecords(std::vector<stringtable::Record>& out) const
 {
     out.clear();
@@ -374,6 +533,10 @@ bool StringTableFile::extractStrings(std::vector<U16String>& out) const
         return extractStringDBShort(out);
     case Format::StringDB_Paged:
         return extractStringDBPaged(out);
+    case Format::StringDB_Offsets:
+        return extractStringDBOffsets(out);
+    case Format::StringDB_Grouped:
+        return extractStringDBGrouped(out);
     default:
         return false;
     }

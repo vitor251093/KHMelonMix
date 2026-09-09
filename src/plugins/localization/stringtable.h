@@ -17,7 +17,9 @@ enum class Format : uint8_t
     StringDB,
     StringDB_Long,
     StringDB_Short,
-    StringDB_Paged
+    StringDB_Paged,
+    StringDB_Offsets,
+    StringDB_Grouped
 };
 
 struct Entry
@@ -78,6 +80,8 @@ private:
     bool extractStringDBLong(std::vector<U16String>& out) const;
     bool extractStringDBShort(std::vector<U16String>& out) const;
     bool extractStringDBPaged(std::vector<U16String>& out) const;
+    bool extractStringDBOffsets(std::vector<U16String>& out) const;
+    bool extractStringDBGrouped(std::vector<U16String>& out) const;
 
     void addString(uint32_t at, uint32_t lengthInBytes, std::vector<U16String>& out) const;
 

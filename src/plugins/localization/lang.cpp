@@ -46,17 +46,17 @@ bool shouldIgnoreFile(const std::string& filename, Language language)
         str = filename.substr(0, idx);
     }
 
-    if ((utils::ends_with(str,"_en") || str.find("/en/") != std::string::npos) && language != Language::LANG_EN)
+    if ((utils::ends_with(str,"en") || str.find("/en/") != std::string::npos) && language != Language::LANG_EN)
         return true;
-    else if ((utils::ends_with(str,"_fr") || str.find("/fr/") != std::string::npos) && language != Language::LANG_FR)
+    else if ((utils::ends_with(str,"fr") || str.find("/fr/") != std::string::npos) && language != Language::LANG_FR)
         return true;
-    else if ((utils::ends_with(str,"_ja") || str.find("/ja/") != std::string::npos) && language != Language::LANG_JP)
+    else if ((utils::ends_with(str,"ja") || str.find("/ja/") != std::string::npos) && language != Language::LANG_JP)
         return true;
-    else if ((utils::ends_with(str,"_de") || str.find("/de/") != std::string::npos) && language != Language::LANG_DE)
+    else if ((utils::ends_with(str,"de") || str.find("/de/") != std::string::npos) && language != Language::LANG_DE)
         return true;
-    else if ((utils::ends_with(str,"_es") || str.find("/es/") != std::string::npos) && language != Language::LANG_ES)
+    else if ((utils::ends_with(str,"es") || str.find("/es/") != std::string::npos) && language != Language::LANG_ES)
         return true;
-    else if ((utils::ends_with(str,"_it") || str.find("/it/") != std::string::npos) && language != Language::LANG_IT)
+    else if ((utils::ends_with(str,"it") || str.find("/it/") != std::string::npos) && language != Language::LANG_IT)
         return true;
 
     return false;

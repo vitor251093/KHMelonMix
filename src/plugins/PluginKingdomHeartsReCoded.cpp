@@ -3134,6 +3134,14 @@ std::string PluginKingdomHeartsReCoded::localizationFilePath(std::string languag
     return "";
 }
 
+bool PluginKingdomHeartsReCoded::shouldExcludeLocalizationSubfile(std::string filename)
+{
+    if (filename.find("/wxc/wlm3_en.s.z") != std::string::npos)
+        return true;
+
+    return false;
+}
+
 u8 PluginKingdomHeartsReCoded::getFloorLevel()
 {
     u32 placeIdentAddr = getU32ByCart(BUG_SECTOR_IDENTIFIER_ADDRESS_US, BUG_SECTOR_IDENTIFIER_ADDRESS_EU, BUG_SECTOR_IDENTIFIER_ADDRESS_JP);

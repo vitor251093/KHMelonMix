@@ -19,7 +19,7 @@
 
 #include "localization/lang.h"
 #include "localization/strings.h"
-#include "plugins/Plugin.h"
+#include "localization/handler.h"
 
 namespace
 {
@@ -160,10 +160,10 @@ void LocUtils::on_buttonExportStringsToCsv_clicked()
     const int8_t lang = selectedLanguage();
     QString startDir;
 
-    if (m_plugin != nullptr)
+    if (m_handler != nullptr)
     {
         const auto probeLang = (lang == -1) ? ndsloc::Language::LANG_EN : static_cast<ndsloc::Language>(lang);
-        const std::string localizationFilePath = m_plugin->localizationFilePath(ndsloc::getLanguageFileName(probeLang), false);
+        const std::string localizationFilePath = m_handler->getLocalizationFilePath(ndsloc::getLanguageFileName(probeLang));
 
         if (!localizationFilePath.empty())
         {
@@ -183,6 +183,7 @@ void LocUtils::on_buttonExportStringsToCsv_clicked()
         return;
 
     beginTask();
+    m_worker->setLocHandler(m_handler);
     emit requestExportStrings(path, files, ndsloc::ExportFormat::Csv, lang);
 }
 
