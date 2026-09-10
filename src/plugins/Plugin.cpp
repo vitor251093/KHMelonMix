@@ -439,7 +439,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         }
         else {
             if (_StartPressCount == 0) {
-                bool requiresDoubleStart = (_CutscenesQueue[0]->dsScreensState & 4) == 4;
+                bool requiresDoubleStart = (CurrentCutscene()->dsScreensState & 4) == 4;
                 if (requiresDoubleStart) {
                     _StartPressCount = CUTSCENE_SKIP_START_FRAMES_COUNT*2 + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT;
                 }
@@ -458,7 +458,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         if (_StartPressCount > 0) {
             _StartPressCount--;
 
-            bool requiresDoubleStart = (_CutscenesQueue[0]->dsScreensState & 4) == 4;
+            bool requiresDoubleStart = (CurrentCutscene()->dsScreensState & 4) == 4;
             if (requiresDoubleStart) {
                 if (_StartPressCount < CUTSCENE_SKIP_START_FRAMES_COUNT || _StartPressCount > CUTSCENE_SKIP_START_FRAMES_COUNT + CUTSCENE_SKIP_INTERVAL_FRAMES_COUNT) {
                     *InputMask &= ~(1<<3); // Start (skip DS cutscene)
@@ -476,7 +476,7 @@ bool Plugin::_superApplyHotkeyToInputMask(u32* InputMask, u32* HotkeyMask, u32* 
         if (_APressCount > 0) {
             _APressCount--;
 
-            bool requiresSmashingA = (_CutscenesQueue[0]->dsScreensState & 8) == 8;
+            bool requiresSmashingA = (CurrentCutscene()->dsScreensState & 8) == 8;
             if (requiresSmashingA) {
                 if (_APressCount < DIALOG_SKIP_START_FRAMES_COUNT || _APressCount > DIALOG_SKIP_START_FRAMES_COUNT + DIALOG_SKIP_INTERVAL_FRAMES_COUNT) {
                     *InputMask &= ~(1<<0); // A (skip DS cutscene)
@@ -795,7 +795,7 @@ std::string Plugin::tmpTextureFilePath(std::string texture) {
 
 bool Plugin::IsReplacementCutsceneRunning() {return _IsReplacementCutsceneRunning;}
 
-CutsceneEntry* Plugin::CurrentCutscene() {return _CutscenesQueue[0];};
+CutsceneEntry* Plugin::CurrentCutscene() {return _CutscenesQueue[_CurrentCutsceneIndex];};
 
 CutsceneEntry* Plugin::detectTopScreenCutscene()
 {
@@ -804,7 +804,13 @@ CutsceneEntry* Plugin::detectTopScreenCutscene()
         return nullptr;
     }
 
-    u32 cutsceneAddressValue = 0;
+    u32 cutsceneAddressValue = detectTopScreenInEngineCutsceneId();
+    CutsceneEntry* cutscene2 = getInEngineCutsceneById(cutsceneAddressValue);
+    if (cutscene2 != nullptr)
+    {
+        return cutscene2;
+    }
+
     u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
     if (cutsceneAddress != 0) {
         cutsceneAddressValue = nds->ARM7Read32(cutsceneAddress);
@@ -813,14 +819,7 @@ CutsceneEntry* Plugin::detectTopScreenCutscene()
         }
     }
 
-    CutsceneEntry* cutscene1 = getMobiCutsceneByAddress(cutsceneAddressValue);
-    if (cutscene1 != nullptr)
-    {
-        return cutscene1;
-    }
-
-    cutsceneAddressValue = detectTopScreenInEngineCutsceneId();
-    return getInEngineCutsceneById(cutsceneAddressValue);
+    return getMobiCutsceneByAddress(cutsceneAddressValue);
 }
 
 CutsceneEntry* Plugin::detectBottomScreenCutscene()
@@ -876,6 +875,8 @@ void Plugin::refreshCutscene()
     }
 
     CutsceneEntry* cutscene = detectCutscene();
+    bool isSequenceOfEqualCutscenes = _CutscenesQueue.size() > (_CurrentCutsceneIndex + 1) &&
+            strcmp(_CutscenesQueue[_CurrentCutsceneIndex]->MmName, _CutscenesQueue[_CurrentCutsceneIndex + 1]->MmName) == 0;
 
     if (_DidReplacementCutsceneFailedToPlay || (!_IsReplacementCutsceneRunning && !_IsMobiCutsceneRunning &&
             !_IsInEngineCutsceneRunning && _IsIngameOrReplacementCutsceneRunning && canReturnToGameAfterReplacementCutscene())) {
@@ -890,20 +891,27 @@ void Plugin::refreshCutscene()
         }
 
         _IsIngameOrReplacementCutsceneRunning = false;
-        _LastCutscene = _CutscenesQueue[0];
-        _CutscenesQueue.erase(_CutscenesQueue.begin());
+        _LastCutscene = _CutscenesQueue[_CurrentCutsceneIndex];
+
+        while (_CurrentCutsceneIndex + 1 > 0) {
+            _CutscenesQueue.erase(_CutscenesQueue.begin());
+            _CurrentCutsceneIndex--;
+        }
+        _CurrentCutsceneIndex = 0;
+
         if (!_DidReplacementCutsceneFailedToPlay && !_CutscenesQueue.empty())
         {
-            printf("Playing next cutscene on queue: %s\n", _CutscenesQueue[0]->Name);
-            bool isMobiCutsceneRunning = (_CutscenesQueue[0]->dsScreensState & 1) == 1;
+            printf("Playing next cutscene on queue: %s\n", _CutscenesQueue[_CurrentCutsceneIndex]->Name);
+            bool isMobiCutsceneRunning = (_CutscenesQueue[_CurrentCutsceneIndex]->dsScreensState & 1) == 1;
             _PlayFrameLimitCount = isMobiCutsceneRunning ? 10 : 60;
+            _PostVideoFrameCount = _CutscenesQueue[_CurrentCutsceneIndex]->postVideoFrameCount;
             _IsMobiCutsceneRunning = isMobiCutsceneRunning;
             _IsInEngineCutsceneRunning = !isMobiCutsceneRunning;
             _IsReplacementCutsceneRunning = true;
             _IsIngameOrReplacementCutsceneRunning = true;
-            _IsUnskippableCutscene = isUnskippableMobiCutscene(_CutscenesQueue[0]);
-            std::string videoPath = replacementCutsceneFilePath(_CutscenesQueue[0]);
-            std::string subtitlesPath = replacementCutsceneSubtitlesFilePath(_CutscenesQueue[0]);
+            _IsUnskippableCutscene = isUnskippableMobiCutscene(_CutscenesQueue[_CurrentCutsceneIndex]);
+            std::string videoPath = replacementCutsceneFilePath(_CutscenesQueue[_CurrentCutsceneIndex]);
+            std::string subtitlesPath = replacementCutsceneSubtitlesFilePath(_CutscenesQueue[_CurrentCutsceneIndex]);
             startReplacementCutscene(videoPath, subtitlesPath);
         }
         else
@@ -951,19 +959,67 @@ void Plugin::refreshCutscene()
 
     if (_PlayFrameLimitCount == 0 && _IsMobiCutsceneRunning) {
         if (didMobiCutsceneEnded()) {
-            printf("Ingame Mobi cutscene terminated\n");
+            if (_PostVideoFrameCount > 0) {
+                _PostVideoFrameCount--;
+            }
 
-            _IsMobiCutsceneRunning = false;
-            pauseEmulatorAfterIngamePrerenderedCutsceneEndedBeforeReplacementCutscene();
+            if (_PostVideoFrameCount == 0) {
+                printf("Ingame Mobi cutscene terminated\n");
+
+                _IsMobiCutsceneRunning = false;
+
+                if (isSequenceOfEqualCutscenes) {
+                    _LastCutscene = _CutscenesQueue[_CurrentCutsceneIndex];
+                    _CurrentCutsceneIndex++;
+
+                    bool isMobiCutsceneRunning = (_CutscenesQueue[_CurrentCutsceneIndex]->dsScreensState & 1) == 1;
+                    _PlayFrameLimitCount = isMobiCutsceneRunning ? 10 : 60;
+                    _PostVideoFrameCount = _CutscenesQueue[_CurrentCutsceneIndex]->postVideoFrameCount;
+                    _IsMobiCutsceneRunning = isMobiCutsceneRunning;
+                    _IsInEngineCutsceneRunning = !isMobiCutsceneRunning;
+
+                    u32 cutsceneAddress = detectTopScreenMobiCutsceneAddress();
+                    if (cutsceneAddress != 0) {
+                        nds->ARM7Write32(cutsceneAddress, 0x0);
+                    }
+
+                    u32 cutsceneAddress2 = detectBottomScreenMobiCutsceneAddress();
+                    if (cutsceneAddress2 != 0) {
+                        nds->ARM7Write32(cutsceneAddress2, 0x0);
+                    }
+                }
+                else {
+                    pauseEmulatorAfterIngamePrerenderedCutsceneEndedBeforeReplacementCutscene();
+                }
+            }
         }
     }
 
     if (_PlayFrameLimitCount == 0 && _IsInEngineCutsceneRunning) {
         if (didInEngineCutsceneEnded()) {
-            printf("Ingame in engine cutscene terminated\n");
+            if (_PostVideoFrameCount > 0) {
+                _PostVideoFrameCount--;
+            }
 
-            _IsInEngineCutsceneRunning = false;
-            pauseEmulatorAfterIngamePrerenderedCutsceneEndedBeforeReplacementCutscene();
+            if (_PostVideoFrameCount == 0) {
+                printf("Ingame in engine cutscene terminated\n");
+
+                _IsInEngineCutsceneRunning = false;
+
+                if (isSequenceOfEqualCutscenes) {
+                    _LastCutscene = _CutscenesQueue[_CurrentCutsceneIndex];
+                    _CurrentCutsceneIndex++;
+
+                    bool isMobiCutsceneRunning = (_CutscenesQueue[_CurrentCutsceneIndex]->dsScreensState & 1) == 1;
+                    _PlayFrameLimitCount = isMobiCutsceneRunning ? 10 : 60;
+                    _PostVideoFrameCount = _CutscenesQueue[_CurrentCutsceneIndex]->postVideoFrameCount;
+                    _IsMobiCutsceneRunning = isMobiCutsceneRunning;
+                    _IsInEngineCutsceneRunning = !isMobiCutsceneRunning;
+                }
+                else {
+                    pauseEmulatorAfterIngamePrerenderedCutsceneEndedBeforeReplacementCutscene();
+                }
+            }
         }
     }
 
@@ -984,14 +1040,15 @@ void Plugin::refreshCutscene()
                 printf("Preparing to load cutscene: %s\n", cutscene->Name);
                 bool isMobiCutsceneRunning = (cutscene->dsScreensState & 1) == 1;
                 _PlayFrameLimitCount = isMobiCutsceneRunning ? 10 : 60;
+                _PostVideoFrameCount = cutscene->postVideoFrameCount;
                 _IsMobiCutsceneRunning = isMobiCutsceneRunning;
                 _IsInEngineCutsceneRunning = !isMobiCutsceneRunning;
                 _IsReplacementCutsceneRunning = true;
                 _IsIngameOrReplacementCutsceneRunning = true;
                 _CutscenesQueue.push_back(cutscene);
-                _IsUnskippableCutscene = isUnskippableMobiCutscene(_CutscenesQueue[0]);
-                std::string videoPath = replacementCutsceneFilePath(_CutscenesQueue[0]);
-                std::string subtitlesPath = replacementCutsceneSubtitlesFilePath(_CutscenesQueue[0]);
+                _IsUnskippableCutscene = isUnskippableMobiCutscene(cutscene);
+                std::string videoPath = replacementCutsceneFilePath(cutscene);
+                std::string subtitlesPath = replacementCutsceneSubtitlesFilePath(cutscene);
                 startReplacementCutscene(videoPath, subtitlesPath);
             }
         }

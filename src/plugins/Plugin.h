@@ -48,6 +48,7 @@ struct CutsceneEntry
     u32 usAddress;
     u32 euAddress;
     u32 jpAddress;
+    int postVideoFrameCount;
 
     // 1 -> Is Mobi cutscene
     // 4 -> Requires double Start to skip
@@ -516,6 +517,7 @@ protected:
     int _StartPressCount = 0;
     int _PlayFrameLimitCount = 0;
     int _ReplayFrameLimitCount = 0;
+    int _PostVideoFrameCount = 0;
     bool _SkipDsCutscene = false;
     bool _IsUnskippableCutscene = false;
     bool _IsMobiCutsceneRunning = false;
@@ -534,6 +536,7 @@ protected:
     int _GamePauseMenuSelection = 0; // 0 = Continue, 1 = Skip
     u32 _LastGamePauseMenuButtons = 0; // held-button snapshot for rising-edge detection
 
+    int _CurrentCutsceneIndex = 0;
     std::vector<CutsceneEntry*> _CutscenesQueue = {};
     std::vector<CutsceneEntry*> _CutscenesBlacklist = {};
     CutsceneEntry* _LastCutscene = nullptr;
