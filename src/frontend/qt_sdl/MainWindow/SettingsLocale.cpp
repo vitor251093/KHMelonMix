@@ -166,6 +166,154 @@ static const SettingsLocale kEnglish = {
         "Any progress since your last save will be lost.",
 };
 
+static const SettingsLocale kSpanish = {
+    /* on */  "Sí",
+    /* off */ "No",
+    /* none */ "Nada",
+    /* titleGameSettings */ "AJUSTES DE LOS JUEGOS",
+
+    /* sidebarLabels */ {
+        "Juego",
+        "Emulación",
+        "Gráficos",
+        "Sonido",
+        "Mando",
+        "Teclado",
+        "Sistema",
+        "Antes de retransmitir\xE2\x80\xA6",
+        "Salir",
+    },
+
+    /* sectionOverview */ {
+        "Establece ajustes específicos del juego de Kingdom Hearts cargado.",
+        "Establece el tipo de consola, la frecuencia de fotogramas y el comportamiento del entorno de ejecución.",
+        "Establece el renderizador, la resolución, la sincronización y el tema visual.",
+        "Establece el volumen, la calidad del audio y la entrada del micrófono.",
+        "Reasigna los botones y las palancas analógicas del mando.",
+        "Reasigna las teclas del teclado correspondientes a botones de la DS y atajos.",
+        "Establece el modo de red, la simulación de la batería y las opciones del firmware.",
+        "Consulta los lineamientos de retransmisión y la información sobre derechos de autor.",
+        "Sal de la sesión del juego actual.",
+    },
+
+    /* hintToggle */      "Cambiar",
+    /* hintSelect */      "Seleccionar",
+    /* hintAdjust */      "Ajustar",
+    /* hintReset */       "Restablecer",
+    /* hintBack */        "Volver",
+    /* hintEnter */       "Ingresar",
+    /* hintClose */       "Cerrar",
+    /* hintConfirm */     "Confirmar",
+    /* hintRebind */      "Reasignar",
+    /* hintResetAll */    "Restablecer todo",
+    /* hintClear */       "Borrar",
+    /* remapSelectPrompt */  "Selecciona la acción que quieras asignar.",
+    /* remapResetBackHint */ "X Restablecer todo  |  B Volver a la barra lateral",
+    /* hintOpenWebsite */ "Abrir el sitio web",
+    /* hintQuitGame */    "Salir del juego",
+    /* hintYes */         "Sí",
+    /* hintNo */          "No",
+    /* hintCancel */      "Cancelar",
+
+    /* captureController */     "Presiona un botón del mando\xE2\x80\xA6",
+    /* captureKey */            "Presiona una tecla\xE2\x80\xA6",
+    /* captureCancelKeyboard */ "Presiona Esc para cancelar",
+    /* captureReleaseHint */    "Libera el mando\xE2\x80\xA6",
+    /* captureCancelCountdown */"Cancelando en %1s",
+
+    /* resetSectionPrompt */ "¿Quieres restablecer %1 al valor predeterminado?",
+    /* resetAllBindings */   "¿Quieres restablecer todas las asignaciones?",
+    /* pillYes */ "Sí",
+    /* pillNo */  "No",
+
+    /* noKHGameNote */
+        "No se está ejecutando ningún juego de Kingdom Hearts. "
+        "Aquí aparecerán ajustes específicos de KH cuando hayas cargado un juego.",
+
+    /* gameLanguageLabel */       "Idioma",
+    /* gameLanguageDesc */        "Establece el idioma del firmware, que se usa para los subtítulos de las escenas y los menús de pausa.",
+    /* gameFastForwardLabel */    "Acelerar carga",
+    /* gameFastForwardDesc */     "Acelera automáticamente las pantallas de carga.",
+    /* gameSkipCutscenesLabel */  "Saltar escenas instantáneamente",
+    /* gameSkipCutscenesDesc */   "Cuando presiones un botón durante una escena, la saltarás de inmediato.",
+    /* gameHisMemoriesLabel */    "Inhabilitar recuerdos",
+    /* gameHisMemoriesDesc */     "Quita los episodios de recuerdos adicionales que se agregaron en esta versión.",
+
+    /* displayEnhancedLabel */     "Gráficos mejorados",
+    /* displayEnhancedDesc */      "Habilita fondos y modelos de alta resolución.",
+    /* displaySingleScreenLabel */ "Modo de una sola pantalla",
+    /* displaySingleScreenDesc */  "Muestra solo la pantalla superior de la DS y la redimensiona al tamaño de tu pantalla.",
+    /* displayHDCutscenesLabel */  "Habilitar escenas en HD",
+    /* displayHDCutscenesDesc */   "Reproduce escenas prerrenderizadas en HD en vez de las escenas originales del juego (si están disponibles).",
+    /* displaySubtitlesLabel */    "Mostrar subtítulos",
+    /* displaySubtitlesDesc */     "Muestra subtítulos durante la reproducción de las escenas en HD.",
+    /* displayHUDScaleLabel */     "Escala de la interfaz",
+    /* displayHUDScaleDesc */      "Ajusta el tamaño de los elementos de la interfaz.",
+
+    /* soundAudioPackLabel */ "Paquete de audio",
+    /* soundAudioPackDesc */  "Establece el paquete de reemplazo de música para el audio del juego.",
+
+    /* gamepadConfirmBtnLabel */ "Confirmar",
+    /* gamepadConfirmBtnDesc */  "Asigna el botón de la DS que se usará para confirmar acciones.",
+    /* gamepadBindingsLabel */ "Asignación de botones",
+    /* gamepadBindingsDesc */  "Asigna botones del mando a botones de la DS y atajos.",
+    /* gamepadCamSensLabel */  "Sensibilidad de la cámara",
+    /* gamepadCamSensDesc */   "Establece la velocidad de los controles táctiles de la cámara.",
+
+    /* keyboardBindingsLabel */ "Asignación de teclas",
+    /* keyboardBindingsDesc */  "Asigna teclas del teclado a botones de la DS y atajos.",
+
+    // Emulation
+    /* emuConsoleType */     "Tipo de consola",          "Establece la consola emulada. Surte efecto después de reiniciar el juego.",
+    /* emuDirectBoot */      "Inicio directo",           "Salta la secuencia de encendido de la DS para iniciar el juego directamente.",
+    /* emuFpsLimit */        "Límite de FPS",             "Limita la velocidad de emulación a la frecuencia de fotogramas objetivo.",
+    /* emuTargetFps */       "FPS objetivo",            "Limita la frecuencia de fotogramas de la jugabilidad habitual.",
+    /* emuFastForwardFps */  "FPS para adelantar",      "Limita la velocidad mientras se mantiene presionado el botón para adelantar.",
+    /* emuSlowmoFps */       "FPS para ralentizar",            "Limita la frecuencia de fotogramas mientras está activa la ralentización.",
+    /* emuMuteFastForward */ "Silenciar al adelantar",     "Silencia el audio mientras se mantiene presionado el botón para adelantar.",
+    /* emuPauseLostFocus */  "Pausar en segundo plano",   "Pausa la emulación cuando la ventana no está activa.",
+    /* emuHideMouse */       "Ocultar cursor",            "Oculta el cursor del mouse mientras la ventana del emulador está activa.",
+    /* emuHideMouseAfter */  "Tiempo para ocultar el cursor",      "Oculta automáticamente el cursor del mouse después de este período de inactividad.",
+    /* emuJit */             "Recompilador JIT",        "Mejora el rendimiento a costa de la estabilidad. Surte efecto la próxima vez que cargues la ROM.",
+    // Display
+    /* displayRenderer */    "Renderizador 3D",           "Establece el renderizador gráfico de las pantallas 3D. Para usar los modos de OpenGL, se requiere una GPU compatible.",
+    /* displayResolution */  "Resolución 3D",         "Establece la escala de renderización interna de los gráficos 3D.",
+    /* displayVSync */       "Sincronización vertical",                 "Sincroniza el renderizado a la frecuencia de actualización de tu pantalla.",
+    /* displayThemeColor */  "Tema de color",           "Establece los colores del menú según el juego de Kingdom Hearts.",
+    // Sound
+    /* soundVolume */        "Volumen",                "Establece el nivel de salida del audio del juego.",
+    /* soundBgmVolume */     "Volumen de la música",            "Establece el nivel de salida de la música de fondo.",
+    /* soundInterpolation */ "Interpolación",         "Establece la calidad de remuestreo del audio. Los ajustes de mayor calidad mejoran la fidelidad, pero utilizan más la CPU.",
+    /* soundBitDepth */      "Profundidad de bits",             "Establece la profundidad de bits de las muestras de audio. La opción de 10 bits imita el hardware original de la DS.",
+    /* soundDSiVolumeSync */ "Sincronización de volumen de la DSi",       "Sincroniza el volumen del audio de la DS con nivel de volumen del firmware de la DSi.",
+    /* soundMicInput */      "Entrada del micrófono",             "Establece la fuente de entrada para los juegos que utilizan el micrófono de la DS.",
+    // System
+    /* systemWifiMode */     "Modo de Wi-Fi",             "Establece el modo de conexión de las funciones inalámbricas.",
+    /* systemWifiAdapter */  "Adaptador Wi-Fi",          "Establece el adaptador de red que se utiliza para el modo directo (solo activo cuando ese modo está seleccionado).",
+    /* systemDSBattery */    "Batería de la DS",            "Establece el nivel de la batería de la DS para los juegos que lo comprueban.",
+    /* systemDSiBattery */   "Nivel de la batería de la DSi",     "Establece el nivel de carga de la batería simulada de la DSi.",
+    /* systemDSiCharging */  "Carga de la DSi",          "Establece si la batería simulada de la DSi se está cargando.",
+
+    /* streamPara1 */
+        "Para retransmitir Melon Mix con OBS, captura toda la pantalla (de lo contrario, "
+        "no se grabarán las escenas). Además, captura todo el audio del sistema, o no se grabará la música de reemplazo.",
+    /* streamPara2 */
+        "Este juego es una obra protegida por derechos de autor propiedad de The Walt Disney "
+        "Company y una colaboración de autores que representan a The Walt Disney Company. "
+        "Además, los derechos de autor de ciertos personajes pertenecen a Square Enix Co., Ltd.",
+    /* streamPara3 */
+        "La retransmisión de este juego queda permitida únicamente con fines no comerciales. "
+        "No obstante, la reproducción del juego para proporcionar o escuchar la música "
+        "como fin principal queda prohibida incluso para uso no comercial.",
+    /* streamPara4 */
+        "Para obtener más información acerca de las condiciones de uso en relación "
+        "con la reproducción del juego, visita el sitio oficial de Kingdom Hearts. ",
+    /* streamOpenHint */ "Abre un navegador para ver el sitio web oficial.",
+    /* quitBody */
+        "Saldrás del juego actual. "
+        "Perderás el progreso logrado después de la última vez que guardaste.",
+};
+
 // TODO: KH Add support to all languages from PluginLanguage.h
 const SettingsLocale kLocales[6] = {
     kEnglish,  // 0  English
@@ -173,5 +321,5 @@ const SettingsLocale kLocales[6] = {
     kEnglish,  // 2  French    (stub)
     kEnglish,  // 3  German    (stub)
     kEnglish,  // 4  Italian   (stub)
-    kEnglish,  // 5  Spanish   (stub)
+    kSpanish,  // 5  Spanish   (WIP)
 };
