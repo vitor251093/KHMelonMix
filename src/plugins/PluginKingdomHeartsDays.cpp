@@ -495,7 +495,7 @@ void PluginKingdomHeartsDays::overrideConfigs(
         setBoolConfig(tomlUniqueIdentifier() + ".JoystickDefaultsApplied", true);
     }
 
-    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
+    KingdomHeartsHDCollection::KHMareConfig* config = SyncSettingsWithHDCollection ? KingdomHeartsHDCollection::config() : nullptr;
     if (config == nullptr)
     {
         return;
@@ -537,7 +537,7 @@ void PluginKingdomHeartsDays::overrideConfigs(
 
 void PluginKingdomHeartsDays::overrideJoystickMappings(std::function<void(std::string, int)> setIntConfig)
 {
-    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
+    KingdomHeartsHDCollection::KHMareConfig* config = SyncSettingsWithHDCollection ? KingdomHeartsHDCollection::config() : nullptr;
     if (config == nullptr)
     {
         if (!JoystickDefaultsApplied)
@@ -590,7 +590,7 @@ std::string PluginKingdomHeartsDays::saveFilePath()
 
 StartupWindowConfig PluginKingdomHeartsDays::startupWindowConfig()
 {
-    KingdomHeartsHDCollection::KHMareConfig* config = KingdomHeartsHDCollection::config();
+    KingdomHeartsHDCollection::KHMareConfig* config = SyncSettingsWithHDCollection ? KingdomHeartsHDCollection::config() : nullptr;
     if (config == nullptr) {
         return { FullscreenOnStartup ? 1 : -1, 0, 0 };
     }

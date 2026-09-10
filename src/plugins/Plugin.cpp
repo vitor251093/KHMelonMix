@@ -1583,6 +1583,7 @@ void Plugin::_superLoadConfigs(
     DaysDisableHisMemories = getBoolConfig(root + ".DaysDisableHisMemories");
     ExportTextures = getBoolConfig(root + ".ExportTextures");
     FullscreenOnStartup = getBoolConfig(root + ".FullscreenOnStartup");
+    SyncSettingsWithHDCollection = !getBoolConfig(root + ".DisableHDCollectionSync");
     UIScale = getIntConfig(root + ".HUDScale");
     UIScale = (UIScale == 0) ? 4 : UIScale;
     SelectedAudioPack = getStringConfig(root + ".AudioPack");

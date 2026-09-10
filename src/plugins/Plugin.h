@@ -504,6 +504,7 @@ protected:
     bool DaysDisableHisMemories = false;
     bool ExportTextures = false;
     bool FullscreenOnStartup = false;
+    bool SyncSettingsWithHDCollection = true;
     bool HDCutscenesEnabled = true;
     bool SubtitlesEnabled = true;
     int JoystickConfirmIndex = 0;

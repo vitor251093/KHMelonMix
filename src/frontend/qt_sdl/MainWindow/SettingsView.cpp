@@ -34,6 +34,7 @@
 #include "MainWindowSettings.h"
 #include "EmuInstance.h"
 #include "plugins/Plugin.h"
+#include "plugins/KingdomHeartsHDCollection.h"
 #include "InputConfig/BindingName.h"
 
 using namespace Plugins;
@@ -235,6 +236,12 @@ QVector<SettingRow> SettingsView::rowsFor(int idx) const
         {
             rows.append(buildToggle(loc.gameHisMemoriesLabel,
                 loc.gameHisMemoriesDesc, gcfg, prefix + "DaysDisableHisMemories", false, false, pluginSave));
+        }
+
+        if (!KingdomHeartsHDCollection::path().empty())
+        {
+            rows.append(buildToggle(loc.gameSyncHDCollectionLabel,
+                loc.gameSyncHDCollectionDesc, gcfg, prefix + "DisableHDCollectionSync", true, false, pluginSave));
         }
         break;
     }

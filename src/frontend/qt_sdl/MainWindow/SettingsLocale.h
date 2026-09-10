@@ -77,6 +77,8 @@ struct SettingsLocale
     const char* gameSkipCutscenesDesc;
     const char* gameHisMemoriesLabel;
     const char* gameHisMemoriesDesc;
+    const char* gameSyncHDCollectionLabel;
+    const char* gameSyncHDCollectionDesc;
 
     // Display section (KH-guarded rows)
     const char* displayEnhancedLabel;
