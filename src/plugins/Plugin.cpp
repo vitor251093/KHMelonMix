@@ -613,6 +613,7 @@ std::string Plugin::localizationFilePath(std::string language, bool emptyIfFileN
     return "";
 }
 
+// TODO: KH Move the two functions below to an utility class
 std::string trim(const std::string& str) {
     // Find the first non-whitespace character from the beginning
     size_t start = str.find_first_not_of(" \t\n\r\f\v");
@@ -636,6 +637,7 @@ const char* Plugin::skipUtf8Bom(const char* line) {
 
     return line;
 }
+
 std::string Plugin::textureIndexFilePath() {
     std::string filename = "index.ini";
     std::filesystem::path _assetsFolderPath = gameAssetsFolderPath();

@@ -63,6 +63,8 @@ struct BgmEntry
     char Name[40];
 };
 
+// TODO: KH Marked for refactor
+//   Details: an enum must be introduced to deal with `mode`, and the excess of comments must be removed
 // Display mode + window size the HD Collection launcher requests at game start.
 // mode: -1 = leave as-is; 0 = fullscreen, 1 = borderless, 2 = windowed.
 // width/height: 0 = unset (keep the current/previous window size).
