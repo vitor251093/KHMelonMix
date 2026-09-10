@@ -16,6 +16,8 @@
     with melonDS. If not, see http://www.gnu.org/licenses/.
 */
 
+// TODO: KH Marked for refactor
+
 #include "CutsceneVideoView.h"
 #include "PauseMenuOverlay.h"
 

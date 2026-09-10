@@ -1,3 +1,5 @@
+// TODO: KH Marked for refactor
+
 #include "PluginMenuStrings.h"
 
 namespace Plugins

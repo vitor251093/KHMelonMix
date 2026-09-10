@@ -45,6 +45,8 @@ using namespace melonDS;
 
 namespace {
 
+// TODO: KH Marked for refactor
+
 // Some HD cutscene MP4s ship with their first 256 bytes XORed against a fixed, repeating
 // 16-byte key (a KH HD Remix asset-scrambling quirk), so they start with neither a "ftyp"
 // nor a "moov" box and QMediaPlayer refuses to load them as InvalidMedia. XOR is its own
@@ -468,6 +470,8 @@ static QByteArray loadWavPcm(const QString& path)
 
 void MainWindowSettings::createMenuSounds()
 {
+    // TODO: KH Marked for refactor
+
     static const char* sources[5] = {
         nullptr,                       // 0: unused
         ":/ds/sfx_menu_enter.wav",     // 1: enter

@@ -345,6 +345,7 @@ void EmuInstance::openJoystick()
             hasGyroscope = SDL_GameControllerSetSensorEnabled(controller, SDL_SENSOR_GYRO, SDL_TRUE) == 0;
         }
 
+        // TODO: KH Marked for refactor
         // If the GC descriptor has no trigger mapping (CoreHID/Apple VID after device switch),
         // open a raw HID channel to the Nintendo device for ZL/ZR detection.
         SDL_GameControllerButtonBind trigBind =
@@ -592,6 +593,7 @@ Sint16 EmuInstance::joystickButtonDown(int val)
     return 0;
 }
 
+// TODO: KH Marked for refactor
 void EmuInstance::pollHidReport()
 {
     // hidDevice is opened/closed by openJoystick()/closeJoystick() (under joyMutex) and read here.

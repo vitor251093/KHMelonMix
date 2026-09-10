@@ -307,6 +307,7 @@ protected:
             }
         }
 
+        // TODO: KH Marked for refactor
         // Raw HID fallback for NSO SNES via CoreHID (GC descriptor has no trigger entries).
         // ZL = report[1] bit 6 (0x40), ZR = report[2] bit 7 (0x80), confirmed empirically.
         const melonDS::u8* hr = parentDialog->pollAndGetHidReport();
