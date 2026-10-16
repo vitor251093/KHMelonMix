@@ -104,9 +104,14 @@ if (ENABLE_GDBSTUB)
 endif()
 
 option(BUILD_QT_SDL "Build Qt/SDL frontend" ON)
+option(BUILD_LIBRETRO "Build libretro core" OFF)
 
 add_subdirectory(src)
 
 if (BUILD_QT_SDL)
     add_subdirectory(src/frontend/qt_sdl)
+endif()
+
+if (BUILD_LIBRETRO)
+    add_subdirectory(src/frontend/libretro)
 endif()

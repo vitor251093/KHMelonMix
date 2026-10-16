@@ -3,6 +3,7 @@
 * [Linux](#linux)
 * [Windows](#windows)
 * [macOS](#macos)
+* [libretro core](#libretro-core)
 
 ## Linux
 1. Install dependencies:
@@ -72,3 +73,17 @@ If everything went well, MelonMix.app should now be in the `build` directory.
 ### Self-contained app bundle
 If you want an app bundle that can be distributed to other computers without needing to install dependencies through Homebrew, you can additionally run `
 ../tools/mac-libs.rb .` after the build is completed, or add `-DMACOS_BUNDLE_LIBS=ON` to the first CMake command.
+
+## libretro core
+The libretro core lets KH Melon Mix run inside RetroArch. It is off by default and needs none of the Qt, SDL or Lua dependencies listed above; a C++17 compiler and CMake are enough.
+
+```bash
+cmake -B build-libretro -DBUILD_LIBRETRO=ON -DBUILD_QT_SDL=OFF -DENABLE_OGLRENDERER=OFF
+cmake --build build-libretro
+```
+
+`-DENABLE_OGLRENDERER=OFF` is required: the OpenGL sources need the `MELONDS_GL_HEADER` definition that only the Qt/SDL frontend provides, and the core renders in software.
+
+The build writes `khmelonmix_libretro.dll` (or `.so` / `.dylib`) and `khmelonmix_libretro.info` into the build directory. Copy the library to RetroArch's `cores` folder and the info file to its `info` folder. Both are needed: without the info file RetroArch will not offer the core for `.nds` content and will not associate it with a scanned Nintendo DS playlist.
+
+See [src/frontend/libretro/README.md](src/frontend/libretro/README.md) for what the core supports and what it does not.
